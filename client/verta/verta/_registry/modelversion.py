@@ -184,6 +184,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         print("Created new ModelVersion: {}".format(model_version.version))
         return model_version
 
+    ModelVersionMessage = _ModelVersionService.ModelVersion
+
     def log_model(self, model, model_api=None, overwrite=False):
         """
         Logs a model to this Model Version.
@@ -202,7 +204,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
-        self._fetch_with_no_cache()
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
 
@@ -216,8 +217,11 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
             extension = _artifact_utils.ext_from_method(method)
 
         # Create artifact message and update ModelVersion's message:
-        self._msg.model.CopyFrom(self._create_artifact_msg("model", serialized_model, artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension))
-        self._update()
+        model_msg = self._create_artifact_msg("model", serialized_model,
+                                        artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension)
+        model_version_update = self.ModelVersionMessage(model=model_msg)
+        self._update(model_version_update)
+
 
         # Upload the artifact to ModelDB:
         self._upload_artifact(
@@ -263,7 +267,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         """
         self._fetch_with_no_cache()
         self._msg.ClearField("model")
-        self._update()
+        self._update(self._msg, method="PUT")
 
     def log_artifact(self, key, artifact, overwrite=False, extension=None):
         """
@@ -317,7 +321,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         else:
             self._msg.artifacts[same_key_ind].CopyFrom(artifact_msg)
 
-        self._update()
+        self._update(self._msg, method="PUT")
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def get_artifact(self, key):
@@ -388,7 +392,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
             raise KeyError("no artifact found with key {}".format(key))
 
         del self._msg.artifacts[ind]
-        self._update()
+        self._update(self._msg, method="PUT")
 
     def log_environment(self, env):
         """
@@ -405,7 +409,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
 
         self._fetch_with_no_cache()
         self._msg.environment.CopyFrom(env._msg)
-        self._update()
+        self._update(self._msg, method="PUT")
+        # probably error on backend
+        #self._update(self.ModelVersionMessage(environment=env._msg))
 
     def del_environment(self):
         """
@@ -414,7 +420,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         """
         self._fetch_with_no_cache()
         self._msg.ClearField("environment")
-        self._update()
+        self._update(self._msg, method="PUT")
 
     def get_environment(self):
         """
@@ -577,9 +583,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
     def set_description(self, desc):
         if not desc:
             raise ValueError("desc is not specified")
-        self._fetch_with_no_cache()
-        self._msg.description = desc
-        self._update()
+        self._update(self.ModelVersionMessage(description=desc))
 
     def get_description(self):
         self._refresh_cache()
@@ -598,11 +602,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         if not labels:
             raise ValueError("label is not specified")
 
-        self._fetch_with_no_cache()
-        for label in labels:
-            if label not in self._msg.labels:
-                self._msg.labels.append(label)
-        self._update()
+        self._update(self.ModelVersionMessage(labels=labels))
 
     def add_label(self, label):
         """
@@ -617,9 +617,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         if label is None:
             raise ValueError("label is not specified")
         self._fetch_with_no_cache()
-        if label not in self._msg.labels:
-            self._msg.labels.append(label)
-            self._update()
+        self._update(self.ModelVersionMessage(labels=[label]))
 
     def del_label(self, label):
         """
@@ -636,7 +634,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         self._fetch_with_no_cache()
         if label in self._msg.labels:
             self._msg.labels.remove(label)
-            self._update()
+            self._update(self._msg, method="PUT")
 
     def get_labels(self):
         """
@@ -698,13 +696,12 @@ class RegisteredModelVersion(_ModelDBRegistryEntity):
         if self.is_archived:
             raise RuntimeError("the version has already been archived")
 
-        self._fetch_with_no_cache()
-        self._msg.archived = _CommonCommonService.TernaryEnum.TRUE
-        self._update()
+        self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
 
-    def _update(self):
-        response = self._conn.make_proto_request("PUT", "/api/v1/registry/registered_models/{}/model_versions/{}".format(self._msg.registered_model_id, self.id),
-                                                 body=self._msg)
+    def _update(self, msg, method="PATCH"):
+        response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
+                                                 .format(self._msg.registered_model_id, self.id),
+                                                 body=msg, include_default=False)
         Message = _ModelVersionService.SetModelVersion
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
