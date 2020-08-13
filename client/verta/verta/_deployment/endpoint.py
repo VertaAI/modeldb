@@ -221,7 +221,8 @@ class Endpoint(object):
 
             print()
             if self.get_status()['status'] == "error":
-                raise RuntimeError("endpoint update failed")
+                failure_msg = self.get_status()['components'][0].get('message', "no error message available")
+                raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
 
         return self.get_status()
 
@@ -350,7 +351,7 @@ class Endpoint(object):
             model_reference = RegisteredModelVersion._get_by_id(self._conn, self._conf, id=update_dict["model_version_id"])
         else:
             raise RuntimeError("must provide either model_version_id or run_id")
-            
+
         return self.update(model_reference, strategy, resources=resources_list, autoscaling=autoscaling_obj, env_vars=update_dict.get("env_vars"))
 
     def get_status(self):
@@ -414,7 +415,7 @@ class Endpoint(object):
 
         # prepare body for update request
         return update_body
-      
+
     def get_deployed_model(self):
         """
         Returns an object for making predictions against the deployed model.
