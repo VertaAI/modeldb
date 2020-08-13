@@ -264,7 +264,6 @@ class RegisteredModel(_ModelDBRegistryEntity):
         """
         if label is None:
             raise ValueError("label is not specified")
-        self._fetch_with_no_cache()
         self._update(self.RegisteredModelMessage(labels=[label]))
 
     def del_label(self, label):
