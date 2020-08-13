@@ -35,3 +35,7 @@ Autoscaling
     :members:
 .. automodule:: verta.deployment.autoscaling.metrics
     :members:
+
+Command Line Interface
+^^^^^^^^^^^^^^^^^^^^^^
+See :doc:`CLI documentation for Deployment <deployment_cli>`.

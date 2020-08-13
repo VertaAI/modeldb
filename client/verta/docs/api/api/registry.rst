@@ -17,3 +17,7 @@ Registered Model Version
 ------------------------
 .. autoclass:: verta._registry.modelversion.RegisteredModelVersion()
     :members:
+
+Command Line Interface
+^^^^^^^^^^^^^^^^^^^^^^
+See :doc:`CLI documentation for Model Registry <registry_cli>`.
