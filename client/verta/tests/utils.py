@@ -1,6 +1,8 @@
 import contextlib
+import copy
 import random
 import os
+import sys
 from string import printable
 
 import requests
@@ -102,6 +104,23 @@ def chdir(new_dir):
     finally:
         os.chdir(old_dir)
 
+
+@contextlib.contextmanager
+def sys_path_manager():
+    """
+    Context manager for safely modifying `sys.path`.
+
+    Without this, if a test involving a `sys.path` modification fails then subsequent tests could
+    possibly fail as well due to a bad execution state.
+
+    """
+    old_sys_path = copy.copy(sys.path)
+    try:
+        yield sys.path
+    finally:
+        sys.path = old_sys_path
+
+
 def get_build_ids(status):
     # get the set of build_ids in the status of the stage:
     return set(map(lambda comp: comp["build_id"], status["components"]))
@@ -143,4 +162,3 @@ def delete_endpoint(id_, workspace, conn):
     request_url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}".format(conn.scheme, conn.socket, workspace, id_)
     response = requests.delete(request_url, headers=conn.auth)
     _utils.raise_for_http_error(response)
-

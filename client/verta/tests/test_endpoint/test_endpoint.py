@@ -14,7 +14,7 @@ from verta._internal_utils import _utils
 from verta.environment import Python
 from verta.utils import ModelAPI
 
-from ..utils import get_build_ids
+from ..utils import (get_build_ids, sys_path_manager)
 
 
 class TestEndpoint:
@@ -413,7 +413,7 @@ class TestEndpoint:
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
         update_status = endpoint.get_update_status()
-        
+
         autoscaling_metrics = update_status["update_request"]["autoscaling"]["metrics"]
         assert len(autoscaling_metrics) == 3
         for metric in autoscaling_metrics:
@@ -428,23 +428,36 @@ class TestEndpoint:
 
     def test_update_with_custom_module(self, client, model_version, created_endpoints):
         torch = pytest.importorskip("torch")
-        from models.nets import FullyConnected
 
-        train_data = torch.rand((2, 4))
+        import sys
+        for p in sys.path:
+            print("    {}".format(p))
 
-        classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
-        model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
-        model_version.log_model(classifier, custom_modules=["models/"], model_api=model_api)
+        with sys_path_manager() as sys_path:
+            sys_path.append(".")
 
-        env = Python(requirements=["torch==1.0.0"])
-        model_version.log_environment(env)
+            print()
+            for p in sys_path:
+                print("    {}".format(p))
+
+            from models.nets import FullyConnected
+
+            train_data = torch.rand((2, 4))
+
+            classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
+            model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
+            model_version.log_model(classifier, custom_modules=["models/"], model_api=model_api)
+
+            env = Python(requirements=["torch==1.0.0"])
+            model_version.log_environment(env)
 
 
-        path = verta._internal_utils._utils.generate_default_name()
-        endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
-        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+            path = verta._internal_utils._utils.generate_default_name()
+            endpoint = client.set_endpoint(path)
+            created_endpoints.append(endpoint)
+            endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
 
 
-        test_data = torch.rand((4, 4))
-        assert torch.all(endpoint.get_deployed_model().predict(test_data.tolist()).eq(classifier(test_data)))
+            test_data = torch.rand((4, 4))
+            prediction = torch.tensor(endpoint.get_deployed_model().predict(test_data.tolist()))
+            assert torch.all(classifier(test_data).eq(prediction))
