@@ -429,16 +429,8 @@ class TestEndpoint:
     def test_update_with_custom_module(self, client, model_version, created_endpoints):
         torch = pytest.importorskip("torch")
 
-        import sys
-        for p in sys.path:
-            print("    {}".format(p))
-
         with sys_path_manager() as sys_path:
             sys_path.append(".")
-
-            print()
-            for p in sys_path:
-                print("    {}".format(p))
 
             from models.nets import FullyConnected
 
