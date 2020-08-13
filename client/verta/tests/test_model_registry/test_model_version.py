@@ -184,7 +184,7 @@ class TestModelVersion:
         # Overwrite should work:
         new_classifier = LogisticRegression()
         new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_artifact("coef", new_classifier.coef_, overwrite=True)
+        model_version.log_artifact("coef", new_classifier.coef_, True)
         retrieved_coef = model_version.get_artifact("coef")
         assert np.array_equal(retrieved_coef, new_classifier.coef_)
 
