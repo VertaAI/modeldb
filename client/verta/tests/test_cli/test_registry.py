@@ -2,6 +2,7 @@ import json
 import os
 import tarfile
 import pickle
+import time
 
 import pytest
 from click.testing import CliRunner
@@ -11,8 +12,11 @@ from verta._cli import cli
 from verta._registry import RegisteredModel
 from verta._internal_utils import _utils
 from verta.environment import Python
+from verta.utils import ModelAPI
+from verta.deployment.update._strategies import DirectUpdateStrategy
 
-from ..utils import delete_organization
+
+from ..utils import delete_organization, sys_path_manager
 
 
 
@@ -529,6 +533,50 @@ class TestUpdate:
         assert model_version.get_artifact("file").read() == FILE_CONTENTS_2
         assert pickle.dumps(model_version.get_model()) != CLASSIFIER_CONTENTS
         assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS_2
+
+    def test_update_version_with_custom_modules(self, client, in_tempdir, registered_model, created_endpoints):
+        torch = pytest.importorskip("torch")
+        np = pytest.importorskip("numpy")
+
+        model_name = registered_model.name
+        version_name = "my version"
+
+        with sys_path_manager() as sys_path:
+            sys_path.append(".")
+
+            from models.nets import FullyConnected
+            train_data = torch.rand((2, 4))
+
+            model_path = "classifier"
+            classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
+            torch.save(classifier, model_path)
+
+            model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
+
+            runner = CliRunner()
+            runner.invoke(
+                cli,
+                ['registry', 'update', 'registeredmodelversion', model_name, version_name,
+                 "--model", model_path, "--custom-module", "models/"],
+            )
+
+
+            model_version = registered_model.get_version(name=version_name)
+
+            # TODO: consolidate these in the command above
+            model_version.log_artifact("model_api.json", model_api, True, "json")
+            env = Python(requirements=["torch==1.0.0"])
+            model_version.log_environment(env)
+
+            path = _utils.generate_default_name()
+            endpoint = client.set_endpoint(path)
+            created_endpoints.append(endpoint)
+            endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+
+
+            test_data = torch.rand((4, 4))
+            prediction = torch.tensor(endpoint.get_deployed_model().predict(test_data.tolist()))
+            assert torch.all(classifier(test_data).eq(prediction))
 
 
 class TestDownload:

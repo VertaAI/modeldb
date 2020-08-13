@@ -8,9 +8,6 @@ from verta import Client
 from verta._cli import cli
 from verta._internal_utils import _utils
 from verta.environment import Python
-from verta.utils import ModelAPI
-
-from ..utils import (get_build_ids, sys_path_manager)
 
 
 class TestList:
@@ -374,48 +371,3 @@ class TestUpdate:
             else:
                 assert metric["parameters"][0]["name"] == "target"
                 assert metric["parameters"][0]["value"] == "0.7"
-
-    def test_update_from_version_with_custom_modules(self, client, registered_model, created_endpoints):
-        torch = pytest.importorskip("torch")
-        np = pytest.importorskip("numpy")
-
-        model_name = registered_model.name
-        version_name = "my version"
-
-        with sys_path_manager() as sys_path:
-            sys_path.append(".")
-            from models.sklearn_models import MyLogisticRegression  # pylint: disable=import-error
-
-            train_data = np.random.random((2, 4))
-
-            classifier = MyLogisticRegression()
-
-            runner.invoke(
-                cli,
-                ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--model", classifier_name],
-            )
-
-            model_version.log_model(classifier, custom_modules=["models/"])
-
-            env = Python(requirements=["torch==1.0.0"])
-            model_version.log_environment(env)
-
-
-            path = _utils.generate_default_name()
-            endpoint = client.set_endpoint(path)
-            created_endpoints.append(endpoint)
-
-            runner = CliRunner()
-            result = runner.invoke(
-                cli,
-                ['deployment', 'update', 'endpoint', path, '--model-version-id', model_version.id, "--strategy",
-                 "direct"],
-            )
-            assert not result.exception
-
-            while not endpoint.get_status()['status'] == "active":
-                time.sleep(3)
-
-            test_data = torch.rand((4, 4))
-            prediction = torch.tensor(endpoint.get_deployed_model().predict(test_data.tolist()))
-            assert torch.all(classifier(test_data).eq(prediction))
