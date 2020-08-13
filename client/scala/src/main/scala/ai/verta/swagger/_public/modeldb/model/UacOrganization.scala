@@ -35,6 +35,7 @@ case class UacOrganization (
   id: Option[String] = None,
   name: Option[String] = None,
   owner_id: Option[String] = None,
+  registered_model_can_deploy: Option[TernaryEnumTernary] = None,
   short_name: Option[String] = None,
   updated_timestamp: Option[BigInt] = None,
   workspace_id: Option[String] = None
@@ -57,6 +58,7 @@ object UacOrganization {
         obj.id.map(x => JField("id", JString(x))),
         obj.name.map(x => JField("name", JString(x))),
         obj.owner_id.map(x => JField("owner_id", JString(x))),
+        obj.registered_model_can_deploy.map(x => JField("registered_model_can_deploy", ((x: TernaryEnumTernary) => TernaryEnumTernary.toJson(x))(x))),
         obj.short_name.map(x => JField("short_name", JString(x))),
         obj.updated_timestamp.map(x => JField("updated_timestamp", JInt(x))),
         obj.workspace_id.map(x => JField("workspace_id", JString(x)))
@@ -84,6 +86,7 @@ object UacOrganization {
           id = fieldsMap.get("id").map(JsonConverter.fromJsonString),
           name = fieldsMap.get("name").map(JsonConverter.fromJsonString),
           owner_id = fieldsMap.get("owner_id").map(JsonConverter.fromJsonString),
+          registered_model_can_deploy = fieldsMap.get("registered_model_can_deploy").map(TernaryEnumTernary.fromJson),
           short_name = fieldsMap.get("short_name").map(JsonConverter.fromJsonString),
           updated_timestamp = fieldsMap.get("updated_timestamp").map(JsonConverter.fromJsonInteger),
           workspace_id = fieldsMap.get("workspace_id").map(JsonConverter.fromJsonString)

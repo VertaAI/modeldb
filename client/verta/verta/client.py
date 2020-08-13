@@ -78,10 +78,10 @@ class Client(object):
     Object for interfacing with the ModelDB backend.
 
     .. deprecated:: 0.12.0
-       The `port` parameter will removed in v0.15.0; please combine `port` with the first parameter,
+       The `port` parameter will removed in v0.16.0; please combine `port` with the first parameter,
        e.g. `Client("localhost:8080")`.
     .. deprecated:: 0.13.3
-       The `expt_runs` attribute will removed in v0.15.0; consider using `proj.expt_runs` and
+       The `expt_runs` attribute will removed in v0.16.0; consider using `proj.expt_runs` and
        `expt.expt_runs` instead.
 
     This class provides functionality for starting/resuming Projects, Experiments, and Experiment Runs.
@@ -686,8 +686,6 @@ class Client(object):
         if dataset_ids:
             datasets = datasets.with_ids(_utils.as_list_of_str(dataset_ids))
         if sort_key:
-            if sort_key.startswith("time_"):
-                sort_key = "date_" + sort_key[len("time_"):]
             datasets = datasets.sort(sort_key, not ascending)
         if workspace:
             datasets = datasets.with_workspace(workspace)

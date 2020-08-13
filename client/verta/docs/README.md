@@ -1,6 +1,12 @@
 ## Installation
 To install the packages needed for building documentation, refer to the *Python 3* steps of the **Developer Installation** instructions in [the contribution guide](../../CONTRIBUTING.md).
 
+## Adding a New Tutorial
+1. create a new `.rst` file in [`tutorials/`](https://github.com/VertaAI/modeldb/tree/master/client/verta/docs/tutorials)
+1. add the new page as an entry in the `toctree` of [`tutorials/tutorials.rst`](https://github.com/VertaAI/modeldb/blob/master/client/verta/docs/tutorials/tutorials.rst); the format is  
+   `Page Title <relative/path/to/page>`
+   - This makes the new page accessible via the navigation sidebar.
+
 ## Building Documentation
 To clear existing generated files and rebuild pages, run:
 ```bash

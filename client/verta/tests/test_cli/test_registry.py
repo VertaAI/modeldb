@@ -9,6 +9,11 @@ from click.testing import CliRunner
 from verta import Client
 from verta._cli import cli
 from verta._registry import RegisteredModel
+from verta._internal_utils import _utils
+from verta.environment import Python
+
+from ..utils import delete_organization
+
 
 
 class TestCreate:
@@ -28,7 +33,7 @@ class TestCreate:
 
         created_registered_models.append(registered_model)
 
-    def test_create_version(self, registered_model, in_tempdir):
+    def test_create_version(self, registered_model, in_tempdir, requirements_file):
         LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
 
         model_name = registered_model.name
@@ -48,7 +53,7 @@ class TestCreate:
         result = runner.invoke(
             cli,
             ['registry', 'create', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2',
-             "--artifact", "file={}".format(filename), "--model", classifier_name],
+             "--artifact", "file={}".format(filename), "--model", classifier_name, "--requirements", requirements_file.name],
         )
         assert not result.exception
 
@@ -57,6 +62,11 @@ class TestCreate:
         assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
         assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
+
+        # Check environment:
+        reqs = Python.read_pip_file(requirements_file.name)
+        env = Python(requirements=reqs)
+        assert repr(env) == str(model_version.get_environment())
 
     def test_create_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name
@@ -82,19 +92,6 @@ class TestCreate:
         )
         assert result.exception
         assert "cannot have duplicate artifact keys" in result.output
-
-        runner.invoke(
-            cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, "my version 3", "--artifact",
-             "file={}".format(filename)],
-        )
-        result = runner.invoke(
-            cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, "my version 3", "--artifact",
-             "file={}".format(filename)],
-        )
-        assert result.exception
-        assert "key \"file\" already exists" in result.output
 
     def test_create_version_wrong_model_name(self, strs):
         version_name = "my version"
@@ -178,6 +175,29 @@ class TestCreate:
         )
         assert result.exception
         assert error_message in result.output
+
+    @pytest.mark.skip("bug in uac service")
+    def test_create_workspace_config(self, client, organization, in_tempdir):
+        model_name = _utils.generate_default_name()
+        version_name = _utils.generate_default_name()
+
+        client_config = {
+            "workspace": organization.name
+        }
+
+        filepath = "verta_config.json"
+        with open(filepath, "w") as f:
+            json.dump(client_config, f)
+
+        runner = CliRunner()
+        runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodel', model_name],
+        )
+
+        client = Client()
+        model = client.get_registered_model(model_name)
+        assert model.workspace == organization.name
 
 
 class TestGet:
@@ -363,7 +383,7 @@ class TestUpdate:
         assert registered_model.get_labels() == ["label1", "label2"]
 
 
-    def test_update_version(self, registered_model, in_tempdir):
+    def test_update_version(self, registered_model, in_tempdir, requirements_file):
         LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
 
         model_name = registered_model.name
@@ -384,7 +404,9 @@ class TestUpdate:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'update', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2', "--artifact", "file={}".format(filename), "--model", classifier_name],
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name,
+             '-l', 'label1', '-l', 'label2', "--artifact", "file={}".format(filename),
+             "--model", classifier_name, "--requirements", requirements_file.name],
         )
         assert not result.exception
 
@@ -392,6 +414,11 @@ class TestUpdate:
         assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
         assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
+
+        # Check environment:
+        reqs = Python.read_pip_file(requirements_file.name)
+        env = Python(requirements=reqs)
+        assert repr(env) == str(model_version.get_environment())
 
     def test_update_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name
