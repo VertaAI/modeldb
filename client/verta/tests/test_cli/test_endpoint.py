@@ -10,6 +10,8 @@ from verta._internal_utils import _utils
 from verta.environment import Python
 from verta.deployment.update._strategies import DirectUpdateStrategy
 
+from ..utils import get_build_ids
+
 
 class TestList:
     def test_list_endpoint(self):
