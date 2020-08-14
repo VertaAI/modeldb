@@ -222,16 +222,20 @@ class TestCreate:
             with open(model_path, "wb") as f:
                 pickle.dump(classifier, f)
 
+            requirements_path = "requirements.txt"
+            with open(requirements_path, "w") as f:
+                f.write("torch==1.0.0")
 
             runner = CliRunner()
             result = runner.invoke(
                 cli,
                 ['registry', 'create', 'registeredmodelversion', model_name, version_name,
-                 "--model", model_path, "--custom-module", "models/"],
+                 "--model", model_path, "--custom-module", "models/", "--requirements", requirements_path],
             )
             assert not result.exception
 
             os.remove(model_path)
+            os.remove(requirements_path)
 
             # TODO: consolidate these in the command above
             model_version = registered_model.get_version(name=version_name)
@@ -245,15 +249,10 @@ class TestCreate:
             }
             model_version.log_artifact("model_api.json", model_api, True, "json")
 
-            # Log environment:
-            env = Python(requirements=["torch==1.0.0"])
-            model_version.log_environment(env)
-
             path = _utils.generate_default_name()
             endpoint = client.set_endpoint(path)
             created_endpoints.append(endpoint)
             endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
-
 
             test_data = torch.rand((4, 4))
             prediction = torch.tensor(endpoint.get_deployed_model().predict(test_data.tolist()))
