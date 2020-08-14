@@ -4,32 +4,55 @@ In this tutorial, we'll briefly go through the concept of Model Registry, and ex
 
 Registered Model
 ----------------
-Say we have several trained document classification models, stored in ModelDB, and would like to register them for sharing and downstream usage.
-We can represent such models in Verta using a *registered model*:
+Conceptually, a *registered model* is a model registered with model registry which can later be packed and deployed.
+We can create a registered model in Verta using ``client.create_registered_model()`` as follows:
 
 .. code-block:: python
 
     registered_model = client.create_registered_model(
-        name="my model"
-        label=["for-research-purpose", "team-a"],
+        name="my model",
+        label=["research-purpose", "team-a"]
     )
+
+We can also create registered models using the CLI:
+
+.. code-block:: sh
+
+    verta registry create registeredmodel "my model" -l research-purpose -l team-a
 
 Model Version
 -------------
-A registered model can contain multiple *model versions*.
-Each model version store necessary information for deployment, such as artifacts, model, requirements, etc.
+Each registered model can have one or many *model versions* associated with it.
+Each model version stores necessary information for deployment, such as artifacts, model, requirements, etc.
 
-Model versions can be created directly:
+Model versions can be created directly from models and artifacts:
 
 .. code-block:: python
 
     model_version = registered_model.create_version(
-        name="my version"
+        name="my version",
+        labels=["prototype"]
     )
 
-    model_version.log_model(classifier)
+    # Logging the classifier and requirements:
+
+    model_version.log_model(classifier_path)
+
+    reqs = Python.read_pip_file(req_path)
+    model_version.log_environment(Python(requirements=reqs))
     model_version.log_environments(Python(requirements=["sklearn"]))
-Model versions can also be created from experiment run, inheriting requirements, artifacts, and models from the run:
+
+The equivalent CLI command to the snippet above is:
+
+.. code-block:: sh
+
+    verta registry create registeredmodelversion "my model" "my version" \
+    --label prototype \
+    --model classifier_path \
+    --requirements req_path
+
+
+Model versions can also be created from experiment run, inheriting requirements, artifacts, and models from the run. Using the client:
 
 .. code-block:: python
 
@@ -37,3 +60,9 @@ Model versions can also be created from experiment run, inheriting requirements,
         run_id=experiment_run.id
         name="from-experiment-run"
     )
+
+Using the CLI:
+
+.. code-block:: sh
+
+    verta registry create registeredmodelversion "my model" "my version" --from-run experiment-run-id
