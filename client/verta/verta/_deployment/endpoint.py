@@ -436,8 +436,8 @@ class Endpoint(object):
             If the model is not currently deployed.
 
         """
-        status = self.get_status()
-        if status['status'] not in ("active", "updating"):
+        status = self.get_status().get('status', "<no status>")
+        if status not in ("active", "updating"):
             raise RuntimeError("model is not currently deployed (status: {})".format(status))
 
         access_token = self.get_access_token()
