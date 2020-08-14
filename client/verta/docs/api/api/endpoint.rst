@@ -53,3 +53,7 @@ Command Line Interface
 .. click:: verta._cli.deployment:lst
     :prog: verta deployment list
     :show-nested:
+
+.. click:: verta._cli.deployment:predict
+    :prog: verta deployment predict
+    :show-nested:
