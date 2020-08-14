@@ -2,7 +2,7 @@ import json
 import os
 import tarfile
 import pickle
-import time
+import zipfile
 
 import pytest
 from click.testing import CliRunner
@@ -588,6 +588,30 @@ class TestUpdate:
         assert model_version.get_artifact("file").read() == FILE_CONTENTS_2
         assert pickle.dumps(model_version.get_model()) != CLASSIFIER_CONTENTS
         assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS_2
+
+    def test_update_with_no_custom_modules(self, registered_model, in_tempdir):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+
+        model_name = registered_model.name
+        version_name = "my version"
+        registered_model.get_or_create_version(version_name)
+
+        classifier_name = "tiny2.pth"
+        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
+        with open(classifier_name, 'wb') as f:
+            f.write(CLASSIFIER_CONTENTS)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--model", classifier_name, "--no-custom-modules"],
+        )
+        assert not result.exception
+
+        custom_module_filenames = {"__init__.py", "_verta_config.py"}
+        model_version = registered_model.get_version(name=version_name)
+        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
 
 class TestDownload:
