@@ -61,11 +61,13 @@ public class S3Service implements ArtifactStoreService {
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
   private AmazonS3 s3Client;
   private String bucketName;
-  private final Regions awsRegion;
+  private Regions awsRegion;
   private static Credentials temporarySessionCredentials;
   private App app = App.getInstance();
 
   @Autowired
+  public S3Service(){}
+
   public S3Service(String cloudBucketName) throws ModelDBException {
     App app = App.getInstance();
     String cloudAccessKey = app.getCloudAccessKey();
