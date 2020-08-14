@@ -53,11 +53,9 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
     if custom_module and no_custom_modules:
         raise click.BadParameter("--custom-module cannot be used alongside --no-custom-modules.")
     elif no_custom_modules:
-        custom_modules = []
-    elif custom_module:
-        custom_modules = list(custom_module)  # listify tuple. Is this necessary?
-    else:
-        custom_modules = None
+        custom_module = []
+    elif not custom_module:
+        custom_module = None
 
     client = Client()
 
@@ -98,7 +96,7 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
         model_version.add_labels(label)
 
     if model:
-        model_version.log_model(model, custom_modules=custom_modules, overwrite=overwrite)
+        model_version.log_model(model, custom_modules=custom_module, overwrite=overwrite)
 
     if requirements:
         reqs = Python.read_pip_file(requirements)
