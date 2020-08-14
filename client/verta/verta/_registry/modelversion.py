@@ -182,7 +182,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         response = conn.make_proto_request("POST", endpoint, body=model_version_msg)
         model_version = conn.must_proto_response(response, SetModelVersionMessage.Response).model_version
 
-        print("Created new ModelVersion: {}".format(model_version.version))
+        print("created new ModelVersion: {}".format(model_version.version))
         return model_version
 
     ModelVersionMessage = _ModelVersionService.ModelVersion
