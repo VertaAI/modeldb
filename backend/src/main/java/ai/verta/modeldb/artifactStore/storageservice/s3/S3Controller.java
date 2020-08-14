@@ -28,24 +28,25 @@ public class S3Controller {
 
   private static final Logger LOGGER = LogManager.getLogger(S3Controller.class);
 
-  @Autowired
-  private S3Service s3Service;
+  @Autowired private S3Service s3Service;
 
   @PutMapping(value = {"${artifactEndpoint.storeArtifact}"})
   public UploadFileResponse storeArtifact(
       @RequestParam("file") MultipartFile file,
       @RequestParam("artifact_path") String artifactPath,
       @RequestParam("part_number") Long part_number,
-      @RequestParam("artifact_path") String upload_id)
+      @RequestParam("upload_id") String upload_id)
       throws ModelDBException, IOException {
     LOGGER.debug("S3 storeArtifact called");
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBConstants.STORE_ARTIFACT_ENDPOINT)) {
-      String fileName = s3Service.uploadFile(artifactPath, file, part_number, upload_id);
-      LOGGER.trace("S3 storeArtifact - file name : {}", fileName);
+      String eTag = s3Service.uploadFile(artifactPath, file, part_number, upload_id);
+      LOGGER.trace("S3 storeArtifact - artifact_path : {}", artifactPath);
+      LOGGER.trace("S3 storeArtifact - eTag : {}", eTag);
       LOGGER.debug("S3 storeArtifact returned");
-      return new UploadFileResponse(fileName, null, null, -1L);
+      return new UploadFileResponse(
+          artifactPath, null, file.getContentType(), file.getSize(), eTag);
     } catch (IOException | ModelDBException e) {
       LOGGER.warn(e.getMessage(), e);
       ErrorCountResource.inc(e);

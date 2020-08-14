@@ -22,10 +22,10 @@ public interface ModelDBConstants {
   String HOST = "host";
   String HTTPS_STR = "https";
   String NFS = "NFS";
-  String PICK_NFS_HOST_FROM_CONFIG = "pickNFSHostFromConfig";
+  String PICK_ARTIFACT_STORE_HOST_FROM_CONFIG = "pickArtifactStoreHostFromConfig";
   String NFS_ROOT_PATH = "nfsRootPath";
-  String NFS_SERVER_HOST = "nfsServerHost";
-  String NFS_URL_PROTOCOL = "nfsUrlProtocol";
+  String ARTIFACT_STORE_SERVER_HOST = "artifactStoreServerHost";
+  String ARTIFACT_STORE_URL_PROTOCOL = "artifactStoreUrlProtocol";
   String PATH = "path";
   String PORT = "port";
   String RELATIONAL = "relational";
@@ -38,9 +38,6 @@ public interface ModelDBConstants {
   String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
-  String PICK_S3_HOST_FROM_CONFIG = "pickS3HostFromConfig";
-  String S3_SERVER_HOST = "s3ServerHost";
-  String S3_URL_PROTOCOL = "s3UrlProtocol";
 
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";

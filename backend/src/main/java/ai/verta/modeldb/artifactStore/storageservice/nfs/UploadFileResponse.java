@@ -5,12 +5,15 @@ public class UploadFileResponse {
   private String fileDownloadUri;
   private String fileType;
   private long size;
+  private String eTag;
 
-  public UploadFileResponse(String fileName, String fileDownloadUri, String fileType, long size) {
+  public UploadFileResponse(
+      String fileName, String fileDownloadUri, String fileType, long size, String eTag) {
     this.fileName = fileName;
     this.fileDownloadUri = fileDownloadUri;
     this.fileType = fileType;
     this.size = size;
+    this.eTag = eTag;
   }
 
   public String getFileName() {
@@ -27,5 +30,9 @@ public class UploadFileResponse {
 
   public long getSize() {
     return size;
+  }
+
+  public String geteTag() {
+    return eTag;
   }
 }

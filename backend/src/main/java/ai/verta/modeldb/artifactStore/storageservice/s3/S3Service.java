@@ -23,6 +23,7 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -49,13 +50,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-@Service
 public class S3Service implements ArtifactStoreService {
 
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
@@ -64,9 +62,6 @@ public class S3Service implements ArtifactStoreService {
   private Regions awsRegion;
   private static Credentials temporarySessionCredentials;
   private App app = App.getInstance();
-
-  @Autowired
-  public S3Service(){}
 
   public S3Service(String cloudBucketName) throws ModelDBException {
     App app = App.getInstance();
@@ -217,44 +212,49 @@ public class S3Service implements ArtifactStoreService {
   public String generatePresignedUrl(String s3Key, String method, long partNumber, String uploadId)
       throws ModelDBException {
     if (app.isS3presignedURLEnabled()) {
-      // Validate bucket
-      Boolean exist = doesBucketExist(bucketName);
-      if (!exist) {
-        throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
-      }
-
-      HttpMethod reqMethod;
-      if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
-        reqMethod = HttpMethod.PUT;
-      } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
-        reqMethod = HttpMethod.GET;
-      } else {
-        String errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        LOGGER.info(errorMessage);
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      // Set Expiration
-      java.util.Date expiration = new java.util.Date();
-      long milliSeconds = expiration.getTime();
-      milliSeconds += 1000 * 60 * 5; // Add 5 mins
-      expiration.setTime(milliSeconds);
-
-      GeneratePresignedUrlRequest request =
-          new GeneratePresignedUrlRequest(bucketName, s3Key)
-              .withMethod(reqMethod)
-              .withExpiration(expiration);
-      if (partNumber != 0) {
-        request.addRequestParameter("partNumber", String.valueOf(partNumber));
-        request.addRequestParameter("uploadId", uploadId);
-      }
-
-      return s3Client.generatePresignedUrl(request).toString();
+      return getS3PresignedUrl(s3Key, method, partNumber, uploadId);
     } else {
-      return getPresignedUrlForMDB(s3Key, method, partNumber, uploadId);
+      return getPresignedUrlViaMDB(s3Key, method, partNumber, uploadId);
     }
+  }
+
+  private String getS3PresignedUrl(String s3Key, String method, long partNumber, String uploadId)
+      throws ModelDBException {
+    // Validate bucket
+    Boolean exist = doesBucketExist(bucketName);
+    if (!exist) {
+      throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
+    }
+
+    HttpMethod reqMethod;
+    if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
+      reqMethod = HttpMethod.PUT;
+    } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
+      reqMethod = HttpMethod.GET;
+    } else {
+      String errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
+      Status status =
+          Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
+      LOGGER.info(errorMessage);
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+
+    // Set Expiration
+    Date expiration = new Date();
+    long milliSeconds = expiration.getTime();
+    milliSeconds += 1000 * 60 * 5; // Add 5 mins
+    expiration.setTime(milliSeconds);
+
+    GeneratePresignedUrlRequest request =
+        new GeneratePresignedUrlRequest(bucketName, s3Key)
+            .withMethod(reqMethod)
+            .withExpiration(expiration);
+    if (partNumber != 0) {
+      request.addRequestParameter("partNumber", String.valueOf(partNumber));
+      request.addRequestParameter("uploadId", uploadId);
+    }
+
+    return s3Client.generatePresignedUrl(request).toString();
   }
 
   @Override
@@ -307,20 +307,15 @@ public class S3Service implements ArtifactStoreService {
         TransferManager transferManager =
             TransferManagerBuilder.standard()
                 .withS3Client(s3Client)
+                // TODO: Validate use and if not required then remove below two line
                 .withMultipartUploadThreshold((long) (5 * 1024 * 1024)) // 5 MB
                 .withExecutorFactory(() -> Executors.newFixedThreadPool(maxUploadThreads))
                 .build();
         Upload upload =
             transferManager.upload(bucketName, artifactPath, file.getInputStream(), metadata);
-        // You can poll your transfer's status to check its progress
-        if (!upload.isDone()) {
-          System.out.println("Transfer: " + upload.getDescription());
-          System.out.println("  - State: " + upload.getState());
-          System.out.println("  - Progress: " + upload.getProgress().getBytesTransferred());
-        }
-
+        upload.waitForCompletion();
         UploadResult uploadResult = upload.waitForUploadResult();
-        return uploadResult.getKey();
+        return uploadResult.getETag();
       }
     } catch (AmazonServiceException e) {
       // Amazon S3 couldn't be contacted for a response, or the client
@@ -338,7 +333,12 @@ public class S3Service implements ArtifactStoreService {
   public Resource loadFileAsResource(String artifactPath) throws ModelDBException {
     LOGGER.trace("S3Service - loadFileAsResource called");
     try {
-      Resource resource = new UrlResource(s3Client.getUrl(bucketName, artifactPath));
+
+      Resource resource =
+          new InputStreamResource(
+              s3Client
+                  .getObject(new GetObjectRequest(bucketName, artifactPath))
+                  .getObjectContent());
       if (resource.exists()) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");
@@ -355,7 +355,7 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  public String getPresignedUrlForMDB(
+  public String getPresignedUrlViaMDB(
       String artifactPath, String method, long partNumber, String uploadId) {
     LOGGER.trace("S3Service - generatePresignedUrl called");
     Map<String, Object> parameters = new HashMap<>();
@@ -367,18 +367,18 @@ public class S3Service implements ArtifactStoreService {
       parameters.put("upload_id", uploadId);
       return getUploadUrl(
           parameters,
-          app.getNfsUrlProtocol(),
+          app.getArtifactStoreUrlProtocol(),
           app.getStoreArtifactEndpoint(),
-          app.getPickS3HostFromConfig(),
-          app.getNfsServerHost());
+          app.getPickArtifactStoreHostFromConfig(),
+          app.getArtifactStoreServerHost());
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("S3Service - generatePresignedUrl - get url returned");
       return getDownloadUrl(
           parameters,
-          app.getNfsUrlProtocol(),
+          app.getArtifactStoreUrlProtocol(),
           app.getGetArtifactEndpoint(),
-          app.getPickS3HostFromConfig(),
-          app.getNfsServerHost());
+          app.getPickArtifactStoreHostFromConfig(),
+          app.getArtifactStoreServerHost());
     } else {
       String errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
       Status status =

@@ -30,18 +30,19 @@ public interface ArtifactStoreService {
    */
   default String getDownloadUrl(
       Map<String, Object> parameters,
-      String nfsUrlProtocol,
+      String artifactStoreUrlProtocol,
       String getArtifactEndpoint,
       boolean pickNFSHostFromConfig,
-      String nfsServerHost) {
+      String artifactStoreServerHost) {
     String scheme =
         ModelDBAuthInterceptor.METADATA_INFO
             .get()
             .get(Metadata.Key.of("scheme", Metadata.ASCII_STRING_MARSHALLER));
     if (scheme == null || scheme.isEmpty()) {
-      scheme = nfsUrlProtocol;
+      scheme = artifactStoreUrlProtocol;
     }
-    return getUrl(parameters, getArtifactEndpoint, scheme, pickNFSHostFromConfig, nfsServerHost);
+    return getUrl(
+        parameters, getArtifactEndpoint, scheme, pickNFSHostFromConfig, artifactStoreServerHost);
   }
 
   /**
@@ -52,10 +53,10 @@ public interface ArtifactStoreService {
    */
   default String getUploadUrl(
       Map<String, Object> parameters,
-      String nfsUrlProtocol,
+      String artifactStoreUrlProtocol,
       String storeArtifactEndpoint,
       boolean pickNFSHostFromConfig,
-      String nfsServerHost) {
+      String artifactStoreServerHost) {
     String scheme =
         ModelDBAuthInterceptor.METADATA_INFO
             .get()
@@ -69,10 +70,11 @@ public interface ArtifactStoreService {
       try {
         scheme = new URL(url).getProtocol();
       } catch (MalformedURLException e) {
-        scheme = nfsUrlProtocol;
+        scheme = artifactStoreUrlProtocol;
       }
     }
-    return getUrl(parameters, storeArtifactEndpoint, scheme, pickNFSHostFromConfig, nfsServerHost);
+    return getUrl(
+        parameters, storeArtifactEndpoint, scheme, pickNFSHostFromConfig, artifactStoreServerHost);
   }
 
   default String getUrl(
@@ -80,14 +82,14 @@ public interface ArtifactStoreService {
       String endpoint,
       String scheme,
       boolean pickNFSHostFromConfig,
-      String nfsServerHost) {
+      String artifactStoreServerHost) {
 
     String host =
         ModelDBAuthInterceptor.METADATA_INFO
             .get()
             .get(Metadata.Key.of("x-forwarded-host", Metadata.ASCII_STRING_MARSHALLER));
     if (host == null || host.isEmpty() || pickNFSHostFromConfig) {
-      host = nfsServerHost;
+      host = artifactStoreServerHost;
     }
 
     String[] hostArr = host.split(":");

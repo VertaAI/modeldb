@@ -160,18 +160,18 @@ public class NFSService implements ArtifactStoreService {
       LOGGER.trace("NFSService - generatePresignedUrl - put url returned");
       return getUploadUrl(
           Collections.singletonMap("artifact_path", artifactPath),
-          app.getNfsUrlProtocol(),
+          app.getArtifactStoreUrlProtocol(),
           app.getStoreArtifactEndpoint(),
-          app.getPickNFSHostFromConfig(),
-          app.getNfsServerHost());
+          app.getPickArtifactStoreHostFromConfig(),
+          app.getArtifactStoreServerHost());
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("NFSService - generatePresignedUrl - get url returned");
       return getDownloadUrl(
           Collections.singletonMap("artifact_path", artifactPath),
-          app.getNfsUrlProtocol(),
+          app.getArtifactStoreUrlProtocol(),
           app.getGetArtifactEndpoint(),
-          app.getPickNFSHostFromConfig(),
-          app.getNfsServerHost());
+          app.getPickArtifactStoreHostFromConfig(),
+          app.getArtifactStoreServerHost());
     } else {
       String errorMessage = "Unsupported HTTP Method for NFS Presigned URL";
       Status status =
