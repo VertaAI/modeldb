@@ -45,9 +45,9 @@ class TestCreate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -61,7 +61,7 @@ class TestCreate:
         assert model_version.name in result.output
         assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
-        assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
+        assert model_version.get_model().get_params() == classifier.get_params()
 
         # Check environment:
         reqs = Python.read_pip_file(requirements_file.name)
@@ -396,10 +396,9 @@ class TestUpdate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
-
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -413,7 +412,7 @@ class TestUpdate:
         model_version = registered_model.get_version(name=version_name)
         assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
-        assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
+        assert model_version.get_model().get_params() == classifier.get_params()
 
         # Check environment:
         reqs = Python.read_pip_file(requirements_file.name)
@@ -463,9 +462,9 @@ class TestUpdate:
         version_name = "my version"
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         runner.invoke(
@@ -493,9 +492,9 @@ class TestUpdate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         runner.invoke(
@@ -513,9 +512,9 @@ class TestUpdate:
             f.write(FILE_CONTENTS_2)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS_2 = pickle.dumps(LogisticRegression(C=0.1))
+        classifier2 = LogisticRegression(C=0.1)
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS_2)
+            pickle.dump(classifier2, f)
 
         result = runner.invoke(
             cli,
@@ -527,8 +526,8 @@ class TestUpdate:
         model_version = registered_model.get_version(name=version_name)
         assert model_version.get_artifact("file").read() != FILE_CONTENTS
         assert model_version.get_artifact("file").read() == FILE_CONTENTS_2
-        assert pickle.dumps(model_version.get_model()) != CLASSIFIER_CONTENTS
-        assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS_2
+        assert model_version.get_model().get_params() != classifier
+        assert model_version.get_model().get_params() == classifier2.get_params()
 
 
 class TestDownload:
