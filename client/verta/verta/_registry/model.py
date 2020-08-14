@@ -63,7 +63,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
         else:
             return _OSS_DEFAULT_WORKSPACE
 
-    def get_or_create_version(self, name=None, desc=None, labels=None, id=None, time_created=None):
+    def get_or_create_version(self, name=None, desc=None, labels=None, attrs=None, id=None, time_created=None):
         """
         Gets or creates a Model Version.
 
@@ -79,6 +79,8 @@ class RegisteredModel(_ModelDBRegistryEntity):
             Description of the Model Version.
         labels : list of str, optional
             Labels of the Model Version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Model Version.
         id : str, optional
             ID of the Model Version. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
@@ -103,9 +105,9 @@ class RegisteredModel(_ModelDBRegistryEntity):
             ctx.registered_model = self
             return RegisteredModelVersion._get_or_create_by_name(self._conn, name,
                                                        lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
-                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, date_created=time_created))
+                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, attrs=attrs, date_created=time_created))
 
-    def create_version(self, name=None, desc=None, labels=None, time_created=None):
+    def create_version(self, name=None, desc=None, labels=None, attrs=None, time_created=None):
         """
         Creates a model registry entry.
 
@@ -117,6 +119,8 @@ class RegisteredModel(_ModelDBRegistryEntity):
             Description of the Model Version.
         labels : list of str, optional
             Labels of the Model Version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Model Version.
 
         Returns
         -------
@@ -125,7 +129,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
         """
         ctx = _Context(self._conn, self._conf)
         ctx.registered_model = self
-        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, date_created=time_created)
+        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, attrs=attrs, date_created=time_created)
 
 
     def create_version_from_run(self, run_id, name=None):
