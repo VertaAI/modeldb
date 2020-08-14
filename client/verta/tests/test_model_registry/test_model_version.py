@@ -321,6 +321,16 @@ class TestModelVersion:
         model_version.set_description(desc)
         assert desc == model_version.get_description()
 
+    def test_list_from_client(self, client, created_registered_models):
+        registered_model = client.create_registered_model()
+        created_registered_models.append(registered_model)
+
+        before = len(client.registered_model_versions)
+        registered_model.create_version()
+        after = len(client.registered_model_versions)
+
+        assert before == after + 1
+
     def test_find(self, client):
         name = "registered_model_test"
         registered_model = client.set_registered_model()
@@ -416,4 +426,3 @@ class TestModelVersion:
 
         # Deleting non-existing key:
         model_version.del_attribute("non-existing")
-
