@@ -176,7 +176,6 @@ class TestCreate:
         assert result.exception
         assert error_message in result.output
 
-    @pytest.mark.skip("bug in uac service")
     def test_create_workspace_config(self, client, organization, in_tempdir):
         model_name = _utils.generate_default_name()
         version_name = _utils.generate_default_name()
