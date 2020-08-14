@@ -222,7 +222,6 @@ class TestCreate:
             with open(model_path, "wb") as f:
                 pickle.dump(classifier, f)
 
-            model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
 
             runner = CliRunner()
             result = runner.invoke(
@@ -236,7 +235,17 @@ class TestCreate:
 
             # TODO: consolidate these in the command above
             model_version = registered_model.get_version(name=version_name)
+
+            # Log model api:
+            model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
+            model_api["model_packaging"] = {
+                "deserialization": "cloudpickle",
+                "type": "torch",
+                "python_version": "2.7.17"
+            }
             model_version.log_artifact("model_api.json", model_api, True, "json")
+
+            # Log environment:
             env = Python(requirements=["torch==1.0.0"])
             model_version.log_environment(env)
 
