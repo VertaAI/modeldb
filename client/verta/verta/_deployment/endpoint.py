@@ -417,9 +417,7 @@ class Endpoint(object):
             update_body["autoscaling"] = autoscaling._as_dict()
 
         if env_vars:
-            update_body["env"] = list(
-                sorted(map(lambda env_var: {"name": env_var, "value": env_vars[env_var]}, env_vars),
-                       key=lambda env_elem: env_elem["name"]))
+            update_body["env"] = list(map(lambda env_var: {"name": env_var, "value": env_vars[env_var]}, env_vars))
 
         # prepare body for update request
         return update_body
