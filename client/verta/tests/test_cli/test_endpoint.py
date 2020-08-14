@@ -8,6 +8,7 @@ from verta import Client
 from verta._cli import cli
 from verta._internal_utils import _utils
 from verta.environment import Python
+from verta.deployment.update._strategies import DirectUpdateStrategy
 
 from ..utils import get_build_ids
 
@@ -70,6 +71,40 @@ class TestCreate:
         assert endpoint.workspace == organization.name
 
         created_endpoints.append(endpoint)
+
+
+class TestGet:
+    def test_get(self, client, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'get', 'endpoint', path],
+        )
+        assert not result.exception
+        assert "path: {}".format(endpoint.path) in result.output
+        assert "id: {}".format(endpoint.id) in result.output
+        assert "curl: <Endpoint not deployed>" in result.output
+
+        assert "status" in result.output
+        assert "date created" in result.output
+        assert "date updated" in result.output
+        assert "stage's date created" in result.output
+        assert "stage's date updated" in result.output
+        assert "components" in result.output
+
+        updated_status = endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+        result = runner.invoke(
+            cli,
+            ['deployment', 'get', 'endpoint', path],
+        )
+        assert "curl: {}".format(endpoint.get_deployed_model().get_curl()) in result.output
 
 
 class TestUpdate:
@@ -373,3 +408,33 @@ class TestUpdate:
             else:
                 assert metric["parameters"][0]["name"] == "target"
                 assert metric["parameters"][0]["value"] == "0.7"
+
+
+class TestPredict:
+    def test_predict(self, client, experiment_run, created_endpoints):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+
+        test_data = np.random.random((4, 12))
+        test_data_str = json.dumps(test_data.tolist())
+
+        experiment_run.log_model(classifier, custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+        endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'predict', 'endpoint', path, '--data', test_data_str],
+        )
+
+        assert not result.exception
+        assert json.dumps(classifier.predict(test_data).tolist()) in result.output

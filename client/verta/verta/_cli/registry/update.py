@@ -17,7 +17,8 @@ def update():
 @click.argument("model_name", nargs=1, required=True)
 @click.option("--label", "-l", multiple=True, help="Label to be associated with the object.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-def update_model(model_name, label, workspace):
+@click.option("--description", "-d", help="Description.")
+def update_model(model_name, label, workspace, description):
     """Update an existing registeredmodel entry.
     """
     client = Client()
@@ -29,6 +30,9 @@ def update_model(model_name, label, workspace):
     if label:
         registered_model.add_labels(label)
 
+    if description:
+        registered_model.set_description(description)
+
 
 @update.command(name="registeredmodelversion")
 @click.argument("model_name", nargs=1, required=True)
@@ -39,7 +43,9 @@ def update_model(model_name, label, workspace):
 @click.option("--workspace", "-w", help="Workspace to use.")
 @click.option('--overwrite', help="Overwrite model and artifacts if already logged.", is_flag=True)
 @click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
-def update_model_version(model_name, version_name, label, model, artifact, workspace, overwrite, requirements):
+@click.option("--description", "-d", help="Description.")
+def update_model_version(model_name, version_name, label, model, artifact, workspace, overwrite, requirements,
+                         description):
     """Update an existing registeredmodelversion entry.
     """
     client = Client()
@@ -86,3 +92,6 @@ def update_model_version(model_name, version_name, label, model, artifact, works
     if requirements:
         reqs = Python.read_pip_file(requirements)
         model_version.log_environment(Python(requirements=reqs))
+
+    if description:
+        registered_model.set_description(description)

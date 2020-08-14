@@ -1,6 +1,9 @@
 Endpoint
 ========
 
+.. note::
+    .. versionadded:: 0.15.0
+
 Client
 ------
 .. automethod:: verta.Client.get_or_create_endpoint

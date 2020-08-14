@@ -2,6 +2,9 @@ import tarfile
 
 import pytest
 import requests
+import zipfile
+import glob
+import sys
 
 import verta
 
@@ -118,6 +121,50 @@ class TestModelVersion:
             model_version.log_model(new_classifier)
 
         assert "model already exists" in str(excinfo.value)
+
+        # Check custom modules:
+        custom_module_filenames = {"__init__.py", "_verta_config.py"}
+        for path in sys.path:
+            # skip std libs and venvs
+            #     This logic is from verta.client._log_modules().
+            lib_python_str = os.path.join(os.sep, "lib", "python")
+            i = path.find(lib_python_str)
+            if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+                continue
+
+            for parent_dir, dirnames, filenames in os.walk(path):
+                # skip venvs
+                #     This logic is from _utils.find_filepaths().
+                exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
+                dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+
+                # only Python files
+                filenames[:] = [filename for filename in filenames if filename.endswith(('.py', '.pyc', '.pyo'))]
+
+                custom_module_filenames.update(map(os.path.basename, filenames))
+
+        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+
+    def test_log_model_with_custom_modules(self, model_version, model_for_deployment):
+        custom_modules_dir = "."
+
+        model_version.log_model(
+            model_for_deployment['model'],
+            custom_modules=["."],
+        )
+
+        custom_module_filenames = {"__init__.py", "_verta_config.py"}
+        for parent_dir, dirnames, filenames in os.walk(custom_modules_dir):
+            # skip venvs
+            #     This logic is from _utils.find_filepaths().
+            exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
+            dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+
+            custom_module_filenames.update(map(os.path.basename, filenames))
+
+        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
     def test_log_artifact(self, model_version):
         np = pytest.importorskip("numpy")
@@ -274,6 +321,16 @@ class TestModelVersion:
         model_version.set_description(desc)
         assert desc == model_version.get_description()
 
+    def test_list_from_client(self, client, created_registered_models):
+        registered_model = client.create_registered_model()
+        created_registered_models.append(registered_model)
+
+        before = len(client.registered_model_versions)
+        registered_model.create_version()
+        after = len(client.registered_model_versions)
+
+        assert before == after + 1
+
     def test_find(self, client):
         name = "registered_model_test"
         registered_model = client.set_registered_model()
@@ -352,3 +409,20 @@ class TestModelVersion:
             filepaths = set(f.getnames())
 
         assert "Dockerfile" in filepaths
+
+    def test_attributes(self, client, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
+
+        model_version.add_attribute("float-attr", 0.4)
+        assert model_version.get_attribute("float-attr") == 0.4
+
+        # Test overwriting
+        model_version.add_attribute("int-attr", 15)
+        assert model_version.get_attribute("int-attr") == 15
+
+        # Test deleting:
+        model_version.del_attribute('int-attr')
+        assert model_version.get_attributes() == {"float-attr": 0.4}
+
+        # Deleting non-existing key:
+        model_version.del_attribute("non-existing")

@@ -37,6 +37,27 @@ Release Notes
      <>`__
 
 
+v0.14.17 (2020-08-13)
+---------------------
+
+New Features
+^^^^^^^^^^^^
+- `add DeployedModel.get_curl()
+  <https://github.com/VertaAI/modeldb/pull/1287>`__
+- `add ExperimentRun.get_artifact_keys()
+  <https://github.com/VertaAI/modeldb/pull/1296>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix inability to get others' shared personal Projects and Datasets
+  <https://github.com/VertaAI/modeldb/pull/1286>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `add util to convert requests to cURL
+  <https://github.com/VertaAI/modeldb/pull/1268>`__
+
+
 v0.14.16 (2020-08-06)
 ---------------------
 

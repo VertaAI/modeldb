@@ -8,6 +8,7 @@ from google.protobuf.struct_pb2 import Value
 
 import requests
 
+from .entity_registry import _ModelDBRegistryEntity
 from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
@@ -25,11 +26,12 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 from .. import utils
 
-from .._tracking.entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
+from .._tracking.entity import _OSS_DEFAULT_WORKSPACE
+from .._tracking.deployable_entity import _DeployableEntity
 from ..environment import _Environment, Python
 
 
-class RegisteredModelVersion(_ModelDBEntity):
+class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     """
     Object representing a version of a Registered Model.
 
@@ -183,7 +185,9 @@ class RegisteredModelVersion(_ModelDBEntity):
         print("Created new ModelVersion: {}".format(model_version.version))
         return model_version
 
-    def log_model(self, model, model_api=None, overwrite=False):
+    ModelVersionMessage = _ModelVersionService.ModelVersion
+
+    def log_model(self, model, custom_modules=None, model_api=None, overwrite=False):
         """
         Logs a model to this Model Version.
 
@@ -195,6 +199,12 @@ class RegisteredModelVersion(_ModelDBEntity):
                   and uploaded as an artifact. If it is a directory path, its contents will be zipped.
                 - If file-like, then the contents will be read as bytes and uploaded as an artifact.
                 - Otherwise, the object will be serialized and uploaded as an artifact.
+        custom_modules : list of str, optional
+            Paths to local Python modules and other files that the deployed model depends on.
+                - If directories are provided, all files within—excluding virtual environments—will
+                  be included.
+                - If not provided, all Python files located within `sys.path`—excluding virtual
+                  environments—will be included.
         model_api : :class:`~utils.ModelAPI`, optional
             Model API specifying details about the model and its deployment.
         overwrite : bool, default False
@@ -223,6 +233,10 @@ class RegisteredModelVersion(_ModelDBEntity):
             "model", serialized_model,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
+
+        # Log modules:
+        custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
+        self.log_artifact("custom_modules", custom_modules_artifact, overwrite, 'zip')
 
         # build model API
         if model_api is None:
@@ -263,6 +277,7 @@ class RegisteredModelVersion(_ModelDBEntity):
         self._fetch_with_no_cache()
         self._msg.ClearField("model")
         self._update()
+
 
     def log_artifact(self, key, artifact, overwrite=False, extension=None):
         """
@@ -699,6 +714,88 @@ class RegisteredModelVersion(_ModelDBEntity):
 
         self._fetch_with_no_cache()
         self._msg.archived = _CommonCommonService.TernaryEnum.TRUE
+        self._update()
+
+    def add_attribute(self, key, value):
+        """
+        Adds an attribute to this Model Version.
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+        value : one of {None, bool, float, int, str, list, dict}
+            Value of the attribute.
+        """
+        self.add_attributes({key: value})
+
+    def add_attributes(self, attrs):
+        """
+        Adds potentially multiple attributes to this Model Version.
+        Parameters
+        ----------
+        attrs : dict of str to {None, bool, float, int, str, list, dict}
+            Attributes.
+        """
+        # validate all keys first
+        for key in six.viewkeys(attrs):
+            _utils.validate_flat_key(key)
+
+        # build KeyValues
+        self._fetch_with_no_cache()
+        # TODO: prevent duplicates
+        attribute_keyvals = []
+        for key, value in six.viewitems(attrs):
+            attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
+                                                                                                             allow_collection=True)))
+
+        self._msg.attributes.extend(attribute_keyvals)
+        self._update()
+
+    def get_attribute(self, key):
+        """
+        Gets the attribute with name `key` from this Model Version.
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+        Returns
+        -------
+        one of {None, bool, float, int, str}
+            Value of the attribute.
+        """
+        _utils.validate_flat_key(key)
+        attributes = self.get_attributes()
+
+        try:
+            return attributes[key]
+        except KeyError:
+            six.raise_from(KeyError("no attribute found with key {}".format(key)), None)
+
+    def get_attributes(self):
+        """
+        Gets all attributes from this Model Version.
+        Returns
+        -------
+        dict of str to {None, bool, float, int, str}
+            Names and values of all attributes.
+        """
+        self._refresh_cache()
+        return _utils.unravel_key_values(self._msg.attributes)
+
+    def del_attribute(self, key):
+        """
+        Deletes the attribute with name `key` from this Model Version
+        Parameters
+        ----------
+        key : str
+            Name of the attribute.
+        """
+        _utils.validate_flat_key(key)
+
+        self._fetch_with_no_cache()
+        attributes = list(filter(lambda attribute: attribute.key == key, self._msg.attributes))
+        if attributes:
+            self._msg.attributes.remove(attributes[0])
         self._update()
 
     def _update(self):
