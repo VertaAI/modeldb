@@ -410,6 +410,13 @@ class TestModelVersion:
 
         assert "Dockerfile" in filepaths
 
+    def test_training_data(self, model_version, model_for_deployment):
+        X_train = model_for_deployment['train_features']
+        y_train = model_for_deployment['train_targets']
+
+        # no errors
+        model_version.log_training_data(X_train, y_train)
+
     def test_attributes(self, client, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
 
