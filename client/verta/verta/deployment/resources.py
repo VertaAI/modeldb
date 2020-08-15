@@ -36,6 +36,13 @@ class CpuMillis(_Resource):
     """
     Number of CPU milli allowed for Endpoint. Must be an integer greater than 0.
 
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.resources import CpuMillis
+        cpu = CpuMillis(128)
+
     """
     milli_err_msg = "`cpu_millis` must be int greater than 0"
 
@@ -58,6 +65,14 @@ class Memory(_Resource):
     "E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki."
 
     For example: "128974848", "129e6", "129M", "123Mi"
+
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.resources import Memory
+        memory = Memory("100M")
 
     """
     memory_err_msg = "`memory` must be a string representing a plain integer or a fixed-point integer with suffixes " \
