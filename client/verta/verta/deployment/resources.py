@@ -66,7 +66,6 @@ class Memory(_Resource):
 
     For example: "128974848", "129e6", "129M", "123Mi"
 
-
     Examples
     --------
     .. code-block:: python
