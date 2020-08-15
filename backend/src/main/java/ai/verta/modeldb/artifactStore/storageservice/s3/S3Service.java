@@ -52,7 +52,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class S3Service implements ArtifactStoreService {
 
@@ -285,7 +288,7 @@ public class S3Service implements ArtifactStoreService {
   }
 
   public String uploadFile(
-      String artifactPath, MultipartFile file, Long partNumber, String uploadId)
+          String artifactPath, HttpServletRequest request, Long partNumber, String uploadId)
       throws ModelDBException, IOException {
     try {
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
@@ -295,13 +298,12 @@ public class S3Service implements ArtifactStoreService {
                 .withKey(artifactPath)
                 .withUploadId(uploadId)
                 .withPartNumber(partNumber.intValue())
-                .withInputStream(file.getInputStream());
+                .withInputStream(request.getInputStream());
         UploadPartResult uploadPartResult = s3Client.uploadPart(uploadRequest);
         return uploadPartResult.getPartETag().getETag();
       } else {
         ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());
+        metadata.setContentType(request.getContentType());
 
         int maxUploadThreads = 5;
         TransferManager transferManager =
@@ -312,7 +314,7 @@ public class S3Service implements ArtifactStoreService {
                 .withExecutorFactory(() -> Executors.newFixedThreadPool(maxUploadThreads))
                 .build();
         Upload upload =
-            transferManager.upload(bucketName, artifactPath, file.getInputStream(), metadata);
+            transferManager.upload(bucketName, artifactPath, request.getInputStream(), metadata);
         upload.waitForCompletion();
         UploadResult uploadResult = upload.waitForUploadResult();
         return uploadResult.getETag();
@@ -334,11 +336,7 @@ public class S3Service implements ArtifactStoreService {
     LOGGER.trace("S3Service - loadFileAsResource called");
     try {
 
-      Resource resource =
-          new InputStreamResource(
-              s3Client
-                  .getObject(new GetObjectRequest(bucketName, artifactPath))
-                  .getObjectContent());
+      Resource resource = new UrlResource(s3Client.getUrl(bucketName, artifactPath));
       if (resource.exists()) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");

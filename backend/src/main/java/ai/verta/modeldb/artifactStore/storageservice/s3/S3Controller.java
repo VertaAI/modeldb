@@ -32,7 +32,7 @@ public class S3Controller {
 
   @PutMapping(value = {"${artifactEndpoint.storeArtifact}"})
   public UploadFileResponse storeArtifact(
-      @RequestParam("file") MultipartFile file,
+      HttpServletRequest requestEntity,
       @RequestParam("artifact_path") String artifactPath,
       @RequestParam("part_number") Long part_number,
       @RequestParam("upload_id") String upload_id)
@@ -41,12 +41,12 @@ public class S3Controller {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBConstants.STORE_ARTIFACT_ENDPOINT)) {
-      String eTag = s3Service.uploadFile(artifactPath, file, part_number, upload_id);
+      String eTag = s3Service.uploadFile(artifactPath, requestEntity, part_number, upload_id);
       LOGGER.trace("S3 storeArtifact - artifact_path : {}", artifactPath);
       LOGGER.trace("S3 storeArtifact - eTag : {}", eTag);
       LOGGER.debug("S3 storeArtifact returned");
       return new UploadFileResponse(
-          artifactPath, null, file.getContentType(), file.getSize(), eTag);
+          artifactPath, null, null, -1, eTag);
     } catch (IOException | ModelDBException e) {
       LOGGER.warn(e.getMessage(), e);
       ErrorCountResource.inc(e);
