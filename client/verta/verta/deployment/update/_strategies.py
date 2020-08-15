@@ -21,7 +21,19 @@ class _UpdateStrategy(object):
         """
         pass
 
+
 class DirectUpdateStrategy(_UpdateStrategy):
+    """
+    Represents direct update strategy for Endpoint.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.update import DirectUpdateStrategy
+        strategy = DirectUpdateStrategy()
+
+    """
     _STRATEGY = "rollout"
 
     def _as_build_update_req_body(self, build_id):
@@ -30,7 +42,19 @@ class DirectUpdateStrategy(_UpdateStrategy):
             'strategy': self._STRATEGY,
         }
 
+
 class CanaryUpdateStrategy(_UpdateStrategy):
+    """
+    Represents canary update strategy for Endpoint.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.update import CanaryUpdateStrategy
+        strategy = CanaryUpdateStrategy(interval=10, step=.1)
+
+    """
     _STRATEGY = "canary"
 
     def __init__(self, interval, step):
