@@ -25,6 +25,14 @@ _CUSTOM_MODULES_DIR = os.environ.get('VERTA_CUSTOM_MODULES_DIR', "/app/custom_mo
 
 
 class _DeployableEntity(_ModelDBEntity):
+    @property
+    def _histogram_endpoint(self):
+        return "{}://{}/api/v1/monitoring/data/references/{}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+        )
+
     def _custom_modules_as_artifact(self, paths=None):
         if isinstance(paths, six.string_types):
             paths = [paths]
@@ -164,10 +172,21 @@ class _DeployableEntity(_ModelDBEntity):
 
         histograms = _histogram_utils.calculate_histograms(train_df)
 
-        endpoint = "{}://{}/api/v1/monitoring/data/references/{}".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.id,
-        )
-        response = _utils.make_request("PUT", endpoint, self._conn, json=histograms)
+        response = _utils.make_request("PUT", self._histogram_endpoint, self._conn, json=histograms)
         _utils.raise_for_http_error(response)
+
+    def _get_histogram(self):
+        """
+        Returns histogram JSON.
+
+        Note that in Python 2, the JSON library returns strings as ``unicode``.
+
+        Returns
+        -------
+        dict
+
+        """
+        response = _utils.make_request("GET", self._histogram_endpoint, self._conn)
+        _utils.raise_for_http_error(response)
+
+        return response.json()
