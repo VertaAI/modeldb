@@ -8,6 +8,8 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,7 @@ public class S3Controller {
   @PutMapping(value = {"${artifactEndpoint.storeArtifact}"})
   public ResponseEntity<UploadFileResponse> storeArtifact(
       HttpServletRequest requestEntity,
+      HttpServletResponse response,
       @RequestParam("artifact_path") String artifactPath,
       @RequestParam("part_number") Long part_number,
       @RequestParam("upload_id") String upload_id)
@@ -44,10 +47,9 @@ public class S3Controller {
       LOGGER.trace("S3 storeArtifact - artifact_path : {}", artifactPath);
       LOGGER.trace("S3 storeArtifact - eTag : {}", eTag);
       HttpHeaders responseHeaders = new HttpHeaders();
-      responseHeaders.set("ETag", eTag);
+      response.addHeader("ETag", String.valueOf(eTag));
       LOGGER.debug("S3 storeArtifact returned");
       return ResponseEntity.ok()
-          .headers(responseHeaders)
           .body(new UploadFileResponse(artifactPath, null, null, -1, eTag));
     } catch (IOException | ModelDBException e) {
       LOGGER.warn(e.getMessage(), e);
