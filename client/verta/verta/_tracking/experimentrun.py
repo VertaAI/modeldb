@@ -1843,7 +1843,8 @@ class ExperimentRun(_DeployableEntity):
                           " consider removing it from the function call",
                           category=FutureWarning)
 
-        self._log_modules(paths)
+        custom_modules_artifact = self._custom_modules_as_artifact(paths)
+        self._log_artifact("custom_modules", custom_modules_artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
 
     def log_setup_script(self, script, overwrite=False):
         """
