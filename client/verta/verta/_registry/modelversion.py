@@ -50,8 +50,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         Whether there is a model associated with this Model Version.
     registered_model_id : int
         ID of this version's Registered Model.
-    is_archived : bool
-        Whether this Model Version is archived.
 
     """
     def __init__(self, conn, conf, msg):
@@ -74,7 +72,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             "id: {}".format(msg.id),
             "registered model id: {}".format(msg.registered_model_id),
             "experiment run id: {}".format(msg.experiment_run_id),
-            "archived status: {}".format(msg.archived),
+            # "archived status: {}".format(msg.archived),
             "artifact keys: {}".format(artifact_keys),
         ))
 
@@ -98,10 +96,10 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         self._refresh_cache()
         return self._msg.registered_model_id
 
-    @property
-    def is_archived(self):
-        self._refresh_cache()
-        return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
+    # @property
+    # def is_archived(self):
+    #     self._refresh_cache()
+    #     return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
 
     @property
     def workspace(self):
@@ -700,15 +698,15 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 
-    def archive(self):
-        """
-        Archive this Model Version.
+    # def archive(self):
+    #     """
+    #     Archive this Model Version.
 
-        """
-        if self.is_archived:
-            raise RuntimeError("the version has already been archived")
+    #     """
+    #     if self.is_archived:
+    #         raise RuntimeError("the version has already been archived")
 
-        self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
+    #     self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
 
     def add_attribute(self, key, value):
         """
