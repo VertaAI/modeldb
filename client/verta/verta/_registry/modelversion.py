@@ -50,8 +50,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         Whether there is a model associated with this Model Version.
     registered_model_id : int
         ID of this version's Registered Model.
-    is_archived : bool
-        Whether this Model Version is archived.
 
     """
     def __init__(self, conn, conf, msg):
