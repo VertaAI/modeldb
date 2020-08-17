@@ -1,31 +1,26 @@
-Model Registry in Verta
-=======================
-In this tutorial, we'll briefly go through the concept of Model Registry, and explore some examples using the Verta client and CLI.
+Register Models and Model Versions in Model Registry
+====================================================
+After models are trained and evaluated, they need to be ''stored'' along with necessary information so that they can be packed and deployed later.
+This tutorial will show how this can be done using Verta's Model Registry.
 
-Registered Model
-----------------
-Conceptually, a *registered model* is a model registered with model registry which can later be packed and deployed.
-We can create a registered model in Verta using ``client.create_registered_model()`` as follows:
+Creating a registered model and model version using the Client
+--------------------------------------------------------------
+Suppose we have the following LogisticRegression classifier from scikit-learn:
 
 .. code-block:: python
 
-    registered_model = client.create_registered_model(
-        name="my model",
-        label=["research-purpose", "team-a"]
-    )
+    classifier = LogisticRegression()
+    classifier.fit(X_train, y_train)
 
-We can also create registered models using the CLI:
+We need to log this model, along with the requirements to use it (scikit-learn).
+The first step is to create a registered model in Verta using ``client.create_registered_model()`` as follows:
 
-.. code-block:: sh
+.. code-block:: python
 
-    verta registry create registeredmodel "my model" -l research-purpose -l team-a
+    registered_model = client.create_registered_model(name="my model", label=["research-purpose", "team-a"])
 
-Model Version
--------------
 Each registered model can have one or many *model versions* associated with it.
-Each model version stores necessary information for deployment, such as artifacts, model, requirements, etc.
-
-Model versions can be created directly from models and artifacts:
+With model version, we can store necessary information for deployment, such as artifacts, model, requirements, etc as follows:
 
 .. code-block:: python
 
@@ -36,23 +31,40 @@ Model versions can be created directly from models and artifacts:
 
     # Logging the classifier and requirements:
 
-    model_version.log_model(classifier_path)
+    model_version.log_model(classifier)
 
     reqs = Python.read_pip_file(req_path)
     model_version.log_environment(Python(requirements=reqs))
     model_version.log_environments(Python(requirements=["sklearn"]))
 
-The equivalent CLI command to the snippet above is:
+
+Creating a registered model and model version using the CLI:
+------------------------------------------------------------
+
+We can also accomplish the steps above using Verta's Command-line Interface.
+First, we need to serialize our machine learning model. The recommended way to do so is to use the pickle module:
+
+.. code-block:: python
+
+    with open(classifier_path, "wb") as f:
+        pickle.dump(classifier, f)
+
+Then, we can create a registered model and a model version as follows:
 
 .. code-block:: sh
+
+    verta registry create registeredmodel "my model" -l research-purpose -l team-a
 
     verta registry create registeredmodelversion "my model" "my version" \
     --label prototype \
     --model classifier_path \
     --requirements req_path
 
+Creating Model Version from Experiment Run
+==========================================
+In addition to register model and version directly from artifacts to the Model Registry, we can convert an Experiment Run into a Model Version.
 
-Model versions can also be created from experiment run, inheriting requirements, artifacts, and models from the run. Using the client:
+Using the Client:
 
 .. code-block:: python
 
@@ -66,3 +78,5 @@ Using the CLI:
 .. code-block:: sh
 
     verta registry create registeredmodelversion "my model" "my version" --from-run experiment-run-id
+
+The new Model Version will inherit requirements, artifacts, and model from the Experiment Run.
