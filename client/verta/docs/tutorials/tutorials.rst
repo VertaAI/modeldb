@@ -54,4 +54,3 @@ Core Verta functionality
     Web App <webapp>
     Workspaces <workspaces>
     Client Config File <config>
-    Model Registry <registry>
