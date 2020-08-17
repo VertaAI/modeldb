@@ -287,6 +287,11 @@ public class S3Service implements ArtifactStoreService {
       String artifactPath, HttpServletRequest request, Long partNumber, String uploadId)
       throws ModelDBException, IOException {
     try {
+      Boolean exist = doesBucketExist(bucketName);
+      if (!exist) {
+        throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
+      }
+
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
         UploadPartRequest uploadRequest =
             new UploadPartRequest()
@@ -331,6 +336,10 @@ public class S3Service implements ArtifactStoreService {
   public Resource loadFileAsResource(String artifactPath) throws ModelDBException {
     LOGGER.trace("S3Service - loadFileAsResource called");
     try {
+      Boolean exist = doesBucketExist(bucketName);
+      if (!exist) {
+        throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
+      }
 
       Resource resource = new UrlResource(s3Client.getUrl(bucketName, artifactPath));
       if (resource.exists()) {
