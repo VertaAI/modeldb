@@ -20,13 +20,14 @@ class TestModel:
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
 
-    def test_get(self, client):
+    def test_get(self, client, created_registered_models):
         name = verta._internal_utils._utils.generate_default_name()
 
         with pytest.raises(ValueError):
             client.get_registered_model(name)
 
         registered_model = client.set_registered_model(name)
+        created_registered_models.append(registered_model)
 
         assert registered_model.id == client.get_registered_model(registered_model.name).id
         assert registered_model.id == client.get_registered_model(id=registered_model.id).id
