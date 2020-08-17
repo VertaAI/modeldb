@@ -410,23 +410,23 @@ class TestUpdate:
                 assert metric["parameters"][0]["name"] == "target"
                 assert metric["parameters"][0]["value"] == "0.7"
 
+
 class TestDownload:
-    def test_download_context(self, experiment_run, model_for_deployment, registered_model, in_tempdir, created_registered_models):
+    def test_download_context(self, experiment_run, model_for_deployment, registered_model, in_tempdir, created_registered_models, model_version):
         np = pytest.importorskip("numpy")
-        version_name = "my-version"
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         artifact = np.random.random((36, 12))
         experiment_run.log_artifact("some-artifact", artifact)
-        model_version = registered_model.create_version_from_run(experiment_run.id, version_name)
 
         download_to_path = "context_cli.tgz"
 
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['deployment', 'download', 'dockercontext', '--run_id', experiment_run.id, '--output', download_to_path],
+            ['deployment', 'download', 'dockercontext', '--run-id', experiment_run.id, '--output',
+             download_to_path],
         )
         assert not result.exception
 
@@ -436,11 +436,22 @@ class TestDownload:
 
         assert "Dockerfile" in filepaths
 
+        np = pytest.importorskip("numpy")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['deployment', 'download', 'dockercontext', '--model_version_id', model_version.id, '--output', download_to_path],
+            ['deployment', 'download', 'dockercontext', '--model-version-id', model_version.id,
+             '--output', download_to_path],
         )
+
         assert not result.exception
 
         # can be loaded as tgz
