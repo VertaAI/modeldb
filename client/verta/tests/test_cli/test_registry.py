@@ -351,6 +351,7 @@ class TestList:
         assert version2_1_name in result.output
         assert version2_name in result.output
 
+
 class TestUpdate:
     def test_update_model(self, registered_model):
         model_name = registered_model.name
@@ -380,7 +381,6 @@ class TestUpdate:
         assert not result.exception
         registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
-
 
     def test_update_version(self, registered_model, in_tempdir, requirements_file):
         LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
@@ -528,6 +528,24 @@ class TestUpdate:
         assert model_version.get_model().get_params() != classifier
         assert model_version.get_model().get_params() == classifier2.get_params()
 
+    def test_archive(self, registered_model):
+        model_name = registered_model.name
+        my_version = "my_version"
+        registered_model.create_version(my_version)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'archive', 'registeredmodelversion', model_name, my_version],
+        )
+        assert not result.exception
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'archive', 'registeredmodelversion', model_name, my_version],
+        )
+        assert result.exception
+        assert "the version has already been archived" in str(result.exception)
 
 class TestDownload:
     def test_download_context(self, experiment_run, model_for_deployment, registered_model, in_tempdir, created_registered_models):
