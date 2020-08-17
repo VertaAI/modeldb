@@ -365,6 +365,7 @@ class TestModelVersion:
             assert labels1 == labels2
             assert item._msg == msg_other
 
+    @pytest.mark.skip(reason="functionality postponed in Client")
     def test_archive(self, model_version):
         assert (not model_version.is_archived)
 
