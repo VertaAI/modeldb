@@ -269,7 +269,7 @@ class TestUpdate:
         )
         assert result.exception
         assert error_msg_3 in str(result.exception)
-        
+
     def test_update_from_version(self, client, model_version, created_endpoints):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
@@ -388,7 +388,7 @@ class TestUpdate:
         result = runner.invoke(
             cli,
             ['deployment', 'update', 'endpoint', path, '--run-id', experiment_run.id, '--autoscaling', autoscaling_option,
-             "--autoscaling-metrics", cpu_metric, "--autoscaling-metrics", memory_metric, "--strategy", "direct"],
+             "--autoscaling-metric", cpu_metric, "--autoscaling-metric", memory_metric, "--strategy", "direct"],
         )
         assert not result.exception
 
