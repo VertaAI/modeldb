@@ -78,6 +78,18 @@ def dev_key():
     return os.environ.get("VERTA_DEV_KEY", DEFAULT_DEV_KEY)
 
 
+@pytest.fixture(scope='session')
+def email_2():
+    # For collaboration tests
+    return os.environ.get("VERTA_EMAIL_2")
+
+
+@pytest.fixture(scope='session')
+def dev_key_2():
+    # For collaboration tests
+    return os.environ.get("VERTA_DEV_KEY_2")
+
+
 @pytest.fixture
 def seed():
     return RANDOM_SEED
@@ -273,6 +285,17 @@ def client(host, port, email, dev_key):
     proj = client._ctx.proj
     if proj is not None:
         utils.delete_project(proj.id, client._conn)
+
+    print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
+
+
+@pytest.fixture
+def client_2(host, port, email_2, dev_key_2):
+    # For collaboration tests
+    print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
+    client = Client(host, port, email_2, dev_key_2, debug=True)
+
+    yield client
 
     print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
