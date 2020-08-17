@@ -5,7 +5,7 @@ Once the Endpoint has finished updating:
 
 .. code-block:: python
 
-    endpoint.update(model_version, strategy, wait=True) # will return only when endpoint is ready for prediction.
+    endpoint.update(model_version, strategy, wait=True)
 
 
 Users can make queries to it. This tutorial will explore several ways to do this, using the Client and CLI.
