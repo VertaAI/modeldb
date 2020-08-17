@@ -8,6 +8,8 @@ import os
 import sys
 import zipfile
 
+import requests
+
 from .entity import _ModelDBEntity
 from .._internal_utils import (
     _histogram_utils,
@@ -187,6 +189,10 @@ class _DeployableEntity(_ModelDBEntity):
 
         """
         response = _utils.make_request("GET", self._histogram_endpoint, self._conn)
-        _utils.raise_for_http_error(response)
+        try:
+            _utils.raise_for_http_error(response)
+        except requests.HTTPError as e:
+            if e.response.status_code == 404:
+                raise RuntimeError("log_training_data() may not yet have been called")
 
         return response.json()
