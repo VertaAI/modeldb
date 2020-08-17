@@ -20,7 +20,7 @@ The first step is to create a registered model in Verta using ``client.create_re
     registered_model = client.create_registered_model(name="my model", label=["research-purpose", "team-a"])
 
 Each registered model can have one or many *model versions* associated with it.
-With model version, we can store necessary information for deployment, such as artifacts, model, requirements, etc as follows:
+With model versions, we can store necessary information for deployment, such as artifacts, model, requirements, etc. as follows:
 
 .. code-block:: python
 
@@ -28,9 +28,8 @@ With model version, we can store necessary information for deployment, such as a
         name="my version",
         labels=["prototype"]
     )
-
+    
     # Logging the classifier and requirements:
-
     model_version.log_model(classifier)
 
     reqs = Python.read_pip_file(req_path)
@@ -41,7 +40,7 @@ With model version, we can store necessary information for deployment, such as a
 Creating a registered model and model version using the CLI:
 ------------------------------------------------------------
 
-We can also accomplish the steps above using Verta's Command-line Interface.
+We can also accomplish the steps above using Verta's command-line interface.
 First, we need to serialize our machine learning model. The recommended way to do so is to use the pickle module:
 
 .. code-block:: python
@@ -62,7 +61,7 @@ Then, we can create a registered model and a model version as follows:
 
 Creating Model Version from Experiment Run
 ==========================================
-In addition to register model and version directly from artifacts to the Model Registry, we can convert an Experiment Run into a Model Version.
+In addition to register model and version directly from artifacts to the Model Registry, we can convert an existing Experiment Run into a Model Version.
 
 Using the Client:
 
