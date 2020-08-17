@@ -9,7 +9,7 @@ from .._tracking.context import _Context
 from .._internal_utils import _utils
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.registry import RegistryService_pb2 as _RegisteredModelService
+from .._protos.public.registry import RegistryService_pb2 as _RegistryService
 
 from .modelversion import RegisteredModelVersion
 from .modelversions import RegisteredModelVersions
@@ -33,7 +33,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
 
     """
     def __init__(self, conn, conf, msg):
-        super(RegisteredModel, self).__init__(conn, conf, _RegisteredModelService, "registered_model", msg)
+        super(RegisteredModel, self).__init__(conn, conf, _RegistryService, "registered_model", msg)
 
     def __repr__(self):
         self._refresh_cache()
@@ -186,21 +186,21 @@ class RegisteredModel(_ModelDBRegistryEntity):
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
-        Message = _RegisteredModelService.GetRegisteredModelRequest
+        Message = _RegistryService.GetRegisteredModelRequest
         response = conn.make_proto_request("GET",
                                            "/api/v1/registry/registered_models/{}".format(id))
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
-        Message = _RegisteredModelService.GetRegisteredModelRequest
+        Message = _RegistryService.GetRegisteredModelRequest
         response = conn.make_proto_request("GET",
                                            "/api/v1/registry/workspaces/{}/registered_models/{}".format(workspace, name))
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
-        Message = _RegisteredModelService.RegisteredModel
+        Message = _RegistryService.RegisteredModel
         msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created)
         if public_within_org:
             if ctx.workspace_name is None:
@@ -216,7 +216,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
         response = conn.make_proto_request("POST",
                                            "/api/v1/registry/workspaces/{}/registered_models".format(ctx.workspace_name),
                                            body=msg)
-        registered_model = conn.must_proto_response(response, _RegisteredModelService.SetRegisteredModel.Response).registered_model
+        registered_model = conn.must_proto_response(response, _RegistryService.SetRegisteredModel.Response).registered_model
 
         if ctx.workspace_name is not None:
             WORKSPACE_PRINT_MSG = "workspace: {}".format(ctx.workspace_name)
@@ -226,7 +226,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
 
-    RegisteredModelMessage = _RegisteredModelService.RegisteredModel
+    RegisteredModelMessage = _RegistryService.RegisteredModel
 
     def set_description(self, desc):
         if not desc:
@@ -299,7 +299,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
     def _update(self, msg, method="PATCH"):
         response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}".format(self.id),
                                            body=msg, include_default=False)
-        Message = _RegisteredModelService.SetRegisteredModel
+        Message = _RegistryService.SetRegisteredModel
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
         self._clear_cache()
