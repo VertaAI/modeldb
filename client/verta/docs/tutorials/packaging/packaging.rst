@@ -13,6 +13,8 @@ ways to save a model to Verta:
 
 * `Using a custom model <custom_model.html>`_ to perform arbitrary computations.
 * `Using a custom model with artifact dependencies <custom_model_with_dependencies.html>`_.
+* `Register Models and Versions in Model Registry <registry.html>`_.
+* `Creating Model Version From Experiment Run <version_from_run.html>`_.
 
 
 Using the model
