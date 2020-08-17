@@ -20,12 +20,13 @@ Given an Endpoint (which has a model deployed to it), we can make queries as fol
     deployed_model = endpoint.get_deployed_model()
     results = deployed_model.predict(test_data)
 
-Users can also make queries via cURL requests. An example request is given in the string representation of the endpoint object:
+We can also make queries via cURL requests. An example request is given in the string representation of the endpoint object:
 
 .. code-block:: python
 
     print(endpoint)
-    # should return sth similar to:
+
+    # should print out sth similar to:
     # path: <some-path>
     # id: <some-id>
     # curl: curl -X POST <prediction-url> -d '' -H "Content-Type: application/json"
