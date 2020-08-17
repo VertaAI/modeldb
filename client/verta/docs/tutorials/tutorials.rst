@@ -24,8 +24,6 @@ Deployment and Release
 
 .. * `Deploying Custom Models <deployment/custom_model.html>`_
 
-*  `Model Registry <registry.html>`_
-
 .. commented out because page doesn't exist yet
     * `Deploying off-the-shelf Models <off-the-shelf.html>`_ in Scikit-learn, PyTorch, Tensorflow
 
