@@ -38,5 +38,5 @@ def download_docker_context(run_id, model_version_id, output):
         except ValueError:
             raise click.BadParameter("version {} not found".format(model_version_id))
     else:
-        raise click.BadParameter("run-id or model_version_id should be specified")
+        raise click.BadParameter("--run-id or --model-version-id should be specified")
     entity.download_docker_context(output)
