@@ -136,11 +136,7 @@ public class CommitDAORdbImpl implements CommitDAO {
                 datasetVersion.getPathDatasetVersionInfo();
             List<DatasetPartInfo> partInfos = pathDatasetVersionInfo.getDatasetPartInfosList();
             Stream<PathDatasetComponentBlob> result =
-                partInfos.stream()
-                    .map(
-                        datasetPartInfo ->
-                            componentFromPart(
-                                datasetPartInfo, pathDatasetVersionInfo.getBasePath()));
+                partInfos.stream().map(this::componentFromPart);
             if (pathDatasetVersionInfo.getLocationType() == PathLocationType.S3_FILE_SYSTEM) {
               datasetBlobBuilder.setS3(
                   S3DatasetBlob.newBuilder()
@@ -236,13 +232,9 @@ public class CommitDAORdbImpl implements CommitDAO {
     }
   }
 
-  private PathDatasetComponentBlob componentFromPart(DatasetPartInfo part, String basePath) {
-    String path = part.getPath();
-    if (basePath != null && !basePath.isEmpty() && !path.startsWith(basePath)) {
-      path = basePath.endsWith("/") ? basePath + path : basePath + "/" + path;
-    }
+  private PathDatasetComponentBlob componentFromPart(DatasetPartInfo part) {
     return PathDatasetComponentBlob.newBuilder()
-        .setPath(path)
+        .setPath(part.getPath())
         .setSize(part.getSize())
         .setLastModifiedAtSource(part.getLastModifiedAtSource())
         .setMd5(part.getChecksum())
