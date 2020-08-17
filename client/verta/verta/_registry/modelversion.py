@@ -711,22 +711,26 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     def add_attribute(self, key, value):
         """
         Adds an attribute to this Model Version.
+
         Parameters
         ----------
         key : str
             Name of the attribute.
         value : one of {None, bool, float, int, str, list, dict}
             Value of the attribute.
+
         """
         self.add_attributes({key: value})
 
     def add_attributes(self, attrs):
         """
         Adds potentially multiple attributes to this Model Version.
+
         Parameters
         ----------
         attrs : dict of str to {None, bool, float, int, str, list, dict}
             Attributes.
+
         """
         # validate all keys first
         for key in six.viewkeys(attrs):
@@ -743,14 +747,17 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     def get_attribute(self, key):
         """
         Gets the attribute with name `key` from this Model Version.
+
         Parameters
         ----------
         key : str
             Name of the attribute.
+
         Returns
         -------
         one of {None, bool, float, int, str}
             Value of the attribute.
+
         """
         _utils.validate_flat_key(key)
         attributes = self.get_attributes()
@@ -763,10 +770,12 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     def get_attributes(self):
         """
         Gets all attributes from this Model Version.
+
         Returns
         -------
         dict of str to {None, bool, float, int, str}
             Names and values of all attributes.
+
         """
         self._refresh_cache()
         return _utils.unravel_key_values(self._msg.attributes)
@@ -774,10 +783,12 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     def del_attribute(self, key):
         """
         Deletes the attribute with name `key` from this Model Version
+
         Parameters
         ----------
         key : str
             Name of the attribute.
+
         """
         _utils.validate_flat_key(key)
 
