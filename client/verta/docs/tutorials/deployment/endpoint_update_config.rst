@@ -10,7 +10,7 @@ For example:
 .. code-block:: json
 
         {
-            "run_id": experiment_run.id,
+            "run_id": <experiment run id>,
             "strategy": "canary",
             "canary_strategy": {
                 "progress_step": 0.05,
