@@ -24,6 +24,7 @@ import ai.verta.swagger._public.modeldb.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
 case class VersioningPathDatasetComponentBlob (
+  base_path: Option[String] = None,
   internal_versioned_path: Option[String] = None,
   last_modified_at_source: Option[BigInt] = None,
   md5: Option[String] = None,
@@ -38,6 +39,7 @@ object VersioningPathDatasetComponentBlob {
   def toJson(obj: VersioningPathDatasetComponentBlob): JObject = {
     new JObject(
       List[Option[JField]](
+        obj.base_path.map(x => JField("base_path", JString(x))),
         obj.internal_versioned_path.map(x => JField("internal_versioned_path", JString(x))),
         obj.last_modified_at_source.map(x => JField("last_modified_at_source", JInt(x))),
         obj.md5.map(x => JField("md5", JString(x))),
@@ -57,6 +59,7 @@ object VersioningPathDatasetComponentBlob {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         VersioningPathDatasetComponentBlob(
           // TODO: handle required
+          base_path = fieldsMap.get("base_path").map(JsonConverter.fromJsonString),
           internal_versioned_path = fieldsMap.get("internal_versioned_path").map(JsonConverter.fromJsonString),
           last_modified_at_source = fieldsMap.get("last_modified_at_source").map(JsonConverter.fromJsonInteger),
           md5 = fieldsMap.get("md5").map(JsonConverter.fromJsonString),
