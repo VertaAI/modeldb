@@ -1,11 +1,14 @@
 import contextlib
+import copy
 import random
 import os
+import sys
 from string import printable
 
 import requests
 
 from verta._internal_utils import _utils
+from verta._protos.public.uac import Organization_pb2 as _OrganizationService
 
 from hypothesis import strategies as st
 
@@ -102,6 +105,23 @@ def chdir(new_dir):
     finally:
         os.chdir(old_dir)
 
+
+@contextlib.contextmanager
+def sys_path_manager():
+    """
+    Context manager for safely modifying `sys.path`.
+
+    Without this, if a test involving a `sys.path` modification fails then subsequent tests could
+    possibly fail as well due to a bad execution state.
+
+    """
+    old_sys_path = copy.copy(sys.path)
+    try:
+        yield sys.path
+    finally:
+        sys.path = old_sys_path
+
+
 def get_build_ids(status):
     # get the set of build_ids in the status of the stage:
     return set(map(lambda comp: comp["build_id"], status["components"]))
@@ -144,3 +164,9 @@ def delete_endpoint(id_, workspace, conn):
     response = requests.delete(request_url, headers=conn.auth)
     _utils.raise_for_http_error(response)
 
+def delete_organization(id_, conn):
+    Message = _OrganizationService.DeleteOrganization
+    endpoint = "/api/v1/uac-proxy/organization/deleteOrganization"
+    msg = Message(org_id=id_)
+    response = conn.make_proto_request("POST", endpoint, body=msg)
+    conn.must_proto_response(response, Message.Response)

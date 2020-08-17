@@ -8,6 +8,7 @@ from verta import Client
 from verta._cli import cli
 from verta._internal_utils import _utils
 from verta.environment import Python
+from verta.deployment.update._strategies import DirectUpdateStrategy
 
 from ..utils import get_build_ids
 
@@ -46,6 +47,65 @@ class TestCreate:
 
         created_endpoints.append(endpoint)
 
+    def test_create_workspace_config(self, client, organization, in_tempdir, created_endpoints):
+        client_config = {
+            "workspace": organization.name
+        }
+
+        filepath = "verta_config.json"
+        with open(filepath, "w") as f:
+            json.dump(client_config, f)
+
+        endpoint_name = _utils.generate_default_name()
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'create', 'endpoint', endpoint_name],
+        )
+
+        assert not result.exception
+
+        client = Client()
+        endpoint = client.get_endpoint(endpoint_name)
+        assert endpoint.workspace == organization.name
+
+        created_endpoints.append(endpoint)
+
+
+class TestGet:
+    def test_get(self, client, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'get', 'endpoint', path],
+        )
+        assert not result.exception
+        assert "path: {}".format(endpoint.path) in result.output
+        assert "id: {}".format(endpoint.id) in result.output
+        assert "curl: <Endpoint not deployed>" in result.output
+
+        assert "status" in result.output
+        assert "date created" in result.output
+        assert "date updated" in result.output
+        assert "stage's date created" in result.output
+        assert "stage's date updated" in result.output
+        assert "components" in result.output
+
+        updated_status = endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+        result = runner.invoke(
+            cli,
+            ['deployment', 'get', 'endpoint', path],
+        )
+        assert "curl: {}".format(endpoint.get_deployed_model().get_curl()) in result.output
+
 
 class TestUpdate:
     def test_direct_update_endpoint(self, client, created_endpoints, experiment_run, model_for_deployment):
@@ -79,10 +139,14 @@ class TestUpdate:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        canary_rule = '{"rule": "latency", "rule_parameters": \
-        [{"name": "latency_avg", "value": "0.8"}]}'
-        canary_rule_2 = '{"rule": "error_rate", "rule_parameters": \
-        [{"name": "error_rate", "value": "0.8"}]}'
+        canary_rule = json.dumps({
+            "rule": "latency_avg_max",
+            "rule_parameters": [{"name": "threshold", "value": 0.8}]}
+        )
+        canary_rule_2 = json.dumps({
+            "rule": "error_4xx_rate",
+            "rule_parameters": [{"name": "threshold", "value": "0.8"}]}
+        )
 
         runner = CliRunner()
         result = runner.invoke(
@@ -107,10 +171,10 @@ class TestUpdate:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        canary_rule = '{"rule_id": 1001, "rule_parameters": \
-        [{"name": "latency_avg", "value": "0.8"}]}'
-        canary_rule_2 = '{"rule_id": 1002, "rule_parameters": \
-        [{"name": "error_rate", "value": "0.8"}]}'
+        canary_rule = json.dumps({
+            "rule": "latency_avg_max",
+            "rule_parameters": [{"name": "threshold", "value": 0.8}]}
+        )
 
         runner = CliRunner()
         result = runner.invoke(
@@ -134,8 +198,10 @@ class TestUpdate:
         endpoint = client.set_endpoint(endpoint_name)
         created_endpoints.append(endpoint)
 
-        canary_rule = '{"rule": "latency", "rule_parameters": \
-        [{"name": "latency_avg", "value": "0.8"}]}'
+        canary_rule = json.dumps({
+            "rule": "latency_avg_max",
+            "rule_parameters": [{"name": "threshold", "value": 0.8}]
+        })
 
         # Extra parameters provided:
         runner = CliRunner()
@@ -234,6 +300,78 @@ class TestUpdate:
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
 
+    def test_update_from_json_config(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+        json = pytest.importorskip("json")
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        strategy_dict = {
+            "run_id": experiment_run.id,
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.05,
+                "progress_interval_seconds": 30,
+                "rules": [
+                    {"rule": "latency_avg_max",
+                     "rule_parameters": [
+                         {"name": "threshold",
+                          "value": "0.1"}
+                    ]},
+                    {"rule": "error_4xx_rate",
+                     "rule_parameters": [
+                        {"name": "threshold",
+                         "value": "1"}
+                    ]}
+                ]
+            }
+        }
+
+        filepath = "config.json"
+        with open(filepath, 'w') as f:
+            json.dump(strategy_dict, f)
+
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', path, "-f", filepath],
+        )
+        assert not result.exception
+
+        print(endpoint.get_update_status())
+        updated_build_ids = get_build_ids(endpoint.get_status())
+        assert len(updated_build_ids) - len(updated_build_ids.intersection(original_build_ids)) > 0
+
+    def test_update_with_resources(self, client, created_endpoints, experiment_run, model_for_deployment):
+        endpoint_name = _utils.generate_default_name()
+        endpoint = client.set_endpoint(endpoint_name)
+        created_endpoints.append(endpoint)
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        resources = '{"cpu_millis": 250, "memory": "100M"}'
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'update', 'endpoint', endpoint_name, '--run-id', experiment_run.id, "-s", "direct",
+             '--resources', resources],
+        )
+        assert not result.exception
+        assert endpoint.get_update_status()['update_request']['resources'] == json.loads(resources)
+
     def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
@@ -270,3 +408,33 @@ class TestUpdate:
             else:
                 assert metric["parameters"][0]["name"] == "target"
                 assert metric["parameters"][0]["value"] == "0.7"
+
+
+class TestPredict:
+    def test_predict(self, client, experiment_run, created_endpoints):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+
+        test_data = np.random.random((4, 12))
+        test_data_str = json.dumps(test_data.tolist())
+
+        experiment_run.log_model(classifier, custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = _utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+        endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'predict', 'endpoint', path, '--data', test_data_str],
+        )
+
+        assert not result.exception
+        assert json.dumps(classifier.predict(test_data).tolist()) in result.output

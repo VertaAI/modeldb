@@ -108,6 +108,10 @@ class Connection:
             raise_for_http_error(response)
 
     @staticmethod
+    def must_response(response):
+        raise_for_http_error(response)
+
+    @staticmethod
     def _request_to_curl(request):
         """
         Prints a cURL to reproduce `request`.

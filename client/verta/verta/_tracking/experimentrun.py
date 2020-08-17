@@ -20,6 +20,7 @@ import zipfile
 import requests
 
 from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
+from .deployable_entity import _DeployableEntity
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -44,9 +45,6 @@ from .. import deployment
 from .. import utils
 
 
-# location in DeploymentService model container
-_CUSTOM_MODULES_DIR = os.environ.get('VERTA_CUSTOM_MODULES_DIR', "/app/custom_modules/")
-
 _MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
 
 _CACHE_DIR = os.path.join(
@@ -56,7 +54,7 @@ _CACHE_DIR = os.path.join(
 )
 
 
-class ExperimentRun(_ModelDBEntity):
+class ExperimentRun(_DeployableEntity):
     """
     Object representing a machine learning Experiment Run.
 
@@ -775,7 +773,7 @@ class ExperimentRun(_ModelDBEntity):
                                        self._conn, json={'id': self.id, 'hyperparameter_keys': keys})
         _utils.raise_for_http_error(response)
 
-    def log_metric(self, key, value, overwrite=False):
+    def log_metric(self, key, value):
         """
         Logs a metric to this Experiment Run.
 
@@ -787,8 +785,6 @@ class ExperimentRun(_ModelDBEntity):
             Name of the metric.
         value : one of {None, bool, float, int, str}
             Value of the metric.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing metric with key `key`.
 
         """
         _utils.validate_flat_key(key)
@@ -796,8 +792,6 @@ class ExperimentRun(_ModelDBEntity):
         metric = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         msg = _ExperimentRunService.LogMetric(id=self.id, metric=metric)
         data = _utils.proto_to_json(msg)
-        if overwrite:
-            self._delete_metrics([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logMetric".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -810,7 +804,7 @@ class ExperimentRun(_ModelDBEntity):
 
         self._clear_cache()
 
-    def log_metrics(self, metrics, overwrite=False):
+    def log_metrics(self, metrics):
         """
         Logs potentially multiple metrics to this Experiment Run.
 
@@ -818,8 +812,6 @@ class ExperimentRun(_ModelDBEntity):
         ----------
         metrics : dict of str to {None, bool, float, int, str}
             Metrics.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing metric with key `key`.
 
         """
         # validate all keys first
@@ -835,8 +827,6 @@ class ExperimentRun(_ModelDBEntity):
 
         msg = _ExperimentRunService.LogMetrics(id=self.id, metrics=metric_keyvals)
         data = _utils.proto_to_json(msg)
-        if overwrite:
-            self._delete_metrics(keys)
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logMetrics".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -883,7 +873,7 @@ class ExperimentRun(_ModelDBEntity):
         self._refresh_cache()
         return self._metrics
 
-    def log_hyperparameter(self, key, value, overwrite=False):
+    def log_hyperparameter(self, key, value):
         """
         Logs a hyperparameter to this Experiment Run.
 
@@ -893,8 +883,6 @@ class ExperimentRun(_ModelDBEntity):
             Name of the hyperparameter.
         value : one of {None, bool, float, int, str}
             Value of the hyperparameter.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing hyperparameter with key `key`.
 
         """
         _utils.validate_flat_key(key)
@@ -902,8 +890,6 @@ class ExperimentRun(_ModelDBEntity):
         hyperparameter = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         msg = _ExperimentRunService.LogHyperparameter(id=self.id, hyperparameter=hyperparameter)
         data = _utils.proto_to_json(msg)
-        if overwrite:
-            self._delete_hyperparameters([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logHyperparameter".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -916,7 +902,7 @@ class ExperimentRun(_ModelDBEntity):
 
         self._clear_cache()
 
-    def log_hyperparameters(self, hyperparams, overwrite=False):
+    def log_hyperparameters(self, hyperparams):
         """
         Logs potentially multiple hyperparameters to this Experiment Run.
 
@@ -924,8 +910,6 @@ class ExperimentRun(_ModelDBEntity):
         ----------
         hyperparameters : dict of str to {None, bool, float, int, str}
             Hyperparameters.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing hyperparameter with key `key`.
 
         """
         # validate all keys first
@@ -941,8 +925,6 @@ class ExperimentRun(_ModelDBEntity):
 
         msg = _ExperimentRunService.LogHyperparameters(id=self.id, hyperparameters=hyperparameter_keyvals)
         data = _utils.proto_to_json(msg)
-        if overwrite:
-            self._delete_hyperparameters(keys)
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logHyperparameters".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -1056,7 +1038,7 @@ class ExperimentRun(_ModelDBEntity):
         Logs the filesystem path of an dataset to this Experiment Run.
 
         .. deprecated:: 0.13.0
-           The `log_dataset_path()` method will removed in v0.15.0; consider using
+           The `log_dataset_path()` method will removed in v0.16.0; consider using
            `client.set_dataset(…, type="local")` and `run.log_dataset_version()` instead.
 
         This function makes no attempt to open a file at `dataset_path`. Only the path string itself
@@ -1339,7 +1321,9 @@ class ExperimentRun(_ModelDBEntity):
         if artifacts:
             self.log_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts)
 
-        self._log_modules(custom_modules, overwrite=overwrite)
+        custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
+        self._log_artifact("custom_modules", custom_modules_artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
+
         self._log_artifact("model.pkl", serialized_model, _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
         self._log_artifact("model_api.json", model_api, _CommonCommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
 
@@ -1575,6 +1559,19 @@ class ExperimentRun(_ModelDBEntity):
 
         return artifact_stream
 
+    def get_artifact_keys(self):
+        """
+        Gets the artifact keys of this Experiment Run.
+
+        Returns
+        -------
+        list of str
+            List of artifact keys of this Experiment Run.
+
+        """
+        self._refresh_cache()
+        return list(map(lambda artifact: artifact.key, self._msg.artifacts))
+
     def download_artifact(self, key, download_to_path):
         """
         Downloads the artifact with name `key` to path `download_to_path`.
@@ -1657,7 +1654,7 @@ class ExperimentRun(_ModelDBEntity):
         ))
         return committed_parts
 
-    def log_observation(self, key, value, timestamp=None, epoch_num=None, overwrite=False):
+    def log_observation(self, key, value, timestamp=None, epoch_num=None):
         """
         Logs an observation to this Experiment Run.
 
@@ -1673,8 +1670,6 @@ class ExperimentRun(_ModelDBEntity):
         epoch_num : non-negative int, optional
             Epoch number associated with this observation. If not provided, it will automatically
             be incremented from prior observations for the same `key`.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing observation with key `key`.
 
         Warnings
         --------
@@ -1703,8 +1698,6 @@ class ExperimentRun(_ModelDBEntity):
 
         msg = _ExperimentRunService.LogObservation(id=self.id, observation=observation)
         data = _utils.proto_to_json(msg)
-        if overwrite:
-            self._delete_observations([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logObservation".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -1832,7 +1825,7 @@ class ExperimentRun(_ModelDBEntity):
            The behavior of this function has been merged into :meth:`log_model` as its
            ``custom_modules`` parameter; consider using that instead.
         .. deprecated:: 0.12.4
-           The `search_path` parameter is no longer necessary and will removed in v0.15.0; consider
+           The `search_path` parameter is no longer necessary and will removed in v0.16.0; consider
            removing it from the function call.
 
         Parameters
@@ -1851,110 +1844,6 @@ class ExperimentRun(_ModelDBEntity):
                           category=FutureWarning)
 
         self._log_modules(paths)
-
-    def _log_modules(self, paths=None, overwrite=False):
-        if isinstance(paths, six.string_types):
-            paths = [paths]
-        if paths is not None:
-            paths = list(map(os.path.expanduser, paths))
-            paths = list(map(os.path.abspath, paths))
-
-        # collect local sys paths
-        local_sys_paths = copy.copy(sys.path)
-        ## replace empty first element with cwd
-        ##     https://docs.python.org/3/library/sys.html#sys.path
-        if local_sys_paths[0] == "":
-            local_sys_paths[0] = os.getcwd()
-        ## convert to absolute paths
-        local_sys_paths = list(map(os.path.abspath, local_sys_paths))
-        ## remove paths that don't exist
-        local_sys_paths = list(filter(os.path.exists, local_sys_paths))
-        ## remove .ipython
-        local_sys_paths = list(filter(lambda path: not path.endswith(".ipython"), local_sys_paths))
-        ## remove virtual (and real) environments
-        def is_in_venv(path):
-            """
-            Roughly checks for:
-                /
-                |_ lib/
-                |   |_ python*/ <- directory with Python packages, containing `path`
-                |
-                |_ bin/
-                    |_ python*  <- Python executable
-
-            """
-            lib_python_str = os.path.join(os.sep, "lib", "python")
-            i = path.find(lib_python_str)
-            return i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*"))
-        local_sys_paths = list(filter(lambda path: not is_in_venv(path), local_sys_paths))
-
-        # get paths to files within
-        if paths is None:
-            # Python files within filtered sys.path dirs
-            paths = local_sys_paths
-            extensions = ['py', 'pyc', 'pyo']
-        else:
-            # all user-specified files
-            paths = paths
-            extensions = None
-        local_filepaths = _utils.find_filepaths(
-            paths, extensions=extensions,
-            include_hidden=True,
-            include_venv=False,  # ignore virtual environments nested within
-        )
-
-        # obtain deepest common directory
-        #     This directory on the local system will be mirrored in `_CUSTOM_MODULES_DIR` in
-        #     deployment.
-        curr_dir = os.path.join(os.getcwd(), "")
-        paths_plus = list(local_filepaths) + [curr_dir]
-        common_prefix = os.path.commonprefix(paths_plus)
-        common_dir = os.path.dirname(common_prefix)
-
-        # replace `common_dir` with `_CUSTOM_MODULES_DIR` for deployment sys.path
-        depl_sys_paths = list(map(lambda path: os.path.relpath(path, common_dir), local_sys_paths))
-        depl_sys_paths = list(map(lambda path: os.path.join(_CUSTOM_MODULES_DIR, path), depl_sys_paths))
-
-        bytestream = six.BytesIO()
-        with zipfile.ZipFile(bytestream, 'w') as zipf:
-            for filepath in local_filepaths:
-                arcname = os.path.relpath(filepath, common_dir)  # filepath relative to archive root
-                try:
-                    zipf.write(filepath, arcname)
-                except:
-                    # maybe file has corrupt metadata; try reading then writing contents
-                    with open(filepath, 'rb') as f:
-                        zipf.writestr(arcname, f.read())
-
-            # add verta config file for sys.path and chdir
-            working_dir = os.path.join(_CUSTOM_MODULES_DIR, os.path.relpath(curr_dir, common_dir))
-            zipf.writestr(
-                "_verta_config.py",
-                six.ensure_binary('\n'.join([
-                    "import os, sys",
-                    "",
-                    "",
-                    "sys.path = sys.path[:1] + {} + sys.path[1:]".format(depl_sys_paths),
-                    "",
-                    "try:",
-                    "    os.makedirs(\"{}\")".format(working_dir),
-                    "except OSError:  # already exists",
-                    "    pass",
-                    "os.chdir(\"{}\")".format(working_dir),
-                ]))
-            )
-
-            # add __init__.py
-            init_filename = "__init__.py"
-            if init_filename not in zipf.namelist():
-                zipf.writestr(init_filename, b"")
-
-            if self._conf.debug:
-                print("[DEBUG] archive contains:")
-                zipf.printdir()
-        bytestream.seek(0)
-
-        self._log_artifact("custom_modules", bytestream, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
     def log_setup_script(self, script, overwrite=False):
         """

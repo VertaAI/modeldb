@@ -4,6 +4,7 @@ import click
 
 from .registry import registry
 from ... import Client
+from ...environment import Python
 
 
 @registry.group(name="update")
@@ -16,7 +17,8 @@ def update():
 @click.argument("model_name", nargs=1, required=True)
 @click.option("--label", "-l", multiple=True, help="Label to be associated with the object.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-def update_model(model_name, label, workspace):
+@click.option("--description", "-d", help="Description.")
+def update_model(model_name, label, workspace, description):
     """Update an existing registeredmodel entry.
     """
     client = Client()
@@ -28,6 +30,9 @@ def update_model(model_name, label, workspace):
     if label:
         registered_model.add_labels(label)
 
+    if description:
+        registered_model.set_description(description)
+
 
 @update.command(name="registeredmodelversion")
 @click.argument("model_name", nargs=1, required=True)
@@ -37,8 +42,10 @@ def update_model(model_name, label, workspace):
 @click.option("--artifact", type=str, multiple=True, help="Path to the artifact required for the model. The format is --artifact artifact_key=path_to_artifact.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 @click.option('--overwrite', help="Overwrite model and artifacts if already logged.", is_flag=True)
-# TODO: add environment
-def update_model_version(model_name, version_name, label, model, artifact, workspace, overwrite):
+@click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
+@click.option("--description", "-d", help="Description.")
+def update_model_version(model_name, version_name, label, model, artifact, workspace, overwrite, requirements,
+                         description):
     """Update an existing registeredmodelversion entry.
     """
     client = Client()
@@ -81,3 +88,10 @@ def update_model_version(model_name, version_name, label, model, artifact, works
 
     if model:
         model_version.log_model(model, overwrite=overwrite)
+
+    if requirements:
+        reqs = Python.read_pip_file(requirements)
+        model_version.log_environment(Python(requirements=reqs))
+
+    if description:
+        registered_model.set_description(description)
