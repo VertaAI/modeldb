@@ -22,4 +22,4 @@ Or using the CLI:
 
     verta registry create registeredmodelversion "my model" "from-experiment-run" --from-run experiment-run-id
 
-The new Model Version will automatically inherit requirements, artifacts, and model from the Experiment Run.
+The new Model Version will automatically inherit requirements, artifacts, model, etc. from the Experiment Run.

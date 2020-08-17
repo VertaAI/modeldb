@@ -17,7 +17,7 @@ The first step is to create a registered model in Verta using ``client.create_re
 
 .. code-block:: python
 
-    registered_model = client.create_registered_model(name="my model", label=["research-purpose", "team-a"])
+    registered_model = client.create_registered_model(name="my model", labels=["research-purpose", "team-a"])
 
 Each registered model can have one or many *model versions* associated with it.
 With model versions, we can store necessary information for deployment, such as artifacts, model, requirements, etc. as follows:
