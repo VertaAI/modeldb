@@ -33,7 +33,11 @@ class DatasetVersion(entity._ModelDBEntity):
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
-        raise NotImplementedError
+        Message = _DatasetVersionService.GetDatasetVersionById
+        msg = Message(id=id)
+        endpoint = "/api/v1/modeldb/dataset-version/getDatasetVersionById"
+        response = conn.make_proto_request("GET", endpoint, params=msg)
+        return conn.maybe_proto_response(response, Message.Response).dataset_version
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
@@ -41,10 +45,16 @@ class DatasetVersion(entity._ModelDBEntity):
 
     @classmethod
     def _create_proto_internal(cls, conn, dataset, dataset_blob, desc=None, tags=None, attrs=None, time_logged=None, time_updated=None):
-        raise NotImplementedError
-        # msg = _DatasetVersionService.DatasetVersion(
-        #     dataset_blob=dataset_blob._as_proto().dataset
-        # )
+        Message = _DatasetVersionService.CreateDatasetVersion
+        msg = Message(dataset_id=dataset.id, description=desc, tags=tags, attributes=attrs, time_created=time_updated,
+                      dataset_blob=dataset_blob._as_proto().dataset)
+
+        endpoint = "/api/v1/modeldb/dataset-version/createDatasetVersion"
+        response = conn.make_proto_request("POST", endpoint, body=msg)
+        dataset_version = conn.must_proto_response(response, Message.Response).dataset_version
+
+        print("created new Dataset Version: {} for {}".format(dataset_version.version, dataset.name))
+        return dataset_version
 
     def set_description(self, desc):
         raise NotImplementedError
