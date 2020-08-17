@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -31,7 +30,7 @@ public class S3Controller {
   @Autowired private S3Service s3Service;
 
   @PutMapping(value = {"${artifactEndpoint.storeArtifact}"})
-  public UploadFileResponse storeArtifact(
+  public ResponseEntity<UploadFileResponse> storeArtifact(
       HttpServletRequest requestEntity,
       @RequestParam("artifact_path") String artifactPath,
       @RequestParam("part_number") Long part_number,
@@ -44,9 +43,12 @@ public class S3Controller {
       String eTag = s3Service.uploadFile(artifactPath, requestEntity, part_number, upload_id);
       LOGGER.trace("S3 storeArtifact - artifact_path : {}", artifactPath);
       LOGGER.trace("S3 storeArtifact - eTag : {}", eTag);
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.set("ETag", eTag);
       LOGGER.debug("S3 storeArtifact returned");
-      return new UploadFileResponse(
-          artifactPath, null, null, -1, eTag);
+      return ResponseEntity.ok()
+          .headers(responseHeaders)
+          .body(new UploadFileResponse(artifactPath, null, null, -1, eTag));
     } catch (IOException | ModelDBException e) {
       LOGGER.warn(e.getMessage(), e);
       ErrorCountResource.inc(e);

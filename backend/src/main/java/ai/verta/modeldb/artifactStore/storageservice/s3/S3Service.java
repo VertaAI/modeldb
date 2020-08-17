@@ -23,7 +23,6 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -48,14 +47,11 @@ import java.util.Optional;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.http.HttpServletRequest;
 
 public class S3Service implements ArtifactStoreService {
 
@@ -288,7 +284,7 @@ public class S3Service implements ArtifactStoreService {
   }
 
   public String uploadFile(
-          String artifactPath, HttpServletRequest request, Long partNumber, String uploadId)
+      String artifactPath, HttpServletRequest request, Long partNumber, String uploadId)
       throws ModelDBException, IOException {
     try {
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
