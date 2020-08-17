@@ -31,4 +31,5 @@ frequently ones:
     Custom models with dependencies <custom_model_with_dependencies>
     Building local Docker images <local_docker_build>
     Register models in Model Registry <registry>
+    Creating Model Version from Experiment Run <version_from_run>
 
