@@ -414,6 +414,7 @@ class Endpoint(object):
         Parameters
         ----------
         token : str
+            Token to create.
 
         """
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/accesstokens".format(
