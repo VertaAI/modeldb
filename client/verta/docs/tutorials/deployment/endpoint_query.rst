@@ -20,7 +20,7 @@ Given an Endpoint (which has a model deployed to it), we can make queries as fol
     deployed_model = endpoint.get_deployed_model()
     results = deployed_model.predict(test_data)
 
-We can also make queries via cURL requests. An example request is given in the string representation of the endpoint object:
+We can also make queries via cURL requests. An example request is given in the string representation of the Endpoint object:
 
 .. code-block:: python
 
@@ -35,7 +35,7 @@ We can also make queries via cURL requests. An example request is given in the s
 Using the CLI
 -------------
 
-Verta's CLI also has a `predict` command for querying an endpoint:
+Verta's CLI also has a `predict` command for querying an Endpoint:
 
 .. code-block:: sh
 
