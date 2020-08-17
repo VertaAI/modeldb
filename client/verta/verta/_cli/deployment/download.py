@@ -19,8 +19,8 @@ def download():
 
 
 @download.command(name="dockercontext")
-@click.option("--run_id", "-r", help="Experiment Run id")
-@click.option("--model_version_id", "-m", help="Model Version id")
+@click.option("--run-id", "-r", help="Experiment Run ID")
+@click.option("--model-version-id", "-m", help="Model Version ID")
 @click.option("--output", "-o", required=True, help="Filepath to write to")
 def download_docker_context(run_id, model_version_id, output):
     """Download registeredmodelversion's or experiment run's context entry.
