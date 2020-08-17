@@ -1,6 +1,7 @@
 Creating Model Version From Experiment Run
 ==========================================
 During the experiment process, data scientists can use Verta to log the model and their requirements:
+
 .. code-block:: python
 
     experiment_run.log_model(model=model, custom_modules=custom_modules, model_api=model_api)
