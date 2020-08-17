@@ -30,5 +30,5 @@ frequently ones:
     Custom models <custom_model>
     Custom models with dependencies <custom_model_with_dependencies>
     Building local Docker images <local_docker_build>
-    Register models in Model Registry <registry.html>`_
+    Register models in Model Registry <registry>
 
