@@ -407,6 +407,25 @@ class Endpoint(object):
             return None
         return tokens[0]['creator_request']['value']
 
+    def create_access_token(self, token):
+        """
+        Creates an access token for the Endpoint.
+
+        Parameters
+        ----------
+        token : str
+
+        """
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/accesstokens".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_stage(),
+        )
+        response = _utils.make_request("POST", url, self._conn, json={"value": token})
+        _utils.raise_for_http_error(response)
+
     def _form_update_body(self, resources, strategy, autoscaling, env_vars, build_id):
         update_body = strategy._as_build_update_req_body(build_id)
         if resources:
