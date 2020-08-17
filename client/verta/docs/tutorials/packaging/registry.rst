@@ -1,5 +1,5 @@
-Register Models and Model Versions in Model Registry
-====================================================
+Register Models and Versions in Model Registry
+==============================================
 After models are trained and evaluated, they need to be ''stored'' along with necessary information so that they can be packed and deployed later.
 This tutorial will show how this can be done using Verta's Model Registry.
 
