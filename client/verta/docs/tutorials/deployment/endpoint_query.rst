@@ -12,6 +12,7 @@ Users can make queries to it. This tutorial will explore several ways to do this
 
 Using the Client
 ----------------
+
 Given an Endpoint (which has a model deployed to it), we can make queries as follows:
 
 .. code-block:: python
@@ -32,6 +33,7 @@ Users can also make queries via cURL requests. An example request is given in th
 
 Using the CLI
 -------------
+
 Verta's CLI also has a `predict` command for querying an endpoint:
 
 .. code-block:: sh
