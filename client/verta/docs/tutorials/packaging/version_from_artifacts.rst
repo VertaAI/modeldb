@@ -31,7 +31,6 @@ We can create a new version for the registered model, and upload the classifier,
     model_version.log_environment(Python(requirements=reqs))
     model_version.log_environments(Python(requirements=["sklearn"]))
 
-
 Using the CLI
 -------------
 
