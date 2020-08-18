@@ -1,4 +1,4 @@
-Updating Endpoint With A Configuration File
+Updating Endpoint With a Configuration File
 ===========================================
 
 .. TODO: link to Endpoint.update tutorial
