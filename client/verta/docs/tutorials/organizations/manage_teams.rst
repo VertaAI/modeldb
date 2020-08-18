@@ -2,7 +2,7 @@ Managing teams
 ==============
 
 A team is a subset of the members of your organization that can share a single level of access. This
-simplifies controlling access based on which teams individuals belong.
+simplifies controlling access based on which teams individuals belong to.
 
 Creating a new team
 -------------------

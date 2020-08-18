@@ -1,8 +1,8 @@
-Creating an organization
+Creating an Organization
 ========================
 
 Sometimes it's easier to manage projects and people by grouping them. An organization allows you to
-share permissions and visibility across them.
+share permissions and visibility settings for such groups.
 
 Listing organizations
 ---------------------

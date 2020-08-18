@@ -17,7 +17,7 @@ The following screenshot shows an example of creating a project:
     :align: center
 
 If the permission level is private, then access is provided only based on who is a collaborator in
-the resource and no organization member except for the organization owner and the resource owner
+the resource, and no organization member except for the organization owner and the resource owner
 will be able to view the resource.
 
 If the permission level is the default, then the resource will automatically be exposed to all

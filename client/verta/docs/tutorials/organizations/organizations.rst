@@ -1,12 +1,12 @@
 Organizations
 =============
 
-Organizations within the Verta platform helps you manage access to resources while facilitating
+Organizations within the Verta platform help you manage access to resources while facilitating
 collaboration. You can start by `creating an organization <create_organization.html>`_, which then
 allows you to:
 
 * `Manage members <manage_members.html>`_ to control visibility;
-* `Manage teams <manage_teams.html>`_ to facilitate collaboration and handling access control;
+* `Manage teams <manage_teams.html>`_ to facilitate collaboration and handle access control;
 * `Manage default permissions <manage_permissions.html>`_ of resources that belong to the organization.
 
 .. note::
