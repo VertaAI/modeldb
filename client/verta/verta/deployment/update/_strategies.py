@@ -53,7 +53,7 @@ class CanaryUpdateStrategy(_UpdateStrategy):
         Rollout interval, in seconds.
     step : float in (0, 1]
         Ratio of deployment to roll out per `interval`.
-    
+
     Examples
     --------
     .. code-block:: python
