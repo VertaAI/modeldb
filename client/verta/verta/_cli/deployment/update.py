@@ -27,15 +27,15 @@ def update():
 @click.option("--canary-rule", "-c", multiple=True, help="Rule to use for canary deployment. Can only be used alongside --strategy=canary.")
 @click.option("--canary-interval", "-i", type=click.IntRange(min=0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary.")
 @click.option("--canary-step", type=click.FloatRange(min=0.0, max=1.0), help="Ratio of deployment to roll out per interval. Can only be used alongside --strategy=canary.")
-@click.option("--autoscaling", help="Quantities for autoscaling. Must also provide --autoscaling-metrics.")
-@click.option("--autoscaling-metrics", multiple=True, help="Metrics for autoscaling. Can only be used alongside --autoscaling.")
+@click.option("--autoscaling", help="Quantities for autoscaling. Must also provide --autoscaling-metric.")
+@click.option("--autoscaling-metric", multiple=True, help="Metrics for autoscaling. Can only be used alongside --autoscaling.")
 @click.option("--env-vars", type=str, help="Environment variables to set for the model build. The format is --env-vars '{\"VERTA_HOST\": \"app.verta.ai\"}'.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 # TODO: more options
-def update_endpoint(path, run_id, model_version_id, filename, strategy, resources, canary_rule, canary_interval, canary_step, autoscaling, autoscaling_metrics, env_vars, workspace):
+def update_endpoint(path, run_id, model_version_id, filename, strategy, resources, canary_rule, canary_interval, canary_step, autoscaling, autoscaling_metric, env_vars, workspace):
     """Update an endpoint.
     """
-    non_file_options = (run_id, model_version_id, strategy, resources, canary_rule, canary_interval, canary_step, autoscaling, autoscaling_metrics, env_vars)
+    non_file_options = (run_id, model_version_id, strategy, resources, canary_rule, canary_interval, canary_step, autoscaling, autoscaling_metric, env_vars)
 
     if filename and any(non_file_options):
         raise click.BadParameter("--filename can't be used alongside other options except for --workspace.")
@@ -52,11 +52,11 @@ def update_endpoint(path, run_id, model_version_id, filename, strategy, resource
     if strategy == "canary" and not all(canary_options):
         raise click.BadParameter("--canary-rule, --canary-interval, and --canary-step must be provided alongside --strategy=canary")
 
-    if autoscaling and not autoscaling_metrics:
-        raise click.BadParameter("--autoscaling-metrics must be provided when using --autoscaling.")
+    if autoscaling and not autoscaling_metric:
+        raise click.BadParameter("--autoscaling-metric must be provided when using --autoscaling.")
 
-    if autoscaling_metrics and not autoscaling:
-        raise click.BadParameter("--autoscaling-metrics can only be provided when using --autoscaling.")
+    if autoscaling_metric and not autoscaling:
+        raise click.BadParameter("--autoscaling-metric can only be provided when using --autoscaling.")
 
     client = Client()
 
@@ -99,7 +99,7 @@ def update_endpoint(path, run_id, model_version_id, filename, strategy, resource
 
     if autoscaling:
         autoscaling_obj = Autoscaling._from_dict(json.loads(autoscaling))
-        for metric in autoscaling_metrics:
+        for metric in autoscaling_metric:
             autoscaling_obj.add_metric(_AutoscalingMetric._from_dict(json.loads(metric)))
     else:
         autoscaling_obj = None

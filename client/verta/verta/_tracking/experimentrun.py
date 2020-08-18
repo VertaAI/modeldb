@@ -31,7 +31,6 @@ from ..external.six.moves import cPickle as pickle  # pylint: disable=import-err
 
 from .._internal_utils import (
     _artifact_utils,
-    _histogram_utils,
     _pip_requirements_utils,
     _request_utils,
     _utils,
@@ -1885,49 +1884,6 @@ class ExperimentRun(_DeployableEntity):
         script = six.BytesIO(script)
 
         self._log_artifact("setup_script", script, _CommonCommonService.ArtifactTypeEnum.BLOB, 'py', overwrite=overwrite)
-
-    def log_training_data(self, train_features, train_targets, overwrite=False):
-        """
-        Associate training data with this Experiment Run.
-
-        .. versionchanged:: 0.14.4
-           Instead of uploading the data itself as a CSV artifact ``'train_data'``, this method now
-           generates a histogram for internal use by our deployment data monitoring system.
-
-        Parameters
-        ----------
-        train_features : pd.DataFrame
-            pandas DataFrame representing features of the training data.
-        train_targets : pd.DataFrame or pd.Series
-            pandas DataFrame representing targets of the training data.
-        overwrite : bool, default False
-            Whether to allow overwriting existing training data.
-
-        """
-        if train_features.__class__.__name__ != "DataFrame":
-            raise TypeError("`train_features` must be a pandas DataFrame, not {}".format(type(train_features)))
-        if train_targets.__class__.__name__ == "Series":
-            train_targets = train_targets.to_frame()
-        elif train_targets.__class__.__name__ != "DataFrame":
-            raise TypeError("`train_targets` must be a pandas DataFrame or Series, not {}".format(type(train_targets)))
-
-        # check for overlapping column names
-        common_column_names = set(train_features.columns) & set(train_targets.columns)
-        if common_column_names:
-            raise ValueError("`train_features` and `train_targets` combined have overlapping column names;"
-                             " please ensure column names are unique")
-
-        train_df = train_features.join(train_targets)
-
-        histograms = _histogram_utils.calculate_histograms(train_df)
-
-        endpoint = "{}://{}/api/v1/monitoring/data/references/{}".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.id,
-        )
-        response = _utils.make_request("PUT", endpoint, self._conn, json=histograms)
-        _utils.raise_for_http_error(response)
 
     def fetch_artifacts(self, keys):
         """

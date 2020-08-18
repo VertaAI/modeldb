@@ -14,7 +14,7 @@
     "/registry/model_versions/find": {
       "post": {
         "summary": "CRUD for Model Version",
-        "operationId": "RegistryService_FindModelVersion3",
+        "operationId": "RegistryService_FindModelVersion4",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -991,6 +991,46 @@
         ]
       }
     },
+    "/registry/workspaces/{id.named_id.workspace_name}/model_versions/find": {
+      "post": {
+        "summary": "CRUD for Model Version",
+        "operationId": "RegistryService_FindModelVersion3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryFindModelVersionRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.named_id.workspace_name",
+            "description": "WorkspaceName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryFindModelVersionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
     "/registry/workspaces/{id.named_id.workspace_name}/registered_models": {
       "post": {
         "operationId": "RegistryService_CreateRegisteredModel",
@@ -1526,7 +1566,7 @@
           "items": {
             "$ref": "#/definitions/commonKeyValueQuery"
           },
-          "title": "Filtering supported on \n1. version\n2. labels\n3. description\n4. model_source\n5. experiment_run_id\n6. status\n7. archived status"
+          "title": "Filtering supported on\n1. version\n2. labels\n3. description\n4. model_source\n5. experiment_run_id\n6. status\n7. archived status"
         },
         "pagination": {
           "$ref": "#/definitions/commonPagination",
@@ -1568,7 +1608,7 @@
           "items": {
             "$ref": "#/definitions/commonKeyValueQuery"
           },
-          "title": "Filtering supported on \n1. name\n2. labels\n3. description"
+          "title": "Filtering supported on\n1. name\n2. labels\n3. description"
         },
         "pagination": {
           "$ref": "#/definitions/commonPagination",

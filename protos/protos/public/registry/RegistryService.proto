@@ -50,7 +50,7 @@ message RegisteredModel {
 message FindRegisteredModelRequest{
     //User or organization name
     string workspace_name = 1;
-    //Filtering supported on 
+    //Filtering supported on
     // 1. name
     // 2. labels
     // 3. description
@@ -182,7 +182,7 @@ message GetModelVersionRequest{
 message FindModelVersionRequest{
     //identity of parent registered model
     RegisteredModelIdentification id = 1;
-    //Filtering supported on 
+    //Filtering supported on
     // 1. version
     // 2. labels
     // 3. description
@@ -222,7 +222,7 @@ message DeleteModelVersionRequest {
 message GetUrlForArtifact {
     // id of model version
     uint64 model_version_id = 1;
-    //artifact key 
+    //artifact key
     string key = 2;
     //GET or PUT
     string method = 3;
@@ -241,7 +241,7 @@ message GetUrlForArtifact {
 message CommitArtifactPart {
     // id of model version
     uint64 model_version_id = 1;
-    //artifact key 
+    //artifact key
     string key = 2;
     common.ArtifactPart artifact_part = 3;
 
@@ -251,7 +251,7 @@ message CommitArtifactPart {
 message GetCommittedArtifactParts {
     // id of model version
     uint64 model_version_id = 1;
-    //artifact key 
+    //artifact key
     string key = 2;
 
     message Response {
@@ -262,7 +262,7 @@ message GetCommittedArtifactParts {
 message CommitMultipartArtifact {
     // id of model version
     uint64 model_version_id = 1;
-    //artifact key 
+    //artifact key
     string key = 2;
 
     message Response { }
@@ -333,6 +333,10 @@ service RegistryService {
             body: "*"
             additional_bindings {
                 post: "/v1/registry/registered_models/{id.registered_model_id}/model_versions/find"
+                body: "*"
+            }
+            additional_bindings {
+                post: "/v1/registry/workspaces/{id.named_id.workspace_name}/model_versions/find"
                 body: "*"
             }
             additional_bindings {

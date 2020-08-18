@@ -50,8 +50,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         Whether there is a model associated with this Model Version.
     registered_model_id : int
         ID of this version's Registered Model.
-    is_archived : bool
-        Whether this Model Version is archived.
 
     """
     def __init__(self, conn, conf, msg):
@@ -71,10 +69,11 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
             "labels: {}".format(msg.labels),
+            "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
             "id: {}".format(msg.id),
             "registered model id: {}".format(msg.registered_model_id),
             "experiment run id: {}".format(msg.experiment_run_id),
-            "archived status: {}".format(msg.archived),
+            # "archived status: {}".format(msg.archived),
             "artifact keys: {}".format(artifact_keys),
         ))
 
@@ -98,10 +97,10 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         self._refresh_cache()
         return self._msg.registered_model_id
 
-    @property
-    def is_archived(self):
-        self._refresh_cache()
-        return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
+    # @property
+    # def is_archived(self):
+    #     self._refresh_cache()
+    #     return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
 
     @property
     def workspace(self):
@@ -175,14 +174,14 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         registered_model_id = ctx.registered_model.id
 
         model_version_msg = ModelVersionMessage(registered_model_id=registered_model_id, version=name,
-                                                description=desc, labels=tags,
+                                                description=desc, labels=tags, attributes=attrs,
                                                 time_created=date_created, time_updated=date_created,
                                                 experiment_run_id=experiment_run_id)
         endpoint = "/api/v1/registry/registered_models/{}/model_versions".format(registered_model_id)
         response = conn.make_proto_request("POST", endpoint, body=model_version_msg)
         model_version = conn.must_proto_response(response, SetModelVersionMessage.Response).model_version
 
-        print("Created new ModelVersion: {}".format(model_version.version))
+        print("created new ModelVersion: {}".format(model_version.version))
         return model_version
 
     ModelVersionMessage = _ModelVersionService.ModelVersion
@@ -211,7 +210,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
-        self._fetch_with_no_cache()
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
 
@@ -225,8 +223,11 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             extension = _artifact_utils.ext_from_method(method)
 
         # Create artifact message and update ModelVersion's message:
-        self._msg.model.CopyFrom(self._create_artifact_msg("model", serialized_model, artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension))
-        self._update()
+        model_msg = self._create_artifact_msg("model", serialized_model,
+                                        artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension)
+        model_version_update = self.ModelVersionMessage(model=model_msg)
+        self._update(model_version_update)
+
 
         # Upload the artifact to ModelDB:
         self._upload_artifact(
@@ -276,7 +277,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         """
         self._fetch_with_no_cache()
         self._msg.ClearField("model")
-        self._update()
+        self._update(self._msg, method="PUT")
 
 
     def log_artifact(self, key, artifact, overwrite=False, extension=None):
@@ -331,7 +332,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         else:
             self._msg.artifacts[same_key_ind].CopyFrom(artifact_msg)
 
-        self._update()
+        self._update(self._msg, method="PUT")
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def get_artifact(self, key):
@@ -402,7 +403,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             raise KeyError("no artifact found with key {}".format(key))
 
         del self._msg.artifacts[ind]
-        self._update()
+        self._update(self._msg, method="PUT")
 
     def log_environment(self, env):
         """
@@ -419,7 +420,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         self._fetch_with_no_cache()
         self._msg.environment.CopyFrom(env._msg)
-        self._update()
+        self._update(self._msg, method="PUT")
+        # probably error on backend
+        #self._update(self.ModelVersionMessage(environment=env._msg))
 
     def del_environment(self):
         """
@@ -428,7 +431,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         """
         self._fetch_with_no_cache()
         self._msg.ClearField("environment")
-        self._update()
+        self._update(self._msg, method="PUT")
 
     def get_environment(self):
         """
@@ -591,9 +594,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     def set_description(self, desc):
         if not desc:
             raise ValueError("desc is not specified")
-        self._fetch_with_no_cache()
-        self._msg.description = desc
-        self._update()
+        self._update(self.ModelVersionMessage(description=desc))
 
     def get_description(self):
         self._refresh_cache()
@@ -612,11 +613,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         if not labels:
             raise ValueError("label is not specified")
 
-        self._fetch_with_no_cache()
-        for label in labels:
-            if label not in self._msg.labels:
-                self._msg.labels.append(label)
-        self._update()
+        self._update(self.ModelVersionMessage(labels=labels))
 
     def add_label(self, label):
         """
@@ -631,9 +628,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         if label is None:
             raise ValueError("label is not specified")
         self._fetch_with_no_cache()
-        if label not in self._msg.labels:
-            self._msg.labels.append(label)
-            self._update()
+        self._update(self.ModelVersionMessage(labels=[label]))
 
     def del_label(self, label):
         """
@@ -650,7 +645,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         self._fetch_with_no_cache()
         if label in self._msg.labels:
             self._msg.labels.remove(label)
-            self._update()
+            self._update(self._msg, method="PUT")
 
     def get_labels(self):
         """
@@ -704,64 +699,66 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 
-    def archive(self):
-        """
-        Archive this Model Version.
+    # def archive(self):
+    #     """
+    #     Archive this Model Version.
 
-        """
-        if self.is_archived:
-            raise RuntimeError("the version has already been archived")
+    #     """
+    #     if self.is_archived:
+    #         raise RuntimeError("the version has already been archived")
 
-        self._fetch_with_no_cache()
-        self._msg.archived = _CommonCommonService.TernaryEnum.TRUE
-        self._update()
+    #     self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
 
     def add_attribute(self, key, value):
         """
         Adds an attribute to this Model Version.
+
         Parameters
         ----------
         key : str
             Name of the attribute.
         value : one of {None, bool, float, int, str, list, dict}
             Value of the attribute.
+
         """
         self.add_attributes({key: value})
 
     def add_attributes(self, attrs):
         """
         Adds potentially multiple attributes to this Model Version.
+
         Parameters
         ----------
         attrs : dict of str to {None, bool, float, int, str, list, dict}
             Attributes.
+
         """
         # validate all keys first
         for key in six.viewkeys(attrs):
             _utils.validate_flat_key(key)
 
         # build KeyValues
-        self._fetch_with_no_cache()
-        # TODO: prevent duplicates
         attribute_keyvals = []
         for key, value in six.viewitems(attrs):
             attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
                                                                                                              allow_collection=True)))
 
-        self._msg.attributes.extend(attribute_keyvals)
-        self._update()
+            self._update(self.ModelVersionMessage(attributes=attribute_keyvals))
 
     def get_attribute(self, key):
         """
         Gets the attribute with name `key` from this Model Version.
+
         Parameters
         ----------
         key : str
             Name of the attribute.
+
         Returns
         -------
         one of {None, bool, float, int, str}
             Value of the attribute.
+
         """
         _utils.validate_flat_key(key)
         attributes = self.get_attributes()
@@ -774,10 +771,12 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     def get_attributes(self):
         """
         Gets all attributes from this Model Version.
+
         Returns
         -------
         dict of str to {None, bool, float, int, str}
             Names and values of all attributes.
+
         """
         self._refresh_cache()
         return _utils.unravel_key_values(self._msg.attributes)
@@ -785,10 +784,12 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     def del_attribute(self, key):
         """
         Deletes the attribute with name `key` from this Model Version
+
         Parameters
         ----------
         key : str
             Name of the attribute.
+
         """
         _utils.validate_flat_key(key)
 
@@ -796,11 +797,13 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         attributes = list(filter(lambda attribute: attribute.key == key, self._msg.attributes))
         if attributes:
             self._msg.attributes.remove(attributes[0])
-        self._update()
+            self._update(self._msg, method="PUT")
 
-    def _update(self):
-        response = self._conn.make_proto_request("PUT", "/api/v1/registry/registered_models/{}/model_versions/{}".format(self._msg.registered_model_id, self.id),
-                                                 body=self._msg)
+
+    def _update(self, msg, method="PATCH"):
+        response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
+                                                 .format(self._msg.registered_model_id, self.id),
+                                                 body=msg, include_default=False)
         Message = _ModelVersionService.SetModelVersion
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")

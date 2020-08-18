@@ -63,7 +63,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
         else:
             return _OSS_DEFAULT_WORKSPACE
 
-    def get_or_create_version(self, name=None, desc=None, labels=None, id=None, time_created=None):
+    def get_or_create_version(self, name=None, desc=None, labels=None, attrs=None, id=None, time_created=None):
         """
         Gets or creates a Model Version.
 
@@ -79,6 +79,8 @@ class RegisteredModel(_ModelDBRegistryEntity):
             Description of the Model Version.
         labels : list of str, optional
             Labels of the Model Version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Model Version.
         id : str, optional
             ID of the Model Version. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
@@ -103,9 +105,9 @@ class RegisteredModel(_ModelDBRegistryEntity):
             ctx.registered_model = self
             return RegisteredModelVersion._get_or_create_by_name(self._conn, name,
                                                        lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
-                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, date_created=time_created))
+                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, attrs=attrs, date_created=time_created))
 
-    def create_version(self, name=None, desc=None, labels=None, time_created=None):
+    def create_version(self, name=None, desc=None, labels=None, attrs=None, time_created=None):
         """
         Creates a model registry entry.
 
@@ -117,6 +119,8 @@ class RegisteredModel(_ModelDBRegistryEntity):
             Description of the Model Version.
         labels : list of str, optional
             Labels of the Model Version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Model Version.
 
         Returns
         -------
@@ -125,7 +129,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
         """
         ctx = _Context(self._conn, self._conf)
         ctx.registered_model = self
-        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, date_created=time_created)
+        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, attrs=attrs, date_created=time_created)
 
 
     def create_version_from_run(self, run_id, name=None):
@@ -226,12 +230,12 @@ class RegisteredModel(_ModelDBRegistryEntity):
         print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
         return registered_model
 
+    RegisteredModelMessage = _RegisteredModelService.RegisteredModel
+
     def set_description(self, desc):
         if not desc:
             raise ValueError("desc is not specified")
-        self._fetch_with_no_cache()
-        self._msg.description = desc
-        self._update()
+        self._update(self.RegisteredModelMessage(description=desc))
 
     def get_description(self):
         self._refresh_cache()
@@ -250,11 +254,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
         if not labels:
             raise ValueError("label is not specified")
 
-        self._fetch_with_no_cache()
-        for label in labels:
-            if label not in self._msg.labels:
-                self._msg.labels.append(label)
-        self._update()
+        self._update(self.RegisteredModelMessage(labels=labels))
 
     def add_label(self, label):
         """
@@ -268,10 +268,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
         """
         if label is None:
             raise ValueError("label is not specified")
-        self._fetch_with_no_cache()
-        if label not in self._msg.labels:
-            self._msg.labels.append(label)
-            self._update()
+        self._update(self.RegisteredModelMessage(labels=[label]))
 
     def del_label(self, label):
         """
@@ -288,7 +285,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
         self._fetch_with_no_cache()
         if label in self._msg.labels:
             self._msg.labels.remove(label)
-            self._update()
+            self._update(self._msg, method="PUT")
 
     def get_labels(self):
         """
@@ -303,9 +300,9 @@ class RegisteredModel(_ModelDBRegistryEntity):
         self._refresh_cache()
         return self._msg.labels
 
-    def _update(self):
-        response = self._conn.make_proto_request("PUT", "/api/v1/registry/registered_models/{}".format(self.id),
-                                           body=self._msg)
+    def _update(self, msg, method="PATCH"):
+        response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}".format(self.id),
+                                           body=msg, include_default=False)
         Message = _RegisteredModelService.SetRegisteredModel
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")

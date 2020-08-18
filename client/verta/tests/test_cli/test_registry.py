@@ -2,6 +2,7 @@ import json
 import os
 import tarfile
 import pickle
+import zipfile
 
 import pytest
 from click.testing import CliRunner
@@ -11,8 +12,11 @@ from verta._cli import cli
 from verta._registry import RegisteredModel
 from verta._internal_utils import _utils
 from verta.environment import Python
+from verta.utils import ModelAPI
+from verta.deployment.update._strategies import DirectUpdateStrategy
 
-from ..utils import delete_organization
+
+from ..utils import delete_organization, sys_path_manager
 
 
 
@@ -45,9 +49,9 @@ class TestCreate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -61,7 +65,7 @@ class TestCreate:
         assert model_version.name in result.output
         assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
-        assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
+        assert model_version.get_model().get_params() == classifier.get_params()
 
         # Check environment:
         reqs = Python.read_pip_file(requirements_file.name)
@@ -176,7 +180,6 @@ class TestCreate:
         assert result.exception
         assert error_message in result.output
 
-    @pytest.mark.skip("bug in uac service")
     def test_create_workspace_config(self, client, organization, in_tempdir):
         model_name = _utils.generate_default_name()
         version_name = _utils.generate_default_name()
@@ -198,6 +201,61 @@ class TestCreate:
         client = Client()
         model = client.get_registered_model(model_name)
         assert model.workspace == organization.name
+
+    def test_create_version_with_custom_modules(self, client, registered_model, created_endpoints):
+        torch = pytest.importorskip("torch")
+        np = pytest.importorskip("numpy")
+
+        model_name = registered_model.name
+        version_name = "my version"
+
+        with sys_path_manager() as sys_path:
+            sys_path.append(".")
+
+            from models.nets import FullyConnected
+            train_data = torch.rand((2, 4))
+
+            model_path = "classifier.pkl"
+            classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
+
+            with open(model_path, "wb") as f:
+                pickle.dump(classifier, f)
+
+            requirements_path = "requirements.txt"
+            with open(requirements_path, "w") as f:
+                f.write("torch==1.0.0")
+
+            runner = CliRunner()
+            result = runner.invoke(
+                cli,
+                ['registry', 'create', 'registeredmodelversion', model_name, version_name,
+                 "--model", model_path, "--custom-module", "models/", "--requirements", requirements_path],
+            )
+            assert not result.exception
+
+            os.remove(model_path)
+            os.remove(requirements_path)
+
+            # TODO: consolidate these in the command above
+            model_version = registered_model.get_version(name=version_name)
+
+            # Log model api:
+            model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
+            model_api["model_packaging"] = {
+                "deserialization": "cloudpickle",
+                "type": "torch",
+                "python_version": "2.7.17"
+            }
+            model_version.log_artifact("model_api.json", model_api, True, "json")
+
+            path = _utils.generate_default_name()
+            endpoint = client.set_endpoint(path)
+            created_endpoints.append(endpoint)
+            endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+
+            test_data = torch.rand((4, 4))
+            prediction = torch.tensor(endpoint.get_deployed_model().predict(test_data.tolist()))
+            assert torch.all(classifier(test_data).eq(prediction))
 
 
 class TestGet:
@@ -396,10 +454,9 @@ class TestUpdate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
-
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -413,7 +470,7 @@ class TestUpdate:
         model_version = registered_model.get_version(name=version_name)
         assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
-        assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS
+        assert model_version.get_model().get_params() == classifier.get_params()
 
         # Check environment:
         reqs = Python.read_pip_file(requirements_file.name)
@@ -463,9 +520,9 @@ class TestUpdate:
         version_name = "my version"
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         runner.invoke(
@@ -493,9 +550,9 @@ class TestUpdate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         runner.invoke(
@@ -513,9 +570,9 @@ class TestUpdate:
             f.write(FILE_CONTENTS_2)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS_2 = pickle.dumps(LogisticRegression(C=0.1))
+        classifier2 = LogisticRegression(C=0.1)
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS_2)
+            pickle.dump(classifier2, f)
 
         result = runner.invoke(
             cli,
@@ -527,8 +584,32 @@ class TestUpdate:
         model_version = registered_model.get_version(name=version_name)
         assert model_version.get_artifact("file").read() != FILE_CONTENTS
         assert model_version.get_artifact("file").read() == FILE_CONTENTS_2
-        assert pickle.dumps(model_version.get_model()) != CLASSIFIER_CONTENTS
-        assert pickle.dumps(model_version.get_model()) == CLASSIFIER_CONTENTS_2
+        assert model_version.get_model().get_params() != classifier
+        assert model_version.get_model().get_params() == classifier2.get_params()
+
+    def test_update_with_no_custom_modules(self, registered_model, in_tempdir):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+
+        model_name = registered_model.name
+        version_name = "my version"
+        registered_model.get_or_create_version(version_name)
+
+        classifier_name = "tiny2.pth"
+        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
+        with open(classifier_name, 'wb') as f:
+            f.write(CLASSIFIER_CONTENTS)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--model", classifier_name, "--no-custom-modules"],
+        )
+        assert not result.exception
+
+        custom_module_filenames = {"__init__.py", "_verta_config.py"}
+        model_version = registered_model.get_version(name=version_name)
+        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
 
 class TestDownload:
