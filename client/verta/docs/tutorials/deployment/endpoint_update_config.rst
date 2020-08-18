@@ -1,31 +1,39 @@
-Updating Endpoint with Config File
+Updating Endpoint With Config File
 ==================================
 
 .. TODO: link to Endpoint.update tutorial
 
-Sometimes, it is more convenient to specify update configuration in a separate, human-readable file, than to cram everything in the Python script or the CLI command.
+Sometimes, it is more convenient to specify update configuration in a separate, human-readable file, than to have everything in a Python script or a split CLI command.
 
 For example:
 
 .. code-block:: json
 
         {
-            "run_id": <experiment run id>,
+            "run_id": "<experiment run id>",
             "strategy": "canary",
             "canary_strategy": {
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {"rule": "latency_avg_max",
-                     "rule_parameters": [
-                         {"name": "threshold",
-                          "value": "0.1"}
-                    ]},
-                    {"rule": "error_4xx_rate",
-                     "rule_parameters": [
-                        {"name": "threshold",
-                         "value": "1"}
-                    ]}
+                    {
+                        "rule": "latency_avg_max",
+                        "rule_parameters": [
+                            {
+                                "name": "threshold",
+                                "value": "0.1"
+                            }
+                        ]
+                    },
+                    {
+                        "rule": "error_4xx_rate",
+                        "rule_parameters": [
+                            {
+                                "name": "threshold",
+                                "value": "1"
+                            }
+                        ]
+                    }
                 ]
             }
         }
@@ -37,7 +45,7 @@ Verta's Client and CLI support updating Endpoint with JSON or YAML config file. 
 Updating via Client
 -------------------
 
-With the client, instead of using ``endpoint.update()``, we will use the ``endpoint.update_from_config()`` method, which takes only the path to the config file:
+With the client, instead of using :meth:`verta._deployment.endpoint.Endpoint.update()`, we will use the :meth:`verta._deployment.endpoint.Endpoint.update_from_config()` method, which takes only the path to the config file:
 
 .. code-block:: python
 
@@ -47,7 +55,7 @@ With the client, instead of using ``endpoint.update()``, we will use the ``endpo
 Updating via the CLI
 --------------------
 
-Updating the Endpoint with a config file via the CLI can be done using the `filename` option, or `f` for short:
+Updating the Endpoint with a config file via the CLI can be done using the ``filename`` option, or ``f`` for short:
 
 .. code-block:: sh
 
