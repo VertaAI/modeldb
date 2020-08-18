@@ -34,7 +34,7 @@ A model version can be created from an existing experiment run as follows:
 Using the CLI
 -------------
 
-We can also create a new Model Version from an existing Experiment Run with the ``from-run`` option:
+With Verta's CLI, we can create a new model version from an existing experiment run with the ``from-run`` option:
 
 .. code-block:: sh
 
