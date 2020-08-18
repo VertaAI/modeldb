@@ -301,7 +301,8 @@ public class S3Service implements ArtifactStoreService {
                 .withKey(artifactPath)
                 .withUploadId(uploadId)
                 .withPartNumber(partNumber.intValue())
-                .withInputStream(request.getInputStream());
+                .withInputStream(request.getInputStream())
+                .withPartSize(request.getContentLength());
         UploadPartResult uploadPartResult = s3Client.uploadPart(uploadRequest);
         return uploadPartResult.getPartETag().getETag();
       } else {
