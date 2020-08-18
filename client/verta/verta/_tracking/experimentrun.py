@@ -19,7 +19,7 @@ import zipfile
 
 import requests
 
-from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
+from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE, _MODEL_ARTIFACTS_ATTR_KEY
 from .deployable_entity import _DeployableEntity
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -43,8 +43,6 @@ from .._repository import commit as commit_module
 from .. import deployment
 from .. import utils
 
-
-_MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
 
 _CACHE_DIR = os.path.join(
     os.path.expanduser("~"),
