@@ -39,14 +39,6 @@ class TestSharing:
         project = client.create_project(project_name, workspace=organization.name, public_within_org=False)
 
         organization.add_member(email_2)
-
-        # Shouldn't be able to access:
-        with pytest.raises(ValueError) as excinfo:
-            client_2.get_project(id=project.id)
-
-        excinfo_value = str(excinfo.value).strip()
-        assert "not found" in excinfo_value
-
         project._add_collaborator(email=email_2)
 
         assert client_2.get_project(id=project.id)
