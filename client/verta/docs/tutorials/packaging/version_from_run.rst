@@ -22,7 +22,7 @@ The new versions should automatically inherit requirements, artifacts, model, et
 Using the Client
 ----------------
 
-A model version can be created from an existing experiment run as follows:
+To create a new model version from an existing experiment run, we can use :meth:`RegisteredModel.create_version_from_run() <verta._registry.model.RegisteredModel.create_version_from_run>` method:
 
 .. code-block:: python
 
