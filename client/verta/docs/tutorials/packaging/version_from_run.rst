@@ -1,13 +1,28 @@
-Creating Model Version From Experiment Run
-==========================================
-During the experiment process, data scientists can use Verta to log the model and deployment-specific information (requirements, custom modules, model API, etc.):
+Creating Model Versions From Experiment Runs
+============================================
+
+An alternative to creating model versions `from artifacts <version_from_artifacts>`_ is to convert an existing experiment run into a new version for the registered model.
+
+This tutorial will explore how this can be done, using the Client and the CLI.
+
+Context
+-------
+
+During the experimentation process, data scientists can use Verta to log the model and deployment-specific information (requirements, custom modules, model API, etc.):
 
 .. code-block:: python
 
     experiment_run.log_model(model=model, custom_modules=custom_modules, model_api=model_api)
     experiment_run.log_requirements(["torch==1.0.0"])
 
-Now suppose we want to use the model (and requirements) in one such experiment run to create a new version for a registered model. This could be done using the Client as follows:
+The models that are good enough for production will then be moved to the Model Registry, as versions of a registered model.
+
+The new versions should automatically inherit requirements, artifacts, model, etc. from the experiment runs they were created from.
+
+Using the Client
+----------------
+
+A model version can be created from an existing experiment run as follows:
 
 .. code-block:: python
 
@@ -16,10 +31,11 @@ Now suppose we want to use the model (and requirements) in one such experiment r
         name="from-experiment-run"
     )
 
-Or using the CLI:
+Using the CLI
+-------------
+
+We can also create a new Model Version from an existing Experiment Run with the ``from-run`` option:
 
 .. code-block:: sh
 
-    verta registry create registeredmodelversion "my model" "from-experiment-run" --from-run experiment-run-id
-
-The new Model Version will automatically inherit requirements, artifacts, model, etc. from the Experiment Run.
+    verta registry create registeredmodelversion <model name> <version name> --from-run <experiment run id>
