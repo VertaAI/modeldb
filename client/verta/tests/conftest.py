@@ -353,14 +353,17 @@ def commit(repository):
 
 
 @pytest.fixture
-def created_datasets(client):
+def created_datasets(client, client_2):
     """Container to track and clean up Datasets created during tests."""
     created_datasets = []
 
     yield created_datasets
 
     if created_datasets:
-        utils.delete_datasets(list(set(dataset.id for dataset in created_datasets)), client._conn)
+        try:
+            utils.delete_datasets(list(set(dataset.id for dataset in created_datasets)), client._conn)
+        except requests.HTTPError:
+            utils.delete_datasets(list(set(dataset.id for dataset in created_datasets)), client_2._conn)
 
 
 @pytest.fixture

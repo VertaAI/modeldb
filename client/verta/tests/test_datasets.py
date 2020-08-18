@@ -5,6 +5,7 @@ import six
 import os
 import time
 import shutil
+import requests
 
 from . import utils
 
@@ -513,6 +514,30 @@ class TestLogDatasetVersion:
         retrieved_dataset_version = experiment_run.get_dataset_version('train')
         path = retrieved_dataset_version.dataset_version.path_dataset_version_info.base_path
         assert path.endswith(__file__)
+
+    def test_log_dataset_version_diff_workspaces(self, client, organization, created_datasets, experiment_run):
+        dataset = client.set_dataset(type="local", workspace=organization.name)
+        created_datasets.append(dataset)
+
+        dataset_version = dataset.create_version(__file__)
+        experiment_run.log_dataset_version('train', dataset_version)
+
+        retrieved_dataset_version = experiment_run.get_dataset_version('train')
+        assert retrieved_dataset_version.id == dataset_version.id
+
+    def test_log_dataset_version_diff_workspaces_no_access_error(self, client_2, created_datasets, experiment_run):
+        dataset = client_2.set_dataset(type="local")
+        created_datasets.append(dataset)
+
+        dataset_version = dataset.create_version(__file__)
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            experiment_run.log_dataset_version('train', dataset_version)
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "403" in excinfo_value
+        assert "Access Denied" in excinfo_value
+
 
     def test_overwrite(self, client, created_datasets, experiment_run, s3_bucket):
         dataset = client.set_dataset(type="local")
