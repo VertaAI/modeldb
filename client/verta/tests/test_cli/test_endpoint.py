@@ -436,12 +436,7 @@ class TestDownload:
 
         assert "Dockerfile" in filepaths
 
-        np = pytest.importorskip("numpy")
-        from sklearn.linear_model import LogisticRegression
-
-        classifier = LogisticRegression()
-        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_model(classifier)
+        model_version.log_model(model_for_deployment['model'], custom_modules=[])
 
         env = Python(requirements=["scikit-learn"])
         model_version.log_environment(env)
