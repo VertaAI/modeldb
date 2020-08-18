@@ -40,14 +40,7 @@ class TestMDBIntegration:
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
         assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
 
-    def test_from_run_diff_workspaces(self, client, experiment_run, organization, in_tempdir, created_registered_models):
-        client_config = {
-            "workspace": organization.name
-        }
-        filepath = "verta_config.json"
-        with open(filepath, "w") as f:
-            json.dump(client_config, f)
-
+    def test_from_run_diff_workspaces(self, client, experiment_run, organization, created_registered_models):
         registered_model = client.create_registered_model(workspace=organization.name)
         created_registered_models.append(registered_model)
 

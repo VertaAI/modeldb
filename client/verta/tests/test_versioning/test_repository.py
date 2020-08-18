@@ -1,9 +1,11 @@
 import pytest
+import requests
 
 from .. import utils
 
 import verta.dataset
 import verta.environment
+from verta._internal_utils import _utils
 
 
 class TestRepository:
@@ -207,6 +209,36 @@ class TestCommit:
         retrieved_commit, retrieved_key_paths = experiment_run.get_commit()
         assert retrieved_commit.id == commit.id
         assert retrieved_key_paths == key_paths
+
+    def test_log_to_run_diff_workspaces(self, client, experiment_run, organization):
+        repository_name = _utils.generate_default_name()
+        repository = client.get_or_create_repository(repository_name, workspace=organization.name)
+
+        # TODO: Uncomment this check when repository.workspace is implemented
+        # assert repository.workspace != experiment_run.workspace
+
+        commit = repository.get_commit()
+        experiment_run.log_commit(commit)
+
+        retrieved_commit, retrieved_key_paths = experiment_run.get_commit()
+        assert retrieved_commit.id == commit.id
+
+        utils.delete_repository(repository.id, client._conn)
+
+    def test_log_to_run_diff_workspaces_no_access_error(self, client_2, experiment_run):
+        repository_name = _utils.generate_default_name()
+        repository = client_2.get_or_create_repository(repository_name)
+        commit = repository.get_commit()
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            experiment_run.log_commit(commit)
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "403" in excinfo_value
+        assert "Access Denied" in excinfo_value
+
+        utils.delete_repository(repository.id, client_2._conn)
+
 
 class TestBranch:
     def test_set(self, repository):
