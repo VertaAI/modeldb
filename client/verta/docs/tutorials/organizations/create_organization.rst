@@ -1,4 +1,4 @@
-Creating an Organization
+Creating an organization
 ========================
 
 Sometimes it's easier to manage projects and people by grouping them. An organization allows you to
