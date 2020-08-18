@@ -51,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
@@ -341,13 +342,13 @@ public class S3Service implements ArtifactStoreService {
       if (s3Client.doesObjectExist(bucketName, artifactPath)) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");
-        return new UrlResource(getS3PresignedUrl(artifactPath, "get", 0, null));
+        return new InputStreamResource(s3Client.getObject(bucketName, artifactPath).getObjectContent());
       } else {
         String errorMessage = "File not found " + artifactPath;
         LOGGER.warn(errorMessage);
         throw new ModelDBException(errorMessage);
       }
-    } catch (ModelDBException | MalformedURLException ex) {
+    } catch (ModelDBException ex) {
       String errorMessage = "File not found " + artifactPath;
       LOGGER.warn(errorMessage, ex);
       throw new ModelDBException(errorMessage, ex);

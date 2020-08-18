@@ -72,13 +72,13 @@ public class S3Controller {
 
       // Fallback to the default content type if type could not be determined
       if (contentType == null) {
-        contentType = "application/octet-stream";
+        contentType = "binary/octet-stream";
       }
       LOGGER.trace("getArtifact - file content type : {}", contentType);
 
       LOGGER.debug("getArtifact returned");
       return ResponseEntity.ok()
-          .contentType(MediaType.parseMediaType(contentType))
+          /*.contentType(MediaType.parseMediaType(contentType))*/
           .header(
               HttpHeaders.CONTENT_DISPOSITION,
               "attachment; filename=\"" + resource.getFilename() + "\"")
