@@ -279,7 +279,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         self._update(self._msg, method="PUT")
 
 
-    def log_artifact(self, key, artifact, overwrite=False, extension=None):
+    def log_artifact(self, key, artifact, overwrite=False, _extension=None):
         """
         Logs an artifact to this Model Version.
 
@@ -295,8 +295,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                 - Otherwise, the object will be serialized and uploaded as an artifact.
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
-        extension : str, optional
-            Filename extension associated with the artifact.
 
         """
         if key == "model":
@@ -319,13 +317,13 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             artifact = open(artifact, 'rb')
         artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
-        if not extension:
+        if not _extension:
             try:
-                extension = _artifact_utils.get_file_ext(artifact_stream)
+                _extension = _artifact_utils.get_file_ext(artifact_stream)
             except (TypeError, ValueError):
-                extension = _artifact_utils.ext_from_method(method)
+                _extension = _artifact_utils.ext_from_method(method)
 
-        artifact_msg = self._create_artifact_msg(key, artifact_stream, artifact_type=artifact_type, extension=extension)
+        artifact_msg = self._create_artifact_msg(key, artifact_stream, artifact_type=artifact_type, extension=_extension)
         if same_key_ind == -1:
             self._msg.artifacts.append(artifact_msg)
         else:
