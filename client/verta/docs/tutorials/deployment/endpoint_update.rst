@@ -25,8 +25,7 @@ its Python environment logged.
 
 The second argument is a strategy to use for the update. Here, you would be using a simple
 :class:`~verta.deployment.update._strategies.DirectUpdateStrategy` that will fully transition the
-endpoint to use your new model. There are also more advanced ways of updating an endpoint, which
-you can read more about at the bottom of this tutorial.
+endpoint to use your new model.
 
 You can also update an Endpoint with an :class:`~verta._tracking.ExperimentRun`:
 
@@ -41,7 +40,7 @@ The same action can be done through the CLI. Again, using a model version and a 
 
 .. code-block:: sh
 
-    verta deployment update endpoint /some-path --run-id <id> --strategy direct
+    verta deployment update endpoint /some-path --run-id "<id>" --strategy direct
 
 Or using an experiment run:
 
