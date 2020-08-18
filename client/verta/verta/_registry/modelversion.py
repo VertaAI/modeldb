@@ -433,9 +433,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         self._fetch_with_no_cache()
         self._msg.environment.CopyFrom(env._msg)
-        self._update(self._msg, method="PUT")
-        # probably error on backend
-        #self._update(self.ModelVersionMessage(environment=env._msg))
+        self._update(self.ModelVersionMessage(environment=env._msg), method="PATCH",
+                     update_mask={"paths": ["environment.python.version.major", "environment.python.version.minor",
+                                            "environment.python.version.patch", "environment.python.requirements"]})
 
     def del_environment(self):
         """
@@ -813,12 +813,21 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             self._update(self._msg, method="PUT")
 
 
-    def _update(self, msg, method="PATCH"):
-        self._refresh_cache()  # to have `self._msg.registered_model_id` for URL
-        response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
-                                                 .format(self._msg.registered_model_id, self.id),
-                                                 body=msg, include_default=False)
+    def _update(self, msg, method="PATCH", update_mask=None):
         Message = _ModelVersionService.SetModelVersion
+        self._refresh_cache()  # to have `self._msg.registered_model_id` for URL
+        if update_mask:
+            url = "{}://{}/v1/registry/registered_models/{}/model_versions/{}/full_body".format(
+                self._conn.scheme,
+                self._conn.socket, self._msg.registered_model_id, self.id
+            )
+            # proto converter for update_mask is missing
+            data = {"model_version": _utils.proto_to_json(msg, False), "update_mask": update_mask}
+            response = _utils.make_request(method, url, self._conn, json=data)
+        else:
+            response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
+                                                     .format(self._msg.registered_model_id, self.id),
+                                                     body=msg, include_default=False)
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
         self._clear_cache()
