@@ -59,7 +59,7 @@ This allows for easier inspection and modification later on. Users can find out 
 Updating via Client
 -------------------
 
-With the client, instead of using :meth:`verta._deployment.endpoint.Endpoint.update()`, we will use the :meth:`verta._deployment.endpoint.Endpoint.update_from_config()` method, which takes only the path to the configuration file:
+With the client, instead of using :meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>`, we will use the :meth:`Endpoint.update_from_config() <verta._deployment.endpoint.Endpoint.update_from_config>` method, which takes only the path to the configuration file:
 
 .. code-block:: python
 
