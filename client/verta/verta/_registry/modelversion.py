@@ -69,6 +69,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
             "labels: {}".format(msg.labels),
+            "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
             "id: {}".format(msg.id),
             "registered model id: {}".format(msg.registered_model_id),
             "experiment run id: {}".format(msg.experiment_run_id),
@@ -173,7 +174,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         registered_model_id = ctx.registered_model.id
 
         model_version_msg = ModelVersionMessage(registered_model_id=registered_model_id, version=name,
-                                                description=desc, labels=tags,
+                                                description=desc, labels=tags, attributes=attrs,
                                                 time_created=date_created, time_updated=date_created,
                                                 experiment_run_id=experiment_run_id)
         endpoint = "/api/v1/registry/registered_models/{}/model_versions".format(registered_model_id)
