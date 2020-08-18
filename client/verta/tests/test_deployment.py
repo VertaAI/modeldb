@@ -529,18 +529,26 @@ class TestLogTrainingData:
     def test_series(self, experiment_run, model_for_deployment):
         X_train = model_for_deployment['train_features']
         y_train = model_for_deployment['train_targets']
+        col_names = set(X_train.columns) | set([y_train.name])
 
-        # no errors
         experiment_run.log_training_data(X_train, y_train)
+        histogram = experiment_run._get_histogram()
+        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
+
+        assert set(retrieved_col_names) == col_names
 
     def test_dataframe(self, experiment_run, model_for_deployment):
         X_train = model_for_deployment['train_features']
         y_train = model_for_deployment['train_targets']
+        col_names = set(X_train.columns) | set([y_train.name])
 
         y_train = y_train.to_frame()
 
-        # no errors
         experiment_run.log_training_data(X_train, y_train)
+        histogram = experiment_run._get_histogram()
+        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
+
+        assert set(retrieved_col_names) == col_names
 
 
 class TestHistogram:

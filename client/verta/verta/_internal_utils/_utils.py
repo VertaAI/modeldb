@@ -34,7 +34,7 @@ from . import importer
 
 _GRPC_PREFIX = "Grpc-Metadata-"
 
-_VALID_HTTP_METHODS = {'GET', 'POST', 'PUT', 'DELETE'}
+_VALID_HTTP_METHODS = {'GET', 'POST', 'PUT', 'DELETE', 'PATCH'}
 _VALID_FLAT_KEY_CHARS = set(string.ascii_letters + string.digits + '_-/')
 
 THREAD_LOCALS = threading.local()
@@ -76,11 +76,11 @@ class Connection:
                            raise_on_status=False)  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
 
-    def make_proto_request(self, method, path, params=None, body=None):
+    def make_proto_request(self, method, path, params=None, body=None, include_default=True):
         if params is not None:
             params = proto_to_json(params)
         if body is not None:
-            body = proto_to_json(body)
+            body = proto_to_json(body, include_default)
         response = make_request(method,
                                 "{}://{}{}".format(self.scheme, self.socket, path),
                                 self, params=params, json=body)
@@ -599,7 +599,7 @@ def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=Fa
     return filepaths
 
 
-def proto_to_json(msg):
+def proto_to_json(msg, include_default=True):
     """
     Converts a `protobuf` `Message` object into a JSON-compliant dictionary.
 
@@ -617,7 +617,7 @@ def proto_to_json(msg):
 
     """
     return json.loads(json_format.MessageToJson(msg,
-                                                including_default_value_fields=True,
+                                                including_default_value_fields=include_default,
                                                 preserving_proto_field_name=True,
                                                 use_integers_for_enums=True))
 
