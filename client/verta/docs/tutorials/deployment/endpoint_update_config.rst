@@ -1,5 +1,5 @@
-Updating Endpoint With Config File
-==================================
+Updating Endpoint With A Configuration File
+===========================================
 
 .. TODO: link to Endpoint.update tutorial
 
