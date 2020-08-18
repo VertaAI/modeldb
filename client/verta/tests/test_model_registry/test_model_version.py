@@ -431,15 +431,21 @@ class TestModelVersion:
         model_version = registered_model.get_or_create_version(name="my version")
 
         model_version.add_attribute("float-attr", 0.4)
+        model_version.add_attribute("float-attr", 0.8)
         assert model_version.get_attribute("float-attr") == 0.4
 
+        model_version.add_attribute("float-attr", 0.8, overwrite=True)
+        assert model_version.get_attribute("float-attr") == 0.8
         # Test overwriting
         model_version.add_attribute("int-attr", 15)
         assert model_version.get_attribute("int-attr") == 15
 
+        model_version.add_attributes({"int-attr": 16, "float-attr": 123.}, overwrite=True)
+        assert model_version.get_attributes() == {"int-attr": 16, "float-attr": 123.}
         # Test deleting:
         model_version.del_attribute('int-attr')
-        assert model_version.get_attributes() == {"float-attr": 0.4}
+        assert model_version.get_attributes() == {"float-attr": 123.}
+
 
         # Deleting non-existing key:
         model_version.del_attribute("non-existing")
