@@ -3,8 +3,10 @@ package ai.verta.modeldb.utils;
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.OperatorEnum.Operator;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Comment;
 import ai.verta.modeldb.Dataset;
@@ -59,6 +61,7 @@ import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
+import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
@@ -2056,17 +2059,23 @@ public class RdbmsUtils {
       List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings)
       throws InvalidProtocolBufferException {
     VersioningEntry.Builder versioningEntry = VersioningEntry.newBuilder();
+    App app = App.getInstance();
     for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
         versioningModeldbEntityMappings) {
-      versioningEntry.setRepositoryId(versioningModeldbEntityMapping.getRepository_id());
-      versioningEntry.setCommit(versioningModeldbEntityMapping.getCommit());
-      if (versioningModeldbEntityMapping.getVersioning_location() != null
-          && !versioningModeldbEntityMapping.getVersioning_location().isEmpty()) {
-        Location.Builder locationBuilder = Location.newBuilder();
-        ModelDBUtils.getProtoObjectFromString(
-            versioningModeldbEntityMapping.getVersioning_location(), locationBuilder);
-        versioningEntry.putKeyLocationMap(
-            versioningModeldbEntityMapping.getVersioning_key(), locationBuilder.build());
+      if (app.checkConnectionsBasedOnPrivileges(
+          ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
+          ModelDBActionEnum.ModelDBServiceActions.READ,
+          String.valueOf(versioningModeldbEntityMapping.getRepository_id()))) {
+        versioningEntry.setRepositoryId(versioningModeldbEntityMapping.getRepository_id());
+        versioningEntry.setCommit(versioningModeldbEntityMapping.getCommit());
+        if (versioningModeldbEntityMapping.getVersioning_location() != null
+            && !versioningModeldbEntityMapping.getVersioning_location().isEmpty()) {
+          Location.Builder locationBuilder = Location.newBuilder();
+          ModelDBUtils.getProtoObjectFromString(
+              versioningModeldbEntityMapping.getVersioning_location(), locationBuilder);
+          versioningEntry.putKeyLocationMap(
+              versioningModeldbEntityMapping.getVersioning_key(), locationBuilder.build());
+        }
       }
     }
     return versioningEntry.build();

@@ -1,5 +1,6 @@
 package ai.verta.modeldb;
 
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
@@ -51,6 +52,7 @@ import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
+import ai.verta.uac.ModelDBActionEnum;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -148,6 +150,8 @@ public class App implements ApplicationContextAware {
 
   private Boolean traceEnabled = false;
   private static TracingServerInterceptor tracingInterceptor;
+  private boolean populateConnectionsBasedOnPrivileges = false;
+  private RoleService roleService;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -238,7 +242,7 @@ public class App implements ApplicationContextAware {
         TracingDriver.setInterceptorProperty(true);
       }
       AuthService authService = new PublicAuthServiceUtils();
-      RoleService roleService = new PublicRoleServiceUtils(authService);
+      app.roleService = new PublicRoleServiceUtils(authService);
 
       Map<String, Object> authServicePropMap =
           (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
@@ -249,7 +253,7 @@ public class App implements ApplicationContextAware {
         app.setAuthServerPort(authServicePort);
 
         authService = new AuthServiceUtils();
-        roleService = new RoleServiceUtils(authService);
+        app.roleService = new RoleServiceUtils(authService);
       }
 
       Map<String, Object> databasePropMap =
@@ -261,7 +265,7 @@ public class App implements ApplicationContextAware {
 
       // ----------------- Start Initialize database & modelDB services with DAO ---------
       initializeServicesBaseOnDataBase(
-          serverBuilder, databasePropMap, propertiesMap, authService, roleService);
+          serverBuilder, databasePropMap, propertiesMap, authService, app.roleService);
       // ----------------- Finish Initialize database & modelDB services with DAO --------
 
       serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -332,6 +336,11 @@ public class App implements ApplicationContextAware {
         LOGGER.trace("service user devKey found");
       }
     }
+
+    app.populateConnectionsBasedOnPrivileges =
+        (boolean)
+            propertiesMap.getOrDefault(
+                ModelDBConstants.POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES, false);
 
     Map<String, Object> featureFlagMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
@@ -765,5 +774,29 @@ public class App implements ApplicationContextAware {
 
   public Integer getRequestTimeout() {
     return requestTimeout;
+  }
+
+  public void setRoleService(RoleService roleService) {
+    this.roleService = roleService;
+  }
+
+  public RoleService getRoleService() {
+    return roleService;
+  }
+
+  public boolean checkConnectionsBasedOnPrivileges(
+      ModelDBResourceEnum.ModelDBServiceResourceTypes serviceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions serviceActions,
+      String resourceId) {
+    if (populateConnectionsBasedOnPrivileges) {
+      try {
+        roleService.isSelfAllowed(serviceResourceTypes, serviceActions, resourceId);
+        return true;
+      } catch (Exception ex) {
+        LOGGER.debug(ex.getMessage());
+        return false;
+      }
+    }
+    return true;
   }
 }

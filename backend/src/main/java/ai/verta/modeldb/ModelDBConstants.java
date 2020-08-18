@@ -38,6 +38,7 @@ public interface ModelDBConstants {
   String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
+  String POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES = "populateConnectionsBasedOnPrivileges";
 
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
