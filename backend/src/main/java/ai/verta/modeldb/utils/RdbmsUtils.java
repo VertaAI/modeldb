@@ -2059,10 +2059,9 @@ public class RdbmsUtils {
       List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings)
       throws InvalidProtocolBufferException {
     VersioningEntry.Builder versioningEntry = VersioningEntry.newBuilder();
-    App app = App.getInstance();
     for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
         versioningModeldbEntityMappings) {
-      if (app.checkConnectionsBasedOnPrivileges(
+      if (checkConnectionsBasedOnPrivileges(
           ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
           ModelDBActionEnum.ModelDBServiceActions.READ,
           String.valueOf(versioningModeldbEntityMapping.getRepository_id()))) {
@@ -2079,6 +2078,23 @@ public class RdbmsUtils {
       }
     }
     return versioningEntry.build();
+  }
+
+  public static boolean checkConnectionsBasedOnPrivileges(
+      ModelDBResourceEnum.ModelDBServiceResourceTypes serviceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions serviceActions,
+      String resourceId) {
+    App app = App.getInstance();
+    if (app.isPopulateConnectionsBasedOnPrivileges()) {
+      try {
+        app.getRoleService().isSelfAllowed(serviceResourceTypes, serviceActions, resourceId);
+        return true;
+      } catch (Exception ex) {
+        LOGGER.debug(ex.getMessage());
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

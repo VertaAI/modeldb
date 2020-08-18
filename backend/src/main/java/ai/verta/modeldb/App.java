@@ -1,6 +1,5 @@
 package ai.verta.modeldb;
 
-import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
@@ -52,7 +51,6 @@ import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
-import ai.verta.uac.ModelDBActionEnum;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -784,19 +782,7 @@ public class App implements ApplicationContextAware {
     return roleService;
   }
 
-  public boolean checkConnectionsBasedOnPrivileges(
-      ModelDBResourceEnum.ModelDBServiceResourceTypes serviceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions serviceActions,
-      String resourceId) {
-    if (populateConnectionsBasedOnPrivileges) {
-      try {
-        roleService.isSelfAllowed(serviceResourceTypes, serviceActions, resourceId);
-        return true;
-      } catch (Exception ex) {
-        LOGGER.debug(ex.getMessage());
-        return false;
-      }
-    }
-    return true;
+  public boolean isPopulateConnectionsBasedOnPrivileges() {
+    return populateConnectionsBasedOnPrivileges;
   }
 }

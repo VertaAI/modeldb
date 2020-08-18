@@ -8,6 +8,7 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
 import ai.verta.modeldb.CommitArtifactPart.Response;
@@ -116,6 +117,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private static final Logger LOGGER =
       LogManager.getLogger(ExperimentRunDAORdbImpl.class.getName());
   private static final boolean OVERWRITE_VERSION_MAP = false;
+  private App app = App.getInstance();
   private final AuthService authService;
   private final RoleService roleService;
   private final RepositoryDAO repositoryDAO;
@@ -567,7 +569,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
       LOGGER.debug("Got ExperimentRun successfully");
-      return experimentRunEntity.getProtoObject();
+      ExperimentRun experimentRun = experimentRunEntity.getProtoObject();
+      if (experimentRun.getDatasetsCount() > 0) {
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+      }
+      return experimentRun;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getExperimentRun(experimentRunId);
@@ -575,6 +581,27 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw ex;
       }
     }
+  }
+
+  private ExperimentRun checkDatasetVersionBasedOnPrivileges(ExperimentRun experimentRun) {
+    ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
+    if (app.isPopulateConnectionsBasedOnPrivileges()) {
+      List<Artifact> accessibleDatasets = new ArrayList<>();
+      for (Artifact dataset : experimentRun.getDatasetsList()) {
+        if (!dataset.getLinkedArtifactId().isEmpty()) {
+          if (RdbmsUtils.checkConnectionsBasedOnPrivileges(
+              ModelDBServiceResourceTypes.DATASET_VERSION,
+              ModelDBActionEnum.ModelDBServiceActions.READ,
+              dataset.getLinkedArtifactId())) {
+            accessibleDatasets.add(dataset);
+          }
+        } else {
+          accessibleDatasets.add(dataset);
+        }
+      }
+      experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasets);
+    }
+    return experimentRunBuilder.build();
   }
 
   @Override
@@ -620,7 +647,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.update(experimentRunEntity);
       transaction.commit();
       LOGGER.debug("ExperimentRun description updated successfully");
-      return experimentRunEntity.getProtoObject();
+      ExperimentRun experimentRun = experimentRunEntity.getProtoObject();
+      if (experimentRun.getDatasetsCount() > 0) {
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+      }
+      return experimentRun;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateExperimentRunDescription(experimentRunId, experimentRunDescription);
@@ -717,7 +748,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         transaction.commit();
       }
       LOGGER.debug("ExperimentRun tags added successfully");
-      return experimentRunObj.getProtoObject();
+      ExperimentRun experimentRun = experimentRunObj.getProtoObject();
+      if (experimentRun.getDatasetsCount() > 0) {
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+      }
+      return experimentRun;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addExperimentRunTags(experimentRunId, tagsList);
@@ -750,7 +785,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.update(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun tags deleted successfully");
-      return experimentRunObj.getProtoObject();
+      ExperimentRun experimentRun = experimentRunObj.getProtoObject();
+      if (experimentRun.getDatasetsCount() > 0) {
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+      }
+      return experimentRun;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteExperimentRunTags(experimentRunId, experimentRunTagList, deleteAll);
@@ -926,7 +965,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
       LOGGER.debug("Got ExperimentRun Datasets");
-      return experimentRunObj.getProtoObject().getDatasetsList();
+      ExperimentRun experimentRun = experimentRunObj.getProtoObject();
+      if (experimentRun.getDatasetsCount() > 0) {
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+      }
+      return experimentRun.getDatasetsList();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getExperimentRunDatasets(experimentRunId);
@@ -1559,6 +1602,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               experimentRun = ExperimentRun.newBuilder().setId(experimentRun.getId()).build();
               experimentRuns.add(experimentRun);
             } else {
+              if (experimentRun.getDatasetsCount() > 0) {
+                experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+              }
               experimentRuns.add(experimentRun);
             }
           }
@@ -1912,7 +1958,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.saveOrUpdate(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun copied successfully");
-      return experimentRunObj.getProtoObject();
+      ExperimentRun experimentRun = experimentRunObj.getProtoObject();
+      if (experimentRun.getDatasetsCount() > 0) {
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+      }
+      return experimentRun;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deepCopyExperimentRunForUser(srcExperimentRun, newExperiment, newProject, newOwner);
