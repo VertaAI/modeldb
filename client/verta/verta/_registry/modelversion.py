@@ -73,7 +73,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             "id: {}".format(msg.id),
             "registered model id: {}".format(msg.registered_model_id),
             "experiment run id: {}".format(msg.experiment_run_id),
-            "archived status: {}".format(msg.archived == _CommonCommonService.TernaryEnum.TRUE),
+            # "archived status: {}".format(msg.archived == _CommonCommonService.TernaryEnum.TRUE),
             "artifact keys: {}".format(artifact_keys),
         ))
 
