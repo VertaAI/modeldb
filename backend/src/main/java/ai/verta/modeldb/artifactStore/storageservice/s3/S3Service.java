@@ -39,6 +39,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -337,22 +338,16 @@ public class S3Service implements ArtifactStoreService {
   public Resource loadFileAsResource(String artifactPath) throws ModelDBException {
     LOGGER.trace("S3Service - loadFileAsResource called");
     try {
-      Boolean exist = doesBucketExist(bucketName);
-      if (!exist) {
-        throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
-      }
-
-      Resource resource = new UrlResource(s3Client.getUrl(bucketName, artifactPath));
-      if (resource.exists()) {
+      if (s3Client.doesObjectExist(bucketName, artifactPath)) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");
-        return resource;
+        return new UrlResource(getS3PresignedUrl(artifactPath, "get", 0, null));
       } else {
         String errorMessage = "File not found " + artifactPath;
         LOGGER.warn(errorMessage);
         throw new ModelDBException(errorMessage);
       }
-    } catch (ModelDBException ex) {
+    } catch (ModelDBException | MalformedURLException ex) {
       String errorMessage = "File not found " + artifactPath;
       LOGGER.warn(errorMessage, ex);
       throw new ModelDBException(errorMessage, ex);
