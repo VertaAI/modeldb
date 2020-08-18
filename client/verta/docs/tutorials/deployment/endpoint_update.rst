@@ -46,7 +46,7 @@ Or using an experiment run:
 
 .. code-block:: sh
 
-    verta deployment update endpoint /some-path --model-version-id <id> --strategy direct
+    verta deployment update endpoint /some-path --model-version-id "<id>" --strategy direct
 
 Advanced Endpoint Updates
 -------------------------
