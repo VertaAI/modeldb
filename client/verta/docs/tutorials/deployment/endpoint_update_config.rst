@@ -47,8 +47,6 @@ For example:
 
 This allows for easier inspection and modification later on. Users can find out more about the fields of the configuration file here.
 
-In the next sections, we will go through how to update the Endpoint with this configuration file, using the Client and the CLI.
-
 Updating via Client
 -------------------
 
