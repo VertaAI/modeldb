@@ -9,7 +9,6 @@ import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +48,7 @@ public class S3Controller {
       HttpHeaders responseHeaders = new HttpHeaders();
       response.addHeader("ETag", String.valueOf(eTag));
       LOGGER.debug("S3 storeArtifact returned");
-      return ResponseEntity.ok()
-          .body(new UploadFileResponse(artifactPath, null, null, -1, eTag));
+      return ResponseEntity.ok().body(new UploadFileResponse(artifactPath, null, null, -1, eTag));
     } catch (IOException | ModelDBException e) {
       LOGGER.warn(e.getMessage(), e);
       ErrorCountResource.inc(e);

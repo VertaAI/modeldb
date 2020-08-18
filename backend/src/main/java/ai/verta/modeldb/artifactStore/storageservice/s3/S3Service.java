@@ -305,6 +305,7 @@ public class S3Service implements ArtifactStoreService {
       } else {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(request.getContentType());
+        metadata.setContentLength(request.getContentLength());
 
         int maxUploadThreads = 5;
         TransferManager transferManager =
