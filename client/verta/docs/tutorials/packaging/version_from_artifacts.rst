@@ -15,7 +15,7 @@ Suppose we have just trained the following LogisticRegression classifier from sc
     classifier = LogisticRegression()
     classifier.fit(X_train, y_train)
 
-We can create a new version for ``registered_model``, and upload the classifier, along with the requirements (scikit-learn), as follows:
+We can create a new version for the registered model, and upload the classifier, along with the requirements (scikit-learn), as follows:
 
 .. code-block:: python
 
