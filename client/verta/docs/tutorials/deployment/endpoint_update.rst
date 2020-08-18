@@ -1,16 +1,17 @@
-Updating Endpoints
-==================
+Model Deployment
+================
 
 After an Endpoint has been `created <endpoint_creation.html>`__, it needs to be updated with a
 machine learning model that can serve predictions.
 
-This tutorial demonstrates how to take a model you've logged with Verta and use it to update an
+This tutorial demonstrates how to take a model you've logged with Verta and deploy it to an
 Endpoint.
 
 Using the Client
 ----------------
 
-This is what an Endpoint update generally looks like:
+Whether the Endpoint is already live and serving predictions, or was newly created moments ago, the
+process for updating it with a new model is the same:
 
 .. code-block:: python
 
@@ -48,10 +49,10 @@ Or using an experiment run:
 
     verta deployment update endpoint /some-path --model-version-id <id> --strategy direct
 
-Advanced Updates
-----------------
-Alternatively, an Endpoint can be updated in a more `incremental, rule-based manner
-<endpoint_canary_update.html>`__ rather than all at once.
-
+Advanced Endpoint Updates
+-------------------------
 Certain properties of the Endpoint can also be `configured <endpoint_config.html>`__ during the
 update, such as compute resources and metric-based autoscaling.
+
+Alternatively, an Endpoint can be updated in a more `incremental, rule-based manner
+<endpoint_canary_update.html>`__ rather than all at once.
