@@ -1,6 +1,4 @@
 import pytest
-import requests
-
 
 from verta._internal_utils import _utils
 
@@ -30,13 +28,11 @@ class TestSharing:
         organization.add_member(email_2)
 
         # Shouldn't be able to access:
-        with pytest.raises(requests.HTTPError) as excinfo:
+        with pytest.raises(ValueError) as excinfo:
             client_2.get_project(id=project.id)
 
         excinfo_value = str(excinfo.value).strip()
-        assert "403" in excinfo_value
-        assert "Access Denied" in excinfo_value
-
+        assert "not found" in excinfo_value
 
     def test_share_org_projectr(self, client, organization, client_2, email_2):
         project_name = _utils.generate_default_name()
