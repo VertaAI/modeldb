@@ -17,9 +17,13 @@ ways to save a model to Verta:
 Registering the model
 ^^^^^^^^^^^^^^^^^^^^^
 
+Model registry provides a staging area between models developed during experimentation and models to be taken to production.
+
+The following tutorials go through the steps to add models to the model registry:
+
 * `Creating registered models <create_registered_model.html>`_.
 * `Creating model versions from artifacts <version_from_artifacts.html>`_.
-* `Creating model versions from experiment run <version_from_run.html>`_.
+* `Creating model versions from experiment runs <version_from_run.html>`_.
 
 Using the model
 ^^^^^^^^^^^^^^^
