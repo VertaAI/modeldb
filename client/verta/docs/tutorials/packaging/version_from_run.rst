@@ -1,7 +1,7 @@
 Creating Model Versions From Experiment Runs
 ============================================
 
-An alternative to creating model versions `from artifacts <version_from_artifacts>`_ is to convert an existing experiment run into a new version for the registered model.
+An alternative to creating model versions `from artifacts <version_from_artifacts.html>`_ is to convert an existing experiment run into a new version for the registered model.
 
 This tutorial will explore how this can be done, using the Client and the CLI.
 
