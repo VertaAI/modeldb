@@ -14,12 +14,14 @@ from ..utils import get_build_ids
 
 
 class TestList:
-    def test_list_endpoint(self):
+    def test_list_endpoint(self, created_endpoints):
         client = Client()
         path = _utils.generate_default_name()
         path2 = _utils.generate_default_name()
         endpoint1 = client.get_or_create_endpoint(path)
         endpoint2 = client.get_or_create_endpoint(path2)
+        created_endpoints.append(endpoint1)
+        created_endpoints.append(endpoint2)
         runner = CliRunner()
         result = runner.invoke(
             cli,

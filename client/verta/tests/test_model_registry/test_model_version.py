@@ -83,8 +83,9 @@ class TestModelVersion:
         assert "model" in repr
         assert "coef" in repr
 
-    def test_get_by_client(self, client):
+    def test_get_by_client(self, client, created_registered_models):
         registered_model = client.set_registered_model()
+        created_registered_models.append(registered_model)
         model_version = registered_model.get_or_create_version(name="my version")
 
         retrieved_model_version_by_id = client.get_registered_model_version(model_version.id)
@@ -333,9 +334,10 @@ class TestModelVersion:
 
         assert before == after + 1
 
-    def test_find(self, client):
+    def test_find(self, client, created_registered_models):
         name = "registered_model_test"
         registered_model = client.set_registered_model()
+        created_registered_models.append(registered_model)
         model_version = registered_model.get_or_create_version(name=name)
 
         find_result = registered_model.versions.find(["version == '{}'".format(name)])
@@ -394,7 +396,8 @@ class TestModelVersion:
         model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
         assert len(model_version._msg.artifacts) == 4
 
-    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir, registered_model):
+    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir,
+                                     registered_model):
         download_to_path = "context.tgz"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
