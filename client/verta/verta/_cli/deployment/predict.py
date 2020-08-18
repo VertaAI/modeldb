@@ -17,6 +17,8 @@ def predict():
 @click.option("--data", "-d", required=True, help="Input for prediction. Must be a valid JSON string.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 def predict_endpoint(path, data, workspace):
+    """Making prediction via a deployed endpoint.
+    """
     client = Client()
 
     try:

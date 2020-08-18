@@ -1,2 +1,3 @@
 sphinx>=1.8.5,<2.0; python_version != '2.7'
 sphinx_copybutton; python_version != '2.7'
+sphinx-click; python_version != '2.7'

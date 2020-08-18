@@ -469,11 +469,14 @@
     "uacGetAllowedEntitiesWithActionsResponse": {
       "type": "object",
       "properties": {
-        "entitiesWithActions": {
+        "entities": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/uacGetAllowedEntitiesWithActionsResponse"
+            "$ref": "#/definitions/uacEntities"
           }
+        },
+        "actions": {
+          "$ref": "#/definitions/uacAction"
         }
       }
     },
