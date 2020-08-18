@@ -15,7 +15,7 @@ During the experimentation process, data scientists can use Verta to log the mod
     experiment_run.log_model(model=model, custom_modules=custom_modules, model_api=model_api)
     experiment_run.log_requirements(["torch==1.0.0"])
 
-The models that are good enough for production will then be moved to the Model Registry, as versions of a registered model.
+The models that are good enough for production will then be moved to the model registry, as versions of a registered model.
 
 The new versions should automatically inherit requirements, artifacts, model, etc. from the experiment runs they were created from.
 

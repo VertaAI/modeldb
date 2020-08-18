@@ -20,9 +20,7 @@ We need to log this model, along with the requirements to use it (scikit-learn).
 Using the Client
 ----------------
 
-In order to create a new version for the registered model, the first step is to create a `registered model <create_registered_model.html>`_.
-
-We can then create a version for this registered model, and upload the classifier, along with the requirements, as follows:
+We can create a version for ``registered_model``, and upload the classifier, along with the requirements, as follows:
 
 .. code-block:: python
 
