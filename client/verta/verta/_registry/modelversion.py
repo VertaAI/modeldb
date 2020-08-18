@@ -26,7 +26,7 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 from .. import utils
 
-from .._tracking.entity import _OSS_DEFAULT_WORKSPACE
+from .._tracking.entity import _OSS_DEFAULT_WORKSPACE, _MODEL_ARTIFACTS_ATTR_KEY
 from .._tracking.deployable_entity import _DeployableEntity
 from ..environment import _Environment, Python
 
@@ -186,7 +186,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
     ModelVersionMessage = _ModelVersionService.ModelVersion
 
-    def log_model(self, model, custom_modules=None, model_api=None, overwrite=False):
+    def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
         """
         Logs a model to this Model Version.
 
@@ -206,12 +206,28 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                   environments—will be included.
         model_api : :class:`~utils.ModelAPI`, optional
             Model API specifying details about the model and its deployment.
+        artifacts : list of str, optional
+            Keys of logged artifacts to be used by a class model.
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
+
+        if (artifacts is not None
+                and not (isinstance(artifacts, list)
+                         and all(isinstance(artifact_key, six.string_types) for artifact_key in artifacts))):
+            raise TypeError("`artifacts` must be list of str, not {}".format(type(artifacts)))
+
+        # validate that `artifacts` are actually logged
+        if artifacts:
+            self._refresh_cache()
+            run_msg = self._msg
+            existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
+            unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
+            if unlogged_artifact_keys:
+                raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
 
         if isinstance(model, six.string_types):  # filepath
             model = open(model, 'rb')
@@ -227,7 +243,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                                         artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension)
         model_version_update = self.ModelVersionMessage(model=model_msg)
         self._update(model_version_update)
-
 
         # Upload the artifact to ModelDB:
         self._upload_artifact(
@@ -280,7 +295,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         self._update(self._msg, method="PUT")
 
 
-    def log_artifact(self, key, artifact, overwrite=False, extension=None):
+    def log_artifact(self, key, artifact, overwrite=False, _extension=None):
         """
         Logs an artifact to this Model Version.
 
@@ -296,8 +311,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                 - Otherwise, the object will be serialized and uploaded as an artifact.
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
-        extension : str, optional
-            Filename extension associated with the artifact.
 
         """
         if key == "model":
@@ -320,13 +333,13 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             artifact = open(artifact, 'rb')
         artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
-        if not extension:
+        if not _extension:
             try:
-                extension = _artifact_utils.get_file_ext(artifact_stream)
+                _extension = _artifact_utils.get_file_ext(artifact_stream)
             except (TypeError, ValueError):
-                extension = _artifact_utils.ext_from_method(method)
+                _extension = _artifact_utils.ext_from_method(method)
 
-        artifact_msg = self._create_artifact_msg(key, artifact_stream, artifact_type=artifact_type, extension=extension)
+        artifact_msg = self._create_artifact_msg(key, artifact_stream, artifact_type=artifact_type, extension=_extension)
         if same_key_ind == -1:
             self._msg.artifacts.append(artifact_msg)
         else:
@@ -801,6 +814,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
 
     def _update(self, msg, method="PATCH"):
+        self._refresh_cache()  # to have `self._msg.registered_model_id` for URL
         response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
                                                  .format(self._msg.registered_model_id, self.id),
                                                  body=msg, include_default=False)
