@@ -116,13 +116,22 @@ class RegistryServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def RegistryService_FindModelVersion2(body: RegistryFindModelVersionRequest, id_registered_model_id: BigInt)(implicit ec: ExecutionContext): Try[RegistryFindModelVersionRequestResponse] = Await.result(RegistryService_FindModelVersion2Async(body, id_registered_model_id), Duration.Inf)
 
-  def RegistryService_FindModelVersion3Async(body: RegistryFindModelVersionRequest)(implicit ec: ExecutionContext): Future[Try[RegistryFindModelVersionRequestResponse]] = {
+  def RegistryService_FindModelVersion3Async(body: RegistryFindModelVersionRequest, id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Future[Try[RegistryFindModelVersionRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"id_named_id_workspace_name\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[RegistryFindModelVersionRequest, RegistryFindModelVersionRequestResponse]("POST", basePath + s"/registry/workspaces/$id_named_id_workspace_name/model_versions/find", __query.toMap, body, RegistryFindModelVersionRequestResponse.fromJson)
+  }
+
+  def RegistryService_FindModelVersion3(body: RegistryFindModelVersionRequest, id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Try[RegistryFindModelVersionRequestResponse] = Await.result(RegistryService_FindModelVersion3Async(body, id_named_id_workspace_name), Duration.Inf)
+
+  def RegistryService_FindModelVersion4Async(body: RegistryFindModelVersionRequest)(implicit ec: ExecutionContext): Future[Try[RegistryFindModelVersionRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
     return client.request[RegistryFindModelVersionRequest, RegistryFindModelVersionRequestResponse]("POST", basePath + s"/registry/model_versions/find", __query.toMap, body, RegistryFindModelVersionRequestResponse.fromJson)
   }
 
-  def RegistryService_FindModelVersion3(body: RegistryFindModelVersionRequest)(implicit ec: ExecutionContext): Try[RegistryFindModelVersionRequestResponse] = Await.result(RegistryService_FindModelVersion3Async(body), Duration.Inf)
+  def RegistryService_FindModelVersion4(body: RegistryFindModelVersionRequest)(implicit ec: ExecutionContext): Try[RegistryFindModelVersionRequestResponse] = Await.result(RegistryService_FindModelVersion4Async(body), Duration.Inf)
 
   def RegistryService_FindRegisteredModelAsync(body: RegistryFindRegisteredModelRequest, workspace_name: String)(implicit ec: ExecutionContext): Future[Try[RegistryFindRegisteredModelRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
