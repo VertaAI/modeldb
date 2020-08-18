@@ -48,7 +48,6 @@ Or using an experiment run:
 
     verta deployment update endpoint /some-path --model-version-id <id> --strategy direct
 
-
 Advanced Updates
 ----------------
 Alternatively, an Endpoint can be updated in a more `incremental, rule-based manner
