@@ -285,6 +285,24 @@ class Client(object):
         return var or None
 
     def get_project(self, name=None, workspace=None, id=None):
+        """
+        Retrieves an already created Project. Only one of `name` or `id` can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Project.
+        workspace : str, optional
+            Workspace under which the Project with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        id : str, optional
+            ID of the Project. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~Project`
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -366,6 +384,21 @@ class Client(object):
         return self._ctx.proj
 
     def get_experiment(self, name=None, id=None):
+        """
+        Retrieves an already created Experiment. Only one of `name` or `id` can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Experiment.
+        id : str, optional
+            ID of the Experiment. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~Experiment`
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -440,6 +473,21 @@ class Client(object):
         return self._ctx.expt
 
     def get_experiment_run(self, name=None, id=None):
+        """
+        Retrieves an already created Experiment Run. Only one of `name` or `id` can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Experiment Run.
+        id : str, optional
+            ID of the Experiment Run. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~ExperimentRun`
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
