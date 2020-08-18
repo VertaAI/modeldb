@@ -7,6 +7,7 @@ import requests
 import zipfile
 import glob
 import sys
+import json
 
 import verta
 
@@ -38,6 +39,38 @@ class TestMDBIntegration:
 
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
         assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
+
+    def test_from_run_diff_workspaces(self, client, experiment_run, organization, in_tempdir, created_registered_models):
+        client_config = {
+            "workspace": organization.name
+        }
+        filepath = "verta_config.json"
+        with open(filepath, "w") as f:
+            json.dump(client_config, f)
+
+        registered_model = client.create_registered_model(workspace=organization.name)
+        created_registered_models.append(registered_model)
+
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id,
+            name="From Run {}".format(experiment_run.id)
+        )
+
+        assert model_version.workspace != experiment_run.workspace
+
+    def test_from_run_diff_workspaces_no_access_error(self, experiment_run, client_2, created_registered_models):
+        registered_model = client_2.create_registered_model()
+        created_registered_models.append(registered_model)
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            model_version = registered_model.create_version_from_run(
+                run_id=experiment_run.id,
+                name="From Run {}".format(experiment_run.id)
+            )
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "403" in excinfo_value
+        assert "Access Denied" in excinfo_value
 
 
 class TestModelVersion:

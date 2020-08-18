@@ -371,14 +371,17 @@ def registered_model(client):
 
 
 @pytest.fixture
-def created_registered_models(client):
+def created_registered_models(client, client_2):
     """Container to track and clean up `RegisteredModel`s created during tests."""
     to_delete = []
 
     yield to_delete
 
     for registered_model in to_delete:
-        utils.delete_registered_model(registered_model.id, client._conn)
+        try:
+            utils.delete_registered_model(registered_model.id, client._conn)
+        except requests.HTTPError:
+            utils.delete_registered_model(registered_model.id, client_2._conn)
 
 
 @pytest.fixture
