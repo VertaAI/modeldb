@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from verta._internal_utils import _utils
 from verta._tracking.entity import _ModelDBEntity
 
