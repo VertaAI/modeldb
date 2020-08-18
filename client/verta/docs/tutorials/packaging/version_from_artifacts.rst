@@ -5,22 +5,17 @@ With model versions, we can store necessary information for deployment, such as 
 
 This tutorial will explain how we can create a version from artifacts, using the Client and CLI.
 
-Context
--------
+Using the Client
+----------------
 
-Suppose we have the following LogisticRegression classifier from scikit-learn:
+Suppose we have just trained the following LogisticRegression classifier from scikit-learn:
 
 .. code-block:: python
 
     classifier = LogisticRegression()
     classifier.fit(X_train, y_train)
 
-We need to log this model, along with the requirements to use it (scikit-learn).
-
-Using the Client
-----------------
-
-We can create a version for ``registered_model``, and upload the classifier, along with the requirements, as follows:
+We can create a version for ``registered_model``, and upload the classifier, along with the requirements (scikit-learn), as follows:
 
 .. code-block:: python
 
