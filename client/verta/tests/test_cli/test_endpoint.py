@@ -2,6 +2,7 @@ from click.testing import CliRunner
 
 import pytest
 import time
+import tarfile
 import json
 
 from verta import Client
@@ -410,6 +411,51 @@ class TestUpdate:
             else:
                 assert metric["parameters"][0]["name"] == "target"
                 assert metric["parameters"][0]["value"] == "0.7"
+
+
+class TestDownload:
+    def test_download_context(self, experiment_run, model_for_deployment, registered_model, in_tempdir, created_registered_models, model_version):
+        np = pytest.importorskip("numpy")
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        artifact = np.random.random((36, 12))
+        experiment_run.log_artifact("some-artifact", artifact)
+
+        download_to_path = "context_cli.tgz"
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'download', 'dockercontext', '--run-id', experiment_run.id, '--output',
+             download_to_path],
+        )
+        assert not result.exception
+
+        # can be loaded as tgz
+        with tarfile.open(download_to_path, 'r:gz') as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths
+
+        model_version.log_model(model_for_deployment['model'], custom_modules=[])
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'download', 'dockercontext', '--model-version-id', model_version.id,
+             '--output', download_to_path],
+        )
+
+        assert not result.exception
+
+        # can be loaded as tgz
+        with tarfile.open(download_to_path, 'r:gz') as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths
 
 
 class TestPredict:
