@@ -47,6 +47,13 @@ class CanaryUpdateStrategy(_UpdateStrategy):
     """
     Represents canary update strategy for Endpoint.
 
+    Parameters
+    ----------
+    interval : int
+        Rollout interval, in seconds.
+    step : float in (0, 1]
+        Ratio of deployment to roll out per `interval`.
+    
     Examples
     --------
     .. code-block:: python
@@ -58,15 +65,6 @@ class CanaryUpdateStrategy(_UpdateStrategy):
     _STRATEGY = "canary"
 
     def __init__(self, interval, step):
-        """
-        Parameters
-        ----------
-        interval : int
-            Rollout interval, in seconds.
-        step : float in (0, 1]
-            Ratio of deployment to roll out per `interval`.
-
-        """
         interval_err_msg = "`interval` must be int greater than 0"
         if not isinstance(interval, int):
             raise TypeError(interval_err_msg)

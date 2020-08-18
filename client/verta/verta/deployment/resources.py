@@ -41,7 +41,7 @@ class CpuMillis(_Resource):
     .. code-block:: python
 
         from verta.deployment.resources import CpuMillis
-        cpu = CpuMillis(128)
+        cpu = CpuMillis(250)
 
     """
     milli_err_msg = "`cpu_millis` must be int greater than 0"
