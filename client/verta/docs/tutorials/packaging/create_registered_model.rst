@@ -14,14 +14,24 @@ Registered models can be created as follows:
 
     registered_model = client.create_registered_model(name="my model", labels=["research-purpose", "team-a"])
 
+Notice that we have assigned the labels ``research-purpose`` and ``team-a`` to the registered model. Labels are great tools for quickly filtering for a list of relevant registered models.
+
+Labels can also be added after the registered model has been created:
+
+.. code-block:: python
+
+    registered_model.add_label("from-scikit-learn")
+
 Using the CLI:
 --------------
 
-We can also accomplish the step above using Verta's command-line interface:
+We can also accomplish the steps above using Verta's command-line interface:
 
 .. code-block:: sh
 
     verta registry create registeredmodel "my model" -l research-purpose -l team-a
+
+    verta registry update registeredmodel "my model" -l from-scikit-learn
 
 Creating a new version
 ----------------------
