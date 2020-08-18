@@ -3,7 +3,7 @@ Creating Registered Models
 
 After models are trained and evaluated, they need to be stored along with necessary information so that they can be packed and deployed later. Verta's model registry is a centralized store for this purpose.
 
-This tutorial will go through how to create a register model using the Client and the CLI.
+This tutorial will go through how to create a registered model using the Client and the CLI.
 
 Using the Client
 ----------------
