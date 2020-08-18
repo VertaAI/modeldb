@@ -1,7 +1,7 @@
 Creating Model Versions from Artifacts
 ======================================
 
-Once a registered model has been `created <create_registered_model.html>`_, we can add new versions to it. With model versions, we can store necessary information for deployment, such as artifacts, model, requirements, etc.
+Once `a registered model has been created <create_registered_model.html>`_, we can add new versions to it. With model versions, we can store necessary information for deployment, such as artifacts, model, requirements, etc.
 
 This tutorial will explain how we can create a version from artifacts, using the Client and CLI.
 
