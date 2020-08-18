@@ -40,7 +40,16 @@ For example:
                         ]
                     }
                 ]
-            }
+            },
+            "autoscaling": {
+                "quantities": {"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0},
+                "metrics": [
+                    {"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.5"}]},
+                    {"metric": "memory_utilization", "parameters": [{"name": "target", "value": "0.7"}]}
+                ]
+            },
+            "env_vars": {"VERTA_HOST": "<Verta host URL>"},
+            "resources": {"cpu_millis": 250, "memory": "100M"}
         }
 
 .. TODO: Link to configuration file fields.
