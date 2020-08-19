@@ -3,9 +3,11 @@ Updating endpoints with canary
 
 As an alternative to updating an Endpoint `all at once <endpoint_update.html>`__,
 Verta offers the ability to roll out a new model incrementally while monitoring
-its behavior to prevent a problematic model from beiing deployed completely.
+its behavior to prevent a problematic model from being deployed completely.
 
-This is the principle behind a canary update, as this tutorial will demonstrate.
+This is the principle behind a canary update shown in this tutorial.
+
+.. TODO: add link to canary details
 
 Using the client
 ----------------
