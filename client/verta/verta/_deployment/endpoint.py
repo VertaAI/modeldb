@@ -219,18 +219,24 @@ class Endpoint(object):
             print("waiting for update...", end='')
             sys.stdout.flush()
 
-            build_status = self._get_build_status(build_id)
-
-            while build_status['status'] not in ("finished", "error") \
-                    or (build_status['status'] == "finished" and len(self.get_status()['components']) > 1):
+            status_dict = self.get_status()
+            while status_dict['status'] not in ("active", "error") \
+                    or (status_dict['status'] == "finished" and len(self.get_status()['components']) > 1):
                 print(".", end='')
                 sys.stdout.flush()
                 time.sleep(5)
+
                 build_status = self._get_build_status(build_id)
+                if build_status["status"] == "error":
+                    print()
+                    failure_msg = build_status.get('message', "no error message available")
+                    raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
+
+                status_dict = self.get_status()
 
             print()
-            if self._get_build_status(build_id)["status"] == "error":
-                failure_msg = self._get_build_status(build_id).get('message', "no error message available")
+            if status_dict["status"] == "error":
+                failure_msg = status_dict.get('message', "no error message available")
                 raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
 
         return self.get_status()
