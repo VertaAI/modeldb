@@ -480,7 +480,7 @@ class TestDeployability:
                        for filepath in six.viewvalues(artifacts))
 
             for key, filepath in six.viewitems(artifacts):
-                artifact_contents, _ = model_version._get_artifact(key)
+                artifact_contents = model_version._get_artifact(key)
                 with open(filepath, 'rb') as f:
                     file_contents = f.read()
 

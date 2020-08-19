@@ -198,7 +198,10 @@ class _DeployableEntity(_ModelDBEntity):
             #     identical, so multiple writes would be idempotent.
             path = self._get_cached_file(filename)
             if path is None:
-                contents, _ = self._get_artifact(key)  # TODO: raise error if path_only
+                contents = self._get_artifact(key)
+                if isinstance(contents, tuple):  # ExperimentRun._get_artifact() returns (contents, path_only)
+                    contents, _ = contents  # TODO: raise error if path_only
+
                 path = self._cache_file(filename, contents)
 
             artifacts.update({key: path})
