@@ -553,3 +553,17 @@ class TestEndpoint:
         endpoint.update(new_model_version, DirectUpdateStrategy(), wait=True)
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), new_classifier.predict(test_data))
+
+    def test_update_build_error(self, client, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['blahblahblah==3.6.0'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        with pytest.raises(RuntimeError) as excinfo:
+            endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in excinfo_value

@@ -219,17 +219,18 @@ class Endpoint(object):
             print("waiting for update...", end='')
             sys.stdout.flush()
 
-            status_dict = self.get_status()  # if you think of a better var name, please do use it haha
-            while status_dict['status'] not in ("active", "error") \
-                    or (status_dict['status'] == "active" and len(self.get_status()['components']) > 1):
+            build_status = self._get_build_status(build_id)
+
+            while build_status['status'] not in ("finished", "error") \
+                    or (build_status['status'] == "finished" and len(self.get_status()['components']) > 1):
                 print(".", end='')
                 sys.stdout.flush()
                 time.sleep(5)
-                status_dict = self.get_status()
+                build_status = self._get_build_status(build_id)
 
             print()
-            if self.get_status()['status'] == "error":
-                failure_msg = self.get_status()['components'][0].get('message', "no error message available")
+            if self._get_build_status(build_id)["status"] == "error":
+                failure_msg = self._get_build_status(build_id).get('message', "no error message available")
                 raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
 
         return self.get_status()
@@ -465,5 +466,18 @@ class Endpoint(object):
             self._get_or_create_stage()
         )
         response = _utils.make_request("GET", url, self._conn)
+        _utils.raise_for_http_error(response)
+        return response.json()
+
+    def _get_build_status(self, build_id):
+        url = "{}://{}/api/v1/deployment/workspace/{}/builds/{}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            build_id
+        )
+
+        response = _utils.make_request("GET", url, self._conn)
+
         _utils.raise_for_http_error(response)
         return response.json()
