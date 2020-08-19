@@ -4,7 +4,7 @@ from .metrics import _AutoscalingMetric
 
 class Autoscaling(object):
     """
-    Represents autoscaling configuration based on certain metrics for Endpoint.
+    Represents autoscaling configuration for Endpoint.
 
     To be passed to :meth:`verta._deployment.endpoint.Endpoint.update`.
 
