@@ -586,20 +586,20 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private ExperimentRun checkDatasetVersionBasedOnPrivileges(ExperimentRun experimentRun) {
     ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
     if (app.isPopulateConnectionsBasedOnPrivileges()) {
-      List<Artifact> accessibleDatasets = new ArrayList<>();
+      List<Artifact> accessibleDatasetVersions = new ArrayList<>();
       for (Artifact dataset : experimentRun.getDatasetsList()) {
         if (!dataset.getLinkedArtifactId().isEmpty()) {
           if (RdbmsUtils.checkConnectionsBasedOnPrivileges(
               ModelDBServiceResourceTypes.DATASET_VERSION,
               ModelDBActionEnum.ModelDBServiceActions.READ,
               dataset.getLinkedArtifactId())) {
-            accessibleDatasets.add(dataset);
+            accessibleDatasetVersions.add(dataset);
           }
         } else {
-          accessibleDatasets.add(dataset);
+          accessibleDatasetVersions.add(dataset);
         }
       }
-      experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasets);
+      experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasetVersions);
     }
     return experimentRunBuilder.build();
   }
@@ -1578,6 +1578,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             getExperimentRunCodeVersionMap(session, expRunIds);
 
         Set<String> experimentRunIdsSet = new HashSet<>();
+        Set<String> accessibleDatasetVersionIdsSet = new HashSet<>();
+        Set<String> notAccessibleDatasetVersionIdsSet = new HashSet<>();
         for (ExperimentRun experimentRun : experimentRunList) {
           if (!expRunHyperparameterConfigBlobMap.isEmpty()
               && expRunHyperparameterConfigBlobMap.containsKey(experimentRun.getId())) {
@@ -1602,8 +1604,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               experimentRun = ExperimentRun.newBuilder().setId(experimentRun.getId()).build();
               experimentRuns.add(experimentRun);
             } else {
-              if (experimentRun.getDatasetsCount() > 0) {
-                experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+              if (experimentRun.getDatasetsCount() > 0
+                  && app.isPopulateConnectionsBasedOnPrivileges()) {
+                experimentRun =
+                    filteredDatasetsBasedOnPrivileges(
+                        accessibleDatasetVersionIdsSet,
+                        notAccessibleDatasetVersionIdsSet,
+                        experimentRun);
               }
               experimentRuns.add(experimentRun);
             }
@@ -1625,6 +1632,37 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw ex;
       }
     }
+  }
+
+  private ExperimentRun filteredDatasetsBasedOnPrivileges(
+      Set<String> accessibleDatasetVersionIdsSet,
+      Set<String> notAccessibleDatasetVersionIdsSet,
+      ExperimentRun experimentRun) {
+    List<Artifact> accessibleDatasetVersions = new ArrayList<>();
+    for (Artifact dataset : experimentRun.getDatasetsList()) {
+      if (!dataset.getLinkedArtifactId().isEmpty()) {
+        if (accessibleDatasetVersionIdsSet.contains(dataset.getLinkedArtifactId())) {
+          accessibleDatasetVersions.add(dataset);
+        } else if (notAccessibleDatasetVersionIdsSet.contains(dataset.getLinkedArtifactId())) {
+          notAccessibleDatasetVersionIdsSet.add(dataset.getLinkedArtifactId());
+        } else {
+          if (RdbmsUtils.checkConnectionsBasedOnPrivileges(
+              ModelDBServiceResourceTypes.DATASET_VERSION,
+              ModelDBActionEnum.ModelDBServiceActions.READ,
+              dataset.getLinkedArtifactId())) {
+            accessibleDatasetVersionIdsSet.add(dataset.getLinkedArtifactId());
+            accessibleDatasetVersions.add(dataset);
+          } else {
+            notAccessibleDatasetVersionIdsSet.add(dataset.getLinkedArtifactId());
+          }
+        }
+      } else {
+        accessibleDatasetVersions.add(dataset);
+      }
+    }
+    experimentRun =
+        experimentRun.toBuilder().clearDatasets().addAllDatasets(accessibleDatasetVersions).build();
+    return experimentRun;
   }
 
   private Map<String, List<KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
