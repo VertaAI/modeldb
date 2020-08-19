@@ -9,20 +9,20 @@ functions in Verta.
 ModelDB (versioning and metadata)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* `Versioning Model Ingredients <ingredients.html>`_, which allows you to have Git-like
+* `Versioning model ingredients <ingredients.html>`_, which allows you to have Git-like
   tracking for the components of models
-* `Versioning a Model and Logging Metadata <workflow.html>`_
-* `Versioning Data <dataset.html>`_
-* `Metadata Querying <querying.html>`_
-* `Handling Merge Conflicts <merge.html>`_
+* `Versioning a model and logging metadata <workflow.html>`_
+* `Versioning data <dataset.html>`_
+* `Metadata querying <querying.html>`_
+* `Handling merge conflicts <merge.html>`_
 
 
 Deployment and release
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. * `Deploying Custom Models <class.html>`_
+.. * `Deploying custom models <class.html>`_
 
-.. * `Deploying Custom Models <deployment/custom_model.html>`_
+.. * `Deploying custom models <deployment/custom_model.html>`_
 
 .. commented out because page doesn't exist yet
     * `Deploying off-the-shelf Models <off-the-shelf.html>`_ in Scikit-learn, PyTorch, Tensorflow
@@ -37,21 +37,21 @@ Real-time model monitoring
 Core Verta functionality
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-* `Using the Verta Web App <webapp.html>`_
+* `Using the Verta web app <webapp.html>`_
 * `Workspaces in Verta <workspaces.html>`_
-* `Using a Client Config File <config.html>`_
+* `Using a client config file <config.html>`_
 
 .. toctree::
     :hidden:
     :titlesonly:
 
-    Model Ingredient Versioning <ingredients>
-    Model Versioning <workflow>
-    Data Versioning <dataset>
-    Metadata Querying <querying>
-    Merge Conflicts <merge>
+    Model ingredient versioning <ingredients>
+    Model versioning <workflow>
+    Data versioning <dataset>
+    Metadata querying <querying>
+    Merge conflicts <merge>
     Packaging <packaging/packaging>
     Organizations <organizations/organizations>
-    Web App <webapp>
+    Web app <webapp>
     Workspaces <workspaces>
-    Client Config File <config>
+    Client config file <config>
