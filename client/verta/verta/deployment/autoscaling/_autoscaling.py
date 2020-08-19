@@ -8,7 +8,7 @@ class Autoscaling(object):
 
     To be passed to :meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>`.
 
-    The JSON equivalence for this is:
+    The JSON equivalent for this is:
 
     .. code-block:: json
 

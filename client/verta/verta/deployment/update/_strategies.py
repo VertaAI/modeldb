@@ -24,7 +24,7 @@ class _UpdateStrategy(object):
 class DirectUpdateStrategy(_UpdateStrategy):
     """
 
-    The JSON equivalence for this is:
+    The JSON equivalent for this is:
 
     .. code-block:: json
 
@@ -44,7 +44,7 @@ class DirectUpdateStrategy(_UpdateStrategy):
 class CanaryUpdateStrategy(_UpdateStrategy):
     """
 
-    The JSON equivalence for this is:
+    The JSON equivalent for this is:
 
     .. code-block:: json
     

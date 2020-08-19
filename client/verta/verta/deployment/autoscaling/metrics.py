@@ -47,7 +47,7 @@ class CpuUtilizationTarget(_AutoscalingMetric):
     """
     Memory utilization target to trigger autoscaling.
 
-    The JSON equivalence for this is:
+    The JSON equivalent for this is:
 
     .. code-block:: json
 
@@ -65,7 +65,7 @@ class RequestsPerWorkerTarget(_AutoscalingMetric):
     """
     CPU utilization target to trigger autoscaling.
 
-    The JSON equivalence for this is:
+    The JSON equivalent for this is:
 
     .. code-block:: json
 
@@ -83,7 +83,7 @@ class MemoryUtilizationTarget(_AutoscalingMetric):
     """
     Number of requests per worker target to trigger autoscaling.
 
-    The JSON equivalence for this is:
+    The JSON equivalent for this is:
 
     .. code-block:: json
 
