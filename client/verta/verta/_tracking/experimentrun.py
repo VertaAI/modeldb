@@ -10,8 +10,6 @@ import pathlib2
 import pprint
 import shutil
 import sys
-import shutil
-import tarfile
 import tempfile
 import time
 import warnings
