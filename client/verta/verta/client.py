@@ -21,6 +21,7 @@ import zipfile
 import requests
 import yaml
 from verta._tracking.organization import Organization
+from ._dataset_versioning.dataset_version import DatasetVersion
 
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -1328,8 +1329,27 @@ class Client(object):
         raise NotImplementedError
 
     def _get_dataset_version2(self, id):
+        """
+        Gets a Dataset version.
+
+        Parameters
+        ----------
+        id : str
+            ID of the Dataset version.
+
+        Returns
+        -------
+        :class:`DatasetVersion`
+
+        """
         # TODO: when MVP, remove '2'
-        raise NotImplementedError
+        self._ctx = _Context(self._conn, self._conf)
+
+        dataset_version = DatasetVersion._get_by_id(self._conn, self._conf, id)
+
+        if dataset_version is None:
+            raise ValueError("Dataset Version not found")
+        return dataset_version
 
     def _create_organization(self, name, desc=None, collaborator_type=None, global_can_deploy=None):
         return Organization._create(self._conn, name, desc, collaborator_type, global_can_deploy)

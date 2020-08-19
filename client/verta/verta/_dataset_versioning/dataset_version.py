@@ -40,6 +40,14 @@ class DatasetVersion(entity._ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).dataset_version
 
     @classmethod
+    def _get_latest_version_by_dataset_id(cls, conn, dataset_id):
+        Message = _DatasetVersionService.GetLatestDatasetVersionByDatasetId
+        msg = Message(dataset_id=dataset_id)
+        endpoint = "/api/v1/modeldb/dataset-version/getLatestDatasetVersionByDatasetId"
+        response = conn.make_proto_request("GET", endpoint, params=msg)
+        return conn.must_proto_response(response, Message.Response).dataset_version
+
+    @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
         raise NotImplementedError("cannot get DatasetVersion by name")
 
