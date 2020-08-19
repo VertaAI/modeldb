@@ -1,5 +1,5 @@
-Query an endpoint
-=================
+Querying an endpoint
+====================
 
 Once the endpoint has finished updating:
 
