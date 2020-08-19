@@ -27,6 +27,7 @@ class DirectUpdateStrategy(_UpdateStrategy):
     The JSON equivalent for this is:
 
     .. code-block:: json
+
         {
             "strategy": "direct"
         }
@@ -46,6 +47,7 @@ class CanaryUpdateStrategy(_UpdateStrategy):
     The JSON equivalent for this is:
 
     .. code-block:: json
+    
         {
             "strategy": "canary",
             "canary_strategy": {
