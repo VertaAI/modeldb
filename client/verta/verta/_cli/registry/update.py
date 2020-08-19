@@ -100,6 +100,7 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
 def add_attribute(model_version, key, value):
     model_version.add_attribute(key, json.loads(value))
 
+
 def add_attributes(model_version, attribute, overwrite):
     attributes = MultipleArguments(attribute, "attribute")
     attributes.for_each(
