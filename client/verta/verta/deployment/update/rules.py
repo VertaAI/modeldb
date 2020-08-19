@@ -54,6 +54,24 @@ class MaximumAverageLatencyThresholdRule(_UpdateRule):
     """
     Rule for maximum average latency threshold.
 
+    The JSON equivalence for this is:
+
+    .. code-block:: json
+
+        {
+            "rules": [
+                {
+                    "rule": "latency_avg_max",
+                    "rule_parameters": [
+                        {
+                            "name": "threshold",
+                            "value": "0.1"
+                        }
+                    ]
+                }
+            ]
+        }
+
     """
     _RULE_ID = 1005
     _PARENT_NAME = "latency_avg_max"
@@ -63,6 +81,22 @@ class MaximumAverageLatencyThresholdRule(_UpdateRule):
 class MaximumP90LatencyThresholdRule(_UpdateRule):
     """
     Rule for maximum p90 latency threshold.
+
+    .. code-block:: json
+
+        {
+            "rules": [
+                {
+                    "rule": "latency_p90_max",
+                    "rule_parameters": [
+                        {
+                            "name": "threshold",
+                            "value": "0.1"
+                        }
+                    ]
+                }
+            ]
+        }
 
     """
     _RULE_ID = 1006
@@ -74,6 +108,22 @@ class MaximumRequestErrorPercentageThresholdRule(_UpdateRule):
     """
     Rule for maximum request error percentage threshold.
 
+    .. code-block:: json
+
+        {
+            "rules": [
+                {
+                    "rule": "error_4xx_rate",
+                    "rule_parameters": [
+                        {
+                            "name": "threshold",
+                            "value": "0.1"
+                        }
+                    ]
+                }
+            ]
+        }
+
     """
     _RULE_ID = 1007
     _PARENT_NAME = "error_4xx_rate"
@@ -83,6 +133,22 @@ class MaximumRequestErrorPercentageThresholdRule(_UpdateRule):
 class MaximumServerErrorPercentageThresholdRule(_UpdateRule):
     """
     Rule for maximum server error percentage threshold.
+
+    .. code-block:: json
+
+        {
+            "rules": [
+                {
+                    "rule": "error_5xx_rate",
+                    "rule_parameters": [
+                        {
+                            "name": "threshold",
+                            "value": "0.1"
+                        }
+                    ]
+                }
+            ]
+        }
 
     """
     _RULE_ID = 1008
