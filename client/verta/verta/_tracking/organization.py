@@ -21,6 +21,8 @@ class Organization:
     def __init__(self, conn, msg):
         self.conn = conn
         self.msg = msg
+        self.id = msg.id
+        self.name = msg.name
 
     @classmethod
     def _create(cls, conn, name, desc=None, collaborator_type=None, global_can_deploy=False):
@@ -58,10 +60,20 @@ class Organization:
                 raise ValueError(unknown_value_error.format(key))
         return msg
 
+    """
+    Adds member to an organization
+
+    Parameters
+    ----------
+    share_with : str
+        Represents email or username.
+
+    """
+
     def add_member(self, share_with):
         Message = _Organization.AddUser
 
         response = self.conn.make_proto_request("POST",
                                            "/api/v1/uac-proxy/organization/addUser",
-                                           body=Message(org_id=self.msg.id, share_with=share_with))
+                                           body=Message(org_id=self.id, share_with=share_with))
         status = self.conn.must_proto_response(response, Message.Response).status
