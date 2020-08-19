@@ -408,19 +408,23 @@ class Endpoint(object):
             return None
         return tokens[0]['creator_request']['value']
 
-    def _create_update_body(self, strategy, resources, autoscaling, env_vars, build_id):
-        update_body = strategy._as_build_update_req_body(build_id)
-        if resources:
+    def _create_update_body(self, strategy, resources=None, autoscaling=None, env_vars=None, build_id=None):
+        update_body = strategy._as_build_update_req_body()
+
+        if resources is not None:
             update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
                                               map(lambda resource: resource.to_dict(), resources))
 
-        if autoscaling:
+        if autoscaling is not None:
             update_body["autoscaling"] = autoscaling._as_dict()
 
-        if env_vars:
+        if env_vars is not None:
             update_body["env"] = list(
                 sorted(map(lambda env_var: {"name": env_var, "value": env_vars[env_var]}, env_vars),
                        key=lambda env_elem: env_elem["name"]))
+
+        if build_id is not None:
+            update_body['build_id'] = build_id
 
         # prepare body for update request
         return update_body

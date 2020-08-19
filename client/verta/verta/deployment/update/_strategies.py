@@ -11,7 +11,7 @@ class _UpdateStrategy(object):
     _STRATEGY = ""
 
     @abc.abstractmethod
-    def _as_build_update_req_body(self, build_id):
+    def _as_build_update_req_body(self):
         """
         Returns
         -------
@@ -24,9 +24,8 @@ class _UpdateStrategy(object):
 class DirectUpdateStrategy(_UpdateStrategy):
     _STRATEGY = "rollout"
 
-    def _as_build_update_req_body(self, build_id):
+    def _as_build_update_req_body(self):
         return {
-            'build_id': build_id,
             'strategy': self._STRATEGY,
         }
 
@@ -59,12 +58,11 @@ class CanaryUpdateStrategy(_UpdateStrategy):
         self._progress_step = step
         self._rules = []
 
-    def _as_build_update_req_body(self, build_id):
+    def _as_build_update_req_body(self):
         if not self._rules:
             raise RuntimeError("canary update strategy must have at least one rule")
 
         return {
-            'build_id': build_id,
             'strategy': self._STRATEGY,
             'canary_strategy': {
                 'progress_interval_seconds': self._progress_interval_seconds,
