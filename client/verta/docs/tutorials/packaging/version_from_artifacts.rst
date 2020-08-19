@@ -1,11 +1,11 @@
-Creating Model Versions from Artifacts
+Creating model versions from artifacts
 ======================================
 
 Once `a registered model has been created <create_registered_model.html>`_, we can add new versions to it. With model versions, we can store necessary information for deployment, such as artifacts, model, requirements, etc.
 
-This tutorial will explain how we can create a version from artifacts, using the Client and CLI.
+This tutorial will explain how we can create a version from artifacts, using the client and CLI.
 
-Using the Client
+Using the client
 ----------------
 
 Suppose we have just trained the following LogisticRegression classifier from scikit-learn:

@@ -1,9 +1,9 @@
-Creating Model Versions From Experiment Runs
+Creating model versions from experiment runs
 ============================================
 
 An alternative to creating model versions `from artifacts <version_from_artifacts.html>`_ is to convert an existing experiment run into a new version for the registered model. This conversion provides a direct link between the experimentation process and production.
 
-In this tutorial, we will explore how this can be done, using the Client and the CLI.
+In this tutorial, we will explore how this can be done, using the client and the CLI.
 
 Scenario
 --------
@@ -19,7 +19,7 @@ The models that are good enough for production now needs to be moved to the mode
 
 The new versions should automatically inherit requirements, artifacts, model, etc. from the experiment runs they were created from.
 
-Using the Client
+Using the client
 ----------------
 
 To create a new model version from an existing experiment run, we can use :meth:`RegisteredModel.create_version_from_run() <verta._registry.model.RegisteredModel.create_version_from_run>` method:
