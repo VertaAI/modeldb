@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+import os
 import sys
 import time
 import json
 import yaml
 from functools import reduce
+
+import requests
 
 from ..external import six
 
@@ -15,7 +18,10 @@ from ..deployment.resources import _Resource
 from ..deployment.update.rules import _UpdateRule
 from ..deployment import DeployedModel
 from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
-from .._internal_utils import _utils
+from .._internal_utils import (
+    _request_utils,
+    _utils,
+)
 from .._tracking import experimentrun
 from .._registry import RegisteredModelVersion
 
@@ -470,3 +476,24 @@ class Endpoint(object):
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
         return response.json()
+
+    def download_manifest(
+            self, download_to_path, name, strategy,
+            resources=None, autoscaling=None, env_vars=None):
+        data = {
+            'endpoint': {'path': self.path},
+            'name': name,
+            'update': self._create_update_body(strategy, resources, autoscaling, env_vars),
+            'workspace_name': self.workspace,
+        }
+
+        endpoint = "{}://{}/api/v1/deployment/operations/manifest".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        with _utils.make_request("POST", endpoint, self._conn, json=data, stream=True) as response:
+            _utils.raise_for_http_error(response)
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
