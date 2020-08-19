@@ -511,11 +511,15 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
                 # upload part
                 #     Retry connection errors, to make large multipart uploads more robust.
-                for _ in range(3):
+                for i in range(3):
                     try:
                         response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-                    except requests.ConnectionError:  # e.g. broken pipe
+                    except requests.ConnectionError as err:  # e.g. broken pipe
                         time.sleep(1)
+
+                        if i == 2:
+                            raise err
+
                         continue  # try again
                     else:
                         break
