@@ -77,8 +77,10 @@ public class PathDatasetComponentBlobEntity {
             .setSize(this.size)
             .setLastModifiedAtSource(this.last_modified_at_source)
             .setSha256(this.sha256)
-            .setMd5(this.md5)
-            .setBasePath(this.base_path);
+            .setMd5(this.md5);
+    if (base_path != null) {
+      pathDatasetComponentBlob.setBasePath(base_path);
+    }
     if (this.internal_versioned_path != null) {
       pathDatasetComponentBlob.setInternalVersionedPath(this.internal_versioned_path);
     }
