@@ -2061,20 +2061,15 @@ public class RdbmsUtils {
     VersioningEntry.Builder versioningEntry = VersioningEntry.newBuilder();
     for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
         versioningModeldbEntityMappings) {
-      if (checkConnectionsBasedOnPrivileges(
-          ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
-          ModelDBActionEnum.ModelDBServiceActions.READ,
-          String.valueOf(versioningModeldbEntityMapping.getRepository_id()))) {
-        versioningEntry.setRepositoryId(versioningModeldbEntityMapping.getRepository_id());
-        versioningEntry.setCommit(versioningModeldbEntityMapping.getCommit());
-        if (versioningModeldbEntityMapping.getVersioning_location() != null
-            && !versioningModeldbEntityMapping.getVersioning_location().isEmpty()) {
-          Location.Builder locationBuilder = Location.newBuilder();
-          ModelDBUtils.getProtoObjectFromString(
-              versioningModeldbEntityMapping.getVersioning_location(), locationBuilder);
-          versioningEntry.putKeyLocationMap(
-              versioningModeldbEntityMapping.getVersioning_key(), locationBuilder.build());
-        }
+      versioningEntry.setRepositoryId(versioningModeldbEntityMapping.getRepository_id());
+      versioningEntry.setCommit(versioningModeldbEntityMapping.getCommit());
+      if (versioningModeldbEntityMapping.getVersioning_location() != null
+          && !versioningModeldbEntityMapping.getVersioning_location().isEmpty()) {
+        Location.Builder locationBuilder = Location.newBuilder();
+        ModelDBUtils.getProtoObjectFromString(
+            versioningModeldbEntityMapping.getVersioning_location(), locationBuilder);
+        versioningEntry.putKeyLocationMap(
+            versioningModeldbEntityMapping.getVersioning_key(), locationBuilder.build());
       }
     }
     return versioningEntry.build();
