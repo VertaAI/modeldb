@@ -221,26 +221,31 @@ class Endpoint(object):
 
             build_status = self._get_build_status(build_id)
             # have to check using build status, otherwise might never terminate
-            while build_status['status'] not in ("finished", "error") \
-                    or (build_status['status'] == "finished" and len(self.get_status()['components']) > 1):
+            while build_status['status'] not in ("finished", "error"):
                 print(".", end='')
                 sys.stdout.flush()
                 time.sleep(5)
                 build_status = self._get_build_status(build_id)
 
-            if self._get_build_status(build_id)["status"] == "error":
+            if build_status["status"] == "error":
                 print()
-                failure_msg = self._get_build_status(build_id).get('message', "no error message available")
+                failure_msg = build_status.get('message', "no error message available")
                 raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
 
             # still need to wait because status might be "creating" even though build status is "finished"
             status_dict = self.get_status()
-            while status_dict["status"] != "active" or (build_status['status'] == "finished" and len(self.get_status()['components']) > 1):
+            while status_dict["status"] not in ("active", "error") or \
+                    (status_dict['status'] == "active" and len(status_dict['components']) > 1):
                 print(".", end='')
                 sys.stdout.flush()
                 time.sleep(5)
                 status_dict = self.get_status()
+
             print()
+            # is this check necessary?
+            if status_dict["status"] == "error":
+                failure_msg = status_dict['components'][0].get('message', "no error message available")
+                raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
 
         return self.get_status()
 
