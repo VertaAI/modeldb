@@ -462,7 +462,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         return Python._from_proto(self._msg)
 
-    def _get_url_for_artifact(self, key, method, artifact_type, part_num=0):
+    def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
@@ -586,7 +586,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                                                filename_extension=extension)
         return artifact_msg
 
-    def _get_artifact(self, key, artifact_type):
+    def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists
         self._refresh_cache()
         if key == "model":
