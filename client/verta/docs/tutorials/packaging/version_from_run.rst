@@ -1,12 +1,12 @@
 Creating Model Versions From Experiment Runs
 ============================================
 
-An alternative to creating model versions `from artifacts <version_from_artifacts.html>`_ is to convert an existing experiment run into a new version for the registered model. This provides a direct link between the experimentation process and production.
+An alternative to creating model versions `from artifacts <version_from_artifacts.html>`_ is to convert an existing experiment run into a new version for the registered model. This conversion provides a direct link between the experimentation process and production.
 
-This tutorial will explore how this can be done, using the Client and the CLI.
+In this tutorial, we will explore how this can be done, using the Client and the CLI.
 
-Context
--------
+Scenario
+--------
 
 During experimentation, data scientists can use Verta to log the model and deployment-specific information (requirements, custom modules, model API, etc.):
 
