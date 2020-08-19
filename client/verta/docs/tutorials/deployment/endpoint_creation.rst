@@ -1,20 +1,20 @@
-Creating and Retrieving an Endpoint
+Creating and retrieving an endpoint
 ===================================
 
-When a machine learning model is released, it must be made available for downstream consumption; Verta offers Endpoints as an API for configuring and releasing deployable models.
+When a machine learning model is released, it must be made available for downstream consumption; Verta offers endpoints as an API for configuring and releasing deployable models.
 
-This tutorial will go through how to create and retrieve such an Endpoint using Verta Client and CLI.
+This tutorial will go through how to create and retrieve such an endpoint using Verta client and CLI.
 
-Using the Client
+Using the client
 ----------------
 
-Users can create an Endpoint as follows:
+Users can create an endpoint as follows:
 
 .. code-block:: python
 
     endpoint = client.create_endpoint(path="/some-path")
 
-This Endpoint can be retrieved later on via its path or its ID:
+This endpoint can be retrieved later on via its path or its ID:
 
 .. code-block:: python
 
