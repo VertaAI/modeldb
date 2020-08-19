@@ -1,4 +1,4 @@
-Query an andpoint
+Query an endpoint
 =================
 
 Once the endpoint has finished updating:
