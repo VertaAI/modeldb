@@ -554,7 +554,10 @@ class TestEndpoint:
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), new_classifier.predict(test_data))
 
-    def test_update_build_error(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_build_error(self, client, created_endpoints, experiment_run, model_for_deployment, model_version):
+        model_version.log_model(model_for_deployment['model'], custom_modules=[])
+        model_version.log_environment(Python(requirements=["scikit-learn"]))
+
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['blahblahblah==3.6.0'])
 
@@ -562,8 +565,11 @@ class TestEndpoint:
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
 
+        update_status = endpoint.update(model_version, DirectUpdateStrategy(), True) # this should work
+        assert update_status["status"] == "active"
+
         with pytest.raises(RuntimeError) as excinfo:
-            endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+            endpoint.update(experiment_run, DirectUpdateStrategy(), True) # this should fail, and not take forever!
 
         excinfo_value = str(excinfo.value).strip()
         assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in excinfo_value
