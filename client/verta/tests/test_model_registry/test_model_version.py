@@ -6,6 +6,7 @@ import pytest
 import requests
 import zipfile
 import glob
+import shutil
 import sys
 
 import verta
@@ -15,6 +16,7 @@ import os
 
 import verta.dataset
 from verta.environment import Python
+from verta._tracking.experimentrun import _CACHE_DIR
 
 
 class TestMDBIntegration:
@@ -41,7 +43,6 @@ class TestMDBIntegration:
 
 
 class TestModelVersion:
-
     def test_create(self, registered_model):
         name = verta._internal_utils._utils.generate_default_name()
         assert registered_model.create_version(name)
@@ -462,3 +463,26 @@ class TestModelVersion:
         assert version.get_labels() == LABELS
 
         assert version.get_attributes() == ATTRIBUTES
+
+class TestDeployable:
+    """Deployment-related functionality"""
+    # TODO: move tests from TestModelVersion before merging
+    def test_fetch_artifacts(self, model_version, strs, flat_dicts):
+        for key, artifact in zip(strs, flat_dicts):
+            model_version.log_artifact(key, artifact)
+
+        try:
+            artifacts = model_version.fetch_artifacts(strs)
+
+            assert set(six.viewkeys(artifacts)) == set(strs)
+            assert all(filepath.startswith(_CACHE_DIR)
+                       for filepath in six.viewvalues(artifacts))
+
+            for key, filepath in six.viewitems(artifacts):
+                artifact_contents, _ = model_version._get_artifact(key)
+                with open(filepath, 'rb') as f:
+                    file_contents = f.read()
+
+                assert file_contents == artifact_contents
+        finally:
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
