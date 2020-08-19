@@ -431,8 +431,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         if not isinstance(env, _Environment):
             raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
 
-        self._fetch_with_no_cache()
-        self._msg.environment.CopyFrom(env._msg)
         self._update(self.ModelVersionMessage(environment=env._msg), method="PATCH",
                      update_mask={"paths": ["environment.python.version.major", "environment.python.version.minor",
                                             "environment.python.version.patch", "environment.python.requirements"]})
