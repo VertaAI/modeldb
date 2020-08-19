@@ -16,7 +16,7 @@ import os
 
 import verta.dataset
 from verta.environment import Python
-from verta._tracking.experimentrun import _CACHE_DIR
+from verta._tracking.deployable_entity import _CACHE_DIR
 
 
 class TestMDBIntegration:

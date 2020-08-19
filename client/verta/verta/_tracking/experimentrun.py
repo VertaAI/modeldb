@@ -44,11 +44,7 @@ from .. import deployment
 from .. import utils
 
 
-_CACHE_DIR = os.path.join(
-    os.path.expanduser("~"),
-    ".verta",
-    "cache",
-)
+
 
 
 class ExperimentRun(_DeployableEntity):
@@ -1947,10 +1943,10 @@ class ExperimentRun(_DeployableEntity):
             #     "try-get-then-create" can lead multiple threads trying to write to the cache
             #     simultaneously, but artifacts being cached at a particular location should be
             #     identical, so multiple writes would be idempotent.
-            path = self._get_cached(filename)
+            path = self._get_cached_file(filename)
             if path is None:
                 contents, _ = self._get_artifact(key)  # TODO: raise error if path_only
-                path = self._cache(filename, contents)
+                path = self._cache_file(filename, contents)
 
             artifacts.update({key: path})
 
@@ -2353,89 +2349,3 @@ class ExperimentRun(_DeployableEntity):
         response_msg.url = url
 
         return response_msg
-
-    def _cache(self, filename, contents):
-        """
-        Caches `contents` to `filename` within ``_CACHE_DIR``.
-
-        If `contents` represents a ZIP file, then it will be unzipped, and the path to the target
-        directory will be returned.
-
-        Parameters
-        ----------
-        filename : str
-            Filename within ``_CACHE_DIR`` to write to.
-        contents : bytes
-            Contents to be cached.
-
-        Returns
-        -------
-        str
-            Full path to cached contents.
-
-        """
-        # write contents to temporary file
-        with tempfile.NamedTemporaryFile(delete=False) as tempf:
-            tempf.write(contents)
-            tempf.flush()  # flush object buffer
-            os.fsync(tempf.fileno())  # flush OS buffer
-
-        name, extension = os.path.splitext(filename)
-        if extension == '.zip':
-            temp_path = tempfile.mkdtemp()
-
-            with zipfile.ZipFile(tempf.name, 'r') as zipf:
-                zipf.extractall(temp_path)
-            os.remove(tempf.name)
-        elif extension == '.tgz':
-            temp_path = tempfile.mkdtemp()
-
-            with tarfile.open(tempf.name, 'r:gz') as tarf:
-                tarf.extractall(temp_path)
-            os.remove(tempf.name)
-        elif extension == '.tar':
-            temp_path = tempfile.mkdtemp()
-
-            with tarfile.open(tempf.name, 'r') as tarf:
-                tarf.extractall(temp_path)
-            os.remove(tempf.name)
-        elif extension == '.gz' and os.path.splitext(name)[1] == '.tar':
-            name = os.path.splitext(name)[0]
-
-            temp_path = tempfile.mkdtemp()
-
-            with tarfile.open(tempf.name, 'r:gz') as tarf:
-                tarf.extractall(temp_path)
-            os.remove(tempf.name)
-        else:
-            name = filename
-            temp_path = tempf.name
-
-        path = os.path.join(_CACHE_DIR, name)
-
-        # create intermediate dirs
-        try:
-            os.makedirs(os.path.dirname(path))
-        except OSError:  # already exists
-            pass
-
-        # move written contents to cache location
-        shutil.move(temp_path, path)
-
-        return path
-
-    def _get_cached(self, filename):
-        name, extension = os.path.splitext(filename)
-        if extension == '.zip':
-            pass
-        elif extension == '.tgz':
-            pass
-        elif extension == '.tar':
-            pass
-        elif extension == '.gz' and os.path.splitext(name)[1] == '.tar':
-            name = os.path.splitext(name)[0]
-        else:
-            name = filename
-
-        path = os.path.join(_CACHE_DIR, name)
-        return path if os.path.exists(path) else None
