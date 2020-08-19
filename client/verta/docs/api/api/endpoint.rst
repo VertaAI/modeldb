@@ -27,10 +27,15 @@ Canary Update Rules
 
 Update Configuration
 --------------------
+
+.. _resources:
+
 Resources
 ^^^^^^^^^
 .. automodule:: verta.deployment.resources
     :members:
+
+.. _autoscaling:
 
 Autoscaling
 ^^^^^^^^^^^
