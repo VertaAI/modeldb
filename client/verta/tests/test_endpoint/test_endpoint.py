@@ -105,6 +105,7 @@ class TestEndpoint:
         str_repr = repr(endpoint)
 
         assert "path: {}".format(endpoint.path) in str_repr
+        assert "url" in str_repr
         assert "id: {}".format(endpoint.id) in str_repr
         assert "curl: <Endpoint not deployed>" in str_repr
 
