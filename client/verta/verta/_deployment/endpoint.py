@@ -200,7 +200,8 @@ class Endpoint(object):
         return self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
 
     def _update_from_build(self, build_id, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
-        update_body = self._form_update_body(resources, strategy, autoscaling, env_vars, build_id)
+        update_body = self._create_update_body(resources, strategy, autoscaling, env_vars, build_id)
+        print(update_body)
 
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
@@ -407,7 +408,7 @@ class Endpoint(object):
             return None
         return tokens[0]['creator_request']['value']
 
-    def _form_update_body(self, resources, strategy, autoscaling, env_vars, build_id):
+    def _create_update_body(self, resources, strategy, autoscaling, env_vars, build_id):
         update_body = strategy._as_build_update_req_body(build_id)
         if resources:
             update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
