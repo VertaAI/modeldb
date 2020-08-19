@@ -480,6 +480,30 @@ class Endpoint(object):
     def download_manifest(
             self, download_to_path, name, strategy,
             resources=None, autoscaling=None, env_vars=None):
+        """
+        Downloads this Endpoint's Kubernetes manifest YAML.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download manifest YAML to.
+        name : str
+            Name of the Endpoint.
+        strategy : :class:`~verta.deployment.update._strategies._UpdateStrategy`
+            Strategy (direct or canary) for updating the Endpoint.
+        resources : list of :class:`~verta.deployment.resources._Resource`, optional
+            Resources allowed for the updated Endpoint.
+        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`, optional
+            Autoscaling condition for the updated Endpoint.
+        env_vars : dict of str to str, optional
+            Environment variables.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where deployment YAML was downloaded to. Matches `download_to_path`.
+
+        """
         data = {
             'endpoint': {'path': self.path},
             'name': name,
