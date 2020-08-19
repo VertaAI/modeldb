@@ -58,8 +58,6 @@ class Endpoint(object):
 
         return '\n'.join((
             "path: {}".format(data['creator_request']['path']),
-            "url: {}://{}/{}/endpoints/{}/summary".format(self._conn.scheme, self._conn.socket,
-                                                          self.workspace, self.id),
             "id: {}".format(self.id),
             "curl: {}".format(curl),
             "status: {}".format(status["status"]),
