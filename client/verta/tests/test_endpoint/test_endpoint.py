@@ -1,8 +1,11 @@
+import json
 import time
 
 import pytest
+
 import requests
-import json
+
+import yaml
 
 import verta
 from verta._deployment import Endpoint
@@ -116,6 +119,36 @@ class TestEndpoint:
         endpoint.update(experiment_run, DirectUpdateStrategy(), True)
         str_repr = repr(endpoint)
         assert "curl: {}".format(endpoint.get_deployed_model().get_curl()) in str_repr
+
+    def test_download_manifest(self, client, created_endpoints, in_tempdir):
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        download_to_path = "manifest.yaml"
+
+        strategy = CanaryUpdateStrategy(interval=10, step=0.1)
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.1))
+        resources = [CpuMillis(100), Memory("128Mi")]
+        autoscaling = Autoscaling(min_replicas=1, max_replicas=10, min_scale=0.1, max_scale=2)
+        autoscaling.add_metric(CpuUtilizationTarget(0.75))
+        env_vars = {'foo': "bar"}
+
+        filepath = endpoint.download_manifest(
+            download_to_path="endpoint.yaml",
+            name="conrado",
+            strategy=strategy,
+            autoscaling=autoscaling,
+            resources=resources,
+            env_vars=env_vars,
+        )
+
+        # can be loaded as YAML
+        with open(filepath, 'rb') as f:
+            manifest = yaml.safe_load(f)
+
+        assert manifest['kind'] == "Endpoint"
+        assert manifest['spec']['endpoint']['spec']['ingress']['path'] == path
 
     def test_direct_update(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
