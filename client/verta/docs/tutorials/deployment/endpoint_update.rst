@@ -1,4 +1,4 @@
-Model Deployment
+Model deployment
 ================
 
 After an Endpoint has been `created <endpoint_creation.html>`__, it needs to be updated with a
@@ -7,7 +7,7 @@ machine learning model that can serve predictions.
 This tutorial demonstrates how to take a model you've logged with Verta and deploy it to an
 Endpoint.
 
-Using the Client
+Using the client
 ----------------
 
 Whether the Endpoint is already live and serving predictions, or was newly created moments ago, the
@@ -48,7 +48,7 @@ Or using an experiment run:
 
     verta deployment update endpoint /some-path --model-version-id "<id>" --strategy direct
 
-Advanced Endpoint Updates
+Advanced endpoint updates
 -------------------------
 Certain properties of the Endpoint can also be `configured <endpoint_config.html>`__ during the
 update, such as compute resources and metric-based autoscaling.

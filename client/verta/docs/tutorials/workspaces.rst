@@ -1,4 +1,4 @@
-Working in Workspaces
+Working in workspaces
 =====================
 
 Verta offers Workspaces as a feature in Verta Core and Verta Enterprise.

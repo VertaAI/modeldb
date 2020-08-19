@@ -6,7 +6,7 @@ functions in Verta.
 
 * `Packaging models <packaging/packaging.html>`_ for use in different applications.
 
-ModelDB (Versioning and Metadata)
+ModelDB (versioning and metadata)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * `Versioning Model Ingredients <ingredients.html>`_, which allows you to have Git-like
@@ -17,7 +17,7 @@ ModelDB (Versioning and Metadata)
 * `Handling Merge Conflicts <merge.html>`_
 
 
-Deployment and Release
+Deployment and release
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. * `Deploying Custom Models <class.html>`_
@@ -27,7 +27,7 @@ Deployment and Release
 .. commented out because page doesn't exist yet
     * `Deploying off-the-shelf Models <off-the-shelf.html>`_ in Scikit-learn, PyTorch, Tensorflow
 
-Real-time Model Monitoring
+Real-time model monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note::

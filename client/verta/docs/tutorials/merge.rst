@@ -1,4 +1,4 @@
-Handling Merge Conflicts
+Handling merge conflicts
 ========================
 
 At the moment, the Client does not yet fully support resolving merge conflicts. To handle them, it

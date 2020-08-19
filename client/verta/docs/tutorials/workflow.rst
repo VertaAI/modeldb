@@ -1,4 +1,4 @@
-Logging and Querying Model Metadata
+Logging and querying model metadata
 ===================================
 
 Setup
@@ -67,7 +67,7 @@ If you'd like, you could also add a description, tags, and attributes:
     #                                 {'architecture': "SVM"})
 
 
-Run Tracking
+Run tracking
 ------------
 
 scikit-learn has built-in datasets we can use:

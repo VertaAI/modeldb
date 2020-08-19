@@ -1,4 +1,4 @@
-Querying Model Metadata
+Querying model metadata
 =======================
 
 For revisiting past Experiment Runs, the Verta API offers the ability to find Runs based on their
@@ -40,7 +40,7 @@ Multiple queries can be specified together, which returns the intersection of th
     ])
     # <ExperimentRuns containing 2 runs>
 
-Query Syntax
+Query syntax
 ------------
 
 Queries are Python strings that follow this syntax:
