@@ -47,6 +47,14 @@ class CpuUtilizationTarget(_AutoscalingMetric):
     """
     Memory utilization target to trigger autoscaling.
 
+    The JSON equivalence for this is:
+
+    .. code-block:: json
+
+        {
+            "metrics": [{"metric": "cpu_utilization", "parameters": [{"name": "target", "value": 0.5}]}]
+        }
+
     """
     _METRIC_ID = 1001
     _PARENT_NAME = "cpu_utilization"
@@ -57,6 +65,14 @@ class RequestsPerWorkerTarget(_AutoscalingMetric):
     """
     CPU utilization target to trigger autoscaling.
 
+    The JSON equivalence for this is:
+
+    .. code-block:: json
+
+        {
+            "metrics": [{"metric": "requests_per_worker", "parameters": [{"name": "target", "value": 1000}]}]
+        }
+
     """
     _METRIC_ID = 1002
     _PARENT_NAME = "requests_per_worker"
@@ -66,6 +82,14 @@ class RequestsPerWorkerTarget(_AutoscalingMetric):
 class MemoryUtilizationTarget(_AutoscalingMetric):
     """
     Number of requests per worker target to trigger autoscaling.
+
+    The JSON equivalence for this is:
+
+    .. code-block:: json
+
+        {
+            "metrics": [{"metric": "memory_utilization", "parameters": [{"name": "target", "value": 0.5}]}]
+        }
 
     """
     _METRIC_ID = 1003
