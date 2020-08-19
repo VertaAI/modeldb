@@ -63,11 +63,6 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
 
     client = Client()
 
-    artifacts = MultipleArguments(artifact, "artifact")
-    artifacts.for_each(
-        lambda key, path: model_version.log_artifact(key, path, overwrite=overwrite),
-        lambda: model_version.get_artifact_keys(), overwrite)
-
     try:
         registered_model = client.get_registered_model(model_name, workspace=workspace)
     except ValueError:
@@ -77,6 +72,11 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
         model_version = registered_model.get_version(name=version_name)
     except ValueError:
         raise click.BadParameter("version {} not found".format(version_name))
+
+    artifacts = MultipleArguments(artifact, "artifact")
+    artifacts.for_each(
+        lambda key, path: model_version.log_artifact(key, path, overwrite=overwrite),
+        lambda: model_version.get_artifact_keys(), overwrite)
 
     if not overwrite and model and model_version.has_model:
         raise click.BadParameter("a model has already been associated with the version; consider using --overwrite flag")
