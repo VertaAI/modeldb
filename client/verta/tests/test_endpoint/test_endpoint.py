@@ -292,7 +292,7 @@ class TestEndpoint:
 
         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai", "GIT_TERMINAL_PROMPT" : "1"}
 
-        parameter_json = endpoint._create_update_body(resources, DirectUpdateStrategy(), None, env_vars, 0)
+        parameter_json = endpoint._create_update_body(DirectUpdateStrategy(), resources, None, env_vars, 0)
         assert parameter_json == {'build_id': 0, 'env': [{"name": 'CUDA_VISIBLE_DEVICES', 'value': '1,2'},
                                                          {'name': 'GIT_TERMINAL_PROMPT', 'value': '1'},
                                                          {"name": 'VERTA_HOST', 'value': 'app.verta.ai'}],
