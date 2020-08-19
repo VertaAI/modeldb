@@ -220,7 +220,7 @@ class Endpoint(object):
             sys.stdout.flush()
 
             build_status = self._get_build_status(build_id)
-
+            # have to check using build status, otherwise might never terminate
             while build_status['status'] not in ("finished", "error") \
                     or (build_status['status'] == "finished" and len(self.get_status()['components']) > 1):
                 print(".", end='')
@@ -228,10 +228,19 @@ class Endpoint(object):
                 time.sleep(5)
                 build_status = self._get_build_status(build_id)
 
-            print()
             if self._get_build_status(build_id)["status"] == "error":
+                print()
                 failure_msg = self._get_build_status(build_id).get('message', "no error message available")
                 raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
+
+            # still need to wait because status might be "creating" even though build status is "finished"
+            status_dict = self.get_status()
+            while status_dict["status"] != "active" or (build_status['status'] == "finished" and len(self.get_status()['components']) > 1):
+                print(".", end='')
+                sys.stdout.flush()
+                time.sleep(5)
+                status_dict = self.get_status()
+            print()
 
         return self.get_status()
 
