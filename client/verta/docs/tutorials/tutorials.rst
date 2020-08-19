@@ -51,6 +51,7 @@ Core Verta functionality
     Metadata Querying <querying>
     Merge Conflicts <merge>
     Packaging <packaging/packaging>
+    Organizations <organizations/organizations>
     Web App <webapp>
     Workspaces <workspaces>
     Client Config File <config>

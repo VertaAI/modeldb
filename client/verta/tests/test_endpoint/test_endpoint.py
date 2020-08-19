@@ -290,11 +290,12 @@ class TestEndpoint:
             Memory("500Mi"),
         ]
 
-        env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"}
+        env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai", "GIT_TERMINAL_PROMPT" : "1"}
 
         parameter_json = endpoint._form_update_body(resources, DirectUpdateStrategy(), None, env_vars, 0)
-        assert parameter_json == {'build_id': 0, 'env': [{"name":'CUDA_VISIBLE_DEVICES', 'value':'1,2'},
-                                                         {"name":'VERTA_HOST', 'value':'app.verta.ai'}],
+        assert parameter_json == {'build_id': 0, 'env': [{"name": 'CUDA_VISIBLE_DEVICES', 'value': '1,2'},
+                                                         {'name': 'GIT_TERMINAL_PROMPT', 'value': '1'},
+                                                         {"name": 'VERTA_HOST', 'value': 'app.verta.ai'}],
                                   'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
 
 
@@ -319,7 +320,7 @@ class TestEndpoint:
         x = model_for_deployment['train_features'].iloc[1].values
         deployed_model = endpoint.get_deployed_model()
 
-        assert deployed_model.predict([x]) == [2]
+        assert np.allclose(deployed_model.predict([x]), model.predict([x]))
         deployed_model_curl = deployed_model.get_curl()
         assert endpoint.path in deployed_model_curl
 

@@ -46,6 +46,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx_copybutton',
+    'sphinx_click',
 ]
 
 autodoc_member_order = 'bysource'

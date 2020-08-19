@@ -164,13 +164,13 @@ class Endpoint(object):
             An Experiment Run or a Model Version with a model logged.
         strategy : :class:`~verta.deployment.update._strategies._UpdateStrategy`
             Strategy (direct or canary) for updating the Endpoint.
-        wait : bool
+        wait : bool, default False
             Whether to wait for the Endpoint to finish updating before returning.
-        resources : list of :class:`~verta.deployment.resources._Resource`
+        resources : list of :class:`~verta.deployment.resources._Resource`, optional
             Resources allowed for the updated Endpoint.
-        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`
+        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`, optional
             Autoscaling condition for the updated Endpoint.
-        env_vars : dict of str to str
+        env_vars : dict of str to str, optional
             Environment variables.
 
         Returns
@@ -417,7 +417,9 @@ class Endpoint(object):
             update_body["autoscaling"] = autoscaling._as_dict()
 
         if env_vars:
-            update_body["env"] = list(map(lambda env_var: {"name": env_var, "value": env_vars[env_var]}, env_vars))
+            update_body["env"] = list(
+                sorted(map(lambda env_var: {"name": env_var, "value": env_vars[env_var]}, env_vars),
+                       key=lambda env_elem: env_elem["name"]))
 
         # prepare body for update request
         return update_body

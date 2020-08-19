@@ -43,4 +43,4 @@ to build the image locally.
 
 .. note::
     You might require permission from your system administrator to access the verified base images
-    used for Docker. Please contact your admin or the Verta team for support.
+    used for Docker. Please contact your admin or the Verta team at `support@verta.ai <mailto:support@verta.ai>`_.

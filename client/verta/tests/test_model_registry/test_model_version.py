@@ -1,3 +1,5 @@
+import six
+
 import tarfile
 
 import pytest
@@ -81,8 +83,9 @@ class TestModelVersion:
         assert "model" in repr
         assert "coef" in repr
 
-    def test_get_by_client(self, client):
+    def test_get_by_client(self, client, created_registered_models):
         registered_model = client.set_registered_model()
+        created_registered_models.append(registered_model)
         model_version = registered_model.get_or_create_version(name="my version")
 
         retrieved_model_version_by_id = client.get_registered_model_version(model_version.id)
@@ -331,9 +334,10 @@ class TestModelVersion:
 
         assert before == after + 1
 
-    def test_find(self, client):
+    def test_find(self, client, created_registered_models):
         name = "registered_model_test"
         registered_model = client.set_registered_model()
+        created_registered_models.append(registered_model)
         model_version = registered_model.get_or_create_version(name=name)
 
         find_result = registered_model.versions.find(["version == '{}'".format(name)])
@@ -365,6 +369,7 @@ class TestModelVersion:
             assert labels1 == labels2
             assert item._msg == msg_other
 
+    @pytest.mark.skip(reason="functionality postponed in Client")
     def test_archive(self, model_version):
         assert (not model_version.is_archived)
 
@@ -391,7 +396,8 @@ class TestModelVersion:
         model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
         assert len(model_version._msg.artifacts) == 4
 
-    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir, registered_model):
+    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir,
+                                     registered_model):
         download_to_path = "context.tgz"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -410,6 +416,17 @@ class TestModelVersion:
 
         assert "Dockerfile" in filepaths
 
+    def test_training_data(self, model_version, model_for_deployment):
+        X_train = model_for_deployment['train_features']
+        y_train = model_for_deployment['train_targets']
+        col_names = set(X_train.columns) | set([y_train.name])
+
+        model_version.log_training_data(X_train, y_train)
+        histogram = model_version._get_histogram()
+        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
+
+        assert set(retrieved_col_names) == col_names
+
     def test_attributes(self, client, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
 
@@ -426,3 +443,22 @@ class TestModelVersion:
 
         # Deleting non-existing key:
         model_version.del_attribute("non-existing")
+
+    def test_patch(self, registered_model):
+        NAME = "name"
+        DESCRIPTION = "description"
+        LABELS = ['label']
+        ATTRIBUTES = {'attribute': 3}
+
+        version = registered_model.create_version(NAME)
+
+        version.set_description(DESCRIPTION)
+        assert version.name == NAME
+
+        version.add_labels(LABELS)
+        assert version.get_description() == DESCRIPTION
+
+        version.add_attributes(ATTRIBUTES)
+        assert version.get_labels() == LABELS
+
+        assert version.get_attributes() == ATTRIBUTES
