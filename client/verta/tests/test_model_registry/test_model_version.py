@@ -443,3 +443,22 @@ class TestModelVersion:
 
         # Deleting non-existing key:
         model_version.del_attribute("non-existing")
+
+    def test_patch(self, registered_model):
+        NAME = "name"
+        DESCRIPTION = "description"
+        LABELS = ['label']
+        ATTRIBUTES = {'attribute': 3}
+
+        version = registered_model.create_version(NAME)
+
+        version.set_description(DESCRIPTION)
+        assert version.name == NAME
+
+        version.add_labels(LABELS)
+        assert version.get_description() == DESCRIPTION
+
+        version.add_attributes(ATTRIBUTES)
+        assert version.get_labels() == LABELS
+
+        assert version.get_attributes() == ATTRIBUTES

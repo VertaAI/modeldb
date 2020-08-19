@@ -9,7 +9,7 @@ from google.protobuf.struct_pb2 import Value
 import requests
 
 from .entity_registry import _ModelDBRegistryEntity
-from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
+from .._protos.public.registry import RegistryService_pb2 as _RegistryService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 import requests
@@ -53,7 +53,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
     """
     def __init__(self, conn, conf, msg):
-        super(RegisteredModelVersion, self).__init__(conn, conf, _ModelVersionService, "registered_model_version", msg)
+        super(RegisteredModelVersion, self).__init__(conn, conf, _RegistryService, "registered_model_version", msg)
 
     def __repr__(self):
         self._refresh_cache()
@@ -105,7 +105,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     @property
     def workspace(self):
         self._refresh_cache()
-        Message = _ModelVersionService.GetRegisteredModelRequest
+        Message = _RegistryService.GetRegisteredModelRequest
         response = self._conn.make_proto_request(
             "GET", "/api/v1/registry/registered_models/{}".format(self.registered_model_id)
         )
@@ -136,7 +136,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
-        Message = _ModelVersionService.GetModelVersionRequest
+        Message = _RegistryService.GetModelVersionRequest
         endpoint = "/api/v1/registry/model_versions/{}".format(id)
         response = conn.make_proto_request("GET", endpoint)
 
@@ -149,7 +149,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         else:
             raise TypeError("`name` must be a string")
 
-        Message = _ModelVersionService.FindModelVersionRequest
+        Message = _RegistryService.FindModelVersionRequest
         predicates = [
             _CommonCommonService.KeyValueQuery(key="version",
                                                value=value,
@@ -169,8 +169,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, experiment_run_id=None):
-        ModelVersionMessage = _ModelVersionService.ModelVersion
-        SetModelVersionMessage = _ModelVersionService.SetModelVersion
+        ModelVersionMessage = _RegistryService.ModelVersion
+        SetModelVersionMessage = _RegistryService.SetModelVersion
         registered_model_id = ctx.registered_model.id
 
         model_version_msg = ModelVersionMessage(registered_model_id=registered_model_id, version=name,
@@ -184,7 +184,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         print("created new ModelVersion: {}".format(model_version.version))
         return model_version
 
-    ModelVersionMessage = _ModelVersionService.ModelVersion
+    ModelVersionMessage = _RegistryService.ModelVersion
 
     def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
         """
@@ -464,7 +464,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
-        Message = _ModelVersionService.GetUrlForArtifact
+        Message = _RegistryService.GetUrlForArtifact
         msg = Message(
             model_version_id=self.id,
             key=key,
@@ -525,7 +525,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                     self._conn.socket,
                     self.id
                 )
-                msg = _ModelVersionService.CommitArtifactPart(
+                msg = _RegistryService.CommitArtifactPart(
                     model_version_id=self.id,
                     key=key
                 )
@@ -542,7 +542,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                 self._conn.socket,
                 self.id
             )
-            msg = _ModelVersionService.CommitMultipartArtifact(
+            msg = _RegistryService.CommitMultipartArtifact(
                 model_version_id=self.id,
                 key=key
             )
