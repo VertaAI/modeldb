@@ -22,6 +22,16 @@ class _UpdateStrategy(object):
         pass
 
 class DirectUpdateStrategy(_UpdateStrategy):
+    """
+
+    The JSON equivalent for this is:
+
+    .. code-block:: json
+        {
+            "strategy": "direct"
+        }
+
+    """
     _STRATEGY = "rollout"
 
     def _as_build_update_req_body(self, build_id):
@@ -31,6 +41,21 @@ class DirectUpdateStrategy(_UpdateStrategy):
         }
 
 class CanaryUpdateStrategy(_UpdateStrategy):
+    """
+
+    The JSON equivalent for this is:
+
+    .. code-block:: json
+        {
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.2,
+                "progress_interval_seconds": 10,
+                "rules": []
+            }
+        }
+
+    """
     _STRATEGY = "canary"
 
     def __init__(self, interval, step):
