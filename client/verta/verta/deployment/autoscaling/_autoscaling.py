@@ -6,7 +6,7 @@ class Autoscaling(object):
     """
     Represents autoscaling configuration for Endpoint.
 
-    To be passed to :meth:`verta._deployment.endpoint.Endpoint.update`.
+    To be passed to :meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>`.
 
     Parameters
     ----------
