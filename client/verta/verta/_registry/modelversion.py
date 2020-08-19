@@ -756,10 +756,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         # build KeyValues
         attribute_keyvals = []
-        if overwrite:
-            existing_attrs = {}
-        else:
-            existing_attrs = self.get_attributes()
+        existing_attrs = self.get_attributes()
         for key, value in six.viewitems(attrs):
             if not key in existing_attrs or overwrite:
                 attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
