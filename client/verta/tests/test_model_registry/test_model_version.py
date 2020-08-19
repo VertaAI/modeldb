@@ -468,6 +468,7 @@ class TestDeployable:
     """Deployment-related functionality"""
     # TODO: move tests from TestModelVersion before merging
     def test_fetch_artifacts(self, model_version, strs, flat_dicts):
+        strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
         for key, artifact in zip(strs, flat_dicts):
             model_version.log_artifact(key, artifact)
 

@@ -210,6 +210,7 @@ class TestLogModel:
 
 class TestFetchArtifacts:
     def test_fetch_artifacts(self, experiment_run, strs, flat_dicts):
+        strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
         for key, artifact in zip(strs, flat_dicts):
             experiment_run.log_artifact(key, artifact)
 
