@@ -465,7 +465,7 @@ class TestModelVersion:
         assert version.get_attributes() == ATTRIBUTES
 
 # TODO: move related tests from TestModelVersion before merging
-class TestDeployable:
+class TestDeployability:
     """Deployment-related functionality"""
     def test_fetch_artifacts(self, model_version, strs, flat_dicts):
         strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test

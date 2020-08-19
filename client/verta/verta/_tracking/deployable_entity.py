@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import abc
 import copy
 import glob
 import os
@@ -36,6 +37,7 @@ _CACHE_DIR = os.path.join(
 )
 
 
+@six.add_metaclass(abc.ABCMeta)
 class _DeployableEntity(_ModelDBEntity):
     @property
     def _histogram_endpoint(self):
@@ -131,6 +133,10 @@ class _DeployableEntity(_ModelDBEntity):
         path = os.path.join(_CACHE_DIR, name)
         return path if os.path.exists(path) else None
 
+    @abc.abstractmethod
+    def _get_artifact(self, key):
+        raise NotImplementedError
+
     def fetch_artifacts(self, keys):
         """
         Downloads artifacts that are associated with a class model.
@@ -173,19 +179,14 @@ class _DeployableEntity(_ModelDBEntity):
 
         # validate that `keys` are actually logged
         self._refresh_cache()
-        run_msg = self._msg
-        existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
+        existing_artifact_keys = {artifact.key for artifact in self._msg.artifacts}
         unlogged_artifact_keys = set(keys) - existing_artifact_keys
         if unlogged_artifact_keys:
             raise ValueError("`keys` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
 
         # get artifact checksums
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params={'id': self.id})
-        _utils.raise_for_http_error(response)
-        paths = {artifact['key']: artifact['path']
-                 for artifact in _utils.body_to_json(response)['artifacts']}
+        paths = {artifact.key: artifact.path
+                 for artifact in self._msg.artifacts}
 
         artifacts = dict()
         for key in keys:
