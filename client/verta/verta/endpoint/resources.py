@@ -40,7 +40,7 @@ class CpuMillis(_Resource):
     --------
     .. code-block:: python
 
-        from verta.deployment.resources import CpuMillis
+        from verta.endpoint.resources import CpuMillis
         cpu = CpuMillis(250)
 
     """
@@ -70,7 +70,7 @@ class Memory(_Resource):
     --------
     .. code-block:: python
 
-        from verta.deployment.resources import Memory
+        from verta.endpoint.resources import Memory
         memory = Memory("100M")
 
     """

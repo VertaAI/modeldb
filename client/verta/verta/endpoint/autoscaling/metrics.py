@@ -57,7 +57,7 @@ class CpuUtilizationTarget(_AutoscalingMetric):
     --------
     .. code-block:: python
 
-        from verta.deployment.autoscaling.metrics import CpuUtilizationTarget
+        from verta.endpoint.autoscaling.metrics import CpuUtilizationTarget
         metric = CpuUtilizationTarget(0.6)
     """
     _METRIC_ID = 1001
@@ -79,7 +79,7 @@ class RequestsPerWorkerTarget(_AutoscalingMetric):
     --------
     .. code-block:: python
 
-        from verta.deployment.autoscaling.metrics import RequestsPerWorkerTarget
+        from verta.endpoint.autoscaling.metrics import RequestsPerWorkerTarget
         metric = RequestsPerWorkerTarget(1000)
 
     """
@@ -102,7 +102,7 @@ class MemoryUtilizationTarget(_AutoscalingMetric):
     --------
     .. code-block:: python
 
-        from verta.deployment.autoscaling.metrics import MemoryUtilizationTarget
+        from verta.endpoint.autoscaling.metrics import MemoryUtilizationTarget
         metric = MemoryUtilizationTarget(0.7)
 
     """
