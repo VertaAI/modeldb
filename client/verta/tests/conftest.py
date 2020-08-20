@@ -272,7 +272,7 @@ def client(host, port, email, dev_key):
 
     proj = client._ctx.proj
     if proj is not None:
-        utils.delete_project(proj.id, client._conn)
+        proj.delete()
 
     print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
