@@ -23,6 +23,7 @@ class Resources(object):
     The JSON equivalent for this is:
 
     .. code-block:: json
+
         {
             "resources": {'cpu_millis': 250, 'memory': '512Mi'}
         }
