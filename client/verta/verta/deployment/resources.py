@@ -66,7 +66,7 @@ class Resources(object):
             raise ValueError(self.CPU_ERR_MSG)
 
     def _validate_memory(self, memory):
-        if not isinstance(memory, str):
+        if not isinstance(memory, six.string_types):
             raise TypeError(self.MEMORY_ERR_MSG)
         if not re.match(r'^[0-9]+[e]?[0-9]*[E|P|T|G|M|K]?[i]?$', memory):
             raise ValueError(self.MEMORY_ERR_MSG)
