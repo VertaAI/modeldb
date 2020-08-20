@@ -424,7 +424,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         Parameters
         ----------
-        environment : `verta.environment._Environment.`
+        environment : `verta.environment.Python.`
             Environment to log.
 
         """
