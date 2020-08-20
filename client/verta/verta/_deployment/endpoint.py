@@ -277,7 +277,7 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
         return response.json()["id"]
 
-    def update_from_config(self, filepath):
+    def update_from_config(self, filepath, wait=False):
         """
         Updates the Endpoint via a YAML or JSON config file.
 
@@ -285,6 +285,8 @@ class Endpoint(object):
         ----------
         filepath : str
             Path to the YAML or JSON config file.
+        wait : bool, default False
+            Whether to wait for the Endpoint to finish updating before returning.
 
         Returns
         -------
@@ -315,9 +317,9 @@ class Endpoint(object):
         if not update_dict:
             raise ValueError("input file must be a json or yaml")
 
-        return self._update_from_dict(update_dict)
+        return self._update_from_dict(update_dict, wait=wait)
 
-    def _update_from_dict(self, update_dict):
+    def _update_from_dict(self, update_dict, wait=False):
         if update_dict["strategy"] == "direct":
             strategy = DirectUpdateStrategy()
         elif update_dict["strategy"] == "canary":
@@ -353,7 +355,7 @@ class Endpoint(object):
         else:
             raise RuntimeError("must provide either model_version_id or run_id")
 
-        return self.update(model_reference, strategy, resources=resources_list, autoscaling=autoscaling_obj, env_vars=update_dict.get("env_vars"))
+        return self.update(model_reference, strategy, wait=wait, resources=resources_list, autoscaling=autoscaling_obj, env_vars=update_dict.get("env_vars"))
 
     def get_status(self):
         """

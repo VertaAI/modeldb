@@ -415,7 +415,7 @@ class TestEndpoint:
 
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_model(classifier)
+        model_version.log_model(classifier, custom_modules=[])
 
         env = Python(requirements=["scikit-learn"])
         model_version.log_environment(env)
@@ -453,10 +453,7 @@ class TestEndpoint:
         with open(filepath, "w") as f:
             json.dump(strategy_dict, f)
 
-        endpoint.update_from_config(filepath)
-
-        while not endpoint.get_status()['status'] == "active":
-            time.sleep(3)
+        endpoint.update_from_config(filepath, wait=True)
 
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
