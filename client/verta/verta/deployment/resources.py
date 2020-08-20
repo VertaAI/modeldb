@@ -51,8 +51,10 @@ class Resources(object):
     ])
 
     def __init__(self, cpu_millis=None, memory=None):
-        self._validate_cpu(cpu_millis)
-        self._validate_memory(memory)
+        if cpu_millis is not None:
+            self._validate_cpu(cpu_millis)
+        if memory is not None:
+            self._validate_memory(memory)
 
         self.cpu_millis = cpu_millis
         self.memory = memory
