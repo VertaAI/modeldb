@@ -26,7 +26,7 @@ We can also make queries via cURL requests. An example request is given in the s
 
     print(endpoint)
 
-    # should print out sth similar to:
+    # should print out something similar to:
     # path: <some-path>
     # id: <some-id>
     # curl: curl -X POST <prediction-url> -d '' -H "Content-Type: application/json"
