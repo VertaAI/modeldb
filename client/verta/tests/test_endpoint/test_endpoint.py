@@ -284,6 +284,10 @@ class TestEndpoint:
 
         assert token is None
 
+        token = verta._internal_utils._utils.generate_default_name()
+        endpoint.create_access_token(token)
+        assert endpoint.get_access_token() == token
+
     def test_create_update_body(self):
         endpoint = Endpoint(None, None, None, None)
         resources = [
@@ -323,12 +327,15 @@ class TestEndpoint:
         created_endpoints.append(endpoint)
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
+        token = verta._internal_utils._utils.generate_default_name()
+        endpoint.create_access_token(token)
         x = model_for_deployment['train_features'].iloc[1].values
         deployed_model = endpoint.get_deployed_model()
 
         assert np.allclose(deployed_model.predict([x]), model.predict([x]))
         deployed_model_curl = deployed_model.get_curl()
         assert endpoint.path in deployed_model_curl
+        assert "-H \"Access-token: {}\"".format(token) in deployed_model_curl
 
         new_model = model_for_deployment['model'].fit(
             np.random.random(model_for_deployment['train_features'].shape),
