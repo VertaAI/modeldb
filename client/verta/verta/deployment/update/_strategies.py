@@ -11,7 +11,7 @@ class _UpdateStrategy(object):
     _STRATEGY = ""
 
     @abc.abstractmethod
-    def _as_build_update_req_body(self, build_id):
+    def _as_build_update_req_body(self):
         """
         Returns
         -------
@@ -20,6 +20,7 @@ class _UpdateStrategy(object):
 
         """
         pass
+
 
 class DirectUpdateStrategy(_UpdateStrategy):
     """
@@ -32,14 +33,23 @@ class DirectUpdateStrategy(_UpdateStrategy):
             "strategy": "direct"
         }
 
+    Represents direct update strategy for Endpoint.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.update import DirectUpdateStrategy
+        strategy = DirectUpdateStrategy()
+
     """
     _STRATEGY = "rollout"
 
-    def _as_build_update_req_body(self, build_id):
+    def _as_build_update_req_body(self):
         return {
-            'build_id': build_id,
             'strategy': self._STRATEGY,
         }
+
 
 class CanaryUpdateStrategy(_UpdateStrategy):
     """
@@ -57,19 +67,26 @@ class CanaryUpdateStrategy(_UpdateStrategy):
             }
         }
 
+    Represents canary update strategy for Endpoint.
+
+    Parameters
+    ----------
+    interval : int
+        Rollout interval, in seconds.
+    step : float in (0, 1]
+        Ratio of deployment to roll out per `interval`.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.update import CanaryUpdateStrategy
+        strategy = CanaryUpdateStrategy(interval=10, step=.1)
+
     """
     _STRATEGY = "canary"
 
     def __init__(self, interval, step):
-        """
-        Parameters
-        ----------
-        interval : int
-            Rollout interval, in seconds.
-        step : float in (0, 1]
-            Ratio of deployment to roll out per `interval`.
-
-        """
         interval_err_msg = "`interval` must be int greater than 0"
         if not isinstance(interval, int):
             raise TypeError(interval_err_msg)
@@ -86,12 +103,11 @@ class CanaryUpdateStrategy(_UpdateStrategy):
         self._progress_step = step
         self._rules = []
 
-    def _as_build_update_req_body(self, build_id):
+    def _as_build_update_req_body(self):
         if not self._rules:
             raise RuntimeError("canary update strategy must have at least one rule")
 
         return {
-            'build_id': build_id,
             'strategy': self._STRATEGY,
             'canary_strategy': {
                 'progress_interval_seconds': self._progress_interval_seconds,

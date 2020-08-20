@@ -180,30 +180,17 @@ class Endpoint(object):
         status : dict of str to {None, bool, float, int, str, list, dict}
 
         """
-        if not isinstance(strategy, _UpdateStrategy):
-            raise TypeError("`strategy` must be an object from verta.deployment.strategies")
-
         if not isinstance(model_reference, (RegisteredModelVersion, experimentrun.ExperimentRun)):
             raise TypeError("`model_reference` must be an ExperimentRun or RegisteredModelVersion")
 
-        if autoscaling and not isinstance(autoscaling, Autoscaling):
-            raise TypeError("`autoscaling` must be an Autoscaling object")
+        update_body = self._create_update_body(strategy, resources, autoscaling, env_vars)
 
-        if env_vars:
-            env_vars_err_msg = "`env_vars` must be dictionary of str keys and str values"
-            if not isinstance(env_vars, dict):
-                raise TypeError(env_vars_err_msg)
-            for key, value in env_vars.items():
-                if not isinstance(key, six.string_types) or not isinstance(value, six.string_types):
-                    raise TypeError(env_vars_err_msg)
+        # create new build
+        update_body['build_id'] = self._create_build(model_reference)
 
-        # Create new build:
-        build_id = self._create_build(model_reference)
-        return self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
+        return self._update_from_build(update_body, wait)
 
-    def _update_from_build(self, build_id, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
-        update_body = self._form_update_body(resources, strategy, autoscaling, env_vars, build_id)
-
+    def _update_from_build(self, update_body, wait=False):
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
             self._conn.scheme,
@@ -409,21 +396,39 @@ class Endpoint(object):
             return None
         return tokens[0]['creator_request']['value']
 
-    def _form_update_body(self, resources, strategy, autoscaling, env_vars, build_id):
-        update_body = strategy._as_build_update_req_body(build_id)
-        if resources:
+    def _create_update_body(self, strategy, resources=None, autoscaling=None, env_vars=None):
+        """
+        Converts endpoint update/config util classes into a JSON-friendly dict.
+
+        """
+        if not isinstance(strategy, _UpdateStrategy):
+            raise TypeError("`strategy` must be an object from verta.deployment.strategies")
+
+        if autoscaling and not isinstance(autoscaling, Autoscaling):
+            raise TypeError("`autoscaling` must be an Autoscaling object")
+
+        if env_vars:
+            env_vars_err_msg = "`env_vars` must be dictionary of str keys and str values"
+            if not isinstance(env_vars, dict):
+                raise TypeError(env_vars_err_msg)
+            for key, value in env_vars.items():
+                if not isinstance(key, six.string_types) or not isinstance(value, six.string_types):
+                    raise TypeError(env_vars_err_msg)
+
+        update_body = strategy._as_build_update_req_body()
+
+        if resources is not None:
             update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
                                               map(lambda resource: resource.to_dict(), resources))
 
-        if autoscaling:
+        if autoscaling is not None:
             update_body["autoscaling"] = autoscaling._as_dict()
 
-        if env_vars:
+        if env_vars is not None:
             update_body["env"] = list(
                 sorted(map(lambda env_var: {"name": env_var, "value": env_vars[env_var]}, env_vars),
                        key=lambda env_elem: env_elem["name"]))
 
-        # prepare body for update request
         return update_body
 
     def get_deployed_model(self):

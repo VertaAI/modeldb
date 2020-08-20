@@ -17,7 +17,7 @@ import requests
 import yaml
 
 import verta
-from verta._tracking.experimentrun import _CACHE_DIR
+from verta._tracking.deployable_entity import _CACHE_DIR
 from verta._internal_utils import _histogram_utils
 from verta._internal_utils import _utils
 
@@ -210,6 +210,7 @@ class TestLogModel:
 
 class TestFetchArtifacts:
     def test_fetch_artifacts(self, experiment_run, strs, flat_dicts):
+        strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
         for key, artifact in zip(strs, flat_dicts):
             experiment_run.log_artifact(key, artifact)
 

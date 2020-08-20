@@ -72,6 +72,13 @@ class MaximumAverageLatencyThresholdRule(_UpdateRule):
             ]
         }
 
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.update.rules import MaximumAverageLatencyThresholdRule
+        rule = MaximumAverageLatencyThresholdRule(100)
+
     """
     _RULE_ID = 1005
     _PARENT_NAME = "latency_avg_max"
@@ -97,6 +104,13 @@ class MaximumP90LatencyThresholdRule(_UpdateRule):
                 }
             ]
         }
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.update.rules import MaximumP90LatencyThresholdRule
+        rule = MaximumP90LatencyThresholdRule(100)
 
     """
     _RULE_ID = 1006
@@ -124,6 +138,13 @@ class MaximumRequestErrorPercentageThresholdRule(_UpdateRule):
             ]
         }
 
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.update.rules import MaximumRequestErrorPercentageThresholdRule
+        rule = MaximumRequestErrorPercentageThresholdRule(0.5)
+
     """
     _RULE_ID = 1007
     _PARENT_NAME = "error_4xx_rate"
@@ -149,6 +170,13 @@ class MaximumServerErrorPercentageThresholdRule(_UpdateRule):
                 }
             ]
         }
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.update.rules import MaximumServerErrorPercentageThresholdRule
+        rule = MaximumServerErrorPercentageThresholdRule(0.5)
 
     """
     _RULE_ID = 1008

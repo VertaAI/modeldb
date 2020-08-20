@@ -1,4 +1,4 @@
-Logging and Querying Model Metadata
+Logging and querying model metadata
 ===================================
 
 Setup
@@ -46,12 +46,12 @@ organize your work:
     run = client.set_experiment_run("RBF Kernel")
     # created new ExperimentRun: RBF Kernel
 
-A *Project* is a goal. We're going to classify multiple handwritten digits.
+A *project* is a goal. We're going to classify multiple handwritten digits.
 
-An *Experiment* is a strategy for that goal. We'll use a support vector machine as our classification
+An *experiment* is a strategy for that goal. We'll use a support vector machine as our classification
 model.
 
-An *Experiment Run* is an execution of that strategy. We'll train a support vector machine using the
+An *experiment run* is an execution of that strategy. We'll train a support vector machine using the
 radial basis function kernel.
 
 Note that you are not restricted to any naming conventions here. Feel free to use names that you
@@ -67,7 +67,7 @@ If you'd like, you could also add a description, tags, and attributes:
     #                                 {'architecture': "SVM"})
 
 
-Run Tracking
+Run tracking
 ------------
 
 scikit-learn has built-in datasets we can use:
@@ -104,7 +104,7 @@ To see how well we did, we can calculate our mean accuracy on the entire trainin
 |
 
 That's not much better than purely guessing! So how do we keep a more permanent record of this abysmal
-*Experiment Run*? With Verta of course:
+*experiment run*? With Verta of course:
 
 .. code-block:: python
 
@@ -114,7 +114,7 @@ That's not much better than purely guessing! So how do we keep a more permanent 
 
 |
 
-But logging doesn't need to occur all at once at the end. Let's do another *Experiment Run* with a
+But logging doesn't need to occur all at once at the end. Let's do another *experiment run* with a
 linear kernel—this time interweaving the logging statements with our training process:
 
 .. code-block:: python
@@ -132,7 +132,7 @@ linear kernel—this time interweaving the logging statements with our training 
 Querying
 --------
 
-Organizing *Experiment Run*\ s under *Experiment*\ s gives us the ability to retrieve them as a group:
+Organizing *experiment run*\ s under *experiment*\ s gives us the ability to retrieve them as a group:
 
 .. code-block:: python
 
