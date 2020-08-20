@@ -337,7 +337,7 @@ def created_datasets(client):
     yield created_datasets
 
     if created_datasets:
-        utils.delete_datasets(list(set(dataset.id for dataset in created_datasets)), client._conn)
+        client.delete_datasets(list(set(dataset.id for dataset in created_datasets)))
 
 
 @pytest.fixture
