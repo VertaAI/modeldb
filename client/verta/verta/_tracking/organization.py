@@ -60,6 +60,17 @@ class Organization:
                 raise ValueError(unknown_value_error.format(key))
         return msg
 
+    @classmethod
+    def _get_by_name(cls, conn, name):
+        Message = _Organization.GetOrganizationByName
+        msg = Message(org_name=name)
+
+        response = conn.make_proto_request("GET",
+                                           "/api/v1/uac-proxy/organization/getOrganizationByName",
+                                           params=msg)
+        org = conn.must_proto_response(response, Message.Response).organization
+        return cls(conn, org)
+
     """
     Adds member to an organization
 

@@ -1381,3 +1381,6 @@ class Client(object):
 
     def _create_organization(self, name, desc=None, collaborator_type=None, global_can_deploy=None):
         return Organization._create(self._conn, name, desc, collaborator_type, global_can_deploy)
+
+    def _get_organization(self, name):
+        return Organization._get_by_name(self._conn, name)
