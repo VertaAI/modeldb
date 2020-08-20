@@ -127,11 +127,6 @@ def get_build_ids(status):
     return set(map(lambda comp: comp["build_id"], status["components"]))
 
 
-def delete_experiment_run(id_, conn):
-    request_url = "{}://{}/api/v1/modeldb/experiment-run/deleteExperimentRun".format(conn.scheme, conn.socket)
-    response = requests.delete(request_url, json={'id': id_}, headers=conn.auth)
-    _utils.raise_for_http_error(response)
-
 def delete_datasets(ids, conn):
     request_url = "{}://{}/api/v1/modeldb/dataset/deleteDatasets".format(conn.scheme, conn.socket)
     response = requests.delete(request_url, json={'ids': ids}, headers=conn.auth)
