@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import copy
 
-from .._protos.public.registry import RegistryService_pb2 as _RegisteredModelService
+from .._protos.public.registry import RegistryService_pb2 as _RegistryService
 from .._internal_utils import _utils
 
 from .modelversion import RegisteredModelVersion
@@ -25,7 +25,7 @@ class RegisteredModelVersions(_utils.LazyList):
     def __init__(self, conn, conf):
         super(RegisteredModelVersions, self).__init__(
             conn, conf,
-            _RegisteredModelService.FindModelVersionRequest(),
+            _RegistryService.FindModelVersionRequest(),
         )
 
     def __repr__(self):

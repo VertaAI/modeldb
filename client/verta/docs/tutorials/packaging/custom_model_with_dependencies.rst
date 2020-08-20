@@ -75,6 +75,9 @@ dependency like
 By doing this, whenever an object of ``MyModel`` is instantiated by Verta, the artifacts will be
 available for consumption and passed to the constructor automatically.
 
+Local testing
+-------------
+
 For local testing, you can use the equivalent method ``fetch_artifacts()`` to fetch the artifacts
 and initialize the model.
 
