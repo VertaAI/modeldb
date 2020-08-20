@@ -1425,6 +1425,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       String sortBy = queryParameters.getSortKey();
       if (sortBy == null || sortBy.isEmpty()) {
         sortBy = ModelDBConstants.DATE_UPDATED;
+      } else if (sortBy.equals(ModelDBConstants.TIME_CREATED)) {
+        sortBy = ModelDBConstants.DATE_CREATED;
       }
 
       Order orderBy =
