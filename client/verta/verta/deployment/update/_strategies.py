@@ -24,6 +24,15 @@ class _UpdateStrategy(object):
 
 class DirectUpdateStrategy(_UpdateStrategy):
     """
+
+    The JSON equivalent for this is:
+
+    .. code-block:: json
+
+        {
+            "strategy": "direct"
+        }
+
     Represents direct update strategy for Endpoint.
 
     Examples
@@ -44,6 +53,20 @@ class DirectUpdateStrategy(_UpdateStrategy):
 
 class CanaryUpdateStrategy(_UpdateStrategy):
     """
+
+    The JSON equivalent for this is:
+
+    .. code-block:: json
+    
+        {
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.2,
+                "progress_interval_seconds": 10,
+                "rules": []
+            }
+        }
+
     Represents canary update strategy for Endpoint.
 
     Parameters
