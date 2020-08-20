@@ -4,9 +4,9 @@ import json
 import click
 
 from .registry import registry
-from ..multiple_arguments import MultipleArguments
 from ... import Client
 from ...environment import Python
+from ...utils import multiple_arguments_for_each
 
 
 @registry.group(name="update")
@@ -73,10 +73,9 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
     except ValueError:
         raise click.BadParameter("version {} not found".format(version_name))
 
-    artifacts = MultipleArguments(artifact, "artifact")
-    artifacts.for_each(
-        lambda key, path: model_version.log_artifact(key, path, overwrite=overwrite),
-        lambda: model_version.get_artifact_keys(), overwrite)
+    multiple_arguments_for_each(artifact, "artifact",
+                                lambda key, path: model_version.log_artifact(key, path, overwrite=overwrite),
+                                lambda: model_version.get_artifact_keys(), overwrite)
 
     if not overwrite and model and model_version.has_model:
         raise click.BadParameter("a model has already been associated with the version; consider using --overwrite flag")
@@ -97,12 +96,7 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
     add_attributes(model_version, attribute, overwrite)
 
 
-def add_attribute(model_version, key, value):
-    model_version.add_attribute(key, json.loads(value))
-
-
 def add_attributes(model_version, attribute, overwrite):
-    attributes = MultipleArguments(attribute, "attribute")
-    attributes.for_each(
-        lambda key, value: add_attribute(model_version, key, value),
+    multiple_arguments_for_each(attribute, "attribute",
+        lambda key, value: model_version.add_attribute(key, json.loads(value)),
         lambda: model_version._get_attribute_keys(), overwrite)
