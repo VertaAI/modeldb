@@ -79,6 +79,10 @@ class Organization:
         status = self.conn.must_proto_response(response, Message.Response).status
 
     def delete(self):
+        """
+        Deletes this organization.
+
+        """
         Message = _Organization.DeleteOrganization
         endpoint = "/api/v1/uac-proxy/organization/deleteOrganization"
         msg = Message(org_id=self.id)
