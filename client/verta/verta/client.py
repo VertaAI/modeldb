@@ -1437,6 +1437,15 @@ class Client(object):
         return Organization._create(self._conn, name, desc, collaborator_type, global_can_deploy)
 
     def delete_datasets(self, ids):
+        """
+        Delete datasets.
+
+        Parameters
+        ----------
+        ids : list of strr
+            List of IDs of datasets to delete.
+
+        """
         request_url = "{}://{}/api/v1/modeldb/dataset/deleteDatasets".format(self._conn.scheme, self._conn.socket)
         response = requests.delete(request_url, json={'ids': ids}, headers=self._conn.auth)
         _utils.raise_for_http_error(response)
