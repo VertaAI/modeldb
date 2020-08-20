@@ -44,10 +44,10 @@ class Resources(object):
     """
     CPU_ERR_MSG = "`cpu_millis` must be int greater than 0"
     MEMORY_ERR_MSG = ' '.join([
-        "`memory` must be a string representing a plain integer"
-        "or a fixed-point integer with suffixes"
-        "E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki;"
-        "for example: 128974848, 129e6, 129M, 123Mi"
+        "`memory` must be a string representing a plain integer",
+        "or a fixed-point integer with suffixes",
+        "E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki;",
+        "for example: 128974848, 129e6, 129M, 123Mi",
     ])
 
     def __init__(self, cpu_millis=None, memory=None):
