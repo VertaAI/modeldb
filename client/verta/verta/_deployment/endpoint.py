@@ -418,8 +418,7 @@ class Endpoint(object):
         update_body = strategy._as_build_update_req_body()
 
         if resources is not None:
-            update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
-                                              map(lambda resource: resource.to_dict(), resources))
+            update_body["resources"] = resources._as_dict()
 
         if autoscaling is not None:
             update_body["autoscaling"] = autoscaling._as_dict()
