@@ -1,6 +1,6 @@
 import pytest
 
-from verta.deployment.resources import CpuMillis, Memory
+from verta.endpoint.resources import CpuMillis, Memory
 
 
 @pytest.mark.parametrize("data", [3, 64])

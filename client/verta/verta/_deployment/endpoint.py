@@ -9,12 +9,12 @@ from functools import reduce
 
 from ..external import six
 
-from ..deployment.autoscaling import Autoscaling
-from ..deployment.autoscaling.metrics import _AutoscalingMetric
-from ..deployment.resources import _Resource
-from ..deployment.update.rules import _UpdateRule
+from ..endpoint.autoscaling import Autoscaling
+from ..endpoint.autoscaling.metrics import _AutoscalingMetric
+from ..endpoint.resources import _Resource
+from ..endpoint.update.rules import _UpdateRule
 from ..deployment import DeployedModel
-from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
+from ..endpoint.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
 from .._internal_utils import _utils
 from .._tracking import experimentrun
 from .._registry import RegisteredModelVersion

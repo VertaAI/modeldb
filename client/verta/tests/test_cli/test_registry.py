@@ -12,7 +12,7 @@ from verta._registry import RegisteredModel
 from verta._internal_utils import _utils
 from verta.environment import Python
 from verta.utils import ModelAPI
-from verta.deployment.update._strategies import DirectUpdateStrategy
+from verta.endpoint.update._strategies import DirectUpdateStrategy
 
 
 from ..utils import delete_organization, sys_path_manager
