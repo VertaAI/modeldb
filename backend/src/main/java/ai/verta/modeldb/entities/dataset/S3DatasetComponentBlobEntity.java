@@ -27,6 +27,7 @@ public class S3DatasetComponentBlobEntity {
     this.md5 = pathDatasetComponentBlob.getMd5();
     this.s3_version_id = s3DatasetComponentBlob.getS3VersionId();
     this.internal_versioned_path = pathDatasetComponentBlob.getInternalVersionedPath();
+    this.base_path = pathDatasetComponentBlob.getBasePath();
   }
 
   @EmbeddedId private S3DatasetComponentBlobId id;
@@ -51,6 +52,9 @@ public class S3DatasetComponentBlobEntity {
 
   @Column(name = "s3_version_id")
   private String s3_version_id;
+
+  @Column(name = "base_path", columnDefinition = "TEXT")
+  private String base_path;
 
   public String getPath() {
     return path;
@@ -79,7 +83,8 @@ public class S3DatasetComponentBlobEntity {
             .setSize(this.size)
             .setLastModifiedAtSource(this.last_modified_at_source)
             .setSha256(this.sha256)
-            .setMd5(this.md5);
+            .setMd5(this.md5)
+            .setBasePath(this.base_path);
     if (this.internal_versioned_path != null) {
       pathDatasetComponentBlob.setInternalVersionedPath(this.internal_versioned_path);
     }

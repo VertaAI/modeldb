@@ -1,7 +1,25 @@
 # -*- coding: utf-8 -*-
 from .metrics import _AutoscalingMetric
 
+
 class Autoscaling(object):
+    """
+    Represents autoscaling configuration for Endpoint.
+
+    To be passed to :meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>`.
+
+    Parameters
+    ----------
+    min_replicas : int
+        Minimum number of replicas to scale down to.
+    max_replicas : int
+        Maximum number of replicas to scale up to.
+    min_scale : float in (0, 1]
+        Minimum growth factor for scaling.
+    max_scale : float in (0, 1]
+        Maximum growth factor for scaling.
+
+    """
     def __init__(self, min_replicas=None, max_replicas=None, min_scale=None, max_scale=None):
         self._min_replicas = min_replicas
         self._max_replicas = max_replicas
@@ -30,6 +48,15 @@ class Autoscaling(object):
         )
 
     def add_metric(self, metric):
+        """
+        Adds a metric.
+
+        Parameters
+        ----------
+        metric : subclass of :class:`~verta.deployment.autoscaling.metrics._AutoscalingMetric`
+            Metric to add.
+
+        """
         if not isinstance(metric, _AutoscalingMetric):
             raise TypeError("`metric` must be an object from verta.deployment.autoscaling.metrics")
 

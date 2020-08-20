@@ -20,6 +20,8 @@ Update Strategies
 .. automodule:: verta.deployment.update._strategies
     :members:
 
+.. _canary-rules:
+
 Canary Update Rules
 ^^^^^^^^^^^^^^^^^^^
 .. automodule:: verta.deployment.update.rules
