@@ -25,7 +25,7 @@ class Resources(object):
     .. code-block:: json
 
         {
-            "resources": {'cpu_millis': 250, 'memory': '512Mi'}
+            "resources": {"cpu_millis": 250, "memory": "512Mi"}
         }
 
     Parameters
