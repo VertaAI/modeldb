@@ -344,7 +344,7 @@ def created_datasets(client):
 def registered_model(client):
     model = client.get_or_create_registered_model()
     yield model
-    utils.delete_registered_model(model.id, client._conn)
+    model.delete()
 
 
 @pytest.fixture
@@ -355,7 +355,7 @@ def created_registered_models(client):
     yield to_delete
 
     for registered_model in to_delete:
-        utils.delete_registered_model(registered_model.id, client._conn)
+        registered_model.delete()
 
 
 @pytest.fixture
