@@ -402,7 +402,8 @@ class Endpoint(object):
             return None
         return tokens[0]['creator_request']['value']
 
-    def _create_update_body(self, strategy, resources=None, autoscaling=None, env_vars=None):
+    @staticmethod
+    def _create_update_body(strategy, resources=None, autoscaling=None, env_vars=None):
         """
         Converts endpoint update/config util classes into a JSON-friendly dict.
 
@@ -478,48 +479,3 @@ class Endpoint(object):
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
         return response.json()
-
-    def download_manifest(
-            self, download_to_path, name, strategy,
-            resources=None, autoscaling=None, env_vars=None):
-        """
-        Downloads this Endpoint's Kubernetes manifest YAML.
-
-        Parameters
-        ----------
-        download_to_path : str
-            Path to download manifest YAML to.
-        name : str
-            Name of the Endpoint.
-        strategy : :class:`~verta.deployment.update._strategies._UpdateStrategy`
-            Strategy (direct or canary) for updating the Endpoint.
-        resources : list of :class:`~verta.deployment.resources._Resource`, optional
-            Resources allowed for the updated Endpoint.
-        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`, optional
-            Autoscaling condition for the updated Endpoint.
-        env_vars : dict of str to str, optional
-            Environment variables.
-
-        Returns
-        -------
-        downloaded_to_path : str
-            Absolute path where deployment YAML was downloaded to. Matches `download_to_path`.
-
-        """
-        data = {
-            'endpoint': {'path': self.path},
-            'name': name,
-            'update': self._create_update_body(strategy, resources, autoscaling, env_vars),
-            'workspace_name': self.workspace,
-        }
-
-        endpoint = "{}://{}/api/v1/deployment/operations/manifest".format(
-            self._conn.scheme,
-            self._conn.socket,
-        )
-
-        with _utils.make_request("POST", endpoint, self._conn, json=data, stream=True) as response:
-            _utils.raise_for_http_error(response)
-
-            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
-            return os.path.abspath(downloaded_to_path)

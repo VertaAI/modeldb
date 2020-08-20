@@ -1226,6 +1226,60 @@ class Client(object):
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
+    def download_endpoint_manifest(
+            self, download_to_path, path, name, strategy,
+            resources=None, autoscaling=None, env_vars=None,
+            workspace=None):
+        """
+        Downloads this endpoint's Kubernetes manifest YAML.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Local path to download manifest YAML to.
+        path : str
+            Path of the endpoint.
+        name : str
+            Name of the endpoint.
+        strategy : :class:`~verta.deployment.update._strategies._UpdateStrategy`
+            Strategy (direct or canary) for updating the endpoint.
+        resources : list of :class:`~verta.deployment.resources._Resource`, optional
+            Resources allowed for the updated endpoint.
+        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`, optional
+            Autoscaling condition for the updated endpoint.
+        env_vars : dict of str to str, optional
+            Environment variables.
+        workspace : str, optional
+            Workspace for the endpoint. If not provided, the current user's
+            personal workspace will be used.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where deployment YAML was downloaded to. Matches `download_to_path`.
+
+        """
+        if not path.startswith('/'):
+            path = '/' + path
+
+        data = {
+            'endpoint': {'path': path},
+            'name': name,
+            'update': Endpoint._create_update_body(strategy, resources, autoscaling, env_vars),
+            'workspace_name': workspace or self._get_personal_workspace(),
+        }
+
+        endpoint = "{}://{}/api/v1/deployment/operations/manifest".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        with _utils.make_request("POST", endpoint, self._conn, json=data, stream=True) as response:
+            _utils.raise_for_http_error(response)
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
+
     def _get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, id=None):
         """
         Gets or creates a Dataset.

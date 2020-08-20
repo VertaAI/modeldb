@@ -121,12 +121,10 @@ class TestEndpoint:
         str_repr = repr(endpoint)
         assert "curl: {}".format(endpoint.get_deployed_model().get_curl()) in str_repr
 
-    def test_download_manifest(self, client, created_endpoints, in_tempdir):
-        path = verta._internal_utils._utils.generate_default_name()
-        endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
-
+    def test_download_manifest(self, client, in_tempdir):
         download_to_path = "manifest.yaml"
+        path = verta._internal_utils._utils.generate_default_name()
+        name = verta._internal_utils._utils.generate_default_name()
 
         strategy = CanaryUpdateStrategy(interval=10, step=0.1)
         strategy.add_rule(MaximumAverageLatencyThresholdRule(0.1))
@@ -135,9 +133,10 @@ class TestEndpoint:
         autoscaling.add_metric(CpuUtilizationTarget(0.75))
         env_vars = {'foo': "bar"}
 
-        filepath = endpoint.download_manifest(
-            download_to_path="endpoint.yaml",
-            name="conrado",
+        filepath = client.download_endpoint_manifest(
+            download_to_path=download_to_path,
+            path=path,
+            name=name,
             strategy=strategy,
             autoscaling=autoscaling,
             resources=resources,
