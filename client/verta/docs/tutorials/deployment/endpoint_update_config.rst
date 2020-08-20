@@ -21,31 +21,15 @@ For example:
                 "progress_step": 0.05,
                 "progress_interval_seconds": 30,
                 "rules": [
-                    {
-                        "rule": "latency_avg_max",
-                        "rule_parameters": [
-                            {
-                                "name": "threshold",
-                                "value": "0.1"
-                            }
-                        ]
-                    },
-                    {
-                        "rule": "error_4xx_rate",
-                        "rule_parameters": [
-                            {
-                                "name": "threshold",
-                                "value": "1"
-                            }
-                        ]
-                    }
+                    {"rule": "latency_avg_max", "rule_parameters": [{"name": "threshold", "value": 0.1}]},
+                    {"rule": "error_4xx_rate", "rule_parameters": [{"name": "threshold", "value": 1}]}
                 ]
             },
             "autoscaling": {
                 "quantities": {"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0},
                 "metrics": [
-                    {"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.5"}]},
-                    {"metric": "memory_utilization", "parameters": [{"name": "target", "value": "0.7"}]}
+                    {"metric": "cpu_utilization", "parameters": [{"name": "target", "value": 0.5}]},
+                    {"metric": "memory_utilization", "parameters": [{"name": "target", "value": 0.7}]}
                 ]
             },
             "env_vars": {"VERTA_HOST": "<Verta host URL>"},
