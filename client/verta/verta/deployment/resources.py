@@ -8,7 +8,8 @@ from ..external import six
 
 class Resources(object):
     """
-    Computational resources allowed for an endpoint's model.
+    Computational resources allowed for an endpoint's model, to be passed to
+    :meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>`.
 
     Verta uses the same representation for memory `as Kubernetes
     <https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory>`__:
@@ -17,8 +18,6 @@ class Resources(object):
         using one of these suffixes: **E, P, T, G, M, K**. You can also use the
         power-of-two equivalents: **Ei, Pi, Ti, Gi, Mi, Ki**. For example, the
         following represent roughly the same value: 128974848, 129e6, 129M, 123Mi.
-
-    To be passed to :meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>`.
 
     The JSON equivalent for this is:
 
