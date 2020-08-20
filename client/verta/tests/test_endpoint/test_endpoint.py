@@ -131,7 +131,7 @@ class TestEndpoint:
         resources = [CpuMillis(100), Memory("128Mi")]
         autoscaling = Autoscaling(min_replicas=1, max_replicas=10, min_scale=0.1, max_scale=2)
         autoscaling.add_metric(CpuUtilizationTarget(0.75))
-        env_vars = {'foo': "bar"}
+        env_vars = {'env1': "var1", 'env2': "var2"}
 
         filepath = client.download_endpoint_manifest(
             download_to_path=download_to_path,
@@ -148,7 +148,15 @@ class TestEndpoint:
             manifest = yaml.safe_load(f)
 
         assert manifest['kind'] == "Endpoint"
-        assert manifest['spec']['endpoint']['spec']['ingress']['path'] == path
+
+        # check environment variables
+        containers = manifest['spec']['function']['spec']['templates']['deployment']['spec']['template']['spec']['containers']
+        retrieved_env_vars = {
+            env_var['name']: env_var['value']
+            for env_var
+            in containers[0]['env']
+        }
+        assert retrieved_env_vars == env_vars
 
     def test_direct_update(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
