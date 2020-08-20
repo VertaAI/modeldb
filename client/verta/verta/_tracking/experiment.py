@@ -89,3 +89,12 @@ class Experiment(_ModelDBEntity):
         expt = conn.must_proto_response(response, Message.Response).experiment
         print("created new Experiment: {}".format(expt.name))
         return expt
+
+    def delete(self):
+        """
+        Deletes this experiment.
+
+        """
+        request_url = "{}://{}/api/v1/modeldb/experiment/deleteExperiment".format(self._conn.scheme, self._conn.socket)
+        response = requests.delete(request_url, json={'id': self.id}, headers=self._conn.auth)
+        _utils.raise_for_http_error(response)
