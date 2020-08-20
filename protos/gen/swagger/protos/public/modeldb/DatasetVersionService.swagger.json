@@ -1547,6 +1547,9 @@
         },
         "internal_versioned_path": {
           "type": "string"
+        },
+        "base_path": {
+          "type": "string"
         }
       }
     },

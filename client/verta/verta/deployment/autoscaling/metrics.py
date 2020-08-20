@@ -45,7 +45,14 @@ class _AutoscalingMetric(object):
 
 class CpuUtilizationTarget(_AutoscalingMetric):
     """
-    Memory utilization target to trigger autoscaling.
+    CPU utilization target to trigger autoscaling.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.autoscaling.metrics import CpuUtilizationTarget
+        metric = CpuUtilizationTarget(0.6)
 
     """
     _METRIC_ID = 1001
@@ -55,7 +62,14 @@ class CpuUtilizationTarget(_AutoscalingMetric):
 
 class RequestsPerWorkerTarget(_AutoscalingMetric):
     """
-    CPU utilization target to trigger autoscaling.
+    Number of requests per worker target to trigger autoscaling.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.autoscaling.metrics import RequestsPerWorkerTarget
+        metric = RequestsPerWorkerTarget(1000)
 
     """
     _METRIC_ID = 1002
@@ -65,7 +79,14 @@ class RequestsPerWorkerTarget(_AutoscalingMetric):
 
 class MemoryUtilizationTarget(_AutoscalingMetric):
     """
-    Number of requests per worker target to trigger autoscaling.
+    Memory utilization target to trigger autoscaling.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.deployment.autoscaling.metrics import MemoryUtilizationTarget
+        metric = MemoryUtilizationTarget(0.7)
 
     """
     _METRIC_ID = 1003

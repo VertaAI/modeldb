@@ -10,8 +10,6 @@ import pathlib2
 import pprint
 import shutil
 import sys
-import shutil
-import tarfile
 import tempfile
 import time
 import warnings
@@ -19,7 +17,7 @@ import zipfile
 
 import requests
 
-from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
+from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE, _MODEL_ARTIFACTS_ATTR_KEY
 from .deployable_entity import _DeployableEntity
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -31,7 +29,6 @@ from ..external.six.moves import cPickle as pickle  # pylint: disable=import-err
 
 from .._internal_utils import (
     _artifact_utils,
-    _histogram_utils,
     _pip_requirements_utils,
     _request_utils,
     _utils,
@@ -43,15 +40,6 @@ from .. import _repository
 from .._repository import commit as commit_module
 from .. import deployment
 from .. import utils
-
-
-_MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
-
-_CACHE_DIR = os.path.join(
-    os.path.expanduser("~"),
-    ".verta",
-    "cache",
-)
 
 
 class ExperimentRun(_DeployableEntity):
@@ -1886,122 +1874,6 @@ class ExperimentRun(_DeployableEntity):
 
         self._log_artifact("setup_script", script, _CommonCommonService.ArtifactTypeEnum.BLOB, 'py', overwrite=overwrite)
 
-    def log_training_data(self, train_features, train_targets, overwrite=False):
-        """
-        Associate training data with this Experiment Run.
-
-        .. versionchanged:: 0.14.4
-           Instead of uploading the data itself as a CSV artifact ``'train_data'``, this method now
-           generates a histogram for internal use by our deployment data monitoring system.
-
-        Parameters
-        ----------
-        train_features : pd.DataFrame
-            pandas DataFrame representing features of the training data.
-        train_targets : pd.DataFrame or pd.Series
-            pandas DataFrame representing targets of the training data.
-        overwrite : bool, default False
-            Whether to allow overwriting existing training data.
-
-        """
-        if train_features.__class__.__name__ != "DataFrame":
-            raise TypeError("`train_features` must be a pandas DataFrame, not {}".format(type(train_features)))
-        if train_targets.__class__.__name__ == "Series":
-            train_targets = train_targets.to_frame()
-        elif train_targets.__class__.__name__ != "DataFrame":
-            raise TypeError("`train_targets` must be a pandas DataFrame or Series, not {}".format(type(train_targets)))
-
-        # check for overlapping column names
-        common_column_names = set(train_features.columns) & set(train_targets.columns)
-        if common_column_names:
-            raise ValueError("`train_features` and `train_targets` combined have overlapping column names;"
-                             " please ensure column names are unique")
-
-        train_df = train_features.join(train_targets)
-
-        histograms = _histogram_utils.calculate_histograms(train_df)
-
-        endpoint = "{}://{}/api/v1/monitoring/data/references/{}".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.id,
-        )
-        response = _utils.make_request("PUT", endpoint, self._conn, json=histograms)
-        _utils.raise_for_http_error(response)
-
-    def fetch_artifacts(self, keys):
-        """
-        Downloads artifacts that are associated with a class model.
-
-        Parameters
-        ----------
-        keys : list of str
-            Keys of artifacts to download.
-
-        Returns
-        -------
-        dict of str to str
-            Map of artifacts' keys to their cache filepaths—for use as the ``artifacts`` parameter
-            to a Verta class model.
-
-        Examples
-        --------
-        .. code-block:: python
-
-            run.log_artifact("weights", open("weights.npz", 'rb'))
-            # upload complete (weights)
-            run.log_artifact("text_embeddings", open("embedding.csv", 'rb'))
-            # upload complete (text_embeddings)
-            artifact_keys = ["weights", "text_embeddings"]
-            artifacts = run.fetch_artifacts(artifact_keys)
-            artifacts
-            # {'weights': '/Users/convoliution/.verta/cache/artifacts/50a9726b3666d99aea8af006cf224a7637d0c0b5febb3b0051192ce1e8615f47/weights.npz',
-            #  'text_embeddings': '/Users/convoliution/.verta/cache/artifacts/2d2d1d809e9bce229f0a766126ae75df14cadd1e8f182561ceae5ad5457a3c38/embedding.csv'}
-            ModelClass(artifacts=artifacts).predict(["Good book.", "Bad book!"])
-            # [0.955998517288053, 0.09809996313422353]
-            run.log_model(ModelClass, artifacts=artifact_keys)
-            # upload complete (custom_modules.zip)
-            # upload complete (model.pkl)
-            # upload complete (model_api.json)
-
-        """
-        if not (isinstance(keys, list)
-                and all(isinstance(key, six.string_types) for key in keys)):
-            raise TypeError("`keys` must be list of str, not {}".format(type(keys)))
-
-        # validate that `keys` are actually logged
-        self._refresh_cache()
-        run_msg = self._msg
-        existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
-        unlogged_artifact_keys = set(keys) - existing_artifact_keys
-        if unlogged_artifact_keys:
-            raise ValueError("`keys` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
-
-        # get artifact checksums
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(self._conn.scheme, self._conn.socket),
-                                       self._conn, params={'id': self.id})
-        _utils.raise_for_http_error(response)
-        paths = {artifact['key']: artifact['path']
-                 for artifact in _utils.body_to_json(response)['artifacts']}
-
-        artifacts = dict()
-        for key in keys:
-            filename = os.path.join("artifacts", paths[key])
-
-            # check cache, otherwise write to cache
-            #     "try-get-then-create" can lead multiple threads trying to write to the cache
-            #     simultaneously, but artifacts being cached at a particular location should be
-            #     identical, so multiple writes would be idempotent.
-            path = self._get_cached(filename)
-            if path is None:
-                contents, _ = self._get_artifact(key)  # TODO: raise error if path_only
-                path = self._cache(filename, contents)
-
-            artifacts.update({key: path})
-
-        return artifacts
-
     def get_deployment_status(self):
         """
         Returns the current status of the model deployment associated with this Experiment Run.
@@ -2399,89 +2271,3 @@ class ExperimentRun(_DeployableEntity):
         response_msg.url = url
 
         return response_msg
-
-    def _cache(self, filename, contents):
-        """
-        Caches `contents` to `filename` within ``_CACHE_DIR``.
-
-        If `contents` represents a ZIP file, then it will be unzipped, and the path to the target
-        directory will be returned.
-
-        Parameters
-        ----------
-        filename : str
-            Filename within ``_CACHE_DIR`` to write to.
-        contents : bytes
-            Contents to be cached.
-
-        Returns
-        -------
-        str
-            Full path to cached contents.
-
-        """
-        # write contents to temporary file
-        with tempfile.NamedTemporaryFile(delete=False) as tempf:
-            tempf.write(contents)
-            tempf.flush()  # flush object buffer
-            os.fsync(tempf.fileno())  # flush OS buffer
-
-        name, extension = os.path.splitext(filename)
-        if extension == '.zip':
-            temp_path = tempfile.mkdtemp()
-
-            with zipfile.ZipFile(tempf.name, 'r') as zipf:
-                zipf.extractall(temp_path)
-            os.remove(tempf.name)
-        elif extension == '.tgz':
-            temp_path = tempfile.mkdtemp()
-
-            with tarfile.open(tempf.name, 'r:gz') as tarf:
-                tarf.extractall(temp_path)
-            os.remove(tempf.name)
-        elif extension == '.tar':
-            temp_path = tempfile.mkdtemp()
-
-            with tarfile.open(tempf.name, 'r') as tarf:
-                tarf.extractall(temp_path)
-            os.remove(tempf.name)
-        elif extension == '.gz' and os.path.splitext(name)[1] == '.tar':
-            name = os.path.splitext(name)[0]
-
-            temp_path = tempfile.mkdtemp()
-
-            with tarfile.open(tempf.name, 'r:gz') as tarf:
-                tarf.extractall(temp_path)
-            os.remove(tempf.name)
-        else:
-            name = filename
-            temp_path = tempf.name
-
-        path = os.path.join(_CACHE_DIR, name)
-
-        # create intermediate dirs
-        try:
-            os.makedirs(os.path.dirname(path))
-        except OSError:  # already exists
-            pass
-
-        # move written contents to cache location
-        shutil.move(temp_path, path)
-
-        return path
-
-    def _get_cached(self, filename):
-        name, extension = os.path.splitext(filename)
-        if extension == '.zip':
-            pass
-        elif extension == '.tgz':
-            pass
-        elif extension == '.tar':
-            pass
-        elif extension == '.gz' and os.path.splitext(name)[1] == '.tar':
-            name = os.path.splitext(name)[0]
-        else:
-            name = filename
-
-        path = os.path.join(_CACHE_DIR, name)
-        return path if os.path.exists(path) else None

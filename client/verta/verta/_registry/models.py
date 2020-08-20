@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import copy
 
-from .._protos.public.registry import RegistryService_pb2 as _RegisteredModelService
+from .._protos.public.registry import RegistryService_pb2 as _RegistryService
 from .._internal_utils import _utils
 
 from . import RegisteredModel
@@ -23,7 +23,7 @@ class RegisteredModels(_utils.LazyList):
     def __init__(self, conn, conf):
         super(RegisteredModels, self).__init__(
             conn, conf,
-            _RegisteredModelService.FindRegisteredModelRequest(),
+            _RegistryService.FindRegisteredModelRequest(),
         )
 
     def __repr__(self):

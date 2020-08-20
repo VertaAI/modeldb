@@ -1,4 +1,4 @@
-Versioning Data in Verta
+Versioning data in Verta
 ========================
 
 We'll walk briefly through the concept of data versioning, and how it can be handled by the Verta
@@ -51,7 +51,7 @@ After installation, make sure AWS credentials are set up in your local environme
 `official instructions <https://pypi.org/project/boto3/>`_.
 
 
-Version Logging
+Version logging
 ---------------
 
 Now, in Python, we'll instantiate the :class:`~verta.client.Client`:
@@ -86,7 +86,7 @@ As we track our data science workflow, we can log this dataset version:
     run.log_dataset_version("training_data", dataset_version)
 
 
-Version Viewing
+Version viewing
 ---------------
 
 Once a dataset version is logged, it can be viewed in the Verta Web App.

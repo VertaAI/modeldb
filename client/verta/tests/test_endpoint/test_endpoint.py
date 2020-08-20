@@ -102,6 +102,7 @@ class TestEndpoint:
         str_repr = repr(endpoint)
 
         assert "path: {}".format(endpoint.path) in str_repr
+        assert "url" in str_repr
         assert "id: {}".format(endpoint.id) in str_repr
         assert "curl: <Endpoint not deployed>" in str_repr
 
@@ -287,7 +288,7 @@ class TestEndpoint:
         endpoint.create_access_token(token)
         assert endpoint.get_access_token() == token
 
-    def test_form_update_body(self):
+    def test_create_update_body(self):
         endpoint = Endpoint(None, None, None, None)
         resources = [
             CpuMillis(500),
@@ -296,11 +297,16 @@ class TestEndpoint:
 
         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai", "GIT_TERMINAL_PROMPT" : "1"}
 
-        parameter_json = endpoint._form_update_body(resources, DirectUpdateStrategy(), None, env_vars, 0)
-        assert parameter_json == {'build_id': 0, 'env': [{"name": 'CUDA_VISIBLE_DEVICES', 'value': '1,2'},
-                                                         {'name': 'GIT_TERMINAL_PROMPT', 'value': '1'},
-                                                         {"name": 'VERTA_HOST', 'value': 'app.verta.ai'}],
-                                  'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
+        parameter_json = endpoint._create_update_body(DirectUpdateStrategy(), resources, None, env_vars)
+        assert parameter_json == {
+            'env': [
+                {"name": 'CUDA_VISIBLE_DEVICES', 'value': '1,2'},
+                {'name': 'GIT_TERMINAL_PROMPT', 'value': '1'},
+                {"name": 'VERTA_HOST', 'value': 'app.verta.ai'}
+            ],
+            'resources': {'cpu_millis': 500, 'memory': '500Mi'},
+            'strategy': 'rollout',
+        }
 
 
     def test_get_deployed_model(self, client, experiment_run, model_version, model_for_deployment, created_endpoints):
@@ -326,7 +332,7 @@ class TestEndpoint:
         x = model_for_deployment['train_features'].iloc[1].values
         deployed_model = endpoint.get_deployed_model()
 
-        assert deployed_model.predict([x]) == [2]
+        assert np.allclose(deployed_model.predict([x]), model.predict([x]))
         deployed_model_curl = deployed_model.get_curl()
         assert endpoint.path in deployed_model_curl
         assert "-H \"Access-token: {}\"".format(token) in deployed_model_curl
