@@ -795,7 +795,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         return _utils.unravel_key_values(self._msg.attributes)
 
     def _get_attribute_keys(self):
-        return map(lambda attribute: attribute.key, self.get_attributes())
+        return list(map(lambda attribute: attribute.key, self.get_attributes()))
 
     def del_attribute(self, key):
         """
