@@ -532,16 +532,16 @@ class DatasetVersion(object):
     @staticmethod
     def _get(conn, _dataset_version_id=None):
         if _dataset_version_id is not None:
-            msg = _DatasetVersionService.FindDatasetVersions()
-            msg.dataset_version_ids.append(_dataset_version_id)
+            Message = _DatasetVersionService.GetDatasetVersionById
+            msg = Message(id=_dataset_version_id)
             data = _utils.proto_to_json(msg)
             response = _utils.make_request(
-                "POST",
-                "{}://{}/api/v1/modeldb/dataset-version/findDatasetVersions".format(conn.scheme, conn.socket),
-                conn, json=data,
+                "GET",
+                "{}://{}/api/v1/modeldb/dataset-version/getDatasetVersionById".format(conn.scheme, conn.socket),
+                conn, params=data
             )
             if response.ok:
-                dataset_version = _utils.json_to_proto(_utils.body_to_json(response), msg.Response).dataset_versions[0]
+                dataset_version = _utils.json_to_proto(_utils.body_to_json(response), Message.Response).dataset_version
 
                 if not dataset_version.id:  # 200, but empty message
                     raise RuntimeError("unable to retrieve DatasetVersion {};"
