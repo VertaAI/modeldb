@@ -1,6 +1,9 @@
 Model Registry
 ==============
 
+.. note::
+    .. versionadded:: 0.15.0
+
 Client
 ------
 .. automethod:: verta.Client.get_or_create_registered_model
@@ -17,3 +20,22 @@ Registered Model Version
 ------------------------
 .. autoclass:: verta._registry.modelversion.RegisteredModelVersion()
     :members:
+    :inherited-members:
+
+Command Line Interface
+----------------------
+.. click:: verta._cli.registry:create
+    :prog: verta registry create
+    :show-nested:
+
+.. click:: verta._cli.registry:get
+    :prog: verta registry get
+    :show-nested:
+
+.. click:: verta._cli.registry:update
+    :prog: verta registry update
+    :show-nested:
+
+.. click:: verta._cli.registry:lst
+    :prog: verta registry list
+    :show-nested:

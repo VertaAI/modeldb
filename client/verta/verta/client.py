@@ -78,10 +78,10 @@ class Client(object):
     Object for interfacing with the ModelDB backend.
 
     .. deprecated:: 0.12.0
-       The `port` parameter will removed in v0.15.0; please combine `port` with the first parameter,
+       The `port` parameter will removed in v0.16.0; please combine `port` with the first parameter,
        e.g. `Client("localhost:8080")`.
     .. deprecated:: 0.13.3
-       The `expt_runs` attribute will removed in v0.15.0; consider using `proj.expt_runs` and
+       The `expt_runs` attribute will removed in v0.16.0; consider using `proj.expt_runs` and
        `expt.expt_runs` instead.
 
     This class provides functionality for starting/resuming Projects, Experiments, and Experiment Runs.
@@ -285,6 +285,24 @@ class Client(object):
         return var or None
 
     def get_project(self, name=None, workspace=None, id=None):
+        """
+        Retrieves an already created Project. Only one of `name` or `id` can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Project.
+        workspace : str, optional
+            Workspace under which the Project with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        id : str, optional
+            ID of the Project. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~Project`
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -366,6 +384,21 @@ class Client(object):
         return self._ctx.proj
 
     def get_experiment(self, name=None, id=None):
+        """
+        Retrieves an already created Experiment. Only one of `name` or `id` can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Experiment.
+        id : str, optional
+            ID of the Experiment. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~Experiment`
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -440,6 +473,21 @@ class Client(object):
         return self._ctx.expt
 
     def get_experiment_run(self, name=None, id=None):
+        """
+        Retrieves an already created Experiment Run. Only one of `name` or `id` can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Experiment Run.
+        id : str, optional
+            ID of the Experiment Run. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~ExperimentRun`
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -686,8 +734,6 @@ class Client(object):
         if dataset_ids:
             datasets = datasets.with_ids(_utils.as_list_of_str(dataset_ids))
         if sort_key:
-            if sort_key.startswith("time_"):
-                sort_key = "date_" + sort_key[len("time_"):]
             datasets = datasets.sort(sort_key, not ascending)
         if workspace:
             datasets = datasets.with_workspace(workspace)

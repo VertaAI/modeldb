@@ -2,6 +2,7 @@ import time
 
 import pytest
 import requests
+import json
 
 import verta
 from verta._deployment import Endpoint
@@ -12,8 +13,9 @@ from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
 from verta.deployment.update.rules import MaximumAverageLatencyThresholdRule
 from verta._internal_utils import _utils
 from verta.environment import Python
+from verta.utils import ModelAPI
 
-from ..utils import get_build_ids
+from ..utils import (get_build_ids, sys_path_manager)
 
 
 class TestEndpoint:
@@ -97,11 +99,12 @@ class TestEndpoint:
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
-
         str_repr = repr(endpoint)
 
         assert "path: {}".format(endpoint.path) in str_repr
+        assert "url" in str_repr
         assert "id: {}".format(endpoint.id) in str_repr
+        assert "curl: <Endpoint not deployed>" in str_repr
 
         # these fields might have changed:
         assert "status" in str_repr
@@ -110,6 +113,10 @@ class TestEndpoint:
         assert "stage's date created" in str_repr
         assert "stage's date updated" in str_repr
         assert "components" in str_repr
+
+        endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+        str_repr = repr(endpoint)
+        assert "curl: {}".format(endpoint.get_deployed_model().get_curl()) in str_repr
 
     def test_direct_update(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -277,19 +284,25 @@ class TestEndpoint:
 
         assert token is None
 
-    def test_form_update_body(self):
+    def test_create_update_body(self):
         endpoint = Endpoint(None, None, None, None)
         resources = [
             CpuMillis(500),
             Memory("500Mi"),
         ]
 
-        env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"}
+        env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai", "GIT_TERMINAL_PROMPT" : "1"}
 
-        parameter_json = endpoint._form_update_body(resources, DirectUpdateStrategy(), None, env_vars, 0)
-        assert parameter_json == {'build_id': 0, 'env': [{"name":'CUDA_VISIBLE_DEVICES', 'value':'1,2'},
-                                                         {"name":'VERTA_HOST', 'value':'app.verta.ai'}],
-                                  'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
+        parameter_json = endpoint._create_update_body(DirectUpdateStrategy(), resources, None, env_vars)
+        assert parameter_json == {
+            'env': [
+                {"name": 'CUDA_VISIBLE_DEVICES', 'value': '1,2'},
+                {'name': 'GIT_TERMINAL_PROMPT', 'value': '1'},
+                {"name": 'VERTA_HOST', 'value': 'app.verta.ai'}
+            ],
+            'resources': {'cpu_millis': 500, 'memory': '500Mi'},
+            'strategy': 'rollout',
+        }
 
 
     def test_get_deployed_model(self, client, experiment_run, model_version, model_for_deployment, created_endpoints):
@@ -311,7 +324,11 @@ class TestEndpoint:
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
         x = model_for_deployment['train_features'].iloc[1].values
-        assert endpoint.get_deployed_model().predict([x]) == [2]
+        deployed_model = endpoint.get_deployed_model()
+
+        assert np.allclose(deployed_model.predict([x]), model.predict([x]))
+        deployed_model_curl = deployed_model.get_curl()
+        assert endpoint.path in deployed_model_curl
 
         new_model = model_for_deployment['model'].fit(
             np.random.random(model_for_deployment['train_features'].shape),
@@ -412,7 +429,7 @@ class TestEndpoint:
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
         update_status = endpoint.get_update_status()
-        
+
         autoscaling_metrics = update_status["update_request"]["autoscaling"]["metrics"]
         assert len(autoscaling_metrics) == 3
         for metric in autoscaling_metrics:
@@ -424,6 +441,93 @@ class TestEndpoint:
                 assert metric["parameters"][0]["value"] == "100"
             else:
                 assert metric["parameters"][0]["value"] == "0.7"
+
+    def test_update_with_custom_module(self, client, model_version, created_endpoints):
+        torch = pytest.importorskip("torch")
+
+        with sys_path_manager() as sys_path:
+            sys_path.append(".")
+
+            from models.nets import FullyConnected
+
+            train_data = torch.rand((2, 4))
+
+            classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
+            model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
+            model_version.log_model(classifier, custom_modules=["models/"], model_api=model_api)
+
+            env = Python(requirements=["torch==1.0.0"])
+            model_version.log_environment(env)
+
+
+            path = verta._internal_utils._utils.generate_default_name()
+            endpoint = client.set_endpoint(path)
+            created_endpoints.append(endpoint)
+            endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+
+
+            test_data = torch.rand((4, 4))
+            prediction = torch.tensor(endpoint.get_deployed_model().predict(test_data.tolist()))
+            assert torch.all(classifier(test_data).eq(prediction))
+
+    def test_update_from_json_config_with_params(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+        yaml = pytest.importorskip("yaml")
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        config_dict = {
+            "run_id": experiment_run.id,
+            "strategy": "direct",
+            "autoscaling": {
+                "quantities": {"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0},
+                "metrics": [
+                    {"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.5"}]},
+                    {"metric": "memory_utilization", "parameters": [{"name": "target", "value": "0.7"}]}
+                ]
+            },
+            "env_vars": {"VERTA_HOST": "app.verta.ai"},
+            "resources": {"cpu_millis": 250, "memory": "100M"}
+        }
+
+        filepath = "config.json"
+        with open(filepath, 'w') as f:
+            json.dump(config_dict, f)
+
+        endpoint.update_from_config(filepath)
+        update_status = endpoint.get_update_status()
+
+        # Check autoscaling:
+        autoscaling_parameters = update_status["update_request"]["autoscaling"]
+        autoscaling_quantities = autoscaling_parameters["quantities"]
+
+        assert autoscaling_quantities == config_dict["autoscaling"]["quantities"]
+
+        autoscaling_metrics = autoscaling_parameters["metrics"]
+        assert len(autoscaling_metrics) == 2
+        for metric in autoscaling_metrics:
+            assert metric["metric_id"] in [1001, 1002, 1003]
+
+            if metric["metric_id"] == 1001:
+                assert metric["parameters"][0]["value"] == "0.5"
+            else:
+                assert metric["parameters"][0]["value"] == "0.7"
+
+        # Check env_vars:
+        assert update_status["update_request"]["env"][0]["name"] == "VERTA_HOST"
+        assert update_status["update_request"]["env"][0]["value"] == "app.verta.ai"
+
+        # Check resources:
+        assert endpoint.get_update_status()['update_request']['resources'] == config_dict["resources"]
 
     def test_update_twice(self, client, registered_model, created_endpoints):
         np = pytest.importorskip("numpy")

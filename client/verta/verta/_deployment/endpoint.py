@@ -10,6 +10,8 @@ from functools import reduce
 from ..external import six
 
 from ..deployment.autoscaling import Autoscaling
+from ..deployment.autoscaling.metrics import _AutoscalingMetric
+from ..deployment.resources import _Resource
 from ..deployment.update.rules import _UpdateRule
 from ..deployment import DeployedModel
 from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
@@ -49,9 +51,17 @@ class Endpoint(object):
         status = self.get_status()
         data = Endpoint._get_json_by_id(self._conn, self.workspace, self.id)
 
+        try:
+            curl = self.get_deployed_model().get_curl()
+        except RuntimeError:
+            curl = "<Endpoint not deployed>"
+
         return '\n'.join((
             "path: {}".format(data['creator_request']['path']),
+            "url: {}://{}/{}/endpoints/{}/summary".format(self._conn.scheme, self._conn.socket,
+                                                          self.workspace, self.id),
             "id: {}".format(self.id),
+            "curl: {}".format(curl),
             "status: {}".format(status["status"]),
             "date created: {}".format(data["date_created"]),
             "date updated: {}".format(data["date_updated"]),
@@ -156,13 +166,13 @@ class Endpoint(object):
             An Experiment Run or a Model Version with a model logged.
         strategy : :class:`~verta.deployment.update._strategies._UpdateStrategy`
             Strategy (direct or canary) for updating the Endpoint.
-        wait : bool
+        wait : bool, default False
             Whether to wait for the Endpoint to finish updating before returning.
-        resources : list of :class:`~verta.deployment.resources._Resource`
+        resources : list of :class:`~verta.deployment.resources._Resource`, optional
             Resources allowed for the updated Endpoint.
-        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`
+        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`, optional
             Autoscaling condition for the updated Endpoint.
-        env_vars : dict of str to str
+        env_vars : dict of str to str, optional
             Environment variables.
 
         Returns
@@ -170,30 +180,17 @@ class Endpoint(object):
         status : dict of str to {None, bool, float, int, str, list, dict}
 
         """
-        if not isinstance(strategy, _UpdateStrategy):
-            raise TypeError("`strategy` must be an object from verta.deployment.strategies")
-
         if not isinstance(model_reference, (RegisteredModelVersion, experimentrun.ExperimentRun)):
             raise TypeError("`model_reference` must be an ExperimentRun or RegisteredModelVersion")
 
-        if autoscaling and not isinstance(autoscaling, Autoscaling):
-            raise TypeError("`autoscaling` must be an Autoscaling object")
+        update_body = self._create_update_body(strategy, resources, autoscaling, env_vars)
 
-        if env_vars:
-            env_vars_err_msg = "`env_vars` must be dictionary of str keys and str values"
-            if not isinstance(env_vars, dict):
-                raise TypeError(env_vars_err_msg)
-            for key, value in env_vars.items():
-                if not isinstance(key, six.string_types) or not isinstance(value, six.string_types):
-                    raise TypeError(env_vars_err_msg)
+        # create new build
+        update_body['build_id'] = self._create_build(model_reference)
 
-        # Create new build:
-        build_id = self._create_build(model_reference)
-        return self._update_from_build(build_id, strategy, wait, resources, autoscaling, env_vars)
+        return self._update_from_build(update_body, wait)
 
-    def _update_from_build(self, build_id, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
-        update_body = self._form_update_body(resources, strategy, autoscaling, env_vars, build_id)
-
+    def _update_from_build(self, update_body, wait=False):
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
             self._conn.scheme,
@@ -219,7 +216,8 @@ class Endpoint(object):
 
             print()
             if self.get_status()['status'] == "error":
-                raise RuntimeError("endpoint update failed")
+                failure_msg = self.get_status()['components'][0].get('message', "no error message available")
+                raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
 
         return self.get_status()
 
@@ -327,6 +325,19 @@ class Endpoint(object):
         else:
             raise ValueError("update strategy must be \"direct\" or \"canary\"")
 
+        if "autoscaling" in update_dict:
+            autoscaling_obj = Autoscaling._from_dict(update_dict["autoscaling"]["quantities"])
+
+            for metric in update_dict["autoscaling"]["metrics"]:
+                autoscaling_obj.add_metric(_AutoscalingMetric._from_dict(metric))
+        else:
+            autoscaling_obj = None
+
+        if "resources" in update_dict:
+            resources_list = _Resource._from_dict(update_dict["resources"])
+        else:
+            resources_list = None
+
         if "run_id" in update_dict and "model_version_id" in update_dict:
             raise ValueError("cannot provide both run_id and model_version_id")
         elif "run_id" in update_dict:
@@ -335,8 +346,8 @@ class Endpoint(object):
             model_reference = RegisteredModelVersion._get_by_id(self._conn, self._conf, id=update_dict["model_version_id"])
         else:
             raise RuntimeError("must provide either model_version_id or run_id")
-            
-        return self.update(model_reference, strategy)
+
+        return self.update(model_reference, strategy, resources=resources_list, autoscaling=autoscaling_obj, env_vars=update_dict.get("env_vars"))
 
     def get_status(self):
         """
@@ -385,21 +396,41 @@ class Endpoint(object):
             return None
         return tokens[0]['creator_request']['value']
 
-    def _form_update_body(self, resources, strategy, autoscaling, env_vars, build_id):
-        update_body = strategy._as_build_update_req_body(build_id)
-        if resources:
+    def _create_update_body(self, strategy, resources=None, autoscaling=None, env_vars=None):
+        """
+        Converts endpoint update/config util classes into a JSON-friendly dict.
+
+        """
+        if not isinstance(strategy, _UpdateStrategy):
+            raise TypeError("`strategy` must be an object from verta.deployment.strategies")
+
+        if autoscaling and not isinstance(autoscaling, Autoscaling):
+            raise TypeError("`autoscaling` must be an Autoscaling object")
+
+        if env_vars:
+            env_vars_err_msg = "`env_vars` must be dictionary of str keys and str values"
+            if not isinstance(env_vars, dict):
+                raise TypeError(env_vars_err_msg)
+            for key, value in env_vars.items():
+                if not isinstance(key, six.string_types) or not isinstance(value, six.string_types):
+                    raise TypeError(env_vars_err_msg)
+
+        update_body = strategy._as_build_update_req_body()
+
+        if resources is not None:
             update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
                                               map(lambda resource: resource.to_dict(), resources))
 
-        if autoscaling:
+        if autoscaling is not None:
             update_body["autoscaling"] = autoscaling._as_dict()
 
-        if env_vars:
-            update_body["env"] = list(map(lambda env_var: {"name": env_var, "value": env_vars[env_var]}, env_vars))
+        if env_vars is not None:
+            update_body["env"] = list(
+                sorted(map(lambda env_var: {"name": env_var, "value": env_vars[env_var]}, env_vars),
+                       key=lambda env_elem: env_elem["name"]))
 
-        # prepare body for update request
         return update_body
-      
+
     def get_deployed_model(self):
         """
         Returns an object for making predictions against the deployed model.

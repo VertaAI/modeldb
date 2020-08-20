@@ -18,6 +18,12 @@ class Organization:
 
     """
 
+    def __init__(self, conn, msg):
+        self.conn = conn
+        self.msg = msg
+        self.id = msg.id
+        self.name = msg.name
+
     @classmethod
     def _create(cls, conn, name, desc=None, collaborator_type=None, global_can_deploy=False):
         Message = _Organization.SetOrganization
@@ -29,7 +35,7 @@ class Organization:
         org = conn.must_proto_response(response, Message.Response).organization
 
         print("created new Organization: {}".format(org.name))
-        return org
+        return cls(conn, org)
 
     @classmethod
     def _create_msg(cls, name, desc, collaborator_type, global_can_deploy):
@@ -53,3 +59,21 @@ class Organization:
                 unknown_value_error = "Unknown value specified for {}. Possible values are READ_ONLY, READ_WRITE."
                 raise ValueError(unknown_value_error.format(key))
         return msg
+
+    """
+    Adds member to an organization
+
+    Parameters
+    ----------
+    share_with : str
+        Represents email or username.
+
+    """
+
+    def add_member(self, share_with):
+        Message = _Organization.AddUser
+
+        response = self.conn.make_proto_request("POST",
+                                           "/api/v1/uac-proxy/organization/addUser",
+                                           body=Message(org_id=self.id, share_with=share_with))
+        status = self.conn.must_proto_response(response, Message.Response).status

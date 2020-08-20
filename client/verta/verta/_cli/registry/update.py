@@ -17,7 +17,8 @@ def update():
 @click.argument("model_name", nargs=1, required=True)
 @click.option("--label", "-l", multiple=True, help="Label to be associated with the object.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-def update_model(model_name, label, workspace):
+@click.option("--description", "-d", help="Description.")
+def update_model(model_name, label, workspace, description):
     """Update an existing registeredmodel entry.
     """
     client = Client()
@@ -29,19 +30,33 @@ def update_model(model_name, label, workspace):
     if label:
         registered_model.add_labels(label)
 
+    if description:
+        registered_model.set_description(description)
+
 
 @update.command(name="registeredmodelversion")
 @click.argument("model_name", nargs=1, required=True)
 @click.argument("version_name", nargs=1, required=True)
 @click.option("--label", "-l", multiple=True, help="Label to be associated with the object.")
 @click.option("--model", help="Path to the model.")
+@click.option("--custom-module", type=click.Path(exists=True), multiple=True, help="Path to custom module file or directory.")
+@click.option("--no-custom-modules", help="Flag to not upload any custom modules.", is_flag=True)
 @click.option("--artifact", type=str, multiple=True, help="Path to the artifact required for the model. The format is --artifact artifact_key=path_to_artifact.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 @click.option('--overwrite', help="Overwrite model and artifacts if already logged.", is_flag=True)
 @click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
-def update_model_version(model_name, version_name, label, model, artifact, workspace, overwrite, requirements):
+@click.option("--description", "-d", help="Description.")
+def update_model_version(model_name, version_name, label, model, custom_module, no_custom_modules, artifact, workspace, overwrite, requirements,
+                         description):
     """Update an existing registeredmodelversion entry.
     """
+    if custom_module and no_custom_modules:
+        raise click.BadParameter("--custom-module cannot be used alongside --no-custom-modules.")
+    elif no_custom_modules:
+        custom_module = []
+    elif not custom_module:
+        custom_module = None
+
     client = Client()
 
     artifact = list(map(lambda s: s.split('='), artifact))
@@ -81,8 +96,11 @@ def update_model_version(model_name, version_name, label, model, artifact, works
         model_version.add_labels(label)
 
     if model:
-        model_version.log_model(model, overwrite=overwrite)
+        model_version.log_model(model, custom_modules=custom_module, overwrite=overwrite)
 
     if requirements:
         reqs = Python.read_pip_file(requirements)
         model_version.log_environment(Python(requirements=reqs))
+
+    if description:
+        registered_model.set_description(description)

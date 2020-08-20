@@ -19,9 +19,9 @@ class DeployedModel:
     Object for interacting with deployed models.
 
     .. deprecated:: 0.13.7
-        The `socket` parameter will be renamed to `host` in v0.15.0
+        The `socket` parameter will be renamed to `host` in v0.16.0
     .. deprecated:: 0.13.7
-        The `model_id` parameter will be renamed to `run_id` in v0.15.0
+        The `model_id` parameter will be renamed to `run_id` in v0.16.0
 
     This class provides functionality for sending predictions to a deployed model on the Verta
     backend.
@@ -51,9 +51,9 @@ class DeployedModel:
     """
     def __init__(self, _host=None, _run_id=None, _from_url=False, **kwargs):
         # this is to temporarily maintain compatibility with anyone passing in `socket` and `model_id` as kwargs
-        # TODO v0.15.0: instate `host` and `run_id` params
-        # TODO v0.15.0: remove the following block of param checks
-        # TODO v0.15.0: put automodule verta.deployment back on ReadTheDocs
+        # TODO v0.16.0: instate `host` and `run_id` params
+        # TODO v0.16.0: remove the following block of param checks
+        # TODO v0.16.0: put automodule verta.deployment back on ReadTheDocs
         if 'socket' in kwargs:
             warnings.warn("`socket` will be renamed to `host` in an upcoming version",
                           category=FutureWarning)
@@ -170,6 +170,24 @@ class DeployedModel:
             )
         else:
             return self._session.post(self._prediction_url, json=x)
+
+    def get_curl(self):
+        """
+        Gets a valid cURL command.
+
+        Returns
+        -------
+        str
+
+        """
+        if 'Access-token' not in self._session.headers or self._prediction_url is None:
+            self._set_token_and_url()
+
+        curl = "curl -X POST {} -d \'\' -H \"Content-Type: application/json\"".format(self._prediction_url)
+        if self._session.headers.get('Access-token'):
+            curl += " -H \"Access-token: {}\"".format(self._session.headers['Access-token'])
+
+        return curl
 
     def predict(self, x, compress=False, max_retries=5, always_retry_404=True, always_retry_429=True):
         """

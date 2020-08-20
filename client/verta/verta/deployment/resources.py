@@ -33,6 +33,10 @@ class _Resource(object):
 
 
 class CpuMillis(_Resource):
+    """
+    Number of CPU milli allowed for Endpoint. Must be an integer greater than 0.
+
+    """
     milli_err_msg = "`cpu_millis` must be int greater than 0"
 
     def __init__(self, parameter):
@@ -47,6 +51,15 @@ class CpuMillis(_Resource):
 
 
 class Memory(_Resource):
+    """
+    Amount of memory allowed for Endpoint.
+
+    Must be a string representing a plain integer or a fixed-point integer with one of the following suffixes:
+    "E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki."
+
+    For example: "128974848", "129e6", "129M", "123Mi"
+
+    """
     memory_err_msg = "`memory` must be a string representing a plain integer or a fixed-point integer with suffixes " \
                      "E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki, for example: 128974848, 129e6, 129M, 123Mi "
 

@@ -17,7 +17,7 @@ import requests
 import yaml
 
 import verta
-from verta._tracking.experimentrun import _CACHE_DIR
+from verta._tracking.deployable_entity import _CACHE_DIR
 from verta._internal_utils import _histogram_utils
 from verta._internal_utils import _utils
 
@@ -210,6 +210,7 @@ class TestLogModel:
 
 class TestFetchArtifacts:
     def test_fetch_artifacts(self, experiment_run, strs, flat_dicts):
+        strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
         for key, artifact in zip(strs, flat_dicts):
             experiment_run.log_artifact(key, artifact)
 
@@ -529,18 +530,26 @@ class TestLogTrainingData:
     def test_series(self, experiment_run, model_for_deployment):
         X_train = model_for_deployment['train_features']
         y_train = model_for_deployment['train_targets']
+        col_names = set(X_train.columns) | set([y_train.name])
 
-        # no errors
         experiment_run.log_training_data(X_train, y_train)
+        histogram = experiment_run._get_histogram()
+        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
+
+        assert set(retrieved_col_names) == col_names
 
     def test_dataframe(self, experiment_run, model_for_deployment):
         X_train = model_for_deployment['train_features']
         y_train = model_for_deployment['train_targets']
+        col_names = set(X_train.columns) | set([y_train.name])
 
         y_train = y_train.to_frame()
 
-        # no errors
         experiment_run.log_training_data(X_train, y_train)
+        histogram = experiment_run._get_histogram()
+        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
+
+        assert set(retrieved_col_names) == col_names
 
 
 class TestHistogram:
@@ -972,8 +981,14 @@ class TestGetDeployedModel:
 
         experiment_run.deploy(wait=True)
 
+        deployed_model = experiment_run.get_deployed_model()
         x = model_for_deployment['train_features'].iloc[1].values
-        experiment_run.get_deployed_model().predict([x])
+        deployed_model.predict([x])
+
+        deployed_model_curl = deployed_model.get_curl()
+        deployed_status = experiment_run.get_deployment_status()
+        assert deployed_status["url"] in deployed_model_curl
+        assert deployed_status["token"] in deployed_model_curl
 
         conn = experiment_run._conn
         requests.delete(

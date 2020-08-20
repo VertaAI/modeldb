@@ -22,6 +22,7 @@ import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
@@ -115,7 +116,8 @@ public class CommitDAORdbImpl implements CommitDAO {
                 .setRepositoryId(repositoryIdentification)
                 .setBranch(ModelDBConstants.MASTER_BRANCH)
                 .build(),
-            false);
+            false,
+            RepositoryEnums.RepositoryTypeEnum.DATASET);
     datasetVersion =
         datasetVersion
             .toBuilder()
@@ -218,7 +220,8 @@ public class CommitDAORdbImpl implements CommitDAO {
               .setBranch(ModelDBConstants.MASTER_BRANCH)
               .setCommitSha(commitEntity.getCommit_hash())
               .build(),
-          false);
+          false,
+          RepositoryEnums.RepositoryTypeEnum.DATASET);
 
       return CreateCommitRequest.Response.newBuilder()
           .setCommit(commitEntity.toCommitProto())
@@ -234,15 +237,12 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   private PathDatasetComponentBlob componentFromPart(DatasetPartInfo part, String basePath) {
-    String path = part.getPath();
-    if (basePath != null && !basePath.isEmpty()) {
-      path = basePath.endsWith("/") ? basePath + path : basePath + "/" + path;
-    }
     return PathDatasetComponentBlob.newBuilder()
-        .setPath(path)
+        .setPath(part.getPath())
         .setSize(part.getSize())
         .setLastModifiedAtSource(part.getLastModifiedAtSource())
         .setMd5(part.getChecksum())
+        .setBasePath(basePath)
         .build();
   }
 
@@ -457,7 +457,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryEntity repositoryEntity = null;
       if (repositoryIdentification != null) {
         repositoryEntity =
-            repositoryDAO.getRepositoryById(session, repositoryIdentification, true, false);
+            repositoryDAO.getRepositoryById(
+                session,
+                repositoryIdentification,
+                true,
+                false,
+                RepositoryEnums.RepositoryTypeEnum.REGULAR);
       }
 
       for (String datasetVersionId : datasetVersionIds) {
@@ -500,7 +505,12 @@ public class CommitDAORdbImpl implements CommitDAO {
 
         if (repositoryEntity == null) {
           repositoryEntity =
-              repositoryDAO.getRepositoryById(session, repositoryIdentification, true, false);
+              repositoryDAO.getRepositoryById(
+                  session,
+                  repositoryIdentification,
+                  true,
+                  false,
+                  RepositoryEnums.RepositoryTypeEnum.REGULAR);
         }
 
         Query query = session.createQuery(RepositoryDAORdbImpl.CHECK_BRANCH_IN_REPOSITORY_HQL);
@@ -518,7 +528,8 @@ public class CommitDAORdbImpl implements CommitDAO {
                   .setBranch(ModelDBConstants.MASTER_BRANCH)
                   .setCommitSha(parentDatasetVersion.getCommit_hash())
                   .build(),
-              false);
+              false,
+              RepositoryEnums.RepositoryTypeEnum.DATASET);
         }
 
         session.beginTransaction();
@@ -582,7 +593,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
 
       RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(session, repositoryIdentification, true, true);
+          repositoryDAO.getRepositoryById(
+              session,
+              repositoryIdentification,
+              true,
+              true,
+              RepositoryEnums.RepositoryTypeEnum.REGULAR);
 
       String getBranchByCommitHQLBuilder =
           "FROM "

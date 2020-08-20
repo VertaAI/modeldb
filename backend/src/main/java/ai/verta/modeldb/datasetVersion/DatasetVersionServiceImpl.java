@@ -37,6 +37,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
@@ -244,7 +245,12 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         commitDAO.listCommits(
             listCommitsRequest.build(),
             (session ->
-                repositoryDAO.getRepositoryById(session, repositoryIdentification, false, false)),
+                repositoryDAO.getRepositoryById(
+                    session,
+                    repositoryIdentification,
+                    false,
+                    false,
+                    RepositoryEnums.RepositoryTypeEnum.DATASET)),
             ascending);
 
     long totalRecords = listCommitsResponse.getTotalRecords();
