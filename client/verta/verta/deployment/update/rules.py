@@ -54,7 +54,7 @@ class MaximumAverageLatencyThresholdRule(_UpdateRule):
     """
     Rule for maximum average latency threshold.
 
-    The JSON equivalent for this is:
+    The JSON equivalent for this (as an element of canary rules JSON) is:
 
     .. code-block:: json
 
