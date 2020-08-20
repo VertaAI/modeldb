@@ -199,7 +199,10 @@ class _DeployableEntity(_ModelDBEntity):
             path = self._get_cached_file(filename)
             if path is None:
                 contents = self._get_artifact(key)
-                if isinstance(contents, tuple):  # ExperimentRun._get_artifact() returns (contents, path_only)
+                if isinstance(contents, tuple):
+                    # ExperimentRun._get_artifact() returns two values (contents, path_only)
+                    # whereas ModelVersion._get_artifact() returns one (contents), so until
+                    # their implementations are unified, this check is to handle the difference.
                     contents, _ = contents  # TODO: raise error if path_only
 
                 path = self._cache_file(filename, contents)
