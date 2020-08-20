@@ -69,6 +69,6 @@ class Autoscaling(object):
 
         """
         if not isinstance(metric, _AutoscalingMetric):
-            raise TypeError("`metric` must be an object from verta.deployment.autoscaling.metrics")
+            raise TypeError("`metric` must be an object from verta.endpoint.autoscaling.metrics")
 
         self._metrics.append(metric)

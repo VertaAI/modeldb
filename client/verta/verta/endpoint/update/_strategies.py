@@ -118,6 +118,6 @@ class CanaryUpdateStrategy(_UpdateStrategy):
 
     def add_rule(self, rule):
         if not isinstance(rule, _UpdateRule):
-            raise TypeError("strategy must be an object from verta.deployment.update_rules")
+            raise TypeError("strategy must be an object from verta.endpoint.update_rules")
 
         self._rules.append(rule)

@@ -170,13 +170,13 @@ class Endpoint(object):
         ----------
         model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta._registry.modelversion.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
-        strategy : :class:`~verta.deployment.update._strategies._UpdateStrategy`
+        strategy : :class:`~verta.endpoint.update._strategies._UpdateStrategy`
             Strategy (direct or canary) for updating the Endpoint.
         wait : bool, default False
             Whether to wait for the Endpoint to finish updating before returning.
-        resources : list of :class:`~verta.deployment.resources._Resource`, optional
+        resources : list of :class:`~verta.endpoint.resources._Resource`, optional
             Resources allowed for the updated Endpoint.
-        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`, optional
+        autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
             Autoscaling condition for the updated Endpoint.
         env_vars : dict of str to str, optional
             Environment variables.
@@ -432,7 +432,7 @@ class Endpoint(object):
 
         """
         if not isinstance(strategy, _UpdateStrategy):
-            raise TypeError("`strategy` must be an object from verta.deployment.strategies")
+            raise TypeError("`strategy` must be an object from verta.endpoint.strategies")
 
         if autoscaling and not isinstance(autoscaling, Autoscaling):
             raise TypeError("`autoscaling` must be an Autoscaling object")
