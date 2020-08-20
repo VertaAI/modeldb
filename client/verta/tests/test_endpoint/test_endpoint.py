@@ -1,8 +1,11 @@
+import json
 import time
 
 import pytest
+
 import requests
-import json
+
+import yaml
 
 import verta
 from verta._deployment import Endpoint
@@ -117,6 +120,43 @@ class TestEndpoint:
         endpoint.update(experiment_run, DirectUpdateStrategy(), True)
         str_repr = repr(endpoint)
         assert "curl: {}".format(endpoint.get_deployed_model().get_curl()) in str_repr
+
+    def test_download_manifest(self, client, in_tempdir):
+        download_to_path = "manifest.yaml"
+        path = verta._internal_utils._utils.generate_default_name()
+        name = verta._internal_utils._utils.generate_default_name()
+
+        strategy = CanaryUpdateStrategy(interval=10, step=0.1)
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.1))
+        resources = [CpuMillis(100), Memory("128Mi")]
+        autoscaling = Autoscaling(min_replicas=1, max_replicas=10, min_scale=0.1, max_scale=2)
+        autoscaling.add_metric(CpuUtilizationTarget(0.75))
+        env_vars = {'env1': "var1", 'env2': "var2"}
+
+        filepath = client.download_endpoint_manifest(
+            download_to_path=download_to_path,
+            path=path,
+            name=name,
+            strategy=strategy,
+            autoscaling=autoscaling,
+            resources=resources,
+            env_vars=env_vars,
+        )
+
+        # can be loaded as YAML
+        with open(filepath, 'rb') as f:
+            manifest = yaml.safe_load(f)
+
+        assert manifest['kind'] == "Endpoint"
+
+        # check environment variables
+        containers = manifest['spec']['function']['spec']['templates']['deployment']['spec']['template']['spec']['containers']
+        retrieved_env_vars = {
+            env_var['name']: env_var['value']
+            for env_var
+            in containers[0]['env']
+        }
+        assert retrieved_env_vars == env_vars
 
     def test_direct_update(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -284,6 +324,10 @@ class TestEndpoint:
 
         assert token is None
 
+        token = verta._internal_utils._utils.generate_default_name()
+        endpoint.create_access_token(token)
+        assert endpoint.get_access_token() == token
+
     def test_create_update_body(self):
         endpoint = Endpoint(None, None, None, None)
         resources = Resources(cpu_millis=250, memory="512Mi")
@@ -320,12 +364,15 @@ class TestEndpoint:
         created_endpoints.append(endpoint)
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
+        token = verta._internal_utils._utils.generate_default_name()
+        endpoint.create_access_token(token)
         x = model_for_deployment['train_features'].iloc[1].values
         deployed_model = endpoint.get_deployed_model()
 
         assert np.allclose(deployed_model.predict([x]), model.predict([x]))
         deployed_model_curl = deployed_model.get_curl()
         assert endpoint.path in deployed_model_curl
+        assert "-H \"Access-token: {}\"".format(token) in deployed_model_curl
 
         new_model = model_for_deployment['model'].fit(
             np.random.random(model_for_deployment['train_features'].shape),

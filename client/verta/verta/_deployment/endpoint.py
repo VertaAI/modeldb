@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+import os
 import sys
 import time
 import json
 import yaml
 from functools import reduce
+
+import requests
 
 from ..external import six
 
@@ -15,7 +18,10 @@ from ..deployment.resources import Resources
 from ..deployment.update.rules import _UpdateRule
 from ..deployment import DeployedModel
 from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
-from .._internal_utils import _utils
+from .._internal_utils import (
+    _request_utils,
+    _utils,
+)
 from .._tracking import experimentrun
 from .._registry import RegisteredModelVersion
 
@@ -396,7 +402,31 @@ class Endpoint(object):
             return None
         return tokens[0]['creator_request']['value']
 
-    def _create_update_body(self, strategy, resources=None, autoscaling=None, env_vars=None):
+    def create_access_token(self, token):
+        """
+        Creates an access token for the Endpoint.
+
+        Parameters
+        ----------
+        token : str
+            Token to create.
+
+        """
+        if not isinstance(token, six.string_types):
+            raise TypeError("`token` must be a string.")
+
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/accesstokens".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_stage(),
+        )
+        response = _utils.make_request("POST", url, self._conn, json={"value": token})
+        _utils.raise_for_http_error(response)
+
+    @staticmethod
+    def _create_update_body(strategy, resources=None, autoscaling=None, env_vars=None):
         """
         Converts endpoint update/config util classes into a JSON-friendly dict.
 

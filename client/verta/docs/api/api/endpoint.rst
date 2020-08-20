@@ -9,6 +9,7 @@ Client
 .. automethod:: verta.Client.get_or_create_endpoint
 .. automethod:: verta.Client.get_endpoint
 .. automethod:: verta.Client.create_endpoint
+.. automethod:: verta.Client.download_endpoint_manifest
 
 Endpoint
 --------
