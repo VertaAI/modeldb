@@ -476,16 +476,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   private void setRepositoryTypeInQueryBuilder(
       RepositoryTypeEnum repositoryType, StringBuilder getRepoCountByNamePrefixHQL) {
-    getRepoCountByNamePrefixHQL
-        .append(" AND ")
-        .append(SHORT_NAME)
-        .append(".")
-        .append("repositoryAccessModifier = ");
+    getRepoCountByNamePrefixHQL.append(" AND ").append(SHORT_NAME).append(".");
     if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
-      getRepoCountByNamePrefixHQL.append(
-          RepositoryEnums.RepositoryModifierEnum.PROTECTED.ordinal());
+      getRepoCountByNamePrefixHQL.append("datasetRepositoryMappingEntity IS NOT EMPTY ");
     } else {
-      getRepoCountByNamePrefixHQL.append(RepositoryEnums.RepositoryModifierEnum.REGULAR.ordinal());
+      getRepoCountByNamePrefixHQL.append("datasetRepositoryMappingEntity IS EMPTY ");
     }
   }
 
