@@ -137,10 +137,3 @@ def delete_endpoint(id_, workspace, conn):
     request_url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}".format(conn.scheme, conn.socket, workspace, id_)
     response = requests.delete(request_url, headers=conn.auth)
     _utils.raise_for_http_error(response)
-
-def delete_organization(id_, conn):
-    Message = _OrganizationService.DeleteOrganization
-    endpoint = "/api/v1/uac-proxy/organization/deleteOrganization"
-    msg = Message(org_id=id_)
-    response = conn.make_proto_request("POST", endpoint, body=msg)
-    conn.must_proto_response(response, Message.Response)

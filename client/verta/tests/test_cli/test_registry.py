@@ -15,7 +15,7 @@ from verta.utils import ModelAPI
 from verta.deployment.update._strategies import DirectUpdateStrategy
 
 
-from ..utils import delete_organization, sys_path_manager
+from ..utils import sys_path_manager
 
 
 

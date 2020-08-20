@@ -380,7 +380,7 @@ def organization(client):
 
     yield org
 
-    utils.delete_organization(org.id, client._conn)
+    org.delete()
 
     
 @pytest.fixture
