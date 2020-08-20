@@ -5,11 +5,11 @@ import json
 
 from .deployment import deployment
 from ... import Client
-from ...deployment.update._strategies import DirectUpdateStrategy, CanaryUpdateStrategy
-from ...deployment.update.rules import _UpdateRule
-from ...deployment.resources import Resources
-from ...deployment.autoscaling import Autoscaling
-from ...deployment.autoscaling.metrics import _AutoscalingMetric
+from ...endpoint.update._strategies import DirectUpdateStrategy, CanaryUpdateStrategy
+from ...endpoint.update.rules import _UpdateRule
+from ...endpoint.resources import Resources
+from ...endpoint.autoscaling import Autoscaling
+from ...endpoint.autoscaling.metrics import _AutoscalingMetric
 from ..._registry import RegisteredModelVersion
 
 

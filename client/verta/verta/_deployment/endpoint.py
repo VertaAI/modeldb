@@ -12,12 +12,12 @@ import requests
 
 from ..external import six
 
-from ..deployment.autoscaling import Autoscaling
-from ..deployment.autoscaling.metrics import _AutoscalingMetric
-from ..deployment.resources import Resources
-from ..deployment.update.rules import _UpdateRule
+from ..endpoint.autoscaling import Autoscaling
+from ..endpoint.autoscaling.metrics import _AutoscalingMetric
+from ..endpoint.resources import Resources
+from ..endpoint.update.rules import _UpdateRule
 from ..deployment import DeployedModel
-from ..deployment.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
+from ..endpoint.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
 from .._internal_utils import (
     _request_utils,
     _utils,
@@ -170,13 +170,13 @@ class Endpoint(object):
         ----------
         model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta._registry.modelversion.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
-        strategy : :class:`~verta.deployment.update._strategies._UpdateStrategy`
+        strategy : :class:`~verta.endpoint.update._strategies._UpdateStrategy`
             Strategy (direct or canary) for updating the Endpoint.
         wait : bool, default False
             Whether to wait for the Endpoint to finish updating before returning.
-        resources : :class:`~verta.deployment.resources.Resources`, optional
+        resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated Endpoint.
-        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`, optional
+        autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
             Autoscaling condition for the updated Endpoint.
         env_vars : dict of str to str, optional
             Environment variables.
@@ -432,7 +432,7 @@ class Endpoint(object):
 
         """
         if not isinstance(strategy, _UpdateStrategy):
-            raise TypeError("`strategy` must be an object from verta.deployment.strategies")
+            raise TypeError("`strategy` must be an object from verta.endpoint.strategies")
 
         if autoscaling and not isinstance(autoscaling, Autoscaling):
             raise TypeError("`autoscaling` must be an Autoscaling object")

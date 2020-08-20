@@ -9,7 +9,7 @@ from verta import Client
 from verta._cli import cli
 from verta._internal_utils import _utils
 from verta.environment import Python
-from verta.deployment.update._strategies import DirectUpdateStrategy
+from verta.endpoint.update._strategies import DirectUpdateStrategy
 
 from ..utils import get_build_ids
 

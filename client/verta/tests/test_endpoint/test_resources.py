@@ -1,6 +1,6 @@
 import pytest
 
-from verta.deployment.resources import Resources
+from verta.endpoint.resources import Resources
 
 
 @pytest.mark.parametrize("data", [3, 64])

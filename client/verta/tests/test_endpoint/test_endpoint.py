@@ -9,11 +9,11 @@ import yaml
 
 import verta
 from verta._deployment import Endpoint
-from verta.deployment.resources import Resources
-from verta.deployment.autoscaling import Autoscaling
-from verta.deployment.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
-from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
-from verta.deployment.update.rules import MaximumAverageLatencyThresholdRule
+from verta.endpoint.resources import Resources
+from verta.endpoint.autoscaling import Autoscaling
+from verta.endpoint.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
+from verta.endpoint.update import DirectUpdateStrategy, CanaryUpdateStrategy
+from verta.endpoint.update.rules import MaximumAverageLatencyThresholdRule
 from verta._internal_utils import _utils
 from verta.environment import Python
 from verta.utils import ModelAPI

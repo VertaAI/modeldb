@@ -38,7 +38,7 @@ class Resources(object):
     --------
     .. code-block:: python
 
-        from verta.deployment.resources import Resources
+        from verta.endpoint.resources import Resources
         resources = Resources(cpu_millis=250, memory="512Mi")
 
     """

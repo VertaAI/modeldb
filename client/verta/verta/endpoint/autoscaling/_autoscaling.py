@@ -8,6 +8,17 @@ class Autoscaling(object):
 
     To be passed to :meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>`.
 
+    The JSON equivalent for this is:
+
+    .. code-block:: json
+
+        {
+            "autoscaling": {
+                "quantities": {"min_replicas": 2, "max_replicas": 7, "min_scale": 0.2, "max_scale": 0.7},
+                "metrics": []
+            }
+        }
+
     Parameters
     ----------
     min_replicas : int
@@ -53,11 +64,11 @@ class Autoscaling(object):
 
         Parameters
         ----------
-        metric : subclass of :class:`~verta.deployment.autoscaling.metrics._AutoscalingMetric`
+        metric : subclass of :class:`~verta.endpoint.autoscaling.metrics._AutoscalingMetric`
             Metric to add.
 
         """
         if not isinstance(metric, _AutoscalingMetric):
-            raise TypeError("`metric` must be an object from verta.deployment.autoscaling.metrics")
+            raise TypeError("`metric` must be an object from verta.endpoint.autoscaling.metrics")
 
         self._metrics.append(metric)
