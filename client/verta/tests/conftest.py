@@ -370,7 +370,7 @@ def created_endpoints(client):
     yield to_delete
 
     for endpoint in to_delete:
-        utils.delete_endpoint(endpoint.id, endpoint.workspace, client._conn)
+        endpoint.delete()
 
 
 @pytest.fixture
