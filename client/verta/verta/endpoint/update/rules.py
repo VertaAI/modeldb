@@ -64,7 +64,7 @@ class MaximumAverageLatencyThresholdRule(_UpdateRule):
     --------
     .. code-block:: python
 
-        from verta.deployment.update.rules import MaximumAverageLatencyThresholdRule
+        from verta.endpoint.update.rules import MaximumAverageLatencyThresholdRule
         rule = MaximumAverageLatencyThresholdRule(100)
 
     """
@@ -87,7 +87,7 @@ class MaximumP90LatencyThresholdRule(_UpdateRule):
     --------
     .. code-block:: python
 
-        from verta.deployment.update.rules import MaximumP90LatencyThresholdRule
+        from verta.endpoint.update.rules import MaximumP90LatencyThresholdRule
         rule = MaximumP90LatencyThresholdRule(100)
 
     """
@@ -110,7 +110,7 @@ class MaximumRequestErrorPercentageThresholdRule(_UpdateRule):
     --------
     .. code-block:: python
 
-        from verta.deployment.update.rules import MaximumRequestErrorPercentageThresholdRule
+        from verta.endpoint.update.rules import MaximumRequestErrorPercentageThresholdRule
         rule = MaximumRequestErrorPercentageThresholdRule(0.5)
 
     """
@@ -133,7 +133,7 @@ class MaximumServerErrorPercentageThresholdRule(_UpdateRule):
     --------
     .. code-block:: python
 
-        from verta.deployment.update.rules import MaximumServerErrorPercentageThresholdRule
+        from verta.endpoint.update.rules import MaximumServerErrorPercentageThresholdRule
         rule = MaximumServerErrorPercentageThresholdRule(0.5)
 
     """

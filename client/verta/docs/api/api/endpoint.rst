@@ -18,28 +18,28 @@ Endpoint
 
 Update Strategies
 -----------------
-.. automodule:: verta.deployment.update._strategies
+.. automodule:: verta.endpoint.update._strategies
     :members:
 
 .. _canary-rules:
 
 Canary Update Rules
 ^^^^^^^^^^^^^^^^^^^
-.. automodule:: verta.deployment.update.rules
+.. automodule:: verta.endpoint.update.rules
     :members:
 
 Update Configuration
 --------------------
 Resources
 ^^^^^^^^^
-.. automodule:: verta.deployment.resources
+.. automodule:: verta.endpoint.resources
     :members:
 
 Autoscaling
 ^^^^^^^^^^^
-.. automodule:: verta.deployment.autoscaling._autoscaling
+.. automodule:: verta.endpoint.autoscaling._autoscaling
     :members:
-.. automodule:: verta.deployment.autoscaling.metrics
+.. automodule:: verta.endpoint.autoscaling.metrics
     :members:
 
 Command Line Interface

@@ -39,7 +39,7 @@ class DirectUpdateStrategy(_UpdateStrategy):
     --------
     .. code-block:: python
 
-        from verta.deployment.update import DirectUpdateStrategy
+        from verta.endpoint.update import DirectUpdateStrategy
         strategy = DirectUpdateStrategy()
 
     """
@@ -80,7 +80,7 @@ class CanaryUpdateStrategy(_UpdateStrategy):
     --------
     .. code-block:: python
 
-        from verta.deployment.update import CanaryUpdateStrategy
+        from verta.endpoint.update import CanaryUpdateStrategy
         strategy = CanaryUpdateStrategy(interval=10, step=.1)
 
     """
@@ -118,6 +118,6 @@ class CanaryUpdateStrategy(_UpdateStrategy):
 
     def add_rule(self, rule):
         if not isinstance(rule, _UpdateRule):
-            raise TypeError("strategy must be an object from verta.deployment.update_rules")
+            raise TypeError("strategy must be an object from verta.endpoint.update_rules")
 
         self._rules.append(rule)
