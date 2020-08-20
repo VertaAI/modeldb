@@ -453,10 +453,7 @@ class TestEndpoint:
         with open(filepath, "w") as f:
             json.dump(strategy_dict, f)
 
-        endpoint.update_from_config(filepath)
-
-        while not endpoint.get_status()['status'] == "active":
-            time.sleep(3)
+        endpoint.update_from_config(filepath, wait=True)
 
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
