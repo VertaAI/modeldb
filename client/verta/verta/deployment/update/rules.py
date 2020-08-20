@@ -58,19 +58,7 @@ class MaximumAverageLatencyThresholdRule(_UpdateRule):
 
     .. code-block:: json
 
-        {
-            "rules": [
-                {
-                    "rule": "latency_avg_max",
-                    "rule_parameters": [
-                        {
-                            "name": "threshold",
-                            "value": "0.1"
-                        }
-                    ]
-                }
-            ]
-        }
+        {"rule": "latency_avg_max", "rule_parameters": [{"name": "threshold", "value": 0.1}]}
 
     Examples
     --------
@@ -89,21 +77,11 @@ class MaximumP90LatencyThresholdRule(_UpdateRule):
     """
     Rule for maximum p90 latency threshold.
 
+    The JSON equivalent for this (as an element of canary rules JSON) is:
+
     .. code-block:: json
 
-        {
-            "rules": [
-                {
-                    "rule": "latency_p90_max",
-                    "rule_parameters": [
-                        {
-                            "name": "threshold",
-                            "value": "0.1"
-                        }
-                    ]
-                }
-            ]
-        }
+        {"rule": "latency_p90_max", "rule_parameters": [{"name": "threshold", "value": 0.1}]}
 
     Examples
     --------
@@ -122,21 +100,11 @@ class MaximumRequestErrorPercentageThresholdRule(_UpdateRule):
     """
     Rule for maximum request error percentage threshold.
 
+    The JSON equivalent for this (as an element of canary rules JSON) is:
+
     .. code-block:: json
 
-        {
-            "rules": [
-                {
-                    "rule": "error_4xx_rate",
-                    "rule_parameters": [
-                        {
-                            "name": "threshold",
-                            "value": "0.1"
-                        }
-                    ]
-                }
-            ]
-        }
+        {"rule": "error_4xx_rate", "rule_parameters": [{"name": "threshold", "value": 0.1}]}
 
     Examples
     --------
@@ -155,21 +123,11 @@ class MaximumServerErrorPercentageThresholdRule(_UpdateRule):
     """
     Rule for maximum server error percentage threshold.
 
+    The JSON equivalent for this (as an element of canary rules JSON) is:
+
     .. code-block:: json
 
-        {
-            "rules": [
-                {
-                    "rule": "error_5xx_rate",
-                    "rule_parameters": [
-                        {
-                            "name": "threshold",
-                            "value": "0.1"
-                        }
-                    ]
-                }
-            ]
-        }
+        {"rule": "error_5xx_rate", "rule_parameters": [{"name": "threshold", "value": 0.1}]}
 
     Examples
     --------

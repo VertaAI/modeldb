@@ -47,13 +47,11 @@ class CpuUtilizationTarget(_AutoscalingMetric):
     """
     CPU utilization target to trigger autoscaling.
 
-    The JSON equivalent for this is:
+    The JSON equivalent for this (as an element of autoscaling metrics JSON) is:
 
     .. code-block:: json
 
-        {
-            "metrics": [{"metric": "cpu_utilization", "parameters": [{"name": "target", "value": 0.5}]}]
-        }
+        {"metric": "cpu_utilization", "parameters": [{"name": "target", "value": 0.5}]}
 
     Examples
     --------
@@ -71,13 +69,11 @@ class RequestsPerWorkerTarget(_AutoscalingMetric):
     """
     Number of requests per worker target to trigger autoscaling.
 
-    The JSON equivalent for this is:
+    The JSON equivalent for this (as an element of autoscaling metrics JSON) is:
 
     .. code-block:: json
 
-        {
-            "metrics": [{"metric": "requests_per_worker", "parameters": [{"name": "target", "value": 1000}]}]
-        }
+        {"metric": "requests_per_worker", "parameters": [{"name": "target", "value": 1000}]}
 
     Examples
     --------
@@ -96,13 +92,11 @@ class MemoryUtilizationTarget(_AutoscalingMetric):
     """
     Memory utilization target to trigger autoscaling.
 
-    The JSON equivalent for this is:
+    The JSON equivalent for this (as an element of autoscaling metrics JSON) is:
 
     .. code-block:: json
 
-        {
-            "metrics": [{"metric": "memory_utilization", "parameters": [{"name": "target", "value": 0.5}]}]
-        }
+        {"metric": "memory_utilization", "parameters": [{"name": "target", "value": 0.5}]}
 
     Examples
     --------
