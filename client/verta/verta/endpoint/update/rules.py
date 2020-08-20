@@ -3,7 +3,7 @@
 import abc
 import json
 
-from verta.external import six
+from ...external import six
 
 
 @six.add_metaclass(abc.ABCMeta)
