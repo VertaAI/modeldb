@@ -618,7 +618,7 @@ class TestUpdate:
     ["dict", {"a": 1, "b": 2}, ['dict={"a": 1, "b": 2}']]))
 def test_add_attributes(key, value, arg):
     class TestModelVersion:
-        def add_attribute(self, key, value0):
+        def add_attribute(self, key, value0, overwrite):
             assert value == value0
 
         def _get_attribute_keys(self):
@@ -633,7 +633,7 @@ def test_multiple_attributes():
     values = [3.6, {"a": 1, "b": 2}]
 
     class TestModelVersion:
-        def add_attribute(self, key, value0):
+        def add_attribute(self, key, value0, overwrite):
             assert values[call_number[0]] == value0
             call_number[0] += 1
 

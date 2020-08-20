@@ -98,5 +98,5 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
 
 def add_attributes(model_version, attribute, overwrite):
     multiple_arguments_for_each(attribute, "attribute",
-        lambda key, value: model_version.add_attribute(key, json.loads(value)),
+        lambda key, value: model_version.add_attribute(key, json.loads(value), overwrite=overwrite),
         lambda: model_version._get_attribute_keys(), overwrite)
