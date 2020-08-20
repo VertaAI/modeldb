@@ -462,7 +462,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         return Python._from_proto(self._msg)
 
-    def _get_url_for_artifact(self, key, method, artifact_type, part_num=0):
+    def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
@@ -586,7 +586,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                                                filename_extension=extension)
         return artifact_msg
 
-    def _get_artifact(self, key, artifact_type):
+    def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists
         self._refresh_cache()
         if key == "model":
@@ -722,7 +722,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
     #     self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
 
-    def add_attribute(self, key, value):
+    def add_attribute(self, key, value, overwrite=False):
         """
         Adds an attribute to this Model Version.
 
@@ -732,11 +732,13 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             Name of the attribute.
         value : one of {None, bool, float, int, str, list, dict}
             Value of the attribute.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing attribute with key `key`.
 
         """
-        self.add_attributes({key: value})
+        self.add_attributes({key: value}, overwrite)
 
-    def add_attributes(self, attrs):
+    def add_attributes(self, attrs, overwrite=False):
         """
         Adds potentially multiple attributes to this Model Version.
 
@@ -744,6 +746,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         ----------
         attrs : dict of str to {None, bool, float, int, str, list, dict}
             Attributes.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing attribute with key `key`.
 
         """
         # validate all keys first
@@ -752,11 +756,13 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         # build KeyValues
         attribute_keyvals = []
+        existing_attrs = self.get_attributes()
         for key, value in six.viewitems(attrs):
-            attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
-                                                                                                             allow_collection=True)))
+            if not key in existing_attrs or overwrite:
+                attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
+                                                                                                                 allow_collection=True)))
 
-            self._update(self.ModelVersionMessage(attributes=attribute_keyvals))
+        self._update(self.ModelVersionMessage(attributes=attribute_keyvals))
 
     def get_attribute(self, key):
         """
