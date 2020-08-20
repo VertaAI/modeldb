@@ -1,14 +1,12 @@
 Updating endpoint with a configuration file
 ===========================================
 
-.. TODO: link to Endpoint.update tutorial
-
 Verta's client and CLI support updating Endpoint with JSON or YAML configuration file. This tutorial will show how it can be done, using the client and CLI.
 
 Configuration file
 ------------------
 
-Sometimes, it is more convenient to specify update configuration in a separate, human-readable file, than to have everything in a Python script or a split CLI command.
+Sometimes, it is more convenient to specify update configuration in a separate, human-readable file, than to `have everything in a Python script or a split CLI command <endpoint_update.html>`_.
 
 For example:
 
