@@ -132,10 +132,6 @@ def delete_datasets(ids, conn):
     response = requests.delete(request_url, json={'ids': ids}, headers=conn.auth)
     _utils.raise_for_http_error(response)
 
-def delete_repository(id_, conn):
-    request_url = "{}://{}/api/v1/modeldb/versioning/repositories/{}".format(conn.scheme, conn.socket, id_)
-    response = requests.delete(request_url, headers=conn.auth)
-    _utils.raise_for_http_error(response)
 
 def delete_registered_model(id_, conn):
     request_url = "{}://{}/api/v1/registry/registered_models/{}".format(conn.scheme, conn.socket, id_)

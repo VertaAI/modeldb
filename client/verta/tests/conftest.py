@@ -319,7 +319,7 @@ def repository(client):
 
     yield repo
 
-    utils.delete_repository(repo.id, client._conn)
+    repo.delete()
 
 
 @pytest.fixture
