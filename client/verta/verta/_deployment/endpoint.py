@@ -402,6 +402,29 @@ class Endpoint(object):
             return None
         return tokens[0]['creator_request']['value']
 
+    def create_access_token(self, token):
+        """
+        Creates an access token for the Endpoint.
+
+        Parameters
+        ----------
+        token : str
+            Token to create.
+
+        """
+        if not isinstance(token, six.string_types):
+            raise TypeError("`token` must be a string.")
+
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/accesstokens".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_stage(),
+        )
+        response = _utils.make_request("POST", url, self._conn, json={"value": token})
+        _utils.raise_for_http_error(response)
+
     @staticmethod
     def _create_update_body(strategy, resources=None, autoscaling=None, env_vars=None):
         """

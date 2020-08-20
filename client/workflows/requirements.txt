@@ -3,7 +3,7 @@ jupyter
 matplotlib
 pandas
 scikit-learn
-tensorflow<2.0
+tensorflow
 tensorflow-hub
 torch
 wget

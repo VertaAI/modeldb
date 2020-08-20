@@ -6,6 +6,7 @@ import pytest
 import requests
 import zipfile
 import glob
+import shutil
 import sys
 
 import verta
@@ -15,6 +16,7 @@ import os
 
 import verta.dataset
 from verta.environment import Python
+from verta._tracking.deployable_entity import _CACHE_DIR
 
 
 class TestMDBIntegration:
@@ -41,7 +43,6 @@ class TestMDBIntegration:
 
 
 class TestModelVersion:
-
     def test_create(self, registered_model):
         name = verta._internal_utils._utils.generate_default_name()
         assert registered_model.create_version(name)
@@ -91,83 +92,6 @@ class TestModelVersion:
         retrieved_model_version_by_id = client.get_registered_model_version(model_version.id)
 
         assert retrieved_model_version_by_id.id == model_version.id
-
-    def test_log_model(self, model_version):
-        np = pytest.importorskip("numpy")
-        sklearn = pytest.importorskip("sklearn")
-        from sklearn.linear_model import LogisticRegression
-
-        classifier = LogisticRegression()
-        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        original_coef = classifier.coef_
-        model_version.log_model(classifier)
-
-        # retrieve the classifier:
-        retrieved_classfier = model_version.get_model()
-        assert np.array_equal(retrieved_classfier.coef_, original_coef)
-
-        # check model api:
-        assert "model_api.json" in model_version.get_artifact_keys()
-        for artifact in model_version._msg.artifacts:
-            if artifact.key == "model_api.json":
-                assert artifact.filename_extension == "json"
-
-        # overwrite should work:
-        new_classifier = LogisticRegression()
-        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_model(new_classifier, overwrite=True)
-        retrieved_classfier = model_version.get_model()
-        assert np.array_equal(retrieved_classfier.coef_, new_classifier.coef_)
-
-        # when overwrite = false, overwriting should fail
-        with pytest.raises(ValueError) as excinfo:
-            model_version.log_model(new_classifier)
-
-        assert "model already exists" in str(excinfo.value)
-
-        # Check custom modules:
-        custom_module_filenames = {"__init__.py", "_verta_config.py"}
-        for path in sys.path:
-            # skip std libs and venvs
-            #     This logic is from verta.client._log_modules().
-            lib_python_str = os.path.join(os.sep, "lib", "python")
-            i = path.find(lib_python_str)
-            if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
-                continue
-
-            for parent_dir, dirnames, filenames in os.walk(path):
-                # skip venvs
-                #     This logic is from _utils.find_filepaths().
-                exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-                dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
-
-                # only Python files
-                filenames[:] = [filename for filename in filenames if filename.endswith(('.py', '.pyc', '.pyo'))]
-
-                custom_module_filenames.update(map(os.path.basename, filenames))
-
-        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
-            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
-
-    def test_log_model_with_custom_modules(self, model_version, model_for_deployment):
-        custom_modules_dir = "."
-
-        model_version.log_model(
-            model_for_deployment['model'],
-            custom_modules=["."],
-        )
-
-        custom_module_filenames = {"__init__.py", "_verta_config.py"}
-        for parent_dir, dirnames, filenames in os.walk(custom_modules_dir):
-            # skip venvs
-            #     This logic is from _utils.find_filepaths().
-            exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-            dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
-
-            custom_module_filenames.update(map(os.path.basename, filenames))
-
-        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
-            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
     def test_log_artifact(self, model_version):
         np = pytest.importorskip("numpy")
@@ -396,26 +320,6 @@ class TestModelVersion:
         model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
         assert len(model_version._msg.artifacts) == 4
 
-    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir,
-                                     registered_model):
-        download_to_path = "context.tgz"
-
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
-        model_version = registered_model.create_version_from_run(
-            run_id=experiment_run.id,
-            name="From Run {}".format(experiment_run.id),
-        )
-
-        filepath = model_version.download_docker_context(download_to_path)
-        assert filepath == os.path.abspath(download_to_path)
-
-        # can be loaded as tgz
-        with tarfile.open(filepath, 'r:gz') as f:
-            filepaths = set(f.getnames())
-
-        assert "Dockerfile" in filepaths
-
     def test_training_data(self, model_version, model_for_deployment):
         X_train = model_for_deployment['train_features']
         y_train = model_for_deployment['train_targets']
@@ -431,15 +335,21 @@ class TestModelVersion:
         model_version = registered_model.get_or_create_version(name="my version")
 
         model_version.add_attribute("float-attr", 0.4)
+        model_version.add_attribute("float-attr", 0.8)
         assert model_version.get_attribute("float-attr") == 0.4
 
+        model_version.add_attribute("float-attr", 0.8, overwrite=True)
+        assert model_version.get_attribute("float-attr") == 0.8
         # Test overwriting
         model_version.add_attribute("int-attr", 15)
         assert model_version.get_attribute("int-attr") == 15
 
+        model_version.add_attributes({"int-attr": 16, "float-attr": 123.}, overwrite=True)
+        assert model_version.get_attributes() == {"int-attr": 16, "float-attr": 123.}
         # Test deleting:
         model_version.del_attribute('int-attr')
-        assert model_version.get_attributes() == {"float-attr": 0.4}
+        assert model_version.get_attributes() == {"float-attr": 123.}
+
 
         # Deleting non-existing key:
         model_version.del_attribute("non-existing")
@@ -462,3 +372,123 @@ class TestModelVersion:
         assert version.get_labels() == LABELS
 
         assert version.get_attributes() == ATTRIBUTES
+
+class TestDeployability:
+    """Deployment-related functionality"""
+    def test_log_model(self, model_version):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        original_coef = classifier.coef_
+        model_version.log_model(classifier)
+
+        # retrieve the classifier:
+        retrieved_classfier = model_version.get_model()
+        assert np.array_equal(retrieved_classfier.coef_, original_coef)
+
+        # check model api:
+        assert "model_api.json" in model_version.get_artifact_keys()
+        for artifact in model_version._msg.artifacts:
+            if artifact.key == "model_api.json":
+                assert artifact.filename_extension == "json"
+
+        # overwrite should work:
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(new_classifier, overwrite=True)
+        retrieved_classfier = model_version.get_model()
+        assert np.array_equal(retrieved_classfier.coef_, new_classifier.coef_)
+
+        # when overwrite = false, overwriting should fail
+        with pytest.raises(ValueError) as excinfo:
+            model_version.log_model(new_classifier)
+
+        assert "model already exists" in str(excinfo.value)
+
+        # Check custom modules:
+        custom_module_filenames = {"__init__.py", "_verta_config.py"}
+        for path in sys.path:
+            # skip std libs and venvs
+            #     This logic is from verta.client._log_modules().
+            lib_python_str = os.path.join(os.sep, "lib", "python")
+            i = path.find(lib_python_str)
+            if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+                continue
+
+            for parent_dir, dirnames, filenames in os.walk(path):
+                # skip venvs
+                #     This logic is from _utils.find_filepaths().
+                exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
+                dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+
+                # only Python files
+                filenames[:] = [filename for filename in filenames if filename.endswith(('.py', '.pyc', '.pyo'))]
+
+                custom_module_filenames.update(map(os.path.basename, filenames))
+
+        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+
+    def test_log_model_with_custom_modules(self, model_version, model_for_deployment):
+        custom_modules_dir = "."
+
+        model_version.log_model(
+            model_for_deployment['model'],
+            custom_modules=["."],
+        )
+
+        custom_module_filenames = {"__init__.py", "_verta_config.py"}
+        for parent_dir, dirnames, filenames in os.walk(custom_modules_dir):
+            # skip venvs
+            #     This logic is from _utils.find_filepaths().
+            exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
+            dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+
+            custom_module_filenames.update(map(os.path.basename, filenames))
+
+        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+
+    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir,
+                                     registered_model):
+        download_to_path = "context.tgz"
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id,
+            name="From Run {}".format(experiment_run.id),
+        )
+
+        filepath = model_version.download_docker_context(download_to_path)
+        assert filepath == os.path.abspath(download_to_path)
+
+        # can be loaded as tgz
+        with tarfile.open(filepath, 'r:gz') as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths
+
+    def test_fetch_artifacts(self, model_version, strs, flat_dicts):
+        strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
+        for key, artifact in zip(strs, flat_dicts):
+            model_version.log_artifact(key, artifact)
+
+        try:
+            artifacts = model_version.fetch_artifacts(strs)
+
+            assert set(six.viewkeys(artifacts)) == set(strs)
+            assert all(filepath.startswith(_CACHE_DIR)
+                       for filepath in six.viewvalues(artifacts))
+
+            for key, filepath in six.viewitems(artifacts):
+                artifact_contents = model_version._get_artifact(key)
+                with open(filepath, 'rb') as f:
+                    file_contents = f.read()
+
+                assert file_contents == artifact_contents
+        finally:
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
