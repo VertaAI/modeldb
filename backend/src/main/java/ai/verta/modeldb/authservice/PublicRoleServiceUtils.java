@@ -11,6 +11,8 @@ import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experiment.ExperimentDAORdbImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
+import ai.verta.modeldb.metadata.MetadataDAO;
+import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.BlobDAORdbImpl;
@@ -42,6 +44,7 @@ public class PublicRoleServiceUtils implements RoleService {
   private DatasetDAO datasetDAO;
 
   public PublicRoleServiceUtils(AuthService authService) {
+    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, this);
     ExperimentRunDAO experimentRunDAO =
         new ExperimentRunDAORdbImpl(
@@ -49,7 +52,8 @@ public class PublicRoleServiceUtils implements RoleService {
             this,
             new RepositoryDAORdbImpl(authService, this),
             new CommitDAORdbImpl(authService, this),
-            new BlobDAORdbImpl(authService, this));
+            new BlobDAORdbImpl(authService, this),
+            metadataDAO);
     this.projectDAO = new ProjectDAORdbImpl(authService, this, experimentDAO, experimentRunDAO);
     this.datasetDAO = new DatasetDAORdbImpl(authService, this);
   }

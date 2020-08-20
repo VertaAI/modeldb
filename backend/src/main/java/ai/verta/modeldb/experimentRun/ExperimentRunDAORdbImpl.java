@@ -56,6 +56,7 @@ import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
+import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -123,6 +124,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
+  private final MetadataDAO metadataDAO;
   private static final String CHECK_EXP_RUN_EXISTS_AT_INSERT_HQL =
       new StringBuilder("Select count(*) From ExperimentRunEntity ere where ")
           .append(" ere." + ModelDBConstants.NAME + " = :experimentRunName ")
@@ -234,12 +236,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       RoleService roleService,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
-      BlobDAO blobDAO) {
+      BlobDAO blobDAO,
+      MetadataDAO metadataDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
+    this.metadataDAO = metadataDAO;
   }
 
   private void checkIfEntityAlreadyExists(ExperimentRun experimentRun, Boolean isInsert) {
@@ -596,13 +600,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
     if (app.isPopulateConnectionsBasedOnPrivileges()) {
       List<Artifact> accessibleDatasetVersions = new ArrayList<>();
+      List<String> accessibleDatasetVersionIds = new ArrayList<>();
       for (Artifact dataset : experimentRun.getDatasetsList()) {
-        if (!dataset.getLinkedArtifactId().isEmpty()) {
-          if (RdbmsUtils.checkConnectionsBasedOnPrivileges(
-              ModelDBServiceResourceTypes.DATASET_VERSION,
-              ModelDBActionEnum.ModelDBServiceActions.READ,
-              dataset.getLinkedArtifactId())) {
+        if (!dataset.getLinkedArtifactId().isEmpty()
+            && !accessibleDatasetVersionIds.contains(dataset.getLinkedArtifactId())) {
+          try {
+            commitDAO.getDatasetVersionById(
+                repositoryDAO, blobDAO, metadataDAO, dataset.getLinkedArtifactId());
             accessibleDatasetVersions.add(dataset);
+            accessibleDatasetVersionIds.add(dataset.getLinkedArtifactId());
+          } catch (Exception ex) {
+            LOGGER.debug(ex.getMessage());
           }
         } else {
           accessibleDatasetVersions.add(dataset);
@@ -1678,13 +1686,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         } else if (notAccessibleDatasetVersionIdsSet.contains(dataset.getLinkedArtifactId())) {
           notAccessibleDatasetVersionIdsSet.add(dataset.getLinkedArtifactId());
         } else {
-          if (RdbmsUtils.checkConnectionsBasedOnPrivileges(
-              ModelDBServiceResourceTypes.DATASET_VERSION,
-              ModelDBActionEnum.ModelDBServiceActions.READ,
-              dataset.getLinkedArtifactId())) {
+          try {
+            commitDAO.getDatasetVersionById(
+                repositoryDAO, blobDAO, metadataDAO, dataset.getLinkedArtifactId());
             accessibleDatasetVersionIdsSet.add(dataset.getLinkedArtifactId());
             accessibleDatasetVersions.add(dataset);
-          } else {
+          } catch (Exception ex) {
+            LOGGER.debug(ex.getMessage());
             notAccessibleDatasetVersionIdsSet.add(dataset.getLinkedArtifactId());
           }
         }

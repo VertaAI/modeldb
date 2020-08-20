@@ -406,10 +406,12 @@ public class App implements ApplicationContextAware {
     CommitDAO commitDAO = new CommitDAORdbImpl(authService, roleService);
     RepositoryDAO repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
     BlobDAO blobDAO = new BlobDAORdbImpl(authService, roleService);
+    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
 
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, roleService);
     ExperimentRunDAO experimentRunDAO =
-        new ExperimentRunDAORdbImpl(authService, roleService, repositoryDAO, commitDAO, blobDAO);
+        new ExperimentRunDAORdbImpl(
+            authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
     ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
@@ -417,7 +419,6 @@ public class App implements ApplicationContextAware {
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
     LineageDAO lineageDAO = new LineageDAORdbImpl();
     DatasetVersionDAO datasetVersionDAO = new DatasetVersionDAORdbImpl(authService, roleService);
-    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
     LOGGER.info("All DAO initialized");
     // --------------- Finish Initialize DAO --------------------------
     initializeBackendServices(

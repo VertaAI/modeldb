@@ -8552,12 +8552,14 @@ public class ExperimentRunTest {
           logVersionedInput.getVersionedInputs(),
           getVersionedInputResponse.getVersionedInputs());
 
-      getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
-      getVersionedInputResponse =
-          experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
-      assertTrue(
-          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-          getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
+        getVersionedInputResponse =
+            experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
+        assertTrue(
+            "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+            getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
+      }
     } finally {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
@@ -10511,6 +10513,8 @@ public class ExperimentRunTest {
         ExperimentServiceGrpc.newBlockingStub(channel);
     ExperimentRunServiceBlockingStub experimentRunServiceStub =
         ExperimentRunServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
+        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
     DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
@@ -10743,6 +10747,37 @@ public class ExperimentRunTest {
           "ExperimentRun not match with expected experimentRun",
           experimentRun11,
           response.getExperimentRuns(0));
+
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        CollaboratorServiceBlockingStub collaboratorServiceStub =
+            CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
+
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestProjectInterceptor(
+                project, CollaboratorType.READ_ONLY, authClientInterceptor);
+
+        AddCollaboratorRequest.Response addCollaboratorResponse =
+            collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator updated in server : " + addCollaboratorResponse.getStatus());
+        assertTrue(addCollaboratorResponse.getStatus());
+
+        response =
+            experimentRunServiceStubClient2.getExperimentRunsByDatasetVersionId(
+                getExperimentRunsByDatasetVersionId);
+
+        assertEquals(
+            "Total records count not matched with expected records count",
+            1,
+            response.getTotalRecords());
+        assertEquals(
+            "ExperimentRun count not match with expected experimentRun count",
+            1,
+            response.getExperimentRunsCount());
+        assertEquals(
+            "ExperimentRun not match with expected experimentRun",
+            0,
+            response.getExperimentRuns(0).getDatasetsCount());
+      }
     } finally {
       for (String datasetVersionId : datasetVersionIds) {
         DeleteDatasetVersion deleteDatasetVersion =
