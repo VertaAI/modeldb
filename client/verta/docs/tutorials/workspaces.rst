@@ -1,11 +1,11 @@
 Working in Workspaces
 =====================
 
-Verta offers Workspaces as a feature in Verta Core and Verta Enterprise.
+Verta offers workspaces as a feature in Verta Core and Verta Enterprise.
 Workspaces enable sharing, collaboration, and permissions.
 
-By default, Projects, Datasets, and other entities are created in your Personal Workspace. 
-You can specify another Workspace when initializing Verta to ensure that all the work you do
+By default, projects, datasets, and other entities are created in your personal wworkspace.
+You can specify another workspace when initializing Verta to ensure that all the work you do
 is performed in that workspace.
 
 For example, the ``workspace`` parameter is available in both

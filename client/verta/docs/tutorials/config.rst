@@ -25,8 +25,8 @@ Defining a config file like this:
     project: "My Project"
     experiment: "My Experiment"
 
-allows you go directly from instantiating a Client to working with your
-:class:`~verta.client.ExperimentRun` without needing to explicitly set the Project or Experiment in
+allows you go directly from instantiating a client to working with your
+:class:`~verta.client.ExperimentRun` without needing to explicitly set the project or experiment in
 your code:
 
 ``workflow.py``
