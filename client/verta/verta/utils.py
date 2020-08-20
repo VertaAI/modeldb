@@ -327,7 +327,7 @@ def multiple_arguments_for_each(argument, name, action, get_keys, overwrite):
 
         for pair in argument:
             if len(pair) != 2:
-                raise click.BadParameter("key and path for {}s must be separated by a '='".format(self.name))
+                raise click.BadParameter("key and path for {}s must be separated by a '='".format(name))
             (key, _) = pair
             if key == "model":
                 raise click.BadParameter("the key \"model\" is reserved for model")
