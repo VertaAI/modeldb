@@ -71,16 +71,66 @@ class DatasetVersion(entity._ModelDBEntity):
         raise NotImplementedError
 
     def add_tag(self, tag):
-        raise NotImplementedError
+        """
+        Adds a tag to this Dataset Version.
+
+        Parameters
+        ----------
+        tag : str
+            Tag to add.
+
+        """
+        if not isinstance(tag, six.string_types):
+            raise TypeError("`tag` must be a string")
+
+        self.add_tags([tag])
 
     def add_tags(self, tags):
-        raise NotImplementedError
+        """
+        Adds multiple tags to this Dataset Version.
+
+        Parameters
+        ----------
+        tags : list of str
+            Tags to add.
+
+        """
+        tags = _utils.as_list_of_str(tags)
+        Message = _DatasetVersionService.AddDatasetVersionTags
+        msg = Message(id=self.id, tags=tags)
+        endpoint = "/api/v1/modeldb/dataset-version/addDatasetVersionTags"
+        self._update(msg, Message.Response, endpoint, "POST")
 
     def get_tags(self):
-        raise NotImplementedError
+        """
+        Gets all tags from this Dataset Version.
+
+        Returns
+        -------
+        list of str
+            All tags.
+
+        """
+        self._refresh_cache()
+        return self._msg.tags
 
     def del_tag(self, tag):
-        raise NotImplementedError
+        """
+        Deletes a tag from this Dataset Version.
+
+        Parameters
+        ----------
+        tag : str
+            Tag to delete.
+
+        """
+        if not isinstance(tag, six.string_types):
+            raise TypeError("`tag` must be a string")
+
+        Message = _DatasetVersionService.DeleteDatasetVersionTags
+        msg = Message(id=self.id, tags=[tag])
+        endpoint = "/api/v1/modeldb/dataset-version/deleteDatasetVersionTags"
+        self._update(msg, Message.Response, endpoint, "DELETE")
 
     def add_attribute(self, key, value):
         raise NotImplementedError
@@ -96,3 +146,8 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def del_attribute(self, key):
         raise NotImplementedError
+
+    def _update(self, msg, response_proto, endpoint, method):
+        response = self._conn.make_proto_request(method, endpoint, body=msg)
+        self._conn.must_proto_response(response, response_proto)
+        self._clear_cache()
