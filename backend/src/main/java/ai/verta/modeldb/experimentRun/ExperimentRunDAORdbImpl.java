@@ -570,15 +570,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("Got ExperimentRun successfully");
       ExperimentRun experimentRun = experimentRunEntity.getProtoObject();
-      if (experimentRun.getDatasetsCount() > 0) {
-        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
-      }
-      if (experimentRun.getVersionedInputs() != null
-          && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
-        experimentRun =
-            checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
-      }
-      return experimentRun;
+      return populateFieldsBasedOnPrivileges(experimentRun);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getExperimentRun(experimentRunId);
@@ -586,6 +578,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw ex;
       }
     }
+  }
+
+  private ExperimentRun populateFieldsBasedOnPrivileges(ExperimentRun experimentRun) {
+    if (experimentRun.getDatasetsCount() > 0) {
+      experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+    }
+    if (experimentRun.getVersionedInputs() != null
+        && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
+      experimentRun =
+          checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
+    }
+    return experimentRun;
   }
 
   private ExperimentRun checkDatasetVersionBasedOnPrivileges(ExperimentRun experimentRun) {
@@ -679,15 +683,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun description updated successfully");
       ExperimentRun experimentRun = experimentRunEntity.getProtoObject();
-      if (experimentRun.getDatasetsCount() > 0) {
-        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
-      }
-      if (experimentRun.getVersionedInputs() != null
-          && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
-        experimentRun =
-            checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
-      }
-      return experimentRun;
+      return populateFieldsBasedOnPrivileges(experimentRun);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateExperimentRunDescription(experimentRunId, experimentRunDescription);
@@ -785,15 +781,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("ExperimentRun tags added successfully");
       ExperimentRun experimentRun = experimentRunObj.getProtoObject();
-      if (experimentRun.getDatasetsCount() > 0) {
-        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
-      }
-      if (experimentRun.getVersionedInputs() != null
-          && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
-        experimentRun =
-            checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
-      }
-      return experimentRun;
+      return populateFieldsBasedOnPrivileges(experimentRun);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addExperimentRunTags(experimentRunId, tagsList);
@@ -827,15 +815,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun tags deleted successfully");
       ExperimentRun experimentRun = experimentRunObj.getProtoObject();
-      if (experimentRun.getDatasetsCount() > 0) {
-        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
-      }
-      if (experimentRun.getVersionedInputs() != null
-          && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
-        experimentRun =
-            checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
-      }
-      return experimentRun;
+      return populateFieldsBasedOnPrivileges(experimentRun);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteExperimentRunTags(experimentRunId, experimentRunTagList, deleteAll);
@@ -1012,14 +992,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       LOGGER.debug("Got ExperimentRun Datasets");
       ExperimentRun experimentRun = experimentRunObj.getProtoObject();
-      if (experimentRun.getDatasetsCount() > 0) {
-        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
-      }
-      if (experimentRun.getVersionedInputs() != null
-          && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
-        experimentRun =
-            checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
-      }
+      experimentRun = populateFieldsBasedOnPrivileges(experimentRun);
       return experimentRun.getDatasetsList();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -2056,15 +2029,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction.commit();
       LOGGER.debug("ExperimentRun copied successfully");
       ExperimentRun experimentRun = experimentRunObj.getProtoObject();
-      if (experimentRun.getDatasetsCount() > 0) {
-        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
-      }
-      if (experimentRun.getVersionedInputs() != null
-          && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
-        experimentRun =
-            checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
-      }
-      return experimentRun;
+      return populateFieldsBasedOnPrivileges(experimentRun);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deepCopyExperimentRunForUser(srcExperimentRun, newExperiment, newProject, newOwner);
