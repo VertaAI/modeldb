@@ -407,7 +407,7 @@ class Endpoint(object):
 
         """
         if not isinstance(token, six.string_types):
-            raise TypeError("\"token\" must be a string.")
+            raise TypeError("`token` must be a string.")
 
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/accesstokens".format(
             self._conn.scheme,
