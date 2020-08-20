@@ -30,7 +30,7 @@ class DirectUpdateStrategy(_UpdateStrategy):
     --------
     .. code-block:: python
 
-        from verta.deployment.update import DirectUpdateStrategy
+        from verta.endpoint.update import DirectUpdateStrategy
         strategy = DirectUpdateStrategy()
 
     """
@@ -57,7 +57,7 @@ class CanaryUpdateStrategy(_UpdateStrategy):
     --------
     .. code-block:: python
 
-        from verta.deployment.update import CanaryUpdateStrategy
+        from verta.endpoint.update import CanaryUpdateStrategy
         strategy = CanaryUpdateStrategy(interval=10, step=.1)
 
     """

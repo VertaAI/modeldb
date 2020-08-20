@@ -53,7 +53,7 @@ class Autoscaling(object):
 
         Parameters
         ----------
-        metric : subclass of :class:`~verta.deployment.autoscaling.metrics._AutoscalingMetric`
+        metric : subclass of :class:`~verta.endpoint.autoscaling.metrics._AutoscalingMetric`
             Metric to add.
 
         """
