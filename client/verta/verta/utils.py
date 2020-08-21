@@ -5,12 +5,6 @@ import json
 import numbers
 import os
 
-import click
-import pathlib2
-import tempfile
-import warnings
-import zipfile
-
 from .external import six
 
 from ._internal_utils import (
@@ -316,25 +310,3 @@ class TFSavedModel(object):
         return self.session.run(self.output_tensors, input_dict)
 
 
-def multiple_arguments_for_each(argument, name, action, get_keys, overwrite):
-    name = name
-    argument = list(map(lambda s: s.split('='), argument))
-    if argument and len(argument) > len(
-            set(map(lambda pair: pair[0], argument))):
-        raise click.BadParameter("cannot have duplicate {} keys".format(name))
-    if argument:
-        argument_keys = set(get_keys())
-
-        for pair in argument:
-            if len(pair) != 2:
-                raise click.BadParameter("key and path for {}s must be separated by a '='".format(name))
-            (key, _) = pair
-            if key == "model":
-                raise click.BadParameter("the key \"model\" is reserved for model")
-
-            if not overwrite and key in argument_keys:
-                raise click.BadParameter(
-                    "key \"{}\" already exists; consider using --overwrite flag".format(key))
-
-        for (key, path) in argument:
-            action(key, path)
