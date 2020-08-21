@@ -17,6 +17,7 @@ import threading
 import time
 import warnings
 
+import click
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -1254,3 +1255,27 @@ def as_list_of_str(tags):
                 raise TypeError("`tags` must be list of str, but found {}".format(type(tag)))
 
     return tags
+
+
+def _multiple_arguments_for_each(argument, name, action, get_keys, overwrite):
+    name = name
+    argument = list(map(lambda s: s.split('='), argument))
+    if argument and len(argument) > len(
+            set(map(lambda pair: pair[0], argument))):
+        raise click.BadParameter("cannot have duplicate {} keys".format(name))
+    if argument:
+        argument_keys = set(get_keys())
+
+        for pair in argument:
+            if len(pair) != 2:
+                raise click.BadParameter("key and path for {}s must be separated by a '='".format(name))
+            (key, _) = pair
+            if key == "model":
+                raise click.BadParameter("the key \"model\" is reserved for model")
+
+            if not overwrite and key in argument_keys:
+                raise click.BadParameter(
+                    "key \"{}\" already exists; consider using --overwrite flag".format(key))
+
+        for (key, path) in argument:
+            action(key, path)
