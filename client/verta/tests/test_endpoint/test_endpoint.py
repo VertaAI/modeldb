@@ -9,7 +9,7 @@ import yaml
 
 import verta
 from verta._deployment import Endpoint
-from verta.endpoint.resources import CpuMillis, Memory
+from verta.endpoint.resources import Resources
 from verta.endpoint.autoscaling import Autoscaling
 from verta.endpoint.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
 from verta.endpoint.update import DirectUpdateStrategy, CanaryUpdateStrategy
@@ -309,7 +309,7 @@ class TestEndpoint:
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
 
         strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
-        updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMillis(500), Memory("500Mi"), ],
+        updated_status = endpoint.update(experiment_run, strategy, resources = Resources(cpu_millis=250, memory="512Mi"),
                                          env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
         # Check that a new build is added:
@@ -330,10 +330,7 @@ class TestEndpoint:
 
     def test_create_update_body(self):
         endpoint = Endpoint(None, None, None, None)
-        resources = [
-            CpuMillis(500),
-            Memory("500Mi"),
-        ]
+        resources = Resources(cpu_millis=250, memory="512Mi")
 
         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai", "GIT_TERMINAL_PROMPT" : "1"}
 
@@ -344,7 +341,7 @@ class TestEndpoint:
                 {'name': 'GIT_TERMINAL_PROMPT', 'value': '1'},
                 {"name": 'VERTA_HOST', 'value': 'app.verta.ai'}
             ],
-            'resources': {'cpu_millis': 500, 'memory': '500Mi'},
+            'resources': {'cpu_millis': 250, 'memory': '512Mi'},
             'strategy': 'rollout',
         }
 

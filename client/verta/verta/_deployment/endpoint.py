@@ -14,7 +14,7 @@ from ..external import six
 
 from ..endpoint.autoscaling import Autoscaling
 from ..endpoint.autoscaling.metrics import _AutoscalingMetric
-from ..endpoint.resources import _Resource
+from ..endpoint.resources import Resources
 from ..endpoint.update.rules import _UpdateRule
 from ..deployment import DeployedModel
 from ..endpoint.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
@@ -174,7 +174,7 @@ class Endpoint(object):
             Strategy (direct or canary) for updating the Endpoint.
         wait : bool, default False
             Whether to wait for the Endpoint to finish updating before returning.
-        resources : list of :class:`~verta.endpoint.resources._Resource`, optional
+        resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated Endpoint.
         autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
             Autoscaling condition for the updated Endpoint.
@@ -342,7 +342,7 @@ class Endpoint(object):
             autoscaling_obj = None
 
         if "resources" in update_dict:
-            resources_list = _Resource._from_dict(update_dict["resources"])
+            resources_list = Resources._from_dict(update_dict["resources"])
         else:
             resources_list = None
 
@@ -450,8 +450,7 @@ class Endpoint(object):
         update_body = strategy._as_build_update_req_body()
 
         if resources is not None:
-            update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
-                                              map(lambda resource: resource.to_dict(), resources))
+            update_body["resources"] = resources._as_dict()
 
         if autoscaling is not None:
             update_body["autoscaling"] = autoscaling._as_dict()
