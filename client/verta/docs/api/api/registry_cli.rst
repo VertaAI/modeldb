@@ -1,5 +1,5 @@
-Command Line Interface
-======================
+Registry Command-Line Interface
+===============================
 
 .. click:: verta._cli.registry:create
     :prog: verta registry create
