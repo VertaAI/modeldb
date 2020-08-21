@@ -82,7 +82,10 @@ public interface CommitDAO {
       FindRepositoriesBlobs request,
       UserInfo currentLoginUserInfo,
       boolean idsOnly,
-      boolean rootSHAOnly)
+      boolean rootSHAOnly,
+      boolean isDatasetVersion,
+      String sortKey,
+      boolean ascending)
       throws ModelDBException;
 
   CommitPaginationDTO findCommits(
@@ -90,7 +93,10 @@ public interface CommitDAO {
       FindRepositoriesBlobs request,
       UserInfo currentLoginUserInfo,
       boolean idsOnly,
-      boolean rootSHAOnly)
+      boolean rootSHAOnly,
+      boolean isDatasetVersion,
+      String sortKey,
+      boolean ascending)
       throws ModelDBException;
 
   boolean isCommitExists(Session session, String commitHash);

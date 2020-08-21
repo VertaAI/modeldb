@@ -1290,16 +1290,14 @@ public class FindDatasetEntitiesTest {
 
   /** Find datasetVersion with value of endTime */
   @Test
-  @Ignore
   public void findDatasetVersionsByEndTimeTest() {
     LOGGER.info("FindDatasetVersions by datasetVersion EndTime test start..........");
 
-    Value stringValue =
-        Value.newBuilder().setStringValue(String.valueOf(datasetVersion4.getTimeUpdated())).build();
+    Value numberValue = Value.newBuilder().setNumberValue(datasetVersion4.getTimeUpdated()).build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
             .setKey(ModelDBConstants.DATE_UPDATED)
-            .setValue(stringValue)
+            .setValue(numberValue)
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
 
@@ -1324,6 +1322,32 @@ public class FindDatasetEntitiesTest {
     assertEquals(
         "Total records count not matched with expected records count",
         1,
+        response.getTotalRecords());
+
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addAllDatasetVersionIds(datasetVersionMap.keySet())
+            .setAscending(true)
+            .build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        4,
+        response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersionRun not match with expected datasetVersionRun",
+        datasetVersion1.getId(),
+        response.getDatasetVersionsList().get(0).getId());
+    assertEquals(
+        "DatasetVersionRun not match with expected datasetVersionRun",
+        datasetVersion4.getId(),
+        response.getDatasetVersionsList().get(3).getId());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        4,
         response.getTotalRecords());
 
     LOGGER.info("FindDatasetVersions by datasetVersion EndTime test stop..........");
