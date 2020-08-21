@@ -9,5 +9,7 @@ Read on for the APIs used for packaging and deploying models on Verta.
     :titlesonly:
 
     Deployment <api/deployment>
-    Model Registry <api/registry>
+    Registered Model <api/registered_model>
+    Registered Model Version <api/model_version>
+    Registry CLI <api/registry_cli>
     Endpoint <api/endpoint>
