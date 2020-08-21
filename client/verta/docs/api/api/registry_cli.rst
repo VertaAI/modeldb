@@ -1,6 +1,9 @@
 Registry Command-Line Interface
 ===============================
 
+.. note::
+    .. versionadded:: 0.15.0
+
 .. click:: verta._cli.registry:create
     :prog: verta registry create
     :show-nested:
