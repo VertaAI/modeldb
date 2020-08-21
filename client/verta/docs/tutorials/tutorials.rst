@@ -51,6 +51,7 @@ Core Verta functionality
     Metadata querying <querying>
     Merge conflicts <merge>
     Packaging <packaging/packaging>
+    Deployment <deployment/deployment>
     Organizations <organizations/organizations>
     Web app <webapp>
     Workspaces <workspaces>
