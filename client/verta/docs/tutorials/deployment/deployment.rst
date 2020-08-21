@@ -1,9 +1,9 @@
 Deployment
 ==========
 
-After the models are trained, it must be deployed for downstream consumption. Verta's Endpoint provides a configurable API for deploying machine learning models.
+After the models are trained and packaged, it can be deployed for downstream consumption.
 
-The following tutorials will walk you through the entire process of using an endpoint, from creation and retrieval to updating and making query to it.
+The following tutorials will walk you through the entire process of using an endpoint, Verta's configurable API for deploying machine learning models, from creation and retrieval to updating and making query to it.
 
 * `Creating and retrieving an endpoint <endpoint_creation.html>`_.
 * `Updating an endpoint <endpoint_update.html>`_
