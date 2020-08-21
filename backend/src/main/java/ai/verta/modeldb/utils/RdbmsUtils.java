@@ -1800,9 +1800,13 @@ public class RdbmsUtils {
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
               break;
             default:
-              if (entityName.equals(ModelDBConstants.REPOSITORY_ENTITY)
-                  && key.equals(ModelDBConstants.TIME_UPDATED)) {
-                key = ModelDBConstants.DATE_UPDATED;
+              if (entityName.equals(ModelDBConstants.REPOSITORY_ENTITY)) {
+                if (key.equals(ModelDBConstants.TIME_UPDATED)) {
+                  key = ModelDBConstants.DATE_UPDATED;
+                }
+                if (key.equals(ModelDBConstants.TIME_CREATED)) {
+                  key = ModelDBConstants.DATE_CREATED;
+                }
               }
               predicate = predicate.toBuilder().setOperator(operator).build();
               if (key.equalsIgnoreCase("owner")
