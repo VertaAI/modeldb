@@ -16,6 +16,8 @@ Endpoint
 .. autoclass:: verta._deployment.endpoint.Endpoint()
     :members:
 
+.. _update-stategies:
+
 Update Strategies
 -----------------
 .. automodule:: verta.endpoint.update._strategies
@@ -30,6 +32,9 @@ Canary Update Rules
 
 Update Configuration
 --------------------
+
+.. _update-resources:
+
 Resources
 ^^^^^^^^^
 .. automodule:: verta.endpoint.resources
@@ -39,6 +44,9 @@ Autoscaling
 ^^^^^^^^^^^
 .. automodule:: verta.endpoint.autoscaling._autoscaling
     :members:
+
+.. _autoscaling-metrics:
+
 .. automodule:: verta.endpoint.autoscaling.metrics
     :members:
 
