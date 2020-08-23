@@ -128,7 +128,7 @@ class TestEndpoint:
 
         strategy = CanaryUpdateStrategy(interval=10, step=0.1)
         strategy.add_rule(MaximumAverageLatencyThresholdRule(0.1))
-        resources = [CpuMillis(100), Memory("128Mi")]
+        resources = Resources(cpu_millis=100, memory="128Mi")
         autoscaling = Autoscaling(min_replicas=1, max_replicas=10, min_scale=0.1, max_scale=2)
         autoscaling.add_metric(CpuUtilizationTarget(0.75))
         env_vars = {'env1': "var1", 'env2': "var2"}
