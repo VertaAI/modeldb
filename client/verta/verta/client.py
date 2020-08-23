@@ -119,9 +119,9 @@ class Client(object):
     debug : bool
         Whether to print extra verbose information to aid in debugging. Changes to this value propagate
         to any objects that are/were created from this Client.
-    proj : :class:`Project` or None
+    proj : :class:`~verta._tracking.project.Project` or None
         Currently active Project.
-    expt : :class:`Experiment` or None
+    expt : :class:`~verta._tracking.experiment.Experiment` or None
         Currently active Experiment.
 
     """
@@ -300,7 +300,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~Project`
+        :class:`~verta._tracking.project.Project`
 
         """
         if name is not None and id is not None:
@@ -356,7 +356,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Project`
+        :class:`~verta._tracking.project.Project`
 
         Raises
         ------
@@ -396,7 +396,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~Experiment`
+        :class:`~verta._tracking.experiment.Experiment`
 
         """
         if name is not None and id is not None:
@@ -444,7 +444,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Experiment`
+        :class:`~verta._tracking.experiment.Experiment`
 
         Raises
         ------
@@ -485,7 +485,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         """
         if name is not None and id is not None:
@@ -532,7 +532,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         Raises
         ------
@@ -651,7 +651,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         Raises
         ------
@@ -696,7 +696,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
         """
         return _dataset.Dataset(self._conn, self._conf, name=name, _dataset_id=id)
 
@@ -727,7 +727,7 @@ class Client(object):
 
         Returns
         -------
-        list of :class:`Dataset`
+        list of :class:`~verta._dataset.Dataset`
 
         """
         datasets = Datasets(self._conn, self._conf)
@@ -765,7 +765,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`DatasetVersion`
+        :class:`~verta._dataset.DatasetVersion`
         """
         return _dataset.DatasetVersion(self._conn, self._conf, _dataset_version_id=id)
 
@@ -919,7 +919,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._registry.modelversion.ModelVersion`
+        :class:`~verta._registry.modelversion.RegisteredModelVersion`
         """
         return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
 
@@ -1049,7 +1049,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.Project`
+        :class:`~verta._tracking.project.Project`
 
         Raises
         ------
@@ -1085,7 +1085,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.Experiment`
+        :class:`~verta._tracking.experiment.Experiment`
 
         Raises
         ------
@@ -1125,7 +1125,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         Raises
         ------
@@ -1310,7 +1310,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         Raises
         ------
@@ -1368,7 +1368,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         Raises
         ------
@@ -1401,7 +1401,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         """
         # TODO: when MVP, remove '2'
