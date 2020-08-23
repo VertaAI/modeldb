@@ -170,7 +170,7 @@ class Endpoint(object):
         ----------
         model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta._registry.modelversion.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
-        strategy : :class:`~verta.endpoint.update._strategies._UpdateStrategy`
+        strategy : :ref:`update strategy <update-stategies>`
             Strategy (direct or canary) for updating the Endpoint.
         wait : bool, default False
             Whether to wait for the Endpoint to finish updating before returning.
