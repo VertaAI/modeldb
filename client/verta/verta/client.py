@@ -67,10 +67,8 @@ from ._registry import (
 )
 from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
-from ._deployment import (
-    Endpoint,
-    Endpoints,
-)
+from .endpoint._endpoint import Endpoint
+from .endpoint._endpoints import Endpoints
 
 
 class Client(object):
@@ -954,7 +952,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._deployment.Endpoint`
+        :class:`~verta.endpoint._endpoint.Endpoint`
 
         Raises
         ------
@@ -994,7 +992,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._deployment.endpoint.Endpoint`
+        :class:`~verta.endpoint._endpoint.Endpoint`
 
         """
         if path is not None and id is not None:

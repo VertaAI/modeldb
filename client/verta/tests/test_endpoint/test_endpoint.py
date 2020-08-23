@@ -8,7 +8,7 @@ import requests
 import yaml
 
 import verta
-from verta._deployment import Endpoint
+from verta.endpoint._endpoint import Endpoint
 from verta.endpoint.resources import Resources
 from verta.endpoint.autoscaling import Autoscaling
 from verta.endpoint.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
