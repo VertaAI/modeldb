@@ -249,14 +249,15 @@ class TestModelVersion:
         assert desc == model_version.get_description()
 
     def test_list_from_client(self, client, created_registered_models):
+        """
+        At some point, backend API was unexpectedly changed to require model ID
+        in /model_versions/find, which broke client.registered_model_versions.
+
+        """
         registered_model = client.create_registered_model()
         created_registered_models.append(registered_model)
 
-        before = len(client.registered_model_versions)
-        registered_model.create_version()
-        after = len(client.registered_model_versions)
-
-        assert before == after + 1
+        len(client.registered_model_versions)
 
     def test_find(self, client, created_registered_models):
         name = "registered_model_test"
