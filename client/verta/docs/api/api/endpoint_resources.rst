@@ -1,3 +1,5 @@
+.. _update-resources:
+
 Endpoint Resources
 ==================
 
