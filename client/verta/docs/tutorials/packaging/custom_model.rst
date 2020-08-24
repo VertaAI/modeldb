@@ -36,8 +36,8 @@ In order to use this model, you must also register this model with Verta.
 Saving a class model
 --------------------
 
-Any class within the Verta platform that has a ``log_model`` method, such as an
-:class:`ExperimentRun <verta._tracking.ExperimentRun>`, automatically supports logging
+Any class within the Verta platform that has a ``log_model()`` method, such as an
+:class:`~verta._tracking.experimentrun.ExperimentRun`, automatically supports logging
 custom models. They will be serialized in the right way for consumption downstream.
 
 For example, when using an experiment run, you can just do
