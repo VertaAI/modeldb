@@ -616,13 +616,13 @@ def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=Fa
                     dirnames[:] = [dirname for dirname in dirnames if not is_hidden(dirname)]
                     # skip hidden files
                     filenames[:] = [filename for filename in filenames if not is_hidden(filename)]
-                if not include_venv:
-                    dirnames[:] = [dirname for dirname in dirnames if not is_in_venv(dirname)]
                 for filename in filenames:
                     if extensions is None or os.path.splitext(filename)[1] in extensions:
                         filepaths.add(os.path.join(parent_dir, filename))
         else:
             filepaths.add(path)
+    if not include_venv:
+        filepaths = list(filter(lambda path: not is_in_venv(path), filepaths))
     return filepaths
 
 
