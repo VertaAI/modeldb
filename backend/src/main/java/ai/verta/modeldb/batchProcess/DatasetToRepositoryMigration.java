@@ -93,7 +93,8 @@ public class DatasetToRepositoryMigration {
     blobDAO = new BlobDAORdbImpl(authService, roleService);
     metadataDAO = new MetadataDAORdbImpl();
     experimentRunDAO =
-        new ExperimentRunDAORdbImpl(authService, roleService, repositoryDAO, commitDAO, blobDAO);
+        new ExperimentRunDAORdbImpl(
+            authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
 
     migrateDatasetsToRepositories();
   }

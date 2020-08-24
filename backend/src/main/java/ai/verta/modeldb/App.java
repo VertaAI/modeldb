@@ -149,6 +149,8 @@ public class App implements ApplicationContextAware {
 
   private Boolean traceEnabled = false;
   private static TracingServerInterceptor tracingInterceptor;
+  private boolean populateConnectionsBasedOnPrivileges = false;
+  private RoleService roleService;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -244,7 +246,7 @@ public class App implements ApplicationContextAware {
         TracingDriver.setInterceptorProperty(true);
       }
       AuthService authService = new PublicAuthServiceUtils();
-      RoleService roleService = new PublicRoleServiceUtils(authService);
+      app.roleService = new PublicRoleServiceUtils(authService);
 
       Map<String, Object> authServicePropMap =
           (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
@@ -255,7 +257,7 @@ public class App implements ApplicationContextAware {
         app.setAuthServerPort(authServicePort);
 
         authService = new AuthServiceUtils();
-        roleService = new RoleServiceUtils(authService);
+        app.roleService = new RoleServiceUtils(authService);
       }
 
       Map<String, Object> databasePropMap =
@@ -267,7 +269,7 @@ public class App implements ApplicationContextAware {
 
       // ----------------- Start Initialize database & modelDB services with DAO ---------
       initializeServicesBaseOnDataBase(
-          serverBuilder, databasePropMap, propertiesMap, authService, roleService);
+          serverBuilder, databasePropMap, propertiesMap, authService, app.roleService);
       // ----------------- Finish Initialize database & modelDB services with DAO --------
 
       serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -339,6 +341,11 @@ public class App implements ApplicationContextAware {
       }
     }
 
+    app.populateConnectionsBasedOnPrivileges =
+        (boolean)
+            propertiesMap.getOrDefault(
+                ModelDBConstants.POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES, false);
+
     Map<String, Object> featureFlagMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
     if (featureFlagMap != null) {
@@ -405,10 +412,12 @@ public class App implements ApplicationContextAware {
     CommitDAO commitDAO = new CommitDAORdbImpl(authService, roleService);
     RepositoryDAO repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
     BlobDAO blobDAO = new BlobDAORdbImpl(authService, roleService);
+    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
 
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, roleService);
     ExperimentRunDAO experimentRunDAO =
-        new ExperimentRunDAORdbImpl(authService, roleService, repositoryDAO, commitDAO, blobDAO);
+        new ExperimentRunDAORdbImpl(
+            authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
     ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
@@ -416,7 +425,6 @@ public class App implements ApplicationContextAware {
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
     LineageDAO lineageDAO = new LineageDAORdbImpl();
     DatasetVersionDAO datasetVersionDAO = new DatasetVersionDAORdbImpl(authService, roleService);
-    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
     LOGGER.info("All DAO initialized");
     // --------------- Finish Initialize DAO --------------------------
     initializeBackendServices(
@@ -792,5 +800,17 @@ public class App implements ApplicationContextAware {
 
   public Integer getRequestTimeout() {
     return requestTimeout;
+  }
+
+  public void setRoleService(RoleService roleService) {
+    this.roleService = roleService;
+  }
+
+  public RoleService getRoleService() {
+    return roleService;
+  }
+
+  public boolean isPopulateConnectionsBasedOnPrivileges() {
+    return populateConnectionsBasedOnPrivileges;
   }
 }
