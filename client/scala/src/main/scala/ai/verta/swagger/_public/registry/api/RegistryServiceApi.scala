@@ -217,7 +217,28 @@ class RegistryServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def RegistryService_UpdateModelVersion2(body: RegistryModelVersion, id_model_id_registered_model_id: BigInt, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Try[RegistrySetModelVersionResponse] = Await.result(RegistryService_UpdateModelVersion2Async(body, id_model_id_registered_model_id, id_model_version_id), Duration.Inf)
 
-  def RegistryService_UpdateModelVersion3Async(body: RegistryModelVersion, id_model_id_named_id_name: String, id_model_id_named_id_workspace_name: String, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Future[Try[RegistrySetModelVersionResponse]] = {
+  def RegistryService_UpdateModelVersion3Async(body: RegistrySetModelVersion, id_model_id_named_id_name: String, id_model_id_named_id_workspace_name: String, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Future[Try[RegistrySetModelVersionResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (id_model_id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"id_model_id_named_id_workspace_name\"")
+    if (id_model_id_named_id_name == null) throw new Exception("Missing required parameter \"id_model_id_named_id_name\"")
+    if (id_model_version_id == null) throw new Exception("Missing required parameter \"id_model_version_id\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[RegistrySetModelVersion, RegistrySetModelVersionResponse]("PATCH", basePath + s"/registry/workspaces/$id_model_id_named_id_workspace_name/registered_models/$id_model_id_named_id_name/model_versions/$id_model_version_id/full_body", __query.toMap, body, RegistrySetModelVersionResponse.fromJson)
+  }
+
+  def RegistryService_UpdateModelVersion3(body: RegistrySetModelVersion, id_model_id_named_id_name: String, id_model_id_named_id_workspace_name: String, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Try[RegistrySetModelVersionResponse] = Await.result(RegistryService_UpdateModelVersion3Async(body, id_model_id_named_id_name, id_model_id_named_id_workspace_name, id_model_version_id), Duration.Inf)
+
+  def RegistryService_UpdateModelVersion4Async(body: RegistrySetModelVersion, id_model_id_registered_model_id: BigInt, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Future[Try[RegistrySetModelVersionResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (id_model_id_registered_model_id == null) throw new Exception("Missing required parameter \"id_model_id_registered_model_id\"")
+    if (id_model_version_id == null) throw new Exception("Missing required parameter \"id_model_version_id\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[RegistrySetModelVersion, RegistrySetModelVersionResponse]("PATCH", basePath + s"/registry/registered_models/$id_model_id_registered_model_id/model_versions/$id_model_version_id/full_body", __query.toMap, body, RegistrySetModelVersionResponse.fromJson)
+  }
+
+  def RegistryService_UpdateModelVersion4(body: RegistrySetModelVersion, id_model_id_registered_model_id: BigInt, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Try[RegistrySetModelVersionResponse] = Await.result(RegistryService_UpdateModelVersion4Async(body, id_model_id_registered_model_id, id_model_version_id), Duration.Inf)
+
+  def RegistryService_UpdateModelVersion5Async(body: RegistryModelVersion, id_model_id_named_id_name: String, id_model_id_named_id_workspace_name: String, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Future[Try[RegistrySetModelVersionResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (id_model_id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"id_model_id_named_id_workspace_name\"")
     if (id_model_id_named_id_name == null) throw new Exception("Missing required parameter \"id_model_id_named_id_name\"")
@@ -226,9 +247,9 @@ class RegistryServiceApi(client: HttpClient, val basePath: String = "/v1") {
     return client.request[RegistryModelVersion, RegistrySetModelVersionResponse]("PUT", basePath + s"/registry/workspaces/$id_model_id_named_id_workspace_name/registered_models/$id_model_id_named_id_name/model_versions/$id_model_version_id", __query.toMap, body, RegistrySetModelVersionResponse.fromJson)
   }
 
-  def RegistryService_UpdateModelVersion3(body: RegistryModelVersion, id_model_id_named_id_name: String, id_model_id_named_id_workspace_name: String, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Try[RegistrySetModelVersionResponse] = Await.result(RegistryService_UpdateModelVersion3Async(body, id_model_id_named_id_name, id_model_id_named_id_workspace_name, id_model_version_id), Duration.Inf)
+  def RegistryService_UpdateModelVersion5(body: RegistryModelVersion, id_model_id_named_id_name: String, id_model_id_named_id_workspace_name: String, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Try[RegistrySetModelVersionResponse] = Await.result(RegistryService_UpdateModelVersion5Async(body, id_model_id_named_id_name, id_model_id_named_id_workspace_name, id_model_version_id), Duration.Inf)
 
-  def RegistryService_UpdateModelVersion4Async(body: RegistryModelVersion, id_model_id_registered_model_id: BigInt, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Future[Try[RegistrySetModelVersionResponse]] = {
+  def RegistryService_UpdateModelVersion6Async(body: RegistryModelVersion, id_model_id_registered_model_id: BigInt, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Future[Try[RegistrySetModelVersionResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (id_model_id_registered_model_id == null) throw new Exception("Missing required parameter \"id_model_id_registered_model_id\"")
     if (id_model_version_id == null) throw new Exception("Missing required parameter \"id_model_version_id\"")
@@ -236,7 +257,7 @@ class RegistryServiceApi(client: HttpClient, val basePath: String = "/v1") {
     return client.request[RegistryModelVersion, RegistrySetModelVersionResponse]("PUT", basePath + s"/registry/registered_models/$id_model_id_registered_model_id/model_versions/$id_model_version_id", __query.toMap, body, RegistrySetModelVersionResponse.fromJson)
   }
 
-  def RegistryService_UpdateModelVersion4(body: RegistryModelVersion, id_model_id_registered_model_id: BigInt, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Try[RegistrySetModelVersionResponse] = Await.result(RegistryService_UpdateModelVersion4Async(body, id_model_id_registered_model_id, id_model_version_id), Duration.Inf)
+  def RegistryService_UpdateModelVersion6(body: RegistryModelVersion, id_model_id_registered_model_id: BigInt, id_model_version_id: BigInt)(implicit ec: ExecutionContext): Try[RegistrySetModelVersionResponse] = Await.result(RegistryService_UpdateModelVersion6Async(body, id_model_id_registered_model_id, id_model_version_id), Duration.Inf)
 
   def RegistryService_UpdateRegisteredModelAsync(body: RegistryRegisteredModel, id_named_id_name: String, id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Future[Try[RegistrySetRegisteredModelResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
@@ -257,7 +278,26 @@ class RegistryServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def RegistryService_UpdateRegisteredModel2(body: RegistryRegisteredModel, id_registered_model_id: BigInt)(implicit ec: ExecutionContext): Try[RegistrySetRegisteredModelResponse] = Await.result(RegistryService_UpdateRegisteredModel2Async(body, id_registered_model_id), Duration.Inf)
 
-  def RegistryService_UpdateRegisteredModel3Async(body: RegistryRegisteredModel, id_named_id_name: String, id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Future[Try[RegistrySetRegisteredModelResponse]] = {
+  def RegistryService_UpdateRegisteredModel3Async(body: RegistrySetRegisteredModel, id_named_id_name: String, id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Future[Try[RegistrySetRegisteredModelResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"id_named_id_workspace_name\"")
+    if (id_named_id_name == null) throw new Exception("Missing required parameter \"id_named_id_name\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[RegistrySetRegisteredModel, RegistrySetRegisteredModelResponse]("PATCH", basePath + s"/registry/workspaces/$id_named_id_workspace_name/registered_models/$id_named_id_name/full_body", __query.toMap, body, RegistrySetRegisteredModelResponse.fromJson)
+  }
+
+  def RegistryService_UpdateRegisteredModel3(body: RegistrySetRegisteredModel, id_named_id_name: String, id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Try[RegistrySetRegisteredModelResponse] = Await.result(RegistryService_UpdateRegisteredModel3Async(body, id_named_id_name, id_named_id_workspace_name), Duration.Inf)
+
+  def RegistryService_UpdateRegisteredModel4Async(body: RegistrySetRegisteredModel, id_registered_model_id: BigInt)(implicit ec: ExecutionContext): Future[Try[RegistrySetRegisteredModelResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (id_registered_model_id == null) throw new Exception("Missing required parameter \"id_registered_model_id\"")
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[RegistrySetRegisteredModel, RegistrySetRegisteredModelResponse]("PATCH", basePath + s"/registry/registered_models/$id_registered_model_id/full_body", __query.toMap, body, RegistrySetRegisteredModelResponse.fromJson)
+  }
+
+  def RegistryService_UpdateRegisteredModel4(body: RegistrySetRegisteredModel, id_registered_model_id: BigInt)(implicit ec: ExecutionContext): Try[RegistrySetRegisteredModelResponse] = Await.result(RegistryService_UpdateRegisteredModel4Async(body, id_registered_model_id), Duration.Inf)
+
+  def RegistryService_UpdateRegisteredModel5Async(body: RegistryRegisteredModel, id_named_id_name: String, id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Future[Try[RegistrySetRegisteredModelResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (id_named_id_workspace_name == null) throw new Exception("Missing required parameter \"id_named_id_workspace_name\"")
     if (id_named_id_name == null) throw new Exception("Missing required parameter \"id_named_id_name\"")
@@ -265,16 +305,16 @@ class RegistryServiceApi(client: HttpClient, val basePath: String = "/v1") {
     return client.request[RegistryRegisteredModel, RegistrySetRegisteredModelResponse]("PUT", basePath + s"/registry/workspaces/$id_named_id_workspace_name/registered_models/$id_named_id_name", __query.toMap, body, RegistrySetRegisteredModelResponse.fromJson)
   }
 
-  def RegistryService_UpdateRegisteredModel3(body: RegistryRegisteredModel, id_named_id_name: String, id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Try[RegistrySetRegisteredModelResponse] = Await.result(RegistryService_UpdateRegisteredModel3Async(body, id_named_id_name, id_named_id_workspace_name), Duration.Inf)
+  def RegistryService_UpdateRegisteredModel5(body: RegistryRegisteredModel, id_named_id_name: String, id_named_id_workspace_name: String)(implicit ec: ExecutionContext): Try[RegistrySetRegisteredModelResponse] = Await.result(RegistryService_UpdateRegisteredModel5Async(body, id_named_id_name, id_named_id_workspace_name), Duration.Inf)
 
-  def RegistryService_UpdateRegisteredModel4Async(body: RegistryRegisteredModel, id_registered_model_id: BigInt)(implicit ec: ExecutionContext): Future[Try[RegistrySetRegisteredModelResponse]] = {
+  def RegistryService_UpdateRegisteredModel6Async(body: RegistryRegisteredModel, id_registered_model_id: BigInt)(implicit ec: ExecutionContext): Future[Try[RegistrySetRegisteredModelResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (id_registered_model_id == null) throw new Exception("Missing required parameter \"id_registered_model_id\"")
     if (body == null) throw new Exception("Missing required parameter \"body\"")
     return client.request[RegistryRegisteredModel, RegistrySetRegisteredModelResponse]("PUT", basePath + s"/registry/registered_models/$id_registered_model_id", __query.toMap, body, RegistrySetRegisteredModelResponse.fromJson)
   }
 
-  def RegistryService_UpdateRegisteredModel4(body: RegistryRegisteredModel, id_registered_model_id: BigInt)(implicit ec: ExecutionContext): Try[RegistrySetRegisteredModelResponse] = Await.result(RegistryService_UpdateRegisteredModel4Async(body, id_registered_model_id), Duration.Inf)
+  def RegistryService_UpdateRegisteredModel6(body: RegistryRegisteredModel, id_registered_model_id: BigInt)(implicit ec: ExecutionContext): Try[RegistrySetRegisteredModelResponse] = Await.result(RegistryService_UpdateRegisteredModel6Async(body, id_registered_model_id), Duration.Inf)
 
   def RegistryService_commitArtifactPartAsync(body: RegistryCommitArtifactPart, model_version_id: BigInt)(implicit ec: ExecutionContext): Future[Try[RegistryCommitArtifactPartResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
