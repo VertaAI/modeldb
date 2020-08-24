@@ -4,9 +4,9 @@ import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.artifactStore.storageservice.S3Service;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
+import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -126,13 +126,14 @@ public class App implements ApplicationContextAware {
   private String minioEndpoint = null;
   private String awsRegion = null;
 
-  // NFS Artifact store
-  private Boolean pickNFSHostFromConfig = null;
-  private String nfsServerHost = null;
-  private String nfsUrlProtocol = null;
+  // Artifact store
+  private Boolean pickArtifactStoreHostFromConfig = null;
+  private String artifactStoreServerHost = null;
+  private String artifactStoreUrlProtocol = null;
   private String storeArtifactEndpoint = null;
   private String getArtifactEndpoint = null;
   private String storeTypePathPrefix = null;
+  private boolean s3presignedURLEnabled = true;
 
   // Database connection details
   private Map<String, Object> databasePropMap;
@@ -184,6 +185,11 @@ public class App implements ApplicationContextAware {
     TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
     factory.addConnectorCustomizers(gracefulShutdown);
     return factory;
+  }
+
+  @Bean
+  public S3Service getS3Service() throws ModelDBException {
+    return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
   }
 
   public static App getInstance() {
@@ -581,6 +587,34 @@ public class App implements ApplicationContextAware {
       app.shutdownTimeout = ModelDBConstants.DEFAULT_SHUTDOWN_TIMEOUT;
     }
 
+    app.pickArtifactStoreHostFromConfig =
+        (Boolean)
+            artifactStoreConfigMap.getOrDefault(
+                ModelDBConstants.PICK_ARTIFACT_STORE_HOST_FROM_CONFIG, false);
+    LOGGER.trace(
+        "ArtifactStore pick host from config flag : {}", app.pickArtifactStoreHostFromConfig);
+    app.artifactStoreServerHost =
+        (String)
+            artifactStoreConfigMap.getOrDefault(ModelDBConstants.ARTIFACT_STORE_SERVER_HOST, "");
+    LOGGER.trace("ArtifactStore server host URL found : {}", app.artifactStoreServerHost);
+    app.artifactStoreUrlProtocol =
+        (String)
+            artifactStoreConfigMap.getOrDefault(
+                ModelDBConstants.ARTIFACT_STORE_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
+    LOGGER.debug("ArtifactStore URL protocol found : {}", app.artifactStoreUrlProtocol);
+
+    Map<String, Object> nfsArtifactEndpointConfigMap =
+        (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
+    app.getArtifactEndpoint =
+        (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
+    LOGGER.trace("ArtifactStore Get artifact endpoint found : {}", app.getArtifactEndpoint);
+    app.storeArtifactEndpoint =
+        (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
+    LOGGER.trace("ArtifactStore Store artifact endpoint found : {}", app.storeArtifactEndpoint);
+
+    System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
+    System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
+
     switch (artifactStoreType) {
       case ModelDBConstants.S3:
         Map<String, Object> s3ConfigMap =
@@ -593,10 +627,22 @@ public class App implements ApplicationContextAware {
                 s3ConfigMap.getOrDefault(
                     ModelDBConstants.AWS_REGION, ModelDBConstants.DEFAULT_AWS_REGION);
         String cloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
-        artifactStoreService = new S3Service(cloudBucketName);
         app.storeTypePathPrefix = "s3://" + cloudBucketName + ModelDBConstants.PATH_DELIMITER;
-        System.getProperties().put("scan.packages", "dummyPackageName");
-        SpringApplication.run(App.class, new String[0]);
+
+        if (s3ConfigMap.containsKey(ModelDBConstants.S3_PRESIGNED_URL_ENABLED)
+            && !((boolean) s3ConfigMap.get(ModelDBConstants.S3_PRESIGNED_URL_ENABLED))) {
+          app.s3presignedURLEnabled = false;
+
+          System.setProperty(ModelDBConstants.CLOUD_BUCKET_NAME, cloudBucketName);
+          System.getProperties()
+              .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
+          SpringApplication.run(App.class);
+          artifactStoreService = app.applicationContext.getBean(S3Service.class);
+        } else {
+          artifactStoreService = new S3Service(cloudBucketName);
+          System.getProperties().put("scan.packages", "dummyPackageName");
+          SpringApplication.run(App.class);
+        }
         break;
       case ModelDBConstants.NFS:
         Map<String, Object> nfsConfigMap =
@@ -605,30 +651,7 @@ public class App implements ApplicationContextAware {
         LOGGER.trace("NFS server root path {}", rootDir);
         app.storeTypePathPrefix = "nfs://" + rootDir + ModelDBConstants.PATH_DELIMITER;
 
-        app.pickNFSHostFromConfig =
-            (Boolean) nfsConfigMap.getOrDefault(ModelDBConstants.PICK_NFS_HOST_FROM_CONFIG, false);
-        LOGGER.trace("NFS pick host from config flag : {}", app.pickNFSHostFromConfig);
-        app.nfsServerHost =
-            (String) nfsConfigMap.getOrDefault(ModelDBConstants.NFS_SERVER_HOST, "");
-        LOGGER.trace("NFS server host URL found : {}", app.nfsServerHost);
-        app.nfsUrlProtocol =
-            (String)
-                nfsConfigMap.getOrDefault(
-                    ModelDBConstants.NFS_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
-        LOGGER.debug("NFS URL protocol found : {}", app.nfsUrlProtocol);
-
-        Map<String, Object> artifactEndpointConfigMap =
-            (Map<String, Object>) nfsConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
-        app.getArtifactEndpoint =
-            (String) artifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
-        LOGGER.trace("Get artifact endpoint found : {}", app.getArtifactEndpoint);
-        app.storeArtifactEndpoint =
-            (String) artifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
-        LOGGER.trace("Store artifact endpoint found : {}", app.storeArtifactEndpoint);
-
         System.getProperties().put("file.upload-dir", rootDir);
-        System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
-        System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
         System.getProperties()
             .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
         SpringApplication.run(App.class, new String[0]);
@@ -691,16 +714,20 @@ public class App implements ApplicationContextAware {
     this.authServerPort = authServerPort;
   }
 
-  public Boolean getPickNFSHostFromConfig() {
-    return pickNFSHostFromConfig;
+  public boolean isS3presignedURLEnabled() {
+    return s3presignedURLEnabled;
   }
 
-  public String getNfsServerHost() {
-    return nfsServerHost;
+  public Boolean getPickArtifactStoreHostFromConfig() {
+    return pickArtifactStoreHostFromConfig;
   }
 
-  public String getNfsUrlProtocol() {
-    return nfsUrlProtocol;
+  public String getArtifactStoreServerHost() {
+    return artifactStoreServerHost;
+  }
+
+  public String getArtifactStoreUrlProtocol() {
+    return artifactStoreUrlProtocol;
   }
 
   public String getStoreArtifactEndpoint() {

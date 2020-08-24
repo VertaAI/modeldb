@@ -424,7 +424,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         Parameters
         ----------
-        environment : `verta.environment._Environment.`
+        environment : `verta.environment.Python.`
             Environment to log.
 
         """
@@ -511,11 +511,16 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
                 # upload part
                 #     Retry connection errors, to make large multipart uploads more robust.
-                for _ in range(3):
+                MAX_TRIES = 3
+                for i in range(MAX_TRIES):
                     try:
                         response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-                    except requests.ConnectionError:  # e.g. broken pipe
+                    except requests.ConnectionError as err:  # e.g. broken pipe
                         time.sleep(1)
+
+                        if i == MAX_TRIES - 1:
+                            raise err
+
                         continue  # try again
                     else:
                         break
@@ -799,6 +804,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         """
         self._refresh_cache()
         return _utils.unravel_key_values(self._msg.attributes)
+
+    def _get_attribute_keys(self):
+        return list(map(lambda attribute: attribute.key, self.get_attributes()))
 
     def del_attribute(self, key):
         """

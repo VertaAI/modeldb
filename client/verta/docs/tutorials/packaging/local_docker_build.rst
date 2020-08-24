@@ -1,4 +1,4 @@
-Building a Model Container Locally
+Building a model container locally
 ==================================
 
 Some of our customers want to build a version of the container used for inference locally. Common uses

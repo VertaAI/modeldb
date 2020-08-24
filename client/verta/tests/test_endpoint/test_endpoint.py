@@ -1,16 +1,19 @@
+import json
 import time
 
 import pytest
+
 import requests
-import json
+
+import yaml
 
 import verta
-from verta._deployment import Endpoint
-from verta.deployment.resources import CpuMillis, Memory
-from verta.deployment.autoscaling import Autoscaling
-from verta.deployment.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
-from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
-from verta.deployment.update.rules import MaximumAverageLatencyThresholdRule
+from verta.endpoint._endpoint import Endpoint
+from verta.endpoint.resources import Resources
+from verta.endpoint.autoscaling import Autoscaling
+from verta.endpoint.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
+from verta.endpoint.update import DirectUpdateStrategy, CanaryUpdateStrategy
+from verta.endpoint.update.rules import MaximumAverageLatencyThresholdRule
 from verta._internal_utils import _utils
 from verta.environment import Python
 from verta.utils import ModelAPI
@@ -117,6 +120,43 @@ class TestEndpoint:
         endpoint.update(experiment_run, DirectUpdateStrategy(), True)
         str_repr = repr(endpoint)
         assert "curl: {}".format(endpoint.get_deployed_model().get_curl()) in str_repr
+
+    def test_download_manifest(self, client, in_tempdir):
+        download_to_path = "manifest.yaml"
+        path = verta._internal_utils._utils.generate_default_name()
+        name = verta._internal_utils._utils.generate_default_name()
+
+        strategy = CanaryUpdateStrategy(interval=10, step=0.1)
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.1))
+        resources = Resources(cpu_millis=100, memory="128Mi")
+        autoscaling = Autoscaling(min_replicas=1, max_replicas=10, min_scale=0.1, max_scale=2)
+        autoscaling.add_metric(CpuUtilizationTarget(0.75))
+        env_vars = {'env1': "var1", 'env2': "var2"}
+
+        filepath = client.download_endpoint_manifest(
+            download_to_path=download_to_path,
+            path=path,
+            name=name,
+            strategy=strategy,
+            autoscaling=autoscaling,
+            resources=resources,
+            env_vars=env_vars,
+        )
+
+        # can be loaded as YAML
+        with open(filepath, 'rb') as f:
+            manifest = yaml.safe_load(f)
+
+        assert manifest['kind'] == "Endpoint"
+
+        # check environment variables
+        containers = manifest['spec']['function']['spec']['templates']['deployment']['spec']['template']['spec']['containers']
+        retrieved_env_vars = {
+            env_var['name']: env_var['value']
+            for env_var
+            in containers[0]['env']
+        }
+        assert retrieved_env_vars == env_vars
 
     def test_direct_update(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -269,7 +309,7 @@ class TestEndpoint:
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
 
         strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
-        updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMillis(500), Memory("500Mi"), ],
+        updated_status = endpoint.update(experiment_run, strategy, resources = Resources(cpu_millis=250, memory="512Mi"),
                                          env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
         # Check that a new build is added:
@@ -284,12 +324,13 @@ class TestEndpoint:
 
         assert token is None
 
+        token = verta._internal_utils._utils.generate_default_name()
+        endpoint.create_access_token(token)
+        assert endpoint.get_access_token() == token
+
     def test_create_update_body(self):
         endpoint = Endpoint(None, None, None, None)
-        resources = [
-            CpuMillis(500),
-            Memory("500Mi"),
-        ]
+        resources = Resources(cpu_millis=250, memory="512Mi")
 
         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai", "GIT_TERMINAL_PROMPT" : "1"}
 
@@ -300,7 +341,7 @@ class TestEndpoint:
                 {'name': 'GIT_TERMINAL_PROMPT', 'value': '1'},
                 {"name": 'VERTA_HOST', 'value': 'app.verta.ai'}
             ],
-            'resources': {'cpu_millis': 500, 'memory': '500Mi'},
+            'resources': {'cpu_millis': 250, 'memory': '512Mi'},
             'strategy': 'rollout',
         }
 
@@ -323,12 +364,15 @@ class TestEndpoint:
         created_endpoints.append(endpoint)
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
+        token = verta._internal_utils._utils.generate_default_name()
+        endpoint.create_access_token(token)
         x = model_for_deployment['train_features'].iloc[1].values
         deployed_model = endpoint.get_deployed_model()
 
         assert np.allclose(deployed_model.predict([x]), model.predict([x]))
         deployed_model_curl = deployed_model.get_curl()
         assert endpoint.path in deployed_model_curl
+        assert "-H \"Access-token: {}\"".format(token) in deployed_model_curl
 
         new_model = model_for_deployment['model'].fit(
             np.random.random(model_for_deployment['train_features'].shape),
@@ -368,7 +412,7 @@ class TestEndpoint:
 
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_model(classifier)
+        model_version.log_model(classifier, custom_modules=[])
 
         env = Python(requirements=["scikit-learn"])
         model_version.log_environment(env)
@@ -406,10 +450,7 @@ class TestEndpoint:
         with open(filepath, "w") as f:
             json.dump(strategy_dict, f)
 
-        endpoint.update_from_config(filepath)
-
-        while not endpoint.get_status()['status'] == "active":
-            time.sleep(3)
+        endpoint.update_from_config(filepath, wait=True)
 
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
