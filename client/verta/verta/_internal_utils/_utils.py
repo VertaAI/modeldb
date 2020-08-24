@@ -10,6 +10,7 @@ import json
 import numbers
 import os
 import re
+import site
 import string
 import subprocess
 import sys
@@ -543,6 +544,32 @@ def body_to_json(response):
         six.raise_from(ValueError(msg), None)
 
 
+def is_in_venv(path):
+    # Roughly checks for:
+    #     /
+    #     |_ lib/
+    #     |   |_ python*/ <- directory with Python packages, containing `path`
+    #     |
+    #     |_ bin/
+    #         |_ python*  <- Python executable
+    lib_python_str = os.path.join(os.sep, "lib", "python")
+    i = path.find(lib_python_str)
+    if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+        return True
+
+    # Debian's system-level packages from apt
+    #     https://wiki.debian.org/Python#Deviations_from_upstream
+    dist_pkg_pattern = re.compile(r"/usr(/local)?/lib/python[0-9.]+/dist-packages")
+    if dist_pkg_pattern.match(path):
+        return True
+
+    # packages installed via --user
+    if path.startswith(site.USER_SITE):
+        return True
+
+    return False
+
+
 def is_hidden(path):  # to avoid "./".startswith('.')
     return os.path.basename(path.rstrip('/')).startswith('.') and path != "."
 
@@ -590,8 +617,7 @@ def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=Fa
                     # skip hidden files
                     filenames[:] = [filename for filename in filenames if not is_hidden(filename)]
                 if not include_venv:
-                    exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-                    dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+                    dirnames[:] = [dirname for dirname in dirnames if not is_in_venv(dirname)]
                 for filename in filenames:
                     if extensions is None or os.path.splitext(filename)[1] in extensions:
                         filepaths.add(os.path.join(parent_dir, filename))
