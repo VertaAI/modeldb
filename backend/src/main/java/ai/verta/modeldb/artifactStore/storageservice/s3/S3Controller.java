@@ -1,13 +1,14 @@
-package ai.verta.modeldb.artifactStore.storageservice.nfs;
+package ai.verta.modeldb.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.artifactStore.storageservice.nfs.UploadFileResponse;
 import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import java.io.IOException;
-import java.io.InputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,25 +24,31 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-public class NFSController {
+public class S3Controller {
 
-  private static final Logger LOGGER = LogManager.getLogger(NFSController.class);
+  private static final Logger LOGGER = LogManager.getLogger(S3Controller.class);
 
-  @Autowired private NFSService nfsService;
+  @Autowired private S3Service s3Service;
 
   @PutMapping(value = {"${artifactEndpoint.storeArtifact}"})
-  public UploadFileResponse storeArtifact(
-      HttpServletRequest requestEntity, @RequestParam("artifact_path") String artifactPath)
+  public ResponseEntity<UploadFileResponse> storeArtifact(
+      HttpServletRequest requestEntity,
+      HttpServletResponse response,
+      @RequestParam("artifact_path") String artifactPath,
+      @RequestParam("part_number") Long part_number,
+      @RequestParam("upload_id") String upload_id)
       throws ModelDBException, IOException {
-    LOGGER.debug("storeArtifact called");
+    LOGGER.debug("S3 storeArtifact called");
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBConstants.STORE_ARTIFACT_ENDPOINT)) {
-      InputStream inputStream = requestEntity.getInputStream();
-      String fileName = nfsService.storeFile(artifactPath, inputStream);
-      LOGGER.trace("storeArtifact - file name : {}", fileName);
-      LOGGER.debug("storeArtifact returned");
-      return new UploadFileResponse(fileName, null, null, -1L, null);
+      String eTag = s3Service.uploadFile(artifactPath, requestEntity, part_number, upload_id);
+      LOGGER.trace("S3 storeArtifact - artifact_path : {}", artifactPath);
+      LOGGER.trace("S3 storeArtifact - eTag : {}", eTag);
+      HttpHeaders responseHeaders = new HttpHeaders();
+      response.addHeader("ETag", String.valueOf(eTag));
+      LOGGER.debug("S3 storeArtifact returned");
+      return ResponseEntity.ok().body(new UploadFileResponse(artifactPath, null, null, -1, eTag));
     } catch (IOException | ModelDBException e) {
       LOGGER.warn(e.getMessage(), e);
       ErrorCountResource.inc(e);
@@ -58,14 +65,14 @@ public class NFSController {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBConstants.GET_ARTIFACT_ENDPOINT)) {
       // Load file as Resource
-      Resource resource = nfsService.loadFileAsResource(artifactPath);
+      Resource resource = s3Service.loadFileAsResource(artifactPath);
 
       // Try to determine file's content type
       String contentType = getContentType(request, resource);
 
       // Fallback to the default content type if type could not be determined
       if (contentType == null) {
-        contentType = "application/octet-stream";
+        contentType = "binary/octet-stream";
       }
       LOGGER.trace("getArtifact - file content type : {}", contentType);
 
