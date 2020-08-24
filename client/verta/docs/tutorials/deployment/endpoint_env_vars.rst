@@ -1,6 +1,9 @@
 Endpoint environment variables
 ==============================
 
+Through an endpoint update, you can assign values to environment variables that will be exposed to
+the deployment.
+
 Using the client
 ----------------
 

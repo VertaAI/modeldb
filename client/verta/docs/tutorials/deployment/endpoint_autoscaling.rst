@@ -1,6 +1,9 @@
 Endpoint autoscaling
 ====================
 
+Through an endpoint update, you can configure the deployment's autoscaling behavior: upper/lower
+bounds for replication and metrics to trigger it.
+
 Using the client
 ----------------
 

@@ -1,6 +1,9 @@
 Endpoint resources
 ==================
 
+Through an endpoint update, you can configure the limits for compute resources available to the
+deployment.
+
 Using the client
 ----------------
 
