@@ -605,16 +605,17 @@ public class App implements ApplicationContextAware {
 
     Map<String, Object> nfsArtifactEndpointConfigMap =
         (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
-    app.getArtifactEndpoint =
-        (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
-    LOGGER.trace("ArtifactStore Get artifact endpoint found : {}", app.getArtifactEndpoint);
-    app.storeArtifactEndpoint =
-        (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
-    LOGGER.trace("ArtifactStore Store artifact endpoint found : {}", app.storeArtifactEndpoint);
+    if (nfsArtifactEndpointConfigMap != null && !nfsArtifactEndpointConfigMap.isEmpty()) {
+      app.getArtifactEndpoint =
+          (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
+      LOGGER.trace("ArtifactStore Get artifact endpoint found : {}", app.getArtifactEndpoint);
+      app.storeArtifactEndpoint =
+          (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
+      LOGGER.trace("ArtifactStore Store artifact endpoint found : {}", app.storeArtifactEndpoint);
 
-    System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
-    System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
-
+      System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
+      System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
+    }
     switch (artifactStoreType) {
       case ModelDBConstants.S3:
         Map<String, Object> s3ConfigMap =
