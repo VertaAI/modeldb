@@ -275,6 +275,7 @@ class _DeployableEntity(_ModelDBEntity):
             include_hidden=True,
             include_venv=False,  # ignore virtual environments nested within
         )
+        local_filepaths = list(filter(lambda path: not self._is_in_venv(path), local_filepaths))
 
         # obtain deepest common directory
         #     This directory on the local system will be mirrored in `_CUSTOM_MODULES_DIR` in
