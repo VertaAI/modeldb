@@ -10,6 +10,7 @@ import json
 import numbers
 import os
 import re
+import site
 import string
 import subprocess
 import sys
@@ -17,6 +18,7 @@ import threading
 import time
 import warnings
 
+import click
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -542,6 +544,32 @@ def body_to_json(response):
         six.raise_from(ValueError(msg), None)
 
 
+def is_in_venv(path):
+    # Roughly checks for:
+    #     /
+    #     |_ lib/
+    #     |   |_ python*/ <- directory with Python packages, containing `path`
+    #     |
+    #     |_ bin/
+    #         |_ python*  <- Python executable
+    lib_python_str = os.path.join(os.sep, "lib", "python")
+    i = path.find(lib_python_str)
+    if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+        return True
+
+    # Debian's system-level packages from apt
+    #     https://wiki.debian.org/Python#Deviations_from_upstream
+    dist_pkg_pattern = re.compile(r"/usr(/local)?/lib/python[0-9.]+/dist-packages")
+    if dist_pkg_pattern.match(path):
+        return True
+
+    # packages installed via --user
+    if path.startswith(site.USER_SITE):
+        return True
+
+    return False
+
+
 def is_hidden(path):  # to avoid "./".startswith('.')
     return os.path.basename(path.rstrip('/')).startswith('.') and path != "."
 
@@ -588,14 +616,13 @@ def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=Fa
                     dirnames[:] = [dirname for dirname in dirnames if not is_hidden(dirname)]
                     # skip hidden files
                     filenames[:] = [filename for filename in filenames if not is_hidden(filename)]
-                if not include_venv:
-                    exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-                    dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
                 for filename in filenames:
                     if extensions is None or os.path.splitext(filename)[1] in extensions:
                         filepaths.add(os.path.join(parent_dir, filename))
         else:
             filepaths.add(path)
+    if not include_venv:
+        filepaths = list(filter(lambda path: not is_in_venv(path), filepaths))
     return filepaths
 
 
@@ -1254,3 +1281,27 @@ def as_list_of_str(tags):
                 raise TypeError("`tags` must be list of str, but found {}".format(type(tag)))
 
     return tags
+
+
+def _multiple_arguments_for_each(argument, name, action, get_keys, overwrite):
+    name = name
+    argument = list(map(lambda s: s.split('='), argument))
+    if argument and len(argument) > len(
+            set(map(lambda pair: pair[0], argument))):
+        raise click.BadParameter("cannot have duplicate {} keys".format(name))
+    if argument:
+        argument_keys = set(get_keys())
+
+        for pair in argument:
+            if len(pair) != 2:
+                raise click.BadParameter("key and path for {}s must be separated by a '='".format(name))
+            (key, _) = pair
+            if key == "model":
+                raise click.BadParameter("the key \"model\" is reserved for model")
+
+            if not overwrite and key in argument_keys:
+                raise click.BadParameter(
+                    "key \"{}\" already exists; consider using --overwrite flag".format(key))
+
+        for (key, path) in argument:
+            action(key, path)

@@ -141,7 +141,9 @@ public class DatasetContainer extends BlobContainer {
         .append(":md5:")
         .append(path.getMd5())
         .append(":internal_versioned_path:")
-        .append(path.getInternalVersionedPath());
+        .append(path.getInternalVersionedPath())
+        .append(":base_path:")
+        .append(path.getBasePath());
     return FileHasher.getSha(sb.toString());
   }
 

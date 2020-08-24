@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import copy
 
-from .endpoint import Endpoint
+from ._endpoint import Endpoint
 
 
 # a rough copy of LazyList's API, because Endpoints don't use protos, find, or pagination

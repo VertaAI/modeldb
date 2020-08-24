@@ -41,4 +41,37 @@
     <changeSet id="db_version_2.1" author="raviS">
         <tagDatabase tag="db_version_2.1"/>
     </changeSet>
+
+    <changeSet id="add-base-path-in-path-dataset-component-blob" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="path_dataset_component_blob" columnName="base_path"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="path_dataset_component_blob">
+            <column name="base_path" type="TEXT" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="path_dataset_component_blob" columnName="base_path"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="add-base-path-in-s3-dataset-component-blob" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="s3_dataset_component_blob" columnName="base_path"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="s3_dataset_component_blob">
+            <column name="base_path" type="TEXT" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="s3_dataset_component_blob" columnName="base_path"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.2" author="anandJ">
+        <tagDatabase tag="db_version_2.2"/>
+    </changeSet>
+
 </databaseChangeLog>

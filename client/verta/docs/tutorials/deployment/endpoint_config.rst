@@ -54,7 +54,7 @@ deployed.
     resources = Resources(cpu_millis=250, memory="512Mi")
 
 In this example, each replica will be provided a fourth of a CPU core and 512 Mi of RAM. For the full
-list of available resources, see the :ref:`resources` API documentation.
+list of available resources, see the :ref:`update-resources` API documentation.
 
 Environment variables
 ^^^^^^^^^^^^^^^^^^^^^

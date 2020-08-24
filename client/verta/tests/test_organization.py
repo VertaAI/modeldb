@@ -27,4 +27,6 @@ class TestOrganization:
     @pytest.mark.skip("delete not implemented yet")
     def test_create(self, client):
         name = _utils.generate_default_name()
-        assert client._create_organization(name)
+        org = client._create_organization(name)
+        assert org
+        assert org.id == client._get_organization(name).id

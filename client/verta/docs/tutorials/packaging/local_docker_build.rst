@@ -1,4 +1,4 @@
-Building a Model Container Locally
+Building a model container locally
 ==================================
 
 Some of our customers want to build a version of the container used for inference locally. Common uses
@@ -43,4 +43,4 @@ to build the image locally.
 
 .. note::
     You might require permission from your system administrator to access the verified base images
-    used for Docker. Please contact your admin or the Verta team for support.
+    used for Docker. Please contact your admin or the Verta team at `support@verta.ai <mailto:support@verta.ai>`_.

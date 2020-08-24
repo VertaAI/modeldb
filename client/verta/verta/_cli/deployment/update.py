@@ -5,11 +5,11 @@ import json
 
 from .deployment import deployment
 from ... import Client
-from ...deployment.update._strategies import DirectUpdateStrategy, CanaryUpdateStrategy
-from ...deployment.update.rules import _UpdateRule
-from ...deployment.resources import _Resource
-from ...deployment.autoscaling import Autoscaling
-from ...deployment.autoscaling.metrics import _AutoscalingMetric
+from ...endpoint.update._strategies import DirectUpdateStrategy, CanaryUpdateStrategy
+from ...endpoint.update.rules import _UpdateRule
+from ...endpoint.resources import Resources
+from ...endpoint.autoscaling import Autoscaling
+from ...endpoint.autoscaling.metrics import _AutoscalingMetric
 from ..._registry import RegisteredModelVersion
 
 
@@ -93,7 +93,7 @@ def update_endpoint(path, run_id, model_version_id, filename, strategy, resource
             strategy_obj.add_rule(_UpdateRule._from_dict(json.loads(rule)))
 
     if resources:
-        resources_list = _Resource._from_dict(json.loads(resources))
+        resources_list = Resources._from_dict(json.loads(resources))
     else:
         resources_list = None
 

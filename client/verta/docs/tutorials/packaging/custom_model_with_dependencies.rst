@@ -1,4 +1,4 @@
-Creating Custom Models With Dependencies
+Creating custom models with dependencies
 ========================================
 
 Sometimes just `custom models <custom_model.html>`_ by themselves are not enough and you need to add
@@ -7,7 +7,7 @@ other data necessary for defining your model behavior.
 Verta supports adding artifacts to custom models and this tutorial shows you how to add dependencies
 to your model.
 
-Class Model definition
+Class model definition
 ----------------------
 
 A *Class Model* must implement this interface:
@@ -74,6 +74,9 @@ dependency like
 
 By doing this, whenever an object of ``MyModel`` is instantiated by Verta, the artifacts will be
 available for consumption and passed to the constructor automatically.
+
+Local testing
+-------------
 
 For local testing, you can use the equivalent method ``fetch_artifacts()`` to fetch the artifacts
 and initialize the model.
