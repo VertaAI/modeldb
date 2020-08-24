@@ -27,7 +27,7 @@ The second argument is a strategy to use for the update. Here, you would be usin
 :class:`~verta.deployment.update._strategies.DirectUpdateStrategy` that will fully transition the
 endpoint to use your new model.
 
-You can also update an endpoint with an :class:`~verta._tracking.ExperimentRun`:
+You can also update an endpoint with an :class:`~verta._tracking.experimentrun.ExperimentRun`:
 
 .. code-block:: python
 

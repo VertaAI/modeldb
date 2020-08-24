@@ -53,7 +53,7 @@ Logging model dependencies
 --------------------------
 
 Any class in the Verta platform that has a ``log_artifact`` method, such as an
-:class:`ExperimentRun <verta._tracking.ExperimentRun>`,
+:class:`ExperimentRun <verta._tracking.experimentrun.ExperimentRun>`,
 supports logging dependencies for their associated models. The method signature is generally:
 
 .. code-block:: python
