@@ -2,7 +2,7 @@ Endpoint autoscaling
 ====================
 
 Through an endpoint update, you can configure the deployment's autoscaling behavior: upper and
-lower bounds for replication, scale-up rate, and metrics to trigger it.
+lower bounds for replication, scale-up rrate, and metrics to trigger it.
 
 Using the client
 ----------------
@@ -47,9 +47,10 @@ Autoscaling can also be configured via the CLI:
         --autoscaling '{"max_replicas": 4, "min_scale": 0.5}' \
         --autoscaling-metric '{"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.75"}]}'
 
-``--autoscaling`` and ``--autoscaling-metric`` take JSON strings representing their respective
-values. The Python API documentation for :ref:`autoscaling` and :ref:`autoscaling-metrics` contain
-JSON-equivalent examples for each object.
+``--autoscaling`` takes a JSON string representing the quantites for replicas and scale;
+``--autoscaling-metric`` takes a JSON string representing a metric and its values. The Python API
+documentation for :ref:`autoscaling` and :ref:`autoscaling-metrics` contain JSON-equivalent
+examples for each object.
 
 To set multiple metrics, ``--autoscaling-metric`` can be provided more than
 once.

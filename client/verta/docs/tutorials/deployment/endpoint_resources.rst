@@ -43,5 +43,5 @@ Compute resources can also be configured via the CLI:
         --strategy direct \
         --resources '{"cpu_millis": 250, "memory": "512Mi"}'
 
-``--resources`` takes a JSON string representing its value. The Python API documentation for
+``--resources`` takes a JSON string representing its values. The Python API documentation for
 :ref:`update-resources` contains a JSON-equivalent example for the object.
