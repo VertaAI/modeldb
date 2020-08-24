@@ -27,8 +27,8 @@ To create a new model version from an existing experiment run, we can use :meth:
 .. code-block:: python
 
     model_version = registered_model.create_version_from_run(
-        run_id=experiment_run.id
-        name="from-experiment-run"
+        run_id=experiment_run.id,
+        name="from-experiment-run",
     )
 
 Using the CLI

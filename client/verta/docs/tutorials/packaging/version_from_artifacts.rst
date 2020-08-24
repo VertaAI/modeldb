@@ -21,7 +21,7 @@ We can create a new version for the registered model, and upload the classifier,
 
     model_version = registered_model.create_version(
         name="my version",
-        labels=["prototype"]
+        labels=["prototype"],
     )
 
     # Logging the classifier and requirements:
