@@ -49,12 +49,9 @@ deployed.
 
 .. code-block:: python
 
-    from verta.deployment.resources import (CpuMillis, Memory)
+    from verta.endpoint.resources import Resources
 
-    resources = [
-        CpuMillis(250),
-        Memory("512Mi"),
-    ]
+    resources = Resources(cpu_millis=250, memory="512Mi")
 
 In this example, each replica will be provided a fourth of a CPU core and 512 Mi of RAM. For the full
 list of available resources, see the :ref:`resources` API documentation.
@@ -67,7 +64,7 @@ made available to the model when it is deployed.
 
 .. code-block:: python
 
-    env_vars = {'CUDA_​VISIBLE_​DEVICES': "1,2"}
+    env_vars = {'LOG_LEVEL': "debug"}
 
 Using the CLI
 -------------
@@ -81,7 +78,7 @@ Endpoint configuration can also be done via the CLI:
         --autoscaling '{"max_replicas": 4, "min_scale": 0.5}' \
         --autoscaling-metric '{"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.75"}]}' \
         --resources '{"cpu_millis": 250, "memory": "512Mi"}' \
-        --env-vars '{"CUDA_VISIBLE_DEVICES": "1,2"}'
+        --env-vars '{"LOG_LEVEL": "debug"}'
 
 Each argument takes a JSON string representing their respective values. For a reference of accepted
 values, see here. To set multiple metrics, ``--autoscaling-metric`` can be provided more than once.
