@@ -8,6 +8,7 @@ import glob
 import os
 import re
 import shutil
+import site
 import sys
 import tarfile
 import tempfile
@@ -251,8 +252,9 @@ class _DeployableEntity(_ModelDBEntity):
             if dist_pkg_pattern.match(path):
                 return True
 
-            # TODO: packages installed via --user are still picked up; should they be?
-            # import site; site.getusersitepackages()
+            # packages installed via --user
+            if path == site.USER_SITE:
+                return True
 
             return False
         local_sys_paths = list(filter(lambda path: not is_in_venv(path), local_sys_paths))
