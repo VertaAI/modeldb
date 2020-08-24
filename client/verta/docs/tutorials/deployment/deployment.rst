@@ -16,6 +16,8 @@ Endpoint update
 * `Updating an endpoint <endpoint_update.html>`__
 * `Updating an endpoint with canary strategy <endpoint_canary_update.html>`__.
 
+.. _endpoint-config:
+
 Endpoint configuration
 ----------------------
 
