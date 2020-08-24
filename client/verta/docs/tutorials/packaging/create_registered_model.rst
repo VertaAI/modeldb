@@ -14,7 +14,7 @@ Registered models can be created as follows:
 
     registered_model = client.create_registered_model(name="my model", labels=["research-purpose", "team-a"])
 
-Notice that we have assigned the labels ``research-purpose`` and ``team-a`` to the registered model. Labels are great tools for quickly filtering for a list of relevant registered models.
+Notice that we have assigned the labels ``"research-purpose"`` and ``"team-a"`` to the registered model. Labels are great tools for quickly filtering for a list of relevant registered models.
 
 Labels can also be added after the registered model has been created:
 

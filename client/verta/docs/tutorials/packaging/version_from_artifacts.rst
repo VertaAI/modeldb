@@ -36,7 +36,7 @@ Using the CLI
 
 We can also accomplish the steps above using Verta's command-line interface.
 
-First, we need to serialize our classifier. The recommended way to do so is to use the pickle module:
+First, we need to serialize our classifier, for example via ``pickle``:
 
 .. code-block:: python
 
