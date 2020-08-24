@@ -81,7 +81,9 @@ Endpoint configuration can also be done via the CLI:
         --resources '{"cpu_millis": 250, "memory": "512Mi"}' \
         --env-vars '{"LOG_LEVEL": "debug"}'
 
-Each argument takes a JSON string representing their respective values. For a reference of accepted
-values, see here. To set multiple metrics, ``--autoscaling-metric`` can be provided more than once.
+Each argument takes a JSON string representing its respective value. The
+Python API documentation contains JSON-equivalent examples for each endpoint
+configuration object.
 
-.. TODO Link to list of JSON values
+To set multiple metrics, ``--autoscaling-metric`` can be provided more than
+once.
