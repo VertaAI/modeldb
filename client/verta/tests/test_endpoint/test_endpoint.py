@@ -1,18 +1,25 @@
+import json
 import time
 
 import pytest
+
 import requests
 
-import verta
-from verta._deployment import Endpoint
-from verta.deployment.resources import CpuMilli, Memory
-from verta.deployment.update import DirectUpdateStrategy, CanaryUpdateStrategy
-from verta.deployment.update.rules import AverageLatencyThresholdRule
-from verta._internal_utils import _utils
+import yaml
 
-def get_build_ids(status):
-    # get the set of build_ids in the status of the stage:
-    return set(map(lambda comp: comp["build_id"], status["components"]))
+import verta
+from verta.endpoint._endpoint import Endpoint
+from verta.endpoint.resources import Resources
+from verta.endpoint.autoscaling import Autoscaling
+from verta.endpoint.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
+from verta.endpoint.update import DirectUpdateStrategy, CanaryUpdateStrategy
+from verta.endpoint.update.rules import MaximumAverageLatencyThresholdRule
+from verta._internal_utils import _utils
+from verta.environment import Python
+from verta.utils import ModelAPI
+
+from ..utils import (get_build_ids, sys_path_manager)
+
 
 class TestEndpoint:
     def test_create(self, client, created_endpoints):
@@ -95,11 +102,12 @@ class TestEndpoint:
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
-
         str_repr = repr(endpoint)
 
         assert "path: {}".format(endpoint.path) in str_repr
+        assert "url" in str_repr
         assert "id: {}".format(endpoint.id) in str_repr
+        assert "curl: <Endpoint not deployed>" in str_repr
 
         # these fields might have changed:
         assert "status" in str_repr
@@ -108,6 +116,47 @@ class TestEndpoint:
         assert "stage's date created" in str_repr
         assert "stage's date updated" in str_repr
         assert "components" in str_repr
+
+        endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+        str_repr = repr(endpoint)
+        assert "curl: {}".format(endpoint.get_deployed_model().get_curl()) in str_repr
+
+    def test_download_manifest(self, client, in_tempdir):
+        download_to_path = "manifest.yaml"
+        path = verta._internal_utils._utils.generate_default_name()
+        name = verta._internal_utils._utils.generate_default_name()
+
+        strategy = CanaryUpdateStrategy(interval=10, step=0.1)
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.1))
+        resources = Resources(cpu_millis=100, memory="128Mi")
+        autoscaling = Autoscaling(min_replicas=1, max_replicas=10, min_scale=0.1, max_scale=2)
+        autoscaling.add_metric(CpuUtilizationTarget(0.75))
+        env_vars = {'env1': "var1", 'env2': "var2"}
+
+        filepath = client.download_endpoint_manifest(
+            download_to_path=download_to_path,
+            path=path,
+            name=name,
+            strategy=strategy,
+            autoscaling=autoscaling,
+            resources=resources,
+            env_vars=env_vars,
+        )
+
+        # can be loaded as YAML
+        with open(filepath, 'rb') as f:
+            manifest = yaml.safe_load(f)
+
+        assert manifest['kind'] == "Endpoint"
+
+        # check environment variables
+        containers = manifest['spec']['function']['spec']['templates']['deployment']['spec']['template']['spec']['containers']
+        retrieved_env_vars = {
+            env_var['name']: env_var['value']
+            for env_var
+            in containers[0]['env']
+        }
+        assert retrieved_env_vars == env_vars
 
     def test_direct_update(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -155,10 +204,94 @@ class TestEndpoint:
 
         assert "canary update strategy must have at least one rule" in str(excinfo.value)
 
-        strategy.add_rule(AverageLatencyThresholdRule(0.8))
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
         updated_status = endpoint.update(experiment_run, strategy)
 
         # Check that a new build is added:
+        new_build_ids = get_build_ids(updated_status)
+        assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
+
+    def test_update_from_json_config(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+        json = pytest.importorskip("json")
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        strategy_dict = {
+            "run_id": experiment_run.id,
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.05,
+                "progress_interval_seconds": 30,
+                "rules": [
+                    {"rule": "latency_avg_max",
+                     "rule_parameters": [
+                         {"name": "threshold",
+                          "value": "0.1"}
+                    ]},
+                    {"rule": "error_4xx_rate",
+                     "rule_parameters": [
+                        {"name": "threshold",
+                         "value": "1"}
+                    ]}
+                ]
+            }
+        }
+
+        filepath = "config.json"
+        with open(filepath, 'w') as f:
+            json.dump(strategy_dict, f)
+
+        updated_status = endpoint.update_from_config(filepath)
+        new_build_ids = get_build_ids(updated_status)
+        assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
+
+    def test_update_from_yaml_config(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+        yaml = pytest.importorskip("yaml")
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        strategy_dict = {
+            "run_id": experiment_run.id,
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.05,
+                "progress_interval_seconds": 30,
+                "rules": [
+                    {"rule": "latency_avg_max",
+                     "rule_parameters": [
+                         {"name": "threshold",
+                          "value": "0.1"}
+                    ]},
+                    {"rule": "error_4xx_rate",
+                     "rule_parameters": [
+                        {"name": "threshold",
+                         "value": "1"}
+                    ]}
+                ]
+            }
+        }
+
+        filepath = "config.yaml"
+        with open(filepath, 'w') as f:
+            yaml.safe_dump(strategy_dict, f)
+
+        updated_status = endpoint.update_from_config(filepath)
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
@@ -175,8 +308,9 @@ class TestEndpoint:
 
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
 
-        strategy.add_rule(AverageLatencyThresholdRule(0.8))
-        updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMilli(500), Memory("500Mi"), ] )
+        strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
+        updated_status = endpoint.update(experiment_run, strategy, resources = Resources(cpu_millis=250, memory="512Mi"),
+                                         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
         # Check that a new build is added:
         new_build_ids = get_build_ids(updated_status)
@@ -190,18 +324,34 @@ class TestEndpoint:
 
         assert token is None
 
+        token = verta._internal_utils._utils.generate_default_name()
+        endpoint.create_access_token(token)
+        assert endpoint.get_access_token() == token
 
-    def test_form_update_body(self):
+    def test_create_update_body(self):
         endpoint = Endpoint(None, None, None, None)
-        resources = [
-            CpuMilli(500),
-            Memory("500Mi"),
-        ]
+        resources = Resources(cpu_millis=250, memory="512Mi")
 
-        parameter_json = endpoint._form_update_body(resources, DirectUpdateStrategy(), 0)
-        assert parameter_json == {'build_id': 0, 'resources': {'cpu_millis': 500, 'memory': '500Mi'}, 'strategy': 'rollout'}
-        
-    def test_get_deployed_model(self, client, experiment_run, model_for_deployment, created_endpoints):
+        env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai", "GIT_TERMINAL_PROMPT" : "1"}
+
+        parameter_json = endpoint._create_update_body(DirectUpdateStrategy(), resources, None, env_vars)
+        assert parameter_json == {
+            'env': [
+                {"name": 'CUDA_VISIBLE_DEVICES', 'value': '1,2'},
+                {'name': 'GIT_TERMINAL_PROMPT', 'value': '1'},
+                {"name": 'VERTA_HOST', 'value': 'app.verta.ai'}
+            ],
+            'resources': {'cpu_millis': 250, 'memory': '512Mi'},
+            'strategy': 'rollout',
+        }
+
+
+    def test_get_deployed_model(self, client, experiment_run, model_version, model_for_deployment, created_endpoints):
+        """
+        Verifies prediction for a finished deployment, as well as for an endpoint in the middle of being updated.
+        """
+        np = pytest.importorskip("numpy")
+
         model = model_for_deployment['model'].fit(
             model_for_deployment['train_features'],
             model_for_deployment['train_targets'],
@@ -212,9 +362,240 @@ class TestEndpoint:
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
-        endpoint.update(experiment_run, DirectUpdateStrategy())
+        endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
-        while not endpoint.get_status()['status'] == "active":
-            time.sleep(3)
+        token = verta._internal_utils._utils.generate_default_name()
+        endpoint.create_access_token(token)
         x = model_for_deployment['train_features'].iloc[1].values
-        assert endpoint.get_deployed_model().predict([x]) == [2]
+        deployed_model = endpoint.get_deployed_model()
+
+        assert np.allclose(deployed_model.predict([x]), model.predict([x]))
+        deployed_model_curl = deployed_model.get_curl()
+        assert endpoint.path in deployed_model_curl
+        assert "-H \"Access-token: {}\"".format(token) in deployed_model_curl
+
+        new_model = model_for_deployment['model'].fit(
+            np.random.random(model_for_deployment['train_features'].shape),
+            np.random.random(model_for_deployment['train_targets'].shape).round()
+        )
+        model_version.log_model(new_model)
+        model_version.log_environment(Python(requirements=["scikit-learn"]))
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=False)
+        endpoint.get_deployed_model().predict([x])  # should succeed, because the endpoint can still service requests
+
+    def test_update_from_model_version(self, client, model_version, created_endpoints):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+
+    def test_update_from_json_config_model_version(self, client, in_tempdir, created_endpoints, model_version):
+        np = pytest.importorskip("numpy")
+        json = pytest.importorskip("json")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier, custom_modules=[])
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        strategy_dict = {
+            "model_version_id": model_version.id,
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.05,
+                "progress_interval_seconds": 30,
+                "rules": [
+                    {"rule": "latency_avg_max",
+                     "rule_parameters": [
+                         {"name": "threshold",
+                          "value": "0.1"}
+                    ]},
+                    {"rule": "error_4xx_rate",
+                     "rule_parameters": [
+                        {"name": "threshold",
+                         "value": "1"}
+                    ]}
+                ]
+            }
+        }
+
+        filepath = "config.json"
+        with open(filepath, "w") as f:
+            json.dump(strategy_dict, f)
+
+        endpoint.update_from_config(filepath, wait=True)
+
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+
+    def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        autoscaling = Autoscaling(min_replicas=0, max_replicas=2, min_scale=0.5, max_scale=2.0)
+        autoscaling.add_metric(CpuUtilizationTarget(0.5))
+        autoscaling.add_metric(MemoryUtilizationTarget(0.7))
+        autoscaling.add_metric(RequestsPerWorkerTarget(100))
+
+        endpoint.update(experiment_run, DirectUpdateStrategy(), autoscaling=autoscaling)
+        update_status = endpoint.get_update_status()
+
+        autoscaling_metrics = update_status["update_request"]["autoscaling"]["metrics"]
+        assert len(autoscaling_metrics) == 3
+        for metric in autoscaling_metrics:
+            assert metric["metric_id"] in [1001, 1002, 1003]
+
+            if metric["metric_id"] == 1001:
+                assert metric["parameters"][0]["value"] == "0.5"
+            elif metric["metric_id"] == 1002:
+                assert metric["parameters"][0]["value"] == "100"
+            else:
+                assert metric["parameters"][0]["value"] == "0.7"
+
+    def test_update_with_custom_module(self, client, model_version, created_endpoints):
+        torch = pytest.importorskip("torch")
+
+        with sys_path_manager() as sys_path:
+            sys_path.append(".")
+
+            from models.nets import FullyConnected
+
+            train_data = torch.rand((2, 4))
+
+            classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
+            model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
+            model_version.log_model(classifier, custom_modules=["models/"], model_api=model_api)
+
+            env = Python(requirements=["torch==1.0.0"])
+            model_version.log_environment(env)
+
+
+            path = verta._internal_utils._utils.generate_default_name()
+            endpoint = client.set_endpoint(path)
+            created_endpoints.append(endpoint)
+            endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+
+
+            test_data = torch.rand((4, 4))
+            prediction = torch.tensor(endpoint.get_deployed_model().predict(test_data.tolist()))
+            assert torch.all(classifier(test_data).eq(prediction))
+
+    def test_update_from_json_config_with_params(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+        yaml = pytest.importorskip("yaml")
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+
+
+        original_status = endpoint.get_status()
+        original_build_ids = get_build_ids(original_status)
+
+        # Creating config dict:
+        config_dict = {
+            "run_id": experiment_run.id,
+            "strategy": "direct",
+            "autoscaling": {
+                "quantities": {"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0},
+                "metrics": [
+                    {"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.5"}]},
+                    {"metric": "memory_utilization", "parameters": [{"name": "target", "value": "0.7"}]}
+                ]
+            },
+            "env_vars": {"VERTA_HOST": "app.verta.ai"},
+            "resources": {"cpu_millis": 250, "memory": "100M"}
+        }
+
+        filepath = "config.json"
+        with open(filepath, 'w') as f:
+            json.dump(config_dict, f)
+
+        endpoint.update_from_config(filepath)
+        update_status = endpoint.get_update_status()
+
+        # Check autoscaling:
+        autoscaling_parameters = update_status["update_request"]["autoscaling"]
+        autoscaling_quantities = autoscaling_parameters["quantities"]
+
+        assert autoscaling_quantities == config_dict["autoscaling"]["quantities"]
+
+        autoscaling_metrics = autoscaling_parameters["metrics"]
+        assert len(autoscaling_metrics) == 2
+        for metric in autoscaling_metrics:
+            assert metric["metric_id"] in [1001, 1002, 1003]
+
+            if metric["metric_id"] == 1001:
+                assert metric["parameters"][0]["value"] == "0.5"
+            else:
+                assert metric["parameters"][0]["value"] == "0.7"
+
+        # Check env_vars:
+        assert update_status["update_request"]["env"][0]["name"] == "VERTA_HOST"
+        assert update_status["update_request"]["env"][0]["value"] == "app.verta.ai"
+
+        # Check resources:
+        assert endpoint.get_update_status()['update_request']['resources'] == config_dict["resources"]
+
+    def test_update_twice(self, client, registered_model, created_endpoints):
+        np = pytest.importorskip("numpy")
+        json = pytest.importorskip("json")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        env = Python(requirements=["scikit-learn"])
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version = registered_model.create_version("first-version")
+        model_version.log_model(classifier)
+        model_version.log_environment(env)
+
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        new_model_version = registered_model.create_version("second-version")
+        new_model_version.log_model(new_classifier)
+        new_model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.set_endpoint(path)
+        created_endpoints.append(endpoint)
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+
+        # updating endpoint
+        endpoint.update(new_model_version, DirectUpdateStrategy(), wait=True)
+        test_data = np.random.random((4, 12))
+        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), new_classifier.predict(test_data))

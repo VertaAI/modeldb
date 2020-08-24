@@ -20,6 +20,10 @@ from .._internal_utils import (
 )
 
 
+_OSS_DEFAULT_WORKSPACE = "personal"
+_MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
+
+
 class _ModelDBEntity(object):
     def __init__(self, conn, conf, service_module, service_url_component, msg):
         self._conn = conn
@@ -129,6 +133,9 @@ class _ModelDBEntity(object):
 
     @classmethod
     def _create(cls, conn, conf, *args, **kwargs):
+        if 'name' in kwargs and kwargs['name'] is None:
+            kwargs['name'] = cls._generate_default_name()
+
         msg = cls._create_proto(conn, *args, **kwargs)
         if msg:
             # pylint: disable=no-value-for-parameter
@@ -453,4 +460,3 @@ class _ModelDBEntity(object):
         else:
             # workspace is organization
             return _utils.body_to_json(response)['organization']['name']
-

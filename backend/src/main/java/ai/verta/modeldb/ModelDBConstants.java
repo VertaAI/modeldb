@@ -13,7 +13,6 @@ public interface ModelDBConstants {
   String CLOUD_BUCKET_NAME = "cloudBucketName";
   String MINIO_ENDPOINT = "minioEndpoint";
   String AWS_REGION = "aws_region";
-  String DEFAULT_AWS_REGION = "us-east-1";
   String DATABASE = "database";
   String DB_TYPE = "DBType";
   String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";
@@ -23,10 +22,10 @@ public interface ModelDBConstants {
   String HOST = "host";
   String HTTPS_STR = "https";
   String NFS = "NFS";
-  String PICK_NFS_HOST_FROM_CONFIG = "pickNFSHostFromConfig";
+  String PICK_ARTIFACT_STORE_HOST_FROM_CONFIG = "pickArtifactStoreHostFromConfig";
   String NFS_ROOT_PATH = "nfsRootPath";
-  String NFS_SERVER_HOST = "nfsServerHost";
-  String NFS_URL_PROTOCOL = "nfsUrlProtocol";
+  String ARTIFACT_STORE_SERVER_HOST = "artifactStoreServerHost";
+  String ARTIFACT_STORE_URL_PROTOCOL = "artifactStoreUrlProtocol";
   String PATH = "path";
   String PORT = "port";
   String RELATIONAL = "relational";
@@ -41,6 +40,12 @@ public interface ModelDBConstants {
   String MDB_SERVICE_USER = "mdb_service_user";
   String LIQUIBASE_MIGRATION = "liquibaseMigration";
   String RUN_LIQUIBASE_SEPARATE = "runLiquibaseSeparate";
+
+  // AWS Releated Constants
+  String AWS_ROLE_ARN = "AWS_ROLE_ARN";
+  String DEFAULT_AWS_REGION = "us-east-1";
+  String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
+  String AWS_WEB_IDENTITY_TOKEN = "AWS_WEB_IDENTITY_TOKEN";
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
@@ -250,6 +255,7 @@ public interface ModelDBConstants {
   String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
   String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
   String PROPERTY_NAME = "property_name";
+  String S3_PRESIGNED_URL_ENABLED = "s3presignedURLEnabled";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second

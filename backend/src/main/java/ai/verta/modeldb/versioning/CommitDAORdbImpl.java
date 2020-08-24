@@ -22,6 +22,7 @@ import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
@@ -115,7 +116,8 @@ public class CommitDAORdbImpl implements CommitDAO {
                 .setRepositoryId(repositoryIdentification)
                 .setBranch(ModelDBConstants.MASTER_BRANCH)
                 .build(),
-            false);
+            false,
+            RepositoryEnums.RepositoryTypeEnum.DATASET);
     datasetVersion =
         datasetVersion
             .toBuilder()
@@ -134,7 +136,11 @@ public class CommitDAORdbImpl implements CommitDAO {
                 datasetVersion.getPathDatasetVersionInfo();
             List<DatasetPartInfo> partInfos = pathDatasetVersionInfo.getDatasetPartInfosList();
             Stream<PathDatasetComponentBlob> result =
-                partInfos.stream().map(this::componentFromPart);
+                partInfos.stream()
+                    .map(
+                        datasetPartInfo ->
+                            componentFromPart(
+                                datasetPartInfo, pathDatasetVersionInfo.getBasePath()));
             if (pathDatasetVersionInfo.getLocationType() == PathLocationType.S3_FILE_SYSTEM) {
               datasetBlobBuilder.setS3(
                   S3DatasetBlob.newBuilder()
@@ -214,7 +220,8 @@ public class CommitDAORdbImpl implements CommitDAO {
               .setBranch(ModelDBConstants.MASTER_BRANCH)
               .setCommitSha(commitEntity.getCommit_hash())
               .build(),
-          false);
+          false,
+          RepositoryEnums.RepositoryTypeEnum.DATASET);
 
       return CreateCommitRequest.Response.newBuilder()
           .setCommit(commitEntity.toCommitProto())
@@ -229,12 +236,13 @@ public class CommitDAORdbImpl implements CommitDAO {
     }
   }
 
-  private PathDatasetComponentBlob componentFromPart(DatasetPartInfo part) {
+  private PathDatasetComponentBlob componentFromPart(DatasetPartInfo part, String basePath) {
     return PathDatasetComponentBlob.newBuilder()
         .setPath(part.getPath())
         .setSize(part.getSize())
         .setLastModifiedAtSource(part.getLastModifiedAtSource())
         .setMd5(part.getChecksum())
+        .setBasePath(basePath)
         .build();
   }
 
@@ -284,7 +292,8 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   public CommitPaginationDTO fetchCommitEntityList(
-      Session session, ListCommitsRequest request, Long repoId) throws ModelDBException {
+      Session session, ListCommitsRequest request, Long repoId, boolean ascending)
+      throws ModelDBException {
     StringBuilder commitQueryBuilder =
         new StringBuilder(
             " FROM "
@@ -314,9 +323,11 @@ public class CommitDAORdbImpl implements CommitDAO {
       commitQueryBuilder.append(" AND cm.date_created <= " + headTime);
     }
 
+    String order = ascending ? " ASC " : " DESC ";
+
     Query<CommitEntity> commitEntityQuery =
         session.createQuery(
-            "SELECT cm " + commitQueryBuilder.toString() + " ORDER BY cm.date_updated DESC");
+            "SELECT cm " + commitQueryBuilder.toString() + " ORDER BY cm.date_updated " + order);
     commitEntityQuery.setParameter("repoId", repoId);
     if (request.hasPagination()) {
       int pageLimit = request.getPagination().getPageLimit();
@@ -338,12 +349,13 @@ public class CommitDAORdbImpl implements CommitDAO {
 
   @Override
   public ListCommitsRequest.Response listCommits(
-      ListCommitsRequest request, RepositoryFunction getRepository) throws ModelDBException {
+      ListCommitsRequest request, RepositoryFunction getRepository, boolean ascending)
+      throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepository.apply(session);
 
       CommitPaginationDTO commitPaginationDTO =
-          fetchCommitEntityList(session, request, repository.getId());
+          fetchCommitEntityList(session, request, repository.getId(), ascending);
       List<Commit> commits =
           commitPaginationDTO.getCommitEntities().stream()
               .map(CommitEntity::toCommitProto)
@@ -354,7 +366,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return listCommits(request, getRepository);
+        return listCommits(request, getRepository, ascending);
       } else {
         throw ex;
       }
@@ -445,7 +457,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryEntity repositoryEntity = null;
       if (repositoryIdentification != null) {
         repositoryEntity =
-            repositoryDAO.getRepositoryById(session, repositoryIdentification, true, false);
+            repositoryDAO.getRepositoryById(
+                session,
+                repositoryIdentification,
+                true,
+                false,
+                RepositoryEnums.RepositoryTypeEnum.REGULAR);
       }
 
       for (String datasetVersionId : datasetVersionIds) {
@@ -488,7 +505,12 @@ public class CommitDAORdbImpl implements CommitDAO {
 
         if (repositoryEntity == null) {
           repositoryEntity =
-              repositoryDAO.getRepositoryById(session, repositoryIdentification, true, false);
+              repositoryDAO.getRepositoryById(
+                  session,
+                  repositoryIdentification,
+                  true,
+                  false,
+                  RepositoryEnums.RepositoryTypeEnum.REGULAR);
         }
 
         Query query = session.createQuery(RepositoryDAORdbImpl.CHECK_BRANCH_IN_REPOSITORY_HQL);
@@ -506,14 +528,15 @@ public class CommitDAORdbImpl implements CommitDAO {
                   .setBranch(ModelDBConstants.MASTER_BRANCH)
                   .setCommitSha(parentDatasetVersion.getCommit_hash())
                   .build(),
-              false);
+              false,
+              RepositoryEnums.RepositoryTypeEnum.DATASET);
         }
 
         session.beginTransaction();
         if (!commitEntity.getChild_commits().isEmpty()) {
           CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
           String updateChildEntity =
-              "UPDATE commit_parent cp SET cp.parent_hash = :parentHash WHERE cp.child_hash = :childHash";
+              "UPDATE commit_parent SET parent_hash = :parentHash WHERE child_hash = :childHash";
           Query updateChildQuery = session.createSQLQuery(updateChildEntity);
           updateChildQuery.setParameter("parentHash", parentDatasetVersion.getCommit_hash());
           updateChildQuery.setParameter("childHash", childCommit.getCommit_hash());
@@ -570,7 +593,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
 
       RepositoryEntity repositoryEntity =
-          repositoryDAO.getRepositoryById(session, repositoryIdentification, true, true);
+          repositoryDAO.getRepositoryById(
+              session,
+              repositoryIdentification,
+              true,
+              true,
+              RepositoryEnums.RepositoryTypeEnum.REGULAR);
 
       String getBranchByCommitHQLBuilder =
           "FROM "

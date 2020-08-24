@@ -1,13 +1,22 @@
 import json
-import tarfile
+import os
+import pickle
+import zipfile
 
 import pytest
 from click.testing import CliRunner
 
 from verta import Client
 from verta._cli import cli
+from verta._cli.registry.update import add_attributes
 from verta._registry import RegisteredModel
-import os
+from verta._internal_utils import _utils
+from verta.environment import Python
+from verta.utils import ModelAPI
+from verta.endpoint.update._strategies import DirectUpdateStrategy
+
+
+from ..utils import delete_organization, sys_path_manager
 
 
 
@@ -28,7 +37,9 @@ class TestCreate:
 
         created_registered_models.append(registered_model)
 
-    def test_create_version(self, registered_model, in_tempdir):
+    def test_create_version(self, registered_model, in_tempdir, requirements_file):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+
         model_name = registered_model.name
         version_name = "my version"
 
@@ -38,43 +49,41 @@ class TestCreate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2**16)
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
-
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         result = runner.invoke(
             cli,
             ['registry', 'create', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2',
-             "--artifact", "file={}".format(filename), "--model", classifier_name],
+             "--artifact", "file={}".format(filename), "--model", classifier_name, "--requirements", requirements_file.name],
         )
         assert not result.exception
 
         model_version = registered_model.get_version(name=version_name)
         assert model_version.name in result.output
-        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS
+        assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
-        assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS
+        assert model_version.get_model().get_params() == classifier.get_params()
+
+        # Check environment:
+        reqs = Python.read_pip_file(requirements_file.name)
+        env = Python(requirements=reqs)
+        assert repr(env) == str(model_version.get_environment())
 
     def test_create_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name
-        version_name = "my version"
 
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2 ** 16)
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
 
-        classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2 ** 16)
-        with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
-
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name,
+            ['registry', 'create', 'registeredmodelversion', model_name, "my version",
              "--artifact", "model={}".format(filename)],
         )
         assert result.exception
@@ -82,24 +91,11 @@ class TestCreate:
 
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name,
+            ['registry', 'create', 'registeredmodelversion', model_name, "my version 2",
              "--artifact", "file={}".format(filename), "--artifact", "file={}".format(filename)],
         )
         assert result.exception
         assert "cannot have duplicate artifact keys" in result.output
-
-        runner.invoke(
-            cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact",
-             "file={}".format(filename)],
-        )
-        result = runner.invoke(
-            cli,
-            ['registry', 'create', 'registeredmodelversion', model_name, version_name, "--artifact",
-             "file={}".format(filename)],
-        )
-        assert result.exception
-        assert "key \"file\" already exists" in result.output
 
     def test_create_version_wrong_model_name(self, strs):
         version_name = "my version"
@@ -113,7 +109,6 @@ class TestCreate:
         assert result.exception
         assert result.output.strip().endswith("not found")
 
-    @pytest.mark.skip(reason="bug in dev")
     def test_create_version_from_run(self, experiment_run, model_for_deployment, registered_model):
         np = pytest.importorskip("numpy")
         model_name = registered_model.name
@@ -184,6 +179,84 @@ class TestCreate:
         )
         assert result.exception
         assert error_message in result.output
+
+    def test_create_workspace_config(self, client, organization, in_tempdir):
+        model_name = _utils.generate_default_name()
+        version_name = _utils.generate_default_name()
+
+        client_config = {
+            "workspace": organization.name
+        }
+
+        filepath = "verta_config.json"
+        with open(filepath, "w") as f:
+            json.dump(client_config, f)
+
+        runner = CliRunner()
+        runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodel', model_name],
+        )
+
+        client = Client()
+        model = client.get_registered_model(model_name)
+        assert model.workspace == organization.name
+
+    def test_create_version_with_custom_modules(self, client, registered_model, created_endpoints):
+        torch = pytest.importorskip("torch")
+        np = pytest.importorskip("numpy")
+
+        model_name = registered_model.name
+        version_name = "my version"
+
+        with sys_path_manager() as sys_path:
+            sys_path.append(".")
+
+            from models.nets import FullyConnected
+            train_data = torch.rand((2, 4))
+
+            model_path = "classifier.pkl"
+            classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
+
+            with open(model_path, "wb") as f:
+                pickle.dump(classifier, f)
+
+            requirements_path = "requirements.txt"
+            with open(requirements_path, "w") as f:
+                f.write("torch==1.0.0")
+
+            runner = CliRunner()
+            result = runner.invoke(
+                cli,
+                ['registry', 'create', 'registeredmodelversion', model_name, version_name,
+                 "--model", model_path, "--custom-module", "models/", "--requirements",
+                 requirements_path],
+            )
+            assert not result.exception
+
+            os.remove(model_path)
+            os.remove(requirements_path)
+
+            # TODO: consolidate these in the command above
+            model_version = registered_model.get_version(name=version_name)
+
+            # Log model api:
+            model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
+            model_api["model_packaging"] = {
+                "deserialization": "cloudpickle",
+                "type": "torch",
+                "python_version": "2.7.17"
+            }
+            model_version.log_artifact("model_api.json", model_api, True, "json")
+
+            path = _utils.generate_default_name()
+            endpoint = client.set_endpoint(path)
+            created_endpoints.append(endpoint)
+            endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+
+            test_data = torch.rand((4, 4))
+            prediction = torch.tensor(endpoint.get_deployed_model().predict(test_data.tolist()))
+            assert torch.all(classifier(test_data).eq(prediction))
 
 
 class TestGet:
@@ -288,8 +361,8 @@ class TestList:
         )
 
         assert not result.exception
-        assert str(model1._msg.name) in result.output
-        assert str(model._msg.name) in result.output
+        assert model1.name in result.output
+        assert model.name in result.output
 
         result = runner.invoke(
             cli,
@@ -297,11 +370,10 @@ class TestList:
         )
 
         assert not result.exception
-        assert str(model1._msg.name) in result.output
-        assert str(model._msg.name) in result.output
-        assert str(model2._msg.name) in result.output
+        assert model1.name in result.output
+        assert model.name in result.output
+        assert model2.name in result.output
 
-    @pytest.mark.skip(reason="bug in dev")
     def test_list_version(self, created_registered_models):
         client = Client()
         runner = CliRunner()
@@ -350,6 +422,7 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1', '-l', 'label2'],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
         result = runner.invoke(
@@ -357,6 +430,7 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
         result = runner.invoke(
@@ -364,10 +438,13 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodel', model_name, '-l', 'label1'],
         )
         assert not result.exception
+        registered_model._fetch_with_no_cache() # invalidate cache
         assert registered_model.get_labels() == ["label1", "label2"]
 
 
-    def test_update_version(self, registered_model, in_tempdir):
+    def test_update_version(self, registered_model, in_tempdir, requirements_file):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+
         model_name = registered_model.name
         version_name = "my version"
         registered_model.get_or_create_version(version_name)
@@ -378,22 +455,28 @@ class TestUpdate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2**16)
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
-
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'update', 'registeredmodelversion', model_name, version_name, '-l', 'label1', '-l', 'label2', "--artifact", "file={}".format(filename), "--model", classifier_name],
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name,
+             '-l', 'label1', '-l', 'label2', "--artifact", "file={}".format(filename),
+             "--model", classifier_name, "--requirements", requirements_file.name],
         )
         assert not result.exception
 
         model_version = registered_model.get_version(name=version_name)
-        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS
+        assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
-        assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS
+        assert model_version.get_model().get_params() == classifier.get_params()
+
+        # Check environment:
+        reqs = Python.read_pip_file(requirements_file.name)
+        env = Python(requirements=reqs)
+        assert repr(env) == str(model_version.get_environment())
 
     def test_update_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name
@@ -404,11 +487,6 @@ class TestUpdate:
         FILE_CONTENTS = os.urandom(2**16)
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
-
-        classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2**16)
-        with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -437,13 +515,15 @@ class TestUpdate:
         assert "key \"file\" already exists" in result.output
 
     def test_model_already_logged_error(self, registered_model, in_tempdir):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+
         model_name = registered_model.name
         version_name = "my version"
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2**16)
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         runner.invoke(
@@ -458,8 +538,9 @@ class TestUpdate:
         assert result.exception
         assert "a model has already been associated with the version" in result.output
 
-    def test_overwrite(self, registered_model, in_tempdir, created_registered_models):
-        created_registered_models.append(registered_model)
+    def test_overwrite(self, registered_model, in_tempdir):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+
         model_name = registered_model.name
         version_name = "my version"
         registered_model.get_or_create_version(version_name)
@@ -470,9 +551,9 @@ class TestUpdate:
             f.write(FILE_CONTENTS)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS = os.urandom(2**16)
+        classifier = LogisticRegression()
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS)
+            pickle.dump(classifier, f)
 
         runner = CliRunner()
         runner.invoke(
@@ -490,12 +571,9 @@ class TestUpdate:
             f.write(FILE_CONTENTS_2)
 
         classifier_name = "tiny2.pth"
-        CLASSIFIER_CONTENTS_2 = os.urandom(2**16)
-        while CLASSIFIER_CONTENTS_2 == CLASSIFIER_CONTENTS:
-            CLASSIFIER_CONTENTS_2 = os.urandom(2 ** 16)
-
+        classifier2 = LogisticRegression(C=0.1)
         with open(classifier_name, 'wb') as f:
-            f.write(CLASSIFIER_CONTENTS_2)
+            pickle.dump(classifier2, f)
 
         result = runner.invoke(
             cli,
@@ -505,34 +583,62 @@ class TestUpdate:
 
         # Check that the model and artifact are updated:
         model_version = registered_model.get_version(name=version_name)
-        assert model_version.get_artifact("file").getvalue() != FILE_CONTENTS
-        assert model_version.get_artifact("file").getvalue() == FILE_CONTENTS_2
-        assert model_version.get_model().getvalue() != CLASSIFIER_CONTENTS
-        assert model_version.get_model().getvalue() == CLASSIFIER_CONTENTS_2
+        assert model_version.get_artifact("file").read() != FILE_CONTENTS
+        assert model_version.get_artifact("file").read() == FILE_CONTENTS_2
+        assert model_version.get_model().get_params() != classifier
+        assert model_version.get_model().get_params() == classifier2.get_params()
 
-@pytest.mark.skip(reason="pending backend")
-class TestDownload:
-    def test_download_context(self, experiment_run, model_for_deployment, registered_model, created_registered_models):
-        np = pytest.importorskip("numpy")
+    def test_update_with_no_custom_modules(self, registered_model, in_tempdir):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+
         model_name = registered_model.name
-        version_name = "my-version"
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        version_name = "my version"
+        registered_model.get_or_create_version(version_name)
 
-        artifact = np.random.random((36, 12))
-        experiment_run.log_artifact("some-artifact", artifact)
-        model_version = registered_model.create_version_from_run(experiment_run.id, version_name)
+        classifier_name = "tiny2.pth"
+        CLASSIFIER_CONTENTS = pickle.dumps(LogisticRegression())
+        with open(classifier_name, 'wb') as f:
+            f.write(CLASSIFIER_CONTENTS)
 
-        download_to_path = "context_cli.tgz"
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'download', 'dockercontext', model_name, version_name, '--output', download_to_path],
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name, "--model", classifier_name, "--no-custom-modules"],
         )
         assert not result.exception
 
-        # can be loaded as tgz
-        with tarfile.open(download_to_path, 'r:gz') as f:
-            filepaths = set(f.getnames())
+        custom_module_filenames = {"__init__.py", "_verta_config.py"}
+        model_version = registered_model.get_version(name=version_name)
+        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
-        assert "Dockerfile" in filepaths
+
+@pytest.mark.parametrize(("key", "value", "arg"), (
+    ["num", 3.6, ["num=3.6"]], ["str", '3.6', ['str="3.6"']],
+    ["dict", {"a": 1, "b": 2}, ['dict={"a": 1, "b": 2}']]))
+def test_add_attributes(key, value, arg):
+    class TestModelVersion:
+        def add_attribute(self, key, value0, overwrite):
+            assert value == value0
+
+        def _get_attribute_keys(self):
+            return [key]
+
+    model_version = TestModelVersion()
+    add_attributes(model_version, arg, True)
+
+
+def test_multiple_attributes():
+    call_number = [0]
+    values = [3.6, {"a": 1, "b": 2}]
+
+    class TestModelVersion:
+        def add_attribute(self, key, value0, overwrite):
+            assert values[call_number[0]] == value0
+            call_number[0] += 1
+
+        def _get_attribute_keys(self):
+            return ["numl", "dict"]
+
+    model_version = TestModelVersion()
+    add_attributes(model_version, ["num=3.6", 'dict={"a": 1, "b": 2}'], True)

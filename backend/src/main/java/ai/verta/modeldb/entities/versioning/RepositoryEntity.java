@@ -177,7 +177,6 @@ public class RepositoryEntity {
     final Builder builder = Repository.newBuilder().setId(this.id);
     builder
         .setName(this.name)
-        .setDescription(this.description)
         .setDateCreated(this.date_created)
         .setDateUpdated(this.date_updated)
         .setWorkspaceId(this.workspace_id)
@@ -189,6 +188,9 @@ public class RepositoryEntity {
     }
     if (owner != null) {
       builder.setOwner(owner);
+    }
+    if (description != null) {
+      builder.setDescription(description);
     }
     return builder.build();
   }

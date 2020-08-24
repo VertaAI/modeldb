@@ -20,6 +20,7 @@ import zipfile
 
 import requests
 import yaml
+from verta._tracking.organization import Organization
 
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -47,6 +48,7 @@ from ._repository import commit as commit_module
 from . import deployment
 from . import utils
 
+from ._tracking import entity
 from ._tracking import (
     _Context,
     Project,
@@ -63,26 +65,10 @@ from ._registry import (
     RegisteredModelVersion,
     RegisteredModelVersions,
 )
+from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
-from ._deployment import (
-    Endpoint,
-    Endpoints,
-)
-
-
-_OSS_DEFAULT_WORKSPACE = "personal"
-
-# for ExperimentRun._log_modules()
-_CUSTOM_MODULES_DIR = "/app/custom_modules/"  # location in DeploymentService model container
-
-# for ExperimentRun.log_model()
-_MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
-
-_CACHE_DIR = os.path.join(
-    os.path.expanduser("~"),
-    ".verta",
-    "cache",
-)
+from .endpoint._endpoint import Endpoint
+from .endpoint._endpoints import Endpoints
 
 
 class Client(object):
@@ -90,10 +76,10 @@ class Client(object):
     Object for interfacing with the ModelDB backend.
 
     .. deprecated:: 0.12.0
-       The `port` parameter will removed in v0.15.0; please combine `port` with the first parameter,
+       The `port` parameter will removed in v0.16.0; please combine `port` with the first parameter,
        e.g. `Client("localhost:8080")`.
     .. deprecated:: 0.13.3
-       The `expt_runs` attribute will removed in v0.15.0; consider using `proj.expt_runs` and
+       The `expt_runs` attribute will removed in v0.16.0; consider using `proj.expt_runs` and
        `expt.expt_runs` instead.
 
     This class provides functionality for starting/resuming Projects, Experiments, and Experiment Runs.
@@ -131,9 +117,9 @@ class Client(object):
     debug : bool
         Whether to print extra verbose information to aid in debugging. Changes to this value propagate
         to any objects that are/were created from this Client.
-    proj : :class:`Project` or None
+    proj : :class:`~verta._tracking.project.Project` or None
         Currently active Project.
-    expt : :class:`Experiment` or None
+    expt : :class:`~verta._tracking.experiment.Experiment` or None
         Currently active Experiment.
 
     """
@@ -214,10 +200,6 @@ class Client(object):
         return self._ctx.proj
 
     @property
-    def registered_model(self):
-        return self._ctx.registered_model
-
-    @property
     def expt(self):
         return self._ctx.expt
 
@@ -287,7 +269,7 @@ class Client(object):
                     pass
                 else:
                     _utils.raise_for_http_error(response)
-        return _OSS_DEFAULT_WORKSPACE
+        return entity._OSS_DEFAULT_WORKSPACE
 
     def _load_config(self):
         with _config_utils.read_merged_config() as config:
@@ -301,6 +283,24 @@ class Client(object):
         return var or None
 
     def get_project(self, name=None, workspace=None, id=None):
+        """
+        Retrieves an already created Project. Only one of `name` or `id` can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Project.
+        workspace : str, optional
+            Workspace under which the Project with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        id : str, optional
+            ID of the Project. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~verta._tracking.project.Project`
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -354,7 +354,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Project`
+        :class:`~verta._tracking.project.Project`
 
         Raises
         ------
@@ -377,11 +377,26 @@ class Client(object):
         else:
             self._ctx.proj = Project._get_or_create_by_name(self._conn, name,
                                                         lambda name: Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                        lambda name: Project._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
+                                                        lambda name: Project._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
 
         return self._ctx.proj
 
     def get_experiment(self, name=None, id=None):
+        """
+        Retrieves an already created Experiment. Only one of `name` or `id` can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Experiment.
+        id : str, optional
+            ID of the Experiment. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~verta._tracking.experiment.Experiment`
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -427,7 +442,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Experiment`
+        :class:`~verta._tracking.experiment.Experiment`
 
         Raises
         ------
@@ -451,11 +466,26 @@ class Client(object):
 
             self._ctx.expt = Experiment._get_or_create_by_name(self._conn, name,
                                                             lambda name: Experiment._get_by_name(self._conn, self._conf, name, self._ctx.proj.id),
-                                                            lambda name: Experiment._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs))
+                                                            lambda name: Experiment._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs))
 
         return self._ctx.expt
 
     def get_experiment_run(self, name=None, id=None):
+        """
+        Retrieves an already created Experiment Run. Only one of `name` or `id` can be provided.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Experiment Run.
+        id : str, optional
+            ID of the Experiment Run. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
+
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -500,7 +530,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         Raises
         ------
@@ -522,7 +552,7 @@ class Client(object):
 
             self._ctx.expt_run = ExperimentRun._get_or_create_by_name(self._conn, name,
                                                                     lambda name: ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id),
-                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created))
+                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created))
 
         return self._ctx.expt_run
 
@@ -562,7 +592,7 @@ class Client(object):
                 workspace_str = "workspace {}".format(workspace)
 
             try:
-                repo = _repository.Repository._create(self._conn, name, workspace)
+                repo = _repository.Repository._create(self._conn, name=name, workspace=workspace)
             except requests.HTTPError as e:
                 if e.response.status_code == 403:  # cannot create in other workspace
                     repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
@@ -619,7 +649,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         Raises
         ------
@@ -664,7 +694,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
         """
         return _dataset.Dataset(self._conn, self._conf, name=name, _dataset_id=id)
 
@@ -695,7 +725,7 @@ class Client(object):
 
         Returns
         -------
-        list of :class:`Dataset`
+        list of :class:`~verta._dataset.Dataset`
 
         """
         datasets = Datasets(self._conn, self._conf)
@@ -733,7 +763,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`DatasetVersion`
+        :class:`~verta._dataset.DatasetVersion`
         """
         return _dataset.DatasetVersion(self._conn, self._conf, _dataset_version_id=id)
 
@@ -823,14 +853,13 @@ class Client(object):
         self._ctx.workspace_name = workspace
 
         if id is not None:
-            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
-            self._ctx.populate()
+            registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
         else:
-            self._ctx.registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
+            registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
                                                                                 lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                                                lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=labels, public_within_org=public_within_org))
+                                                                                lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org))
 
-        return self._ctx.registered_model
+        return registered_model
 
     def get_registered_model(self, name=None, workspace=None, id=None):
         """
@@ -861,15 +890,14 @@ class Client(object):
         self._ctx.workspace_name = workspace
 
         if id is not None:
-            self._ctx.registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
-            self._ctx.populate()
+            registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
         else:
-            self._ctx.registered_model = RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+            registered_model =  RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
 
-        if self._ctx.registered_model is None:
+        if registered_model is None:
             raise ValueError("Registered model not found")
 
-        return self._ctx.registered_model
+        return registered_model
 
     def set_registered_model(self, *args, **kwargs):
         """
@@ -878,32 +906,20 @@ class Client(object):
         """
         return self.get_or_create_registered_model(*args, **kwargs)
 
-    def get_registered_model_version(self, name=None, id=None):
+    def get_registered_model_version(self, id):
         """
-        Retrieve an already created Model Version. Only one of name or id can be provided.
+        Retrieve an already created Model Version.
 
         Parameters
         ----------
-        name : str, optional
-            Name of the Model Version.
-        id : str, optional
-            ID of the Model Version. This parameter cannot be provided alongside `name`.
+        id : str
+            ID of the Model Version.
 
         Returns
         -------
-        :class:`~verta._registry.modelversion.ModelVersion`
+        :class:`~verta._registry.modelversion.RegisteredModelVersion`
         """
-        if id is not None:
-            # TODO: Support registered_model in populate
-            model_version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
-            self.get_registered_model(id=model_version.registered_model_id)
-        else:
-            if self._ctx.registered_model is None:
-                self.set_registered_model()
-
-            model_version = RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self._ctx.registered_model.id)
-
-        return model_version
+        return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
 
     @property
     def registered_models(self):
@@ -936,7 +952,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._deployment.Endpoint`
+        :class:`~verta.endpoint._endpoint.Endpoint`
 
         Raises
         ------
@@ -962,6 +978,23 @@ class Client(object):
 
 
     def get_endpoint(self, path=None, workspace=None, id=None):
+        """
+        Retrieves an already created Endpoint. Only one of `path` or `id` can be provided.
+
+        Parameters
+        ----------
+        path : str, optional
+            Path of the Endpoint.
+        workspace : str, optional
+            Name of the workspace of the Endpoint.
+        id : str, optional
+            ID of the Endpoint. This parameter cannot be provided alongside `path`.
+
+        Returns
+        -------
+        :class:`~verta.endpoint._endpoint.Endpoint`
+
+        """
         if path is not None and id is not None:
             raise ValueError("cannot specify both `path` and `id`")
         if path is None and id is None:
@@ -981,6 +1014,10 @@ class Client(object):
         return endpoint
 
     def set_endpoint(self, *args, **kwargs):
+        """
+        Alias for :meth:`Client.get_or_create_endpoint()`.
+
+        """
         return self.get_or_create_endpoint(*args, **kwargs)
 
     def create_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
@@ -1010,7 +1047,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.Project`
+        :class:`~verta._tracking.project.Project`
 
         Raises
         ------
@@ -1023,7 +1060,7 @@ class Client(object):
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
-        self._ctx.proj = Project._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs,
+        self._ctx.proj = Project._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs,
                         public_within_org=public_within_org)
         return self._ctx.proj
 
@@ -1046,7 +1083,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.Experiment`
+        :class:`~verta._tracking.experiment.Experiment`
 
         Raises
         ------
@@ -1061,7 +1098,7 @@ class Client(object):
         if self._ctx.proj is None:
             self.set_project()
 
-        self._ctx.expt = Experiment._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs)
+        self._ctx.expt = Experiment._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs)
 
         return self._ctx.expt
 
@@ -1086,7 +1123,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         Raises
         ------
@@ -1099,7 +1136,7 @@ class Client(object):
         if self._ctx.expt is None:
             self.set_experiment()
 
-        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=tags, attrs=attrs, date_created=date_created)
+        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created)
 
         return self._ctx.expt_run
 
@@ -1144,7 +1181,7 @@ class Client(object):
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
 
-        self._ctx.registered_model = RegisteredModel._create(self._conn, self._conf, self._ctx, name, desc=desc, tags=labels, public_within_org=public_within_org)
+        self._ctx.registered_model = RegisteredModel._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org)
 
         return self._ctx.registered_model
 
@@ -1187,26 +1224,215 @@ class Client(object):
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
-    def get_or_create_dataset2(self):
-        # TODO: when MVP, remove '2'
-        raise NotImplementedError
+    def download_endpoint_manifest(
+            self, download_to_path, path, name, strategy,
+            resources=None, autoscaling=None, env_vars=None,
+            workspace=None):
+        """
+        Downloads this endpoint's Kubernetes manifest YAML.
 
-    def set_dataset2(self, *args, **kwargs):
-        # TODO: when MVP, remove '2'
-        return self.get_or_create_dataset2(*args, **kwargs)
+        Parameters
+        ----------
+        download_to_path : str
+            Local path to download manifest YAML to.
+        path : str
+            Path of the endpoint.
+        name : str
+            Name of the endpoint.
+        strategy : :ref:`update strategy <update-stategies>`
+            Strategy (direct or canary) for updating the endpoint.
+        resources : :class:`~verta.endpoint.resources.Resources`, optional
+            Resources allowed for the updated endpoint.
+        autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
+            Autoscaling condition for the updated endpoint.
+        env_vars : dict of str to str, optional
+            Environment variables.
+        workspace : str, optional
+            Workspace for the endpoint. If not provided, the current user's
+            personal workspace will be used.
 
-    def create_dataset2(self):
-        # TODO: when MVP, remove '2'
-        raise NotImplementedError
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where deployment YAML was downloaded to. Matches `download_to_path`.
 
-    def get_dataset2(self):
+        """
+        if not path.startswith('/'):
+            path = '/' + path
+
+        data = {
+            'endpoint': {'path': path},
+            'name': name,
+            'update': Endpoint._create_update_body(strategy, resources, autoscaling, env_vars),
+            'workspace_name': workspace or self._get_personal_workspace(),
+        }
+
+        endpoint = "{}://{}/api/v1/deployment/operations/manifest".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        with _utils.make_request("POST", endpoint, self._conn, json=data, stream=True) as response:
+            _utils.raise_for_http_error(response)
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
+
+    def _get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, id=None):
+        """
+        Gets or creates a Dataset.
+
+        If an accessible Dataset with name `name` does not already exist, it will be created
+        and initialized with specified metadata parameters. If such a Dataset does already exist,
+        it will be retrieved; specifying metadata parameters in this case will raise an exception.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Dataset. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Dataset.
+        tags : list of str, optional
+            Tags of the Dataset.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Dataset.
+        workspace : str, optional
+            Workspace under which the Dataset with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating a Dataset in an organization's workspace, whether to make this Dataset
+            accessible to all members of that organization.
+        id : str, optional
+            ID of the Dataset. This parameter cannot be provided alongside `name`, and other
+            parameters will be ignored.
+
+        Returns
+        -------
+        :class:`~verta._dataset.Dataset`
+
+        Raises
+        ------
+        ValueError
+            If a Dataset with `name` already exists, but metadata parameters are passed in.
+
+        """
         # TODO: when MVP, remove '2'
-        raise NotImplementedError
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        name = self._set_from_config_if_none(name, "dataset")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+
+        if id is not None:
+            dataset = Dataset._get_by_id(self._conn, self._conf, id)
+        else:
+            dataset = Dataset._get_or_create_by_name(self._conn, name,
+                                                        lambda name: Dataset._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
+                                                        lambda name: Dataset._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org))
+
+        return dataset
+
+    def _set_dataset2(self, *args, **kwargs):
+        """
+        Alias for :meth:`Client.get_or_create_dataset2()`.
+
+        """
+        # TODO: when MVP, remove '2'
+        return self._get_or_create_dataset2(*args, **kwargs)
+
+    def _create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None):
+        """
+        Creates a Dataset, initialized with specified metadata parameters.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Dataset. If no name is provided, one will be generated.
+        desc : str, optional
+            Description of the Dataset.
+        tags : list of str, optional
+            Tags of the Dataset.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the Dataset.
+        workspace : str, optional
+            Workspace under which the Dataset with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating a Dataset in an organization's workspace, whether to make this Dataset
+            accessible to all members of that organization.
+
+        Returns
+        -------
+        :class:`~verta._dataset.Dataset`
+
+        Raises
+        ------
+        ValueError
+            If a Dataset with `name` already exists.
+
+        """
+        # TODO: when MVP, remove '2'
+        name = self._set_from_config_if_none(name, "dataset")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+        return Dataset._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs,
+                               time_created=time_created, public_within_org=public_within_org)
+
+    def _get_dataset2(self, name=None, workspace=None, id=None):
+        """
+        Gets a Dataset.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the Dataset. This parameter cannot be provided alongside `id`.
+        workspace : str, optional
+            Workspace under which the Dataset with name `name` exists. If not provided, the current
+            user's personal workspace will be used.
+        id : str, optional
+            ID of the Dataset. This parameter cannot be provided alongside `name`.
+
+        Returns
+        -------
+        :class:`~verta._dataset.Dataset`
+
+        """
+        # TODO: when MVP, remove '2'
+        if name is not None and id is not None:
+            raise ValueError("cannot specify both `name` and `id`")
+
+        name = self._set_from_config_if_none(name, "project")
+        if name is None and id is None:
+            raise ValueError("must specify either `name` or `id`")
+        workspace = self._set_from_config_if_none(workspace, "workspace")
+
+        self._ctx = _Context(self._conn, self._conf)
+        self._ctx.workspace_name = workspace
+
+        if id is not None:
+            dataset = Dataset._get_by_id(self._conn, self._conf, id)
+        else:
+            dataset = Dataset._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+
+        if dataset is None:
+            raise ValueError("Dataset not found")
+        return dataset
 
     @property
-    def datasets(self):
+    def _datasets(self):
         raise NotImplementedError
 
-    def get_dataset_version2(self):
+    def _get_dataset_version2(self, id):
         # TODO: when MVP, remove '2'
         raise NotImplementedError
+
+    def _create_organization(self, name, desc=None, collaborator_type=None, global_can_deploy=None):
+        return Organization._create(self._conn, name, desc, collaborator_type, global_can_deploy)
+
+    def _get_organization(self, name):
+        return Organization._get_by_name(self._conn, name)

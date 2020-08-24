@@ -9,6 +9,7 @@ import requests
 import pytest
 
 from verta._registry import RegisteredModels
+from verta._tracking.deployable_entity import _CACHE_DIR
 from . import utils
 
 import verta
@@ -179,22 +180,22 @@ class TestEntities:
 
         for entity in entities:
             filename = strs[0]
-            filepath = os.path.join(verta.client._CACHE_DIR, filename)
+            filepath = os.path.join(_CACHE_DIR, filename)
             contents = six.ensure_binary(strs[1])
 
             assert not os.path.isfile(filepath)
-            assert not entity._get_cached(filename)
+            assert not entity._get_cached_file(filename)
 
             try:
-                assert entity._cache(filename, contents) == filepath
+                assert entity._cache_file(filename, contents) == filepath
 
                 assert os.path.isfile(filepath)
-                assert entity._get_cached(filename)
+                assert entity._get_cached_file(filename)
 
                 with open(filepath, 'rb') as f:
                     assert f.read() == contents
             finally:
-                shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+                shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
 
 class TestProject:

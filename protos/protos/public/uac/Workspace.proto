@@ -20,6 +20,10 @@ message Workspace {
         string user_id = 2;
         string org_id = 3;
     }
+    oneof name {
+      string username = 4;
+      string org_name = 5;
+    }
 }
 
 service WorkspaceService {

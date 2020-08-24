@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x13uac/Workspace.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\"\x1e\n\x10GetWorkspaceById\x12\n\n\x02id\x18\x01 \x01(\x04\"\"\n\x12GetWorkspaceByName\x12\x0c\n\x04name\x18\x01 \x01(\t\"K\n\tWorkspace\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x11\n\x07user_id\x18\x02 \x01(\tH\x00\x12\x10\n\x06org_id\x18\x03 \x01(\tH\x00\x42\r\n\x0binternal_id2\x82\x02\n\x10WorkspaceService\x12s\n\x10getWorkspaceById\x12\x1e.ai.verta.uac.GetWorkspaceById\x1a\x17.ai.verta.uac.Workspace\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/workspace/getWorkspaceById\x12y\n\x12getWorkspaceByName\x12 .ai.verta.uac.GetWorkspaceByName\x1a\x17.ai.verta.uac.Workspace\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/workspace/getWorkspaceByNameB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x13uac/Workspace.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\"\x1e\n\x10GetWorkspaceById\x12\n\n\x02id\x18\x01 \x01(\x04\"\"\n\x12GetWorkspaceByName\x12\x0c\n\x04name\x18\x01 \x01(\t\"{\n\tWorkspace\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x11\n\x07user_id\x18\x02 \x01(\tH\x00\x12\x10\n\x06org_id\x18\x03 \x01(\tH\x00\x12\x12\n\x08username\x18\x04 \x01(\tH\x01\x12\x12\n\x08org_name\x18\x05 \x01(\tH\x01\x42\r\n\x0binternal_idB\x06\n\x04name2\x82\x02\n\x10WorkspaceService\x12s\n\x10getWorkspaceById\x12\x1e.ai.verta.uac.GetWorkspaceById\x1a\x17.ai.verta.uac.Workspace\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/workspace/getWorkspaceById\x12y\n\x12getWorkspaceByName\x12 .ai.verta.uac.GetWorkspaceByName\x1a\x17.ai.verta.uac.Workspace\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/workspace/getWorkspaceByNameB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,])
 
@@ -116,6 +116,20 @@ _WORKSPACE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='username', full_name='ai.verta.uac.Workspace.username', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='org_name', full_name='ai.verta.uac.Workspace.org_name', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -130,9 +144,12 @@ _WORKSPACE = _descriptor.Descriptor(
     _descriptor.OneofDescriptor(
       name='internal_id', full_name='ai.verta.uac.Workspace.internal_id',
       index=0, containing_type=None, fields=[]),
+    _descriptor.OneofDescriptor(
+      name='name', full_name='ai.verta.uac.Workspace.name',
+      index=1, containing_type=None, fields=[]),
   ],
   serialized_start=135,
-  serialized_end=210,
+  serialized_end=258,
 )
 
 _WORKSPACE.oneofs_by_name['internal_id'].fields.append(
@@ -141,6 +158,12 @@ _WORKSPACE.fields_by_name['user_id'].containing_oneof = _WORKSPACE.oneofs_by_nam
 _WORKSPACE.oneofs_by_name['internal_id'].fields.append(
   _WORKSPACE.fields_by_name['org_id'])
 _WORKSPACE.fields_by_name['org_id'].containing_oneof = _WORKSPACE.oneofs_by_name['internal_id']
+_WORKSPACE.oneofs_by_name['name'].fields.append(
+  _WORKSPACE.fields_by_name['username'])
+_WORKSPACE.fields_by_name['username'].containing_oneof = _WORKSPACE.oneofs_by_name['name']
+_WORKSPACE.oneofs_by_name['name'].fields.append(
+  _WORKSPACE.fields_by_name['org_name'])
+_WORKSPACE.fields_by_name['org_name'].containing_oneof = _WORKSPACE.oneofs_by_name['name']
 DESCRIPTOR.message_types_by_name['GetWorkspaceById'] = _GETWORKSPACEBYID
 DESCRIPTOR.message_types_by_name['GetWorkspaceByName'] = _GETWORKSPACEBYNAME
 DESCRIPTOR.message_types_by_name['Workspace'] = _WORKSPACE
@@ -176,8 +199,8 @@ _WORKSPACESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=213,
-  serialized_end=471,
+  serialized_start=261,
+  serialized_end=519,
   methods=[
   _descriptor.MethodDescriptor(
     name='getWorkspaceById',

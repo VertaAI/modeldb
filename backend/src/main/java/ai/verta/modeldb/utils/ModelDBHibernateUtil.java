@@ -210,6 +210,9 @@ public class ModelDBHibernateUtil {
         System.getProperties()
             .put("liquibase.databaseChangeLogLockTableName", "database_change_log_lock");
 
+        // Initialize background utils count
+        ModelDBUtils.initializeBackgroundUtilsCount();
+
         // Hibernate settings equivalent to hibernate.cfg.xml's properties
         Configuration configuration = new Configuration();
 

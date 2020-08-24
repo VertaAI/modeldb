@@ -43,16 +43,13 @@ class DatasetServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def DatasetService_deleteDataset(body: ModeldbDeleteDataset)(implicit ec: ExecutionContext): Try[ModeldbDeleteDatasetResponse] = Await.result(DatasetService_deleteDatasetAsync(body), Duration.Inf)
 
-  def DatasetService_deleteDatasetAttributesAsync(attribute_keys: Option[List[String]]=None, delete_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteDatasetAttributesResponse]] = {
+  def DatasetService_deleteDatasetAttributesAsync(body: ModeldbDeleteDatasetAttributes)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteDatasetAttributesResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
-    if (id.isDefined) __query.update("id", client.toQuery(id.get))
-    if (attribute_keys.isDefined) __query.update("attribute_keys", client.toQuery(attribute_keys.get))
-    if (delete_all.isDefined) __query.update("delete_all", client.toQuery(delete_all.get))
-    val body: String = null
-    return client.request[String, ModeldbDeleteDatasetAttributesResponse]("DELETE", basePath + s"/dataset/deleteDatasetAttributes", __query.toMap, body, ModeldbDeleteDatasetAttributesResponse.fromJson)
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbDeleteDatasetAttributes, ModeldbDeleteDatasetAttributesResponse]("DELETE", basePath + s"/dataset/deleteDatasetAttributes", __query.toMap, body, ModeldbDeleteDatasetAttributesResponse.fromJson)
   }
 
-  def DatasetService_deleteDatasetAttributes(attribute_keys: Option[List[String]]=None, delete_all: Option[Boolean]=None, id: Option[String]=None)(implicit ec: ExecutionContext): Try[ModeldbDeleteDatasetAttributesResponse] = Await.result(DatasetService_deleteDatasetAttributesAsync(attribute_keys, delete_all, id), Duration.Inf)
+  def DatasetService_deleteDatasetAttributes(body: ModeldbDeleteDatasetAttributes)(implicit ec: ExecutionContext): Try[ModeldbDeleteDatasetAttributesResponse] = Await.result(DatasetService_deleteDatasetAttributesAsync(body), Duration.Inf)
 
   def DatasetService_deleteDatasetTagsAsync(body: ModeldbDeleteDatasetTags)(implicit ec: ExecutionContext): Future[Try[ModeldbDeleteDatasetTagsResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]

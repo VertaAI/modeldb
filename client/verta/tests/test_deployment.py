@@ -17,6 +17,7 @@ import requests
 import yaml
 
 import verta
+from verta._tracking.deployable_entity import _CACHE_DIR
 from verta._internal_utils import _histogram_utils
 from verta._internal_utils import _utils
 
@@ -209,6 +210,7 @@ class TestLogModel:
 
 class TestFetchArtifacts:
     def test_fetch_artifacts(self, experiment_run, strs, flat_dicts):
+        strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
         for key, artifact in zip(strs, flat_dicts):
             experiment_run.log_artifact(key, artifact)
 
@@ -216,7 +218,7 @@ class TestFetchArtifacts:
             artifacts = experiment_run.fetch_artifacts(strs)
 
             assert set(six.viewkeys(artifacts)) == set(strs)
-            assert all(filepath.startswith(verta.client._CACHE_DIR)
+            assert all(filepath.startswith(_CACHE_DIR)
                        for filepath in six.viewvalues(artifacts))
 
             for key, filepath in six.viewitems(artifacts):
@@ -226,7 +228,7 @@ class TestFetchArtifacts:
 
                 assert file_contents == artifact_contents
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_cached_fetch_artifacts(self, experiment_run, strs, flat_dicts):
         key = strs[0]
@@ -242,7 +244,7 @@ class TestFetchArtifacts:
 
             assert os.path.getmtime(filepath) == last_modified
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_zip(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -253,7 +255,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -264,7 +266,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_cached_fetch_zip(self, experiment_run, strs, dir_and_files):
         dirpath, _ = dir_and_files
@@ -281,7 +283,7 @@ class TestFetchArtifacts:
 
             assert os.path.getmtime(dirpath) == last_modified
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_tgz(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -300,7 +302,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -311,7 +313,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_tar(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -330,7 +332,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -341,7 +343,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_tar_gz(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -360,7 +362,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -371,7 +373,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_wrong_type_artifacts_error(self, experiment_run, all_values):
         # remove lists of strings and empty lists, because they're valid arguments
@@ -528,18 +530,26 @@ class TestLogTrainingData:
     def test_series(self, experiment_run, model_for_deployment):
         X_train = model_for_deployment['train_features']
         y_train = model_for_deployment['train_targets']
+        col_names = set(X_train.columns) | set([y_train.name])
 
-        # no errors
         experiment_run.log_training_data(X_train, y_train)
+        histogram = experiment_run._get_histogram()
+        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
+
+        assert set(retrieved_col_names) == col_names
 
     def test_dataframe(self, experiment_run, model_for_deployment):
         X_train = model_for_deployment['train_features']
         y_train = model_for_deployment['train_targets']
+        col_names = set(X_train.columns) | set([y_train.name])
 
         y_train = y_train.to_frame()
 
-        # no errors
         experiment_run.log_training_data(X_train, y_train)
+        histogram = experiment_run._get_histogram()
+        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
+
+        assert set(retrieved_col_names) == col_names
 
 
 class TestHistogram:
@@ -876,7 +886,7 @@ class TestDeploy:
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact model.pkl"
+        assert "model.pkl" in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(
@@ -899,7 +909,7 @@ class TestDeploy:
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact model_api.json"
+        assert "model_api.json" in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(
@@ -912,7 +922,7 @@ class TestDeploy:
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact requirements.txt"
+        assert "requirements.txt" in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(
@@ -971,8 +981,14 @@ class TestGetDeployedModel:
 
         experiment_run.deploy(wait=True)
 
+        deployed_model = experiment_run.get_deployed_model()
         x = model_for_deployment['train_features'].iloc[1].values
-        experiment_run.get_deployed_model().predict([x])
+        deployed_model.predict([x])
+
+        deployed_model_curl = deployed_model.get_curl()
+        deployed_status = experiment_run.get_deployment_status()
+        assert deployed_status["url"] in deployed_model_curl
+        assert deployed_status["token"] in deployed_model_curl
 
         conn = experiment_run._conn
         requests.delete(
@@ -1017,16 +1033,10 @@ class TestGitOps:
 
         # can be loaded as YAML
         with open(filepath, 'rb') as f:
-            model_deployment, config_map = yaml.safe_load_all(f)
+            model_deployment = yaml.safe_load(f)
 
         assert model_deployment['kind'] == "ModelDeployment"
         assert model_deployment['metadata']['name'] == experiment_run.id
-
-        assert config_map['kind'] == "ConfigMap"
-        assert config_map['metadata']['name'] == "model--{}".format(experiment_run.id)
-
-        model_api = json.loads(config_map['data']['model_api.json'])
-        assert model_api == model_for_deployment['model_api'].to_dict()
 
     def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir):
         download_to_path = "context.tgz"

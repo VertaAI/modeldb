@@ -8,6 +8,8 @@ import random
 import shutil
 import string
 import tempfile
+import subprocess
+import sys
 
 import requests
 
@@ -272,10 +274,6 @@ def client(host, port, email, dev_key):
     if proj is not None:
         utils.delete_project(proj.id, client._conn)
 
-    model = client._ctx.registered_model
-    if model is not None:
-        utils.delete_registered_model(model.id, client._conn)
-
     print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
 
@@ -344,7 +342,9 @@ def created_datasets(client):
 
 @pytest.fixture
 def registered_model(client):
-    yield client.get_or_create_registered_model()
+    model = client.get_or_create_registered_model()
+    yield model
+    utils.delete_registered_model(model.id, client._conn)
 
 
 @pytest.fixture
@@ -355,9 +355,6 @@ def created_registered_models(client):
     yield to_delete
 
     for registered_model in to_delete:
-        if client._ctx.registered_model and registered_model.id == client._ctx.registered_model.id:
-            client._ctx.registered_model = None
-
         utils.delete_registered_model(registered_model.id, client._conn)
 
 
@@ -374,3 +371,28 @@ def created_endpoints(client):
 
     for endpoint in to_delete:
         utils.delete_endpoint(endpoint.id, endpoint.workspace, client._conn)
+
+
+@pytest.fixture
+def organization(client):
+    workspace_name = _utils.generate_default_name()
+    org = client._create_organization(workspace_name)
+
+    yield org
+
+    utils.delete_organization(org.id, client._conn)
+
+    
+@pytest.fixture
+def requirements_file():
+    with tempfile.NamedTemporaryFile('w+') as tempf:
+        # create requirements file from pip freeze
+        pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+        pip_freeze = six.ensure_str(pip_freeze)
+        tempf.write(pip_freeze)
+        tempf.flush()  # flush object buffer
+        os.fsync(tempf.fileno())  # flush OS buffer
+        tempf.seek(0)
+
+        yield tempf
+

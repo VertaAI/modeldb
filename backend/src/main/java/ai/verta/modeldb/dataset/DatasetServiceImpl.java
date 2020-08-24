@@ -45,6 +45,7 @@ import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
@@ -748,7 +749,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           Long.parseLong(request.getId()),
           request.getAttributeKeysList(),
           request.getDeleteAll(),
-          false);
+          false,
+          RepositoryEnums.RepositoryTypeEnum.DATASET);
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       responseObserver.onNext(
@@ -842,7 +844,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .build(),
           commitDAO,
           experimentRunDAO,
-          false);
+          false,
+          RepositoryEnums.RepositoryTypeEnum.DATASET);
     }
   }
 
@@ -880,7 +883,12 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               listCommitsRequest.build(),
               (session ->
                   repositoryDAO.getRepositoryById(
-                      session, repositoryIdentification, false, false)));
+                      session,
+                      repositoryIdentification,
+                      false,
+                      false,
+                      RepositoryEnums.RepositoryTypeEnum.DATASET)),
+              false);
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
       List<Commit> commitList = listCommitsResponse.getCommitsList();
@@ -980,7 +988,12 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               listCommitsRequest.build(),
               (session ->
                   repositoryDAO.getRepositoryById(
-                      session, repositoryIdentification, false, false)));
+                      session,
+                      repositoryIdentification,
+                      false,
+                      false,
+                      RepositoryEnums.RepositoryTypeEnum.DATASET)),
+              false);
       List<String> datasetVersionIds = new ArrayList<>();
       ListValue.Builder listValueBuilder = ListValue.newBuilder();
       List<Commit> commitList = listCommitsResponse.getCommitsList();

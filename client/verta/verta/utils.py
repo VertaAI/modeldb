@@ -4,10 +4,6 @@ import collections
 import json
 import numbers
 import os
-import pathlib2
-import tempfile
-import warnings
-import zipfile
 
 from .external import six
 
@@ -254,7 +250,7 @@ class TFSavedModel(object):
 
         self.__dict__.update(state)
 
-        self.saved_model_dir = _utils.SAVED_MODEL_DIR
+        self.saved_model_dir = os.environ.get('VERTA_SAVED_MODEL_DIR', "/app/tf_saved_model/")
         self.session = tf.Session()
 
         input_tensors, output_tensors = self._map_tensors()
@@ -312,3 +308,5 @@ class TFSavedModel(object):
         }
 
         return self.session.run(self.output_tensors, input_dict)
+
+

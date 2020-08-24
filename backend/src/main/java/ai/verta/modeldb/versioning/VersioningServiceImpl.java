@@ -6,6 +6,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
@@ -176,7 +177,12 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
         DeleteRepositoryRequest.Response response =
-            repositoryDAO.deleteRepository(request, commitDAO, experimentRunDAO, true);
+            repositoryDAO.deleteRepository(
+                request,
+                commitDAO,
+                experimentRunDAO,
+                true,
+                RepositoryEnums.RepositoryTypeEnum.REGULAR);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -195,7 +201,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ListCommitsRequest.Response response =
           commitDAO.listCommits(
               request,
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()));
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              false);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -452,7 +459,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        GetBranchRequest.Response response = repositoryDAO.getBranch(request, true);
+        GetBranchRequest.Response response =
+            repositoryDAO.getBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -469,7 +477,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        SetBranchRequest.Response response = repositoryDAO.setBranch(request, true);
+        SetBranchRequest.Response response =
+            repositoryDAO.setBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }

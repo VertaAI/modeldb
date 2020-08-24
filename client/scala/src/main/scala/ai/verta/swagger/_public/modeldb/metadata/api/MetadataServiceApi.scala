@@ -11,6 +11,14 @@ import ai.verta.swagger.client.objects._
 import ai.verta.swagger._public.modeldb.metadata.model._
 
 class MetadataServiceApi(client: HttpClient, val basePath: String = "/v1") {
+  def MetadataService_AddKeyValuePropertiesAsync(body: MetadataAddKeyValuePropertiesRequest)(implicit ec: ExecutionContext): Future[Try[MetadataAddKeyValuePropertiesRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[MetadataAddKeyValuePropertiesRequest, MetadataAddKeyValuePropertiesRequestResponse]("PUT", basePath + s"/metadata/keyValueProperties", __query.toMap, body, MetadataAddKeyValuePropertiesRequestResponse.fromJson)
+  }
+
+  def MetadataService_AddKeyValueProperties(body: MetadataAddKeyValuePropertiesRequest)(implicit ec: ExecutionContext): Try[MetadataAddKeyValuePropertiesRequestResponse] = Await.result(MetadataService_AddKeyValuePropertiesAsync(body), Duration.Inf)
+
   def MetadataService_AddLabelsAsync(body: MetadataAddLabelsRequest)(implicit ec: ExecutionContext): Future[Try[MetadataAddLabelsRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
@@ -27,6 +35,14 @@ class MetadataServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def MetadataService_AddProperty(body: MetadataAddPropertyRequest)(implicit ec: ExecutionContext): Try[MetadataAddPropertyRequestResponse] = Await.result(MetadataService_AddPropertyAsync(body), Duration.Inf)
 
+  def MetadataService_DeleteKeyValuePropertiesAsync(body: MetadataDeleteKeyValuePropertiesRequest)(implicit ec: ExecutionContext): Future[Try[MetadataDeleteKeyValuePropertiesRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[MetadataDeleteKeyValuePropertiesRequest, MetadataDeleteKeyValuePropertiesRequestResponse]("DELETE", basePath + s"/metadata/keyValueProperties", __query.toMap, body, MetadataDeleteKeyValuePropertiesRequestResponse.fromJson)
+  }
+
+  def MetadataService_DeleteKeyValueProperties(body: MetadataDeleteKeyValuePropertiesRequest)(implicit ec: ExecutionContext): Try[MetadataDeleteKeyValuePropertiesRequestResponse] = Await.result(MetadataService_DeleteKeyValuePropertiesAsync(body), Duration.Inf)
+
   def MetadataService_DeleteLabelsAsync(body: MetadataDeleteLabelsRequest)(implicit ec: ExecutionContext): Future[Try[MetadataDeleteLabelsRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")
@@ -42,6 +58,20 @@ class MetadataServiceApi(client: HttpClient, val basePath: String = "/v1") {
   }
 
   def MetadataService_DeleteProperty(body: MetadataDeletePropertyRequest)(implicit ec: ExecutionContext): Try[MetadataDeletePropertyRequestResponse] = Await.result(MetadataService_DeletePropertyAsync(body), Duration.Inf)
+
+  def MetadataService_GetKeyValuePropertiesAsync(getAll: Option[Boolean]=None, id_id_type: Option[String]=None, id_int_id: Option[BigInt]=None, id_string_id: Option[String]=None, keys: Option[List[String]]=None, property_name: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[MetadataGetKeyValuePropertiesRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (id_id_type.isDefined) __query.update("id.id_type", client.toQuery(id_id_type.get))
+    if (id_int_id.isDefined) __query.update("id.int_id", client.toQuery(id_int_id.get))
+    if (id_string_id.isDefined) __query.update("id.string_id", client.toQuery(id_string_id.get))
+    if (property_name.isDefined) __query.update("property_name", client.toQuery(property_name.get))
+    if (keys.isDefined) __query.update("keys", client.toQuery(keys.get))
+    if (getAll.isDefined) __query.update("getAll", client.toQuery(getAll.get))
+    val body: String = null
+    return client.request[String, MetadataGetKeyValuePropertiesRequestResponse]("GET", basePath + s"/metadata/keyValueProperties", __query.toMap, body, MetadataGetKeyValuePropertiesRequestResponse.fromJson)
+  }
+
+  def MetadataService_GetKeyValueProperties(getAll: Option[Boolean]=None, id_id_type: Option[String]=None, id_int_id: Option[BigInt]=None, id_string_id: Option[String]=None, keys: Option[List[String]]=None, property_name: Option[String]=None)(implicit ec: ExecutionContext): Try[MetadataGetKeyValuePropertiesRequestResponse] = Await.result(MetadataService_GetKeyValuePropertiesAsync(getAll, id_id_type, id_int_id, id_string_id, keys, property_name), Duration.Inf)
 
   def MetadataService_GetLabelIdsAsync(labels: Option[List[String]]=None, operator: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[MetadataGetLabelIdsRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]

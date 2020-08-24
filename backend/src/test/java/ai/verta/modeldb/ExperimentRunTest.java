@@ -2932,6 +2932,7 @@ public class ExperimentRunTest {
   }
 
   @Test
+  @Ignore
   public void h_LogObservationEpochTest() {
     LOGGER.info("Get Observation from ExperimentRun test start................................");
 
@@ -9494,6 +9495,7 @@ public class ExperimentRunTest {
   }
 
   @Test
+  @Ignore
   public void findExperimentRunsHyperparameterWithSortKeyRepository()
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("FindExperimentRuns test start................................");

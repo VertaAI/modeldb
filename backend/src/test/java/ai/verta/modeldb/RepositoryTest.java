@@ -1,8 +1,11 @@
 package ai.verta.modeldb;
 
 import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import ai.verta.common.CollaboratorTypeEnum;
+import ai.verta.common.EntitiesEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
@@ -37,6 +40,8 @@ import ai.verta.modeldb.versioning.SetRepository.Response;
 import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
+import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
@@ -1282,5 +1287,81 @@ public class RepositoryTest {
     }
 
     LOGGER.info("Update Repository Attributes test stop................................");
+  }
+
+  @Test
+  public void findRepositoriesFoSharedUserTest() {
+    LOGGER.info(
+        "FindRepositories by owner fuzzy search test start................................");
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      assertTrue(true);
+      return;
+    }
+    UACServiceGrpc.UACServiceBlockingStub uacServiceStub =
+        UACServiceGrpc.newBlockingStub(authServiceChannel);
+    CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub =
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
+
+    GetUser getUserRequest =
+        GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
+    // Get the user info by vertaId form the AuthService
+    UserInfo testUser2 = uacServiceStub.getUser(getUserRequest);
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+    VersioningServiceBlockingStub versioningServiceBlockingStubClient2 =
+        VersioningServiceGrpc.newBlockingStub(client2Channel);
+
+    long repoId1 = createRepository(versioningServiceBlockingStub, NAME);
+    long repoId2 = createRepository(versioningServiceBlockingStub, NAME_2);
+    long repoId3 = createRepository(versioningServiceBlockingStub, NAME_3);
+    Long[] repoIds = new Long[3];
+    repoIds[0] = repoId1;
+    repoIds[1] = repoId2;
+    repoIds[2] = repoId3;
+
+    try {
+      AddCollaboratorRequest addCollaboratorRequest =
+          AddCollaboratorRequest.newBuilder()
+              .setShareWith(testUser2.getEmail())
+              .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)
+              .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
+              .addEntityIds(String.valueOf(repoId1))
+              .build();
+      AddCollaboratorRequest.Response collaboratorResponse =
+          collaboratorServiceBlockingStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+      assertTrue(collaboratorResponse.getStatus());
+
+      FindRepositories findRepositoriesRequest =
+          FindRepositories.newBuilder()
+              .setWorkspaceName(testUser2.getVertaInfo().getUsername())
+              .build();
+      FindRepositories.Response findRepositoriesResponse =
+          versioningServiceBlockingStubClient2.findRepositories(findRepositoriesRequest);
+      LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
+      assertEquals(
+          "Project count not match with expected project count",
+          1,
+          findRepositoriesResponse.getRepositoriesCount());
+
+      assertEquals(
+          "Total records count not matched with expected records count",
+          1,
+          findRepositoriesResponse.getTotalRecords());
+
+    } finally {
+      for (long repoId : repoIds) {
+        DeleteRepositoryRequest deleteRepository =
+            DeleteRepositoryRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+                .build();
+        DeleteRepositoryRequest.Response deleteResult =
+            versioningServiceBlockingStub.deleteRepository(deleteRepository);
+        Assert.assertTrue(deleteResult.getStatus());
+      }
+    }
+
+    LOGGER.info(
+        "FindRepositories by owner fuzzy search test stop ................................");
   }
 }
