@@ -253,7 +253,7 @@ class _DeployableEntity(_ModelDBEntity):
                 return True
 
             # packages installed via --user
-            if path == site.USER_SITE:
+            if path.startswith(site.USER_SITE):
                 return True
 
             return False
