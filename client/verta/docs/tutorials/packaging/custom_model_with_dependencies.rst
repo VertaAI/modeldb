@@ -72,6 +72,16 @@ dependency like
         artifacts=["tensorflow_saved_model", "nearest_neighbor_index"],  # logged artifact keys
     )
 
+The same can be done using a :class:`~verta._registry.modelversion.RegisteredModelVersion`:
+
+.. code-block:: python
+
+    model_version.log_artifact("user-defined-name", "location/on/disk/to/artifact")
+    model_version.log_model(
+        MyModel,  # class, not instance
+        artifacts=["tensorflow_saved_model", "nearest_neighbor_index"],  # logged artifact keys
+    )
+
 By doing this, whenever an object of ``MyModel`` is instantiated by Verta, the artifacts will be
 available for consumption and passed to the constructor automatically.
 

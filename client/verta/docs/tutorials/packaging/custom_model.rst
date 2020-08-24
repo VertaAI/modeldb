@@ -48,6 +48,12 @@ For example, when using an experiment run, you can just do
 
 and that class will be logged into the system.
 
+The same can be done using a :class:`~verta._registry.modelversion.RegisteredModelVersion`:
+
+.. code-block:: python
+
+    model_version.log_model(MyModel)  # class, not instance
+
 When an object of that class is requested, our tools will automatically build one with the right
 configuration for you!
 
