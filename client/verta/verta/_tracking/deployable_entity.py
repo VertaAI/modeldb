@@ -6,6 +6,7 @@ import abc
 import copy
 import glob
 import os
+import re
 import shutil
 import sys
 import tarfile
@@ -232,19 +233,28 @@ class _DeployableEntity(_ModelDBEntity):
         local_sys_paths = list(filter(lambda path: not path.endswith(".ipython"), local_sys_paths))
         ## remove virtual (and real) environments
         def is_in_venv(path):
-            """
-            Roughly checks for:
-                /
-                |_ lib/
-                |   |_ python*/ <- directory with Python packages, containing `path`
-                |
-                |_ bin/
-                    |_ python*  <- Python executable
-
-            """
+            # Roughly checks for:
+            #     /
+            #     |_ lib/
+            #     |   |_ python*/ <- directory with Python packages, containing `path`
+            #     |
+            #     |_ bin/
+            #         |_ python*  <- Python executable
             lib_python_str = os.path.join(os.sep, "lib", "python")
             i = path.find(lib_python_str)
-            return i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*"))
+            if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+                return True
+
+            # Debian's system-level packages from apt
+            #     https://wiki.debian.org/Python#Deviations_from_upstream
+            dist_pkg_pattern = re.compile(r"/usr(/local)?/lib/python[0-9.]+/dist-packages")
+            if dist_pkg_pattern.match(path):
+                return True
+
+            # TODO: packages installed via --user are still picked up; should they be?
+            # import site; site.getusersitepackages()
+
+            return False
         local_sys_paths = list(filter(lambda path: not is_in_venv(path), local_sys_paths))
 
         # get paths to files within
