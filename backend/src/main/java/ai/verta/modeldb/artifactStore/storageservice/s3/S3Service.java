@@ -39,7 +39,6 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +52,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 
 public class S3Service implements ArtifactStoreService {
 
@@ -343,7 +341,8 @@ public class S3Service implements ArtifactStoreService {
       if (s3Client.doesObjectExist(bucketName, artifactPath)) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");
-        return new InputStreamResource(s3Client.getObject(bucketName, artifactPath).getObjectContent());
+        return new InputStreamResource(
+            s3Client.getObject(bucketName, artifactPath).getObjectContent());
       } else {
         String errorMessage = "File not found " + artifactPath;
         LOGGER.warn(errorMessage);

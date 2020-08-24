@@ -585,39 +585,39 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private ExperimentRun populateFieldsBasedOnPrivileges(ExperimentRun experimentRun) {
-    if (experimentRun.getDatasetsCount() > 0) {
-      experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
-    }
-    if (experimentRun.getVersionedInputs() != null
-        && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
-      experimentRun =
-          checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
+    if (app.isPopulateConnectionsBasedOnPrivileges()) {
+      if (experimentRun.getDatasetsCount() > 0) {
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+      }
+      if (experimentRun.getVersionedInputs() != null
+          && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
+        experimentRun =
+            checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
+      }
     }
     return experimentRun;
   }
 
   private ExperimentRun checkDatasetVersionBasedOnPrivileges(ExperimentRun experimentRun) {
     ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
-    if (app.isPopulateConnectionsBasedOnPrivileges()) {
-      List<Artifact> accessibleDatasetVersions = new ArrayList<>();
-      List<String> accessibleDatasetVersionIds = new ArrayList<>();
-      for (Artifact dataset : experimentRun.getDatasetsList()) {
-        if (!dataset.getLinkedArtifactId().isEmpty()
-            && !accessibleDatasetVersionIds.contains(dataset.getLinkedArtifactId())) {
-          try {
-            commitDAO.getDatasetVersionById(
-                repositoryDAO, blobDAO, metadataDAO, dataset.getLinkedArtifactId());
-            accessibleDatasetVersions.add(dataset);
-            accessibleDatasetVersionIds.add(dataset.getLinkedArtifactId());
-          } catch (Exception ex) {
-            LOGGER.debug(ex.getMessage());
-          }
-        } else {
+    List<Artifact> accessibleDatasetVersions = new ArrayList<>();
+    List<String> accessibleDatasetVersionIds = new ArrayList<>();
+    for (Artifact dataset : experimentRun.getDatasetsList()) {
+      if (!dataset.getLinkedArtifactId().isEmpty()
+          && !accessibleDatasetVersionIds.contains(dataset.getLinkedArtifactId())) {
+        try {
+          commitDAO.getDatasetVersionById(
+              repositoryDAO, blobDAO, metadataDAO, dataset.getLinkedArtifactId());
           accessibleDatasetVersions.add(dataset);
+          accessibleDatasetVersionIds.add(dataset.getLinkedArtifactId());
+        } catch (Exception ex) {
+          LOGGER.debug(ex.getMessage());
         }
+      } else {
+        accessibleDatasetVersions.add(dataset);
       }
-      experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasetVersions);
     }
+    experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasetVersions);
     return experimentRunBuilder.build();
   }
 
@@ -625,23 +625,21 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRun experimentRun,
       Set<Long> accessibleRepoIdsSet,
       Set<Long> notAccessibleRepoIdIdsSet) {
-    if (app.isPopulateConnectionsBasedOnPrivileges()) {
-      Long repoId = experimentRun.getVersionedInputs().getRepositoryId();
-      if (accessibleRepoIdsSet.contains(repoId)) {
+    Long repoId = experimentRun.getVersionedInputs().getRepositoryId();
+    if (accessibleRepoIdsSet.contains(repoId)) {
+      accessibleRepoIdsSet.add(repoId);
+    } else if (notAccessibleRepoIdIdsSet.contains(repoId)) {
+      notAccessibleRepoIdIdsSet.add(repoId);
+      experimentRun = experimentRun.toBuilder().clearVersionedInputs().build();
+    } else {
+      if (roleService.checkConnectionsBasedOnPrivileges(
+          ModelDBServiceResourceTypes.REPOSITORY,
+          ModelDBActionEnum.ModelDBServiceActions.READ,
+          String.valueOf(repoId))) {
         accessibleRepoIdsSet.add(repoId);
-      } else if (notAccessibleRepoIdIdsSet.contains(repoId)) {
-        notAccessibleRepoIdIdsSet.add(repoId);
-        experimentRun = experimentRun.toBuilder().clearVersionedInputs().build();
       } else {
-        if (RdbmsUtils.checkConnectionsBasedOnPrivileges(
-            ModelDBServiceResourceTypes.REPOSITORY,
-            ModelDBActionEnum.ModelDBServiceActions.READ,
-            String.valueOf(repoId))) {
-          accessibleRepoIdsSet.add(repoId);
-        } else {
-          experimentRun = experimentRun.toBuilder().clearVersionedInputs().build();
-          notAccessibleRepoIdIdsSet.add(repoId);
-        }
+        experimentRun = experimentRun.toBuilder().clearVersionedInputs().build();
+        notAccessibleRepoIdIdsSet.add(repoId);
       }
     }
     return experimentRun;
@@ -1638,19 +1636,20 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               experimentRun = ExperimentRun.newBuilder().setId(experimentRun.getId()).build();
               experimentRuns.add(experimentRun);
             } else {
-              if (experimentRun.getDatasetsCount() > 0
-                  && app.isPopulateConnectionsBasedOnPrivileges()) {
-                experimentRun =
-                    filteredDatasetsBasedOnPrivileges(
-                        accessibleDatasetVersionIdsSet,
-                        notAccessibleDatasetVersionIdsSet,
-                        experimentRun);
-              }
-              if (experimentRun.getVersionedInputs() != null
-                  && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
-                experimentRun =
-                    checkVersionInputBasedOnPrivileges(
-                        experimentRun, accessibleRepoIdsSet, notAccessibleRepoIdsSet);
+              if (app.isPopulateConnectionsBasedOnPrivileges()) {
+                if (experimentRun.getDatasetsCount() > 0) {
+                  experimentRun =
+                      filteredDatasetsBasedOnPrivileges(
+                          accessibleDatasetVersionIdsSet,
+                          notAccessibleDatasetVersionIdsSet,
+                          experimentRun);
+                }
+                if (experimentRun.getVersionedInputs() != null
+                    && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
+                  experimentRun =
+                      checkVersionInputBasedOnPrivileges(
+                          experimentRun, accessibleRepoIdsSet, notAccessibleRepoIdsSet);
+                }
               }
               experimentRuns.add(experimentRun);
             }
@@ -2358,7 +2357,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (experimentRunObj != null) {
         ExperimentRun experimentRun = experimentRunObj.getProtoObject();
         if (experimentRun.getVersionedInputs() != null
-            && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
+            && experimentRun.getVersionedInputs().getRepositoryId() != 0
+            && app.isPopulateConnectionsBasedOnPrivileges()) {
           experimentRun =
               checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
         }

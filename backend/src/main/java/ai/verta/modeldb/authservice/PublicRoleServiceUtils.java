@@ -293,4 +293,12 @@ public class PublicRoleServiceUtils implements RoleService {
       List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return true;
   }
+
+  @Override
+  public boolean checkConnectionsBasedOnPrivileges(
+      ModelDBServiceResourceTypes serviceResourceTypes,
+      ModelDBServiceActions serviceActions,
+      String resourceId) {
+    return true;
+  }
 }
