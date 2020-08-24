@@ -605,7 +605,7 @@ public class App implements ApplicationContextAware {
 
     Map<String, Object> nfsArtifactEndpointConfigMap =
         (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
-    if (nfsArtifactEndpointConfigMap == null || nfsArtifactEndpointConfigMap.isEmpty()) {
+    if (nfsArtifactEndpointConfigMap != null && !nfsArtifactEndpointConfigMap.isEmpty()) {
       app.getArtifactEndpoint =
           (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
       LOGGER.trace("ArtifactStore Get artifact endpoint found : {}", app.getArtifactEndpoint);
