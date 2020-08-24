@@ -4,6 +4,18 @@ Endpoint environment variables
 Using the client
 ----------------
 
+:meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>` provides a parameter for
+setting the endpoint's environment variables. It can be used alongside any update strategy.
+
+.. code-block:: python
+
+    from verta.deployment.update import DirectUpdateStrategy
+
+    endpoint.update(
+        model_version, DirectUpdateStrategy(),
+        env_vars=env_vars,
+    )
+
 ``env_vars`` takes a dictionary of string environment variable names to string values, and will be
 made available to the model when it is deployed.
 

@@ -4,6 +4,18 @@ Endpoint autoscaling
 Using the client
 ----------------
 
+:meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>` provides a parameter for
+configuring the endpoint's autoscaling behavior. It can be used alongside any update strategy.
+
+.. code-block:: python
+
+    from verta.deployment.update import DirectUpdateStrategy
+
+    endpoint.update(
+        model_version, DirectUpdateStrategy(),
+        autoscaling=autoscaling,
+    )
+
 ``autoscaling`` takes an :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling` object,
 which itself is used to establish upper and lower bounds for the number of replicas running the
 model. Autoscaling must also have at least one metric associated with it, which sets a threshold
