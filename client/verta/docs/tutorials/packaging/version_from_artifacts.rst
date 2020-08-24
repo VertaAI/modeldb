@@ -47,7 +47,7 @@ Then, we can create the model version and upload the information (model, require
 
 .. code-block:: sh
 
-    verta registry create registeredmodelversion <model name> <version name> \
-    --label prototype \
-    --model <classifier path> \
-    --requirements <requirements path>
+    verta registry create registeredmodelversion "<model name>" "<version name>" \
+        --label prototype \
+        --model "<classifier path>" \
+        --requirements "<requirements path>"

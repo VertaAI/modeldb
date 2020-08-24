@@ -38,4 +38,4 @@ With Verta's CLI, we can create a new model version from an existing experiment 
 
 .. code-block:: sh
 
-    verta registry create registeredmodelversion <model name> <version name> --from-run <experiment run id>
+    verta registry create registeredmodelversion "<model name>" "<version name>" --from-run "<experiment run id>"
