@@ -7,7 +7,7 @@ autoscaling behavior and compute resources.
 Using the client
 ----------------
 
-:meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>` provides parameters for
+:meth:`Endpoint.update() <verta.endpoint.endpoint.Endpoint.update>` provides parameters for
 configuring the resources and behavior of a deployed model. These settings can be used alongside
 any update strategy.
 

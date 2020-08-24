@@ -4,7 +4,7 @@ Endpoint autoscaling
 Using the client
 ----------------
 
-:meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>` provides a parameter for
+:meth:`Endpoint.update() <verta.endpoint.endpoint.Endpoint.update>` provides a parameter for
 configuring the endpoint's autoscaling behavior. It can be used alongside any update strategy.
 
 .. code-block:: python

@@ -4,7 +4,7 @@ Endpoint environment variables
 Using the client
 ----------------
 
-:meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>` provides a parameter for
+:meth:`Endpoint.update() <verta.endpoint.endpoint.Endpoint.update>` provides a parameter for
 setting the endpoint's environment variables. It can be used alongside any update strategy.
 
 .. code-block:: python
