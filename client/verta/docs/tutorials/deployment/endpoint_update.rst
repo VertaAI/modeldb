@@ -19,7 +19,7 @@ process for updating it with a new model is the same:
 
     endpoint.update(model_version, DirectUpdateStrategy())
 
-The first argument to :meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>` is your
+The first argument to :meth:`Endpoint.update() <verta.endpoint._endpoint.Endpoint.update>` is your
 :class:`~verta._registry.modelversion.RegisteredModelVersion` that already has a trained model and
 its Python environment logged.
 
