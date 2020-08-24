@@ -26,8 +26,13 @@ made available to the model when it is deployed.
 Using the CLI
 -------------
 
+Environment variables can also be set via the CLI:
+
 .. code-block:: sh
 
     verta deployment update endpoint /some-path --model-version-id "<id>" \
         --strategy direct \
         --env-vars '{"LOG_LEVEL": "debug"}'
+
+``--env-vars`` takes a JSON string containing a dictionary of string environment variable names
+to string values.

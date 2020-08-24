@@ -32,8 +32,13 @@ Mi of RAM. For more information about available resources and units, see the
 Using the CLI
 -------------
 
+Compute resources can also be configured via the CLI:
+
 .. code-block:: sh
 
     verta deployment update endpoint /some-path --model-version-id "<id>" \
         --strategy direct \
         --resources '{"cpu_millis": 250, "memory": "512Mi"}'
+
+``--resources`` takes a JSON string representing its value. The Python API documentation for
+:ref:`update-resources` contains a JSON-equivalent example for the object.

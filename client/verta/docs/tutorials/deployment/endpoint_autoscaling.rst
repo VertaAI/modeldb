@@ -30,10 +30,12 @@ for triggering a scale-up.
     autoscaling.add_metric(CpuUtilizationTarget(0.75))
 
 Here, CPU utilization exceeding 75% will lead to more replicas being created. For the full list of
-available metrics, see the :ref:`autoscaling` API documentation.
+available metrics, see the :ref:`autoscaling-metrics` API documentation.
 
 Using the CLI
 -------------
+
+Autoscaling can also be configured via the CLI:
 
 .. code-block:: sh
 
@@ -41,6 +43,10 @@ Using the CLI
         --strategy direct \
         --autoscaling '{"max_replicas": 4, "min_scale": 0.5}' \
         --autoscaling-metric '{"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.75"}]}'
+
+``--autoscaling`` and ``--autoscaling-metric`` take JSON strings representing their respective
+values. The Python API documentation for :ref:`autoscaling` and :ref:`autoscaling-metrics` contain
+JSON-equivalent examples for each object.
 
 To set multiple metrics, ``--autoscaling-metric`` can be provided more than
 once.
