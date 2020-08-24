@@ -36,7 +36,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     Object representing a version of a Registered Model.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`RegisteredModel.get_or_create_version`.
+    :meth:`RegisteredModel.get_or_create_version()
+    <verta._registry.model.RegisteredModel.get_or_create_version>`.
 
     Attributes
     ----------
