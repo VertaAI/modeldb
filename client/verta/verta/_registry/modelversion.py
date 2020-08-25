@@ -232,7 +232,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         # associate artifact dependencies
         if artifacts:
-            self.add_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts)
+            self.add_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite=overwrite)
 
         if isinstance(model, six.string_types):  # filepath
             model = open(model, 'rb')
