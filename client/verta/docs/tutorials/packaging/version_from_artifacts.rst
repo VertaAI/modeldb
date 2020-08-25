@@ -27,9 +27,7 @@ We can create a new version for the registered model, and upload the classifier,
     # Logging the classifier and requirements:
     model_version.log_model(classifier)
 
-    reqs = Python.read_pip_file(requirements_path)
-    model_version.log_environment(Python(requirements=reqs))
-    model_version.log_environments(Python(requirements=["scikit-learn"]))
+    model_version.log_environment(Python(requirements=["scikit-learn"]))
 
 Using the CLI
 -------------
