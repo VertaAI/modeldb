@@ -503,7 +503,8 @@ class TestDeployability:
 
         class ModelWithDependency(object):
             def __init__(self, artifacts):
-                with open(artifacts[key], 'rb') as f:  # should not KeyError
+                assert key in artifacts
+                with open(artifacts[key], 'rb') as f:
                     assert cloudpickle.load(f) == artifact
 
             def predict(self, x):
