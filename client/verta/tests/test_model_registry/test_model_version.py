@@ -511,7 +511,7 @@ class TestDeployability:
                 return x
 
         model_version.log_artifact(key, artifact)
-        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=['foo'])
+        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=[key])
         model_version.log_environment(Python([]))
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
