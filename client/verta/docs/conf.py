@@ -124,7 +124,7 @@ html_theme = 'alabaster'
 #
 html_theme_options = {
     'fixed_sidebar': True,
-    'logo': 'images/logo.svg',
+    'logo': 'images/logo.jpeg',
     'sidebar_collapse': True,
     'show_relbar_bottom': True,
 }
