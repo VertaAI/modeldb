@@ -230,6 +230,10 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             if unlogged_artifact_keys:
                 raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
 
+        # associate artifact dependencies
+        if artifacts:
+            self.add_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts)
+
         if isinstance(model, six.string_types):  # filepath
             model = open(model, 'rb')
         serialized_model, method, model_type = _artifact_utils.serialize_model(model)
