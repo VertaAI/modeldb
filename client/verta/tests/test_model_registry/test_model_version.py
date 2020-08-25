@@ -499,18 +499,18 @@ class TestDeployability:
 
     def test_model_artifacts(self, model_version, endpoint, in_tempdir):
         key = "foo"
-        artifact = {'a': 1}
+        val = {'a': 1}
 
         class ModelWithDependency(object):
             def __init__(self, artifacts):
                 assert key in artifacts
                 with open(artifacts[key], 'rb') as f:
-                    assert cloudpickle.load(f) == artifact
+                    assert cloudpickle.load(f) == val
 
             def predict(self, x):
                 return x
 
-        model_version.log_artifact(key, artifact)
+        model_version.log_artifact(key, val)
         model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=[key])
         model_version.log_environment(Python([]))
 
