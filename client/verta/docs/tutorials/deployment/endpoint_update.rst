@@ -50,7 +50,7 @@ Or using an experiment run:
 
 Advanced endpoint updates
 -------------------------
-Certain properties of the endpoint can also be `configured <endpoint_config.html>`__ during the
+Certain properties of the endpoint can also be :ref:`configured <endpoint-config>` during the
 update, such as compute resources and metric-based autoscaling.
 
 Alternatively, an endpoint can be updated in a more `incremental, rule-based manner
