@@ -503,9 +503,9 @@ class TestDeployability:
 
         class ModelWithDependency(object):
             def __init__(self, artifacts):
-                with open(artifacts[key], 'rb') as f:
+                with open(artifacts[key], 'rb') as f:  # should not KeyError
                     if cloudpickle.load(f) != val:
-                        raise ValueError
+                        raise ValueError  # should not ValueError
 
             def predict(self, x):
                 return x
