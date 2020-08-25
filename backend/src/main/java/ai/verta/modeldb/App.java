@@ -149,6 +149,8 @@ public class App implements ApplicationContextAware {
 
   private Boolean traceEnabled = false;
   private static TracingServerInterceptor tracingInterceptor;
+  private boolean populateConnectionsBasedOnPrivileges = false;
+  private RoleService roleService;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -296,7 +298,7 @@ public class App implements ApplicationContextAware {
         TracingDriver.setInterceptorProperty(true);
       }
       AuthService authService = new PublicAuthServiceUtils();
-      RoleService roleService = new PublicRoleServiceUtils(authService);
+      app.roleService = new PublicRoleServiceUtils(authService);
 
       Map<String, Object> authServicePropMap =
           (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
@@ -307,7 +309,7 @@ public class App implements ApplicationContextAware {
         app.setAuthServerPort(authServicePort);
 
         authService = new AuthServiceUtils();
-        roleService = new RoleServiceUtils(authService);
+        app.roleService = new RoleServiceUtils(authService);
       }
 
       HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
@@ -316,7 +318,7 @@ public class App implements ApplicationContextAware {
 
       // ----------------- Start Initialize database & modelDB services with DAO ---------
       initializeServicesBaseOnDataBase(
-          serverBuilder, databasePropMap, propertiesMap, authService, roleService);
+          serverBuilder, databasePropMap, propertiesMap, authService, app.roleService);
       // ----------------- Finish Initialize database & modelDB services with DAO --------
 
       serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -388,6 +390,11 @@ public class App implements ApplicationContextAware {
       }
     }
 
+    app.populateConnectionsBasedOnPrivileges =
+        (boolean)
+            propertiesMap.getOrDefault(
+                ModelDBConstants.POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES, false);
+
     Map<String, Object> featureFlagMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
     if (featureFlagMap != null) {
@@ -454,10 +461,12 @@ public class App implements ApplicationContextAware {
     CommitDAO commitDAO = new CommitDAORdbImpl(authService, roleService);
     RepositoryDAO repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
     BlobDAO blobDAO = new BlobDAORdbImpl(authService, roleService);
+    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
 
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, roleService);
     ExperimentRunDAO experimentRunDAO =
-        new ExperimentRunDAORdbImpl(authService, roleService, repositoryDAO, commitDAO, blobDAO);
+        new ExperimentRunDAORdbImpl(
+            authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
     ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
@@ -465,7 +474,6 @@ public class App implements ApplicationContextAware {
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
     LineageDAO lineageDAO = new LineageDAORdbImpl();
     DatasetVersionDAO datasetVersionDAO = new DatasetVersionDAORdbImpl(authService, roleService);
-    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
     LOGGER.info("All DAO initialized");
     // --------------- Finish Initialize DAO --------------------------
     initializeBackendServices(
@@ -646,16 +654,17 @@ public class App implements ApplicationContextAware {
 
     Map<String, Object> nfsArtifactEndpointConfigMap =
         (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
-    app.getArtifactEndpoint =
-        (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
-    LOGGER.trace("ArtifactStore Get artifact endpoint found : {}", app.getArtifactEndpoint);
-    app.storeArtifactEndpoint =
-        (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
-    LOGGER.trace("ArtifactStore Store artifact endpoint found : {}", app.storeArtifactEndpoint);
+    if (nfsArtifactEndpointConfigMap != null && !nfsArtifactEndpointConfigMap.isEmpty()) {
+      app.getArtifactEndpoint =
+          (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
+      LOGGER.trace("ArtifactStore Get artifact endpoint found : {}", app.getArtifactEndpoint);
+      app.storeArtifactEndpoint =
+          (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
+      LOGGER.trace("ArtifactStore Store artifact endpoint found : {}", app.storeArtifactEndpoint);
 
-    System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
-    System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
-
+      System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
+      System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
+    }
     switch (artifactStoreType) {
       case ModelDBConstants.S3:
         Map<String, Object> s3ConfigMap =
@@ -841,5 +850,17 @@ public class App implements ApplicationContextAware {
 
   public Integer getRequestTimeout() {
     return requestTimeout;
+  }
+
+  public void setRoleService(RoleService roleService) {
+    this.roleService = roleService;
+  }
+
+  public RoleService getRoleService() {
+    return roleService;
+  }
+
+  public boolean isPopulateConnectionsBasedOnPrivileges() {
+    return populateConnectionsBasedOnPrivileges;
   }
 }

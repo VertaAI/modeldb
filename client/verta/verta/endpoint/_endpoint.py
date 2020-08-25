@@ -37,7 +37,8 @@ class Endpoint(object):
     Object representing an endpoint for deployment.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.create_endpoint`.
+    :meth:`Client.get_or_create_endpoint()
+    <verta.client.Client.get_or_create_endpoint>`.
 
     Attributes
     ----------

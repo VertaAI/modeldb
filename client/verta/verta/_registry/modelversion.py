@@ -36,7 +36,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     Object representing a version of a Registered Model.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`RegisteredModel.get_or_create_version`.
+    :meth:`RegisteredModel.get_or_create_version()
+    <verta._registry.model.RegisteredModel.get_or_create_version>`.
 
     Attributes
     ----------
@@ -228,6 +229,10 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
             if unlogged_artifact_keys:
                 raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
+
+        # associate artifact dependencies
+        if artifacts:
+            self.add_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite=overwrite)
 
         if isinstance(model, six.string_types):  # filepath
             model = open(model, 'rb')

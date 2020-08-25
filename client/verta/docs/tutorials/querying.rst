@@ -16,8 +16,8 @@ their ``expt_runs`` attribute:
     expt.expt_runs
     # <ExperimentRuns containing 8 runs>
 
-These are :class:`~verta.client.ExperimentRuns` objects, which have a method
-:meth:`~verta.client.ExperimentRuns.find` for filtering their contents:
+These are :class:`~verta._tracking.ExperimentRuns` objects, which have a method
+:meth:`~verta._tracking.ExperimentRuns.find` for filtering their contents:
 
 .. code-block:: python
 

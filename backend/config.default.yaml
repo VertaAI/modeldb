@@ -88,3 +88,5 @@ cron_job:
   delete_entities:
     initial_delay: 300 #delay timestamp in second, default 300second = 5min
     frequency: 60 #frequency to delete entities in second, default 60
+
+populateConnectionsBasedOnPrivileges: false

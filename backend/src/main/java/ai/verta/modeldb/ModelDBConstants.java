@@ -38,6 +38,7 @@ public interface ModelDBConstants {
   String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
+  String POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES = "populateConnectionsBasedOnPrivileges";
   String LIQUIBASE_MIGRATION = "liquibaseMigration";
   String RUN_LIQUIBASE_SEPARATE = "runLiquibaseSeparate";
 
