@@ -8,13 +8,13 @@ The following tutorials will walk you through the entire process of using an end
 Endpoint creation
 -----------------
 
-* `Creating and retrieving an endpoint <endpoint_creation.html>`__.
+* `Creating and retrieving an endpoint <endpoint_creation.html>`__
 
 Endpoint update
 ---------------
 
 * `Updating an endpoint <endpoint_update.html>`__
-* `Updating an endpoint with canary strategy <endpoint_canary_update.html>`__.
+* `Updating an endpoint with canary strategy <endpoint_canary_update.html>`__
 
 .. _endpoint-config:
 
