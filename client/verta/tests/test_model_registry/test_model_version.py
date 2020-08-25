@@ -9,6 +9,8 @@ import glob
 import shutil
 import sys
 
+import cloudpickle
+
 import verta
 
 from .. import utils
@@ -17,6 +19,7 @@ import os
 import verta.dataset
 from verta.environment import Python
 from verta._tracking.deployable_entity import _CACHE_DIR
+from verta.endpoint.update import DirectUpdateStrategy
 
 
 class TestMDBIntegration:
@@ -493,3 +496,21 @@ class TestDeployability:
                 assert file_contents == artifact_contents
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+
+    def test_model_artifacts(self, model_version, endpoint, in_tempdir):
+        key = "foo"
+        artifact = {'a': 1}
+
+        class ModelWithDependency(object):
+            def __init__(self, artifacts):
+                with open(artifacts[key], 'rb') as f:  # should not KeyError
+                    assert cloudpickle.load(f) == artifact
+
+            def predict(self, x):
+                return x
+
+        model_version.log_artifact(key, artifact)
+        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=['foo'])
+        model_version.log_environment(Python([]))
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
