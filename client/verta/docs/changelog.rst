@@ -37,6 +37,15 @@ Release Notes
      <>`__
 
 
+v0.15.1 (2020-08-24)
+--------------------
+
+Bug Fixes
+^^^^^^^^^
+- `correctly log model artifacts attribute to enable custom models with dependencies
+  <https://github.com/VertaAI/modeldb/pull/1399>`__
+
+
 v0.15.0 (2020-08-24)
 --------------------
 
