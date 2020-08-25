@@ -503,9 +503,9 @@ class TestDeployability:
 
         class ModelWithDependency(object):
             def __init__(self, artifacts):
-                assert key in artifacts
                 with open(artifacts[key], 'rb') as f:
-                    assert cloudpickle.load(f) == val
+                    if cloudpickle.load(f) != val:
+                        raise ValueError
 
             def predict(self, x):
                 return x
@@ -515,3 +515,4 @@ class TestDeployability:
         model_version.log_environment(Python([]))
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        assert val == endpoint.get_deployed_model().predict(val)
