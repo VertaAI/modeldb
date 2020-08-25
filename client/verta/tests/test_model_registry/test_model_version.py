@@ -510,8 +510,15 @@ class TestDeployability:
             def predict(self, x):
                 return x
 
+        # first log junk artifact, to test `overwrite`
+        bad_key = "bar"
+        bad_val = {'b': 2}
+        model_version.log_artifact(bad_key, bad_val)
+        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=[bad_key])
+
+        # log real artifact using `overwrite`
         model_version.log_artifact(key, val)
-        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=[key])
+        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True)
         model_version.log_environment(Python([]))
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
