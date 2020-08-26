@@ -341,7 +341,7 @@ class TestEndpoint:
                 {'name': 'GIT_TERMINAL_PROMPT', 'value': '1'},
                 {"name": 'VERTA_HOST', 'value': 'app.verta.ai'}
             ],
-            'resources': {'cpu': .25, 'memory': '512Mi'},
+            'resources': {'cpu_millis': 250, 'memory': '512Mi'},
             'strategy': 'rollout',
         }
 
@@ -489,7 +489,7 @@ class TestEndpoint:
         with sys_path_manager() as sys_path:
             sys_path.append(".")
 
-            from models.nets import FullyConnected
+            from models.nets import FullyConnected  # pylint: disable=import-error
 
             train_data = torch.rand((2, 4))
 
@@ -568,7 +568,8 @@ class TestEndpoint:
         assert update_status["update_request"]["env"][0]["value"] == "app.verta.ai"
 
         # Check resources:
-        assert endpoint.get_update_status()['update_request']['resources'] == config_dict["resources"]
+        resources_dict = Resources._from_dict(config_dict["resources"])._as_dict()  # config is `cpu`, wire is `cpu_millis`
+        assert endpoint.get_update_status()['update_request']['resources'] == resources_dict
 
     def test_update_twice(self, client, registered_model, created_endpoints):
         np = pytest.importorskip("numpy")

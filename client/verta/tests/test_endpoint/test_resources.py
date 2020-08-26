@@ -3,7 +3,7 @@ import pytest
 from verta.endpoint.resources import Resources
 
 
-@pytest.mark.parametrize("data", [3, 64])
+@pytest.mark.parametrize("data", [3, 2])
 def test_cpu_milli(data):
     Resources(cpu=data)
 
@@ -14,7 +14,7 @@ def test_cpu_milli_negative(data):
         Resources(cpu=data)
 
 
-@pytest.mark.parametrize("data", ["T", 0.5])
+@pytest.mark.parametrize("data", ["T", "0.5"])
 def test_cpu_milli_negative_type(data):
     with pytest.raises(TypeError):
         Resources(cpu=data)
