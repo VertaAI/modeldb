@@ -3,7 +3,7 @@ import pytest
 from verta.endpoint.resources import Resources
 
 
-@pytest.mark.parametrize("data", [3, 2])
+@pytest.mark.parametrize("data", [3, 64, 0.25])
 def test_cpu_milli(data):
     Resources(cpu=data)
 
