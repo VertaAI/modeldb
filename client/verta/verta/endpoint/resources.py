@@ -42,7 +42,7 @@ class Resources(object):
         resources = Resources(cpu=.25, memory="512Mi")
 
     """
-    CPU_ERR_MSG = "`cpu` must be float greater than 0"
+    CPU_ERR_MSG = "`cpu` must be a number greater than 0"
     MEMORY_ERR_MSG = ' '.join([
         "`memory` must be a string representing a plain integer",
         "or a fixed-point integer with suffixes",
@@ -60,7 +60,7 @@ class Resources(object):
         self.memory = memory
 
     def _validate_cpu(self, cpu):
-        if not isinstance(cpu, float):
+        if not isinstance(cpu, (six.integer_types, float)):
             raise TypeError(self.CPU_ERR_MSG)
         if cpu <= 0:
             raise ValueError(self.CPU_ERR_MSG)
@@ -73,7 +73,7 @@ class Resources(object):
 
     def _as_dict(self):
         return {
-            'cpu': self.cpu,
+            'cpu_millis': int(self.cpu*1000),
             'memory': self.memory,
         }
 
