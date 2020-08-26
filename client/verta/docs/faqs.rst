@@ -28,7 +28,7 @@ However, the differentiator for ModelDB 2.0 (latest version) is the full-fledged
 supported by ModelDB.
 ModelDB provides a Git-like versioning system for all model ingredients including code, data, config,
 and environment,  providing reproducibility  guarantees not provided by any other tools.
-Read more about versioning vs. metadata `here <overview/versioning.html>`__.
+Read more about versioning vs. metadata `here <overview/versioning.rst>`__.
 
 In addition to versioning, of course, ModelDB 2.0 continues to provide the metadata and experiment
 management as before and is freely available as open-source.
@@ -48,5 +48,5 @@ Please send email to `support@verta.ai <mailto:support@verta.ai>`_ for more info
 Additional Questions?
 ^^^^^^^^^^^^^^^^^^^^^
 
-If your question is not covered above, please check out the `Support & Community <support.html>`_ page for more
+If your question is not covered above, please check out the `Support & Community <support.rst>`_ page for more
 information about our support channels.
