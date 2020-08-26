@@ -570,6 +570,15 @@ public class BlobDAORdbImpl implements BlobDAO {
         if (labels.size() > 0) {
           datasetVersionBuilder.addAllTags(labels);
         }
+        String version =
+            metadataDAO.getProperty(
+                session,
+                IdentificationType.newBuilder()
+                    .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+                    .setStringId(compositeId)
+                    .build(),
+                ModelDBConstants.VERSION);
+        datasetVersionBuilder.setVersion(Long.parseLong(version));
         datasetVersionBuilder.setDatasetVersionVisibilityValue(
             repositoryEntity.getRepository_visibility());
         datasetVersionBuilder.addAllAttributes(getComponentResponse.getAttributesList());
