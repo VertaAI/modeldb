@@ -128,7 +128,7 @@ class TestEndpoint:
 
         strategy = CanaryUpdateStrategy(interval=10, step=0.1)
         strategy.add_rule(MaximumAverageLatencyThresholdRule(0.1))
-        resources = Resources(cpu_millis=100, memory="128Mi")
+        resources = Resources(cpu=.1, memory="128Mi")
         autoscaling = Autoscaling(min_replicas=1, max_replicas=10, min_scale=0.1, max_scale=2)
         autoscaling.add_metric(CpuUtilizationTarget(0.75))
         env_vars = {'env1': "var1", 'env2': "var2"}
@@ -309,7 +309,7 @@ class TestEndpoint:
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
 
         strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
-        updated_status = endpoint.update(experiment_run, strategy, resources = Resources(cpu_millis=250, memory="512Mi"),
+        updated_status = endpoint.update(experiment_run, strategy, resources = Resources(cpu=.25, memory="512Mi"),
                                          env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
         # Check that a new build is added:
@@ -330,7 +330,7 @@ class TestEndpoint:
 
     def test_create_update_body(self):
         endpoint = Endpoint(None, None, None, None)
-        resources = Resources(cpu_millis=250, memory="512Mi")
+        resources = Resources(cpu=.25, memory="512Mi")
 
         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai", "GIT_TERMINAL_PROMPT" : "1"}
 
@@ -341,7 +341,7 @@ class TestEndpoint:
                 {'name': 'GIT_TERMINAL_PROMPT', 'value': '1'},
                 {"name": 'VERTA_HOST', 'value': 'app.verta.ai'}
             ],
-            'resources': {'cpu_millis': 250, 'memory': '512Mi'},
+            'resources': {'cpu': .25, 'memory': '512Mi'},
             'strategy': 'rollout',
         }
 
@@ -537,7 +537,7 @@ class TestEndpoint:
                 ]
             },
             "env_vars": {"VERTA_HOST": "app.verta.ai"},
-            "resources": {"cpu_millis": 250, "memory": "100M"}
+            "resources": {"cpu": .25, "memory": "100M"}
         }
 
         filepath = "config.json"
