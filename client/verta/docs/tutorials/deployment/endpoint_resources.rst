@@ -26,7 +26,7 @@ deployed.
 
     from verta.endpoint.resources import Resources
 
-    resources = Resources(cpu_millis=250, memory="512Mi")
+    resources = Resources(cpu=.25, memory="512Mi")
 
 In this example, each replica will be provided a fourth of a CPU core and 512
 Mi of RAM. For more information about available resources and units, see the
@@ -41,7 +41,7 @@ Compute resources can also be configured via the CLI:
 
     verta deployment update endpoint /some-path --model-version-id "<id>" \
         --strategy direct \
-        --resources '{"cpu_millis": 250, "memory": "512Mi"}'
+        --resources '{"cpu": .25, "memory": "512Mi"}'
 
 ``--resources`` takes a JSON string representing its values. The Python API documentation for
 :ref:`update-resources` contains a JSON-equivalent example for the object.

@@ -364,7 +364,7 @@ class TestUpdate:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        resources = '{"cpu_millis": 250, "memory": "100M"}'
+        resources = '{"cpu": .25, "memory": "100M"}'
 
         runner = CliRunner()
         result = runner.invoke(
