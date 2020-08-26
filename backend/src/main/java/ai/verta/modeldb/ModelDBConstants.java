@@ -23,9 +23,12 @@ public interface ModelDBConstants {
   String HTTPS_STR = "https";
   String NFS = "NFS";
   String PICK_ARTIFACT_STORE_HOST_FROM_CONFIG = "pickArtifactStoreHostFromConfig";
+  String PICK_NFS_HOST_FROM_CONFIG = "pickNFSHostFromConfig";
   String NFS_ROOT_PATH = "nfsRootPath";
   String ARTIFACT_STORE_SERVER_HOST = "artifactStoreServerHost";
   String ARTIFACT_STORE_URL_PROTOCOL = "artifactStoreUrlProtocol";
+  String NFS_SERVER_HOST = "nfsServerHost";
+  String NFS_URL_PROTOCOL = "nfsUrlProtocol";
   String PATH = "path";
   String PORT = "port";
   String RELATIONAL = "relational";

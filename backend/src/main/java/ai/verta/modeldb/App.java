@@ -189,7 +189,11 @@ public class App implements ApplicationContextAware {
 
   @Bean
   public S3Service getS3Service() throws ModelDBException {
-    return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
+    String bucketName = System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME);
+    if (bucketName != null && !bucketName.isEmpty()) {
+      return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
+    }
+    return null;
   }
 
   public static App getInstance() {
@@ -603,14 +607,14 @@ public class App implements ApplicationContextAware {
                 ModelDBConstants.ARTIFACT_STORE_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
     LOGGER.debug("ArtifactStore URL protocol found : {}", app.artifactStoreUrlProtocol);
 
-    Map<String, Object> nfsArtifactEndpointConfigMap =
+    Map<String, Object> artifactStoreEndpointConfigMap =
         (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
-    if (nfsArtifactEndpointConfigMap != null && !nfsArtifactEndpointConfigMap.isEmpty()) {
+    if (artifactStoreEndpointConfigMap != null && !artifactStoreEndpointConfigMap.isEmpty()) {
       app.getArtifactEndpoint =
-          (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
+          (String) artifactStoreEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
       LOGGER.trace("ArtifactStore Get artifact endpoint found : {}", app.getArtifactEndpoint);
       app.storeArtifactEndpoint =
-          (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
+          (String) artifactStoreEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
       LOGGER.trace("ArtifactStore Store artifact endpoint found : {}", app.storeArtifactEndpoint);
 
       System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
@@ -652,6 +656,40 @@ public class App implements ApplicationContextAware {
         LOGGER.trace("NFS server root path {}", rootDir);
         app.storeTypePathPrefix = "nfs://" + rootDir + ModelDBConstants.PATH_DELIMITER;
 
+        if (!artifactStoreConfigMap.containsKey(
+            ModelDBConstants.PICK_ARTIFACT_STORE_HOST_FROM_CONFIG)) {
+          app.pickArtifactStoreHostFromConfig =
+              (Boolean)
+                  nfsConfigMap.getOrDefault(ModelDBConstants.PICK_NFS_HOST_FROM_CONFIG, false);
+          LOGGER.trace("NFS pick host from config flag : {}", app.pickArtifactStoreHostFromConfig);
+        }
+        if (!artifactStoreConfigMap.containsKey(ModelDBConstants.ARTIFACT_STORE_SERVER_HOST)) {
+          app.artifactStoreServerHost =
+              (String) nfsConfigMap.getOrDefault(ModelDBConstants.NFS_SERVER_HOST, "");
+          LOGGER.trace("NFS server host URL found : {}", app.artifactStoreServerHost);
+        }
+        if (!artifactStoreConfigMap.containsKey(ModelDBConstants.ARTIFACT_STORE_URL_PROTOCOL)) {
+          app.artifactStoreUrlProtocol =
+              (String)
+                  nfsConfigMap.getOrDefault(
+                      ModelDBConstants.NFS_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
+          LOGGER.debug("NFS URL protocol found : {}", app.artifactStoreUrlProtocol);
+        }
+
+        if (artifactStoreEndpointConfigMap == null || artifactStoreEndpointConfigMap.isEmpty()) {
+          Map<String, Object> artifactEndpointConfigMap =
+              (Map<String, Object>) nfsConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
+          if (artifactEndpointConfigMap != null && !artifactEndpointConfigMap.isEmpty()) {
+            app.getArtifactEndpoint =
+                (String) artifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
+            LOGGER.trace("Get artifact endpoint found : {}", app.getArtifactEndpoint);
+            app.storeArtifactEndpoint =
+                (String) artifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
+            LOGGER.trace("Store artifact endpoint found : {}", app.storeArtifactEndpoint);
+          }
+          System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
+          System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
+        }
         System.getProperties().put("file.upload-dir", rootDir);
         System.getProperties()
             .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
