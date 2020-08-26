@@ -348,6 +348,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      if (experimentRun.getDatasetsCount() > 0 && app.isPopulateConnectionsBasedOnPrivileges()) {
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+      }
+
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
         Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
@@ -600,9 +604,16 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private ExperimentRun checkDatasetVersionBasedOnPrivileges(ExperimentRun experimentRun) {
     ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
+    List<Artifact> accessibleDatasetVersions =
+        getPrivilegedDatasets(experimentRun.getDatasetsList());
+    experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasetVersions);
+    return experimentRunBuilder.build();
+  }
+
+  private List<Artifact> getPrivilegedDatasets(List<Artifact> newArtifacts) {
     List<Artifact> accessibleDatasetVersions = new ArrayList<>();
     List<String> accessibleDatasetVersionIds = new ArrayList<>();
-    for (Artifact dataset : experimentRun.getDatasetsList()) {
+    for (Artifact dataset : newArtifacts) {
       if (!dataset.getLinkedArtifactId().isEmpty()
           && !accessibleDatasetVersionIds.contains(dataset.getLinkedArtifactId())) {
         try {
@@ -617,8 +628,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         accessibleDatasetVersions.add(dataset);
       }
     }
-    experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasetVersions);
-    return experimentRunBuilder.build();
+    return accessibleDatasetVersions;
   }
 
   private ExperimentRun checkVersionInputBasedOnPrivileges(
@@ -1050,6 +1060,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             }
           }
         }
+      }
+
+      if (app.isPopulateConnectionsBasedOnPrivileges()) {
+        newDatasets = getPrivilegedDatasets(newDatasets);
       }
 
       List<ArtifactEntity> newDatasetList =
