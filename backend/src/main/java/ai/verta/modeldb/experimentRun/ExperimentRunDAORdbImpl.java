@@ -1594,18 +1594,27 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         LOGGER.trace("experimentRunList {}", experimentRunList);
         LOGGER.trace("Converted from Hibernate to proto");
 
+        List<String> selfAllowedRepositoryIds = new ArrayList<>();
+        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          selfAllowedRepositoryIds =
+              roleService.getSelfAllowedResources(
+                  ModelDBServiceResourceTypes.REPOSITORY,
+                  ModelDBActionEnum.ModelDBServiceActions.READ);
+        }
+
         List<String> expRunIds =
             experimentRunEntities.stream()
                 .map(ExperimentRunEntity::getId)
                 .collect(Collectors.toList());
         Map<String, List<KeyValue>> expRunHyperparameterConfigBlobMap =
-            getExperimentRunHyperparameterConfigBlobMap(session, expRunIds);
+            getExperimentRunHyperparameterConfigBlobMap(
+                session, expRunIds, selfAllowedRepositoryIds);
 
         // Map<experimentRunID, Map<LocationString, CodeVersion>> : Map from experimentRunID to Map
         // of
         // LocationString to CodeBlob
         Map<String, Map<String, CodeVersion>> expRunCodeVersionMap =
-            getExperimentRunCodeVersionMap(session, expRunIds);
+            getExperimentRunCodeVersionMap(session, expRunIds, selfAllowedRepositoryIds);
 
         Set<String> experimentRunIdsSet = new HashSet<>();
         Set<String> accessibleDatasetVersionIdsSet = new HashSet<>();
@@ -1705,13 +1714,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private Map<String, List<KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
-      Session session, List<String> expRunIds) {
+      Session session, List<String> expRunIds, List<String> selfAllowedRepositoryIds) {
+
+    if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
+      return new HashMap<>();
+    }
 
     String queryBuilder =
-        "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds)";
+        "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds) AND vme.repository_id IN (:repoIds)";
+
     Query query = session.createQuery(queryBuilder);
     query.setParameter("hyperparameterType", HYPERPARAMETER);
     query.setParameterList("expRunIds", expRunIds);
+    query.setParameterList(
+        "repoIds",
+        selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+
     LOGGER.debug(
         "Final experimentRuns hyperparameter config blob final query : {}", query.getQueryString());
     List<Object[]> configBlobEntities = query.list();
@@ -1765,16 +1783,28 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
    * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
   private Map<String, Map<String, CodeVersion>> getExperimentRunCodeVersionMap(
-      Session session, List<String> expRunIds) throws InvalidProtocolBufferException {
+      Session session, List<String> expRunIds, List<String> selfAllowedRepositoryIds)
+      throws InvalidProtocolBufferException {
+
+    if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
+      return new HashMap<>();
+    }
+
     String queryBuilder =
         "SELECT vme.experimentRunEntity.id, vme.versioning_location, gcb, ncb, pdcb "
             + " From VersioningModeldbEntityMapping vme LEFT JOIN GitCodeBlobEntity gcb ON vme.blob_hash = gcb.blob_hash "
             + " LEFT JOIN NotebookCodeBlobEntity ncb ON vme.blob_hash = ncb.blob_hash "
             + " LEFT JOIN PathDatasetComponentBlobEntity pdcb ON ncb.path_dataset_blob_hash = pdcb.id.path_dataset_blob_id "
-            + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds)";
+            + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds) "
+            + " AND vme.repository_id IN (:repoIds) ";
+
     Query query = session.createQuery(queryBuilder);
     query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
     query.setParameterList("expRunIds", expRunIds);
+    query.setParameterList(
+        "repoIds",
+        selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+
     LOGGER.debug("Final experimentRuns code config blob final query : {}", query.getQueryString());
     List<Object[]> codeBlobEntities = query.list();
     LOGGER.debug("Final experimentRuns code config list size : {}", codeBlobEntities.size());
