@@ -31,7 +31,7 @@ For example:
                 ]
             },
             "env_vars": {"VERTA_HOST": "<Verta host URL>"},
-            "resources": {"cpu": .25, "memory": "100M"}
+            "resources": {"cpu": 0.25, "memory": "100M"}
         }
 
 .. TODO: Link to configuration file fields.

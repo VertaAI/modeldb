@@ -93,9 +93,9 @@ def update_endpoint(path, run_id, model_version_id, filename, strategy, resource
             strategy_obj.add_rule(_UpdateRule._from_dict(json.loads(rule)))
 
     if resources:
-        resources_list = Resources._from_dict(json.loads(resources))
+        resources = Resources._from_dict(json.loads(resources))
     else:
-        resources_list = None
+        resources = None
 
     if autoscaling:
         autoscaling_obj = Autoscaling._from_dict(json.loads(autoscaling))
@@ -109,4 +109,4 @@ def update_endpoint(path, run_id, model_version_id, filename, strategy, resource
     else:
         env_vars_dict = None
 
-    endpoint.update(model_reference, strategy_obj, resources=resources_list, autoscaling=autoscaling_obj, env_vars=env_vars_dict)
+    endpoint.update(model_reference, strategy_obj, resources=resources, autoscaling=autoscaling_obj, env_vars=env_vars_dict)
