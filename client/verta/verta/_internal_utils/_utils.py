@@ -442,6 +442,8 @@ def make_request(method, url, conn, stream=False, **kwargs):
                         else:
                             return fabricate_200()
                     time.sleep(1)
+                else:
+                    break
 
         except (requests.exceptions.BaseHTTPError,
                 requests.exceptions.RequestException) as e:
