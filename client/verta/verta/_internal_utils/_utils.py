@@ -429,6 +429,7 @@ def make_request(method, url, conn, stream=False, **kwargs):
         try:
             request = requests.Request(method, url, **kwargs).prepare()
 
+            # retry loop for broken connections
             MAX_RETRIES = conn.retry.total
             for retry_num in range(MAX_RETRIES+1):
                 logger.info("Making request ({} retries)".format(retry_num))
