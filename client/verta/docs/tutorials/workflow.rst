@@ -84,7 +84,7 @@ We also need to define some hyperparameters to specify a configuration for our m
 
     hyperparams = {'kernel': "rbf",
                    'C': 1e-2,
-                   'gamma': .2}
+                   'gamma': 0.2}
 
 Then we can finally train a model on our data:
 

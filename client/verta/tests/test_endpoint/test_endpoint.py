@@ -537,7 +537,7 @@ class TestEndpoint:
                 ]
             },
             "env_vars": {"VERTA_HOST": "app.verta.ai"},
-            "resources": {"cpu": .25, "memory": "100M"}
+            "resources": {"cpu": 0.25, "memory": "100M"}
         }
 
         filepath = "config.json"

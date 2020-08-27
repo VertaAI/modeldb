@@ -41,7 +41,7 @@ Compute resources can also be configured via the CLI:
 
     verta deployment update endpoint /some-path --model-version-id "<id>" \
         --strategy direct \
-        --resources '{"cpu": .25, "memory": "512Mi"}'
+        --resources '{"cpu": 0.25, "memory": "512Mi"}'
 
 ``--resources`` takes a JSON string representing its values. The Python API documentation for
 :ref:`update-resources` contains a JSON-equivalent example for the object.
