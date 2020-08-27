@@ -424,8 +424,8 @@ def make_request(method, url, conn, stream=False, **kwargs):
     # add auth to headers
     kwargs.setdefault('headers', {}).update(conn.auth)
 
-    with requests.Session() as s:
-        s.mount(url, HTTPAdapter(max_retries=conn.retry))
+    with requests.Session() as session:
+        session.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
             request = requests.Request(method, url, **kwargs).prepare()
 
@@ -433,7 +433,7 @@ def make_request(method, url, conn, stream=False, **kwargs):
             for retry_num in range(MAX_RETRIES+1):
                 logger.info("Making request ({} retries)".format(retry_num))
                 try:
-                    response = _make_request(s, request, conn.ignore_conn_err, stream=stream)
+                    response = _make_request(session, request, conn.ignore_conn_err, stream=stream)
                 except requests.ConnectionError as e:
                     if ((retry_num == MAX_RETRIES)
                             or ("BrokenPipeError" not in str(e))):
