@@ -7,6 +7,7 @@ import glob
 import inspect
 import itertools
 import json
+import logging
 import numbers
 import os
 import re
@@ -32,6 +33,9 @@ from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 from . import importer
+
+
+logger = logging.getLogger(__name__)
 
 
 _GRPC_PREFIX = "Grpc-Metadata-"
@@ -427,6 +431,7 @@ def make_request(method, url, conn, stream=False, **kwargs):
 
             MAX_RETRIES = conn.retry.total
             for retry_num in range(MAX_RETRIES+1):
+                logger.info("Making request ({} retries)".format(retry_num))
                 try:
                     response = _make_request(s, request, conn.ignore_conn_err, stream=stream)
                 except requests.ConnectionError as e:
