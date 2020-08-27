@@ -432,7 +432,7 @@ def make_request(method, url, conn, stream=False, **kwargs):
             # retry loop for broken connections
             MAX_RETRIES = conn.retry.total
             for retry_num in range(MAX_RETRIES+1):
-                logger.info("Making request ({} retries)".format(retry_num))
+                logger.debug("Making request ({} retries)".format(retry_num))
                 try:
                     response = _make_request(session, request, conn.ignore_conn_err, stream=stream)
                 except requests.ConnectionError as e:
