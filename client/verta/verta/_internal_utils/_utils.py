@@ -402,16 +402,16 @@ def make_request(method, url, conn, stream=False, **kwargs):
         HTTP method.
     url : str
         URL.
-    conn : Connection
+    conn : :class:`Connection`
         Connection authentication and configuration.
     stream : bool, default False
         Whether to stream the response contents.
     **kwargs
-        Initialization parameters to requests.Request().
+        Initialization arguments to :class:`requests.Request`.
 
     Returns
     -------
-    requests.Response
+    :class:`requests.Response`
 
     """
     if method.upper() not in _VALID_HTTP_METHODS:
@@ -424,24 +424,7 @@ def make_request(method, url, conn, stream=False, **kwargs):
         s.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
             request = requests.Request(method, url, **kwargs).prepare()
-            response = s.send(request, stream=stream, allow_redirects=False)
-
-            # manually inspect initial response and subsequent redirects to stop on 302s
-            history = []  # track history because `requests` doesn't since we're redirecting manually
-            responses = itertools.chain([response], s.resolve_redirects(response, request))
-            for response in responses:
-                if response.status_code == 302:
-                    if not conn.ignore_conn_err:
-                        raise RuntimeError(
-                            "received status 302 from {},"
-                            " which is not supported by the Client".format(response.url)
-                        )
-                    else:
-                        return fabricate_200()
-
-                history.append(response)
-            # set full history
-            response.history = history[:-1]  # last element is this response, so drop it
+            response = _make_request(s, request, conn.ignore_conn_err, stream=stream)
         except (requests.exceptions.BaseHTTPError,
                 requests.exceptions.RequestException) as e:
             if not conn.ignore_conn_err:
@@ -452,6 +435,48 @@ def make_request(method, url, conn, stream=False, **kwargs):
                 return response
             # else fall through to fabricate 200 response
         return fabricate_200()
+
+
+def _make_request(session, request, ignore_conn_err=False, **kwargs):
+    """
+    Actually sends the request across the wire, and resolves non-302 redirects.
+
+    Parameters
+    ----------
+    session : :class:`requests.Session`
+        Connection-pooled session for making requests.
+    request : :class:`requests.PreparedRequest`
+        Request to make.
+    ignore_conn_err : bool, default False
+        Whether to ignore connection errors and instead return a success with empty contents.
+    **kwargs
+        Arguments to :meth:`requests.Session.send`
+
+    Returns
+    -------
+    :class:`requests.Response`
+
+    """
+    response = session.send(request, allow_redirects=False, **kwargs)
+
+    # manually inspect initial response and subsequent redirects to stop on 302s
+    history = []  # track history because `requests` doesn't since we're redirecting manually
+    responses = itertools.chain([response], session.resolve_redirects(response, request))
+    for response in responses:
+        if response.status_code == 302:
+            if not ignore_conn_err:
+                raise RuntimeError(
+                    "received status 302 from {},"
+                    " which is not supported by the Client".format(response.url)
+                )
+            else:
+                return fabricate_200()
+
+        history.append(response)
+    # set full history
+    response.history = history[:-1]  # last element is this response, so drop it
+
+    return response
 
 
 def fabricate_200():
