@@ -424,7 +424,20 @@ def make_request(method, url, conn, stream=False, **kwargs):
         s.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
             request = requests.Request(method, url, **kwargs).prepare()
-            response = _make_request(s, request, conn.ignore_conn_err, stream=stream)
+
+            MAX_RETRIES = conn.retry.total
+            for retry_num in range(MAX_RETRIES+1):
+                try:
+                    response = _make_request(s, request, conn.ignore_conn_err, stream=stream)
+                except requests.ConnectionError as e:
+                    if ((retry_num == MAX_RETRIES)
+                            or ("BrokenPipeError" not in str(e))):
+                        if not conn.ignore_conn_err:
+                            raise e
+                        else:
+                            return fabricate_200()
+                    time.sleep(1)
+
         except (requests.exceptions.BaseHTTPError,
                 requests.exceptions.RequestException) as e:
             if not conn.ignore_conn_err:
