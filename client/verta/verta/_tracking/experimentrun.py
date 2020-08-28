@@ -41,6 +41,8 @@ from .._repository import commit as commit_module
 from .. import deployment
 from .. import utils
 
+from  . import experiment
+
 
 class ExperimentRun(_DeployableEntity):
     """
@@ -452,18 +454,21 @@ class ExperimentRun(_DeployableEntity):
         else:
             return dataset.path, dataset.path_only, dataset.linked_artifact_id
 
-    def clone(self, copy_artifacts=False, copy_code_version=False, copy_datasets=False):
+    def clone(self, copy_artifacts=False, copy_code_version=False, copy_datasets=False, experiment_id=None):
         """
-        Returns a newly-created copy of this Experiment Run.
+        Returns a newly-created copy of this experiment run.
 
         Parameters
         ----------
         copy_artifacts : bool, default False
-            Whether to also copy this Experiment Run's artifacts.
+            Whether to also copy this experiment run's artifacts.
         copy_code_version : bool, default False
-            Whether to also copy this Experiment Run's code version.
+            Whether to also copy this experiment run's code version.
         copy_datasets : bool, default False
-            Whether to also copy this Experiment Run's dataset versions.
+            Whether to also copy this experiment run's dataset versions.
+        experiment_id : str, optional
+            ID of experiment to clone this run into. If not provided, the new
+            run will be cloned into this run's experiment.
 
         Returns
         -------
@@ -473,11 +478,17 @@ class ExperimentRun(_DeployableEntity):
         # get info for the current run
         current_run = self._get_proto_by_id(self._conn, self.id)
 
+        if experiment_id is not None:
+            project_id = Experiment._get_proto_by_id(self._conn, experiment_id).project_id
+        else:
+            project_id = current_run.project_id
+            experiment_id = current_run.experiment_id
+
         # clone the current run
         Message = _ExperimentRunService.CreateExperimentRun
         msg = Message(
-            project_id=current_run.project_id,
-            experiment_id=current_run.experiment_id,
+            project_id=project_id,
+            experiment_id=experiment_id,
             name=ExperimentRun._generate_default_name(),
             description=current_run.description,
             tags=current_run.tags,
