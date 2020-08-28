@@ -1414,7 +1414,6 @@ public class FindDatasetEntitiesTest {
 
   /** Check observations.attributes not support */
   @Test
-  @Ignore
   public void findDatasetVersionsNotSupportObservationsAttributesTest() {
     LOGGER.info("FindDatasetVersions not support the observation.attributes test start........");
 
