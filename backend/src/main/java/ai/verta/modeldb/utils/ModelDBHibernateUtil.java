@@ -230,6 +230,9 @@ public class ModelDBHibernateUtil {
         settings.put(Environment.DIALECT, rDBDialect);
         settings.put(Environment.HBM2DDL_AUTO, "validate");
         settings.put(Environment.SHOW_SQL, "false");
+        settings.put(Environment.C3P0_MIN_SIZE, 5);
+        settings.put(Environment.C3P0_MAX_SIZE, 20);
+        settings.put(Environment.C3P0_TIMEOUT, 300);
         configuration.setProperties(settings);
 
         LOGGER.trace("connectionString {}", connectionString);
