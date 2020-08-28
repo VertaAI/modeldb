@@ -656,14 +656,10 @@ public class FindDatasetEntitiesTest {
 
   /** Find dataset with value of endTime */
   @Test
-  @Ignore
-  public void findDatasetsByDatasetEndTimeTest() {
-    LOGGER.info("FindDatasets By Dataset EndTime test start................................");
+  public void findDatasetsByDatasetTimeUpdatedTest() {
+    LOGGER.info("FindDatasets By Dataset TimeUpdated test start................................");
 
-    DatasetTest datasetTest = new DatasetTest();
-
-    Value stringValue =
-        Value.newBuilder().setStringValue(String.valueOf(dataset4.getTimeUpdated())).build();
+    Value stringValue = Value.newBuilder().setNumberValue(dataset4.getTimeUpdated()).build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
             .setKey(ModelDBConstants.TIME_UPDATED)
@@ -690,7 +686,7 @@ public class FindDatasetEntitiesTest {
         1,
         response.getTotalRecords());
 
-    LOGGER.info("FindDatasets By Dataset EndTime test stop................................");
+    LOGGER.info("FindDatasets By Dataset TimeUpdated test stop................................");
   }
 
   /** FInd Datasets by attribute with pagination */
