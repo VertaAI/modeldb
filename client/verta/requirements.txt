@@ -19,7 +19,8 @@ matplotlib>=3.2; python_version >= '3.8'
 numpy<1.17
 pandas
 pillow<7.0
-scikit-learn<0.21
+scikit-learn<0.21; python_version < '3.8'  # https://scikit-learn.org/stable/install.html
+scikit-learn>=0.22; python_version >= '3.8'
 scipy<1.3
 spacy!=2.3.1; python_version == '2.7'  # https://github.com/explosion/spaCy/issues/5729
 spacy; python_version != '2.7'
