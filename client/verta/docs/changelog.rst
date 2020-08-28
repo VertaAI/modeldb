@@ -37,6 +37,15 @@ Release Notes
      <>`__
 
 
+v0.15.2 (2020-08-28)
+--------------------
+
+Enhancements
+^^^^^^^^^^^^
+- `add retries for all client connection errors
+  <https://github.com/VertaAI/modeldb/pull/1407>`__
+
+
 v0.15.1 (2020-08-24)
 --------------------
 
