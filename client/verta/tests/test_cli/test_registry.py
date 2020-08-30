@@ -223,7 +223,7 @@ class TestCreate:
 
             requirements_path = "requirements.txt"
             with open(requirements_path, "w") as f:
-                f.write("torch==1.0.0")
+                f.write("torch=={}".format(torch.__version__))
 
             runner = CliRunner()
             result = runner.invoke(
