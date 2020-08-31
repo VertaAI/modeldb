@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+import requests
 
 from .entity_registry import _ModelDBRegistryEntity
 from .._internal_utils._utils import NoneProtoResponse
@@ -318,3 +319,12 @@ class RegisteredModel(_ModelDBRegistryEntity):
 
     def _get_info_list(self):
         return [self._msg.name, str(self.id), _utils.timestamp_to_str(self._msg.time_updated)]
+
+    def delete(self):
+        """
+        Deletes this registered model.
+
+        """
+        request_url = "{}://{}/api/v1/registry/registered_models/{}".format(self._conn.scheme, self._conn.socket, self.id)
+        response = requests.delete(request_url, headers=self._conn.auth)
+        _utils.raise_for_http_error(response)

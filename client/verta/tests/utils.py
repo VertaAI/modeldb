@@ -127,46 +127,8 @@ def get_build_ids(status):
     return set(map(lambda comp: comp["build_id"], status["components"]))
 
 
-def delete_project(id_, conn):
-    request_url = "{}://{}/api/v1/modeldb/project/deleteProject".format(conn.scheme, conn.socket)
-    response = requests.delete(request_url, json={'id': id_}, headers=conn.auth)
-    _utils.raise_for_http_error(response)
-
-
-def delete_experiment(id_, conn):
-    request_url = "{}://{}/api/v1/modeldb/experiment/deleteExperiment".format(conn.scheme, conn.socket)
-    response = requests.delete(request_url, json={'id': id_}, headers=conn.auth)
-    _utils.raise_for_http_error(response)
-
-
-def delete_experiment_run(id_, conn):
-    request_url = "{}://{}/api/v1/modeldb/experiment-run/deleteExperimentRun".format(conn.scheme, conn.socket)
-    response = requests.delete(request_url, json={'id': id_}, headers=conn.auth)
-    _utils.raise_for_http_error(response)
-
 def delete_datasets(ids, conn):
     request_url = "{}://{}/api/v1/modeldb/dataset/deleteDatasets".format(conn.scheme, conn.socket)
     response = requests.delete(request_url, json={'ids': ids}, headers=conn.auth)
     _utils.raise_for_http_error(response)
 
-def delete_repository(id_, conn):
-    request_url = "{}://{}/api/v1/modeldb/versioning/repositories/{}".format(conn.scheme, conn.socket, id_)
-    response = requests.delete(request_url, headers=conn.auth)
-    _utils.raise_for_http_error(response)
-
-def delete_registered_model(id_, conn):
-    request_url = "{}://{}/api/v1/registry/registered_models/{}".format(conn.scheme, conn.socket, id_)
-    response = requests.delete(request_url, headers=conn.auth)
-    _utils.raise_for_http_error(response)
-
-def delete_endpoint(id_, workspace, conn):
-    request_url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}".format(conn.scheme, conn.socket, workspace, id_)
-    response = requests.delete(request_url, headers=conn.auth)
-    _utils.raise_for_http_error(response)
-
-def delete_organization(id_, conn):
-    Message = _OrganizationService.DeleteOrganization
-    endpoint = "/api/v1/uac-proxy/organization/deleteOrganization"
-    msg = Message(org_id=id_)
-    response = conn.make_proto_request("POST", endpoint, body=msg)
-    conn.must_proto_response(response, Message.Response)
