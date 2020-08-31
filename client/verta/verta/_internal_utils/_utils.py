@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import ast
 import copy
 import datetime
 import glob
@@ -309,11 +310,22 @@ class LazyList(object):
 
             try:
                 value = float(value)
-            except ValueError:  # not a number, so process as string
-                # maintain old behavior where input would be wrapped in quotes
-                if ((value.startswith('\'') and value.endswith('\''))
-                        or (value.startswith('"') and value.endswith('"'))):
-                    value = value[1:-1]
+            except ValueError:  # not a number
+                # parse value
+                try:
+                    expr_node = ast.parse(value, mode='eval')
+                except SyntaxError:
+                    e = ValueError("value `{}` must be a number or string literal".format(value))
+                    six.raise_from(e, None)
+                value_node = expr_node.body
+                if type(value_node) is ast.Str:
+                    value = value_node.s
+                elif type(value_node) is ast.Compare:
+                    e = ValueError("predicate `{}` must be a two-operand comparison".format(predicate))
+                    six.raise_from(e, None)
+                else:
+                    e = ValueError("value `{}` must be a number or string literal".format(value))
+                    six.raise_from(e, None)
 
             new_list._msg.predicates.append(  # pylint: disable=no-member
                 _CommonCommonService.KeyValueQuery(
