@@ -5,6 +5,9 @@ from verta._internal_utils import _utils
 
 class TestSharing:
     def test_share_project_personal_workspace(self, client, client_2, email_2):
+        """
+        User 1 share a project in personal workspace to user 2.
+        """
         project_name = _utils.generate_default_name()
         project = client.create_project(project_name)
         project._add_collaborator(email=email_2)
@@ -13,6 +16,9 @@ class TestSharing:
         assert client_2.get_project(name=project.name)
 
     def test_org_public_project(self, client, organization, client_2, email_2):
+        """
+        User 2 tries to access a org-public project created by a user in the same organization.
+        """
         project_name = _utils.generate_default_name()
         project = client.create_project(project_name, workspace=organization.name, public_within_org=True)
 
@@ -22,6 +28,9 @@ class TestSharing:
         assert client_2.get_project(name=project.name, workspace=organization.name)
 
     def test_non_org_public_project_access_error(self, client, organization, client_2, email_2):
+        """
+        User 2 tries to access a non-org-public project created by a user in the same organization.
+        """
         project_name = _utils.generate_default_name()
         project = client.create_project(project_name, workspace=organization.name, public_within_org=False)
 
@@ -34,7 +43,10 @@ class TestSharing:
         excinfo_value = str(excinfo.value).strip()
         assert "not found" in excinfo_value
 
-    def test_share_org_projectr(self, client, organization, client_2, email_2):
+    def test_share_org_project(self, client, organization, client_2, email_2):
+        """
+        User 2 tries to access a non-org-public project created by another user, but has been shared to user 2.
+        """
         project_name = _utils.generate_default_name()
         project = client.create_project(project_name, workspace=organization.name, public_within_org=False)
 
