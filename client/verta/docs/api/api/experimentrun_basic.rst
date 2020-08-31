@@ -1,4 +1,4 @@
-.. currentmodule:: verta._tracking
+.. currentmodule:: verta._tracking.experimentrun
 
 ExperimentRun (Core)
 ====================

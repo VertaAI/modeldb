@@ -6,7 +6,9 @@ import static org.junit.Assert.*;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
+import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
+import ai.verta.common.EntitiesEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum.Operator;
@@ -21,7 +23,6 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
@@ -114,7 +115,7 @@ public class ExperimentRunTest {
 
     app = App.getInstance();
     AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
+    app.setRoleService(new PublicRoleServiceUtils(authService));
 
     Map<String, Object> authServicePropMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
@@ -125,11 +126,11 @@ public class ExperimentRunTest {
       app.setAuthServerPort(authServicePort);
 
       authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
+      app.setRoleService(new RoleServiceUtils(authService));
     }
 
     App.initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
+        serverBuilder, databasePropMap, propertiesMap, authService, app.getRoleService());
     serverBuilder.intercept(new ModelDBAuthInterceptor());
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
@@ -139,7 +140,8 @@ public class ExperimentRunTest {
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
     deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+        new DeleteEntitiesCron(
+            authService, app.getRoleService(), CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
@@ -8411,6 +8413,8 @@ public class ExperimentRunTest {
         ExperimentServiceGrpc.newBlockingStub(channel);
     ExperimentRunServiceBlockingStub experimentRunServiceStub =
         ExperimentRunServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
+        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
     VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
@@ -8443,123 +8447,137 @@ public class ExperimentRunTest {
         !createExperimentRunRequest.hasVersionedInputs());
 
     long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-    Commit commit =
-        Commit.newBuilder()
-            .setMessage("this is the test commit message")
-            .setDateCreated(111)
-            .addParentShas(getBranchResponse.getCommit().getCommitSha())
-            .build();
-    CreateCommitRequest createCommitRequest =
-        CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-            .setCommit(commit)
-            .addBlobs(
-                BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
-                    .addLocation("dataset")
-                    .addLocation("train")
-                    .build())
-            .addBlobs(
-                BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
-                    .addLocation("dataset_1")
-                    .addLocation("train")
-                    .build())
-            .build();
-    CreateCommitRequest.Response commitResponse =
-        versioningServiceBlockingStub.createCommit(createCommitRequest);
-
-    Map<String, Location> locationMap = new HashMap<>();
-    locationMap.put(
-        "location-2", Location.newBuilder().addLocation("dataset").addLocation("train").build());
-
-    LogVersionedInput logVersionedInput =
-        LogVersionedInput.newBuilder()
-            .setId(experimentRun.getId())
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap)
-                    .build())
-            .build();
-    experimentRunServiceStub.logVersionedInput(logVersionedInput);
-
-    LogVersionedInput logVersionedInputFail =
-        LogVersionedInput.newBuilder()
-            .setId(experimentRun.getId())
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getParentShasList().get(0))
-                    .build())
-            .build();
     try {
-      experimentRunServiceStub.logVersionedInput(logVersionedInputFail);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+      GetBranchRequest getBranchRequest =
+          GetBranchRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+              .setBranch(ModelDBConstants.MASTER_BRANCH)
+              .build();
+      GetBranchRequest.Response getBranchResponse =
+          versioningServiceBlockingStub.getBranch(getBranchRequest);
+      Commit commit =
+          Commit.newBuilder()
+              .setMessage("this is the test commit message")
+              .setDateCreated(111)
+              .addParentShas(getBranchResponse.getCommit().getCommitSha())
+              .build();
+      CreateCommitRequest createCommitRequest =
+          CreateCommitRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+              .setCommit(commit)
+              .addBlobs(
+                  BlobExpanded.newBuilder()
+                      .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                      .addLocation("dataset")
+                      .addLocation("train")
+                      .build())
+              .addBlobs(
+                  BlobExpanded.newBuilder()
+                      .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                      .addLocation("dataset_1")
+                      .addLocation("train")
+                      .build())
+              .build();
+      CreateCommitRequest.Response commitResponse =
+          versioningServiceBlockingStub.createCommit(createCommitRequest);
+
+      Map<String, Location> locationMap = new HashMap<>();
+      locationMap.put(
+          "location-2", Location.newBuilder().addLocation("dataset").addLocation("train").build());
+
+      LogVersionedInput logVersionedInput =
+          LogVersionedInput.newBuilder()
+              .setId(experimentRun.getId())
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .build();
+      experimentRunServiceStub.logVersionedInput(logVersionedInput);
+
+      LogVersionedInput logVersionedInputFail =
+          LogVersionedInput.newBuilder()
+              .setId(experimentRun.getId())
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getParentShasList().get(0))
+                      .build())
+              .build();
+      try {
+        experimentRunServiceStub.logVersionedInput(logVersionedInputFail);
+        fail();
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn(
+            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+      }
+
+      GetExperimentRunById getExperimentRunById =
+          GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+      Response response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+      assertEquals(
+          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+          logVersionedInput.getVersionedInputs(),
+          response.getExperimentRun().getVersionedInputs());
+
+      locationMap.put(
+          "location-1",
+          Location.newBuilder().addLocation("dataset_1").addLocation("train").build());
+      logVersionedInput =
+          LogVersionedInput.newBuilder()
+              .setId(experimentRun.getId())
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .build();
+      experimentRunServiceStub.logVersionedInput(logVersionedInput);
+
+      response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+      assertEquals(
+          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+          logVersionedInput.getVersionedInputs(),
+          response.getExperimentRun().getVersionedInputs());
+
+      GetVersionedInput getVersionedInput =
+          GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
+      GetVersionedInput.Response getVersionedInputResponse =
+          experimentRunServiceStub.getVersionedInputs(getVersionedInput);
+      assertEquals(
+          "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+          logVersionedInput.getVersionedInputs(),
+          getVersionedInputResponse.getVersionedInputs());
+
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
+        getVersionedInputResponse =
+            experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
+        assertTrue(
+            "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+            getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
+      }
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
     }
-
-    GetExperimentRunById getExperimentRunById =
-        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
-    Response response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    assertEquals(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-        logVersionedInput.getVersionedInputs(),
-        response.getExperimentRun().getVersionedInputs());
-
-    locationMap.put(
-        "location-1", Location.newBuilder().addLocation("dataset_1").addLocation("train").build());
-    logVersionedInput =
-        LogVersionedInput.newBuilder()
-            .setId(experimentRun.getId())
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap)
-                    .build())
-            .build();
-    experimentRunServiceStub.logVersionedInput(logVersionedInput);
-
-    response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    assertEquals(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-        logVersionedInput.getVersionedInputs(),
-        response.getExperimentRun().getVersionedInputs());
-
-    GetVersionedInput getVersionedInput =
-        GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
-    GetVersionedInput.Response getVersionedInputResponse =
-        experimentRunServiceStub.getVersionedInputs(getVersionedInput);
-    assertEquals(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-        logVersionedInput.getVersionedInputs(),
-        getVersionedInputResponse.getVersionedInputs());
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Log and Get Versioning ExperimentRun test stop................................");
   }
@@ -9285,6 +9303,8 @@ public class ExperimentRunTest {
         ExperimentServiceGrpc.newBlockingStub(channel);
     ExperimentRunServiceBlockingStub experimentRunServiceStub =
         ExperimentRunServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
+        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
     VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
@@ -9348,148 +9368,224 @@ public class ExperimentRunTest {
     Project project = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
 
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_1");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
+    try {
+      // Create two experiment of above project
+      CreateExperiment createExperimentRequest =
+          ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_1");
+      CreateExperiment.Response createExperimentResponse =
+          experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment1 = createExperimentResponse.getExperiment();
+      LOGGER.info("Experiment created successfully");
 
-    Map<String, Location> locationMap = new HashMap<>();
-    locationMap.put("location-1", location1);
+      Map<String, Location> locationMap = new HashMap<>();
+      locationMap.put("location-1", location1);
 
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
-    KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap)
-                    .build())
-            .addHyperparameters(hyperparameter1)
-            .build();
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
+      CreateExperimentRun createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+      KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .addHyperparameters(hyperparameter1)
+              .build();
+      CreateExperimentRun.Response createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
 
-    locationMap.put("location-2", location2);
+      locationMap.put("location-2", location2);
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap)
-                    .build())
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
-    ExperimentRun experimentRunConfig1 = createExperimentRunResponse.getExperimentRun();
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
+      ExperimentRun experimentRunConfig1 = createExperimentRunResponse.getExperimentRun();
 
-    // experiment2 of above project
-    createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
+      // experiment2 of above project
+      createExperimentRequest =
+          ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
+      createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment2 = createExperimentResponse.getExperiment();
+      LOGGER.info("Experiment created successfully");
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
-    hyperparameter1 = generateNumericKeyValue("C", 0.0001);
-    Map<String, Location> locationMap2 = new HashMap<>();
-    locationMap2.put("location-4", location4);
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap2)
-                    .build())
-            .addHyperparameters(hyperparameter1)
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
-    ExperimentRun experimentRunConfig2 = createExperimentRunResponse.getExperimentRun();
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
+      hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+      Map<String, Location> locationMap2 = new HashMap<>();
+      locationMap2.put("location-4", location4);
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap2)
+                      .build())
+              .addHyperparameters(hyperparameter1)
+              .build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
+      ExperimentRun experimentRunConfig2 = createExperimentRunResponse.getExperimentRun();
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
-    hyperparameter1 = generateNumericKeyValue("C", 1e-6);
-    createExperimentRunRequest =
-        createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
+      hyperparameter1 = generateNumericKeyValue("C", 1e-6);
+      createExperimentRunRequest =
+          createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
 
-    Value hyperparameterFilter = Value.newBuilder().setNumberValue(0.0001).build();
-    KeyValueQuery keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.train")
-            .setValue(hyperparameterFilter)
-            .setOperator(Operator.GTE)
-            .setValueType(ValueType.NUMBER)
-            .build();
+      Value hyperparameterFilter = Value.newBuilder().setNumberValue(0.0001).build();
+      KeyValueQuery keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.train")
+              .setValue(hyperparameterFilter)
+              .setOperator(Operator.GTE)
+              .setValueType(ValueType.NUMBER)
+              .build();
 
-    FindExperimentRuns findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .build();
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .build();
 
-    FindExperimentRuns.Response response =
-        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      FindExperimentRuns.Response response =
+          experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        2,
-        response.getExperimentRunsCount());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        experimentRunConfig2.getId(),
-        response.getExperimentRuns(0).getId());
-    for (ExperimentRun exprRun : response.getExperimentRunsList()) {
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("train")) {
-          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          2,
+          response.getExperimentRunsCount());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          experimentRunConfig2.getId(),
+          response.getExperimentRuns(0).getId());
+      for (ExperimentRun exprRun : response.getExperimentRunsList()) {
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("train")) {
+            assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+          }
         }
       }
+
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        CollaboratorServiceBlockingStub collaboratorServiceStub =
+            CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
+        AddCollaboratorRequest addCollaboratorRequest =
+            AddCollaboratorRequest.newBuilder()
+                .setShareWith(authClientInterceptor.getClient2Email())
+                .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
+                .addEntityIds(project.getId())
+                .build();
+        AddCollaboratorRequest.Response addCollaboratorResponse =
+            collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info(
+            "Project Collaborator added in server : " + addCollaboratorResponse.getStatus());
+        assertTrue(addCollaboratorResponse.getStatus());
+
+        findExperimentRuns =
+            FindExperimentRuns.newBuilder()
+                .setProjectId(project.getId())
+                .addPredicates(keyValueQuery)
+                .setAscending(false)
+                .setIdsOnly(false)
+                .build();
+
+        response = experimentRunServiceStubClient2.findExperimentRuns(findExperimentRuns);
+        assertEquals(
+            "Total records count not matched with expected records count",
+            2,
+            response.getTotalRecords());
+        assertEquals(
+            "ExperimentRun count not match with expected experimentRun count",
+            2,
+            response.getExperimentRunsCount());
+        assertEquals(
+            "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
+            1,
+            response.getExperimentRuns(0).getHyperparametersCount());
+
+        addCollaboratorRequest =
+            AddCollaboratorRequest.newBuilder()
+                .setShareWith(authClientInterceptor.getClient2Email())
+                .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
+                .addEntityIds(String.valueOf(repoId))
+                .build();
+        addCollaboratorResponse =
+            collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
+        assertTrue(addCollaboratorResponse.getStatus());
+
+        findExperimentRuns =
+            FindExperimentRuns.newBuilder()
+                .setProjectId(project.getId())
+                .addPredicates(keyValueQuery)
+                .setAscending(false)
+                .setIdsOnly(false)
+                .build();
+
+        response = experimentRunServiceStubClient2.findExperimentRuns(findExperimentRuns);
+        assertEquals(
+            "Total records count not matched with expected records count",
+            2,
+            response.getTotalRecords());
+        assertEquals(
+            "ExperimentRun count not match with expected experimentRun count",
+            2,
+            response.getExperimentRunsCount());
+        assertEquals(
+            "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
+            3,
+            response.getExperimentRuns(0).getHyperparametersCount());
+      }
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
     }
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("FindExperimentRuns test stop................................");
   }
@@ -10497,6 +10593,8 @@ public class ExperimentRunTest {
         ExperimentServiceGrpc.newBlockingStub(channel);
     ExperimentRunServiceBlockingStub experimentRunServiceStub =
         ExperimentRunServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
+        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
     DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
@@ -10729,6 +10827,37 @@ public class ExperimentRunTest {
           "ExperimentRun not match with expected experimentRun",
           experimentRun11,
           response.getExperimentRuns(0));
+
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        CollaboratorServiceBlockingStub collaboratorServiceStub =
+            CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
+
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestProjectInterceptor(
+                project, CollaboratorType.READ_ONLY, authClientInterceptor);
+
+        AddCollaboratorRequest.Response addCollaboratorResponse =
+            collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator updated in server : " + addCollaboratorResponse.getStatus());
+        assertTrue(addCollaboratorResponse.getStatus());
+
+        response =
+            experimentRunServiceStubClient2.getExperimentRunsByDatasetVersionId(
+                getExperimentRunsByDatasetVersionId);
+
+        assertEquals(
+            "Total records count not matched with expected records count",
+            1,
+            response.getTotalRecords());
+        assertEquals(
+            "ExperimentRun count not match with expected experimentRun count",
+            1,
+            response.getExperimentRunsCount());
+        assertEquals(
+            "ExperimentRun not match with expected experimentRun",
+            0,
+            response.getExperimentRuns(0).getDatasetsCount());
+      }
     } finally {
       for (String datasetVersionId : datasetVersionIds) {
         DeleteDatasetVersion deleteDatasetVersion =

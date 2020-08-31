@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+import json
 
 import click
 
 from .registry import registry
 from ... import Client
 from ...environment import Python
+from ..._internal_utils._utils import _multiple_arguments_for_each
 
 
 @registry.group(name="update")
@@ -46,8 +48,10 @@ def update_model(model_name, label, workspace, description):
 @click.option('--overwrite', help="Overwrite model and artifacts if already logged.", is_flag=True)
 @click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
 @click.option("--description", "-d", help="Description.")
-def update_model_version(model_name, version_name, label, model, custom_module, no_custom_modules, artifact, workspace, overwrite, requirements,
-                         description):
+@click.option("--attribute", type=str, multiple=True, help="Attribute to be associated with the model version. The format is --attribute attribute_key=value.")
+def update_model_version(model_name, version_name, label, model, custom_module, no_custom_modules,
+                         artifact, workspace, overwrite, requirements,
+                         description, attribute):
     """Update an existing registeredmodelversion entry.
     """
     if custom_module and no_custom_modules:
@@ -59,10 +63,6 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
 
     client = Client()
 
-    artifact = list(map(lambda s: s.split('='), artifact))
-    if artifact and len(artifact) > len(set(map(lambda pair: pair[0], artifact))):
-        raise click.BadParameter("cannot have duplicate artifact keys")
-
     try:
         registered_model = client.get_registered_model(model_name, workspace=workspace)
     except ValueError:
@@ -73,24 +73,12 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
     except ValueError:
         raise click.BadParameter("version {} not found".format(version_name))
 
+    _multiple_arguments_for_each(artifact, "artifact",
+                                 lambda key, path: model_version.log_artifact(key, path, overwrite=overwrite),
+                                 lambda: model_version.get_artifact_keys(), overwrite)
+
     if not overwrite and model and model_version.has_model:
         raise click.BadParameter("a model has already been associated with the version; consider using --overwrite flag")
-
-    if artifact:
-        artifact_keys = set(model_version.get_artifact_keys())
-
-        for pair in artifact:
-            if len(pair) != 2:
-                raise click.BadParameter("key and path for artifacts must be separated by a '='")
-            (key, _) = pair
-            if key == "model":
-                raise click.BadParameter("the key \"model\" is reserved for model")
-
-            if not overwrite and key in artifact_keys:
-                raise click.BadParameter("key \"{}\" already exists; consider using --overwrite flag".format(key))
-
-        for (key, path) in artifact:
-            model_version.log_artifact(key, path, overwrite=overwrite)
 
     if label:
         model_version.add_labels(label)
@@ -103,4 +91,12 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
         model_version.log_environment(Python(requirements=reqs))
 
     if description:
-        registered_model.set_description(description)
+        model_version.set_description(description)
+
+    add_attributes(model_version, attribute, overwrite)
+
+
+def add_attributes(model_version, attribute, overwrite):
+    _multiple_arguments_for_each(attribute, "attribute",
+                                 lambda key, value: model_version.add_attribute(key, json.loads(value), overwrite=overwrite),
+                                 lambda: model_version._get_attribute_keys(), overwrite)
