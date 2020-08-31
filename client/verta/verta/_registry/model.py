@@ -88,7 +88,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
 
         Returns
         -------
-        :class:`RegisteredModelVersion`
+        :class:`~verta._registry.modelversion.RegisteredModelVersion`
 
         Raises
         ------
