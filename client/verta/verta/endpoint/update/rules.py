@@ -54,6 +54,19 @@ class MaximumAverageLatencyThresholdRule(_UpdateRule):
     """
     Rule for maximum average latency threshold.
 
+    The JSON equivalent for this (as an element of canary rules JSON) is:
+
+    .. code-block:: json
+
+        {"rule": "latency_avg_max", "rule_parameters": [{"name": "threshold", "value": 0.1}]}
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.endpoint.update.rules import MaximumAverageLatencyThresholdRule
+        rule = MaximumAverageLatencyThresholdRule(100)
+
     """
     _RULE_ID = 1005
     _PARENT_NAME = "latency_avg_max"
@@ -63,6 +76,19 @@ class MaximumAverageLatencyThresholdRule(_UpdateRule):
 class MaximumP90LatencyThresholdRule(_UpdateRule):
     """
     Rule for maximum p90 latency threshold.
+
+    The JSON equivalent for this (as an element of canary rules JSON) is:
+
+    .. code-block:: json
+
+        {"rule": "latency_p90_max", "rule_parameters": [{"name": "threshold", "value": 0.1}]}
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.endpoint.update.rules import MaximumP90LatencyThresholdRule
+        rule = MaximumP90LatencyThresholdRule(100)
 
     """
     _RULE_ID = 1006
@@ -74,6 +100,19 @@ class MaximumRequestErrorPercentageThresholdRule(_UpdateRule):
     """
     Rule for maximum request error percentage threshold.
 
+    The JSON equivalent for this (as an element of canary rules JSON) is:
+
+    .. code-block:: json
+
+        {"rule": "error_4xx_rate", "rule_parameters": [{"name": "threshold", "value": 0.1}]}
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.endpoint.update.rules import MaximumRequestErrorPercentageThresholdRule
+        rule = MaximumRequestErrorPercentageThresholdRule(0.5)
+
     """
     _RULE_ID = 1007
     _PARENT_NAME = "error_4xx_rate"
@@ -83,6 +122,19 @@ class MaximumRequestErrorPercentageThresholdRule(_UpdateRule):
 class MaximumServerErrorPercentageThresholdRule(_UpdateRule):
     """
     Rule for maximum server error percentage threshold.
+
+    The JSON equivalent for this (as an element of canary rules JSON) is:
+
+    .. code-block:: json
+
+        {"rule": "error_5xx_rate", "rule_parameters": [{"name": "threshold", "value": 0.1}]}
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.endpoint.update.rules import MaximumServerErrorPercentageThresholdRule
+        rule = MaximumServerErrorPercentageThresholdRule(0.5)
 
     """
     _RULE_ID = 1008

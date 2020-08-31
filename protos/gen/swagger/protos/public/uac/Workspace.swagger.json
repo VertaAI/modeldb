@@ -119,6 +119,12 @@
         },
         "org_id": {
           "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "org_name": {
+          "type": "string"
         }
       }
     }

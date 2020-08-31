@@ -405,6 +405,14 @@ def created_endpoints(client, client_2):
             utils.delete_endpoint(endpoint.id, endpoint.workspace, client_2._conn)
 
 
+def endpoint(client, created_endpoints):
+    path = _utils.generate_default_name()
+    endpoint = client.create_endpoint(path)
+    created_endpoints.append(endpoint)
+
+    yield endpoint
+
+
 @pytest.fixture
 def organization(client):
     workspace_name = _utils.generate_default_name()
@@ -414,7 +422,7 @@ def organization(client):
 
     utils.delete_organization(org.id, client._conn)
 
-    
+
 @pytest.fixture
 def requirements_file():
     with tempfile.NamedTemporaryFile('w+') as tempf:
@@ -427,4 +435,3 @@ def requirements_file():
         tempf.seek(0)
 
         yield tempf
-

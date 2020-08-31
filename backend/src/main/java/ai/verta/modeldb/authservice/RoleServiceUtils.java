@@ -1,6 +1,7 @@
 package ai.verta.modeldb.authservice;
 
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
@@ -33,6 +34,7 @@ import ai.verta.uac.GetTeamById;
 import ai.verta.uac.GetTeamByName;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ListMyOrganizations;
+import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.RemoveResources;
@@ -1277,6 +1279,19 @@ public class RoleServiceUtils implements RoleService {
               retry,
               (ModelDBUtils.RetryCallInterface<Boolean>)
                   (retry1) -> deleteAllResources(retry1, resourceIds, modelDBServiceResourceTypes));
+    }
+  }
+
+  public boolean checkConnectionsBasedOnPrivileges(
+      ModelDBResourceEnum.ModelDBServiceResourceTypes serviceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions serviceActions,
+      String resourceId) {
+    try {
+      isSelfAllowed(serviceResourceTypes, serviceActions, resourceId);
+      return true;
+    } catch (Exception ex) {
+      LOGGER.debug(ex.getMessage());
+      return false;
     }
   }
 }

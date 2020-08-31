@@ -1,10 +1,10 @@
-Querying Model Metadata
+Querying model metadata
 =======================
 
-For revisiting past Experiment Runs, the Verta API offers the ability to find Runs based on their
+For revisiting past experiment runs, the Verta API offers the ability to find runs based on their
 properties and logged values.
 
-To start, you can obtain a collection of Experiment Runs under a Project or an Experiment using
+To start, you can obtain a collection of experiment runs under a project or an experiment using
 their ``expt_runs`` attribute:
 
 .. code-block:: python
@@ -16,8 +16,8 @@ their ``expt_runs`` attribute:
     expt.expt_runs
     # <ExperimentRuns containing 8 runs>
 
-These are :class:`~verta.client.ExperimentRuns` objects, which have a method
-:meth:`~verta.client.ExperimentRuns.find` for filtering their contents:
+These are :class:`~verta._tracking.ExperimentRuns` objects, which have a method
+:meth:`~verta._tracking.ExperimentRuns.find` for filtering their contents:
 
 .. code-block:: python
 
@@ -40,7 +40,7 @@ Multiple queries can be specified together, which returns the intersection of th
     ])
     # <ExperimentRuns containing 2 runs>
 
-Query Syntax
+Query syntax
 ------------
 
 Queries are Python strings that follow this syntax:
@@ -51,10 +51,10 @@ Queries are Python strings that follow this syntax:
 
 |
 
-For example, lets say I have several Runs, and I've been logging each multi-layer perceptron's
+For example, lets say I have several runs, and I've been logging each multi-layer perceptron's
 hidden layer size as a hyperparameter with the key "hidden_size".
 
-To find all Runs with a hidden size greater than 512, the query would look like this:
+To find all runs with a hidden size greater than 512, the query would look like this:
 
 .. code-block:: python
 
@@ -72,7 +72,7 @@ To find all Runs with a hidden size greater than 512, the query would look like 
 Fields
 ^^^^^^
 
-The fields currently supported by the Client are:
+The fields currently supported by the client are:
 
 * ``id``
 * ``project_id``
@@ -103,7 +103,7 @@ For example:
 Operators
 ^^^^^^^^^
 
-The operators currently supported by the Client are:
+The operators currently supported by the client are:
 
 * ``==``
 * ``!=``

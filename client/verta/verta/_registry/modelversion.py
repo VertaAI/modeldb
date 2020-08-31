@@ -36,7 +36,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     Object representing a version of a Registered Model.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`RegisteredModel.get_or_create_version`.
+    :meth:`RegisteredModel.get_or_create_version()
+    <verta._registry.model.RegisteredModel.get_or_create_version>`.
 
     Attributes
     ----------
@@ -228,6 +229,10 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
             if unlogged_artifact_keys:
                 raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
+
+        # associate artifact dependencies
+        if artifacts:
+            self.add_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite=overwrite)
 
         if isinstance(model, six.string_types):  # filepath
             model = open(model, 'rb')
@@ -424,7 +429,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         Parameters
         ----------
-        environment : `verta.environment._Environment.`
+        environment : `verta.environment.Python.`
             Environment to log.
 
         """
@@ -462,7 +467,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         return Python._from_proto(self._msg)
 
-    def _get_url_for_artifact(self, key, method, artifact_type, part_num=0):
+    def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
@@ -510,15 +515,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                 part_stream = six.BytesIO(file_part)
 
                 # upload part
-                #     Retry connection errors, to make large multipart uploads more robust.
-                for _ in range(3):
-                    try:
-                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-                    except requests.ConnectionError:  # e.g. broken pipe
-                        time.sleep(1)
-                        continue  # try again
-                    else:
-                        break
+                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                 _utils.raise_for_http_error(response)
 
                 # commit part
@@ -586,7 +583,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                                                filename_extension=extension)
         return artifact_msg
 
-    def _get_artifact(self, key, artifact_type):
+    def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists
         self._refresh_cache()
         if key == "model":
@@ -722,7 +719,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
     #     self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
 
-    def add_attribute(self, key, value):
+    def add_attribute(self, key, value, overwrite=False):
         """
         Adds an attribute to this Model Version.
 
@@ -732,11 +729,13 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             Name of the attribute.
         value : one of {None, bool, float, int, str, list, dict}
             Value of the attribute.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing attribute with key `key`.
 
         """
-        self.add_attributes({key: value})
+        self.add_attributes({key: value}, overwrite)
 
-    def add_attributes(self, attrs):
+    def add_attributes(self, attrs, overwrite=False):
         """
         Adds potentially multiple attributes to this Model Version.
 
@@ -744,6 +743,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         ----------
         attrs : dict of str to {None, bool, float, int, str, list, dict}
             Attributes.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing attribute with key `key`.
 
         """
         # validate all keys first
@@ -752,11 +753,13 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         # build KeyValues
         attribute_keyvals = []
+        existing_attrs = self.get_attributes()
         for key, value in six.viewitems(attrs):
-            attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
-                                                                                                             allow_collection=True)))
+            if not key in existing_attrs or overwrite:
+                attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
+                                                                                                                 allow_collection=True)))
 
-            self._update(self.ModelVersionMessage(attributes=attribute_keyvals))
+        self._update(self.ModelVersionMessage(attributes=attribute_keyvals))
 
     def get_attribute(self, key):
         """
@@ -793,6 +796,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         """
         self._refresh_cache()
         return _utils.unravel_key_values(self._msg.attributes)
+
+    def _get_attribute_keys(self):
+        return list(map(lambda attribute: attribute.key, self.get_attributes()))
 
     def del_attribute(self, key):
         """
