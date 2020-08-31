@@ -242,6 +242,8 @@ public class DatasetTest {
 
     DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
         DatasetServiceGrpc.newBlockingStub(channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
 
     CreateDataset createDatasetRequest = getDatasetRequest("rental_TEXT_train_data.csv");
     CreateDataset.Response createDatasetResponse =
@@ -253,6 +255,24 @@ public class DatasetTest {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         createDatasetResponse.getDataset().getName());
+
+    try {
+      createDatasetRequest = getDatasetRequest("rental_TEXT_train_data.csv");
+      createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+    }
+
+    long id = RepositoryTest.createRepository(versioningServiceBlockingStub, NAME);
+
+    DeleteRepositoryRequest.Response deleteRepoResponse =
+        versioningServiceBlockingStub.deleteRepository(
+            DeleteRepositoryRequest.newBuilder()
+                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+                .build());
+    assertTrue(deleteRepoResponse.getStatus());
 
     DeleteDataset deleteDataset =
         DeleteDataset.newBuilder().setId(createDatasetResponse.getDataset().getId()).build();

@@ -2,24 +2,28 @@ from click.testing import CliRunner
 
 import pytest
 import time
+import tarfile
 import json
 
 from verta import Client
 from verta._cli import cli
 from verta._internal_utils import _utils
 from verta.environment import Python
-from verta.deployment.update._strategies import DirectUpdateStrategy
+from verta.endpoint.update._strategies import DirectUpdateStrategy
+from verta.endpoint.resources import Resources
 
 from ..utils import get_build_ids
 
 
 class TestList:
-    def test_list_endpoint(self):
+    def test_list_endpoint(self, created_endpoints):
         client = Client()
         path = _utils.generate_default_name()
         path2 = _utils.generate_default_name()
         endpoint1 = client.get_or_create_endpoint(path)
         endpoint2 = client.get_or_create_endpoint(path2)
+        created_endpoints.append(endpoint1)
+        created_endpoints.append(endpoint2)
         runner = CliRunner()
         result = runner.invoke(
             cli,
@@ -269,7 +273,7 @@ class TestUpdate:
         )
         assert result.exception
         assert error_msg_3 in str(result.exception)
-        
+
     def test_update_from_version(self, client, model_version, created_endpoints):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
@@ -361,7 +365,7 @@ class TestUpdate:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        resources = '{"cpu_millis": 250, "memory": "100M"}'
+        resources = '{"cpu": 0.25, "memory": "100M"}'
 
         runner = CliRunner()
         result = runner.invoke(
@@ -370,7 +374,8 @@ class TestUpdate:
              '--resources', resources],
         )
         assert not result.exception
-        assert endpoint.get_update_status()['update_request']['resources'] == json.loads(resources)
+        resources_dict = Resources._from_dict(json.loads(resources))._as_dict()  # config is `cpu`, wire is `cpu_millis`
+        assert endpoint.get_update_status()['update_request']['resources'] == resources_dict
 
     def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -388,7 +393,7 @@ class TestUpdate:
         result = runner.invoke(
             cli,
             ['deployment', 'update', 'endpoint', path, '--run-id', experiment_run.id, '--autoscaling', autoscaling_option,
-             "--autoscaling-metrics", cpu_metric, "--autoscaling-metrics", memory_metric, "--strategy", "direct"],
+             "--autoscaling-metric", cpu_metric, "--autoscaling-metric", memory_metric, "--strategy", "direct"],
         )
         assert not result.exception
 
@@ -408,6 +413,51 @@ class TestUpdate:
             else:
                 assert metric["parameters"][0]["name"] == "target"
                 assert metric["parameters"][0]["value"] == "0.7"
+
+
+class TestDownload:
+    def test_download_context(self, experiment_run, model_for_deployment, registered_model, in_tempdir, created_registered_models, model_version):
+        np = pytest.importorskip("numpy")
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        artifact = np.random.random((36, 12))
+        experiment_run.log_artifact("some-artifact", artifact)
+
+        download_to_path = "context_cli.tgz"
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'download', 'dockercontext', '--run-id', experiment_run.id, '--output',
+             download_to_path],
+        )
+        assert not result.exception
+
+        # can be loaded as tgz
+        with tarfile.open(download_to_path, 'r:gz') as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths
+
+        model_version.log_model(model_for_deployment['model'], custom_modules=[])
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['deployment', 'download', 'dockercontext', '--model-version-id', model_version.id,
+             '--output', download_to_path],
+        )
+
+        assert not result.exception
+
+        # can be loaded as tgz
+        with tarfile.open(download_to_path, 'r:gz') as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths
 
 
 class TestPredict:

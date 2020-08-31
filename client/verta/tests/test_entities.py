@@ -9,7 +9,7 @@ import requests
 import pytest
 
 from verta._registry import RegisteredModels
-from verta._tracking.experimentrun import _CACHE_DIR
+from verta._tracking.deployable_entity import _CACHE_DIR
 from . import utils
 
 import verta
@@ -184,13 +184,13 @@ class TestEntities:
             contents = six.ensure_binary(strs[1])
 
             assert not os.path.isfile(filepath)
-            assert not entity._get_cached(filename)
+            assert not entity._get_cached_file(filename)
 
             try:
-                assert entity._cache(filename, contents) == filepath
+                assert entity._cache_file(filename, contents) == filepath
 
                 assert os.path.isfile(filepath)
-                assert entity._get_cached(filename)
+                assert entity._get_cached_file(filename)
 
                 with open(filepath, 'rb') as f:
                     assert f.read() == contents

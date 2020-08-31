@@ -4,37 +4,5 @@ Endpoint
 .. note::
     .. versionadded:: 0.15.0
 
-Client
-------
-.. automethod:: verta.Client.get_or_create_endpoint
-.. automethod:: verta.Client.get_endpoint
-.. automethod:: verta.Client.create_endpoint
-
-Endpoint
---------
-.. autoclass:: verta._deployment.endpoint.Endpoint()
-    :members:
-
-Update Strategies
------------------
-.. automodule:: verta.deployment.update._strategies
-    :members:
-
-Canary Update Rules
-^^^^^^^^^^^^^^^^^^^
-.. automodule:: verta.deployment.update.rules
-    :members:
-
-Update Configuration
---------------------
-Resources
-^^^^^^^^^
-.. automodule:: verta.deployment.resources
-    :members:
-
-Autoscaling
-^^^^^^^^^^^
-.. automodule:: verta.deployment.autoscaling._autoscaling
-    :members:
-.. automodule:: verta.deployment.autoscaling.metrics
+.. autoclass:: verta.endpoint._endpoint.Endpoint()
     :members:

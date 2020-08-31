@@ -78,6 +78,18 @@ def dev_key():
     return os.environ.get("VERTA_DEV_KEY", DEFAULT_DEV_KEY)
 
 
+@pytest.fixture(scope='session')
+def email_2():
+    # For collaboration tests
+    return os.environ.get("VERTA_EMAIL_2")
+
+
+@pytest.fixture(scope='session')
+def dev_key_2():
+    # For collaboration tests
+    return os.environ.get("VERTA_DEV_KEY_2")
+
+
 @pytest.fixture
 def seed():
     return RANDOM_SEED
@@ -278,6 +290,20 @@ def client(host, port, email, dev_key):
 
 
 @pytest.fixture
+def client_2(host, port, email_2, dev_key_2):
+    """For collaboration tests."""
+    if not (email_2 and dev_key_2):
+        pytest.skip("second account credentials not present")
+    print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
+
+    client = Client(host, port, email_2, dev_key_2, debug=True)
+
+    yield client
+
+    print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
+
+
+@pytest.fixture
 def experiment_run(client):
     proj = client.set_project()
     print("[TEST LOG] Project ID is {}".format(proj.id))
@@ -364,6 +390,15 @@ def model_version(registered_model):
 
 
 @pytest.fixture
+def endpoint(client, created_endpoints):
+    path = _utils.generate_default_name()
+    endpoint = client.create_endpoint(path)
+    created_endpoints.append(endpoint)
+
+    yield endpoint
+
+
+@pytest.fixture
 def created_endpoints(client):
     to_delete = []
 
@@ -382,7 +417,7 @@ def organization(client):
 
     utils.delete_organization(org.id, client._conn)
 
-    
+
 @pytest.fixture
 def requirements_file():
     with tempfile.NamedTemporaryFile('w+') as tempf:
@@ -395,4 +430,3 @@ def requirements_file():
         tempf.seek(0)
 
         yield tempf
-

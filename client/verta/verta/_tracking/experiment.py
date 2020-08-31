@@ -26,7 +26,7 @@ class Experiment(_ModelDBEntity):
     Runs.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.set_experiment`.
+    :meth:`Client.set_experiment() <verta.client.Client.set_experiment>`.
 
     Attributes
     ----------
@@ -34,7 +34,7 @@ class Experiment(_ModelDBEntity):
         ID of this Experiment.
     name : str
         Name of this Experiment.
-    expt_runs : :class:`ExperimentRuns`
+    expt_runs : :class:`~verta._tracking.ExperimentRuns`
         Experiment Runs under this Experiment.
 
     """

@@ -44,7 +44,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -724,7 +723,6 @@ public class CollaboratorTest {
   }
 
   @Test
-  @Ignore
   public void getDatasetCollaboratorTest() {
     LOGGER.info("Get Dataset Collaborator test start................................");
 
@@ -756,8 +754,11 @@ public class CollaboratorTest {
 
     List<String> sharedUsers = new ArrayList<>();
     AddCollaboratorRequest addCollaboratorRequest =
-        addCollaboratorRequestDataset(
-            dataset, shareWithUserInfo.getEmail(), CollaboratorType.READ_WRITE);
+        addCollaboratorRequestUser(
+            dataset.getId(),
+            shareWithUserInfo.getEmail(),
+            CollaboratorType.READ_WRITE,
+            "Please refer shared project for your invention");
     sharedUsers.add(authService.getVertaIdFromUserInfo(shareWithUserInfo));
 
     AddCollaboratorRequest.Response addCollaboratorResponse =

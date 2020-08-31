@@ -1,4 +1,4 @@
-Creating Custom Models
+Creating custom models
 ======================
 
 Developers frequently need to create a model that is not using a single framework. This mix and match
@@ -7,7 +7,7 @@ makes model development easier, but it complicates depending on the model.
 Verta supports custom models defined as a class that can perform arbitrary computations and this
 tutorial shows you how to create one.
 
-Defining a Class Model
+Defining a class model
 ----------------------
 
 A *Class Model* must implement this interface:
@@ -33,7 +33,7 @@ their json-compatible format automatically.
 
 In order to use this model, you must also register this model with Verta.
 
-Saving a Class Model
+Saving a class model
 --------------------
 
 Any class within the Verta platform that has a ``log_model`` method, such as an

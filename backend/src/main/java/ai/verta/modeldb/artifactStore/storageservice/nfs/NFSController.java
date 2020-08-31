@@ -41,7 +41,7 @@ public class NFSController {
       String fileName = nfsService.storeFile(artifactPath, inputStream);
       LOGGER.trace("storeArtifact - file name : {}", fileName);
       LOGGER.debug("storeArtifact returned");
-      return new UploadFileResponse(fileName, null, null, -1L);
+      return new UploadFileResponse(fileName, null, null, -1L, null);
     } catch (IOException | ModelDBException e) {
       LOGGER.warn(e.getMessage(), e);
       ErrorCountResource.inc(e);

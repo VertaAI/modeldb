@@ -28,10 +28,13 @@ def test_create_msg():
 
 
 class TestOrganization:
-    @pytest.mark.skip("delete not implemented yet")
     def test_create(self, client):
         name = _utils.generate_default_name()
-        assert client._create_organization(name)
+        org = client._create_organization(name)
+        assert org
+        assert org.id == client._get_organization(name).id
+
+        org.delete()
 
     def test_create_same_name_diff_workspace(self, client, organization, in_tempdir, created_endpoints, created_registered_models, created_datasets):
         # creating some entities:
@@ -94,5 +97,5 @@ class TestOrganization:
         assert dataset.id != new_dataset.id
         assert repository.id != new_repository.id
 
-        delete_project(new_project.id, client._conn)
-        delete_repository(repository.id, client._conn)
+        new_project.delete()
+        repository.delete()
