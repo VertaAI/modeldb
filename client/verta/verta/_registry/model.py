@@ -21,7 +21,8 @@ class RegisteredModel(_ModelDBRegistryEntity):
     Object representing a registered model.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.set_registered_model() <verta.client.Client.set_registered_model>`
+    :meth:`Client.get_or_create_registered_model()
+    <verta.client.Client.get_or_create_registered_model>`
 
     Attributes
     ----------

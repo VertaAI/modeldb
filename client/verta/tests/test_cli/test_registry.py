@@ -8,6 +8,7 @@ from click.testing import CliRunner
 
 from verta import Client
 from verta._cli import cli
+from verta._cli.registry.update import add_attributes
 from verta._registry import RegisteredModel
 from verta._internal_utils import _utils
 from verta.environment import Python
@@ -228,7 +229,8 @@ class TestCreate:
             result = runner.invoke(
                 cli,
                 ['registry', 'create', 'registeredmodelversion', model_name, version_name,
-                 "--model", model_path, "--custom-module", "models/", "--requirements", requirements_path],
+                 "--model", model_path, "--custom-module", "models/", "--requirements",
+                 requirements_path],
             )
             assert not result.exception
 
@@ -611,3 +613,32 @@ class TestUpdate:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
 
+@pytest.mark.parametrize(("key", "value", "arg"), (
+    ["num", 3.6, ["num=3.6"]], ["str", '3.6', ['str="3.6"']],
+    ["dict", {"a": 1, "b": 2}, ['dict={"a": 1, "b": 2}']]))
+def test_add_attributes(key, value, arg):
+    class TestModelVersion:
+        def add_attribute(self, key, value0, overwrite):
+            assert value == value0
+
+        def _get_attribute_keys(self):
+            return [key]
+
+    model_version = TestModelVersion()
+    add_attributes(model_version, arg, True)
+
+
+def test_multiple_attributes():
+    call_number = [0]
+    values = [3.6, {"a": 1, "b": 2}]
+
+    class TestModelVersion:
+        def add_attribute(self, key, value0, overwrite):
+            assert values[call_number[0]] == value0
+            call_number[0] += 1
+
+        def _get_attribute_keys(self):
+            return ["numl", "dict"]
+
+    model_version = TestModelVersion()
+    add_attributes(model_version, ["num=3.6", 'dict={"a": 1, "b": 2}'], True)

@@ -36,7 +36,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     Object representing a version of a Registered Model.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`RegisteredModel.get_or_create_version`.
+    :meth:`RegisteredModel.get_or_create_version()
+    <verta._registry.model.RegisteredModel.get_or_create_version>`.
 
     Attributes
     ----------
@@ -228,6 +229,10 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
             if unlogged_artifact_keys:
                 raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
+
+        # associate artifact dependencies
+        if artifacts:
+            self.add_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite=overwrite)
 
         if isinstance(model, six.string_types):  # filepath
             model = open(model, 'rb')
@@ -510,20 +515,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                 part_stream = six.BytesIO(file_part)
 
                 # upload part
-                #     Retry connection errors, to make large multipart uploads more robust.
-                MAX_TRIES = 3
-                for i in range(MAX_TRIES):
-                    try:
-                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-                    except requests.ConnectionError as err:  # e.g. broken pipe
-                        time.sleep(1)
-
-                        if i == MAX_TRIES - 1:
-                            raise err
-
-                        continue  # try again
-                    else:
-                        break
+                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                 _utils.raise_for_http_error(response)
 
                 # commit part
@@ -804,6 +796,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         """
         self._refresh_cache()
         return _utils.unravel_key_values(self._msg.attributes)
+
+    def _get_attribute_keys(self):
+        return list(map(lambda attribute: attribute.key, self.get_attributes()))
 
     def del_attribute(self, key):
         """

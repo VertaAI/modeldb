@@ -4,10 +4,6 @@ import collections
 import json
 import numbers
 import os
-import pathlib2
-import tempfile
-import warnings
-import zipfile
 
 from .external import six
 
@@ -312,3 +308,5 @@ class TFSavedModel(object):
         }
 
         return self.session.run(self.output_tensors, input_dict)
+
+

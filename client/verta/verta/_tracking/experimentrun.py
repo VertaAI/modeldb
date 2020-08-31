@@ -49,7 +49,7 @@ class ExperimentRun(_DeployableEntity):
     This class provides read/write functionality for Experiment Run metadata.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.set_experiment_run`.
+    :meth:`Client.set_experiment_run() <verta.client.Client.set_experiment_run>`.
 
     Attributes
     ----------
@@ -290,20 +290,7 @@ class ExperimentRun(_DeployableEntity):
                 part_stream = six.BytesIO(file_part)
 
                 # upload part
-                #     Retry connection errors, to make large multipart uploads more robust.
-                MAX_TRIES = 3
-                for i in range(MAX_TRIES):
-                    try:
-                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-                    except requests.ConnectionError as err:  # e.g. broken pipe
-                        time.sleep(1)
-
-                        if i == MAX_TRIES - 1:
-                            raise err
-
-                        continue  # try again
-                    else:
-                        break
+                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                 _utils.raise_for_http_error(response)
 
                 # commit part

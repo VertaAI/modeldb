@@ -67,10 +67,8 @@ from ._registry import (
 )
 from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
-from ._deployment import (
-    Endpoint,
-    Endpoints,
-)
+from .endpoint._endpoint import Endpoint
+from .endpoint._endpoints import Endpoints
 
 
 class Client(object):
@@ -119,9 +117,9 @@ class Client(object):
     debug : bool
         Whether to print extra verbose information to aid in debugging. Changes to this value propagate
         to any objects that are/were created from this Client.
-    proj : :class:`Project` or None
+    proj : :class:`~verta._tracking.project.Project` or None
         Currently active Project.
-    expt : :class:`Experiment` or None
+    expt : :class:`~verta._tracking.experiment.Experiment` or None
         Currently active Experiment.
 
     """
@@ -300,7 +298,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~Project`
+        :class:`~verta._tracking.project.Project`
 
         """
         if name is not None and id is not None:
@@ -356,7 +354,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Project`
+        :class:`~verta._tracking.project.Project`
 
         Raises
         ------
@@ -396,7 +394,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~Experiment`
+        :class:`~verta._tracking.experiment.Experiment`
 
         """
         if name is not None and id is not None:
@@ -444,7 +442,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Experiment`
+        :class:`~verta._tracking.experiment.Experiment`
 
         Raises
         ------
@@ -485,7 +483,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         """
         if name is not None and id is not None:
@@ -532,7 +530,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         Raises
         ------
@@ -651,7 +649,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         Raises
         ------
@@ -696,7 +694,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
         """
         return _dataset.Dataset(self._conn, self._conf, name=name, _dataset_id=id)
 
@@ -727,7 +725,7 @@ class Client(object):
 
         Returns
         -------
-        list of :class:`Dataset`
+        list of :class:`~verta._dataset.Dataset`
 
         """
         datasets = Datasets(self._conn, self._conf)
@@ -765,7 +763,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`DatasetVersion`
+        :class:`~verta._dataset.DatasetVersion`
         """
         return _dataset.DatasetVersion(self._conn, self._conf, _dataset_version_id=id)
 
@@ -919,7 +917,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._registry.modelversion.ModelVersion`
+        :class:`~verta._registry.modelversion.RegisteredModelVersion`
         """
         return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
 
@@ -954,7 +952,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._deployment.Endpoint`
+        :class:`~verta.endpoint._endpoint.Endpoint`
 
         Raises
         ------
@@ -994,7 +992,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._deployment.endpoint.Endpoint`
+        :class:`~verta.endpoint._endpoint.Endpoint`
 
         """
         if path is not None and id is not None:
@@ -1049,7 +1047,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.Project`
+        :class:`~verta._tracking.project.Project`
 
         Raises
         ------
@@ -1085,7 +1083,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.Experiment`
+        :class:`~verta._tracking.experiment.Experiment`
 
         Raises
         ------
@@ -1125,7 +1123,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         Raises
         ------
@@ -1241,11 +1239,11 @@ class Client(object):
             Path of the endpoint.
         name : str
             Name of the endpoint.
-        strategy : :class:`~verta.deployment.update._strategies._UpdateStrategy`
+        strategy : :ref:`update strategy <update-stategies>`
             Strategy (direct or canary) for updating the endpoint.
-        resources : list of :class:`~verta.deployment.resources._Resource`, optional
+        resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated endpoint.
-        autoscaling : :class:`~verta.deployment.autoscaling._autoscaling.Autoscaling`, optional
+        autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
             Autoscaling condition for the updated endpoint.
         env_vars : dict of str to str, optional
             Environment variables.
@@ -1310,7 +1308,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         Raises
         ------
@@ -1368,7 +1366,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         Raises
         ------
@@ -1401,7 +1399,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         """
         # TODO: when MVP, remove '2'
@@ -1435,6 +1433,9 @@ class Client(object):
 
     def _create_organization(self, name, desc=None, collaborator_type=None, global_can_deploy=None):
         return Organization._create(self._conn, name, desc, collaborator_type, global_can_deploy)
+
+    def _get_organization(self, name):
+        return Organization._get_by_name(self._conn, name)
 
     def delete_datasets(self, ids):
         """

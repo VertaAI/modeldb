@@ -8,8 +8,8 @@ import requests
 import yaml
 
 import verta
-from verta._deployment import Endpoint
-from verta.endpoint.resources import CpuMillis, Memory
+from verta.endpoint._endpoint import Endpoint
+from verta.endpoint.resources import Resources
 from verta.endpoint.autoscaling import Autoscaling
 from verta.endpoint.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
 from verta.endpoint.update import DirectUpdateStrategy, CanaryUpdateStrategy
@@ -128,7 +128,7 @@ class TestEndpoint:
 
         strategy = CanaryUpdateStrategy(interval=10, step=0.1)
         strategy.add_rule(MaximumAverageLatencyThresholdRule(0.1))
-        resources = [CpuMillis(100), Memory("128Mi")]
+        resources = Resources(cpu=.1, memory="128Mi")
         autoscaling = Autoscaling(min_replicas=1, max_replicas=10, min_scale=0.1, max_scale=2)
         autoscaling.add_metric(CpuUtilizationTarget(0.75))
         env_vars = {'env1': "var1", 'env2': "var2"}
@@ -309,7 +309,7 @@ class TestEndpoint:
         strategy = CanaryUpdateStrategy(interval=1, step=0.5)
 
         strategy.add_rule(MaximumAverageLatencyThresholdRule(0.8))
-        updated_status = endpoint.update(experiment_run, strategy, resources = [ CpuMillis(500), Memory("500Mi"), ],
+        updated_status = endpoint.update(experiment_run, strategy, resources = Resources(cpu=.25, memory="512Mi"),
                                          env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai"})
 
         # Check that a new build is added:
@@ -330,10 +330,7 @@ class TestEndpoint:
 
     def test_create_update_body(self):
         endpoint = Endpoint(None, None, None, None)
-        resources = [
-            CpuMillis(500),
-            Memory("500Mi"),
-        ]
+        resources = Resources(cpu=.25, memory="512Mi")
 
         env_vars = {'CUDA_VISIBLE_DEVICES': "1,2", "VERTA_HOST": "app.verta.ai", "GIT_TERMINAL_PROMPT" : "1"}
 
@@ -344,7 +341,7 @@ class TestEndpoint:
                 {'name': 'GIT_TERMINAL_PROMPT', 'value': '1'},
                 {"name": 'VERTA_HOST', 'value': 'app.verta.ai'}
             ],
-            'resources': {'cpu_millis': 500, 'memory': '500Mi'},
+            'resources': {'cpu_millis': 250, 'memory': '512Mi'},
             'strategy': 'rollout',
         }
 
@@ -415,7 +412,7 @@ class TestEndpoint:
 
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_model(classifier)
+        model_version.log_model(classifier, custom_modules=[])
 
         env = Python(requirements=["scikit-learn"])
         model_version.log_environment(env)
@@ -453,10 +450,7 @@ class TestEndpoint:
         with open(filepath, "w") as f:
             json.dump(strategy_dict, f)
 
-        endpoint.update_from_config(filepath)
-
-        while not endpoint.get_status()['status'] == "active":
-            time.sleep(3)
+        endpoint.update_from_config(filepath, wait=True)
 
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
@@ -495,7 +489,7 @@ class TestEndpoint:
         with sys_path_manager() as sys_path:
             sys_path.append(".")
 
-            from models.nets import FullyConnected
+            from models.nets import FullyConnected  # pylint: disable=import-error
 
             train_data = torch.rand((2, 4))
 
@@ -543,7 +537,7 @@ class TestEndpoint:
                 ]
             },
             "env_vars": {"VERTA_HOST": "app.verta.ai"},
-            "resources": {"cpu_millis": 250, "memory": "100M"}
+            "resources": {"cpu": 0.25, "memory": "100M"}
         }
 
         filepath = "config.json"
@@ -574,7 +568,8 @@ class TestEndpoint:
         assert update_status["update_request"]["env"][0]["value"] == "app.verta.ai"
 
         # Check resources:
-        assert endpoint.get_update_status()['update_request']['resources'] == config_dict["resources"]
+        resources_dict = Resources._from_dict(config_dict["resources"])._as_dict()  # config is `cpu`, wire is `cpu_millis`
+        assert endpoint.get_update_status()['update_request']['resources'] == resources_dict
 
     def test_update_twice(self, client, registered_model, created_endpoints):
         np = pytest.importorskip("numpy")

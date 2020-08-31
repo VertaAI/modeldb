@@ -443,6 +443,7 @@ public class ModelDBUtils {
       Throwable throwable = findRootCause(e);
       // Condition 'throwable != null' covered by below condition 'throwable instanceof
       // SocketException'
+      StackTraceElement[] stack = e.getStackTrace();
       if (throwable instanceof SocketException) {
         String errorMessage = "Database Connection not found: ";
         LOGGER.info(errorMessage + "{}", e.getMessage());
@@ -462,6 +463,8 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else {
+        LOGGER.error(
+            "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());
         status =
             Status.newBuilder()
                 .setCode(Code.INTERNAL_VALUE)
@@ -469,9 +472,6 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       }
-      StackTraceElement[] stack = e.getStackTrace();
-      LOGGER.error(
-          "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());
       int n = 0;
       boolean isLongStack = stack.length > STACKTRACE_LENGTH;
       if (isLongStack) {

@@ -6,86 +6,77 @@ import re
 from ..external import six
 
 
-@six.add_metaclass(abc.ABCMeta)
-class _Resource(object):
-    def __init__(self, parameter):
-        self.parameter = parameter
+class Resources(object):
+    """
+    Computational resources allowed for an endpoint's model, to be passed to
+    :meth:`Endpoint.update() <verta.endpoint._endpoint.Endpoint.update>`.
 
-    @staticmethod
-    def _from_dict(resources_dict):
-        # NOTE: Return a list of resources
-        resources = []
+    Verta uses the same representation for memory `as Kubernetes
+    <https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory>`__:
 
-        RESOURCE_SUBCLASSES = {
-            "cpu_millis": CpuMillis,
-            "memory": Memory
+        You can express memory as a plain integer or as a fixed-point integer
+        using one of these suffixes: **E, P, T, G, M, K**. You can also use the
+        power-of-two equivalents: **Ei, Pi, Ti, Gi, Mi, Ki**. For example, the
+        following represent roughly the same value: 128974848, 129e6, 129M, 123Mi.
+
+    The JSON equivalent for this is:
+
+    .. code-block:: json
+
+        {
+            "resources": {"cpu": 0.25, "memory": "512Mi"}
         }
 
-        for name in resources_dict:
-            parameter = resources_dict[name]
-
-            if isinstance(parameter, six.string_types):
-                parameter = six.ensure_str(parameter)
-
-            resources.append(RESOURCE_SUBCLASSES[name](parameter))
-
-        return resources
-
-
-class CpuMillis(_Resource):
-    """
-    Number of CPU milli allowed for Endpoint. Must be an integer greater than 0.
+    Parameters
+    ----------
+    cpu : float > 0
+        CPU cores allowed for an endpoint's model.
+    memory : str
+        Memory allows for an endpoint's model.
 
     Examples
     --------
     .. code-block:: python
 
-        from verta.endpoint.resources import CpuMillis
-        cpu = CpuMillis(250)
+        from verta.endpoint.resources import Resources
+        resources = Resources(cpu=.25, memory="512Mi")
 
     """
-    milli_err_msg = "`cpu_millis` must be int greater than 0"
+    CPU_ERR_MSG = "`cpu` must be a number greater than 0"
+    MEMORY_ERR_MSG = ' '.join([
+        "`memory` must be a string representing a plain integer",
+        "or a fixed-point integer with suffixes",
+        "E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki;",
+        "for example: 128974848, 129e6, 129M, 123Mi",
+    ])
 
-    def __init__(self, parameter):
-        if not isinstance(parameter, int):
-            raise TypeError(self.milli_err_msg)
-        if parameter <= 0:
-            raise ValueError(self.milli_err_msg)
-        super(CpuMillis, self).__init__(parameter)
+    def __init__(self, cpu=None, memory=None):
+        if cpu is not None:
+            self._validate_cpu(cpu)
+        if memory is not None:
+            self._validate_memory(memory)
 
-    def to_dict(self):
-        return {"cpu_millis": self.parameter}
+        self.cpu = cpu
+        self.memory = memory
 
+    def _validate_cpu(self, cpu):
+        if not isinstance(cpu, (six.integer_types, float)):
+            raise TypeError(self.CPU_ERR_MSG)
+        if cpu <= 0:
+            raise ValueError(self.CPU_ERR_MSG)
 
-class Memory(_Resource):
-    """
-    Amount of memory allowed for Endpoint.
+    def _validate_memory(self, memory):
+        if not isinstance(memory, six.string_types):
+            raise TypeError(self.MEMORY_ERR_MSG)
+        if not re.match(r'^[0-9]+[e]?[0-9]*[E|P|T|G|M|K]?[i]?$', memory):
+            raise ValueError(self.MEMORY_ERR_MSG)
 
-    Must be a string representing a plain integer or a fixed-point integer with one of the following suffixes:
-    "E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki."
+    def _as_dict(self):
+        return {
+            'cpu_millis': int(self.cpu*1000),
+            'memory': self.memory,
+        }
 
-    For example: "128974848", "129e6", "129M", "123Mi"
-
-    Examples
-    --------
-    .. code-block:: python
-
-        from verta.endpoint.resources import Memory
-        memory = Memory("100M")
-
-    """
-    memory_err_msg = "`memory` must be a string representing a plain integer or a fixed-point integer with suffixes " \
-                     "E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki, for example: 128974848, 129e6, 129M, 123Mi "
-
-    def __init__(self, parameter):
-        self._validate(parameter)
-        super(Memory, self).__init__(parameter)
-
-    def _validate(self, parameter):
-        if not isinstance(parameter, str):
-            raise TypeError(self.memory_err_msg)
-        if not re.match(r'^[0-9]+[e]?[0-9]*[E|P|T|G|M|K]?[i]?$', parameter):
-            raise ValueError(self.memory_err_msg)
-
-    def to_dict(self):
-        return {"memory": self.parameter}
+    @classmethod
+    def _from_dict(cls, rule_dict):
+        return cls(**rule_dict)

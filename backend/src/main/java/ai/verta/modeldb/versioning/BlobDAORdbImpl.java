@@ -1623,7 +1623,15 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       CommitPaginationDTO commitPaginationDTO =
-          commitDAO.findCommits(session, request, currentLoginUserInfo, false, true);
+          commitDAO.findCommits(
+              session,
+              request,
+              currentLoginUserInfo,
+              false,
+              true,
+              false,
+              ModelDBConstants.DATE_UPDATED,
+              false);
 
       Set<String> rootShaList =
           commitPaginationDTO.getCommitEntities().stream()

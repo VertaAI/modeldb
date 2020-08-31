@@ -14,7 +14,7 @@ from ..external import six
 
 from ..endpoint.autoscaling import Autoscaling
 from ..endpoint.autoscaling.metrics import _AutoscalingMetric
-from ..endpoint.resources import _Resource
+from ..endpoint.resources import Resources
 from ..endpoint.update.rules import _UpdateRule
 from ..deployment import DeployedModel
 from ..endpoint.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
@@ -37,7 +37,8 @@ class Endpoint(object):
     Object representing an endpoint for deployment.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.create_endpoint`.
+    :meth:`Client.get_or_create_endpoint()
+    <verta.client.Client.get_or_create_endpoint>`.
 
     Attributes
     ----------
@@ -170,11 +171,11 @@ class Endpoint(object):
         ----------
         model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta._registry.modelversion.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
-        strategy : :class:`~verta.endpoint.update._strategies._UpdateStrategy`
+        strategy : :ref:`update strategy <update-stategies>`
             Strategy (direct or canary) for updating the Endpoint.
         wait : bool, default False
             Whether to wait for the Endpoint to finish updating before returning.
-        resources : list of :class:`~verta.endpoint.resources._Resource`, optional
+        resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated Endpoint.
         autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
             Autoscaling condition for the updated Endpoint.
@@ -277,7 +278,7 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
         return response.json()["id"]
 
-    def update_from_config(self, filepath):
+    def update_from_config(self, filepath, wait=False):
         """
         Updates the Endpoint via a YAML or JSON config file.
 
@@ -285,6 +286,8 @@ class Endpoint(object):
         ----------
         filepath : str
             Path to the YAML or JSON config file.
+        wait : bool, default False
+            Whether to wait for the Endpoint to finish updating before returning.
 
         Returns
         -------
@@ -315,9 +318,9 @@ class Endpoint(object):
         if not update_dict:
             raise ValueError("input file must be a json or yaml")
 
-        return self._update_from_dict(update_dict)
+        return self._update_from_dict(update_dict, wait=wait)
 
-    def _update_from_dict(self, update_dict):
+    def _update_from_dict(self, update_dict, wait=False):
         if update_dict["strategy"] == "direct":
             strategy = DirectUpdateStrategy()
         elif update_dict["strategy"] == "canary":
@@ -340,7 +343,7 @@ class Endpoint(object):
             autoscaling_obj = None
 
         if "resources" in update_dict:
-            resources_list = _Resource._from_dict(update_dict["resources"])
+            resources_list = Resources._from_dict(update_dict["resources"])
         else:
             resources_list = None
 
@@ -353,7 +356,7 @@ class Endpoint(object):
         else:
             raise RuntimeError("must provide either model_version_id or run_id")
 
-        return self.update(model_reference, strategy, resources=resources_list, autoscaling=autoscaling_obj, env_vars=update_dict.get("env_vars"))
+        return self.update(model_reference, strategy, wait=wait, resources=resources_list, autoscaling=autoscaling_obj, env_vars=update_dict.get("env_vars"))
 
     def get_status(self):
         """
@@ -448,8 +451,7 @@ class Endpoint(object):
         update_body = strategy._as_build_update_req_body()
 
         if resources is not None:
-            update_body["resources"] = reduce(lambda resource_a, resource_b: merge_dicts(resource_a, resource_b),
-                                              map(lambda resource: resource.to_dict(), resources))
+            update_body["resources"] = resources._as_dict()
 
         if autoscaling is not None:
             update_body["autoscaling"] = autoscaling._as_dict()

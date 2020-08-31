@@ -10,6 +10,7 @@ from verta._cli import cli
 from verta._internal_utils import _utils
 from verta.environment import Python
 from verta.endpoint.update._strategies import DirectUpdateStrategy
+from verta.endpoint.resources import Resources
 
 from ..utils import get_build_ids
 
@@ -364,7 +365,7 @@ class TestUpdate:
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
-        resources = '{"cpu_millis": 250, "memory": "100M"}'
+        resources = '{"cpu": 0.25, "memory": "100M"}'
 
         runner = CliRunner()
         result = runner.invoke(
@@ -373,7 +374,8 @@ class TestUpdate:
              '--resources', resources],
         )
         assert not result.exception
-        assert endpoint.get_update_status()['update_request']['resources'] == json.loads(resources)
+        resources_dict = Resources._from_dict(json.loads(resources))._as_dict()  # config is `cpu`, wire is `cpu_millis`
+        assert endpoint.get_update_status()['update_request']['resources'] == resources_dict
 
     def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])

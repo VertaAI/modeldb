@@ -4,9 +4,8 @@ from .metrics import _AutoscalingMetric
 
 class Autoscaling(object):
     """
-    Represents autoscaling configuration for Endpoint.
-
-    To be passed to :meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>`.
+    Represents autoscaling configuration for Endpoint, to be passed to
+    :meth:`Endpoint.update() <verta.endpoint._endpoint.Endpoint.update>`.
 
     The JSON equivalent for this is:
 
@@ -64,7 +63,7 @@ class Autoscaling(object):
 
         Parameters
         ----------
-        metric : subclass of :class:`~verta.endpoint.autoscaling.metrics._AutoscalingMetric`
+        metric : :ref:`autoscaling metric <autoscaling-metrics>`
             Metric to add.
 
         """
