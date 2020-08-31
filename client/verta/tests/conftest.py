@@ -284,7 +284,7 @@ def client(host, port, email, dev_key):
 
     proj = client._ctx.proj
     if proj is not None:
-        utils.delete_project(proj.id, client._conn)
+        proj.delete()
 
     print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
@@ -345,7 +345,7 @@ def repository(client):
 
     yield repo
 
-    utils.delete_repository(repo.id, client._conn)
+    repo.delete()
 
 
 @pytest.fixture
@@ -370,7 +370,7 @@ def created_datasets(client):
 def registered_model(client):
     model = client.get_or_create_registered_model()
     yield model
-    utils.delete_registered_model(model.id, client._conn)
+    model.delete()
 
 
 @pytest.fixture
@@ -381,7 +381,7 @@ def created_registered_models(client):
     yield to_delete
 
     for registered_model in to_delete:
-        utils.delete_registered_model(registered_model.id, client._conn)
+        registered_model.delete()
 
 
 @pytest.fixture
@@ -405,7 +405,7 @@ def created_endpoints(client):
     yield to_delete
 
     for endpoint in to_delete:
-        utils.delete_endpoint(endpoint.id, endpoint.workspace, client._conn)
+        endpoint.delete()
 
 
 @pytest.fixture
@@ -415,7 +415,7 @@ def organization(client):
 
     yield org
 
-    utils.delete_organization(org.id, client._conn)
+    org.delete()
 
 
 @pytest.fixture
