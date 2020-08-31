@@ -45,8 +45,20 @@ class _AutoscalingMetric(object):
 
 class CpuUtilizationTarget(_AutoscalingMetric):
     """
-    Memory utilization target to trigger autoscaling.
+    CPU utilization target to trigger autoscaling.
 
+    The JSON equivalent for this (as an element of autoscaling metrics JSON) is:
+
+    .. code-block:: json
+
+        {"metric": "cpu_utilization", "parameters": [{"name": "target", "value": 0.5}]}
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.endpoint.autoscaling.metrics import CpuUtilizationTarget
+        metric = CpuUtilizationTarget(0.6)
     """
     _METRIC_ID = 1001
     _PARENT_NAME = "cpu_utilization"
@@ -55,7 +67,20 @@ class CpuUtilizationTarget(_AutoscalingMetric):
 
 class RequestsPerWorkerTarget(_AutoscalingMetric):
     """
-    CPU utilization target to trigger autoscaling.
+    Number of requests per worker target to trigger autoscaling.
+
+    The JSON equivalent for this (as an element of autoscaling metrics JSON) is:
+
+    .. code-block:: json
+
+        {"metric": "requests_per_worker", "parameters": [{"name": "target", "value": 1000}]}
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.endpoint.autoscaling.metrics import RequestsPerWorkerTarget
+        metric = RequestsPerWorkerTarget(1000)
 
     """
     _METRIC_ID = 1002
@@ -65,7 +90,20 @@ class RequestsPerWorkerTarget(_AutoscalingMetric):
 
 class MemoryUtilizationTarget(_AutoscalingMetric):
     """
-    Number of requests per worker target to trigger autoscaling.
+    Memory utilization target to trigger autoscaling.
+
+    The JSON equivalent for this (as an element of autoscaling metrics JSON) is:
+
+    .. code-block:: json
+
+        {"metric": "memory_utilization", "parameters": [{"name": "target", "value": 0.5}]}
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.endpoint.autoscaling.metrics import MemoryUtilizationTarget
+        metric = MemoryUtilizationTarget(0.7)
 
     """
     _METRIC_ID = 1003

@@ -1,4 +1,4 @@
-Building a Model Container Locally
+Building a model container locally
 ==================================
 
 Some of our customers want to build a version of the container used for inference locally. Common uses
@@ -9,8 +9,8 @@ Verta supports fetching the whole context necessary for Docker and building loca
 Fetching the Docker context
 ---------------------------
 
-Any class within the Verta platform that has a ``run.download_docker_context`` method, such as an
-:class:`ExperimentRun <verta._tracking.ExperimentRun>`, automatically supports fetching the Docker
+Any class within the Verta platform that has a ``download_docker_context`` method, such as an
+:class:`ExperimentRun <verta._tracking.experimentrun.ExperimentRun>`, automatically supports fetching the Docker
 context that can be used to build an image.
 
 For example, you can run
@@ -43,4 +43,4 @@ to build the image locally.
 
 .. note::
     You might require permission from your system administrator to access the verified base images
-    used for Docker. Please contact your admin or the Verta team for support.
+    used for Docker. Please contact your admin or the Verta team at `support@verta.ai <mailto:support@verta.ai>`_.

@@ -390,6 +390,15 @@ def model_version(registered_model):
 
 
 @pytest.fixture
+def endpoint(client, created_endpoints):
+    path = _utils.generate_default_name()
+    endpoint = client.create_endpoint(path)
+    created_endpoints.append(endpoint)
+
+    yield endpoint
+
+
+@pytest.fixture
 def created_endpoints(client):
     to_delete = []
 
@@ -408,7 +417,7 @@ def organization(client):
 
     utils.delete_organization(org.id, client._conn)
 
-    
+
 @pytest.fixture
 def requirements_file():
     with tempfile.NamedTemporaryFile('w+') as tempf:
@@ -421,4 +430,3 @@ def requirements_file():
         tempf.seek(0)
 
         yield tempf
-

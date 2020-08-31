@@ -46,6 +46,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx_copybutton',
+    'sphinx_click',
 ]
 
 autodoc_member_order = 'bysource'
@@ -133,7 +134,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_favicon = '../../../webapp/client/public/favicon.svg'
+html_favicon = '_static/images/favicon.ico'
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

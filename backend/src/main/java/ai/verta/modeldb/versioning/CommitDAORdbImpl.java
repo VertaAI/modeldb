@@ -237,15 +237,12 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   private PathDatasetComponentBlob componentFromPart(DatasetPartInfo part, String basePath) {
-    String path = part.getPath();
-    if (basePath != null && !basePath.isEmpty() && !path.startsWith(basePath)) {
-      path = basePath.endsWith("/") ? basePath + path : basePath + "/" + path;
-    }
     return PathDatasetComponentBlob.newBuilder()
-        .setPath(path)
+        .setPath(part.getPath())
         .setSize(part.getSize())
         .setLastModifiedAtSource(part.getLastModifiedAtSource())
         .setMd5(part.getChecksum())
+        .setBasePath(basePath)
         .build();
   }
 
@@ -780,11 +777,22 @@ public class CommitDAORdbImpl implements CommitDAO {
       FindRepositoriesBlobs request,
       UserInfo currentLoginUserInfo,
       boolean idsOnly,
-      boolean rootSHAOnly)
+      boolean rootSHAOnly,
+      boolean isDatasetVersion,
+      String sortKey,
+      boolean ascending)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       CommitPaginationDTO commitPaginationDTO =
-          findCommits(session, request, currentLoginUserInfo, idsOnly, rootSHAOnly);
+          findCommits(
+              session,
+              request,
+              currentLoginUserInfo,
+              idsOnly,
+              rootSHAOnly,
+              isDatasetVersion,
+              sortKey,
+              ascending);
       commitPaginationDTO.setCommits(
           commitPaginationDTO.getCommitEntities().stream()
               .map(CommitEntity::toCommitProto)
@@ -792,7 +800,14 @@ public class CommitDAORdbImpl implements CommitDAO {
       return commitPaginationDTO;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return findCommits(request, currentLoginUserInfo, idsOnly, rootSHAOnly);
+        return findCommits(
+            request,
+            currentLoginUserInfo,
+            idsOnly,
+            rootSHAOnly,
+            isDatasetVersion,
+            sortKey,
+            ascending);
       } else {
         throw ex;
       }
@@ -815,7 +830,10 @@ public class CommitDAORdbImpl implements CommitDAO {
       FindRepositoriesBlobs request,
       UserInfo currentLoginUserInfo,
       boolean idsOnly,
-      boolean rootSHAOnly)
+      boolean rootSHAOnly,
+      boolean isDatasetVersion,
+      String sortKey,
+      boolean ascending)
       throws ModelDBException {
     try {
       List<KeyValueQuery> predicates = new ArrayList<>(request.getPredicatesList());
@@ -1129,6 +1147,28 @@ public class CommitDAORdbImpl implements CommitDAO {
                 return commitPaginationDTO;
               }
               break;
+            case ModelDBConstants.TIME_LOGGED:
+            case ModelDBConstants.TIME_UPDATED:
+            case ModelDBConstants.DATE_CREATED:
+            case ModelDBConstants.DATE_UPDATED:
+              String key = predicate.getKey();
+              if (key.equals(ModelDBConstants.TIME_LOGGED)) {
+                key = ModelDBConstants.DATE_CREATED;
+              } else if (key.equals(ModelDBConstants.TIME_UPDATED)) {
+                key = ModelDBConstants.DATE_UPDATED;
+              }
+
+              Double value = predicate.getValue().getNumberValue();
+              StringBuilder dateQueryBuilder = new StringBuilder(alias);
+              dateQueryBuilder.append(".").append(key);
+              RdbmsUtils.setValueWithOperatorInQuery(
+                  index,
+                  dateQueryBuilder,
+                  predicate.getOperator(),
+                  value.longValue(),
+                  parametersMap);
+              whereClauseList.add(dateQueryBuilder.toString());
+              break;
             default:
               throw new ModelDBException(
                   "Invalid predicate found : " + predicate, Code.INVALID_ARGUMENT);
@@ -1147,12 +1187,23 @@ public class CommitDAORdbImpl implements CommitDAO {
               " AND ", whereClauseList.toArray(new String[0])));
 
       // Order by clause
+      if (sortKey != null && !sortKey.isEmpty()) {
+        if (sortKey.equals(ModelDBConstants.TIME_LOGGED)) {
+          sortKey = ModelDBConstants.DATE_CREATED;
+        } else if (sortKey.equals(ModelDBConstants.TIME_UPDATED)) {
+          sortKey = ModelDBConstants.DATE_UPDATED;
+        }
+      } else {
+        sortKey = ModelDBConstants.DATE_UPDATED;
+      }
+
       StringBuilder orderClause =
           new StringBuilder(" ORDER BY ")
               .append(alias)
               .append(".")
-              .append(ModelDBConstants.DATE_UPDATED)
-              .append(" DESC");
+              .append(sortKey)
+              .append(" ")
+              .append(ascending ? "ASC" : "DESC");
 
       StringBuilder finalQueryBuilder = new StringBuilder();
       if (idsOnly) {

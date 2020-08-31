@@ -1,4 +1,4 @@
-Versioning Model Ingredients
+Versioning model ingredients
 ============================
 
 A model is composed of four ingredients: code, config, dataset and environment. If you change any of
@@ -40,7 +40,7 @@ At this stage, this is what the repository looks like:
     :width: 350px
     :align: center
 
-Commit Operations
+Commit operations
 ^^^^^^^^^^^^^^^^^
 
 As a first example of versioning the ingredients, let's add some local files as a dataset:
@@ -109,7 +109,7 @@ Now that we added a commit, the repository looks like this:
     :width: 350px
     :align: center
 
-Branch Operations
+Branch operations
 ^^^^^^^^^^^^^^^^^
 
 Next, let's version the environment that we want to use to train models. We'll use the previous commit

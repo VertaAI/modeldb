@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
+import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -59,22 +60,46 @@ public class DeleteEntitiesCron extends TimerTask {
     ModelDBUtils.registeredBackgroundUtilsCount();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       // Update project timestamp
-      deleteProjects(session);
+      try {
+        deleteProjects(session);
+      } catch (OptimisticLockException ex) {
+        deleteProjects(session);
+      }
 
       // Update experiment timestamp
-      deleteExperiments(session);
-
-      // Update experimentRun timestamp
-      deleteExperimentRuns(session);
+      try {
+        deleteExperiments(session);
+      } catch (OptimisticLockException ex) {
+        deleteExperiments(session);
+      }
 
       // Update dataset timestamp
-      deleteDatasets(session);
+      try {
+        deleteDatasets(session);
+      } catch (OptimisticLockException ex) {
+        deleteDatasets(session);
+      }
 
       // Update datasetVersion timestamp
-      deleteDatasetVersions(session);
+      try {
+        deleteDatasetVersions(session);
+      } catch (OptimisticLockException ex) {
+        deleteDatasetVersions(session);
+      }
 
       // Update repository timestamp
-      deleteRepositories(session);
+      try {
+        deleteRepositories(session);
+      } catch (OptimisticLockException ex) {
+        deleteRepositories(session);
+      }
+
+      // Update experimentRun timestamp
+      try {
+        deleteExperimentRuns(session);
+      } catch (OptimisticLockException ex) {
+        deleteExperimentRuns(session);
+      }
     } catch (Exception ex) {
       if (ex instanceof StatusRuntimeException) {
         StatusRuntimeException exception = (StatusRuntimeException) ex;

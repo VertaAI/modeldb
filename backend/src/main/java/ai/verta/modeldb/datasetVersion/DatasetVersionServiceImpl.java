@@ -406,7 +406,14 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         findRepositoriesBlobs.addRepoIds(Long.parseLong(request.getDatasetId()));
       }
       CommitPaginationDTO commitPaginationDTO =
-          commitDAO.findCommits(findRepositoriesBlobs.build(), currentLoginUserInfo, false, false);
+          commitDAO.findCommits(
+              findRepositoriesBlobs.build(),
+              currentLoginUserInfo,
+              false,
+              false,
+              true,
+              request.getSortKey(),
+              request.getAscending());
 
       RepositoryEntity repositoryEntity = null;
       if (!request.getDatasetId().isEmpty()) {

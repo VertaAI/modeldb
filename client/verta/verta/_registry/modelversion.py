@@ -9,7 +9,7 @@ from google.protobuf.struct_pb2 import Value
 import requests
 
 from .entity_registry import _ModelDBRegistryEntity
-from .._protos.public.registry import RegistryService_pb2 as _ModelVersionService
+from .._protos.public.registry import RegistryService_pb2 as _RegistryService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 import requests
@@ -26,7 +26,7 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 from .. import utils
 
-from .._tracking.entity import _OSS_DEFAULT_WORKSPACE
+from .._tracking.entity import _OSS_DEFAULT_WORKSPACE, _MODEL_ARTIFACTS_ATTR_KEY
 from .._tracking.deployable_entity import _DeployableEntity
 from ..environment import _Environment, Python
 
@@ -36,7 +36,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     Object representing a version of a Registered Model.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`RegisteredModel.get_or_create_version`.
+    :meth:`RegisteredModel.get_or_create_version()
+    <verta._registry.model.RegisteredModel.get_or_create_version>`.
 
     Attributes
     ----------
@@ -53,7 +54,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
     """
     def __init__(self, conn, conf, msg):
-        super(RegisteredModelVersion, self).__init__(conn, conf, _ModelVersionService, "registered_model_version", msg)
+        super(RegisteredModelVersion, self).__init__(conn, conf, _RegistryService, "registered_model_version", msg)
 
     def __repr__(self):
         self._refresh_cache()
@@ -69,10 +70,11 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
             "labels: {}".format(msg.labels),
+            "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
             "id: {}".format(msg.id),
             "registered model id: {}".format(msg.registered_model_id),
             "experiment run id: {}".format(msg.experiment_run_id),
-            # "archived status: {}".format(msg.archived),
+            # "archived status: {}".format(msg.archived == _CommonCommonService.TernaryEnum.TRUE),
             "artifact keys: {}".format(artifact_keys),
         ))
 
@@ -104,7 +106,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     @property
     def workspace(self):
         self._refresh_cache()
-        Message = _ModelVersionService.GetRegisteredModelRequest
+        Message = _RegistryService.GetRegisteredModelRequest
         response = self._conn.make_proto_request(
             "GET", "/api/v1/registry/registered_models/{}".format(self.registered_model_id)
         )
@@ -135,7 +137,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
-        Message = _ModelVersionService.GetModelVersionRequest
+        Message = _RegistryService.GetModelVersionRequest
         endpoint = "/api/v1/registry/model_versions/{}".format(id)
         response = conn.make_proto_request("GET", endpoint)
 
@@ -148,7 +150,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         else:
             raise TypeError("`name` must be a string")
 
-        Message = _ModelVersionService.FindModelVersionRequest
+        Message = _RegistryService.FindModelVersionRequest
         predicates = [
             _CommonCommonService.KeyValueQuery(key="version",
                                                value=value,
@@ -168,12 +170,12 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, experiment_run_id=None):
-        ModelVersionMessage = _ModelVersionService.ModelVersion
-        SetModelVersionMessage = _ModelVersionService.SetModelVersion
+        ModelVersionMessage = _RegistryService.ModelVersion
+        SetModelVersionMessage = _RegistryService.SetModelVersion
         registered_model_id = ctx.registered_model.id
 
         model_version_msg = ModelVersionMessage(registered_model_id=registered_model_id, version=name,
-                                                description=desc, labels=tags,
+                                                description=desc, labels=tags, attributes=attrs,
                                                 time_created=date_created, time_updated=date_created,
                                                 experiment_run_id=experiment_run_id)
         endpoint = "/api/v1/registry/registered_models/{}/model_versions".format(registered_model_id)
@@ -183,9 +185,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         print("created new ModelVersion: {}".format(model_version.version))
         return model_version
 
-    ModelVersionMessage = _ModelVersionService.ModelVersion
+    ModelVersionMessage = _RegistryService.ModelVersion
 
-    def log_model(self, model, custom_modules=None, model_api=None, overwrite=False):
+    def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
         """
         Logs a model to this Model Version.
 
@@ -205,12 +207,32 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                   environments—will be included.
         model_api : :class:`~utils.ModelAPI`, optional
             Model API specifying details about the model and its deployment.
+        artifacts : list of str, optional
+            Keys of logged artifacts to be used by a class model.
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
+
+        if (artifacts is not None
+                and not (isinstance(artifacts, list)
+                         and all(isinstance(artifact_key, six.string_types) for artifact_key in artifacts))):
+            raise TypeError("`artifacts` must be list of str, not {}".format(type(artifacts)))
+
+        # validate that `artifacts` are actually logged
+        if artifacts:
+            self._refresh_cache()
+            run_msg = self._msg
+            existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
+            unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
+            if unlogged_artifact_keys:
+                raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
+
+        # associate artifact dependencies
+        if artifacts:
+            self.add_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite=overwrite)
 
         if isinstance(model, six.string_types):  # filepath
             model = open(model, 'rb')
@@ -226,7 +248,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                                         artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension)
         model_version_update = self.ModelVersionMessage(model=model_msg)
         self._update(model_version_update)
-
 
         # Upload the artifact to ModelDB:
         self._upload_artifact(
@@ -279,7 +300,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         self._update(self._msg, method="PUT")
 
 
-    def log_artifact(self, key, artifact, overwrite=False, extension=None):
+    def log_artifact(self, key, artifact, overwrite=False, _extension=None):
         """
         Logs an artifact to this Model Version.
 
@@ -295,8 +316,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                 - Otherwise, the object will be serialized and uploaded as an artifact.
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
-        extension : str, optional
-            Filename extension associated with the artifact.
 
         """
         if key == "model":
@@ -319,13 +338,13 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             artifact = open(artifact, 'rb')
         artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
-        if not extension:
+        if not _extension:
             try:
-                extension = _artifact_utils.get_file_ext(artifact_stream)
+                _extension = _artifact_utils.get_file_ext(artifact_stream)
             except (TypeError, ValueError):
-                extension = _artifact_utils.ext_from_method(method)
+                _extension = _artifact_utils.ext_from_method(method)
 
-        artifact_msg = self._create_artifact_msg(key, artifact_stream, artifact_type=artifact_type, extension=extension)
+        artifact_msg = self._create_artifact_msg(key, artifact_stream, artifact_type=artifact_type, extension=_extension)
         if same_key_ind == -1:
             self._msg.artifacts.append(artifact_msg)
         else:
@@ -410,7 +429,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         Parameters
         ----------
-        environment : `verta.environment._Environment.`
+        environment : `verta.environment.Python.`
             Environment to log.
 
         """
@@ -448,11 +467,11 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         return Python._from_proto(self._msg)
 
-    def _get_url_for_artifact(self, key, method, artifact_type, part_num=0):
+    def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
-        Message = _ModelVersionService.GetUrlForArtifact
+        Message = _RegistryService.GetUrlForArtifact
         msg = Message(
             model_version_id=self.id,
             key=key,
@@ -496,15 +515,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                 part_stream = six.BytesIO(file_part)
 
                 # upload part
-                #     Retry connection errors, to make large multipart uploads more robust.
-                for _ in range(3):
-                    try:
-                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-                    except requests.ConnectionError:  # e.g. broken pipe
-                        time.sleep(1)
-                        continue  # try again
-                    else:
-                        break
+                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                 _utils.raise_for_http_error(response)
 
                 # commit part
@@ -513,7 +524,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                     self._conn.socket,
                     self.id
                 )
-                msg = _ModelVersionService.CommitArtifactPart(
+                msg = _RegistryService.CommitArtifactPart(
                     model_version_id=self.id,
                     key=key
                 )
@@ -530,7 +541,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                 self._conn.socket,
                 self.id
             )
-            msg = _ModelVersionService.CommitMultipartArtifact(
+            msg = _RegistryService.CommitMultipartArtifact(
                 model_version_id=self.id,
                 key=key
             )
@@ -572,7 +583,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                                                filename_extension=extension)
         return artifact_msg
 
-    def _get_artifact(self, key, artifact_type):
+    def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists
         self._refresh_cache()
         if key == "model":
@@ -708,7 +719,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
     #     self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
 
-    def add_attribute(self, key, value):
+    def add_attribute(self, key, value, overwrite=False):
         """
         Adds an attribute to this Model Version.
 
@@ -718,11 +729,13 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             Name of the attribute.
         value : one of {None, bool, float, int, str, list, dict}
             Value of the attribute.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing attribute with key `key`.
 
         """
-        self.add_attributes({key: value})
+        self.add_attributes({key: value}, overwrite)
 
-    def add_attributes(self, attrs):
+    def add_attributes(self, attrs, overwrite=False):
         """
         Adds potentially multiple attributes to this Model Version.
 
@@ -730,6 +743,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         ----------
         attrs : dict of str to {None, bool, float, int, str, list, dict}
             Attributes.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing attribute with key `key`.
 
         """
         # validate all keys first
@@ -738,11 +753,13 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         # build KeyValues
         attribute_keyvals = []
+        existing_attrs = self.get_attributes()
         for key, value in six.viewitems(attrs):
-            attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
-                                                                                                             allow_collection=True)))
+            if not key in existing_attrs or overwrite:
+                attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
+                                                                                                                 allow_collection=True)))
 
-            self._update(self.ModelVersionMessage(attributes=attribute_keyvals))
+        self._update(self.ModelVersionMessage(attributes=attribute_keyvals))
 
     def get_attribute(self, key):
         """
@@ -780,6 +797,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         self._refresh_cache()
         return _utils.unravel_key_values(self._msg.attributes)
 
+    def _get_attribute_keys(self):
+        return list(map(lambda attribute: attribute.key, self.get_attributes()))
+
     def del_attribute(self, key):
         """
         Deletes the attribute with name `key` from this Model Version
@@ -800,10 +820,11 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
 
     def _update(self, msg, method="PATCH"):
+        self._refresh_cache()  # to have `self._msg.registered_model_id` for URL
         response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
                                                  .format(self._msg.registered_model_id, self.id),
                                                  body=msg, include_default=False)
-        Message = _ModelVersionService.SetModelVersion
+        Message = _RegistryService.SetModelVersion
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
         self._clear_cache()

@@ -1,4 +1,4 @@
-Client Config File
+Client config file
 ==================
 The Client config file allows you to define settings that are easily repeatable and sharable. This
 can be either a `JSON <https://www.json.org/json-en.html>`__ or a `YAML <https://yaml.org/>`__ file.
@@ -25,8 +25,8 @@ Defining a config file like this:
     project: "My Project"
     experiment: "My Experiment"
 
-allows you go directly from instantiating a Client to working with your
-:class:`~verta.client.ExperimentRun` without needing to explicitly set the Project or Experiment in
+allows you go directly from instantiating a client to working with your
+:class:`~verta._tracking.experimentrun.ExperimentRun` without needing to explicitly set the project or experiment in
 your code:
 
 ``workflow.py``
@@ -47,7 +47,7 @@ your code:
     # set existing Experiment: My Experiment
     # created new ExperimentRun: New Run
 
-Supported Fields
+Supported fields
 ----------------
 For the fields and structure of the config file itself, please refer to the specification `here
 <https://github.com/VertaAI/modeldb/blob/master/protos/protos/public/client/Config.proto>`__.
