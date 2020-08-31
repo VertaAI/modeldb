@@ -467,7 +467,7 @@ class ExperimentRun(_DeployableEntity):
 
         Returns
         -------
-        :class:`ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         """
         # get info for the current run
@@ -956,7 +956,7 @@ class ExperimentRun(_DeployableEntity):
         Alias for :meth:`~ExperimentRun.log_dataset_version`.
 
         .. deprecated:: 0.14.12
-            ``log_dataset()`` can no longer be used to log artifacts.
+            :meth:`~ExperimentRun.log_dataset` can no longer be used to log artifacts.
             :meth:`~ExperimentRun.log_artifact` should be used instead.
 
         """
@@ -981,7 +981,7 @@ class ExperimentRun(_DeployableEntity):
         Parameters
         ----------
         key : str
-        dataset_version : :class:`~verta._dataset.DatasetVersion`
+        dataset_version : `DatasetVersion <dataset.html>`_
         overwrite : bool, default False
             Whether to allow overwriting a dataset version.
 
@@ -1018,8 +1018,8 @@ class ExperimentRun(_DeployableEntity):
         Logs the filesystem path of an dataset to this Experiment Run.
 
         .. deprecated:: 0.13.0
-           The `log_dataset_path()` method will removed in v0.16.0; consider using
-           `client.set_dataset(…, type="local")` and `run.log_dataset_version()` instead.
+           The :meth:`~ExperimentRun.log_dataset_path` method will removed in v0.16.0; consider using
+           :meth:`client.set_dataset(…, type="local") <verta.client.Client.set_dataset>` and :meth:`~ExperimentRun.log_dataset_version` instead.
 
         This function makes no attempt to open a file at `dataset_path`. Only the path string itself
         is logged.
@@ -1090,7 +1090,7 @@ class ExperimentRun(_DeployableEntity):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             DatasetVersion associated with the given key.
 
         """
@@ -1239,7 +1239,7 @@ class ExperimentRun(_DeployableEntity):
                   be included.
                 - If not provided, all Python files located within `sys.path`—excluding virtual
                   environments—will be included.
-        model_api : :class:`~utils.ModelAPI`, optional
+        model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying details about the model and its deployment.
         artifacts : list of str, optional
             Keys of logged artifacts to be used by a class model.

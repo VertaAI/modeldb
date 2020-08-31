@@ -649,7 +649,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset.Dataset`
+        `Dataset <dataset.html>`_
 
         Raises
         ------
@@ -694,7 +694,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset.Dataset`
+        `Dataset <dataset.html>`_
         """
         return _dataset.Dataset(self._conn, self._conf, name=name, _dataset_id=id)
 
@@ -725,7 +725,7 @@ class Client(object):
 
         Returns
         -------
-        list of :class:`~verta._dataset.Dataset`
+        list of `Dataset <dataset.html>`_
 
         """
         datasets = Datasets(self._conn, self._conf)
@@ -763,7 +763,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset.DatasetVersion`
+        `DatasetVersion <dataset.html>`_
         """
         return _dataset.DatasetVersion(self._conn, self._conf, _dataset_version_id=id)
 

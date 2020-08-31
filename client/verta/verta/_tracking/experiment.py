@@ -34,7 +34,7 @@ class Experiment(_ModelDBEntity):
         ID of this Experiment.
     name : str
         Name of this Experiment.
-    expt_runs : :class:`ExperimentRuns`
+    expt_runs : :class:`~verta._tracking.ExperimentRuns`
         Experiment Runs under this Experiment.
 
     """

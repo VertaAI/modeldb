@@ -43,7 +43,7 @@ class VertaHook(SessionRunHook):
 
     Parameters
     ----------
-    run : :class:`~verta.client.ExperimentRun`
+    run : :class:`~verta._tracking.experimentrun.ExperimentRun`
         Experiment Run tracking this model.
     every_n_steps : int, default 1000
         How often to log summary metrics.
@@ -174,7 +174,7 @@ def log_tensorboard_events(run, log_dir):
 
     Parameters
     ----------
-    run : :class:`~verta.client.ExperimentRun`
+    run : :class:`~verta._tracking.experimentrun.ExperimentRun`
         Experiment Run.
     log_dir : str
         Directory containing TensorBoard-compatible event files.
