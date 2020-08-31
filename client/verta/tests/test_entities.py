@@ -157,7 +157,7 @@ class TestClient:
                     try:
                         assert dataset.name == DATASET_NAME
                     finally:
-                        client.delete_datasets([dataset.id])
+                        utils.delete_datasets([dataset.id], conn)
                 else:
                     assert client._set_from_config_if_none(None, "project") == PROJECT_NAME
                     assert client._set_from_config_if_none(None, "experiment") == EXPERIMENT_NAME
