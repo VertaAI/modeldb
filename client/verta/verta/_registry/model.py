@@ -108,6 +108,13 @@ class RegisteredModel(_ModelDBRegistryEntity):
                                                        lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
                                                        lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, attrs=attrs, date_created=time_created))
 
+    def set_version(self, *args, **kwargs):
+        """
+        Alias for :meth:`RegisteredModel.get_or_create_version()`.
+
+        """
+        return self.get_or_create_version(*args, **kwargs)
+
     def create_version(self, name=None, desc=None, labels=None, attrs=None, time_created=None):
         """
         Creates a model registry entry.
