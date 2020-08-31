@@ -213,13 +213,13 @@ class Endpoint(object):
             print("waiting for update...", end='')
             sys.stdout.flush()
 
-            build_status = self._get_build_status(build_id)
+            build_status = self._get_build_status(update_body['build_id'])
             # have to check using build status, otherwise might never terminate
             while build_status['status'] not in ("finished", "error"):
                 print(".", end='')
                 sys.stdout.flush()
                 time.sleep(5)
-                build_status = self._get_build_status(build_id)
+                build_status = self._get_build_status(update_body['build_id'])
 
             if build_status["status"] == "error":
                 print()
