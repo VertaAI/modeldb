@@ -12,6 +12,8 @@ Repository
 .. autoclass:: verta._repository.commit.Commit
     :members:
 
+.. _blobs:
+
 Blobs
 -----
 Code
