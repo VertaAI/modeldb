@@ -291,8 +291,11 @@ def client(host, port, email, dev_key):
 
 @pytest.fixture
 def client_2(host, port, email_2, dev_key_2):
-    # For collaboration tests
+    """For collaboration tests."""
+    if not (email_2 and dev_key_2):
+        pytest.skip("second account credentials not present")
     print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
+
     client = Client(host, port, email_2, dev_key_2, debug=True)
 
     yield client
