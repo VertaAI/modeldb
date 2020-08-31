@@ -56,9 +56,8 @@ class TestModelVersion:
         name = verta._internal_utils._utils.generate_default_name()
         version = registered_model.set_version(name=name)
 
-        assert registered_model.get_version(name=version.name).id == version.id
-        assert registered_model.get_version(id=version.id)
-
+        assert registered_model.set_version(name=version.name).id == version.id
+        
     def test_get_by_name(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
         retrieved_model_version = registered_model.get_version(name=model_version.name)
