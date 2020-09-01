@@ -12,7 +12,7 @@ def download():
 
     For example, to download the Docker context for a model version, run
 
-    `verta registry download dockercontext -m <model-version-id>`
+    `verta registry download dockercontext -m <model version id>`
 
     """
     pass

@@ -16,6 +16,11 @@ from ..._registry import RegisteredModelVersion
 @deployment.group()
 def update():
     """Update an entity related to deployment.
+
+    For example, to update an endpoint with a new model version, run
+
+    `verta deployment update endpoint <endpoint path> -m <model version id> -s direct`
+
     """
     pass
 

@@ -8,7 +8,12 @@ from ... import Client
 
 @deployment.group()
 def get():
-    """Get an entity related to deployment.
+    """Get detailed information about an entity related to deployment.
+
+    For example, to see information about an endpoint at path /some-path, run
+
+    `verta deployment get endpoint /some-path`
+
     """
     pass
 

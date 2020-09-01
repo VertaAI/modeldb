@@ -9,6 +9,11 @@ from ... import Client
 @deployment.group()
 def create():
     """Create an entity related to deployment.
+
+    For example, to create a new endpoint, run
+
+    `verta deployment create endpoint <endpoint path>`
+
     """
     pass
 
