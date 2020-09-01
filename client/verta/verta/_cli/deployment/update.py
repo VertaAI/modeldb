@@ -15,6 +15,8 @@ from ..._registry import RegisteredModelVersion
 
 @deployment.group()
 def update():
+    """Update an entity related to deployment.
+    """
     pass
 
 @update.command(name="endpoint")

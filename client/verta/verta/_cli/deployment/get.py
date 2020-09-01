@@ -8,6 +8,8 @@ from ... import Client
 
 @deployment.group()
 def get():
+    """Get an entity related to deployment.
+    """
     pass
 
 @get.command(name="endpoint")

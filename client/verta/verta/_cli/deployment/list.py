@@ -9,6 +9,8 @@ from ... import Client
 
 @deployment.group(name="list")
 def lst():
+    """List all instances of an entity related to deployment.
+    """
     pass
 
 

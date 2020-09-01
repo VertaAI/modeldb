@@ -9,6 +9,8 @@ from ... import Client
 
 @deployment.group()
 def predict():
+    """Making prediction to a deployment-related entity.
+    """
     pass
 
 
