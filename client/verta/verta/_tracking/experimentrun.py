@@ -2103,7 +2103,7 @@ class ExperimentRun(_DeployableEntity):
 
     def download_docker_context(self, download_to_path, self_contained=False):
         """
-        Downloads this Model Version's Docker context ``tgz``.
+        Downloads this Experiment Run's Docker context ``tgz``.
 
         Parameters
         ----------
