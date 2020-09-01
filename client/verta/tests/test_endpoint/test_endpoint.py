@@ -18,7 +18,7 @@ from verta._internal_utils import _utils
 from verta.environment import Python
 from verta.utils import ModelAPI
 
-from ..utils import (get_build_ids, sys_path_manager)
+from ..utils import (get_build_ids, sys_path_manager, timeout)
 
 
 class TestEndpoint:
@@ -174,7 +174,7 @@ class TestEndpoint:
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
-    def test_update_wait(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_wait(self, client, created_endpoints, experiment_run, model_version, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
@@ -183,8 +183,17 @@ class TestEndpoint:
         created_endpoints.append(endpoint)
 
         status = endpoint.update(experiment_run, DirectUpdateStrategy(), True)
-
         assert status["status"] == "active"
+
+        model_version.log_model(model_for_deployment['model'], custom_modules=[])
+        model_version.log_environment(Python(requirements=['blahblahblah==3.6.0']))
+
+        with timeout(100): # timeout after 100 seconds
+            with pytest.raises(RuntimeError) as excinfo:
+                endpoint.update(model_version, DirectUpdateStrategy(), True) # this should fail, and not take forever!
+
+            excinfo_value = str(excinfo.value).strip()
+            assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in excinfo_value
 
     def test_canary_update(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -600,32 +609,3 @@ class TestEndpoint:
         endpoint.update(new_model_version, DirectUpdateStrategy(), wait=True)
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), new_classifier.predict(test_data))
-
-    def test_update_build_error(self, client, created_endpoints, experiment_run, model_for_deployment, model_version):
-        model_version.log_model(model_for_deployment['model'], custom_modules=[])
-        model_version.log_environment(Python(requirements=["scikit-learn"]))
-
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['blahblahblah==3.6.0'])
-
-        path = verta._internal_utils._utils.generate_default_name()
-        endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
-
-        endpoint.update(experiment_run, DirectUpdateStrategy())
-        build_id = endpoint.get_status()["components"][0]["build_id"]
-
-        TIME_LIMIT = 60
-        for _ in range(0, TIME_LIMIT, 5):
-            build_status = endpoint._get_build_status(build_id)
-
-            if build_status["status"] == "error":
-                error_msg = build_status.get('message', "no error message available")
-                break
-            else:
-                time.sleep(5)
-        else:
-            pytest.fail("Build takes too long to error out.")
-
-        assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in error_msg
-

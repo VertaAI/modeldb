@@ -5,6 +5,7 @@ import six
 import pathlib2
 import subprocess
 import sys
+import time
 
 import verta
 from verta._internal_utils import _utils
@@ -350,3 +351,10 @@ class TestFileUtils:
             filepath.touch()
 
         assert _file_utils.flatten_file_trees(paths) == filepaths
+
+
+class TestTimeout:
+    def test_timeout(self):
+        with pytest.raises(utils.TimeoutException):
+            with utils.timeout(2):
+                time.sleep(100)
