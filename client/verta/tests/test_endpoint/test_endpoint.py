@@ -612,11 +612,20 @@ class TestEndpoint:
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
 
-        update_status = endpoint.update(model_version, DirectUpdateStrategy(), True) # this should work
-        assert update_status["status"] == "active"
+        endpoint.update(experiment_run, DirectUpdateStrategy())
+        build_id = endpoint.get_status()["components"][0]["build_id"]
 
-        with pytest.raises(RuntimeError) as excinfo:
-            endpoint.update(experiment_run, DirectUpdateStrategy(), True) # this should fail, and not take forever!
+        TIME_LIMIT = 60
+        for _ in range(0, TIME_LIMIT, 5):
+            build_status = endpoint._get_build_status(build_id)
 
-        excinfo_value = str(excinfo.value).strip()
-        assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in excinfo_value
+            if build_status["status"] == "error":
+                error_msg = build_status.get('message', "no error message available")
+                break
+            else:
+                time.sleep(5)
+        else:
+            pytest.fail("Build takes too long to error out.")
+
+        assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in error_msg
+
