@@ -41,8 +41,6 @@ from .._repository import commit as commit_module
 from .. import deployment
 from .. import utils
 
-from  . import experiment
-
 
 class ExperimentRun(_DeployableEntity):
     """
@@ -478,6 +476,10 @@ class ExperimentRun(_DeployableEntity):
         # get info for the current run
         current_run = self._get_proto_by_id(self._conn, self.id)
 
+        # there's a circular import if `experiment` is imported at the top
+        #     experiment -> experimentruns -> experimentrun -> experiment
+        # so this import is deferred to this function body to work in Py2
+        from .experiment import Experiment
         if experiment_id is not None:
             project_id = Experiment._get_proto_by_id(self._conn, experiment_id).project_id
         else:
