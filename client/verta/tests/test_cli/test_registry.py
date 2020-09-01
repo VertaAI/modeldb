@@ -354,6 +354,7 @@ class TestList:
         model2 = client.get_or_create_registered_model()
         created_registered_models.append(model2)
         model = client.get_or_create_registered_model()
+        created_registered_models.append(model)
         model.add_label(label)
         runner = CliRunner()
         result = runner.invoke(
