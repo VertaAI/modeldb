@@ -10,9 +10,9 @@ from ... import Client
 def get():
     """Get detailed information about an entity related to deployment.
 
-    For example, to see information about an endpoint at path /some-path, run
+    For example, to see information about an endpoint, run
 
-    `verta deployment get endpoint /some-path`
+    `verta deployment get endpoint <endpoint path>`
 
     """
     pass
