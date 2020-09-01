@@ -44,7 +44,7 @@ class TestClient:
 
             assert client.set_project()
 
-            utils.delete_project(client.proj.id, client._conn)
+            client.proj.delete()
         finally:
             if EMAIL is not None:
                 os.environ[EMAIL_KEY] = EMAIL
@@ -152,7 +152,7 @@ class TestClient:
                         assert client.expt.name == EXPERIMENT_NAME
                     finally:
                         if client.proj is not None:
-                            utils.delete_project(client.proj.id, conn)
+                            client.proj.delete()
                     dataset = client.set_dataset()
                     try:
                         assert dataset.name == DATASET_NAME

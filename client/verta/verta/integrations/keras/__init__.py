@@ -26,7 +26,7 @@ class VertaCallback(keras.callbacks.Callback):
 
     Parameters
     ----------
-    run : :class:`~verta.client.ExperimentRun`
+    run : :class:`~verta._tracking.experimentrun.ExperimentRun`
         Experiment Run tracking this model.
 
     Examples
