@@ -180,7 +180,7 @@ class TestCreate:
         assert result.exception
         assert error_message in result.output
 
-    def test_create_workspace_config(self, client, organization, in_tempdir):
+    def test_create_workspace_config(self, client, organization, in_tempdir, created_registered_models):
         model_name = _utils.generate_default_name()
         version_name = _utils.generate_default_name()
 
@@ -200,6 +200,7 @@ class TestCreate:
 
         client = Client()
         model = client.get_registered_model(model_name)
+        created_registered_models.append(model)
         assert model.workspace == organization.name
 
     def test_create_version_with_custom_modules(self, client, registered_model, created_endpoints):
