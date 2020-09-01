@@ -8,7 +8,7 @@ from verta._cli.deployment import deployment
 
 @deployment.group(name="download")
 def download():
-    """Download deployment-related artifacts.
+    """Download resources relating to deployment.
 
     For example, to download the Docker context for a model version, run
 
