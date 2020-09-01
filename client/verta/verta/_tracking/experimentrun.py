@@ -2101,14 +2101,16 @@ class ExperimentRun(_DeployableEntity):
             downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 
-    def download_docker_context(self, download_to_path):
+    def download_docker_context(self, download_to_path, self_contained=False):
         """
-        Downloads this Experiment Run's Docker context ``tgz``.
+        Downloads this Model Version's Docker context ``tgz``.
 
         Parameters
         ----------
         download_to_path : str
             Path to download Docker context to.
+        self_contained : bool
+            Whether the downloaded Docker context should be self-contained.
 
         Returns
         -------
@@ -2116,12 +2118,17 @@ class ExperimentRun(_DeployableEntity):
             Absolute path where Docker context was downloaded to. Matches `download_to_path`.
 
         """
-        endpoint = "{}://{}/api/v1/deployment/models/{}/dockercontext".format(
+        self._refresh_cache()
+        endpoint = "{}://{}/api/v1/deployment/builds/dockercontext".format(
             self._conn.scheme,
             self._conn.socket,
-            self.id,
         )
-        with _utils.make_request("GET", endpoint, self._conn, stream=True) as response:
+        body = {
+            "run_id": self.id,
+            "self_contained": self_contained
+        }
+
+        with _utils.make_request("POST", endpoint, self._conn, json=body, stream=True) as response:
             try:
                 _utils.raise_for_http_error(response)
             except requests.HTTPError as e:
