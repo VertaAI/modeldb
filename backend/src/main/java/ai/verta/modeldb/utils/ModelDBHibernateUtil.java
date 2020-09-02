@@ -249,11 +249,6 @@ public class ModelDBHibernateUtil {
           checkDBConnectionInLoop(true);
         }
 
-        releaseLiquibaseLock(metaDataSrc);
-
-        // Run tables liquibase migration
-        createTablesLiquibaseMigration(metaDataSrc);
-
         // Create session factory and validate entity
         sessionFactory = metaDataSrc.buildMetadata().buildSessionFactory();
 
@@ -318,7 +313,7 @@ public class ModelDBHibernateUtil {
     return getSessionFactory();
   }
 
-  private static void checkDBConnectionInLoop(boolean isStartUpTime) throws InterruptedException {
+  public static void checkDBConnectionInLoop(boolean isStartUpTime) throws InterruptedException {
     int loopBackTime = 5;
     int loopIndex = 0;
     boolean dbConnectionLive = false;
@@ -362,12 +357,16 @@ public class ModelDBHibernateUtil {
     }
   }
 
-  private static void releaseLiquibaseLock(MetadataSources metaDataSrc)
-      throws LiquibaseException, SQLException, InterruptedException {
+  public static void releaseLiquibaseLock(
+      String rDBDriver,
+      String rDBUrl,
+      String databaseName,
+      String configUsername,
+      String configPassword)
+      throws LiquibaseException, SQLException, InterruptedException, ClassNotFoundException {
     // Get database connection
     try (Connection con =
-        metaDataSrc.getServiceRegistry().getService(ConnectionProvider.class).getConnection()) {
-
+        getDBConnection(rDBDriver, rDBUrl, databaseName, configUsername, configPassword)) {
       boolean existsStatus = tableExists(con, "database_change_log_lock");
       if (!existsStatus) {
         LOGGER.info("Table database_change_log_lock does not exists in DB");
@@ -424,7 +423,7 @@ public class ModelDBHibernateUtil {
 
       if (locked) {
         Thread.sleep(liquibaseLockThreshold * 1000); // liquibaseLockThreshold = second
-        releaseLiquibaseLock(metaDataSrc);
+        releaseLiquibaseLock(rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
       }
     } catch (InterruptedException e) {
       LOGGER.error(e.getMessage(), e);
@@ -432,11 +431,17 @@ public class ModelDBHibernateUtil {
     }
   }
 
-  private static void createTablesLiquibaseMigration(MetadataSources metaDataSrc)
-      throws LiquibaseException, SQLException, InterruptedException {
+  public static void createTablesLiquibaseMigration(
+      String rDBDriver,
+      String rDBUrl,
+      String databaseName,
+      String configUsername,
+      String configPassword,
+      String changeSetToRevertUntilTag)
+      throws LiquibaseException, SQLException, InterruptedException, ClassNotFoundException {
     // Get database connection
     try (Connection con =
-        metaDataSrc.getServiceRegistry().getService(ConnectionProvider.class).getConnection()) {
+        getDBConnection(rDBDriver, rDBUrl, databaseName, configUsername, configPassword)) {
       JdbcConnection jdbcCon = new JdbcConnection(con);
 
       // Overwrite default liquibase table names by custom
@@ -453,12 +458,16 @@ public class ModelDBHibernateUtil {
       boolean liquibaseExecuted = false;
       while (!liquibaseExecuted) {
         try {
-          liquibase.update(new Contexts(), new LabelExpression());
+          if (changeSetToRevertUntilTag == null || changeSetToRevertUntilTag.isEmpty()) {
+            liquibase.update(new Contexts(), new LabelExpression());
+          } else {
+            liquibase.rollback(changeSetToRevertUntilTag, new Contexts(), new LabelExpression());
+          }
           liquibaseExecuted = true;
         } catch (LockException ex) {
           LOGGER.warn(
               "ModelDBHibernateUtil createTablesLiquibaseMigration() getting LockException ", ex);
-          releaseLiquibaseLock(metaDataSrc);
+          releaseLiquibaseLock(rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
         }
       }
     }
@@ -469,28 +478,36 @@ public class ModelDBHibernateUtil {
         rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
   }
 
-  private static boolean checkDBConnection(
+  public static Connection getDBConnection(
+      String rDBDriver,
+      String rDBUrl,
+      String databaseName,
+      String configUsername,
+      String configPassword)
+      throws SQLException, ClassNotFoundException {
+    String connectionString =
+        rDBUrl
+            + "/"
+            + databaseName
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
+    try {
+      Class.forName(rDBDriver);
+    } catch (ClassNotFoundException e) {
+      LOGGER.warn("ModelDBHibernateUtil getDBConnection() got error ", e);
+      throw e;
+    }
+    return DriverManager.getConnection(connectionString, configUsername, configPassword);
+  }
+
+  public static boolean checkDBConnection(
       String rDBDriver,
       String rDBUrl,
       String databaseName,
       String configUsername,
       String configPassword,
       Integer timeout) {
-    String connectionString =
-        rDBUrl
-            + "/"
-            + databaseName
-            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
-
-    try {
-      Class.forName(rDBDriver);
-    } catch (ClassNotFoundException e) {
-      LOGGER.warn("ModelDBHibernateUtil checkDBConnection() got error ", e);
-      return false;
-    }
     try (Connection con =
-        DriverManager.getConnection(connectionString, configUsername, configPassword)) {
-
+        getDBConnection(rDBDriver, rDBUrl, databaseName, configUsername, configPassword)) {
       return con.isValid(timeout);
     } catch (Exception ex) {
       LOGGER.warn("ModelDBHibernateUtil checkDBConnection() got error ", ex);
@@ -634,7 +651,7 @@ public class ModelDBHibernateUtil {
    * {` condition.
    */
   @SuppressWarnings("unchecked")
-  private static void runMigration() {
+  private static void runMigration() throws ClassNotFoundException {
     App app = App.getInstance();
     Map<String, Map<String, Object>> migrationTypeMap =
         (Map<String, Map<String, Object>>) app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
@@ -700,10 +717,13 @@ public class ModelDBHibernateUtil {
         if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
           try {
             ModelDBUtils.registeredBackgroundUtilsCount();
-            boolean isLocked = checkMigrationLockedStatus(migrationName);
+            boolean isLocked =
+                checkMigrationLockedStatus(
+                    migrationName, rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
             if (!isLocked) {
               LOGGER.debug("Obtaingin migration lock");
-              lockedMigration(migrationName);
+              lockedMigration(
+                  migrationName, rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
               int recordUpdateLimit =
                   (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
               DatasetToRepositoryMigration.execute(recordUpdateLimit);
@@ -720,23 +740,17 @@ public class ModelDBHibernateUtil {
     }
   }
 
-  private static boolean checkMigrationLockedStatus(String migrationName)
-      throws SQLException, DatabaseException {
+  private static boolean checkMigrationLockedStatus(
+      String migrationName,
+      String rDBDriver,
+      String rDBUrl,
+      String databaseName,
+      String configUsername,
+      String configPassword)
+      throws SQLException, DatabaseException, ClassNotFoundException {
     // Get database connection
-    String connectionString =
-        rDBUrl
-            + "/"
-            + databaseName
-            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
-
-    try {
-      Class.forName(rDBDriver);
-    } catch (ClassNotFoundException e) {
-      LOGGER.warn("ModelDBHibernateUtil checkDBConnection() got error ", e);
-      return false;
-    }
     try (Connection con =
-        DriverManager.getConnection(connectionString, configUsername, configPassword)) {
+        getDBConnection(rDBDriver, rDBUrl, databaseName, configUsername, configPassword)) {
 
       JdbcConnection jdbcCon = new JdbcConnection(con);
 
@@ -768,22 +782,17 @@ public class ModelDBHibernateUtil {
     }
   }
 
-  private static void lockedMigration(String migrationName) throws SQLException, DatabaseException {
+  private static void lockedMigration(
+      String migrationName,
+      String rDBDriver,
+      String rDBUrl,
+      String databaseName,
+      String configUsername,
+      String configPassword)
+      throws SQLException, DatabaseException, ClassNotFoundException {
     // Get database connection
-    String connectionString =
-        rDBUrl
-            + "/"
-            + databaseName
-            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
-
-    try {
-      Class.forName(rDBDriver);
-    } catch (ClassNotFoundException e) {
-      LOGGER.warn("ModelDBHibernateUtil checkDBConnection() got error ", e);
-      return;
-    }
     try (Connection con =
-        DriverManager.getConnection(connectionString, configUsername, configPassword)) {
+        getDBConnection(rDBDriver, rDBUrl, databaseName, configUsername, configPassword)) {
 
       JdbcConnection jdbcCon = new JdbcConnection(con);
 
