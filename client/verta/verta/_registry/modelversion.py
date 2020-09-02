@@ -678,7 +678,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         ----------
         download_to_path : str
             Path to download Docker context to.
-        self_contained : bool
+        self_contained : bool, default False
             Whether the downloaded Docker context should be self-contained.
 
         Returns
