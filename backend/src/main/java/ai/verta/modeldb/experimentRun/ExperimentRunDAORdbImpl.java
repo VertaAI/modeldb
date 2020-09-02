@@ -610,25 +610,24 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     return experimentRunBuilder.build();
   }
 
-  private List<Artifact> getPrivilegedDatasets(List<Artifact> newArtifacts) {
-    List<Artifact> accessibleDatasetVersions = new ArrayList<>();
+  private List<Artifact> getPrivilegedDatasets(List<Artifact> newDatasets) {
+    List<Artifact> accessibleDatasets = new ArrayList<>();
     List<String> accessibleDatasetVersionIds = new ArrayList<>();
-    for (Artifact dataset : newArtifacts) {
-      if (!dataset.getLinkedArtifactId().isEmpty()
-          && !accessibleDatasetVersionIds.contains(dataset.getLinkedArtifactId())) {
+    for (Artifact dataset : newDatasets) {
+      String datasetVersionId = dataset.getLinkedArtifactId();
+      if (!datasetVersionId.isEmpty() && !accessibleDatasetVersionIds.contains(datasetVersionId)) {
         try {
-          commitDAO.getDatasetVersionById(
-              repositoryDAO, blobDAO, metadataDAO, dataset.getLinkedArtifactId());
-          accessibleDatasetVersions.add(dataset);
-          accessibleDatasetVersionIds.add(dataset.getLinkedArtifactId());
+          commitDAO.getDatasetVersionById(repositoryDAO, blobDAO, metadataDAO, datasetVersionId);
+          accessibleDatasets.add(dataset);
+          accessibleDatasetVersionIds.add(datasetVersionId);
         } catch (Exception ex) {
           LOGGER.debug(ex.getMessage());
         }
       } else {
-        accessibleDatasetVersions.add(dataset);
+        accessibleDatasets.add(dataset);
       }
     }
-    return accessibleDatasetVersions;
+    return accessibleDatasets;
   }
 
   private ExperimentRun checkVersionInputBasedOnPrivileges(
