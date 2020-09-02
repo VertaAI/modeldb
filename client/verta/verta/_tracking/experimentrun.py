@@ -2263,3 +2263,12 @@ class ExperimentRun(_DeployableEntity):
         response_msg.url = url
 
         return response_msg
+
+    def delete(self):
+        """
+        Deletes this experiment run.
+
+        """
+        request_url = "{}://{}/api/v1/modeldb/experiment-run/deleteExperimentRun".format(self._conn.scheme, self._conn.socket)
+        response = requests.delete(request_url, json={'id': self.id}, headers=self._conn.auth)
+        _utils.raise_for_http_error(response)

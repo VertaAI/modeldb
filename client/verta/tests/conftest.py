@@ -284,7 +284,7 @@ def client(host, port, email, dev_key):
 
     proj = client._ctx.proj
     if proj is not None:
-        utils.delete_project(proj.id, client._conn)
+        proj.delete()
 
     print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
@@ -345,7 +345,7 @@ def repository(client):
 
     yield repo
 
-    utils.delete_repository(repo.id, client._conn)
+    repo.delete()
 
 
 @pytest.fixture
@@ -373,21 +373,18 @@ def created_datasets(client, client_2):
 def registered_model(client):
     model = client.get_or_create_registered_model()
     yield model
-    utils.delete_registered_model(model.id, client._conn)
+    model.delete()
 
 
 @pytest.fixture
-def created_registered_models(client, client_2):
+def created_registered_models():
     """Container to track and clean up `RegisteredModel`s created during tests."""
     to_delete = []
 
     yield to_delete
 
     for registered_model in to_delete:
-        try:
-            utils.delete_registered_model(registered_model.id, client._conn)
-        except requests.HTTPError:
-            utils.delete_registered_model(registered_model.id, client_2._conn)
+        registered_model.delete()
 
 
 @pytest.fixture
@@ -396,17 +393,13 @@ def model_version(registered_model):
 
 
 @pytest.fixture
-def created_endpoints(client, client_2):
+def created_endpoints():
     to_delete = []
 
     yield to_delete
 
     for endpoint in to_delete:
-        try:
-            utils.delete_endpoint(endpoint.id, endpoint.workspace, client._conn)
-        except requests.HTTPError:
-            utils.delete_endpoint(endpoint.id, endpoint.workspace, client_2._conn)
-
+        endpoint.delete()
 
 def endpoint(client, created_endpoints):
     path = _utils.generate_default_name()
@@ -417,13 +410,23 @@ def endpoint(client, created_endpoints):
 
 
 @pytest.fixture
+def created_endpoints():
+    to_delete = []
+
+    yield to_delete
+
+    for endpoint in to_delete:
+        endpoint.delete()
+
+
+@pytest.fixture
 def organization(client):
     workspace_name = _utils.generate_default_name()
     org = client._create_organization(workspace_name)
 
     yield org
 
-    utils.delete_organization(org.id, client._conn)
+    org.delete()
 
 
 @pytest.fixture

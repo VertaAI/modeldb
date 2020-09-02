@@ -228,8 +228,8 @@ class TestEndpoint:
             "run_id": experiment_run.id,
             "strategy": "canary",
             "canary_strategy": {
-                "progress_step": 0.05,
-                "progress_interval_seconds": 30,
+                "progress_step": 0.5,
+                "progress_interval_seconds": 1,
                 "rules": [
                     {"rule": "latency_avg_max",
                      "rule_parameters": [
@@ -270,8 +270,8 @@ class TestEndpoint:
             "run_id": experiment_run.id,
             "strategy": "canary",
             "canary_strategy": {
-                "progress_step": 0.05,
-                "progress_interval_seconds": 30,
+                "progress_step": 0.5,
+                "progress_interval_seconds": 1,
                 "rules": [
                     {"rule": "latency_avg_max",
                      "rule_parameters": [
@@ -429,8 +429,8 @@ class TestEndpoint:
             "model_version_id": model_version.id,
             "strategy": "canary",
             "canary_strategy": {
-                "progress_step": 0.05,
-                "progress_interval_seconds": 30,
+                "progress_step": 0.5,
+                "progress_interval_seconds": 1,
                 "rules": [
                     {"rule": "latency_avg_max",
                      "rule_parameters": [
@@ -453,7 +453,8 @@ class TestEndpoint:
         endpoint.update_from_config(filepath, wait=True)
 
         test_data = np.random.random((4, 12))
-        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+        prediction = endpoint.get_deployed_model().predict(test_data)
+        assert np.array_equal(prediction, classifier.predict(test_data))
 
     def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -497,7 +498,7 @@ class TestEndpoint:
             model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
             model_version.log_model(classifier, custom_modules=["models/"], model_api=model_api)
 
-            env = Python(requirements=["torch==1.0.0"])
+            env = Python(requirements=["torch={}".format(torch.__version__)])
             model_version.log_environment(env)
 
 
