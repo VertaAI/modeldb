@@ -493,7 +493,8 @@ class TestUpdate:
             ['registry', 'update', 'registeredmodelversion', model_name, version_name,
              "--attribute", "att_key=value"],
         )
-        assert "if the attribute's value is a string, consider wrapping it in quotes." in result.exception
+        assert result.exception
+        assert "if the attribute's value is a string, consider wrapping it in quotes." in result.output
 
     def test_update_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name

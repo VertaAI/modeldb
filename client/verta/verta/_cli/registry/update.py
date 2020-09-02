@@ -111,7 +111,7 @@ def add_attributes(model_version, attribute, overwrite):
             model_version.add_attribute(key, json.loads(value), overwrite=overwrite)
         except ValueError as e:
             if not (value.startswith('\"')  and value.endswith('\"')):
-                raise ValueError("if the attribute's value is a string, consider wrapping it in quotes.")
+                raise click.BadParameter("if the attribute's value is a string, consider wrapping it in quotes.")
             else:
                 raise e
 
