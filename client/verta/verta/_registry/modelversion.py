@@ -694,7 +694,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         )
         body = {
             "model_version_id": self.id,
-            "self_contained": self_contained
+            "self_contained": self_contained,
         }
 
         with _utils.make_request("POST", endpoint, self._conn, json=body, stream=True) as response:

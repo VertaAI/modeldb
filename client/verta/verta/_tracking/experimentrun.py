@@ -2125,7 +2125,7 @@ class ExperimentRun(_DeployableEntity):
         )
         body = {
             "run_id": self.id,
-            "self_contained": self_contained
+            "self_contained": self_contained,
         }
 
         with _utils.make_request("POST", endpoint, self._conn, json=body, stream=True) as response:
