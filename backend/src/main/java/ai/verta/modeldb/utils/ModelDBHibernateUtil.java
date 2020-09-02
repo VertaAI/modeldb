@@ -230,6 +230,7 @@ public class ModelDBHibernateUtil {
         settings.put(Environment.DIALECT, rDBDialect);
         settings.put(Environment.HBM2DDL_AUTO, "validate");
         settings.put(Environment.SHOW_SQL, "false");
+        settings.put("hibernate.c3p0.testConnectionOnCheckout", "true");
         configuration.setProperties(settings);
 
         LOGGER.trace("connectionString {}", connectionString);
@@ -293,6 +294,7 @@ public class ModelDBHibernateUtil {
 
   private static SessionFactory loopBack(SessionFactory sessionFactory) {
     try {
+      LOGGER.debug("ModelDBHibernateUtil checking DB connection");
       boolean dbConnectionLive =
           checkDBConnection(
               rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);

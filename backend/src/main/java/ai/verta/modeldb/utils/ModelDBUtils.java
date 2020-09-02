@@ -501,7 +501,12 @@ public class ModelDBUtils {
           "Detected communication exception of type {}",
           communicationsException.getCause().getClass());
       if (ModelDBHibernateUtil.checkDBConnection()) {
+        LOGGER.info("Resetting session Factory");
+
         ModelDBHibernateUtil.resetSessionFactory();
+        LOGGER.info("Resetted session Factory");
+      } else {
+        LOGGER.warn("DB could not be reached");
       }
       return true;
     }
