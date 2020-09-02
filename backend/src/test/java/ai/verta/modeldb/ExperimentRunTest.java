@@ -129,6 +129,7 @@ public class ExperimentRunTest {
       app.setRoleService(new RoleServiceUtils(authService));
     }
 
+    App.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, app.getRoleService());
     serverBuilder.intercept(new ModelDBAuthInterceptor());

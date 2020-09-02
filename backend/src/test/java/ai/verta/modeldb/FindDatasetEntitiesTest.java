@@ -108,6 +108,7 @@ public class FindDatasetEntitiesTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    App.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -1573,6 +1574,7 @@ public class FindDatasetEntitiesTest {
 
   /** Find datasetVersions with attribute predicates and sort by attribute key */
   @Test
+  @Ignore
   public void findAndSortDatasetVersionsByAttributeTest() {
     LOGGER.info("Find and Sort DatasetVersions By attribute test start................");
 

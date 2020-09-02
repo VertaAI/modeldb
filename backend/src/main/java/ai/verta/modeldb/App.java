@@ -329,7 +329,7 @@ public class App implements ApplicationContextAware {
     }
   }
 
-  private static boolean runLiquibaseMigration(Map<String, Object> databasePropMap)
+  public static boolean runLiquibaseMigration(Map<String, Object> databasePropMap)
       throws InterruptedException, LiquibaseException, SQLException, ClassNotFoundException {
     Map<String, Object> rDBPropMap = (Map<String, Object>) databasePropMap.get("RdbConfiguration");
 

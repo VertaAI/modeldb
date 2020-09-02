@@ -89,6 +89,7 @@ public class ArtifactStoreTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    App.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
