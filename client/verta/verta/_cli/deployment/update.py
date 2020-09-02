@@ -19,7 +19,7 @@ def update():
 
     For example, to update an endpoint with a new model version, run
 
-    `verta deployment update endpoint <endpoint path> -m <model version id> -s direct`
+    `verta deployment update endpoint "<endpoint path>" -m "<model version id>" -s direct`
 
     """
     pass

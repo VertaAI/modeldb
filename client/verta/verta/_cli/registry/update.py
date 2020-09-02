@@ -15,11 +15,11 @@ def update():
 
     For example, to update a registered model named BERT with a new label, run
 
-    `verta registry update registeredmodel BERT -l <label>`
+    `verta registry update registeredmodel BERT -l "<label>"`
 
     or to update the version named latest of a model named BERT with a new label, run
 
-    `verta registry update registeredmodelversion BERT latest -l <label>`
+    `verta registry update registeredmodelversion BERT latest -l "<label>"`
 
     """
     pass

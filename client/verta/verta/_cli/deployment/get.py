@@ -12,7 +12,7 @@ def get():
 
     For example, to see information about an endpoint, run
 
-    `verta deployment get endpoint <endpoint path>`
+    `verta deployment get endpoint "<endpoint path>"`
 
     """
     pass

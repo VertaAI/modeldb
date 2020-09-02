@@ -13,7 +13,7 @@ def predict():
 
     For example, to make a prediction to an endpoint, run
 
-    `verta deployment predict endpoint <endpoint path> --data <input data>`
+    `verta deployment predict endpoint "<endpoint path>" --data "<input data>"`
 
     """
     pass
