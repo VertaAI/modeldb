@@ -286,14 +286,14 @@ class TestExperimentRun extends FunSuite {
       val retrievedCommit = f.expRun.getCommit().get.commit
       assert(retrievedCommit equals commit)
 
-      // update the logged commit:
+      // Should not allow updating commit:
       val newCommit = commit.update("abc/def", pathBlob)
                             .flatMap(_.save("Add a blob")).get
-      f.expRun.logCommit(newCommit, Some(Map[String, String]("mnp/qrs" -> "abc/def")))
-      val newExpRunCommit = f.expRun.getCommit().get
-      assert(newCommit equals newExpRunCommit.commit)
-      assert(!newExpRunCommit.commit.equals(commit))
-      assert(newExpRunCommit.keyPaths.get equals Map[String, String]("mnp/qrs" -> "abc/def"))
+      val logAttempt2 = f.expRun.logCommit(newCommit, Some(Map[String, String]("mnp/qrs" -> "abc/def")))
+      assert(logAttempt2.isFailure)
+      
+      val newRetrievedCommit = f.expRun.getCommit().get.commit
+      assert(newRetrievedCommit equals commit)
     } finally {
       cleanup(f)
     }
