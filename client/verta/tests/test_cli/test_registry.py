@@ -466,19 +466,34 @@ class TestUpdate:
             cli,
             ['registry', 'update', 'registeredmodelversion', model_name, version_name,
              '-l', 'label1', '-l', 'label2', "--artifact", "file={}".format(filename),
-             "--model", classifier_name, "--requirements", requirements_file.name],
+             "--model", classifier_name, "--requirements", requirements_file.name,
+             "--attribute", "att_key=\"value\""],
         )
         assert not result.exception
 
         model_version = registered_model.get_version(name=version_name)
         assert model_version.get_artifact("file").read() == FILE_CONTENTS
         assert model_version.get_labels() == ["label1", "label2"]
+        assert model_version.get_attribute("att_key") == "value"
         assert model_version.get_model().get_params() == classifier.get_params()
 
         # Check environment:
         reqs = Python.read_pip_file(requirements_file.name)
         env = Python(requirements=reqs)
         assert repr(env) == str(model_version.get_environment())
+
+    def test_update_version_str_value_not_in_quote_error(self, registered_model):
+        model_name = registered_model.name
+        version_name = "my version"
+        registered_model.get_or_create_version(version_name)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'update', 'registeredmodelversion', model_name, version_name,
+             "--attribute", "att_key=value"],
+        )
+        assert "if the attribute's value is a string, consider wrapping it in quotes." in result.exception
 
     def test_update_version_invalid_key(self, registered_model, in_tempdir):
         model_name = registered_model.name

@@ -106,6 +106,14 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
 
 
 def add_attributes(model_version, attribute, overwrite):
-    _multiple_arguments_for_each(attribute, "attribute",
-                                 lambda key, value: model_version.add_attribute(key, json.loads(value), overwrite=overwrite),
+    def action(key, value):
+        try:
+            model_version.add_attribute(key, json.loads(value), overwrite=overwrite)
+        except ValueError as e:
+            if not (value.startswith('\"')  and value.endswith('\"')):
+                raise ValueError("if the attribute's value is a string, consider wrapping it in quotes.")
+            else:
+                raise e
+
+    _multiple_arguments_for_each(attribute, "attribute", action,
                                  lambda: model_version._get_attribute_keys(), overwrite)
