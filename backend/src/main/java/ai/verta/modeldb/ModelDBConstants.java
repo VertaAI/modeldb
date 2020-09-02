@@ -39,8 +39,6 @@ public interface ModelDBConstants {
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
   String POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES = "populateConnectionsBasedOnPrivileges";
-  String LIQUIBASE_MIGRATION = "liquibaseMigration";
-  String RUN_LIQUIBASE_SEPARATE = "runLiquibaseSeparate";
 
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
