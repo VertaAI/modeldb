@@ -349,7 +349,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       if (experimentRun.getDatasetsCount() > 0 && app.isPopulateConnectionsBasedOnPrivileges()) {
-        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
       }
 
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
@@ -563,7 +563,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRun getExperimentRun(String experimentRunId)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
           session.get(ExperimentRunEntity.class, experimentRunId);
@@ -588,10 +588,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-  private ExperimentRun populateFieldsBasedOnPrivileges(ExperimentRun experimentRun) {
+  private ExperimentRun populateFieldsBasedOnPrivileges(ExperimentRun experimentRun)
+      throws ModelDBException {
     if (app.isPopulateConnectionsBasedOnPrivileges()) {
       if (experimentRun.getDatasetsCount() > 0) {
-        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, false);
       }
       if (experimentRun.getVersionedInputs() != null
           && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
@@ -602,15 +603,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     return experimentRun;
   }
 
-  private ExperimentRun checkDatasetVersionBasedOnPrivileges(ExperimentRun experimentRun) {
+  private ExperimentRun checkDatasetVersionBasedOnPrivileges(
+      ExperimentRun experimentRun, boolean errorOut) throws ModelDBException {
     ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
     List<Artifact> accessibleDatasetVersions =
-        getPrivilegedDatasets(experimentRun.getDatasetsList());
+        getPrivilegedDatasets(experimentRun.getDatasetsList(), errorOut);
     experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasetVersions);
     return experimentRunBuilder.build();
   }
 
-  private List<Artifact> getPrivilegedDatasets(List<Artifact> newDatasets) {
+  private List<Artifact> getPrivilegedDatasets(List<Artifact> newDatasets, boolean errorOut)
+      throws ModelDBException {
     List<Artifact> accessibleDatasets = new ArrayList<>();
     List<String> accessibleDatasetVersionIds = new ArrayList<>();
     for (Artifact dataset : newDatasets) {
@@ -622,6 +625,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           accessibleDatasetVersionIds.add(datasetVersionId);
         } catch (Exception ex) {
           LOGGER.debug(ex.getMessage());
+          if (errorOut) {
+            throw ex;
+          }
         }
       } else {
         accessibleDatasets.add(dataset);
@@ -686,7 +692,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun updateExperimentRunDescription(
       String experimentRunId, String experimentRunDescription)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId);
@@ -764,7 +770,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRun addExperimentRunTags(String experimentRunId, List<String> tagsList)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
@@ -809,7 +815,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun deleteExperimentRunTags(
       String experimentRunId, List<String> experimentRunTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       if (deleteAll) {
@@ -992,7 +998,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<Artifact> getExperimentRunDatasets(String experimentRunId)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
@@ -1020,7 +1026,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logDatasets(String experimentRunId, List<Artifact> newDatasets, boolean overwrite)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
@@ -1062,7 +1068,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       if (app.isPopulateConnectionsBasedOnPrivileges()) {
-        newDatasets = getPrivilegedDatasets(newDatasets);
+        newDatasets = getPrivilegedDatasets(newDatasets, true);
       }
 
       List<ArtifactEntity> newDatasetList =
@@ -2056,7 +2062,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Experiment newExperiment,
       Project newProject,
       UserInfo newOwner)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     checkIfEntityAlreadyExists(srcExperimentRun, false);
 
     if (newExperiment == null || newProject == null || newOwner == null) {
