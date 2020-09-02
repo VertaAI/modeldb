@@ -12,6 +12,15 @@ from ..._internal_utils._utils import _multiple_arguments_for_each
 @registry.group(name="update")
 def update():
     """Update an existing entry.
+
+    For example, to update a registered model named BERT with a new label, run
+
+    `verta registry update registeredmodel BERT -l "<label>"`
+
+    or to update the version named latest of a model named BERT with a new label, run
+
+    `verta registry update registeredmodelversion BERT latest -l "<label>"`
+
     """
     pass
 
