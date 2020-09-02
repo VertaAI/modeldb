@@ -229,7 +229,8 @@ public class CommitDAORdbImpl implements CommitDAO {
 
       long version = datasetVersion.getVersion();
       if (commitPaginationDTO.getCommitEntities() != null
-          && !commitPaginationDTO.getCommitEntities().isEmpty()) {
+          && !commitPaginationDTO.getCommitEntities().isEmpty()
+          && version == 0) {
         CommitEntity parentEntity = commitPaginationDTO.getCommitEntities().get(0);
         String parentCompositeId =
             VersioningUtils.getVersioningCompositeId(
@@ -247,7 +248,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         }
       }
       if (version == 0) {
-        version = version + 1;
+        version = 1;
       }
       metadataDAO.addProperty(
           session,
