@@ -1192,8 +1192,6 @@ public class CommitDAORdbImpl implements CommitDAO {
           sortKey = ModelDBConstants.DATE_CREATED;
         } else if (sortKey.equals(ModelDBConstants.TIME_UPDATED)) {
           sortKey = ModelDBConstants.DATE_UPDATED;
-        } else if (sortKey.contains(ModelDBConstants.OBSERVATIONS)) {
-          throw new ModelDBException("Observations not supported as sort key", Code.UNIMPLEMENTED);
         }
       } else {
         sortKey = ModelDBConstants.DATE_UPDATED;

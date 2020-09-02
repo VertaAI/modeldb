@@ -1412,40 +1412,6 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("FindDatasetVersions by attribute with pagination test stop...........");
   }
 
-  /** Check observations.attributes not support */
-  @Test
-  public void findDatasetVersionsNotSupportObservationsAttributesTest() {
-    LOGGER.info("FindDatasetVersions not support the observation.attributes test start........");
-
-    Value numValue = Value.newBuilder().setStringValue("0.31").build();
-    KeyValueQuery keyValueQuery2 =
-        KeyValueQuery.newBuilder()
-            .setKey("attributes.attribute_2")
-            .setValue(numValue)
-            .setOperator(OperatorEnum.Operator.EQ)
-            .build();
-
-    FindDatasetVersions findDatasetVersions =
-        FindDatasetVersions.newBuilder()
-            .setDatasetId(dataset1.getId())
-            .addAllDatasetVersionIds(datasetVersionMap.keySet())
-            .addPredicates(keyValueQuery2)
-            .setAscending(false)
-            .setSortKey("observations.attribute.attr_1")
-            .build();
-
-    try {
-      datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
-    }
-
-    LOGGER.info("FindDatasetVersions not support the observation.attributes test stop........");
-  }
-
   /** Find datasetVersion with value of tags */
   @Test
   public void findDatasetVersionsByTagsTest() {
