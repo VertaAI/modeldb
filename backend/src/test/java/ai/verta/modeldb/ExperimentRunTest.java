@@ -8559,9 +8559,15 @@ public class ExperimentRunTest {
         getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
         getVersionedInputResponse =
             experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
-        assertTrue(
-            "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-            getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
+        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          assertTrue(
+              "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+              getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
+        } else {
+          assertFalse(
+              "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+              getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
+        }
       }
     } finally {
       DeleteRepositoryRequest deleteRepository =
@@ -9566,10 +9572,17 @@ public class ExperimentRunTest {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        assertEquals(
-            "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
-            3,
-            response.getExperimentRuns(0).getHyperparametersCount());
+        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          assertEquals(
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
+              3,
+              response.getExperimentRuns(0).getHyperparametersCount());
+        } else {
+          assertNotEquals(
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
+              3,
+              response.getExperimentRuns(0).getHyperparametersCount());
+        }
       }
     } finally {
       DeleteRepositoryRequest deleteRepository =
@@ -10215,25 +10228,31 @@ public class ExperimentRunTest {
       if (exprRun.getId().equals(experimentRun2.getId())) {
         String locationKey =
             ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-        assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-        assertTrue(
-            "Expected code config not found in map",
-            !exprRun
-                .getCodeVersionFromBlobOrThrow(locationKey)
-                .getGitSnapshot()
-                .getFilepathsList()
-                .isEmpty());
+        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          assertTrue(
+              "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+          assertTrue(
+              "Expected code config not found in map",
+              !exprRun
+                  .getCodeVersionFromBlobOrThrow(locationKey)
+                  .getGitSnapshot()
+                  .getFilepathsList()
+                  .isEmpty());
+        }
       } else if (exprRun.getId().equals(experimentRun3.getId())) {
         String locationKey =
             ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
-        assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-        assertTrue(
-            "Expected code config not found in map",
-            exprRun
-                .getCodeVersionFromBlobOrThrow(locationKey)
-                .getGitSnapshot()
-                .getFilepathsList()
-                .isEmpty());
+        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          assertTrue(
+              "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+          assertTrue(
+              "Expected code config not found in map",
+              exprRun
+                  .getCodeVersionFromBlobOrThrow(locationKey)
+                  .getGitSnapshot()
+                  .getFilepathsList()
+                  .isEmpty());
+        }
       }
     }
 
@@ -10242,14 +10261,16 @@ public class ExperimentRunTest {
             GetExperimentRunById.newBuilder().setId(experimentRun2.getId()).build());
     ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
     String locationKey = ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-    assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-    assertFalse(
-        "Expected code config not found in map",
-        exprRun
-            .getCodeVersionFromBlobOrThrow(locationKey)
-            .getGitSnapshot()
-            .getFilepathsList()
-            .isEmpty());
+    if (app.isPopulateConnectionsBasedOnPrivileges()) {
+      assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+      assertFalse(
+          "Expected code config not found in map",
+          exprRun
+              .getCodeVersionFromBlobOrThrow(locationKey)
+              .getGitSnapshot()
+              .getFilepathsList()
+              .isEmpty());
+    }
 
     DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()
@@ -10854,10 +10875,12 @@ public class ExperimentRunTest {
             "ExperimentRun count not match with expected experimentRun count",
             1,
             response.getExperimentRunsCount());
-        assertEquals(
-            "ExperimentRun not match with expected experimentRun",
-            0,
-            response.getExperimentRuns(0).getDatasetsCount());
+        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          assertEquals(
+              "ExperimentRun not match with expected experimentRun",
+              0,
+              response.getExperimentRuns(0).getDatasetsCount());
+        }
       }
     } finally {
       for (String datasetVersionId : datasetVersionIds) {
