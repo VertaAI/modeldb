@@ -401,6 +401,8 @@ def created_endpoints():
     for endpoint in to_delete:
         endpoint.delete()
 
+
+@pytest.fixture
 def endpoint(client, created_endpoints):
     path = _utils.generate_default_name()
     endpoint = client.create_endpoint(path)
