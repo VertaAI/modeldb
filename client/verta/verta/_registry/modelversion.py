@@ -670,7 +670,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         self._refresh_cache()
         return self._msg.labels
 
-    def download_docker_context(self, download_to_path):
+    def download_docker_context(self, download_to_path, self_contained=False):
         """
         Downloads this Model Version's Docker context ``tgz``.
 
@@ -678,6 +678,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         ----------
         download_to_path : str
             Path to download Docker context to.
+        self_contained : bool, default False
+            Whether the downloaded Docker context should be self-contained.
 
         Returns
         -------
@@ -691,7 +693,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             self._conn.socket,
         )
         body = {
-            "model_version_id": self.id
+            "model_version_id": self.id,
+            "self_contained": self_contained,
         }
 
         with _utils.make_request("POST", endpoint, self._conn, json=body, stream=True) as response:
