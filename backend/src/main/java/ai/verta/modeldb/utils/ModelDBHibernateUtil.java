@@ -230,7 +230,10 @@ public class ModelDBHibernateUtil {
         settings.put(Environment.DIALECT, rDBDialect);
         settings.put(Environment.HBM2DDL_AUTO, "validate");
         settings.put(Environment.SHOW_SQL, "false");
-        settings.put("hibernate.c3p0.testConnectionOnCheckout", "true");
+        settings.put("hibernate.c3p0.testConnectionOnCheckin", "true");
+        settings.put("hibernate.c3p0.idleConnectionTestPeriod", "300");
+        //Reduce this time period if stale connections still exist
+        settings.put("hibernate.c3p0.idleConnectionTestPeriod", "300");
         configuration.setProperties(settings);
 
         LOGGER.trace("connectionString {}", connectionString);
