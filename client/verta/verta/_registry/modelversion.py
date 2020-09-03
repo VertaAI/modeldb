@@ -431,6 +431,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         if not isinstance(env, _Environment):
             raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
 
+        if self.has_environment:
+            raise ValueError("environment already exists")
+
         self._fetch_with_no_cache()
         self._msg.environment.CopyFrom(env._msg)
         self._update(self._msg, method="PUT")
