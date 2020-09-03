@@ -101,6 +101,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       throws ModelDBException {
     DatasetVersion.Builder datasetVersionBuilder =
         DatasetVersion.newBuilder()
+            .setVersion(request.getVersion())
             .setDatasetId(request.getDatasetId())
             .setDescription(request.getDescription())
             .addAllTags(request.getTagsList())
