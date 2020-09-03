@@ -655,6 +655,13 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
     #     self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
 
+    def log_attribute(self, key, value, overwrite=False):
+        """
+        Alias for :meth:`~verta._registry.modelversion.RegisteredModelVersion.add_attribute`
+
+        """
+        self.add_attribute(key, value, overwrite)
+
     def add_attribute(self, key, value, overwrite=False):
         """
         Adds an attribute to this Model Version.
