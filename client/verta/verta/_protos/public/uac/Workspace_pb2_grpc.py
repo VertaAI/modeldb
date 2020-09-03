@@ -24,6 +24,11 @@ class WorkspaceServiceStub(object):
         request_serializer=uac_dot_Workspace__pb2.GetWorkspaceByName.SerializeToString,
         response_deserializer=uac_dot_Workspace__pb2.Workspace.FromString,
         )
+    self.getWorkspaceByLegacyId = channel.unary_unary(
+        '/ai.verta.uac.WorkspaceService/getWorkspaceByLegacyId',
+        request_serializer=uac_dot_Workspace__pb2.GetWorkspaceByLegacyId.SerializeToString,
+        response_deserializer=uac_dot_Workspace__pb2.Workspace.FromString,
+        )
 
 
 class WorkspaceServiceServicer(object):
@@ -44,6 +49,13 @@ class WorkspaceServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def getWorkspaceByLegacyId(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_WorkspaceServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -55,6 +67,11 @@ def add_WorkspaceServiceServicer_to_server(servicer, server):
       'getWorkspaceByName': grpc.unary_unary_rpc_method_handler(
           servicer.getWorkspaceByName,
           request_deserializer=uac_dot_Workspace__pb2.GetWorkspaceByName.FromString,
+          response_serializer=uac_dot_Workspace__pb2.Workspace.SerializeToString,
+      ),
+      'getWorkspaceByLegacyId': grpc.unary_unary_rpc_method_handler(
+          servicer.getWorkspaceByLegacyId,
+          request_deserializer=uac_dot_Workspace__pb2.GetWorkspaceByLegacyId.FromString,
           response_serializer=uac_dot_Workspace__pb2.Workspace.SerializeToString,
       ),
   }
