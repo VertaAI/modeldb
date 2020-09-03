@@ -12,19 +12,23 @@ import sys
 import tarfile
 import tempfile
 import zipfile
+import pprint
 
 import requests
 
-from .entity import _ModelDBEntity
+from .entity import _ModelDBEntity, _MODEL_ARTIFACTS_ATTR_KEY
+
 from .._internal_utils import (
     _histogram_utils,
     _utils,
+    _artifact_utils,
 )
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 
 from ..external import six
+from .. import utils
 
 
 # location in DeploymentService model container
@@ -359,3 +363,95 @@ class _DeployableEntity(_ModelDBEntity):
                 raise RuntimeError("log_training_data() may not yet have been called")
 
         return response.json()
+
+    def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
+        """
+        Logs a model artifact for Verta model deployment.
+
+        Parameters
+        ----------
+        model : str or object
+            Model for deployment.
+                - If str, then it will be interpreted as a filesystem path to a serialized model file
+                  for upload.
+                - Otherwise, the object will be serialized and uploaded as an artifact.
+        custom_modules : list of str, optional
+            Paths to local Python modules and other files that the deployed model depends on.
+                - If directories are provided, all files within—excluding virtual environments—will
+                  be included.
+                - If not provided, all Python files located within `sys.path`—excluding virtual
+                  environments—will be included.
+        model_api : :class:`~verta.utils.ModelAPI`, optional
+            Model API specifying details about the model and its deployment.
+        artifacts : list of str, optional
+            Keys of logged artifacts to be used by a class model.
+        overwrite : bool, default False
+            Whether to allow overwriting existing artifacts.
+
+        """
+        if (artifacts is not None
+                and not (isinstance(artifacts, list)
+                         and all(isinstance(artifact_key, six.string_types) for artifact_key in artifacts))):
+            raise TypeError("`artifacts` must be list of str, not {}".format(type(artifacts)))
+
+        # validate that `artifacts` are actually logged
+        if artifacts:
+            self._refresh_cache()
+            run_msg = self._msg
+            existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
+            unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
+            if unlogged_artifact_keys:
+                raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
+
+
+        # serialize model
+        try:
+            extension = _artifact_utils.get_file_ext(model)
+        except (TypeError, ValueError):
+            extension = None
+        _utils.THREAD_LOCALS.active_experiment_run = self
+        try:
+            serialized_model, method, model_type = _artifact_utils.serialize_model(model)
+        finally:
+            _utils.THREAD_LOCALS.active_experiment_run = None
+        if method is None:
+            raise ValueError("will not be able to deploy model due to unknown serialization method")
+        if extension is None:
+            extension = _artifact_utils.ext_from_method(method)
+        if self._conf.debug:
+            print("[DEBUG] model is type {}".format(model_type))
+
+        if artifacts and model_type != "class":
+            raise ValueError("`artifacts` can only be provided if `model` is a class")
+
+        # build model API
+        if model_api is None:
+            model_api = utils.ModelAPI()
+        elif not isinstance(model_api, utils.ModelAPI):
+            raise ValueError("`model_api` must be `verta.utils.ModelAPI`, not {}".format(type(model_api)))
+        if 'model_packaging' not in model_api:
+            # add model serialization info to model_api
+            model_api['model_packaging'] = {
+                'python_version': _utils.get_python_version(),
+                'type': model_type,
+                'deserialization': method,
+            }
+        if self._conf.debug:
+            print("[DEBUG] model API is:")
+            pprint.pprint(model_api.to_dict())
+
+        # associate artifact dependencies
+        if artifacts:
+            self.log_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts)
+
+        custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
+        self._log_artifact("custom_modules", custom_modules_artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
+
+        self._log_model_as_artifact(serialized_model, extension, method, overwrite)
+        self._log_artifact("model_api.json", model_api, _CommonCommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
+
+    def _log_model_as_artifact(self, serialized_model, extension, method, overwrite):
+        raise NotImplementedError
+
+    def _log_artifact(self, key, artifact, artifact_type, _extension=None, method=None, overwrite=False):
+        raise NotImplementedError
