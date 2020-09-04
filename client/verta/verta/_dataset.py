@@ -523,7 +523,7 @@ class DatasetVersion(object):
         # assign base_path to proto msg to restore a level of backwards-compatibility
         try:
             self.dataset_version.path_dataset_version_info.base_path = self.base_path
-        except AttributeError:
+        except AttributeError:  # unsupported non-path dataset or multiple base_paths
             pass
 
     def __repr__(self):
