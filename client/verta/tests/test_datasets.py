@@ -284,7 +284,6 @@ class TestClientDatasetVersionFunctions:
             assert retrieved.dataset_version_info is not None
             assert retrieved.dataset_version_info == version.dataset_version_info
 
-
     @pytest.mark.skip(reason="functionality removed")
     def test_reincarnation(self, client, created_datasets):
         """Consecutive identical versions are assigned the same ID."""
