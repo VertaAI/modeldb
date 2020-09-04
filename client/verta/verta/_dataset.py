@@ -14,7 +14,6 @@ from ._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from ._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 
 from .external import six
-
 from ._internal_utils import (
     _utils,
     importer,
@@ -619,13 +618,39 @@ class DatasetVersion(object):
                             version=None):
         raise NotImplementedError('this function must be implemented by subclasses')
 
+    def list_components(self):
+        # there's a circular import if imported at module-level
+        # which I don't fully understand, and even breaks in Python 3
+        # so this import is deferred to this function body
+        from .dataset import _dataset
+
+        blob = self.dataset_version.dataset_blob
+
+        content_field = 'content'
+        if blob.HasField(content_field):
+            # determine component type
+            content_oneof = blob.WhichOneof('content')
+            if content_oneof == "s3":
+                component_cls = _dataset.S3Component
+            elif content_oneof == "path":
+                component_cls = _dataset.Component
+            else:  # shouldn't happen
+                raise RuntimeError(
+                    "found unexpected dataset type {};"
+                    " please notify the Verta development team".format(content_oneof)
+                )
+
+            # return list of component objects
+            components = getattr(blob, content_oneof).components
+            return list(map(component_cls._from_proto, components))
+
+        return []
+
 
 class RawDatasetVersion(DatasetVersion):
     def __init__(self, *args, **kwargs):
         super(RawDatasetVersion, self).__init__(*args, **kwargs)
         self.dataset_version_info = self.dataset_version.raw_dataset_version_info
-        # TODO: this is hacky, we should store dataset_version
-        self.dataset_version = None
 
     @staticmethod
     def make_create_message(dataset_id, dataset_type,
@@ -653,8 +678,6 @@ class PathDatasetVersion(DatasetVersion):
     def __init__(self, *args, **kwargs):
         super(PathDatasetVersion, self).__init__(*args, **kwargs)
         self.dataset_version_info = self.dataset_version.path_dataset_version_info
-        # TODO: this is hacky, we should store dataset_version
-        self.dataset_version = None
 
     @staticmethod
     def make_create_message(dataset_id, dataset_type,
@@ -684,8 +707,6 @@ class QueryDatasetVersion(DatasetVersion):
     def __init__(self, *args, **kwargs):
         super(QueryDatasetVersion, self).__init__(*args, **kwargs)
         self.dataset_version_info = self.dataset_version.query_dataset_version_info
-        # TODO: this is hacky, we should store dataset_version
-        self.dataset_version = None
 
     @staticmethod
     def make_create_message(dataset_id, dataset_type,
