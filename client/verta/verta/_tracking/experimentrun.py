@@ -630,7 +630,7 @@ class ExperimentRun(_DeployableEntity):
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.tags
 
-    def log_attribute(self, key, value):
+    def log_attribute(self, key, value, overwrite):
         """
         Logs an attribute to this Experiment Run.
 
@@ -644,6 +644,9 @@ class ExperimentRun(_DeployableEntity):
         """
         _utils.validate_flat_key(key)
 
+        if overwrite:
+            self._delete_attributes([key])
+
         attribute = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
         msg = _ExperimentRunService.LogAttribute(id=self.id, attribute=attribute)
         data = _utils.proto_to_json(msg)
@@ -653,13 +656,13 @@ class ExperimentRun(_DeployableEntity):
         if not response.ok:
             if response.status_code == 409:
                 raise ValueError("attribute with key {} already exists;"
-                                 " consider using observations instead".format(key))
+                                 " consider using observations instead, or setting overwrite=True.".format(key))
             else:
                 _utils.raise_for_http_error(response)
 
         self._clear_cache()
 
-    def log_attributes(self, attributes):
+    def log_attributes(self, attributes, overwrite):
         """
         Logs potentially multiple attributes to this Experiment Run.
 
@@ -672,6 +675,10 @@ class ExperimentRun(_DeployableEntity):
         # validate all keys first
         for key in six.viewkeys(attributes):
             _utils.validate_flat_key(key)
+
+        if overwrite:
+            keys = list(six.viewkeys(attributes))
+            self._delete_attributes(keys)
 
         # build KeyValues
         attribute_keyvals = []
@@ -744,6 +751,13 @@ class ExperimentRun(_DeployableEntity):
 
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return _utils.unravel_key_values(response_msg.attributes)
+
+    def _delete_attributes(self, keys):
+        response = _utils.make_request("DELETE",
+                                       "{}://{}/api/v1/modeldb/experiment-run/deleteExperimentRunAttributes".format(
+                                           self._conn.scheme, self._conn.socket),
+                                       self._conn, json={'id': self.id, 'attribute_keys': keys})
+        _utils.raise_for_http_error(response)
 
     def _delete_metrics(self, keys):
         response = _utils.make_request("DELETE",
@@ -1328,7 +1342,7 @@ class ExperimentRun(_DeployableEntity):
 
         # associate artifact dependencies
         if artifacts:
-            self.log_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts)
+            self.log_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite)
 
         custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
         self._log_artifact("custom_modules", custom_modules_artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
