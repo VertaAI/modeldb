@@ -306,14 +306,14 @@ class TestBasePath:
     @staticmethod
     def assert_base_path(dataset_version, base_path):
         # base path accessible on components
-            for component in dataset_version.list_components():
-                assert component.base_path == base_path
+        for component in dataset_version.list_components():
+            assert component.base_path == base_path
 
-            # base path accessible on dataset version
-            assert dataset_version.base_path == base_path
+        # base path accessible on dataset version
+        assert dataset_version.base_path == base_path
 
-            # base path accessible via proto for backwards-compatibility
-            assert dataset_version.dataset_version.path_dataset_version_info.base_path == base_path
+        # base path accessible via proto for backwards-compatibility
+        assert dataset_version.dataset_version.path_dataset_version_info.base_path == base_path
 
     def test_s3_bucket(self, client, created_datasets):
         bucket_name = "verta-starter"
