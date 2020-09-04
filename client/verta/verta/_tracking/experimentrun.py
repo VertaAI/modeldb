@@ -630,7 +630,7 @@ class ExperimentRun(_DeployableEntity):
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.tags
 
-    def log_attribute(self, key, value, overwrite):
+    def log_attribute(self, key, value, overwrite=False):
         """
         Logs an attribute to this Experiment Run.
 
@@ -662,7 +662,7 @@ class ExperimentRun(_DeployableEntity):
 
         self._clear_cache()
 
-    def log_attributes(self, attributes, overwrite):
+    def log_attributes(self, attributes, overwrite=False):
         """
         Logs potentially multiple attributes to this Experiment Run.
 
