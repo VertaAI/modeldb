@@ -659,11 +659,11 @@ public class FindDatasetEntitiesTest {
   public void findDatasetsByDatasetTimeUpdatedTest() {
     LOGGER.info("FindDatasets By Dataset TimeUpdated test start................................");
 
-    Value stringValue = Value.newBuilder().setNumberValue(dataset4.getTimeUpdated()).build();
+    Value numberValue = Value.newBuilder().setNumberValue(dataset4.getTimeUpdated()).build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
             .setKey(ModelDBConstants.TIME_UPDATED)
-            .setValue(stringValue)
+            .setValue(numberValue)
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
 
