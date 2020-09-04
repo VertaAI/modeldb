@@ -618,6 +618,16 @@ class DatasetVersion(object):
                             version=None):
         raise NotImplementedError('this function must be implemented by subclasses')
 
+    @property
+    def base_path(self):
+        components = self.list_components()
+        base_paths = set(component.base_path for component in components)
+
+        if len(base_paths) == 1:
+            return base_paths.pop()
+        else:  # shouldn't happen
+            raise AttributeError("multiple base paths among components: {}".format(base_paths))
+
     def list_components(self):
         # there's a circular import if imported at module-level
         # which I don't fully understand, and even breaks in Python 3
