@@ -71,6 +71,9 @@ migration:
     record_update_limit: 100
   SUB_ENTITIES_OWNERS_RBAC_MIGRATION:
     enable: true
+  POPULATE_VERSION_MIGRATION:
+    enable: true
+    record_update_limit: 100
   #xyz :
   #  enable: true
 
