@@ -469,6 +469,11 @@ class TestExperimentRun:
     def test_log_attribute_overwrite(self, client):
         experiment_run = client.set_experiment_run(attrs={"str-attr": "attr", "int-attr": 4, "float-attr": 0.5})
 
+        with pytest.raises(ValueError) as excinfo:
+            experiment_run.log_attribute("str-attr", "some-attr")
+
+        assert "already exists" in str(excinfo.value)
+
         experiment_run.log_attribute("str-attr", "new-attr", True)
         experiment_run.log_attributes({"int-attr": 5, "float-attr": 0.3, "bool-attr": False}, True)
 
