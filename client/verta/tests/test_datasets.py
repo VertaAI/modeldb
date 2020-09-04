@@ -284,6 +284,7 @@ class TestClientDatasetVersionFunctions:
             assert retrieved.dataset_version_info is not None
             assert retrieved.dataset_version_info == version.dataset_version_info
 
+
     @pytest.mark.skip(reason="functionality removed")
     def test_reincarnation(self, client, created_datasets):
         """Consecutive identical versions are assigned the same ID."""
@@ -299,6 +300,85 @@ class TestClientDatasetVersionFunctions:
 
         version = dataset.get_latest_version(ascending=True)
         assert version.id == version1.id
+
+
+class TestBasePath:
+    """Test restored base path accessibility."""
+    @staticmethod
+    def assert_base_path(dataset_version, base_path):
+        # base path accessible on components
+            for component in dataset_version.list_components():
+                assert component.base_path == base_path
+
+            # base path accessible on dataset version
+            assert dataset_version.base_path == base_path
+
+            # base path accessible via proto for backwards-compatibility
+            assert dataset_version.dataset_version.path_dataset_version_info.base_path == base_path
+
+    def test_s3_bucket(self, client, created_datasets):
+        bucket_name = "verta-starter"
+
+        botocore = pytest.importorskip("botocore")
+        try:
+            dataset = client.set_dataset(type="s3")
+            created_datasets.append(dataset)
+            version = dataset.create_version(bucket_name)
+        except botocore.exceptions.ClientError:
+            pytest.skip("insufficient AWS credentials")
+
+        retrieved = dataset.get_latest_version()
+        assert version.id == retrieved.id  # of course, but just to be sure
+
+        self.assert_base_path(version, bucket_name)
+        self.assert_base_path(retrieved, bucket_name)
+
+    def test_s3_obj(self, client, created_datasets):
+        bucket_name = "verta-starter"
+        obj_name = "census-train.csv"
+
+        botocore = pytest.importorskip("botocore")
+        try:
+            dataset = client.set_dataset(type="s3")
+            created_datasets.append(dataset)
+            version = dataset.create_version(bucket_name, obj_name)
+        except botocore.exceptions.ClientError:
+            pytest.skip("insufficient AWS credentials")
+
+        retrieved = dataset.get_latest_version()
+        assert version.id == retrieved.id  # of course, but just to be sure
+
+        base_path = '/'.join([bucket_name, obj_name])
+        self.assert_base_path(version, base_path)
+        self.assert_base_path(retrieved, base_path)
+
+    def test_local_dir(self, client, created_datasets):
+        dirpath = "."
+
+        dataset = client.set_dataset(type="local")
+        created_datasets.append(dataset)
+        version = dataset.create_version(dirpath)
+
+        retrieved = dataset.get_latest_version()
+        assert version.id == retrieved.id  # of course, but just to be sure
+
+        base_path = os.path.abspath(dirpath)
+        self.assert_base_path(version, base_path)
+        self.assert_base_path(retrieved, base_path)
+
+    def test_local_file(self, client, created_datasets):
+        filepath = "conftest.py"
+
+        dataset = client.set_dataset(type="local")
+        created_datasets.append(dataset)
+        version = dataset.create_version(filepath)
+
+        retrieved = dataset.get_latest_version()
+        assert version.id == retrieved.id  # of course, but just to be sure
+
+        base_path = os.path.abspath(filepath)
+        self.assert_base_path(version, base_path)
+        self.assert_base_path(retrieved, base_path)
 
 
 class TestPathBasedDatasetVersions:
