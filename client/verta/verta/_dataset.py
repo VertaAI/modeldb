@@ -457,6 +457,17 @@ class AtlasHiveDataset(QueryDataset):
 
 
 class DatasetVersion(object):
+    """
+    A version of a dataset at a particular point in time.
+
+    Attributes
+    ----------
+    id : str
+        ID of this dataset version.
+    base_path : str
+        Base path of this dataset version's components.
+
+    """
     # TODO: visibility not done
     # TODO: delete version not implemented
     def __init__(self, conn, conf,
@@ -636,6 +647,14 @@ class DatasetVersion(object):
             raise AttributeError("multiple base paths among components: {}".format(base_paths))
 
     def list_components(self):
+        """
+        Returns a list of this dataset version's components.
+
+        Returns
+        -------
+        list of :class:`~verta.dataset._dataset.Component`
+
+        """
         # there's a circular import if imported at module-level
         # which I don't fully understand, and even breaks in Python 3
         # so this import is deferred to this function body
