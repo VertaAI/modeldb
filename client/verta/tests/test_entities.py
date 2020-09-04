@@ -466,6 +466,14 @@ class TestExperimentRun:
         assert old_run_msg.observations == new_run_msg.observations
         assert old_run_msg.artifacts == new_run_msg.artifacts
 
+    def test_log_attribute_overwrite(self, client):
+        experiment_run = client.set_experiment_run(attrs={"str-attr": "attr", "int-attr": 4, "float-attr": 0.5})
+
+        experiment_run.log_attribute("str-attr", "new-attr", True)
+        experiment_run.log_attributes({"int-attr": 5, "float-attr": 0.3, "bool-attr": False}, True)
+
+        assert experiment_run.get_attributes() == {"str-attr": "new-attr", "int-attr": 5, "float-attr": 0.3, "bool-attr": False}
+
 
 class TestExperimentRuns:
     def test_getitem(self, client):
