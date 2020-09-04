@@ -14,6 +14,7 @@ from ._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from ._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 
 from .external import six
+
 from ._internal_utils import (
     _utils,
     importer,
