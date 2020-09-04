@@ -1230,6 +1230,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     Commit internalCommit =
         Commit.newBuilder()
             .setDateCreated(timeCreated)
+            .setDateUpdated(timeCreated)
             .setAuthor(author)
             .setMessage(commitMessage)
             .setCommitSha(commitSha)

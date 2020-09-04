@@ -140,13 +140,16 @@ public class CommitEntity {
   }
 
   public Commit toCommitProto() {
-    return Commit.newBuilder()
-        .setCommitSha(this.commit_hash)
-        .addAllParentShas(getParentCommitIds())
-        .setDateCreated(this.date_created)
-        .setDateUpdated(this.date_updated)
-        .setMessage(this.message)
-        .setAuthor(this.author)
-        .build();
+    Commit.Builder commitBuilder =
+        Commit.newBuilder()
+            .setCommitSha(this.commit_hash)
+            .addAllParentShas(getParentCommitIds())
+            .setDateCreated(this.date_created)
+            .setMessage(this.message)
+            .setAuthor(this.author);
+    if (this.date_updated != null) {
+      commitBuilder.setDateUpdated(this.date_updated);
+    }
+    return commitBuilder.build();
   }
 }
