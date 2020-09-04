@@ -193,7 +193,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         super(RegisteredModelVersion, self).log_model(model, custom_modules, model_api, artifacts, overwrite)
 
-    def _log_model_as_artifact(self, serialized_model, extension, method, overwrite):
+    def _log_model(self, serialized_model, extension, method, overwrite):
         # Create artifact message and update ModelVersion's message:
         model_msg = self._create_artifact_msg("model", serialized_model,
                                         artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension)
@@ -252,7 +252,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         """
         self._log_artifact(key, artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, overwrite=overwrite)
 
-    def _log_artifact(self, key, artifact, artifact_type, _extension=None, method=None, overwrite=False):
+    def _log_artifact(self, key, artifact, artifact_type, extension=None, method=None, overwrite=False):
         if key == "model":
             raise ValueError("the key \"model\" is reserved for model; consider using log_model() instead")
 
@@ -654,13 +654,6 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
     #         raise RuntimeError("the version has already been archived")
 
     #     self._update(self.ModelVersionMessage(archived=_CommonCommonService.TernaryEnum.TRUE))
-
-    def log_attribute(self, key, value, overwrite=False):
-        """
-        Alias for :meth:`~verta._registry.modelversion.RegisteredModelVersion.add_attribute`
-
-        """
-        self.add_attribute(key, value, overwrite)
 
     def add_attribute(self, key, value, overwrite=False):
         """

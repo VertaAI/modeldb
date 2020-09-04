@@ -442,16 +442,16 @@ class _DeployableEntity(_ModelDBEntity):
 
         # associate artifact dependencies
         if artifacts:
-            self.log_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite=overwrite)
+            self.add_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite=overwrite)
 
         custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
         self._log_artifact("custom_modules", custom_modules_artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
-        self._log_model_as_artifact(serialized_model, extension, method, overwrite)
+        self._log_model(serialized_model, extension, method, overwrite)
         self._log_artifact("model_api.json", model_api, _CommonCommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
 
-    def _log_model_as_artifact(self, serialized_model, extension, method, overwrite):
+    def _log_model(self, serialized_model, extension, method, overwrite):
         raise NotImplementedError
 
-    def _log_artifact(self, key, artifact, artifact_type, _extension=None, method=None, overwrite=False):
+    def _log_artifact(self, key, artifact, artifact_type, extension=None, method=None, overwrite=False):
         raise NotImplementedError

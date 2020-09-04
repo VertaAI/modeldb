@@ -630,6 +630,16 @@ class ExperimentRun(_DeployableEntity):
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.tags
 
+    def add_attribute(self, key, value, overwrite=False):
+        """
+        Alias for :meth:`~verta._tracking.experimentrun.ExperimentRun.log_attribute()`.
+
+        """
+        # TODO: remove this method
+        # TODO: handle overwriting
+
+        self.log_attribute(key, value)
+
     def log_attribute(self, key, value):
         """
         Logs an attribute to this Experiment Run.
@@ -1235,7 +1245,7 @@ class ExperimentRun(_DeployableEntity):
             # TODO: change _log_artifact() to not read file into memory
             self._log_artifact("tf_saved_model", tempf, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
 
-    def _log_model_as_artifact(self, serialized_model, extension, method, overwrite):
+    def _log_model(self, serialized_model, extension, method, overwrite):
         self._log_artifact("model.pkl", serialized_model, _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
 
     def get_model(self):
