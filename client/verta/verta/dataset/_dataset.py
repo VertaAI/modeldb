@@ -307,9 +307,9 @@ class Component(object):
     """
     def __init__(
             self,
-            path, base_path=None,
-            size=None, last_modified=None,
+            path, size=None, last_modified=None,
             sha256=None, md5=None,
+            base_path=None,
             internal_versioned_path=None, local_path=None):
         # metadata
         self.path = path
