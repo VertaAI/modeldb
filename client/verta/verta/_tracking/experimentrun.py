@@ -693,7 +693,7 @@ class ExperimentRun(_DeployableEntity):
         if not response.ok:
             if response.status_code == 409:
                 raise ValueError("some attribute with some input key already exists;"
-                                 " consider using observations instead")
+                                 " consider using observations instead, or setting overwrite=True.")
             else:
                 _utils.raise_for_http_error(response)
 
