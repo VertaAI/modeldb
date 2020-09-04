@@ -273,7 +273,7 @@ class S3Dataset(PathDataset):
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         if key is not None and key_prefix is not None:
@@ -310,7 +310,7 @@ class LocalDataset(PathDataset):
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         version_info = FilesystemDatasetVersionInfo(path)
@@ -346,7 +346,7 @@ class BigQueryDataset(QueryDataset):
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         version_info = BigQueryDatasetVersionInfo(job_id=job_id, location=location)
@@ -391,7 +391,7 @@ class RDBMSDataset(QueryDataset):
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         version_info = RDBMSDatasetVersionInfo(
