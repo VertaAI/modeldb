@@ -313,13 +313,15 @@ class Component(object):
             internal_versioned_path=None, local_path=None):
         # metadata
         self.path = path
-        self.base_path = base_path
         self.size = size
         self.last_modified = last_modified
 
         # checksums
         self.sha256 = sha256
         self.md5 = md5
+
+        # base path
+        self.base_path = base_path
 
         # ModelDB versioning
         self._internal_versioned_path = internal_versioned_path
