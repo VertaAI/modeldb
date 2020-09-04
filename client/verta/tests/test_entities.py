@@ -467,17 +467,33 @@ class TestExperimentRun:
         assert old_run_msg.artifacts == new_run_msg.artifacts
 
     def test_log_attribute_overwrite(self, client):
-        experiment_run = client.set_experiment_run(attrs={"str-attr": "attr", "int-attr": 4, "float-attr": 0.5})
+        str_attr = "attr"
+        new_str_attr = "new-attr"
+
+        int_attr = 4
+        new_int_attr = 5
+
+        float_attr = 0.5
+        new_float_attr = 0.3
+
+        bool_attr = False
+
+        experiment_run = client.set_experiment_run(attrs={"str-attr": str_attr, "int-attr": int_attr, "float-attr": float_attr})
 
         with pytest.raises(ValueError) as excinfo:
             experiment_run.log_attribute("str-attr", "some-attr")
 
         assert "already exists" in str(excinfo.value)
 
-        experiment_run.log_attribute("str-attr", "new-attr", True)
-        experiment_run.log_attributes({"int-attr": 5, "float-attr": 0.3, "bool-attr": False}, True)
+        experiment_run.log_attribute("str-attr", new_str_attr, True)
+        experiment_run.log_attributes({"int-attr": new_int_attr, "float-attr": new_float_attr, "bool-attr": bool_attr}, True)
 
-        assert experiment_run.get_attributes() == {"str-attr": "new-attr", "int-attr": 5, "float-attr": 0.3, "bool-attr": False}
+        assert experiment_run.get_attributes() == {
+            "str-attr": new_str_attr,
+            "int-attr": new_int_attr,
+            "float-attr": new_float_attr,
+            "bool-attr": bool_attr
+        }
 
 
 class TestExperimentRuns:
