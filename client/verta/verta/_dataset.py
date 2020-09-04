@@ -513,7 +513,12 @@ class DatasetVersion(object):
         self.version = dataset_version.version
         self._dataset_type = dataset_version.dataset_type
         self.dataset_version = dataset_version
-        self.dataset_version_info = None
+
+        version_info_field = 'dataset_version_info'
+        if dataset_version.HasField(version_info_field):
+            self.dataset_version_info = getattr(dataset_version, dataset_version.WhichOneof(version_info_field))
+        else:
+            self.dataset_version_info = None
 
     def __repr__(self):
         if self.dataset_version:
