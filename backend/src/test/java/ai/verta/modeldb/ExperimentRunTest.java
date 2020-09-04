@@ -9537,10 +9537,17 @@ public class ExperimentRunTest {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        assertEquals(
-            "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
-            1,
-            response.getExperimentRuns(0).getHyperparametersCount());
+        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          assertEquals(
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
+              1,
+              response.getExperimentRuns(0).getHyperparametersCount());
+        } else {
+          assertEquals(
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
+              3,
+              response.getExperimentRuns(0).getHyperparametersCount());
+        }
 
         addCollaboratorRequest =
             AddCollaboratorRequest.newBuilder()
@@ -9577,7 +9584,7 @@ public class ExperimentRunTest {
               3,
               response.getExperimentRuns(0).getHyperparametersCount());
         } else {
-          assertNotEquals(
+          assertEquals(
               "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               3,
               response.getExperimentRuns(0).getHyperparametersCount());
@@ -10880,10 +10887,10 @@ public class ExperimentRunTest {
               0,
               response.getExperimentRuns(0).getDatasetsCount());
         } else {
-            assertEquals(
-                    "ExperimentRun not match with expected experimentRun",
-                    2,
-                    response.getExperimentRuns(0).getDatasetsCount());
+          assertEquals(
+              "ExperimentRun not match with expected experimentRun",
+              2,
+              response.getExperimentRuns(0).getDatasetsCount());
         }
       }
     } finally {
