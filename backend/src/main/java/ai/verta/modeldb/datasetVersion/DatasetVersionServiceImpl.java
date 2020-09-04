@@ -371,13 +371,20 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         repositoryEntity =
             repositoryDAO.getProtectedRepositoryById(repositoryIdentification, false);
       }
+      List<DatasetVersion> datasetVersions =
+          new ArrayList<>(
+              convertRepoDatasetVersions(repositoryEntity, commitPaginationDTO.getCommits()));
 
-      DatasetVersion datasetVersion =
-          convertRepoDatasetVersions(repositoryEntity, commitPaginationDTO.getCommits()).get(0);
+      if (datasetVersions.size() != 1) {
+        logAndThrowError(
+            "No datasetVersion found for dataset '" + request.getDatasetId() + "'",
+            Code.NOT_FOUND_VALUE,
+            Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
+      }
       /*Build response*/
       responseObserver.onNext(
           GetLatestDatasetVersionByDatasetId.Response.newBuilder()
-              .setDatasetVersion(datasetVersion)
+              .setDatasetVersion(datasetVersions.get(0))
               .build());
       responseObserver.onCompleted();
 
