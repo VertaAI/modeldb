@@ -969,7 +969,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           commitPaginationDTO.setTotalRecords(0L);
           return commitPaginationDTO;
         }
-      } else {
+      } else if (!isDatasetVersion || (workspaceName != null && !workspaceName.isEmpty())) {
         WorkspaceDTO workspaceDTO =
             roleService.getWorkspaceDTOByWorkspaceName(
                 currentLoginUserInfo, request.getWorkspaceName());
@@ -1241,7 +1241,12 @@ public class CommitDAORdbImpl implements CommitDAO {
           sortKey = ModelDBConstants.DATE_UPDATED;
         }
       } else {
-        sortKey = ModelDBConstants.DATE_UPDATED;
+        if (isDatasetVersion) {
+          sortKey = ModelDBConstants.DATE_CREATED;
+          ascending = false;
+        } else {
+          sortKey = ModelDBConstants.DATE_UPDATED;
+        }
       }
 
       StringBuilder orderClause =
