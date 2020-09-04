@@ -233,7 +233,7 @@ public class ModelDBHibernateUtil {
         settings.put("hibernate.c3p0.testConnectionOnCheckin", "true");
         settings.put("hibernate.c3p0.idleConnectionTestPeriod", "300");
         //Reduce this time period if stale connections still exist
-        settings.put("hibernate.c3p0.idleConnectionTestPeriod", "300");
+        settings.put("hibernate.c3p0.preferredTestQuery", "Select 1");
         configuration.setProperties(settings);
 
         LOGGER.trace("connectionString {}", connectionString);
