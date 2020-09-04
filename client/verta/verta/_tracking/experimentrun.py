@@ -640,6 +640,8 @@ class ExperimentRun(_DeployableEntity):
             Name of the attribute.
         value : one of {None, bool, float, int, str, list, dict}
             Value of the attribute.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing atribute with key `key`.
 
         """
         _utils.validate_flat_key(key)
@@ -670,6 +672,8 @@ class ExperimentRun(_DeployableEntity):
         ----------
         attributes : dict of str to {None, bool, float, int, str, list, dict}
             Attributes.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing atributes.
 
         """
         # validate all keys first
