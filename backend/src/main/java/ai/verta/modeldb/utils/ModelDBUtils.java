@@ -647,4 +647,13 @@ public class ModelDBUtils {
     String envVarVal = System.getenv(envVar);
     return envVarVal != null && !envVarVal.isEmpty();
   }
+
+  public static void validateEntityNameWithColonAndSlash(String name) throws ModelDBException {
+    if (name != null
+        && !name.isEmpty()
+        && (name.contains(":") || name.contains("/") || name.contains("\\"))) {
+      throw new ModelDBException(
+          "Name contains ':' Or '/' Or '\\' which is not expected", Code.INVALID_ARGUMENT);
+    }
+  }
 }
