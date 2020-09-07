@@ -1,4 +1,4 @@
-Creating Custom Models With Dependencies
+Creating custom models with dependencies
 ========================================
 
 Sometimes just `custom models <custom_model.html>`_ by themselves are not enough and you need to add
@@ -7,7 +7,7 @@ other data necessary for defining your model behavior.
 Verta supports adding artifacts to custom models and this tutorial shows you how to add dependencies
 to your model.
 
-Class Model definition
+Class model definition
 ----------------------
 
 A *Class Model* must implement this interface:
@@ -53,7 +53,7 @@ Logging model dependencies
 --------------------------
 
 Any class in the Verta platform that has a ``log_artifact`` method, such as an
-:class:`ExperimentRun <verta._tracking.ExperimentRun>`,
+:class:`ExperimentRun <verta._tracking.experimentrun.ExperimentRun>`,
 supports logging dependencies for their associated models. The method signature is generally:
 
 .. code-block:: python

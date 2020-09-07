@@ -189,6 +189,21 @@ public class CommitDAORdbImpl implements CommitDAO {
             Status.Code.INVALID_ARGUMENT);
       }
 
+      CommitPaginationDTO commitPaginationDTO =
+          findCommits(
+              session,
+              FindRepositoriesBlobs.newBuilder()
+                  .setPageNumber(1)
+                  .setPageLimit(1)
+                  .addRepoIds(repositoryEntity.getId())
+                  .build(),
+              authService.getCurrentLoginUserInfo(),
+              false,
+              false,
+              true,
+              null,
+              false);
+
       CommitEntity commitEntity =
           saveCommitEntity(session, commit, rootSha, datasetVersion.getOwner(), repositoryEntity);
       blobDAO.setBlobsAttributes(
@@ -211,6 +226,38 @@ public class CommitDAORdbImpl implements CommitDAO {
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
               .build(),
           datasetVersion.getTagsList());
+
+      long version = datasetVersion.getVersion();
+      if (commitPaginationDTO.getCommitEntities() != null
+          && !commitPaginationDTO.getCommitEntities().isEmpty()
+          && version == 0) {
+        CommitEntity parentEntity = commitPaginationDTO.getCommitEntities().get(0);
+        String parentCompositeId =
+            VersioningUtils.getVersioningCompositeId(
+                repositoryEntity.getId(), parentEntity.getCommit_hash(), location);
+        String parentVersion =
+            metadataDAO.getProperty(
+                session,
+                IdentificationType.newBuilder()
+                    .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+                    .setStringId(parentCompositeId)
+                    .build(),
+                ModelDBConstants.VERSION);
+        if (parentVersion != null && !parentVersion.isEmpty()) {
+          version = Long.parseLong(parentVersion) + 1L;
+        }
+      }
+      if (version == 0) {
+        version = 1;
+      }
+      metadataDAO.addProperty(
+          session,
+          IdentificationType.newBuilder()
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+              .setStringId(compositeId)
+              .build(),
+          ModelDBConstants.VERSION,
+          String.valueOf(version));
       session.getTransaction().commit();
 
       repositoryDAO.setBranch(
@@ -777,11 +824,22 @@ public class CommitDAORdbImpl implements CommitDAO {
       FindRepositoriesBlobs request,
       UserInfo currentLoginUserInfo,
       boolean idsOnly,
-      boolean rootSHAOnly)
+      boolean rootSHAOnly,
+      boolean isDatasetVersion,
+      String sortKey,
+      boolean ascending)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       CommitPaginationDTO commitPaginationDTO =
-          findCommits(session, request, currentLoginUserInfo, idsOnly, rootSHAOnly);
+          findCommits(
+              session,
+              request,
+              currentLoginUserInfo,
+              idsOnly,
+              rootSHAOnly,
+              isDatasetVersion,
+              sortKey,
+              ascending);
       commitPaginationDTO.setCommits(
           commitPaginationDTO.getCommitEntities().stream()
               .map(CommitEntity::toCommitProto)
@@ -789,7 +847,14 @@ public class CommitDAORdbImpl implements CommitDAO {
       return commitPaginationDTO;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return findCommits(request, currentLoginUserInfo, idsOnly, rootSHAOnly);
+        return findCommits(
+            request,
+            currentLoginUserInfo,
+            idsOnly,
+            rootSHAOnly,
+            isDatasetVersion,
+            sortKey,
+            ascending);
       } else {
         throw ex;
       }
@@ -812,7 +877,10 @@ public class CommitDAORdbImpl implements CommitDAO {
       FindRepositoriesBlobs request,
       UserInfo currentLoginUserInfo,
       boolean idsOnly,
-      boolean rootSHAOnly)
+      boolean rootSHAOnly,
+      boolean isDatasetVersion,
+      String sortKey,
+      boolean ascending)
       throws ModelDBException {
     try {
       List<KeyValueQuery> predicates = new ArrayList<>(request.getPredicatesList());
@@ -901,7 +969,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           commitPaginationDTO.setTotalRecords(0L);
           return commitPaginationDTO;
         }
-      } else {
+      } else if (!isDatasetVersion || (workspaceName != null && !workspaceName.isEmpty())) {
         WorkspaceDTO workspaceDTO =
             roleService.getWorkspaceDTOByWorkspaceName(
                 currentLoginUserInfo, request.getWorkspaceName());
@@ -1126,6 +1194,28 @@ public class CommitDAORdbImpl implements CommitDAO {
                 return commitPaginationDTO;
               }
               break;
+            case ModelDBConstants.TIME_LOGGED:
+            case ModelDBConstants.TIME_UPDATED:
+            case ModelDBConstants.DATE_CREATED:
+            case ModelDBConstants.DATE_UPDATED:
+              String key = predicate.getKey();
+              if (key.equals(ModelDBConstants.TIME_LOGGED)) {
+                key = ModelDBConstants.DATE_CREATED;
+              } else if (key.equals(ModelDBConstants.TIME_UPDATED)) {
+                key = ModelDBConstants.DATE_UPDATED;
+              }
+
+              Double value = predicate.getValue().getNumberValue();
+              StringBuilder dateQueryBuilder = new StringBuilder(alias);
+              dateQueryBuilder.append(".").append(key);
+              RdbmsUtils.setValueWithOperatorInQuery(
+                  index,
+                  dateQueryBuilder,
+                  predicate.getOperator(),
+                  value.longValue(),
+                  parametersMap);
+              whereClauseList.add(dateQueryBuilder.toString());
+              break;
             default:
               throw new ModelDBException(
                   "Invalid predicate found : " + predicate, Code.INVALID_ARGUMENT);
@@ -1144,12 +1234,28 @@ public class CommitDAORdbImpl implements CommitDAO {
               " AND ", whereClauseList.toArray(new String[0])));
 
       // Order by clause
+      if (sortKey != null && !sortKey.isEmpty()) {
+        if (sortKey.equals(ModelDBConstants.TIME_LOGGED)) {
+          sortKey = ModelDBConstants.DATE_CREATED;
+        } else if (sortKey.equals(ModelDBConstants.TIME_UPDATED)) {
+          sortKey = ModelDBConstants.DATE_UPDATED;
+        }
+      } else {
+        if (isDatasetVersion) {
+          sortKey = ModelDBConstants.DATE_CREATED;
+          ascending = false;
+        } else {
+          sortKey = ModelDBConstants.DATE_UPDATED;
+        }
+      }
+
       StringBuilder orderClause =
           new StringBuilder(" ORDER BY ")
               .append(alias)
               .append(".")
-              .append(ModelDBConstants.DATE_UPDATED)
-              .append(" DESC");
+              .append(sortKey)
+              .append(" ")
+              .append(ascending ? "ASC" : "DESC");
 
       StringBuilder finalQueryBuilder = new StringBuilder();
       if (idsOnly) {

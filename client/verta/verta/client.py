@@ -67,10 +67,8 @@ from ._registry import (
 )
 from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
-from ._deployment import (
-    Endpoint,
-    Endpoints,
-)
+from .endpoint._endpoint import Endpoint
+from .endpoint._endpoints import Endpoints
 
 
 class Client(object):
@@ -119,9 +117,9 @@ class Client(object):
     debug : bool
         Whether to print extra verbose information to aid in debugging. Changes to this value propagate
         to any objects that are/were created from this Client.
-    proj : :class:`Project` or None
+    proj : :class:`~verta._tracking.project.Project` or None
         Currently active Project.
-    expt : :class:`Experiment` or None
+    expt : :class:`~verta._tracking.experiment.Experiment` or None
         Currently active Experiment.
 
     """
@@ -300,7 +298,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~Project`
+        :class:`~verta._tracking.project.Project`
 
         """
         if name is not None and id is not None:
@@ -356,7 +354,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Project`
+        :class:`~verta._tracking.project.Project`
 
         Raises
         ------
@@ -396,7 +394,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~Experiment`
+        :class:`~verta._tracking.experiment.Experiment`
 
         """
         if name is not None and id is not None:
@@ -444,7 +442,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Experiment`
+        :class:`~verta._tracking.experiment.Experiment`
 
         Raises
         ------
@@ -485,7 +483,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         """
         if name is not None and id is not None:
@@ -532,7 +530,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         Raises
         ------
@@ -651,7 +649,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        `Dataset <dataset.html>`_
 
         Raises
         ------
@@ -696,7 +694,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        `Dataset <dataset.html>`_
         """
         return _dataset.Dataset(self._conn, self._conf, name=name, _dataset_id=id)
 
@@ -727,7 +725,7 @@ class Client(object):
 
         Returns
         -------
-        list of :class:`Dataset`
+        list of `Dataset <dataset.html>`_
 
         """
         datasets = Datasets(self._conn, self._conf)
@@ -765,7 +763,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`DatasetVersion`
+        `DatasetVersion <dataset.html>`_
         """
         return _dataset.DatasetVersion(self._conn, self._conf, _dataset_version_id=id)
 
@@ -919,7 +917,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._registry.modelversion.ModelVersion`
+        :class:`~verta._registry.modelversion.RegisteredModelVersion`
         """
         return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
 
@@ -954,7 +952,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._deployment.Endpoint`
+        :class:`~verta.endpoint._endpoint.Endpoint`
 
         Raises
         ------
@@ -994,7 +992,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._deployment.endpoint.Endpoint`
+        :class:`~verta.endpoint._endpoint.Endpoint`
 
         """
         if path is not None and id is not None:
@@ -1049,7 +1047,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.Project`
+        :class:`~verta._tracking.project.Project`
 
         Raises
         ------
@@ -1085,7 +1083,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.Experiment`
+        :class:`~verta._tracking.experiment.Experiment`
 
         Raises
         ------
@@ -1125,7 +1123,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         Raises
         ------
@@ -1226,6 +1224,60 @@ class Client(object):
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
+    def download_endpoint_manifest(
+            self, download_to_path, path, name, strategy,
+            resources=None, autoscaling=None, env_vars=None,
+            workspace=None):
+        """
+        Downloads this endpoint's Kubernetes manifest YAML.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Local path to download manifest YAML to.
+        path : str
+            Path of the endpoint.
+        name : str
+            Name of the endpoint.
+        strategy : :ref:`update strategy <update-stategies>`
+            Strategy (direct or canary) for updating the endpoint.
+        resources : :class:`~verta.endpoint.resources.Resources`, optional
+            Resources allowed for the updated endpoint.
+        autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
+            Autoscaling condition for the updated endpoint.
+        env_vars : dict of str to str, optional
+            Environment variables.
+        workspace : str, optional
+            Workspace for the endpoint. If not provided, the current user's
+            personal workspace will be used.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where deployment YAML was downloaded to. Matches `download_to_path`.
+
+        """
+        if not path.startswith('/'):
+            path = '/' + path
+
+        data = {
+            'endpoint': {'path': path},
+            'name': name,
+            'update': Endpoint._create_update_body(strategy, resources, autoscaling, env_vars),
+            'workspace_name': workspace or self._get_personal_workspace(),
+        }
+
+        endpoint = "{}://{}/api/v1/deployment/operations/manifest".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+
+        with _utils.make_request("POST", endpoint, self._conn, json=data, stream=True) as response:
+            _utils.raise_for_http_error(response)
+
+            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            return os.path.abspath(downloaded_to_path)
+
     def _get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, id=None):
         """
         Gets or creates a Dataset.
@@ -1256,7 +1308,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         Raises
         ------
@@ -1314,7 +1366,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         Raises
         ------
@@ -1347,7 +1399,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`Dataset`
+        :class:`~verta._dataset.Dataset`
 
         """
         # TODO: when MVP, remove '2'
@@ -1381,3 +1433,6 @@ class Client(object):
 
     def _create_organization(self, name, desc=None, collaborator_type=None, global_can_deploy=None):
         return Organization._create(self._conn, name, desc, collaborator_type, global_can_deploy)
+
+    def _get_organization(self, name):
+        return Organization._get_by_name(self._conn, name)

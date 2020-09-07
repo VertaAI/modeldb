@@ -26,7 +26,7 @@ class Experiment(_ModelDBEntity):
     Runs.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.set_experiment`.
+    :meth:`Client.set_experiment() <verta.client.Client.set_experiment>`.
 
     Attributes
     ----------
@@ -34,7 +34,7 @@ class Experiment(_ModelDBEntity):
         ID of this Experiment.
     name : str
         Name of this Experiment.
-    expt_runs : :class:`ExperimentRuns`
+    expt_runs : :class:`~verta._tracking.ExperimentRuns`
         Experiment Runs under this Experiment.
 
     """
@@ -89,3 +89,12 @@ class Experiment(_ModelDBEntity):
         expt = conn.must_proto_response(response, Message.Response).experiment
         print("created new Experiment: {}".format(expt.name))
         return expt
+
+    def delete(self):
+        """
+        Deletes this experiment.
+
+        """
+        request_url = "{}://{}/api/v1/modeldb/experiment/deleteExperiment".format(self._conn.scheme, self._conn.socket)
+        response = requests.delete(request_url, json={'id': self.id}, headers=self._conn.auth)
+        _utils.raise_for_http_error(response)

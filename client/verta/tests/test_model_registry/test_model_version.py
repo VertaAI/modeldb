@@ -9,6 +9,8 @@ import glob
 import shutil
 import sys
 
+import cloudpickle
+
 import verta
 
 from .. import utils
@@ -17,6 +19,7 @@ import os
 import verta.dataset
 from verta.environment import Python
 from verta._tracking.deployable_entity import _CACHE_DIR
+from verta.endpoint.update import DirectUpdateStrategy
 
 
 class TestMDBIntegration:
@@ -52,6 +55,12 @@ class TestModelVersion:
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
 
+    def test_set(self, registered_model):
+        name = verta._internal_utils._utils.generate_default_name()
+        version = registered_model.set_version(name=name)
+
+        assert registered_model.set_version(name=version.name).id == version.id
+        
     def test_get_by_name(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
         retrieved_model_version = registered_model.get_version(name=model_version.name)
@@ -254,14 +263,15 @@ class TestModelVersion:
         assert desc == model_version.get_description()
 
     def test_list_from_client(self, client, created_registered_models):
+        """
+        At some point, backend API was unexpectedly changed to require model ID
+        in /model_versions/find, which broke client.registered_model_versions.
+
+        """
         registered_model = client.create_registered_model()
         created_registered_models.append(registered_model)
 
-        before = len(client.registered_model_versions)
-        registered_model.create_version()
-        after = len(client.registered_model_versions)
-
-        assert before == after + 1
+        len(client.registered_model_versions)
 
     def test_find(self, client, created_registered_models):
         name = "registered_model_test"
@@ -497,3 +507,30 @@ class TestDeployability:
                 assert file_contents == artifact_contents
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+
+    def test_model_artifacts(self, model_version, endpoint, in_tempdir):
+        key = "foo"
+        val = {'a': 1}
+
+        class ModelWithDependency(object):
+            def __init__(self, artifacts):
+                with open(artifacts[key], 'rb') as f:  # should not KeyError
+                    if cloudpickle.load(f) != val:
+                        raise ValueError  # should not ValueError
+
+            def predict(self, x):
+                return x
+
+        # first log junk artifact, to test `overwrite`
+        bad_key = "bar"
+        bad_val = {'b': 2}
+        model_version.log_artifact(bad_key, bad_val)
+        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=[bad_key])
+
+        # log real artifact using `overwrite`
+        model_version.log_artifact(key, val)
+        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True)
+        model_version.log_environment(Python([]))
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        assert val == endpoint.get_deployed_model().predict(val)

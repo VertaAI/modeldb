@@ -656,18 +656,14 @@ public class FindDatasetEntitiesTest {
 
   /** Find dataset with value of endTime */
   @Test
-  @Ignore
-  public void findDatasetsByDatasetEndTimeTest() {
-    LOGGER.info("FindDatasets By Dataset EndTime test start................................");
+  public void findDatasetsByDatasetTimeUpdatedTest() {
+    LOGGER.info("FindDatasets By Dataset TimeUpdated test start................................");
 
-    DatasetTest datasetTest = new DatasetTest();
-
-    Value stringValue =
-        Value.newBuilder().setStringValue(String.valueOf(dataset4.getTimeUpdated())).build();
+    Value numberValue = Value.newBuilder().setNumberValue(dataset4.getTimeUpdated()).build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
             .setKey(ModelDBConstants.TIME_UPDATED)
-            .setValue(stringValue)
+            .setValue(numberValue)
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
 
@@ -690,7 +686,7 @@ public class FindDatasetEntitiesTest {
         1,
         response.getTotalRecords());
 
-    LOGGER.info("FindDatasets By Dataset EndTime test stop................................");
+    LOGGER.info("FindDatasets By Dataset TimeUpdated test stop................................");
   }
 
   /** FInd Datasets by attribute with pagination */
@@ -1290,16 +1286,14 @@ public class FindDatasetEntitiesTest {
 
   /** Find datasetVersion with value of endTime */
   @Test
-  @Ignore
   public void findDatasetVersionsByEndTimeTest() {
     LOGGER.info("FindDatasetVersions by datasetVersion EndTime test start..........");
 
-    Value stringValue =
-        Value.newBuilder().setStringValue(String.valueOf(datasetVersion4.getTimeUpdated())).build();
+    Value numberValue = Value.newBuilder().setNumberValue(datasetVersion4.getTimeUpdated()).build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
             .setKey(ModelDBConstants.DATE_UPDATED)
-            .setValue(stringValue)
+            .setValue(numberValue)
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
 
@@ -1324,6 +1318,32 @@ public class FindDatasetEntitiesTest {
     assertEquals(
         "Total records count not matched with expected records count",
         1,
+        response.getTotalRecords());
+
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addAllDatasetVersionIds(datasetVersionMap.keySet())
+            .setAscending(true)
+            .build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        4,
+        response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersionRun not match with expected datasetVersionRun",
+        datasetVersion1.getId(),
+        response.getDatasetVersionsList().get(0).getId());
+    assertEquals(
+        "DatasetVersionRun not match with expected datasetVersionRun",
+        datasetVersion4.getId(),
+        response.getDatasetVersionsList().get(3).getId());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        4,
         response.getTotalRecords());
 
     LOGGER.info("FindDatasetVersions by datasetVersion EndTime test stop..........");
@@ -1386,41 +1406,6 @@ public class FindDatasetEntitiesTest {
     }
 
     LOGGER.info("FindDatasetVersions by attribute with pagination test stop...........");
-  }
-
-  /** Check observations.attributes not support */
-  @Test
-  @Ignore
-  public void findDatasetVersionsNotSupportObservationsAttributesTest() {
-    LOGGER.info("FindDatasetVersions not support the observation.attributes test start........");
-
-    Value numValue = Value.newBuilder().setStringValue("0.31").build();
-    KeyValueQuery keyValueQuery2 =
-        KeyValueQuery.newBuilder()
-            .setKey("attributes.attribute_2")
-            .setValue(numValue)
-            .setOperator(OperatorEnum.Operator.EQ)
-            .build();
-
-    FindDatasetVersions findDatasetVersions =
-        FindDatasetVersions.newBuilder()
-            .setDatasetId(dataset1.getId())
-            .addAllDatasetVersionIds(datasetVersionMap.keySet())
-            .addPredicates(keyValueQuery2)
-            .setAscending(false)
-            .setSortKey("observations.attribute.attr_1")
-            .build();
-
-    try {
-      datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
-    }
-
-    LOGGER.info("FindDatasetVersions not support the observation.attributes test stop........");
   }
 
   /** Find datasetVersion with value of tags */

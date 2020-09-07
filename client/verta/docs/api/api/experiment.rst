@@ -2,7 +2,7 @@ Experiment
 ==========
 
 
-.. autoclass:: verta._tracking.Experiment
+.. autoclass:: verta._tracking.experiment.Experiment
     :members:
     :inherited-members:
     :exclude-members: log_code, get_code

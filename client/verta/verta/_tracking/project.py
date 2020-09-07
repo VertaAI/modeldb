@@ -31,7 +31,7 @@ class Project(_ModelDBEntity):
     Runs.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.set_project`.
+    :meth:`Client.set_project() <verta.client.Client.set_project>`.
 
     Attributes
     ----------
@@ -39,7 +39,7 @@ class Project(_ModelDBEntity):
         ID of this Project.
     name : str
         Name of this Project.
-    expt_runs : :class:`ExperimentRuns`
+    expt_runs : :class:`~verta._tracking.ExperimentRuns`
         Experiment Runs under this Project.
 
     """
