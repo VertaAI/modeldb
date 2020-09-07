@@ -4,9 +4,19 @@ from .metrics import _AutoscalingMetric
 
 class Autoscaling(object):
     """
-    Represents autoscaling configuration for Endpoint.
+    Represents autoscaling configuration for Endpoint, to be passed to
+    :meth:`Endpoint.update() <verta.endpoint._endpoint.Endpoint.update>`.
 
-    To be passed to :meth:`Endpoint.update() <verta._deployment.endpoint.Endpoint.update>`.
+    The JSON equivalent for this is:
+
+    .. code-block:: json
+
+        {
+            "autoscaling": {
+                "quantities": {"min_replicas": 2, "max_replicas": 7, "min_scale": 0.2, "max_scale": 0.7},
+                "metrics": []
+            }
+        }
 
     Parameters
     ----------
@@ -53,11 +63,11 @@ class Autoscaling(object):
 
         Parameters
         ----------
-        metric : subclass of :class:`~verta.deployment.autoscaling.metrics._AutoscalingMetric`
+        metric : :ref:`autoscaling metric <autoscaling-metrics>`
             Metric to add.
 
         """
         if not isinstance(metric, _AutoscalingMetric):
-            raise TypeError("`metric` must be an object from verta.deployment.autoscaling.metrics")
+            raise TypeError("`metric` must be an object from verta.endpoint.autoscaling.metrics")
 
         self._metrics.append(metric)

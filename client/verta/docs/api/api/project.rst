@@ -2,7 +2,7 @@ Project
 =======
 
 
-.. autoclass:: verta._tracking.Project
+.. autoclass:: verta._tracking.project.Project
     :members:
     :inherited-members:
     :exclude-members: log_code, get_code

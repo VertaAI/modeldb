@@ -22,8 +22,11 @@ public interface ModelDBConstants {
   String HOST = "host";
   String HTTPS_STR = "https";
   String NFS = "NFS";
+  String PICK_ARTIFACT_STORE_HOST_FROM_CONFIG = "pickArtifactStoreHostFromConfig";
   String PICK_NFS_HOST_FROM_CONFIG = "pickNFSHostFromConfig";
   String NFS_ROOT_PATH = "nfsRootPath";
+  String ARTIFACT_STORE_SERVER_HOST = "artifactStoreServerHost";
+  String ARTIFACT_STORE_URL_PROTOCOL = "artifactStoreUrlProtocol";
   String NFS_SERVER_HOST = "nfsServerHost";
   String NFS_URL_PROTOCOL = "nfsUrlProtocol";
   String PATH = "path";
@@ -38,6 +41,7 @@ public interface ModelDBConstants {
   String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
+  String POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES = "populateConnectionsBasedOnPrivileges";
 
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
@@ -192,6 +196,7 @@ public interface ModelDBConstants {
   String DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE =
       "Can't add new versioning entry, because an existing one has different repository or commit";
   String REPOSITORY_ENTITY = "repositoryEntity";
+  String POPULATE_VERSION_MIGRATION = "POPULATE_VERSION_MIGRATION";
 
   enum UserIdentifier {
     VERTA_ID,
@@ -253,6 +258,7 @@ public interface ModelDBConstants {
   String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
   String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
   String PROPERTY_NAME = "property_name";
+  String S3_PRESIGNED_URL_ENABLED = "s3presignedURLEnabled";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second

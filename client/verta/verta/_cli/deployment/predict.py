@@ -9,6 +9,13 @@ from ... import Client
 
 @deployment.group()
 def predict():
+    """Making prediction to a deployment-related entity.
+
+    For example, to make a prediction to an endpoint, run
+
+    `verta deployment predict endpoint "<endpoint path>" --data "<input data>"`
+
+    """
     pass
 
 

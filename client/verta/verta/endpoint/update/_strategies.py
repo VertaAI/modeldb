@@ -21,7 +21,28 @@ class _UpdateStrategy(object):
         """
         pass
 
+
 class DirectUpdateStrategy(_UpdateStrategy):
+    """
+
+    The JSON equivalent for this is:
+
+    .. code-block:: json
+
+        {
+            "strategy": "direct"
+        }
+
+    Represents direct update strategy for Endpoint.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.endpoint.update import DirectUpdateStrategy
+        strategy = DirectUpdateStrategy()
+
+    """
     _STRATEGY = "rollout"
 
     def _as_build_update_req_body(self):
@@ -29,19 +50,43 @@ class DirectUpdateStrategy(_UpdateStrategy):
             'strategy': self._STRATEGY,
         }
 
+
 class CanaryUpdateStrategy(_UpdateStrategy):
+    """
+
+    The JSON equivalent for this is:
+
+    .. code-block:: json
+    
+        {
+            "strategy": "canary",
+            "canary_strategy": {
+                "progress_step": 0.2,
+                "progress_interval_seconds": 10,
+                "rules": []
+            }
+        }
+
+    Represents canary update strategy for Endpoint.
+
+    Parameters
+    ----------
+    interval : int
+        Rollout interval, in seconds.
+    step : float in (0, 1]
+        Ratio of deployment to roll out per `interval`.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.endpoint.update import CanaryUpdateStrategy
+        strategy = CanaryUpdateStrategy(interval=10, step=.1)
+
+    """
     _STRATEGY = "canary"
 
     def __init__(self, interval, step):
-        """
-        Parameters
-        ----------
-        interval : int
-            Rollout interval, in seconds.
-        step : float in (0, 1]
-            Ratio of deployment to roll out per `interval`.
-
-        """
         interval_err_msg = "`interval` must be int greater than 0"
         if not isinstance(interval, int):
             raise TypeError(interval_err_msg)
@@ -73,6 +118,6 @@ class CanaryUpdateStrategy(_UpdateStrategy):
 
     def add_rule(self, rule):
         if not isinstance(rule, _UpdateRule):
-            raise TypeError("strategy must be an object from verta.deployment.update_rules")
+            raise TypeError("strategy must be an object from verta.endpoint.update_rules")
 
         self._rules.append(rule)
