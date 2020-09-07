@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import ast
 import copy
 import datetime
 import glob
 import inspect
 import itertools
 import json
+import logging
 import numbers
 import os
 import re
+import site
 import string
 import subprocess
 import sys
@@ -17,6 +18,7 @@ import threading
 import time
 import warnings
 
+import click
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -30,6 +32,9 @@ from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 from . import importer
+
+
+logger = logging.getLogger(__name__)
 
 
 _GRPC_PREFIX = "Grpc-Metadata-"
@@ -304,22 +309,11 @@ class LazyList(object):
 
             try:
                 value = float(value)
-            except ValueError:  # not a number
-                # parse value
-                try:
-                    expr_node = ast.parse(value, mode='eval')
-                except SyntaxError:
-                    e = ValueError("value `{}` must be a number or string literal".format(value))
-                    six.raise_from(e, None)
-                value_node = expr_node.body
-                if type(value_node) is ast.Str:
-                    value = value_node.s
-                elif type(value_node) is ast.Compare:
-                    e = ValueError("predicate `{}` must be a two-operand comparison".format(predicate))
-                    six.raise_from(e, None)
-                else:
-                    e = ValueError("value `{}` must be a number or string literal".format(value))
-                    six.raise_from(e, None)
+            except ValueError:  # not a number, so process as string
+                # maintain old behavior where input would be wrapped in quotes
+                if ((value.startswith('\'') and value.endswith('\''))
+                        or (value.startswith('"') and value.endswith('"'))):
+                    value = value[1:-1]
 
             new_list._msg.predicates.append(  # pylint: disable=no-member
                 _CommonCommonService.KeyValueQuery(
@@ -400,16 +394,16 @@ def make_request(method, url, conn, stream=False, **kwargs):
         HTTP method.
     url : str
         URL.
-    conn : Connection
+    conn : :class:`Connection`
         Connection authentication and configuration.
     stream : bool, default False
         Whether to stream the response contents.
     **kwargs
-        Initialization parameters to requests.Request().
+        Initialization arguments to :class:`requests.Request`.
 
     Returns
     -------
-    requests.Response
+    :class:`requests.Response`
 
     """
     if method.upper() not in _VALID_HTTP_METHODS:
@@ -418,28 +412,28 @@ def make_request(method, url, conn, stream=False, **kwargs):
     # add auth to headers
     kwargs.setdefault('headers', {}).update(conn.auth)
 
-    with requests.Session() as s:
-        s.mount(url, HTTPAdapter(max_retries=conn.retry))
+    with requests.Session() as session:
+        session.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
             request = requests.Request(method, url, **kwargs).prepare()
-            response = s.send(request, stream=stream, allow_redirects=False)
 
-            # manually inspect initial response and subsequent redirects to stop on 302s
-            history = []  # track history because `requests` doesn't since we're redirecting manually
-            responses = itertools.chain([response], s.resolve_redirects(response, request))
-            for response in responses:
-                if response.status_code == 302:
-                    if not conn.ignore_conn_err:
-                        raise RuntimeError(
-                            "received status 302 from {},"
-                            " which is not supported by the Client".format(response.url)
-                        )
-                    else:
-                        return fabricate_200()
+            # retry loop for broken connections
+            MAX_RETRIES = conn.retry.total
+            for retry_num in range(MAX_RETRIES+1):
+                logger.debug("Making request ({} retries)".format(retry_num))
+                try:
+                    response = _make_request(session, request, conn.ignore_conn_err, stream=stream)
+                except requests.ConnectionError as e:
+                    if ((retry_num == MAX_RETRIES)
+                            or ("BrokenPipeError" not in str(e))):
+                        if not conn.ignore_conn_err:
+                            raise e
+                        else:
+                            return fabricate_200()
+                    time.sleep(1)
+                else:
+                    break
 
-                history.append(response)
-            # set full history
-            response.history = history[:-1]  # last element is this response, so drop it
         except (requests.exceptions.BaseHTTPError,
                 requests.exceptions.RequestException) as e:
             if not conn.ignore_conn_err:
@@ -450,6 +444,48 @@ def make_request(method, url, conn, stream=False, **kwargs):
                 return response
             # else fall through to fabricate 200 response
         return fabricate_200()
+
+
+def _make_request(session, request, ignore_conn_err=False, **kwargs):
+    """
+    Actually sends the request across the wire, and resolves non-302 redirects.
+
+    Parameters
+    ----------
+    session : :class:`requests.Session`
+        Connection-pooled session for making requests.
+    request : :class:`requests.PreparedRequest`
+        Request to make.
+    ignore_conn_err : bool, default False
+        Whether to ignore connection errors and instead return a success with empty contents.
+    **kwargs
+        Arguments to :meth:`requests.Session.send`
+
+    Returns
+    -------
+    :class:`requests.Response`
+
+    """
+    response = session.send(request, allow_redirects=False, **kwargs)
+
+    # manually inspect initial response and subsequent redirects to stop on 302s
+    history = []  # track history because `requests` doesn't since we're redirecting manually
+    responses = itertools.chain([response], session.resolve_redirects(response, request))
+    for response in responses:
+        if response.status_code == 302:
+            if not ignore_conn_err:
+                raise RuntimeError(
+                    "received status 302 from {},"
+                    " which is not supported by the Client".format(response.url)
+                )
+            else:
+                return fabricate_200()
+
+        history.append(response)
+    # set full history
+    response.history = history[:-1]  # last element is this response, so drop it
+
+    return response
 
 
 def fabricate_200():
@@ -542,6 +578,32 @@ def body_to_json(response):
         six.raise_from(ValueError(msg), None)
 
 
+def is_in_venv(path):
+    # Roughly checks for:
+    #     /
+    #     |_ lib/
+    #     |   |_ python*/ <- directory with Python packages, containing `path`
+    #     |
+    #     |_ bin/
+    #         |_ python*  <- Python executable
+    lib_python_str = os.path.join(os.sep, "lib", "python")
+    i = path.find(lib_python_str)
+    if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+        return True
+
+    # Debian's system-level packages from apt
+    #     https://wiki.debian.org/Python#Deviations_from_upstream
+    dist_pkg_pattern = re.compile(r"/usr(/local)?/lib/python[0-9.]+/dist-packages")
+    if dist_pkg_pattern.match(path):
+        return True
+
+    # packages installed via --user
+    if path.startswith(site.USER_SITE):
+        return True
+
+    return False
+
+
 def is_hidden(path):  # to avoid "./".startswith('.')
     return os.path.basename(path.rstrip('/')).startswith('.') and path != "."
 
@@ -588,14 +650,13 @@ def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=Fa
                     dirnames[:] = [dirname for dirname in dirnames if not is_hidden(dirname)]
                     # skip hidden files
                     filenames[:] = [filename for filename in filenames if not is_hidden(filename)]
-                if not include_venv:
-                    exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-                    dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
                 for filename in filenames:
                     if extensions is None or os.path.splitext(filename)[1] in extensions:
                         filepaths.add(os.path.join(parent_dir, filename))
         else:
             filepaths.add(path)
+    if not include_venv:
+        filepaths = list(filter(lambda path: not is_in_venv(path), filepaths))
     return filepaths
 
 
@@ -1254,3 +1315,27 @@ def as_list_of_str(tags):
                 raise TypeError("`tags` must be list of str, but found {}".format(type(tag)))
 
     return tags
+
+
+def _multiple_arguments_for_each(argument, name, action, get_keys, overwrite):
+    name = name
+    argument = list(map(lambda s: s.split('='), argument))
+    if argument and len(argument) > len(
+            set(map(lambda pair: pair[0], argument))):
+        raise click.BadParameter("cannot have duplicate {} keys".format(name))
+    if argument:
+        argument_keys = set(get_keys())
+
+        for pair in argument:
+            if len(pair) != 2:
+                raise click.BadParameter("key and path for {}s must be separated by a '='".format(name))
+            (key, _) = pair
+            if key == "model":
+                raise click.BadParameter("the key \"model\" is reserved for model")
+
+            if not overwrite and key in argument_keys:
+                raise click.BadParameter(
+                    "key \"{}\" already exists; consider using --overwrite flag".format(key))
+
+        for (key, path) in argument:
+            action(key, path)

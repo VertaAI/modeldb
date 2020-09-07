@@ -273,7 +273,7 @@ class S3Dataset(PathDataset):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             Returns the newly created dataset version
         """
         if key is not None and key_prefix is not None:
@@ -310,7 +310,7 @@ class LocalDataset(PathDataset):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             Returns the newly created dataset version
         """
         version_info = FilesystemDatasetVersionInfo(path)
@@ -346,7 +346,7 @@ class BigQueryDataset(QueryDataset):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             Returns the newly created dataset version
         """
         version_info = BigQueryDatasetVersionInfo(job_id=job_id, location=location)
@@ -391,7 +391,7 @@ class RDBMSDataset(QueryDataset):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             Returns the newly created dataset version
         """
         version_info = RDBMSDatasetVersionInfo(
@@ -440,7 +440,7 @@ class AtlasHiveDataset(QueryDataset):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             Returns the newly created dataset version
         """
         version_info = AtlasHiveDatasetVersionInfo(
@@ -513,7 +513,12 @@ class DatasetVersion(object):
         self.version = dataset_version.version
         self._dataset_type = dataset_version.dataset_type
         self.dataset_version = dataset_version
-        self.dataset_version_info = None
+
+        version_info_field = 'dataset_version_info'
+        if dataset_version.HasField(version_info_field):
+            self.dataset_version_info = getattr(dataset_version, dataset_version.WhichOneof(version_info_field))
+        else:
+            self.dataset_version_info = None
 
     def __repr__(self):
         if self.dataset_version:
@@ -532,16 +537,16 @@ class DatasetVersion(object):
     @staticmethod
     def _get(conn, _dataset_version_id=None):
         if _dataset_version_id is not None:
-            msg = _DatasetVersionService.FindDatasetVersions()
-            msg.dataset_version_ids.append(_dataset_version_id)
+            Message = _DatasetVersionService.GetDatasetVersionById
+            msg = Message(id=_dataset_version_id)
             data = _utils.proto_to_json(msg)
             response = _utils.make_request(
-                "POST",
-                "{}://{}/api/v1/modeldb/dataset-version/findDatasetVersions".format(conn.scheme, conn.socket),
-                conn, json=data,
+                "GET",
+                "{}://{}/api/v1/modeldb/dataset-version/getDatasetVersionById".format(conn.scheme, conn.socket),
+                conn, params=data
             )
             if response.ok:
-                dataset_version = _utils.json_to_proto(_utils.body_to_json(response), msg.Response).dataset_versions[0]
+                dataset_version = _utils.json_to_proto(_utils.body_to_json(response), Message.Response).dataset_version
 
                 if not dataset_version.id:  # 200, but empty message
                     raise RuntimeError("unable to retrieve DatasetVersion {};"

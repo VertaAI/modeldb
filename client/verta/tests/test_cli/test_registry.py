@@ -8,14 +8,15 @@ from click.testing import CliRunner
 
 from verta import Client
 from verta._cli import cli
+from verta._cli.registry.update import add_attributes
 from verta._registry import RegisteredModel
 from verta._internal_utils import _utils
 from verta.environment import Python
 from verta.utils import ModelAPI
-from verta.deployment.update._strategies import DirectUpdateStrategy
+from verta.endpoint.update._strategies import DirectUpdateStrategy
 
 
-from ..utils import delete_organization, sys_path_manager
+from ..utils import sys_path_manager
 
 
 
@@ -179,7 +180,7 @@ class TestCreate:
         assert result.exception
         assert error_message in result.output
 
-    def test_create_workspace_config(self, client, organization, in_tempdir):
+    def test_create_workspace_config(self, client, organization, in_tempdir, created_registered_models):
         model_name = _utils.generate_default_name()
         version_name = _utils.generate_default_name()
 
@@ -199,6 +200,7 @@ class TestCreate:
 
         client = Client()
         model = client.get_registered_model(model_name)
+        created_registered_models.append(model)
         assert model.workspace == organization.name
 
     def test_create_version_with_custom_modules(self, client, registered_model, created_endpoints):
@@ -222,13 +224,14 @@ class TestCreate:
 
             requirements_path = "requirements.txt"
             with open(requirements_path, "w") as f:
-                f.write("torch==1.0.0")
+                f.write("torch=={}".format(torch.__version__))
 
             runner = CliRunner()
             result = runner.invoke(
                 cli,
                 ['registry', 'create', 'registeredmodelversion', model_name, version_name,
-                 "--model", model_path, "--custom-module", "models/", "--requirements", requirements_path],
+                 "--model", model_path, "--custom-module", "models/", "--requirements",
+                 requirements_path],
             )
             assert not result.exception
 
@@ -351,6 +354,7 @@ class TestList:
         model2 = client.get_or_create_registered_model()
         created_registered_models.append(model2)
         model = client.get_or_create_registered_model()
+        created_registered_models.append(model)
         model.add_label(label)
         runner = CliRunner()
         result = runner.invoke(
@@ -611,3 +615,32 @@ class TestUpdate:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
 
+@pytest.mark.parametrize(("key", "value", "arg"), (
+    ["num", 3.6, ["num=3.6"]], ["str", '3.6', ['str="3.6"']],
+    ["dict", {"a": 1, "b": 2}, ['dict={"a": 1, "b": 2}']]))
+def test_add_attributes(key, value, arg):
+    class TestModelVersion:
+        def add_attribute(self, key, value0, overwrite):
+            assert value == value0
+
+        def _get_attribute_keys(self):
+            return [key]
+
+    model_version = TestModelVersion()
+    add_attributes(model_version, arg, True)
+
+
+def test_multiple_attributes():
+    call_number = [0]
+    values = [3.6, {"a": 1, "b": 2}]
+
+    class TestModelVersion:
+        def add_attribute(self, key, value0, overwrite):
+            assert values[call_number[0]] == value0
+            call_number[0] += 1
+
+        def _get_attribute_keys(self):
+            return ["numl", "dict"]
+
+    model_version = TestModelVersion()
+    add_attributes(model_version, ["num=3.6", 'dict={"a": 1, "b": 2}'], True)
