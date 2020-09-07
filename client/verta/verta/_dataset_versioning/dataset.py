@@ -387,7 +387,7 @@ class Dataset(entity._ModelDBEntity):
 
     def get_latest_version(self):
         """
-        Get latest dataset version
+        Gets the latest dataset version.
 
         Returns
         -------
