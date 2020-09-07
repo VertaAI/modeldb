@@ -661,6 +661,7 @@ public class FindDatasetEntitiesTest {
 
   /** Find dataset with value of endTime */
   @Test
+  @Ignore
   public void findDatasetsByDatasetTimeUpdatedTest() {
     LOGGER.info("FindDatasets By Dataset TimeUpdated test start................................");
 
