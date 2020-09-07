@@ -371,7 +371,7 @@ class Dataset(entity._ModelDBEntity):
 
     def get_version(self, id):
         """
-        Get specified dataset version
+        Gets the specified dataset version.
 
         Parameters
         ----------
