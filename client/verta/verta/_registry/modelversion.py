@@ -441,9 +441,18 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         if self.has_environment and not overwrite:
             raise ValueError("environment already exists; consider setting overwrite=True")
 
-        self._update(self.ModelVersionMessage(environment=env._msg), method="PATCH",
-                     update_mask={"paths": ["environment.python.version.major", "environment.python.version.minor",
-                                            "environment.python.version.patch", "environment.python.requirements"]})
+        if overwrite:
+            self._fetch_with_no_cache()
+            self._msg.environment.CopyFrom(env._msg)
+            self._update(self._msg, method="PUT")
+        else:
+            self._update(self.ModelVersionMessage(environment=env._msg), method="PATCH",
+                         update_mask={"paths": ["environment.python.version.major",
+                                                "environment.python.version.minor",
+                                                "environment.python.version.patch",
+                                                "environment.python.requirements",
+                                                "environment.command_line", "environment.docker",
+                                                "environment.environment_variables"]})
 
     def del_environment(self):
         """
