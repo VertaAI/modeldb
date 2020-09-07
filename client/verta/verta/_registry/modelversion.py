@@ -812,10 +812,10 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
 
     def _update(self, msg, method="PATCH", update_mask=None):
-        Message = _ModelVersionService.SetModelVersion
+        Message = _RegistryService.SetModelVersion
         self._refresh_cache()  # to have `self._msg.registered_model_id` for URL
         if update_mask:
-            url = "{}://{}/v1/registry/registered_models/{}/model_versions/{}/full_body".format(
+            url = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/full_body".format(
                 self._conn.scheme,
                 self._conn.socket, self._msg.registered_model_id, self.id
             )
