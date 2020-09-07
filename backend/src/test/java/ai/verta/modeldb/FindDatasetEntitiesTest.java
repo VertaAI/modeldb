@@ -1656,45 +1656,6 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("Find and Sort DatasetVersions By attribute test stop................");
   }
 
-  /** Find public visibility datasetVersions */
-  @Test
-  @Ignore
-  public void findPublicDatasetVersionsTest() {
-    LOGGER.info("Find Public DatasetVersions test start................................");
-
-    KeyValueQuery keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey(ModelDBConstants.DATASET_VERSION_VISIBILITY)
-            .setValue(Value.newBuilder().setStringValue("PUBLIC").build())
-            .setOperator(OperatorEnum.Operator.EQ)
-            .build();
-    FindDatasetVersions findDatasetVersions =
-        FindDatasetVersions.newBuilder()
-            .setDatasetId(dataset1.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("version")
-            .build();
-
-    FindDatasetVersions.Response response =
-        datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        response.getTotalRecords());
-    assertEquals(
-        "DatasetVersion count not match with expected datasetVersion count",
-        1,
-        response.getDatasetVersionsCount());
-    assertEquals(
-        "DatasetVersion Id not match with expected datasetVersion Id",
-        datasetVersion4.getId(),
-        response.getDatasetVersions(0).getId());
-
-    LOGGER.info("Find Public DatasetVersions test stop................................");
-  }
-
   /** Find datasetVersions by workspace */
   @Test
   public void findDatasetVersionsByWorkspaceTest() {
