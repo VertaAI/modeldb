@@ -598,6 +598,11 @@ public class FindDatasetEntitiesTest {
         "Dataset not match with expected dataset",
         dataset2.getId(),
         response.getDatasetsList().get(0).getId());
+    dataset2 =
+        dataset2
+            .toBuilder()
+            .setTimeUpdated(response.getDatasetsList().get(0).getTimeUpdated())
+            .build();
     assertEquals(
         "Dataset not match with expected dataset", dataset2, response.getDatasetsList().get(0));
     assertEquals(
