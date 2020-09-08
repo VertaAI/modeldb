@@ -6544,13 +6544,11 @@ public class ExperimentRunTest {
     LOGGER.info("SortExperimentRuns Negative test stop................................");
   }
 
-  @Ignore("ordering")
   @Test
   public void u_getTopExperimentRunsTest() {
     LOGGER.info("TopExperimentRuns test start................................");
 
     ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     ExperimentServiceBlockingStub experimentServiceStub =
@@ -6572,7 +6570,7 @@ public class ExperimentRunTest {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment1 = createExperimentResponse.getExperiment();
@@ -6652,7 +6650,7 @@ public class ExperimentRunTest {
 
     // experiment2 of above project
     createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
     createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment2 = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
