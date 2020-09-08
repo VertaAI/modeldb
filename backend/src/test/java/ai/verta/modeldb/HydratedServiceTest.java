@@ -3647,67 +3647,6 @@ public class HydratedServiceTest {
 
   @Test
   @Ignore
-  public void getHydratedDatasetByName() {
-    LOGGER.info("Get HydratedDataset by name test start................................");
-
-    DatasetTest datasetTest = new DatasetTest();
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
-    // Create dataset
-    CreateDataset createDatasetRequest = datasetTest.getDatasetRequest("dataset_f_apt");
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    Dataset dataset = createDatasetResponse.getDataset();
-    LOGGER.info("Dataset created successfully");
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
-
-    GetHydratedDatasetByName getHydratedDataset =
-        GetHydratedDatasetByName.newBuilder().setName(dataset.getName()).build();
-
-    GetHydratedDatasetByName.Response response =
-        hydratedServiceBlockingStub.getHydratedDatasetByName(getHydratedDataset);
-    LOGGER.info(
-        "Response HydratedDatasetByUser of HydratedDataset : "
-            + response.getHydratedDatasetByUser());
-    LOGGER.info(
-        "Response SharedHydratedDatasetsList of HydratedDatasets : "
-            + response.getSharedHydratedDatasetsList());
-    assertEquals(
-        "HydratedDataset name not match",
-        dataset.getName(),
-        response.getHydratedDatasetByUser().getDataset().getName());
-    for (HydratedDataset sharedHydratedDataset : response.getSharedHydratedDatasetsList()) {
-      Dataset sharedDataset = sharedHydratedDataset.getDataset();
-      assertEquals("Shared dataset name not match", dataset.getName(), sharedDataset.getName());
-    }
-
-    try {
-      getHydratedDataset = GetHydratedDatasetByName.newBuilder().build();
-      hydratedServiceBlockingStub.getHydratedDatasetByName(getHydratedDataset);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
-    LOGGER.info("Get dataset by name test stop................................");
-  }
-
-  @Test
-  @Ignore
   public void findHydratedProjectsByUserTest() {
     LOGGER.info("FindHydratedProjectsByUser test start................................");
     ProjectTest projectTest = new ProjectTest();
