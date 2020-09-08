@@ -643,7 +643,7 @@ class DatasetVersion(object):
 
         if len(base_paths) == 1:
             return base_paths.pop()
-        else:  # shouldn't happen
+        else:  # shouldn't happen: DVs don't have an interface to have different base paths
             raise AttributeError("multiple base paths among components: {}".format(base_paths))
 
     def list_components(self):
