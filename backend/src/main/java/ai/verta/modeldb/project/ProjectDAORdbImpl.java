@@ -655,7 +655,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
   @Override
   public Project deepCopyProjectForUser(String srcProjectID, UserInfo newOwner)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     // if no project id specified , default to the one captured from config.yaml
     // TODO: extend the starter project to be set of projects, so parameterizing this function makes
     // sense

@@ -105,7 +105,8 @@ public interface ExperimentRunDAO {
    * @return ExperimentRun experimentRun
    * @throws InvalidProtocolBufferException
    */
-  ExperimentRun getExperimentRun(String experimentRunId) throws InvalidProtocolBufferException;
+  ExperimentRun getExperimentRun(String experimentRunId)
+      throws InvalidProtocolBufferException, ModelDBException;
 
   boolean isExperimentRunExists(Session session, String experimentRunId);
 
@@ -123,7 +124,7 @@ public interface ExperimentRunDAO {
    */
   ExperimentRun updateExperimentRunDescription(
       String experimentRunId, String experimentRunDescription)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * @param experimentRunId : experimentRun.id
@@ -148,7 +149,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException : InvalidProtocolBufferException
    */
   ExperimentRun addExperimentRunTags(String experimentRunId, List<String> tagsList)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * Delete ExperimentRun Tags from ExperimentRun entity.
@@ -161,7 +162,7 @@ public interface ExperimentRunDAO {
    */
   ExperimentRun deleteExperimentRunTags(
       String experimentRunId, List<String> experimentRunTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * ExperimentRun has Observations list field. Add new Observation in that Observations List.
@@ -212,7 +213,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   List<Artifact> getExperimentRunDatasets(String experimentRunId)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * ExperimentRun has artifacts field. Add new Artifact in that artifacts List.
@@ -378,7 +379,7 @@ public interface ExperimentRunDAO {
       Experiment newExperiment,
       Project newProject,
       UserInfo newOwner)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * Get ExperimentRun entities matching on key value list.
@@ -399,7 +400,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   void logDatasets(String experimentRunId, List<Artifact> datasets, boolean overwrite)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * Deletes the artifact key associated with the experiment run
