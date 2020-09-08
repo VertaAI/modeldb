@@ -10131,124 +10131,122 @@ public class ExperimentRunTest {
     Experiment experiment1 = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
 
-    Map<String, Location> locationMap = new HashMap<>();
-    locationMap.put("location-1", datasetLocation);
+    try {
+      Map<String, Location> locationMap = new HashMap<>();
+      locationMap.put("location-1", datasetLocation);
 
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
-    KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap)
-                    .build())
-            .addHyperparameters(hyperparameter1)
-            .build();
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
+      CreateExperimentRun createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+      KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .addHyperparameters(hyperparameter1)
+              .build();
+      CreateExperimentRun.Response createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
 
-    locationMap.put("location-2", test1Location);
+      locationMap.put("location-2", test1Location);
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap)
-                    .build())
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
+      LOGGER.info("ExperimentRun created successfully");
 
-    // experiment2 of above project
-    createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
+      // experiment2 of above project
+      createExperimentRequest =
+          ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
+      createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment2 = createExperimentResponse.getExperiment();
+      LOGGER.info("Experiment created successfully");
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
-    hyperparameter1 = generateNumericKeyValue("C", 0.0001);
-    Map<String, Location> locationMap2 = new HashMap<>();
-    locationMap2.put("location-111", test2Location);
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap2)
-                    .build())
-            .addHyperparameters(hyperparameter1)
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
+      hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+      Map<String, Location> locationMap2 = new HashMap<>();
+      locationMap2.put("location-111", test2Location);
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap2)
+                      .build())
+              .addHyperparameters(hyperparameter1)
+              .build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
+      LOGGER.info("ExperimentRun created successfully");
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
-    hyperparameter1 = generateNumericKeyValue("C", 1e-6);
-    createExperimentRunRequest =
-        createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
+      hyperparameter1 = generateNumericKeyValue("C", 1e-6);
+      createExperimentRunRequest =
+          createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
 
-    FindExperimentRuns findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .setAscending(false)
-            .setIdsOnly(false)
-            .build();
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .setAscending(false)
+              .setIdsOnly(false)
+              .build();
 
-    FindExperimentRuns.Response response =
-        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      FindExperimentRuns.Response response =
+          experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        4,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        4,
-        response.getExperimentRunsCount());
-    for (ExperimentRun exprRun : response.getExperimentRunsList()) {
-      if (exprRun.getId().equals(experimentRun2.getId())) {
-        String locationKey =
-            ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+      assertEquals(
+          "Total records count not matched with expected records count",
+          4,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          4,
+          response.getExperimentRunsCount());
+      for (ExperimentRun exprRun : response.getExperimentRunsList()) {
+        if (exprRun.getId().equals(experimentRun2.getId())) {
+          String locationKey =
+              ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
           assertTrue(
               "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-          assertTrue(
+          assertFalse(
               "Expected code config not found in map",
-              !exprRun
+              exprRun
                   .getCodeVersionFromBlobOrThrow(locationKey)
                   .getGitSnapshot()
                   .getFilepathsList()
                   .isEmpty());
-        }
-      } else if (exprRun.getId().equals(experimentRun3.getId())) {
-        String locationKey =
-            ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
-        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+        } else if (exprRun.getId().equals(experimentRun3.getId())) {
+          String locationKey =
+              ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
           assertTrue(
               "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
           assertTrue(
@@ -10260,14 +10258,13 @@ public class ExperimentRunTest {
                   .isEmpty());
         }
       }
-    }
 
-    GetExperimentRunById.Response getHydratedExperimentRunsResponse =
-        experimentRunServiceStub.getExperimentRunById(
-            GetExperimentRunById.newBuilder().setId(experimentRun2.getId()).build());
-    ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
-    String locationKey = ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-    if (app.isPopulateConnectionsBasedOnPrivileges()) {
+      GetExperimentRunById.Response getHydratedExperimentRunsResponse =
+          experimentRunServiceStub.getExperimentRunById(
+              GetExperimentRunById.newBuilder().setId(experimentRun2.getId()).build());
+      ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
+      String locationKey =
+          ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
       assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
       assertFalse(
           "Expected code config not found in map",
@@ -10276,21 +10273,24 @@ public class ExperimentRunTest {
               .getGitSnapshot()
               .getFilepathsList()
               .isEmpty());
+
+    } finally {
+
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
     }
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("FindExperimentRuns test stop................................");
   }
