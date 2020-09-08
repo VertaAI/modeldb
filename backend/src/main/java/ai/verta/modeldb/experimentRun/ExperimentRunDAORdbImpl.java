@@ -612,6 +612,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     return experimentRunBuilder.build();
   }
 
+  /**
+   * @param newDatasets : new datasets for privilege check
+   * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false)
+   * @return {@link List} : accessible datasets
+   * @throws ModelDBException: modelDBException
+   */
   private List<Artifact> getPrivilegedDatasets(List<Artifact> newDatasets, boolean errorOut)
       throws ModelDBException {
     List<Artifact> accessibleDatasets = new ArrayList<>();
