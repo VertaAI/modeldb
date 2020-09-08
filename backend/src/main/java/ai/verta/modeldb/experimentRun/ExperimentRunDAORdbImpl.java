@@ -603,6 +603,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     return experimentRun;
   }
 
+  /**
+   * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false)
+   */
   private ExperimentRun checkDatasetVersionBasedOnPrivileges(
       ExperimentRun experimentRun, boolean errorOut) throws ModelDBException {
     ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
