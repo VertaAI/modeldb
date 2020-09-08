@@ -8,7 +8,7 @@ This allows data scientists who work primarily in Scala to integrate Verta seaml
 
 The Scala client currently supports Verta's open source functionality. You could use the client to version a dataset on your local machine or AWS S3 bucket, and tracks the metadata of your experiment run.
 
-To add the Verta's Scala client to your sbt project, add the following line to your ``build.sbt`` file:
+To add Verta's Scala client to your sbt project, add the following line to the ``build.sbt`` file:
 
 .. TODO: host the client and verifies that this works
 
