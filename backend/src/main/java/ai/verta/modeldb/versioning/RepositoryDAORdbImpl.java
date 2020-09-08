@@ -389,6 +389,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       boolean create,
       RepositoryTypeEnum repositoryType)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
+    ModelDBUtils.validateEntityNameWithColonAndSlash(repository.getName());
     RepositoryEntity repositoryEntity;
     if (create) {
       if (workspaceDTO == null) {
@@ -938,6 +939,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   private void saveBranch(
       Session session, String commitSHA, String branch, RepositoryEntity repository)
       throws ModelDBException {
+    ModelDBUtils.validateEntityNameWithColonAndSlash(branch);
     boolean exists =
         VersioningUtils.commitRepositoryMappingExists(session, commitSHA, repository.getId());
     if (!exists) {
