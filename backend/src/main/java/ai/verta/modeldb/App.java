@@ -426,9 +426,11 @@ public class App implements ApplicationContextAware {
             authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
-    ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAODisabled();
+    ArtifactStoreDAO artifactStoreDAO;
     if (artifactStoreService != null) {
       artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
+    } else {
+      artifactStoreDAO = new ArtifactStoreDAODisabled();
     }
 
     CommentDAO commentDAO = new CommentDAORdbImpl(authService);
