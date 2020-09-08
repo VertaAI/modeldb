@@ -2934,7 +2934,6 @@ public class ExperimentRunTest {
   }
 
   @Test
-  @Ignore
   public void h_LogObservationEpochTest() {
     LOGGER.info("Get Observation from ExperimentRun test start................................");
 
