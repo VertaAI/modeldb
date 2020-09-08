@@ -1243,7 +1243,6 @@ public class CommitDAORdbImpl implements CommitDAO {
       } else {
         if (isDatasetVersion) {
           sortKey = ModelDBConstants.DATE_CREATED;
-          ascending = false;
         } else {
           sortKey = ModelDBConstants.DATE_UPDATED;
         }

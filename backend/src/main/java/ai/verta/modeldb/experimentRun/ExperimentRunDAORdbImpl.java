@@ -348,6 +348,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      if (experimentRun.getDatasetsCount() > 0 && app.isPopulateConnectionsBasedOnPrivileges()) {
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
+      }
+
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
         Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
@@ -559,7 +563,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRun getExperimentRun(String experimentRunId)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
           session.get(ExperimentRunEntity.class, experimentRunId);
@@ -584,10 +588,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-  private ExperimentRun populateFieldsBasedOnPrivileges(ExperimentRun experimentRun) {
+  private ExperimentRun populateFieldsBasedOnPrivileges(ExperimentRun experimentRun)
+      throws ModelDBException {
     if (app.isPopulateConnectionsBasedOnPrivileges()) {
       if (experimentRun.getDatasetsCount() > 0) {
-        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun);
+        experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, false);
       }
       if (experimentRun.getVersionedInputs() != null
           && experimentRun.getVersionedInputs().getRepositoryId() != 0) {
@@ -598,27 +603,46 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     return experimentRun;
   }
 
-  private ExperimentRun checkDatasetVersionBasedOnPrivileges(ExperimentRun experimentRun) {
+  /**
+   * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false)
+   */
+  private ExperimentRun checkDatasetVersionBasedOnPrivileges(
+      ExperimentRun experimentRun, boolean errorOut) throws ModelDBException {
     ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
-    List<Artifact> accessibleDatasetVersions = new ArrayList<>();
-    List<String> accessibleDatasetVersionIds = new ArrayList<>();
-    for (Artifact dataset : experimentRun.getDatasetsList()) {
-      if (!dataset.getLinkedArtifactId().isEmpty()
-          && !accessibleDatasetVersionIds.contains(dataset.getLinkedArtifactId())) {
-        try {
-          commitDAO.getDatasetVersionById(
-              repositoryDAO, blobDAO, metadataDAO, dataset.getLinkedArtifactId());
-          accessibleDatasetVersions.add(dataset);
-          accessibleDatasetVersionIds.add(dataset.getLinkedArtifactId());
-        } catch (Exception ex) {
-          LOGGER.debug(ex.getMessage());
-        }
-      } else {
-        accessibleDatasetVersions.add(dataset);
-      }
-    }
+    List<Artifact> accessibleDatasetVersions =
+        getPrivilegedDatasets(experimentRun.getDatasetsList(), errorOut);
     experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasetVersions);
     return experimentRunBuilder.build();
+  }
+
+  /**
+   * @param newDatasets : new datasets for privilege check
+   * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false)
+   * @return {@link List} : accessible datasets
+   * @throws ModelDBException: modelDBException
+   */
+  private List<Artifact> getPrivilegedDatasets(List<Artifact> newDatasets, boolean errorOut)
+      throws ModelDBException {
+    List<Artifact> accessibleDatasets = new ArrayList<>();
+    List<String> accessibleDatasetVersionIds = new ArrayList<>();
+    for (Artifact dataset : newDatasets) {
+      String datasetVersionId = dataset.getLinkedArtifactId();
+      if (!datasetVersionId.isEmpty() && !accessibleDatasetVersionIds.contains(datasetVersionId)) {
+        try {
+          commitDAO.getDatasetVersionById(repositoryDAO, blobDAO, metadataDAO, datasetVersionId);
+          accessibleDatasets.add(dataset);
+          accessibleDatasetVersionIds.add(datasetVersionId);
+        } catch (Exception ex) {
+          LOGGER.debug(ex.getMessage());
+          if (errorOut) {
+            throw ex;
+          }
+        }
+      } else {
+        accessibleDatasets.add(dataset);
+      }
+    }
+    return accessibleDatasets;
   }
 
   private ExperimentRun checkVersionInputBasedOnPrivileges(
@@ -677,7 +701,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun updateExperimentRunDescription(
       String experimentRunId, String experimentRunDescription)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId);
@@ -755,7 +779,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRun addExperimentRunTags(String experimentRunId, List<String> tagsList)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
@@ -800,7 +824,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun deleteExperimentRunTags(
       String experimentRunId, List<String> experimentRunTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       if (deleteAll) {
@@ -983,7 +1007,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<Artifact> getExperimentRunDatasets(String experimentRunId)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
@@ -1011,7 +1035,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logDatasets(String experimentRunId, List<Artifact> newDatasets, boolean overwrite)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
@@ -1050,6 +1074,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             }
           }
         }
+      }
+
+      if (app.isPopulateConnectionsBasedOnPrivileges()) {
+        newDatasets = getPrivilegedDatasets(newDatasets, true);
       }
 
       List<ArtifactEntity> newDatasetList =
@@ -1716,19 +1744,25 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private Map<String, List<KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
       Session session, List<String> expRunIds, List<String> selfAllowedRepositoryIds) {
 
-    if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
-      return new HashMap<>();
-    }
-
     String queryBuilder =
-        "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds) AND vme.repository_id IN (:repoIds)";
+        "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds) ";
+
+    if (app.isPopulateConnectionsBasedOnPrivileges()) {
+      if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
+        return new HashMap<>();
+      } else {
+        queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
+      }
+    }
 
     Query query = session.createQuery(queryBuilder);
     query.setParameter("hyperparameterType", HYPERPARAMETER);
     query.setParameterList("expRunIds", expRunIds);
-    query.setParameterList(
-        "repoIds",
-        selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+    if (app.isPopulateConnectionsBasedOnPrivileges()) {
+      query.setParameterList(
+          "repoIds",
+          selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+    }
 
     LOGGER.debug(
         "Final experimentRuns hyperparameter config blob final query : {}", query.getQueryString());
@@ -1786,24 +1820,29 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Session session, List<String> expRunIds, List<String> selfAllowedRepositoryIds)
       throws InvalidProtocolBufferException {
 
-    if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
-      return new HashMap<>();
-    }
-
     String queryBuilder =
         "SELECT vme.experimentRunEntity.id, vme.versioning_location, gcb, ncb, pdcb "
             + " From VersioningModeldbEntityMapping vme LEFT JOIN GitCodeBlobEntity gcb ON vme.blob_hash = gcb.blob_hash "
             + " LEFT JOIN NotebookCodeBlobEntity ncb ON vme.blob_hash = ncb.blob_hash "
             + " LEFT JOIN PathDatasetComponentBlobEntity pdcb ON ncb.path_dataset_blob_hash = pdcb.id.path_dataset_blob_id "
-            + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds) "
-            + " AND vme.repository_id IN (:repoIds) ";
+            + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds) ";
+
+    if (app.isPopulateConnectionsBasedOnPrivileges()) {
+      if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
+        return new HashMap<>();
+      } else {
+        queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
+      }
+    }
 
     Query query = session.createQuery(queryBuilder);
     query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
     query.setParameterList("expRunIds", expRunIds);
-    query.setParameterList(
-        "repoIds",
-        selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+    if (app.isPopulateConnectionsBasedOnPrivileges()) {
+      query.setParameterList(
+          "repoIds",
+          selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+    }
 
     LOGGER.debug("Final experimentRuns code config blob final query : {}", query.getQueryString());
     List<Object[]> codeBlobEntities = query.list();
@@ -2043,7 +2082,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Experiment newExperiment,
       Project newProject,
       UserInfo newOwner)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     checkIfEntityAlreadyExists(srcExperimentRun, false);
 
     if (newExperiment == null || newProject == null || newOwner == null) {
