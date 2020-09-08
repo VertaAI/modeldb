@@ -653,7 +653,7 @@ public class ModelDBUtils {
         && !name.isEmpty()
         && (name.contains(":") || name.contains("/") || name.contains("\\"))) {
       throw new ModelDBException(
-          "Name contains ':' Or '/' Or '\\' which is not expected", Code.INVALID_ARGUMENT);
+          "Name can not contain ':' or '/' or '\\\\'", Code.INVALID_ARGUMENT);
     }
   }
 }
