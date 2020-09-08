@@ -1,8 +1,7 @@
 package ai.verta.modeldb;
 
 import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.EntitiesEnum;
@@ -1363,5 +1362,38 @@ public class RepositoryTest {
 
     LOGGER.info(
         "FindRepositories by owner fuzzy search test stop ................................");
+  }
+
+  @Test
+  public void checkRepositoryNameWithColonAndSlashesTest() {
+    LOGGER.info(
+        "check repository name with colon and slashes test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    try {
+      createRepository(versioningServiceBlockingStub, "Repo: colons test repository");
+      fail();
+    } catch (StatusRuntimeException e) {
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), e.getStatus().getCode());
+    }
+
+    try {
+      createRepository(versioningServiceBlockingStub, "Repo/ colons test repository");
+      fail();
+    } catch (StatusRuntimeException e) {
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), e.getStatus().getCode());
+    }
+
+    try {
+      createRepository(versioningServiceBlockingStub, "Repo\\\\ colons test repository");
+      fail();
+    } catch (StatusRuntimeException e) {
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), e.getStatus().getCode());
+    }
+
+    LOGGER.info(
+        "check repository name with colon and slashes test end................................");
   }
 }
