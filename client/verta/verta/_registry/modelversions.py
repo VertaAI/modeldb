@@ -71,6 +71,6 @@ class RegisteredModelVersions(_utils.LazyList):
 
     def with_workspace(self, workspace_name=None):
         new_list = copy.deepcopy(self)
-        new_list._msg.id.registered_model_id = 0
+        new_list._msg.id.ClearField('registered_model_id')
         new_list._msg.id.named_id.workspace_name = workspace_name or ''
         return new_list
