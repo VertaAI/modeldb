@@ -37,6 +37,34 @@ Release Notes
      <>`__
 
 
+v0.15.3 (2020-09-08)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add DatasetVersion.list_components() and DatasetVersion.base_path
+  <https://github.com/VertaAI/modeldb/pull/1448>`__
+- `enable cloning a run into another experiment
+  <https://github.com/VertaAI/modeldb/pull/1420>`__
+- `add delete() to most entities
+  <https://github.com/VertaAI/modeldb/pull/1372>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `support Python 3.8
+  <https://github.com/VertaAI/modeldb/pull/1418>`__
+- `add self_contained param to download_docker_context()
+  <https://github.com/VertaAI/modeldb/pull/1425>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix bug where log_model(overwrite=True) didn't work with custom model
+  artifacts
+  <https://github.com/VertaAI/modeldb/pull/1447>`__
+- `properly raise an error when re-logging an environment to a model version
+  <https://github.com/VertaAI/modeldb/pull/1439/files>`__
+
+
 v0.15.2 (2020-08-28)
 --------------------
 
