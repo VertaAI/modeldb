@@ -37,6 +37,16 @@ Release Notes
      <>`__
 
 
+v0.15.4 (2020-09-09)
+--------------------
+
+Bug Fixes
+^^^^^^^^^
+- `fix bug where a DatasetVersion could not be retrieved for certain protobuf
+  configurations
+  <https://github.com/VertaAI/modeldb/pull/1471>`__
+
+
 v0.15.3 (2020-09-08)
 --------------------
 
@@ -62,7 +72,7 @@ Bug Fixes
   artifacts
   <https://github.com/VertaAI/modeldb/pull/1447>`__
 - `properly raise an error when re-logging an environment to a model version
-  <https://github.com/VertaAI/modeldb/pull/1439/files>`__
+  <https://github.com/VertaAI/modeldb/pull/1439>`__
 
 
 v0.15.2 (2020-08-28)
