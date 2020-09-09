@@ -56,4 +56,22 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
       ))
     ) yield new DatasetVersion(clientSet, this, response.dataset_version.get)
   }
+
+  /** Gets a version of the dataset by its ID.
+   *  @param id ID of the dataset version.
+   *  @return the version with the given ID.
+   */
+  def getVersion(id: String)(implicit ec: ExecutionContext): Try[DatasetVersion] =
+    clientSet.datasetVersionService.DatasetVersionService_getDatasetVersionById(Some(id)).map(
+      response => new DatasetVersion(clientSet, this, response.dataset_version.get)
+    )
+
+  /** Gets the latest dataset version.
+   *  @return the latest version of this dataset.
+   */
+  def getLatestVersion()(implicit ec: ExecutionContext): Try[DatasetVersion] =
+    clientSet.datasetVersionService.DatasetVersionService_getLatestDatasetVersionByDatasetId(
+      dataset_id = Some(id)
+    )
+      .map(response => new DatasetVersion(clientSet, this, response.dataset_version.get))
 }
