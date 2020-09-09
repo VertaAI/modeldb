@@ -48,15 +48,11 @@ class RegisteredModelVersions(_utils.LazyList):
 
     def with_model(self, registered_model=None):
         new_list = copy.deepcopy(self)
-        new_list._msg = _RegistryService.FindModelVersionRequest()
         if registered_model:
             new_list._msg.id.registered_model_id = registered_model.id
         else:
             new_list._msg.id.registered_model_id = 0
-        new_list._msg.predicates.extend(self._msg.predicates)
-        new_list._msg.pagination.CopyFrom(self._msg.pagination)
-        new_list._msg.ascending = self._msg.ascending
-        new_list._msg.sort_key = self._msg.sort_key
+        new_list._msg.id.ClearField('named_id')
         return new_list
 
     def set_page_limit(self, msg, param):
