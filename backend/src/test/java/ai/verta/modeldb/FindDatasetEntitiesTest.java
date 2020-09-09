@@ -661,10 +661,17 @@ public class FindDatasetEntitiesTest {
 
   /** Find dataset with value of endTime */
   @Test
-  @Ignore
   public void findDatasetsByDatasetTimeUpdatedTest() {
     LOGGER.info("FindDatasets By Dataset TimeUpdated test start................................");
 
+    GetDatasetById getDatasetById = GetDatasetById.newBuilder().setId(dataset4.getId()).build();
+    GetDatasetById.Response getDatasetByIdResponse =
+        datasetServiceStub.getDatasetById(getDatasetById);
+    assertEquals(
+        "Dataset not match with expected dataset",
+        dataset4.getId(),
+        getDatasetByIdResponse.getDataset().getId());
+    dataset4 = getDatasetByIdResponse.getDataset();
     Value numberValue = Value.newBuilder().setNumberValue(dataset4.getTimeUpdated()).build();
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()

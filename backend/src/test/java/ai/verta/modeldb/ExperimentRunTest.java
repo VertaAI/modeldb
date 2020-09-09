@@ -6544,13 +6544,11 @@ public class ExperimentRunTest {
     LOGGER.info("SortExperimentRuns Negative test stop................................");
   }
 
-  @Ignore("ordering")
   @Test
   public void u_getTopExperimentRunsTest() {
     LOGGER.info("TopExperimentRuns test start................................");
 
     ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     ExperimentServiceBlockingStub experimentServiceStub =
@@ -6572,7 +6570,7 @@ public class ExperimentRunTest {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment1 = createExperimentResponse.getExperiment();
@@ -6652,7 +6650,7 @@ public class ExperimentRunTest {
 
     // experiment2 of above project
     createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
     createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment2 = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
@@ -9611,7 +9609,6 @@ public class ExperimentRunTest {
   }
 
   @Test
-  @Ignore
   public void findExperimentRunsHyperparameterWithSortKeyRepository()
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("FindExperimentRuns test start................................");
@@ -9779,266 +9776,276 @@ public class ExperimentRunTest {
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     LOGGER.info("ExperimentRun created successfully");
 
-    Value hyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
-    KeyValueQuery keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.train")
-            .setValue(hyperparameterFilter)
-            .setOperator(Operator.GTE)
-            .setValueType(ValueType.NUMBER)
-            .build();
+    try {
+      Value hyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
+      KeyValueQuery keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.train")
+              .setValue(hyperparameterFilter)
+              .setOperator(Operator.GTE)
+              .setValueType(ValueType.NUMBER)
+              .build();
 
-    FindExperimentRuns findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.train")
-            .build();
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.train")
+              .build();
 
-    FindExperimentRuns.Response response =
-        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      FindExperimentRuns.Response response =
+          experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        2,
-        response.getExperimentRunsCount());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        experimentRunConfig2.getId(),
-        response.getExperimentRuns(0).getId());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          2,
+          response.getExperimentRunsCount());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          experimentRunConfig2.getId(),
+          response.getExperimentRuns(0).getId());
 
-    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
-      ExperimentRun exprRun = response.getExperimentRuns(index);
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("C")) {
-          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
-        } else if (kv.getKey().equals("train")) {
-          if (index == 0) {
-            assertEquals("Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
-          } else {
-            assertEquals("Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
+      for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+        ExperimentRun exprRun = response.getExperimentRuns(index);
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("C")) {
+            assertTrue(
+                "Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
+          } else if (kv.getKey().equals("train")) {
+            if (index == 0) {
+              assertEquals(
+                  "Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
+            } else {
+              assertEquals(
+                  "Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
+            }
           }
         }
       }
-    }
 
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(true)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.train")
-            .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(true)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.train")
+              .build();
 
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        2,
-        response.getExperimentRunsCount());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        experimentRunConfig1.getId(),
-        response.getExperimentRuns(0).getId());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          2,
+          response.getExperimentRunsCount());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          experimentRunConfig1.getId(),
+          response.getExperimentRuns(0).getId());
 
-    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
-      ExperimentRun exprRun = response.getExperimentRuns(index);
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("C")) {
-          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
-        } else if (kv.getKey().equals("train")) {
-          if (index == 0) {
-            assertEquals("Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
-          } else {
-            assertEquals("Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
+      for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+        ExperimentRun exprRun = response.getExperimentRuns(index);
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("C")) {
+            assertTrue(
+                "Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
+          } else if (kv.getKey().equals("train")) {
+            if (index == 0) {
+              assertEquals(
+                  "Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
+            } else {
+              assertEquals(
+                  "Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
+            }
           }
         }
       }
-    }
 
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setPageLimit(1)
-            .setPageNumber(1)
-            .setSortKey("hyperparameters.train")
-            .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setPageLimit(1)
+              .setPageNumber(1)
+              .setSortKey("hyperparameters.train")
+              .build();
 
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        1,
-        response.getExperimentRunsCount());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        experimentRunConfig2.getId(),
-        response.getExperimentRuns(0).getId());
-    for (ExperimentRun exprRun : response.getExperimentRunsList()) {
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("train")) {
-          assertTrue("Value should be GTE 1 " + kv, kv.getValue().getNumberValue() > 1);
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          1,
+          response.getExperimentRunsCount());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          experimentRunConfig2.getId(),
+          response.getExperimentRuns(0).getId());
+      for (ExperimentRun exprRun : response.getExperimentRunsList()) {
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("train")) {
+            assertTrue("Value should be GTE 1 " + kv, kv.getValue().getNumberValue() > 1);
+          }
         }
       }
-    }
 
-    Value oldHyperparameterFilter = Value.newBuilder().setNumberValue(0.0002).build();
-    KeyValueQuery oldKeyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.C")
-            .setValue(oldHyperparameterFilter)
-            .setOperator(Operator.GTE)
-            .setValueType(ValueType.NUMBER)
-            .build();
+      Value oldHyperparameterFilter = Value.newBuilder().setNumberValue(0.0002).build();
+      KeyValueQuery oldKeyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.C")
+              .setValue(oldHyperparameterFilter)
+              .setOperator(Operator.GTE)
+              .setValueType(ValueType.NUMBER)
+              .build();
 
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(oldKeyValueQuery)
-            .setAscending(true)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.C")
-            .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(oldKeyValueQuery)
+              .setAscending(true)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.C")
+              .build();
 
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
 
-    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
-      ExperimentRun exprRun = response.getExperimentRuns(index);
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("C")) {
-          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+      for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+        ExperimentRun exprRun = response.getExperimentRuns(index);
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("C")) {
+            assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+          }
         }
       }
-    }
 
-    oldHyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
-    oldKeyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.train")
-            .setValue(oldHyperparameterFilter)
-            .setOperator(Operator.GTE)
-            .setValueType(ValueType.NUMBER)
-            .build();
+      oldHyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
+      oldKeyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.train")
+              .setValue(oldHyperparameterFilter)
+              .setOperator(Operator.GTE)
+              .setValueType(ValueType.NUMBER)
+              .build();
 
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(oldKeyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.C")
-            .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(oldKeyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.C")
+              .build();
 
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
 
-    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
-      ExperimentRun exprRun = response.getExperimentRuns(index);
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("C")) {
-          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+      for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+        ExperimentRun exprRun = response.getExperimentRuns(index);
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("C")) {
+            assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+          }
         }
       }
+
+      hyperparameterFilter = Value.newBuilder().setNumberValue(5).build();
+      keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.train")
+              .setValue(hyperparameterFilter)
+              .setOperator(Operator.NE)
+              .setValueType(ValueType.NUMBER)
+              .build();
+
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.train")
+              .build();
+
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+      assertEquals(
+          "Total records count not matched with expected records count",
+          3,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          3,
+          response.getExperimentRunsCount());
+
+      hyperparameterFilter = Value.newBuilder().setStringValue("abc").build();
+      keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.C")
+              .setValue(hyperparameterFilter)
+              .setOperator(Operator.CONTAIN)
+              .setValueType(ValueType.STRING)
+              .build();
+
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.train")
+              .build();
+
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+      assertEquals(
+          "Total records count not matched with expected records count",
+          1,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          1,
+          response.getExperimentRunsCount());
+
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
     }
-
-    hyperparameterFilter = Value.newBuilder().setNumberValue(5).build();
-    keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.train")
-            .setValue(hyperparameterFilter)
-            .setOperator(Operator.NE)
-            .setValueType(ValueType.NUMBER)
-            .build();
-
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.train")
-            .build();
-
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        3,
-        response.getExperimentRunsCount());
-
-    hyperparameterFilter = Value.newBuilder().setStringValue("abc").build();
-    keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.C")
-            .setValue(hyperparameterFilter)
-            .setOperator(Operator.CONTAIN)
-            .setValueType(ValueType.STRING)
-            .build();
-
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.train")
-            .build();
-
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        1,
-        response.getExperimentRunsCount());
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("FindExperimentRuns test stop................................");
   }
