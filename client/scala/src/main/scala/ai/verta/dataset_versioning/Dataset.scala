@@ -10,7 +10,7 @@ import ai.verta.swagger.client.ClientSet
 
 /** Represents a ModelDB dataset.
  */
-class Dataset(private val clientSet: ClientSet, private var dataset: ModeldbDataset) {
+class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbDataset) {
   /** ID of the dataset. */
   def id: String = dataset.id.get
 
