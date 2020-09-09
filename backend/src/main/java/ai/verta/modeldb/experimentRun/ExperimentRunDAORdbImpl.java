@@ -872,6 +872,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       Transaction transaction = session.beginTransaction();
+      LOGGER.debug("logObservations : {}", observations);
       List<ObservationEntity> newObservationList =
           RdbmsUtils.convertObservationsFromObservationEntityList(
               session,
@@ -881,6 +882,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               ExperimentRunEntity.class.getSimpleName(),
               experimentRunEntityObj.getId());
       experimentRunEntityObj.setObservationMapping(newObservationList);
+      LOGGER.debug("logObservations after set in run : {}", experimentRunEntityObj.getProtoObject().getObservationsList());
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
@@ -1620,7 +1622,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         List<ExperimentRun> experimentRunList =
             RdbmsUtils.convertExperimentRunsFromExperimentRunEntityList(experimentRunEntities);
         LOGGER.trace("experimentRunList {}", experimentRunList);
-        LOGGER.debug("findExperimentRuns Converted from Hibernate runs: {}", experimentRunList.get(0));
+        LOGGER.debug("findExperimentRuns Converted from Hibernate runs: {}", ModelDBUtils.getStringFromProtoObject(experimentRunList.get(0)));
         LOGGER.trace("Converted from Hibernate to proto");
 
         List<String> selfAllowedRepositoryIds = new ArrayList<>();
@@ -1698,7 +1700,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long totalRecords = RdbmsUtils.count(session, experimentRunRoot, criteriaQuery);
       LOGGER.debug("ExperimentRuns Total record count : {}", totalRecords);
 
-      LOGGER.debug("findExperimentRuns Response runs: {}", experimentRuns.get(0));
+      LOGGER.debug("findExperimentRuns Response runs: {}", ModelDBUtils.getStringFromProtoObject(experimentRuns.get(0)));
       ExperimentRunPaginationDTO experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
       experimentRunPaginationDTO.setExperimentRuns(experimentRuns);
       experimentRunPaginationDTO.setTotalRecords(totalRecords);
