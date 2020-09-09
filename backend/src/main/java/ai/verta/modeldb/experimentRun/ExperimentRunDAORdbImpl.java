@@ -872,7 +872,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       Transaction transaction = session.beginTransaction();
-      LOGGER.debug("logObservations : {}", observations);
       List<ObservationEntity> newObservationList =
           RdbmsUtils.convertObservationsFromObservationEntityList(
               session,
@@ -882,7 +881,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               ExperimentRunEntity.class.getSimpleName(),
               experimentRunEntityObj.getId());
       experimentRunEntityObj.setObservationMapping(newObservationList);
-      LOGGER.debug("logObservations after set in run : {}", experimentRunEntityObj.getProtoObject().getObservationsList());
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       session.saveOrUpdate(experimentRunEntityObj);
