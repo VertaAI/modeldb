@@ -432,6 +432,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       GetExperimentRunById.Response.Builder response = GetExperimentRunById.Response.newBuilder();
       if (experimentRunPaginationDTO.getExperimentRuns() != null
           && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
+        LOGGER.debug("GetExperimentRunById Response run: {}", experimentRunPaginationDTO.getExperimentRuns().get(0));
         response.setExperimentRun(experimentRunPaginationDTO.getExperimentRuns().get(0));
       }
       responseObserver.onNext(response.build());
