@@ -19,7 +19,7 @@ class TestDatasetVersion:
         created_datasets.append(dataset)
         original_description = "original description"
         dataset_version = dataset.create_path_version(paths=["modelapi_hypothesis/",
-                                                                     "modelapi_hypothesis/api_generator.py"],
+                                                             "modelapi_hypothesis/api_generator.py"],
                                                               desc=original_description)
         assert dataset_version.get_description() == original_description
 
