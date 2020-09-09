@@ -630,7 +630,7 @@ class ExperimentRun(_DeployableEntity):
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return response_msg.tags
 
-    def log_attribute(self, key, value):
+    def log_attribute(self, key, value, overwrite=False):
         """
         Logs an attribute to this Experiment Run.
 
@@ -640,9 +640,14 @@ class ExperimentRun(_DeployableEntity):
             Name of the attribute.
         value : one of {None, bool, float, int, str, list, dict}
             Value of the attribute.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing atribute with key `key`.
 
         """
         _utils.validate_flat_key(key)
+
+        if overwrite:
+            self._delete_attributes([key])
 
         attribute = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
         msg = _ExperimentRunService.LogAttribute(id=self.id, attribute=attribute)
@@ -653,13 +658,13 @@ class ExperimentRun(_DeployableEntity):
         if not response.ok:
             if response.status_code == 409:
                 raise ValueError("attribute with key {} already exists;"
-                                 " consider using observations instead".format(key))
+                                 " consider using observations instead, or setting overwrite=True.".format(key))
             else:
                 _utils.raise_for_http_error(response)
 
         self._clear_cache()
 
-    def log_attributes(self, attributes):
+    def log_attributes(self, attributes, overwrite=False):
         """
         Logs potentially multiple attributes to this Experiment Run.
 
@@ -667,11 +672,17 @@ class ExperimentRun(_DeployableEntity):
         ----------
         attributes : dict of str to {None, bool, float, int, str, list, dict}
             Attributes.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing atributes.
 
         """
         # validate all keys first
         for key in six.viewkeys(attributes):
             _utils.validate_flat_key(key)
+
+        if overwrite:
+            keys = list(six.viewkeys(attributes))
+            self._delete_attributes(keys)
 
         # build KeyValues
         attribute_keyvals = []
@@ -686,7 +697,7 @@ class ExperimentRun(_DeployableEntity):
         if not response.ok:
             if response.status_code == 409:
                 raise ValueError("some attribute with some input key already exists;"
-                                 " consider using observations instead")
+                                 " consider using observations instead, or setting overwrite=True.")
             else:
                 _utils.raise_for_http_error(response)
 
@@ -745,6 +756,13 @@ class ExperimentRun(_DeployableEntity):
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
         return _utils.unravel_key_values(response_msg.attributes)
 
+    def _delete_attributes(self, keys):
+        response = _utils.make_request("DELETE",
+                                       "{}://{}/api/v1/modeldb/experiment-run/deleteExperimentRunAttributes".format(
+                                           self._conn.scheme, self._conn.socket),
+                                       self._conn, json={'id': self.id, 'attribute_keys': keys})
+        _utils.raise_for_http_error(response)
+
     def _delete_metrics(self, keys):
         response = _utils.make_request("DELETE",
                                        "{}://{}/api/v1/modeldb/experiment-run/deleteMetrics".format(
@@ -766,7 +784,7 @@ class ExperimentRun(_DeployableEntity):
                                        self._conn, json={'id': self.id, 'hyperparameter_keys': keys})
         _utils.raise_for_http_error(response)
 
-    def log_metric(self, key, value):
+    def log_metric(self, key, value, overwrite=False):
         """
         Logs a metric to this Experiment Run.
 
@@ -778,6 +796,8 @@ class ExperimentRun(_DeployableEntity):
             Name of the metric.
         value : one of {None, bool, float, int, str}
             Value of the metric.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing metric with key `key`.
 
         """
         _utils.validate_flat_key(key)
@@ -785,6 +805,8 @@ class ExperimentRun(_DeployableEntity):
         metric = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         msg = _ExperimentRunService.LogMetric(id=self.id, metric=metric)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_metrics([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logMetric".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -797,7 +819,7 @@ class ExperimentRun(_DeployableEntity):
 
         self._clear_cache()
 
-    def log_metrics(self, metrics):
+    def log_metrics(self, metrics, overwrite=False):
         """
         Logs potentially multiple metrics to this Experiment Run.
 
@@ -805,6 +827,8 @@ class ExperimentRun(_DeployableEntity):
         ----------
         metrics : dict of str to {None, bool, float, int, str}
             Metrics.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing metric with key `key`.
 
         """
         # validate all keys first
@@ -820,6 +844,8 @@ class ExperimentRun(_DeployableEntity):
 
         msg = _ExperimentRunService.LogMetrics(id=self.id, metrics=metric_keyvals)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_metrics(keys)
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logMetrics".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -866,7 +892,7 @@ class ExperimentRun(_DeployableEntity):
         self._refresh_cache()
         return self._metrics
 
-    def log_hyperparameter(self, key, value):
+    def log_hyperparameter(self, key, value, overwrite=False):
         """
         Logs a hyperparameter to this Experiment Run.
 
@@ -876,6 +902,8 @@ class ExperimentRun(_DeployableEntity):
             Name of the hyperparameter.
         value : one of {None, bool, float, int, str}
             Value of the hyperparameter.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing hyperparameter with key `key`.
 
         """
         _utils.validate_flat_key(key)
@@ -883,6 +911,8 @@ class ExperimentRun(_DeployableEntity):
         hyperparameter = _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value))
         msg = _ExperimentRunService.LogHyperparameter(id=self.id, hyperparameter=hyperparameter)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_hyperparameters([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logHyperparameter".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -895,7 +925,7 @@ class ExperimentRun(_DeployableEntity):
 
         self._clear_cache()
 
-    def log_hyperparameters(self, hyperparams):
+    def log_hyperparameters(self, hyperparams, overwrite=False):
         """
         Logs potentially multiple hyperparameters to this Experiment Run.
 
@@ -903,6 +933,8 @@ class ExperimentRun(_DeployableEntity):
         ----------
         hyperparameters : dict of str to {None, bool, float, int, str}
             Hyperparameters.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing hyperparameter with key `key`.
 
         """
         # validate all keys first
@@ -918,6 +950,8 @@ class ExperimentRun(_DeployableEntity):
 
         msg = _ExperimentRunService.LogHyperparameters(id=self.id, hyperparameters=hyperparameter_keyvals)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_hyperparameters(keys)
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logHyperparameters".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
@@ -1312,7 +1346,7 @@ class ExperimentRun(_DeployableEntity):
 
         # associate artifact dependencies
         if artifacts:
-            self.log_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts)
+            self.log_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite)
 
         custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
         self._log_artifact("custom_modules", custom_modules_artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
@@ -1647,7 +1681,7 @@ class ExperimentRun(_DeployableEntity):
         ))
         return committed_parts
 
-    def log_observation(self, key, value, timestamp=None, epoch_num=None):
+    def log_observation(self, key, value, timestamp=None, epoch_num=None, overwrite=False):
         """
         Logs an observation to this Experiment Run.
 
@@ -1663,6 +1697,8 @@ class ExperimentRun(_DeployableEntity):
         epoch_num : non-negative int, optional
             Epoch number associated with this observation. If not provided, it will automatically
             be incremented from prior observations for the same `key`.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing observation with key `key`.
 
         Warnings
         --------
@@ -1691,6 +1727,8 @@ class ExperimentRun(_DeployableEntity):
 
         msg = _ExperimentRunService.LogObservation(id=self.id, observation=observation)
         data = _utils.proto_to_json(msg)
+        if overwrite:
+            self._delete_observations([key])
         response = _utils.make_request("POST",
                                        "{}://{}/api/v1/modeldb/experiment-run/logObservation".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
