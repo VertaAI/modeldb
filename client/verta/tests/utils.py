@@ -5,9 +5,6 @@ import os
 import sys
 from string import printable
 
-import signal
-from contextlib import contextmanager
-
 import requests
 
 from verta._internal_utils import _utils
@@ -135,27 +132,3 @@ def delete_datasets(ids, conn):
     response = requests.delete(request_url, json={'ids': ids}, headers=conn.auth)
     _utils.raise_for_http_error(response)
 
-
-class TimeoutException(RuntimeError):
-    """Python 2 does not have built-in TimeoutError"""
-    def __init__(self):
-        super(TimeoutException, self).__init__("Timeout.")
-
-
-@contextmanager
-def timeout(time):
-    """From https://www.jujens.eu/posts/en/2018/Jun/02/python-timeout-function/"""
-    def raise_timeout(signum, frame):
-        raise TimeoutException()
-
-    # Register a function to raise a TimeoutError on the signal.
-    signal.signal(signal.SIGALRM, raise_timeout)
-    # Schedule the signal to be sent after ``time``.
-    signal.alarm(time)
-
-    try:
-        yield
-    finally:
-        # Unregister the signal so it won't be triggered
-        # if the timeout is not reached.
-        signal.signal(signal.SIGALRM, signal.SIG_IGN)
