@@ -2996,9 +2996,16 @@ public class ExperimentRunTest {
     GetExperimentRunById.Response response =
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.debug("observation epoch should be 0 Response: {}", response);
-    assertEquals("there should be exactly one observation", 1, response.getExperimentRun().getObservationsCount());
+    assertEquals(
+        "there should be exactly one observation",
+        1,
+        response.getExperimentRun().getObservationsCount());
     Observation responseObservation = response.getExperimentRun().getObservations(0);
-    assertEquals("observation epoch should be 0", 0, responseObservation.getEpochNumber().getNumberValue(), 0.0);
+    assertEquals(
+        "observation epoch should be 0",
+        0,
+        responseObservation.getEpochNumber().getNumberValue(),
+        0.0);
 
     // observation with epoch should set the value passed
     observation =
@@ -3024,10 +3031,14 @@ public class ExperimentRunTest {
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.debug("observation epoch should be 123 Response: {}", response);
-    assertEquals("there should be two observations", 2, response.getExperimentRun().getObservationsCount());
+    assertEquals(
+        "there should be two observations", 2, response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 1
     responseObservation = response.getExperimentRun().getObservations(1);
-    assertEquals("observation epoch should be 123", 123, (long) responseObservation.getEpochNumber().getNumberValue());
+    assertEquals(
+        "observation epoch should be 123",
+        123,
+        (long) responseObservation.getEpochNumber().getNumberValue());
 
     // Subsequent call to log observation without epoch should set value to old max +1
     observation =
@@ -3052,10 +3063,16 @@ public class ExperimentRunTest {
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.debug("observation epoch should be 123 + 1 Response: {}", response);
-    assertEquals("there should be three observations", 3, response.getExperimentRun().getObservationsCount());
+    assertEquals(
+        "there should be three observations",
+        3,
+        response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 2
     responseObservation = response.getExperimentRun().getObservations(2);
-    assertEquals("observation epoch should be 123 + 1", 124, (long) responseObservation.getEpochNumber().getNumberValue());
+    assertEquals(
+        "observation epoch should be 123 + 1",
+        124,
+        (long) responseObservation.getEpochNumber().getNumberValue());
 
     // call to log observation with epoch but o not a different key should set value to 0
     observation =
@@ -3080,10 +3097,14 @@ public class ExperimentRunTest {
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     LOGGER.debug("observation epoch should be 0 again Response: {}", response);
-    assertEquals("there should be four observations", 4, response.getExperimentRun().getObservationsCount());
+    assertEquals(
+        "there should be four observations", 4, response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 3
     responseObservation = response.getExperimentRun().getObservations(3);
-    assertEquals("observation epoch should be 0", 0, (long) responseObservation.getEpochNumber().getNumberValue());
+    assertEquals(
+        "observation epoch should be 0",
+        0,
+        (long) responseObservation.getEpochNumber().getNumberValue());
 
     // same epoch_number, same key stores duplicate
     observation =
@@ -3108,14 +3129,19 @@ public class ExperimentRunTest {
 
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    assertEquals("there should be five observations", 5, response.getExperimentRun().getObservationsCount());
+    assertEquals(
+        "there should be five observations", 5, response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 3
     responseObservation = response.getExperimentRun().getObservations(1);
     Observation responseObservation2 = response.getExperimentRun().getObservations(4);
-    assertEquals("observations have same key", responseObservation
-            .getAttribute()
-            .getKey(), responseObservation2.getAttribute().getKey());
-    assertEquals("observations have same epoch number", responseObservation.getEpochNumber(), responseObservation2.getEpochNumber());
+    assertEquals(
+        "observations have same key",
+        responseObservation.getAttribute().getKey(),
+        responseObservation2.getAttribute().getKey());
+    assertEquals(
+        "observations have same epoch number",
+        responseObservation.getEpochNumber(),
+        responseObservation2.getEpochNumber());
 
     // call to log observation with non numeric epoch throws error
     observation =
