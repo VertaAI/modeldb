@@ -66,10 +66,32 @@ class DatasetVersion(entity._ModelDBEntity):
         return dataset_version
 
     def set_description(self, desc):
-        raise NotImplementedError
+        """
+        Sets the description of this Dataset Version.
+
+        Parameters
+        ----------
+        desc : str
+            Description to set.
+
+        """
+        Message = _DatasetVersionService.UpdateDatasetVersionDescription
+        msg = Message(id=self.id, description=desc)
+        endpoint = "/api/v1/modeldb/dataset-version/updateDatasetVersionDescription"
+        self._update(msg, Message.Response, endpoint, "POST")
 
     def get_description(self):
-        raise NotImplementedError
+        """
+        Gets the description of this Dataset Version.
+
+        Returns
+        -------
+        str
+            Description of this Dataset Version.
+
+        """
+        self._refresh_cache()
+        return self._msg.description
 
     def add_tag(self, tag):
         """
