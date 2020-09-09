@@ -330,7 +330,7 @@ class Dataset(entity._ModelDBEntity):
 
         Returns
         -------
-        new Dataset Version
+        `DatasetVersion <dataset.html>`_
 
         """
         dataset_blob = dataset.S3(paths=paths)
@@ -341,7 +341,7 @@ class Dataset(entity._ModelDBEntity):
             time_logged=date_created, time_updated=date_created,
         )
 
-    def create_path_version(self, paths, base_path=None, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
+    def create_path_version(self, paths, base_path=None, desc=None, tags=None, attrs=None, date_created=None):
         """
         Creates path dataset version
 
@@ -358,7 +358,7 @@ class Dataset(entity._ModelDBEntity):
 
         Returns
         -------
-        new Dataset Version
+        `DatasetVersion <dataset.html>`_
 
         """
         dataset_blob = dataset.Path(paths=paths, base_path=base_path)
@@ -371,7 +371,7 @@ class Dataset(entity._ModelDBEntity):
 
     def get_version(self, id):
         """
-        Get specified dataset version
+        Gets the specified dataset version.
 
         Parameters
         ----------
@@ -380,18 +380,18 @@ class Dataset(entity._ModelDBEntity):
 
         Returns
         -------
-        Dataset Version by id
+        `DatasetVersion <dataset.html>`_
 
         """
         return DatasetVersion._get_by_id(self._conn, self._conf, id)
 
     def get_latest_version(self):
         """
-        Get latest dataset version
+        Gets the latest dataset version.
 
         Returns
         -------
-        The latest Dataset Version
+        `DatasetVersion <dataset.html>`_
 
         """
         return DatasetVersion._get_latest_version_by_dataset_id(self._conn, self.id)

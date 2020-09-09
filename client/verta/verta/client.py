@@ -718,7 +718,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`DatasetVersion`
+        `DatasetVersion <dataset.html>`_
         """
         return _dataset.DatasetVersion(self._conn, self._conf, _dataset_version_id=id)
 
@@ -1339,7 +1339,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`DatasetVersion`
+        `DatasetVersion <dataset.html>`_
 
         """
         # TODO: when MVP, remove '2'
