@@ -122,7 +122,7 @@ class Client(conn: ClientConnection) {
   private def getPersonalWorkspace()(implicit ec: ExecutionContext): Try[String] = {
     if (conn.auth.email.isEmpty)
       Success("personal")
-    else
+    else // Assume that if email is set, then it's not OSS setup.
       clientSet.uacService.UACService_getUser(email = Some(conn.auth.email))
         .map(response => response.verta_info.get)
         .map(info => info.username.get)
