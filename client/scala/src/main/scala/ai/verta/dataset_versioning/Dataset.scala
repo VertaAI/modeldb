@@ -1,7 +1,6 @@
 package ai.verta.dataset_versioning
 
 import ai.verta.swagger._public.modeldb.model._
-import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.swagger.client.ClientSet
 
 /** Represents a ModelDB dataset.
