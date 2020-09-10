@@ -435,7 +435,7 @@ class Endpoint(object):
 
         """
         if not isinstance(strategy, _UpdateStrategy):
-            raise TypeError("`strategy` must be an object from verta.endpoint.strategies")
+            raise TypeError("`strategy` must be an object from verta.endpoint.update.strategies")
 
         if autoscaling and not isinstance(autoscaling, Autoscaling):
             raise TypeError("`autoscaling` must be an Autoscaling object")
