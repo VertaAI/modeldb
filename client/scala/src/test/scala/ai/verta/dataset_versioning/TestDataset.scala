@@ -56,9 +56,7 @@ class TestDataset extends FunSuite {
       })
 
       val getByIdAttempt = f.client.getDatasetById("wrong-id")
-      assert(getByIdAttempt match {
-        case Failure(e) => e.getMessage contains "not found"
-      })
+      assert(getByIdAttempt.isFailure) // message differs in OSS and dev setup.
     } finally {
       cleanup(f)
     }
