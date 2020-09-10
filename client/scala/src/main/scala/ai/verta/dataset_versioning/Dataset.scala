@@ -28,33 +28,31 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
   private def modelFromJson: JObject => VersioningDatasetBlob =
     VersioningDatasetBlob.fromJson _
 
+  private def createVersionFromBlob(blob: ai.verta.blobs.dataset.Dataset)(implicit ec: ExecutionContext): Try[DatasetVersion] =
+    clientSet.datasetVersionService.DatasetVersionService_createDatasetVersion(ModeldbCreateDatasetVersion(
+      dataset_id = Some(id),
+      dataset_blob = Some(convertModel(blobToVersioningDatasetBlob(blob)))
+    ))
+      .map(response => new DatasetVersion(clientSet, this, response.dataset_version.get))
+
+  private def blobToVersioningDatasetBlob(blob: ai.verta.blobs.dataset.Dataset) = blob match {
+    case s3Blob: S3 => S3.toVersioningBlob(s3Blob).dataset.get
+    case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob).dataset.get
+  }
+
   /** Creates path dataset version.
    *  @param paths Dataset version paths.
    *  @return Dataset version from paths.
    */
-  def createPathVersion(paths: List[String])(implicit ec: ExecutionContext): Try[DatasetVersion] = {
-    for (
-      pathBlob <- PathBlob(paths);
-      response <- clientSet.datasetVersionService.DatasetVersionService_createDatasetVersion(ModeldbCreateDatasetVersion(
-        dataset_id = Some(id),
-        dataset_blob = Some(convertModel(PathBlob.toVersioningBlob(pathBlob).dataset.get))
-      ))
-    ) yield new DatasetVersion(clientSet, this, response.dataset_version.get)
-  }
+  def createPathVersion(paths: List[String])(implicit ec: ExecutionContext): Try[DatasetVersion] =
+    PathBlob(paths).flatMap(createVersionFromBlob)
 
   /** Creates S3 dataset version.
    *  @param paths S3 locations.
    *  @return Dataset version from S3 locations.
    */
-  def createS3Version(locations: List[S3Location])(implicit ec: ExecutionContext): Try[DatasetVersion] = {
-    for (
-      s3Blob <- S3(locations);
-      response <- clientSet.datasetVersionService.DatasetVersionService_createDatasetVersion(ModeldbCreateDatasetVersion(
-        dataset_id = Some(id),
-        dataset_blob = Some(convertModel(S3.toVersioningBlob(s3Blob).dataset.get))
-      ))
-    ) yield new DatasetVersion(clientSet, this, response.dataset_version.get)
-  }
+  def createS3Version(locations: List[S3Location])(implicit ec: ExecutionContext): Try[DatasetVersion] =
+    S3(locations).flatMap(createVersionFromBlob)
 
   /** Gets a version of the dataset by its ID.
    *  @param id ID of the dataset version.
