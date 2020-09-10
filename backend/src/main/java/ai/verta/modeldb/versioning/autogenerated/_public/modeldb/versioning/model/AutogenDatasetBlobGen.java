@@ -23,6 +23,10 @@ public class AutogenDatasetBlobGen extends Generator<AutogenDatasetBlob> {
       obj.setPath(Utils.removeEmpty(gen().type(AutogenPathDatasetBlob.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
+      obj.setQuery(
+          Utils.removeEmpty(gen().type(AutogenQueryDatasetBlob.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
       obj.setS3(Utils.removeEmpty(gen().type(AutogenS3DatasetBlob.class).generate(r, status)));
     }
     return obj;

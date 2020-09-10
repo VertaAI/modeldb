@@ -206,6 +206,46 @@ public class DiffAndMerge {
   }
 
   @Property
+  public void diffAndMergeAutogenQueryDataset(AutogenQueryDatasetBlob a, AutogenQueryDatasetBlob b)
+      throws ModelDBException {
+    AutogenQueryDatasetBlob newA = enforceOneof(a);
+    AutogenQueryDatasetBlob newB = enforceOneof(b);
+    AutogenQueryDatasetDiff d = DiffComputer.computeQueryDatasetDiff(newA, newB);
+
+    // Applying the diff on top of the original A should get original B
+    AutogenQueryDatasetBlob diffedB = DiffMerger.mergeQueryDataset(newA, d, new HashSet<String>());
+    assertEquals(newB, diffedB);
+
+    HashSet<String> conflictSet = new HashSet<String>();
+    // Reapplying the diff should not change the result
+    diffedB = DiffMerger.mergeQueryDataset(diffedB, d, conflictSet);
+    if (conflictSet.isEmpty()) {
+      assertEquals(newB, diffedB);
+    }
+  }
+
+  @Property
+  public void diffAndMergeAutogenQueryDatasetComponent(
+      AutogenQueryDatasetComponentBlob a, AutogenQueryDatasetComponentBlob b)
+      throws ModelDBException {
+    AutogenQueryDatasetComponentBlob newA = enforceOneof(a);
+    AutogenQueryDatasetComponentBlob newB = enforceOneof(b);
+    AutogenQueryDatasetComponentDiff d = DiffComputer.computeQueryDatasetComponentDiff(newA, newB);
+
+    // Applying the diff on top of the original A should get original B
+    AutogenQueryDatasetComponentBlob diffedB =
+        DiffMerger.mergeQueryDatasetComponent(newA, d, new HashSet<String>());
+    assertEquals(newB, diffedB);
+
+    HashSet<String> conflictSet = new HashSet<String>();
+    // Reapplying the diff should not change the result
+    diffedB = DiffMerger.mergeQueryDatasetComponent(diffedB, d, conflictSet);
+    if (conflictSet.isEmpty()) {
+      assertEquals(newB, diffedB);
+    }
+  }
+
+  @Property
   public void diffAndMergeAutogenS3Dataset(AutogenS3DatasetBlob a, AutogenS3DatasetBlob b)
       throws ModelDBException {
     AutogenS3DatasetBlob newA = enforceOneof(a);
