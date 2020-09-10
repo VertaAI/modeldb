@@ -123,26 +123,28 @@ class Client(conn: ClientConnection) {
    *  @return the retrieved or created dataset.
    */
   def getOrCreateDataset(name: String, workspace: Option[String] = None)(implicit ec: ExecutionContext): Try[Dataset] =
-    GetOrCreateEntity.getOrCreate[Dataset](
-      get = () => {
-        clientSet.datasetService.DatasetService_getDatasetByName(
-          name = Some(name),
-          workspace_name = Some(workspace.getOrElse(getPersonalWorkspace()))
-        ).flatMap(r => {
-          if (r.dataset_by_user.isDefined)
-            Success(new Dataset(clientSet, r.dataset_by_user.get))
-          else if (r.shared_datasets.isDefined && r.shared_datasets.get.length > 0)
-            Success(new Dataset(clientSet, r.shared_datasets.get(0)))
-          else
-            Failure(new IllegalArgumentException("No dataset with such name exists."))
-        })
-      },
-      create = () => {
-        clientSet.datasetService.DatasetService_createDataset(ModeldbCreateDataset(
-          name = Some(name),
-          workspace_name = Some(workspace.getOrElse(getPersonalWorkspace()))
-        )).map(r => new Dataset(clientSet, r.dataset.get))
-      }
+    processWorkspace(workspace).flatMap(workspace =>
+      GetOrCreateEntity.getOrCreate[Dataset](
+        get = () => {
+          clientSet.datasetService.DatasetService_getDatasetByName(
+            name = Some(name),
+            workspace_name = Some(workspace)
+          ).flatMap(r => {
+            if (r.dataset_by_user.isDefined)
+              Success(new Dataset(clientSet, r.dataset_by_user.get))
+            else if (r.shared_datasets.isDefined && r.shared_datasets.get.length > 0)
+              Success(new Dataset(clientSet, r.shared_datasets.get(0)))
+            else
+              Failure(new IllegalArgumentException("No dataset with such name exists."))
+          })
+        },
+        create = () => {
+          clientSet.datasetService.DatasetService_createDataset(ModeldbCreateDataset(
+            name = Some(name),
+            workspace_name = Some(workspace)
+          )).map(r => new Dataset(clientSet, r.dataset.get))
+        }
+      )
     )
 
   /** Gets a dataset by its id.
@@ -159,17 +161,19 @@ class Client(conn: ClientConnection) {
    *  @return the retrieved dataset, if exists.
    */
   def getDatasetByName(name: String, workspace: Option[String]=None)(implicit ec: ExecutionContext): Try[Dataset] =
-    clientSet.datasetService.DatasetService_getDatasetByName(
-      name = Some(name),
-      workspace_name = Some(workspace.getOrElse(getPersonalWorkspace()))
-    ).flatMap(r => {
-      if (r.dataset_by_user.isDefined)
-        Success(new Dataset(clientSet, r.dataset_by_user.get))
-      else if (r.shared_datasets.isDefined && r.shared_datasets.get.length > 0)
-        Success(new Dataset(clientSet, r.shared_datasets.get(0)))
-      else
-        Failure(new IllegalArgumentException("No dataset with such name exists."))
-    })
+    processWorkspace(workspace).flatMap(workspace =>
+      clientSet.datasetService.DatasetService_getDatasetByName(
+        name = Some(name),
+        workspace_name = Some(workspace)
+      ).flatMap(r => {
+        if (r.dataset_by_user.isDefined)
+          Success(new Dataset(clientSet, r.dataset_by_user.get))
+        else if (r.shared_datasets.isDefined && r.shared_datasets.get.length > 0)
+          Success(new Dataset(clientSet, r.shared_datasets.get(0)))
+        else
+          Failure(new IllegalArgumentException("No dataset with such name exists."))
+      })
+    )
 
   /** Deletes the dataset.
    *  @param id id of the dataset.
