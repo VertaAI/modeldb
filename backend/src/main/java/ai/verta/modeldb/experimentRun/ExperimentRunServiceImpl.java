@@ -1303,7 +1303,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         s3Key -> artifactStoreDAO.initializeMultipart(s3Key));
   }
 
-  private String getUrlForCode(GetUrlForArtifact request) throws InvalidProtocolBufferException {
+  private String getUrlForCode(GetUrlForArtifact request)
+      throws InvalidProtocolBufferException, ModelDBException {
     ExperimentRun exprRun = experimentRunDAO.getExperimentRun(request.getId());
     String s3Key = null;
     /*If code version is not logged at a lower level we check for code at the higher level

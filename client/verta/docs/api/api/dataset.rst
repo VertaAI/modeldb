@@ -20,10 +20,8 @@ Dataset Version Creation
     :noindex:
 .. automethod:: verta._dataset.S3Dataset.create_version
     :noindex:
-.. automethod:: verta._dataset.AtlasHiveDataset.create_version
-    :noindex:
-.. automethod:: verta._dataset.BigQueryDataset.create_version
-    :noindex:
+.. autoclass:: verta._dataset.DatasetVersion
+    :members:
 
 
 Dataset Version Logging and Retrieval
