@@ -20,16 +20,19 @@ class Client(conn: ClientConnection) {
 
   def close() = httpClient.close()
 
-  def getOrCreateProject(name: String, workspace: String = "")(implicit ec: ExecutionContext) = {
-    GetOrCreateEntity.getOrCreate[Project](
-      get = () => {
-        clientSet.projectService.ProjectService_getProjectByName(name = Some(name), workspace_name = Some(workspace))
-          .map(r => new Project(clientSet, r.project_by_user.get))
-      },
-      create = () => {
-        clientSet.projectService.ProjectService_createProject(ModeldbCreateProject(name = Some(name), workspace_name = Some(workspace)))
-          .map(r => new Project(clientSet, r.project.get))
-      })
+  def getOrCreateProject(name: String, workspace: Option[String] = None)(implicit ec: ExecutionContext) = {
+    processWorkspace(workspace).flatMap(workspace =>
+      GetOrCreateEntity.getOrCreate[Project](
+        get = () => {
+          clientSet.projectService.ProjectService_getProjectByName(name = Some(name), workspace_name = Some(workspace))
+            .map(r => new Project(clientSet, r.project_by_user.get))
+        },
+        create = () => {
+          clientSet.projectService.ProjectService_createProject(ModeldbCreateProject(name = Some(name), workspace_name = Some(workspace)))
+            .map(r => new Project(clientSet, r.project.get))
+        }
+      )
+    )
   }
 
   def getProject(id: String)(implicit ec: ExecutionContext) = {
