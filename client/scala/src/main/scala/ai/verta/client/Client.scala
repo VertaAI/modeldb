@@ -71,22 +71,23 @@ class Client(conn: ClientConnection) {
    * @param workspace Workspace under which the Repository with name name exists. If not provided, the current user’s personal workspace will be used.
    */
   def getOrCreateRepository(name: String, workspace: Option[String] = None)(implicit ec: ExecutionContext) = {
-    GetOrCreateEntity.getOrCreate[Repository](
-      get = () => {
-        clientSet.versioningService.VersioningService_GetRepository(
-          id_named_id_workspace_name = workspace.getOrElse(getPersonalWorkspace()),
-          id_named_id_name = name
-        ).map(r => new Repository(clientSet, r.repository.get))
-      },
-      create = () => {
-        clientSet.versioningService.VersioningService_CreateRepository(
-          id_named_id_workspace_name = workspace.getOrElse(getPersonalWorkspace()),
-          body = VersioningRepository(
-            name = Some(name),
-            workspace_id = workspace
-          )
-        ).map(r => new Repository(clientSet, r.repository.get))
-      }
+    processWorkspace(workspace).flatMap(workspace =>
+      GetOrCreateEntity.getOrCreate[Repository](
+        get = () => {
+          clientSet.versioningService.VersioningService_GetRepository(
+            id_named_id_workspace_name = workspace,
+            id_named_id_name = name
+          ).map(r => new Repository(clientSet, r.repository.get))
+        },
+        create = () => {
+          clientSet.versioningService.VersioningService_CreateRepository(
+            id_named_id_workspace_name = workspace,
+            body = VersioningRepository(
+              name = Some(name)
+            )
+          ).map(r => new Repository(clientSet, r.repository.get))
+        }
+      )
     )
   }
 
@@ -110,9 +111,20 @@ class Client(conn: ClientConnection) {
     ).map(_ => ())
   }
 
-  /** Get the user's personal workspace. Currently, only returns "personal"
+  private def processWorkspace(workspace: Option[String])(implicit ec: ExecutionContext): Try[String] =
+    if (workspace.isDefined)
+      Success(workspace.get)
+    else
+      getPersonalWorkspace()
+
+  /** Get the user's personal workspace name.
    */
-  private def getPersonalWorkspace()(implicit ec: ExecutionContext): String = {
-    "personal"
+  private def getPersonalWorkspace()(implicit ec: ExecutionContext): Try[String] = {
+    if (conn.auth.email.isEmpty)
+      Success("personal")
+    else
+      clientSet.uacService.UACService_getUser(email = Some(conn.auth.email))
+        .map(response => response.verta_info.get)
+        .map(info => info.username.get)
   }
 }
