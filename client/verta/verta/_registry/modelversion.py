@@ -273,9 +273,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         if not extension:
             try:
-                _extension = _artifact_utils.get_file_ext(artifact_stream)
+                extension = _artifact_utils.get_file_ext(artifact_stream)
             except (TypeError, ValueError):
-                _extension = _artifact_utils.ext_from_method(method)
+                extension = _artifact_utils.ext_from_method(method)
 
         artifact_msg = self._create_artifact_msg(key, artifact_stream, artifact_type=artifact_type, extension=extension)
         if same_key_ind == -1:
