@@ -250,12 +250,12 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
-        self._log_artifact(key, artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, overwrite=overwrite)
-
-    def _log_artifact(self, key, artifact, artifact_type, extension=None, method=None, overwrite=False):
         if key == "model":
             raise ValueError("the key \"model\" is reserved for model; consider using log_model() instead")
 
+        self._log_artifact(key, artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, overwrite=overwrite)
+
+    def _log_artifact(self, key, artifact, artifact_type, extension=None, method=None, overwrite=False):
         self._fetch_with_no_cache()
         same_key_ind = -1
 
