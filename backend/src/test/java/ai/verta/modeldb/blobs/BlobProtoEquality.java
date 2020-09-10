@@ -315,6 +315,24 @@ public class BlobProtoEquality {
   }
 
   @Property
+  public void protoEqualityAutogenQueryDatasetBlob(AutogenQueryDatasetBlob b)
+      throws ModelDBException {
+    AutogenQueryDatasetBlob newb = enforceOneof(b);
+    AutogenQueryDatasetBlob other =
+        newb == null ? null : AutogenQueryDatasetBlob.fromProto(newb.toProto().build());
+    assertEquals(newb, other);
+  }
+
+  @Property
+  public void protoEqualityAutogenQueryDatasetComponentBlob(AutogenQueryDatasetComponentBlob b)
+      throws ModelDBException {
+    AutogenQueryDatasetComponentBlob newb = enforceOneof(b);
+    AutogenQueryDatasetComponentBlob other =
+        newb == null ? null : AutogenQueryDatasetComponentBlob.fromProto(newb.toProto().build());
+    assertEquals(newb, other);
+  }
+
+  @Property
   public void protoEqualityAutogenS3DatasetBlob(AutogenS3DatasetBlob b) throws ModelDBException {
     AutogenS3DatasetBlob newb = enforceOneof(b);
     AutogenS3DatasetBlob other =
