@@ -7,7 +7,6 @@ import net.liftweb.json._
 
 import ai.verta.blobs.dataset.{PathBlob, S3, S3Location}
 import ai.verta.swagger._public.modeldb.model._
-// import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.swagger.client.ClientSet
 
 /** Represents a ModelDB dataset.
