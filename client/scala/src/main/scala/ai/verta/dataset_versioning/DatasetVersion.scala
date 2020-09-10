@@ -9,7 +9,7 @@ import ai.verta.swagger._public.modeldb.model._
 import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.swagger.client.ClientSet
 
-/** Represents a ModelDB dataset version from path.
+/** Represents a ModelDB dataset version.
  */
 class DatasetVersion(
   private val clientSet: ClientSet,
