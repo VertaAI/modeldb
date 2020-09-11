@@ -30,6 +30,7 @@ public abstract class BlobFactory {
     switch (folderElementEntity.getElement_type()) {
       case S_3_DATASET_BLOB:
       case PATH_DATASET_BLOB:
+      case QUERY_DATASET_BLOB:
         return new DatasetBlobFactory(folderElementEntity);
       case PYTHON_ENVIRONMENT_BLOB:
       case DOCKER_ENVIRONMENT_BLOB:

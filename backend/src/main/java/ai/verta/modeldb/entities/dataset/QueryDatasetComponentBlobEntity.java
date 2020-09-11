@@ -31,7 +31,7 @@ public class QueryDatasetComponentBlobEntity {
   @Column(name = "query", columnDefinition = "TEXT")
   private String query;
 
-  @Column(name = "data_source_uri")
+  @Column(name = "data_source_uri", columnDefinition = "TEXT")
   private String data_source_uri;
 
   @Column(name = "execution_timestamp")

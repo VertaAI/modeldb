@@ -85,6 +85,7 @@ public class DatasetContainer extends BlobContainer {
         break;
       case QUERY:
         blobHash = saveQueryDatasetBlob(session, dataset.getQuery(), blobHashes);
+        break;
       default:
         throw new ModelDBException("Unknown blob type", Code.INTERNAL);
     }
