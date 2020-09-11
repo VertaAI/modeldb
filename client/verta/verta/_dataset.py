@@ -525,9 +525,9 @@ class DatasetVersion(object):
         self._dataset_type = dataset_version.dataset_type
         self.dataset_version = dataset_version
 
-        version_info_field = 'dataset_version_info'
-        if dataset_version.HasField(version_info_field):
-            self.dataset_version_info = getattr(dataset_version, dataset_version.WhichOneof(version_info_field))
+        version_info_oneof = dataset_version.WhichOneof('dataset_version_info')
+        if version_info_oneof:
+            self.dataset_version_info = getattr(dataset_version, version_info_oneof)
         else:
             self.dataset_version_info = None
 
@@ -662,10 +662,9 @@ class DatasetVersion(object):
 
         blob = self.dataset_version.dataset_blob
 
-        content_field = 'content'
-        if blob.HasField(content_field):
+        content_oneof = blob.WhichOneof('content')
+        if content_oneof:
             # determine component type
-            content_oneof = blob.WhichOneof('content')
             if content_oneof == "s3":
                 component_cls = _dataset.S3Component
             elif content_oneof == "path":

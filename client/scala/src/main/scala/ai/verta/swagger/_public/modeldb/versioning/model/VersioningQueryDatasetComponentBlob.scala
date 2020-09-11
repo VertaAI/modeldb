@@ -14,21 +14,23 @@ import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
-case class VersioningDatasetBlob (
-  path: Option[VersioningPathDatasetBlob] = None,
-  query: Option[VersioningQueryDatasetBlob] = None,
-  s3: Option[VersioningS3DatasetBlob] = None
+case class VersioningQueryDatasetComponentBlob (
+  data_source_uri: Option[String] = None,
+  execution_timestamp: Option[BigInt] = None,
+  num_records: Option[BigInt] = None,
+  query: Option[String] = None
 ) extends BaseSwagger {
-  def toJson(): JValue = VersioningDatasetBlob.toJson(this)
+  def toJson(): JValue = VersioningQueryDatasetComponentBlob.toJson(this)
 }
 
-object VersioningDatasetBlob {
-  def toJson(obj: VersioningDatasetBlob): JObject = {
+object VersioningQueryDatasetComponentBlob {
+  def toJson(obj: VersioningQueryDatasetComponentBlob): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.path.map(x => JField("path", ((x: VersioningPathDatasetBlob) => VersioningPathDatasetBlob.toJson(x))(x))),
-        obj.query.map(x => JField("query", ((x: VersioningQueryDatasetBlob) => VersioningQueryDatasetBlob.toJson(x))(x))),
-        obj.s3.map(x => JField("s3", ((x: VersioningS3DatasetBlob) => VersioningS3DatasetBlob.toJson(x))(x)))
+        obj.data_source_uri.map(x => JField("data_source_uri", JString(x))),
+        obj.execution_timestamp.map(x => JField("execution_timestamp", JInt(x))),
+        obj.num_records.map(x => JField("num_records", JInt(x))),
+        obj.query.map(x => JField("query", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -36,15 +38,16 @@ object VersioningDatasetBlob {
     )
   }
 
-  def fromJson(value: JValue): VersioningDatasetBlob =
+  def fromJson(value: JValue): VersioningQueryDatasetComponentBlob =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
-        VersioningDatasetBlob(
+        VersioningQueryDatasetComponentBlob(
           // TODO: handle required
-          path = fieldsMap.get("path").map(VersioningPathDatasetBlob.fromJson),
-          query = fieldsMap.get("query").map(VersioningQueryDatasetBlob.fromJson),
-          s3 = fieldsMap.get("s3").map(VersioningS3DatasetBlob.fromJson)
+          data_source_uri = fieldsMap.get("data_source_uri").map(JsonConverter.fromJsonString),
+          execution_timestamp = fieldsMap.get("execution_timestamp").map(JsonConverter.fromJsonInteger),
+          num_records = fieldsMap.get("num_records").map(JsonConverter.fromJsonInteger),
+          query = fieldsMap.get("query").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
