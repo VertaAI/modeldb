@@ -1452,19 +1452,11 @@ public class Visitor {
   public void preVisitAutogenPathDatasetComponentBlob(AutogenPathDatasetComponentBlob blob)
       throws ModelDBException {}
 
-  public void preVisitAutogenQueryDatasetComponentBlob(AutogenQueryDatasetComponentBlob blob)
-      throws ModelDBException {}
-
   public void preVisitDeepAutogenPathDatasetComponentBlob(AutogenPathDatasetComponentBlob blob)
       throws ModelDBException {}
 
   public AutogenPathDatasetComponentBlob postVisitAutogenPathDatasetComponentBlob(
       AutogenPathDatasetComponentBlob blob) throws ModelDBException {
-    return blob;
-  }
-
-  public AutogenQueryDatasetComponentBlob postVisitAutogenQueryDatasetComponentBlob(
-      AutogenQueryDatasetComponentBlob blob) throws ModelDBException {
     return blob;
   }
 
