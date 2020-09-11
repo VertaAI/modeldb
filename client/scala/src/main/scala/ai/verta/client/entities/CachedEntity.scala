@@ -14,12 +14,12 @@ trait CachedEntity[T] {
     val now = System.currentTimeMillis()
 
     if (cachedTime.isFailure || now - cachedTime.get > 5000)
-      refreshCache()
+      refreshCache(now)
 
     cachedMessage
   }
 
-  def refreshCache(): Unit = fetchMessage() match {
+  def refreshCache(now: Long): Unit = fetchMessage() match {
     case Success(m) => {
       cachedTime = Success(now)
       cachedMessage = Success(m)
