@@ -11,18 +11,23 @@ trait CachedEntity[T] {
   protected var cachedTime: Try[Long] // time of last cache
 
   private def getMessage()(implicit ec: ExecutionContext): Try[T] = {
-    val curTime = System.currentTimeMillis()
+    val now = System.currentTimeMillis()
 
-    if (cachedTime.isFailure || curTime - cachedTime.get > 5000) {
-      fetchMessage().flatMap(message => {
-        cachedTime = Success(curTime)
-        cachedMessage = Success(message)
+    if (cachedTime.isFailure || now - cachedTime.get > 5000)
+      refreshCache()
 
-        cachedMessage
-      })
+    cachedMessage
+  }
+
+  def refreshCache(): Unit = fetchMessage() match {
+    case Success(m) => {
+      cachedTime = Success(now)
+      cachedMessage = Success(m)
     }
-    else
-      cachedMessage
+    case Failure(e) => {
+      cachedTime = Failure(e)
+      cachedMessage = Failure(e)
+    }
   }
 
   private def clearCache(): Unit = {
