@@ -5,7 +5,7 @@ import scala.util.{Failure, Success, Try}
 
 
 trait CachedEntity[T] {
-  // T is type of Message
+  // T is type of the cached message
 
   // Needs to supply these when create subclass:
   protected var cachedMessage: Try[T] // current version of the cached message
@@ -22,6 +22,7 @@ trait CachedEntity[T] {
     cachedMessage
   }
 
+  // refresh current cached value.
   private def refreshCache(now: Long)(implicit ec: ExecutionContext): Unit = fetchMessage() match {
     case Success(m) => {
       cachedTime = Success(now)
@@ -33,6 +34,7 @@ trait CachedEntity[T] {
     }
   }
 
+  // clear current cached value.
   protected def clearCache(): Unit = {
     cachedMessage = Failure(new IllegalStateException("Cache has been cleared."))
     cachedTime = Failure(new IllegalStateException("Cache has been cleared."))
