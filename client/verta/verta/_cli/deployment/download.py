@@ -8,22 +8,22 @@ from verta._cli.deployment import deployment
 
 @deployment.group(name="download")
 def download():
-    """Create a new entry.
+    """Download resources relating to deployment.
 
     For example, to download the Docker context for a model version, run
 
-    `verta registry download dockercontext BERT latest`
+    `verta registry download dockercontext -m "<model version id>"`
 
     """
     pass
 
 
 @download.command(name="dockercontext")
-@click.option("--run-id", "-r", help="Experiment Run ID")
 @click.option("--model-version-id", "-m", help="Model Version ID")
 @click.option("--output", "-o", required=True, help="Filepath to write to")
+@click.option("--run-id", "-r", help="Experiment Run ID")
 def download_docker_context(run_id, model_version_id, output):
-    """Download registeredmodelversion's or experiment run's context entry.
+    """Download a registered model version's or experiment run's context entry.
     """
     client = Client()
 

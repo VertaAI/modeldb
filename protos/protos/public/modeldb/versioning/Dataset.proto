@@ -9,10 +9,29 @@ import "modeldb/versioning/Enums.proto";
 
 message DatasetBlob {
     oneof content {
-        S3DatasetBlob s3 = 1;     // Blob of the type S3 dataset
-        PathDatasetBlob path = 2; // Blob of the type path dataset
+        S3DatasetBlob s3 = 1;       // Blob of the type S3 dataset
+        PathDatasetBlob path = 2;   // Blob of the type path dataset
+        QueryDatasetBlob query = 3; // Blob of the type Query dataset
     }
 }
+
+message QueryDatasetBlob {
+    repeated QueryDatasetComponentBlob components = 1;
+}
+message QueryDatasetComponentBlob {
+    string query = 1;
+    // string query_template = 2;
+    // repeated QueryParameter query_parameters = 3;
+    string data_source_uri = 4;
+    uint64 execution_timestamp = 5;
+    uint64 num_records = 6;
+}
+
+// message QueryParameter {
+//     string parameter_name = 1;
+//     common.ValueTypeEnum.ValueType parameter_type = 2;
+//     google.protobuf.Value value = 3;
+// }
 
 message PathDatasetComponentBlob {
     string path = 1; // Full path to the file

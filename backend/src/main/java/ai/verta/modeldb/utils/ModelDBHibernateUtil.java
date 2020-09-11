@@ -8,6 +8,7 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
+import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.ArtifactStoreMapping;
@@ -230,6 +231,10 @@ public class ModelDBHibernateUtil {
         settings.put(Environment.DIALECT, rDBDialect);
         settings.put(Environment.HBM2DDL_AUTO, "validate");
         settings.put(Environment.SHOW_SQL, "false");
+        settings.put("hibernate.c3p0.testConnectionOnCheckin", "true");
+        // Reduce this time period if stale connections still exist
+        settings.put("hibernate.c3p0.idleConnectionTestPeriod", "100");
+        settings.put("hibernate.c3p0.preferredTestQuery", "Select 1");
         configuration.setProperties(settings);
 
         LOGGER.trace("connectionString {}", connectionString);
@@ -293,6 +298,7 @@ public class ModelDBHibernateUtil {
 
   private static SessionFactory loopBack(SessionFactory sessionFactory) {
     try {
+      LOGGER.debug("ModelDBHibernateUtil checking DB connection");
       boolean dbConnectionLive =
           checkDBConnection(
               rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
@@ -670,6 +676,21 @@ public class ModelDBHibernateUtil {
                             CompletableFuture.supplyAsync(
                                 () -> {
                                   OwnerRoleBindingRepositoryUtils.execute();
+                                  return true;
+                                });
+                        completableFutures[index] = futureTask;
+                        index = index + 1;
+                      }
+                      if (migrationName.equals(ModelDBConstants.POPULATE_VERSION_MIGRATION)) {
+                        // Manual migration for populate RoleBinding of repository
+                        CompletableFuture<Boolean> futureTask =
+                            CompletableFuture.supplyAsync(
+                                () -> {
+                                  int recordUpdateLimit =
+                                      (int)
+                                          migrationDetailMap.getOrDefault(
+                                              ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+                                  PopulateVersionMigration.execute(recordUpdateLimit);
                                   return true;
                                 });
                         completableFutures[index] = futureTask;

@@ -35,6 +35,7 @@ import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import com.mysql.cj.exceptions.CJCommunicationsException;
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
@@ -493,13 +494,25 @@ public class ModelDBUtils {
   public static boolean needToRetry(Exception ex) {
     Throwable communicationsException = findCommunicationsFailedCause(ex);
     if ((communicationsException.getCause() instanceof CommunicationsException)
-        || (communicationsException.getCause() instanceof SocketException)) {
+        || (communicationsException.getCause() instanceof SocketException)
+        || (communicationsException.getCause() instanceof CJCommunicationsException)) {
       LOGGER.warn(communicationsException.getMessage());
+      LOGGER.warn(
+          "Detected communication exception of type {}",
+          communicationsException.getCause().getClass());
       if (ModelDBHibernateUtil.checkDBConnection()) {
+        LOGGER.info("Resetting session Factory");
+
         ModelDBHibernateUtil.resetSessionFactory();
+        LOGGER.info("Resetted session Factory");
+      } else {
+        LOGGER.warn("DB could not be reached");
       }
       return true;
     }
+    LOGGER.warn(
+        "Detected exception of type {}, which is not categorized as retryable",
+        communicationsException.getCause().getClass());
     return false;
   }
 
@@ -509,7 +522,8 @@ public class ModelDBUtils {
     }
     Throwable rootCause = throwable;
     while (rootCause.getCause() != null
-        && !(rootCause.getCause() instanceof CommunicationsException
+        && !(rootCause.getCause() instanceof CJCommunicationsException
+            || rootCause.getCause() instanceof CommunicationsException
             || rootCause.getCause() instanceof SocketException)) {
       rootCause = rootCause.getCause();
     }
@@ -646,5 +660,14 @@ public class ModelDBUtils {
   public static boolean isEnvSet(String envVar) {
     String envVarVal = System.getenv(envVar);
     return envVarVal != null && !envVarVal.isEmpty();
+  }
+
+  public static void validateEntityNameWithColonAndSlash(String name) throws ModelDBException {
+    if (name != null
+        && !name.isEmpty()
+        && (name.contains(":") || name.contains("/") || name.contains("\\"))) {
+      throw new ModelDBException(
+          "Name can not contain ':' or '/' or '\\\\'", Code.INVALID_ARGUMENT);
+    }
   }
 }
