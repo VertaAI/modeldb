@@ -71,4 +71,5 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
       dataset_id = Some(id)
     )
       .map(response => new DatasetVersion(clientSet, this, response.dataset_version.get))
+
 }

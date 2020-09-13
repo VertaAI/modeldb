@@ -232,7 +232,7 @@ public class ModelDBHibernateUtil {
         settings.put(Environment.HBM2DDL_AUTO, "validate");
         settings.put(Environment.SHOW_SQL, "false");
         settings.put("hibernate.c3p0.testConnectionOnCheckin", "true");
-        //Reduce this time period if stale connections still exist
+        // Reduce this time period if stale connections still exist
         settings.put("hibernate.c3p0.idleConnectionTestPeriod", "100");
         settings.put("hibernate.c3p0.preferredTestQuery", "Select 1");
         configuration.setProperties(settings);

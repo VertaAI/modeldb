@@ -45,6 +45,40 @@ class TestDataset extends FunSuite {
 
       assert(latestVersion.id == newVersion.id)
       assert(latestVersion.id != version.id)
+    }
+  }
+
+  test("retrieve dataset by id") {
+    val f = fixture
+
+    try {
+      assert(f.client.getDatasetById(f.dataset.id).get.id == f.dataset.id)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("retrieve dataset by name") {
+    val f = fixture
+
+    try {
+      assert(f.client.getDatasetByName(f.dataset.name).get.id == f.dataset.id)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("retrieve dataset with wrong name or id should fail") {
+    val f = fixture
+
+    try {
+      val getByNameAttempt = f.client.getDatasetByName("wrong-name")
+      assert(getByNameAttempt match {
+        case Failure(e) => e.getMessage contains "not found"
+      })
+
+      val getByIdAttempt = f.client.getDatasetById("wrong-id")
+      assert(getByIdAttempt.isFailure) // message differs in OSS and dev setup.
     } finally {
       cleanup(f)
     }
