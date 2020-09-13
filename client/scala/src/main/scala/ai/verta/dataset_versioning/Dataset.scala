@@ -59,6 +59,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
    */
   def getAttribute(key: String)(implicit ec: ExecutionContext): Try[Option[ValueType]] =
     getAttributes().map(attributes => attributes.get(key))
+
   private def convertModel(
     datasetMessage: ai.verta.swagger._public.modeldb.versioning.model.VersioningDatasetBlob
   ): VersioningDatasetBlob = modelFromJson(modelToJson(datasetMessage))
@@ -112,5 +113,4 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
       dataset_id = Some(id)
     )
       .map(response => new DatasetVersion(clientSet, this, response.dataset_version.get))
-
 }

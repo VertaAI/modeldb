@@ -44,6 +44,9 @@ class TestDataset extends FunSuite {
       assert(f.dataset.getAttributes().get.equals(
         Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
       ))
+    }
+  }
+  
   test("retrieve dataset version") {
     val f = fixture
 
