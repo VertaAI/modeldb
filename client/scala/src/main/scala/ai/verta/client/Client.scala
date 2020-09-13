@@ -127,7 +127,7 @@ class Client(conn: ClientConnection) {
     if (conn.auth.email.isEmpty)
       Success("personal")
     else // Assume that if email is set, then it's not OSS setup.
-      clientSet.uacService.UACService_getUser(email = Some(conn.auth.email))
+      clientSet.uacService.UACService_getCurrentUser()
         .map(response => response.verta_info.get)
         .map(info => info.username.get)
   }
