@@ -236,7 +236,6 @@ class Endpoint(object):
                 status_dict = self.get_status()
 
             print()
-            # is this check necessary?
             if status_dict["status"] == "error":
                 failure_msg = status_dict['components'][0].get('message', "no error message available")
                 raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
