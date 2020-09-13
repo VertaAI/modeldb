@@ -3125,6 +3125,9 @@
         },
         "path": {
           "$ref": "#/definitions/versioningPathDatasetDiff"
+        },
+        "query": {
+          "$ref": "#/definitions/versioningQueryDatasetDiff"
         }
       }
     },
@@ -3936,6 +3939,34 @@
         "num_records": {
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "versioningQueryDatasetComponentDiff": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/DiffStatusEnumDiffStatus"
+        },
+        "A": {
+          "$ref": "#/definitions/versioningQueryDatasetComponentBlob"
+        },
+        "B": {
+          "$ref": "#/definitions/versioningQueryDatasetComponentBlob"
+        },
+        "C": {
+          "$ref": "#/definitions/versioningQueryDatasetComponentBlob"
+        }
+      }
+    },
+    "versioningQueryDatasetDiff": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningQueryDatasetComponentDiff"
+          }
         }
       }
     },

@@ -216,6 +216,27 @@ public class DiffComputer {
         new AutogenPathDatasetComponentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
+  public static AutogenQueryDatasetDiff computeQueryDatasetDiff(
+      AutogenQueryDatasetBlob a, AutogenQueryDatasetBlob b) {
+    return Utils.removeEmpty(
+        new AutogenQueryDatasetDiff()
+            .setComponents(
+                computeListDiff(
+                    a,
+                    b,
+                    AutogenQueryDatasetBlob::getComponents,
+                    x -> x.toString(), // Revisit
+                    DiffComputer::computeQueryDatasetComponentDiff)));
+  }
+
+  public static AutogenQueryDatasetComponentDiff computeQueryDatasetComponentDiff(
+      AutogenQueryDatasetComponentBlob a, AutogenQueryDatasetComponentBlob b) {
+    if (a == null && b == null) return null;
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    return Utils.removeEmpty(
+        new AutogenQueryDatasetComponentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
+  }
+
   public static AutogenS3DatasetDiff computeS3DatasetDiff(
       AutogenS3DatasetBlob a, AutogenS3DatasetBlob b) {
     return Utils.removeEmpty(

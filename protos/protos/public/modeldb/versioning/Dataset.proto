@@ -61,7 +61,19 @@ message DatasetDiff {
     oneof content {
         S3DatasetDiff s3 = 1;
         PathDatasetDiff path = 2;
+        QueryDatasetDiff query = 3;
     }
+}
+
+message QueryDatasetComponentDiff {
+    DiffStatusEnum.DiffStatus status = 1;
+    QueryDatasetComponentBlob A = 2;
+    QueryDatasetComponentBlob B = 3;
+    QueryDatasetComponentBlob C = 4;
+}
+
+message QueryDatasetDiff {
+    repeated QueryDatasetComponentDiff components = 1;
 }
 
 message PathDatasetComponentDiff {

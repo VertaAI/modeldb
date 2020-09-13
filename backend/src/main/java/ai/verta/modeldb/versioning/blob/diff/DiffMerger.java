@@ -330,10 +330,64 @@ public class DiffMerger {
                     null,
                     conflictKeys)));
   }
-
   public static AutogenPathDatasetComponentBlob mergePathDatasetComponent(
-      AutogenPathDatasetComponentBlob a,
-      AutogenPathDatasetComponentDiff d,
+	      AutogenPathDatasetComponentBlob a,
+	      AutogenPathDatasetComponentDiff d,
+	      HashSet<String> conflictKeys) {
+	    return d.getB();
+	  }
+  public static AutogenQueryDatasetBlob mergeQueryDataset(AutogenQueryDatasetBlob a, AutogenQueryDatasetDiff d,
+			HashSet<String> conflictKeys) {
+	    return Utils.removeEmpty(
+	            new AutogenQueryDatasetBlob()
+	                .setComponents(mergeList(
+	                		a, 
+	                		d, 
+	                        AutogenQueryDatasetBlob::getComponents,
+	                        AutogenQueryDatasetDiff::getComponents, 
+	                        AutogenQueryDatasetComponentBlob::ToString, 
+	                        x -> Utils.either(x.getA(), x.getB(), AutogenQueryDatasetComponentBlob::ToString), 
+	                		AutogenQueryDatasetComponentDiff::getStatus, 
+	                		AutogenQueryDatasetComponentDiff::getA,
+	                		AutogenQueryDatasetComponentDiff::getB, null, conflictKeys)
+	                		
+	));
+	}
+  /*
+   * B AutogenQueryDatasetBlob
+   * D AutogenQueryDatasetDiff
+   * DF AutogenQueryDatasetComponentDiff
+   * F AutogenQueryDatasetComponentBlob
+   * 
+	                    mergeList(
+	                        a,
+	                        d,
+	                        AutogenQueryDatasetBlob::getComponents,
+	                        AutogenQueryDatasetDiff::getComponents,
+	                        AutogenQueryDatasetComponentBlob::ToString,
+	                        x -> Utils.either(x.getA(), x.getB(), AutogenQueryDatasetComponentBlob::ToString),
+	                        AutogenQueryDatasetComponentDiff::getStatus,
+	                        AutogenQueryDatasetComponentDiff::getA,
+	                        AutogenQueryDatasetComponentDiff::getB,
+	                        null,
+	                        conflictKeys)*/
+	/*
+	 * (
+B a,
+D d,
+Function<B, List<F>> getterA,
+Function<D, List<DF>> getterD,
+Function<F, String> hasherA,
+Function<DF, String> hasherD,
+Function<DF, AutogenDiffStatusEnumDiffStatus> status,
+Function<DF, F> getA,
+Function<DF, F> getB,
+Function3<Set<F>, DF, F> merger,
+HashSet<String> conflictKeys)*/
+  
+  public static AutogenQueryDatasetComponentBlob mergeQueryDatasetComponent(
+      AutogenQueryDatasetComponentBlob a,
+      AutogenQueryDatasetComponentDiff d,
       HashSet<String> conflictKeys) {
     return d.getB();
   }
