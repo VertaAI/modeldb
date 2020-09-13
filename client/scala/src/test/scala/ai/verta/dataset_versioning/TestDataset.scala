@@ -30,6 +30,26 @@ class TestDataset extends FunSuite {
     f.client.close()
   }
 
+  test("Dataset version tags CRUD") {
+    val f = fixture
+
+    try {
+      val workingDir = System.getProperty("user.dir")
+      val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
+      val version = f.dataset.createPathVersion(List(testDir)).get
+
+      version.addTag("tag-1")
+      version.addTags(List("tag-2", "tag-3"))
+
+      assert(version.getTags().get == List("tag-1", "tag-2", "tag-3"))
+
+      version.delTags(List("tag-2", "tag-4"))
+
+      assert(version.getTags().get == List("tag-1", "tag-3"))
+      } finally {
+      cleanup(f)
+    }
+  }
   test("Dataset tags CRUD") {
     val f = fixture
 
@@ -67,6 +87,8 @@ class TestDataset extends FunSuite {
       assert(version.getAttributes().get.equals(
         Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
       ))
+      } finally {
+      cleanup(f)
     }
   }
 
@@ -86,6 +108,8 @@ class TestDataset extends FunSuite {
       assert(f.dataset.getAttributes().get.equals(
         Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
       ))
+      } finally {
+      cleanup(f)
     }
   }
 
@@ -107,6 +131,8 @@ class TestDataset extends FunSuite {
 
       assert(latestVersion.id == newVersion.id)
       assert(latestVersion.id != version.id)
+      } finally {
+      cleanup(f)
     }
   }
 
