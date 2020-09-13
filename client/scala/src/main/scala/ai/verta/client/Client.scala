@@ -160,7 +160,7 @@ class Client(conn: ClientConnection) {
    *  @param workspace name of the workspace.
    *  @return the retrieved dataset, if exists.
    */
-  def getDatasetByName(name: String, workspace: Option[String]=None)(implicit ec: ExecutionContext): Try[Dataset] =
+  def getDatasetByName(name: String, workspace: Option[String] = None)(implicit ec: ExecutionContext): Try[Dataset] =
     processWorkspace(workspace).flatMap(workspace =>
       clientSet.datasetService.DatasetService_getDatasetByName(
         name = Some(name),
