@@ -21,11 +21,6 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
   /** Name of the dataset. */
   def name: String = dataset.name.get
 
-  /** Add a tag to this dataset.
-   *  @param tag tag to add.
-   */
-  def addTag(tag: String)(implicit ec: ExecutionContext): Try[Unit] = addTags(List(tag))
-
   /** Add multiple tags to this dataset.
    *  @param tags tags to add.
    */
