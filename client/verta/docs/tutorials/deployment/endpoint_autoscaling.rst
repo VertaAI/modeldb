@@ -12,7 +12,7 @@ configuring the endpoint's autoscaling behavior. It can be used alongside any up
 
 .. code-block:: python
 
-    from verta.deployment.update import DirectUpdateStrategy
+    from verta.endpoint.update import DirectUpdateStrategy
 
     endpoint.update(
         model_version, DirectUpdateStrategy(),
