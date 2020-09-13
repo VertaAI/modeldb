@@ -2,6 +2,7 @@ package ai.verta.dataset_versioning
 
 import ai.verta.client._
 import ai.verta.dataset_versioning._
+import ai.verta.blobs.dataset.S3Location
 
 import scala.concurrent.ExecutionContext
 import scala.language.reflectiveCalls
@@ -24,6 +25,27 @@ class TestDataset extends FunSuite {
   ) = {
     f.client.deleteDataset(f.dataset.id)
     f.client.close()
+  }
+
+  test("retrieve dataset version") {
+    val f = fixture
+
+    try {
+      val workingDir = System.getProperty("user.dir")
+      val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
+      val version = f.dataset.createPathVersion(List(testDir)).get
+
+      assert(f.dataset.getVersion(version.id).get.id == version.id)
+      assert(f.dataset.getLatestVersion().get.id == version.id)
+
+      val testfilePath = "s3://verta-scala-test/testdir/testfile"
+      val testfileLoc = S3Location(testfilePath).get
+      val newVersion = f.dataset.createS3Version(List(testfileLoc)).get
+      val latestVersion = f.dataset.getLatestVersion().get
+
+      assert(latestVersion.id == newVersion.id)
+      assert(latestVersion.id != version.id)
+    }
   }
 
   test("retrieve dataset by id") {
