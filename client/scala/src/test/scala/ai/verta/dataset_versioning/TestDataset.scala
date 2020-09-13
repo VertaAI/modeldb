@@ -2,6 +2,8 @@ package ai.verta.dataset_versioning
 
 import ai.verta.client._
 import ai.verta.dataset_versioning._
+import ai.verta.blobs.dataset.S3Location
+import ai.verta.client.entities.utils.ValueType
 import ai.verta.client.entities.utils.ValueType
 import ai.verta.blobs.dataset.S3Location
 
@@ -28,6 +30,29 @@ class TestDataset extends FunSuite {
     f.client.close()
   }
 
+  test("add and retrieve version's attributes") {
+    val f = fixture
+
+    try {
+      val workingDir = System.getProperty("user.dir")
+      val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
+      val version = f.dataset.createPathVersion(List(testDir)).get
+
+      version.addAttribute("some", 0.5)
+      version.addAttribute("int", 4)
+      version.addAttributes(Map("other" -> 0.3, "string" -> "desc"))
+
+      assert(version.getAttribute("some").get.get.asDouble.get equals 0.5)
+      assert(version.getAttribute("other").get.get.asDouble.get equals 0.3)
+      assert(version.getAttribute("int").get.get.asBigInt.get equals 4)
+      assert(version.getAttribute("string").get.get.asString.get equals "desc")
+
+      assert(version.getAttributes().get.equals(
+        Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
+      ))
+    }
+  }
+
   test("add and retrieve attributes") {
     val f = fixture
 
@@ -46,7 +71,7 @@ class TestDataset extends FunSuite {
       ))
     }
   }
-  
+
   test("retrieve dataset version") {
     val f = fixture
 
