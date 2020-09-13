@@ -30,6 +30,23 @@ class TestDataset extends FunSuite {
     f.client.close()
   }
 
+  test("Dataset tags CRUD") {
+    val f = fixture
+
+    try {
+      f.dataset.addTag("tag-1")
+      f.dataset.addTags(List("tag-2", "tag-3"))
+
+      assert(f.dataset.getTags().get == List("tag-1", "tag-2", "tag-3"))
+
+      f.dataset.delTags(List("tag-2", "tag-4"))
+
+      assert(f.dataset.getTags().get == List("tag-1", "tag-3"))
+      } finally {
+      cleanup(f)
+    }
+  }
+
   test("add and retrieve version's attributes") {
     val f = fixture
 
