@@ -1789,6 +1789,112 @@ public class Visitor {
     return null;
   }
 
+  public void preVisitListOfAutogenQueryDatasetBlob(List<AutogenQueryDatasetBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenQueryDatasetBlob val : lst) {
+      preVisitAutogenQueryDatasetBlob(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenQueryDatasetBlob(List<AutogenQueryDatasetBlob> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenQueryDatasetBlob val : lst) {
+      preVisitDeepAutogenQueryDatasetBlob(val);
+    }
+  }
+
+  public List<AutogenQueryDatasetBlob> postVisitListOfAutogenQueryDatasetBlob(
+      List<AutogenQueryDatasetBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenQueryDatasetBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenQueryDatasetBlob val : lst) {
+      collect.add(postVisitAutogenQueryDatasetBlob(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenQueryDatasetBlob> postVisitDeepListOfAutogenQueryDatasetBlob(
+      List<AutogenQueryDatasetBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenQueryDatasetBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenQueryDatasetBlob val : lst) {
+      collect.add(postVisitDeepAutogenQueryDatasetBlob(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenQueryDatasetBlob(AutogenQueryDatasetBlob blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenQueryDatasetBlob(AutogenQueryDatasetBlob blob)
+      throws ModelDBException {}
+
+  public AutogenQueryDatasetBlob postVisitAutogenQueryDatasetBlob(AutogenQueryDatasetBlob blob)
+      throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenQueryDatasetBlob postVisitDeepAutogenQueryDatasetBlob(AutogenQueryDatasetBlob blob)
+      throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenQueryDatasetComponentBlob(
+      List<AutogenQueryDatasetComponentBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenQueryDatasetComponentBlob val : lst) {
+      preVisitAutogenQueryDatasetComponentBlob(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenQueryDatasetComponentBlob(
+      List<AutogenQueryDatasetComponentBlob> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenQueryDatasetComponentBlob val : lst) {
+      preVisitDeepAutogenQueryDatasetComponentBlob(val);
+    }
+  }
+
+  public List<AutogenQueryDatasetComponentBlob> postVisitListOfAutogenQueryDatasetComponentBlob(
+      List<AutogenQueryDatasetComponentBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenQueryDatasetComponentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenQueryDatasetComponentBlob val : lst) {
+      collect.add(postVisitAutogenQueryDatasetComponentBlob(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenQueryDatasetComponentBlob> postVisitDeepListOfAutogenQueryDatasetComponentBlob(
+      List<AutogenQueryDatasetComponentBlob> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenQueryDatasetComponentBlob> collect = new ArrayList<>(lst.size());
+    for (AutogenQueryDatasetComponentBlob val : lst) {
+      collect.add(postVisitDeepAutogenQueryDatasetComponentBlob(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenQueryDatasetComponentBlob(AutogenQueryDatasetComponentBlob blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenQueryDatasetComponentBlob(AutogenQueryDatasetComponentBlob blob)
+      throws ModelDBException {}
+
+  public AutogenQueryDatasetComponentBlob postVisitAutogenQueryDatasetComponentBlob(
+      AutogenQueryDatasetComponentBlob blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenQueryDatasetComponentBlob postVisitDeepAutogenQueryDatasetComponentBlob(
+      AutogenQueryDatasetComponentBlob blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
   public void preVisitListOfAutogenS3DatasetBlob(List<AutogenS3DatasetBlob> lst)
       throws ModelDBException {
     if (lst == null) return;
@@ -2557,6 +2663,14 @@ public class Visitor {
           (T)
               postVisitDeepAutogenPythonRequirementEnvironmentDiff(
                   (AutogenPythonRequirementEnvironmentDiff) b));
+    }
+    if (b instanceof AutogenQueryDatasetBlob) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenQueryDatasetBlob((AutogenQueryDatasetBlob) b));
+    }
+    if (b instanceof AutogenQueryDatasetComponentBlob) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenQueryDatasetComponentBlob((AutogenQueryDatasetComponentBlob) b));
     }
     if (b instanceof AutogenS3DatasetBlob) {
       return Utils.removeEmpty((T) postVisitDeepAutogenS3DatasetBlob((AutogenS3DatasetBlob) b));

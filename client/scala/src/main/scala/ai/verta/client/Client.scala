@@ -2,7 +2,8 @@ package ai.verta.client
 
 import ai.verta.client.entities.{Experiment, ExperimentRun, GetOrCreateEntity, Project}
 import ai.verta.repository.Repository
-import ai.verta.swagger._public.modeldb.model.{ModeldbCreateProject, ModeldbDeleteProject}
+import ai.verta.dataset_versioning.Dataset
+import ai.verta.swagger._public.modeldb.model._
 import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.swagger.client.{ClientSet, HttpClient}
 
@@ -20,16 +21,19 @@ class Client(conn: ClientConnection) {
 
   def close() = httpClient.close()
 
-  def getOrCreateProject(name: String, workspace: String = "")(implicit ec: ExecutionContext) = {
-    GetOrCreateEntity.getOrCreate[Project](
-      get = () => {
-        clientSet.projectService.ProjectService_getProjectByName(name = Some(name), workspace_name = Some(workspace))
-          .map(r => new Project(clientSet, r.project_by_user.get))
-      },
-      create = () => {
-        clientSet.projectService.ProjectService_createProject(ModeldbCreateProject(name = Some(name), workspace_name = Some(workspace)))
-          .map(r => new Project(clientSet, r.project.get))
-      })
+  def getOrCreateProject(name: String, workspace: Option[String] = None)(implicit ec: ExecutionContext) = {
+    processWorkspace(workspace).flatMap(workspace =>
+      GetOrCreateEntity.getOrCreate[Project](
+        get = () => {
+          clientSet.projectService.ProjectService_getProjectByName(name = Some(name), workspace_name = Some(workspace))
+            .map(r => new Project(clientSet, r.project_by_user.get))
+        },
+        create = () => {
+          clientSet.projectService.ProjectService_createProject(ModeldbCreateProject(name = Some(name), workspace_name = Some(workspace)))
+            .map(r => new Project(clientSet, r.project.get))
+        }
+      )
+    )
   }
 
   def getProject(id: String)(implicit ec: ExecutionContext) = {
@@ -71,22 +75,23 @@ class Client(conn: ClientConnection) {
    * @param workspace Workspace under which the Repository with name name exists. If not provided, the current user’s personal workspace will be used.
    */
   def getOrCreateRepository(name: String, workspace: Option[String] = None)(implicit ec: ExecutionContext) = {
-    GetOrCreateEntity.getOrCreate[Repository](
-      get = () => {
-        clientSet.versioningService.VersioningService_GetRepository(
-          id_named_id_workspace_name = workspace.getOrElse(getPersonalWorkspace()),
-          id_named_id_name = name
-        ).map(r => new Repository(clientSet, r.repository.get))
-      },
-      create = () => {
-        clientSet.versioningService.VersioningService_CreateRepository(
-          id_named_id_workspace_name = workspace.getOrElse(getPersonalWorkspace()),
-          body = VersioningRepository(
-            name = Some(name),
-            workspace_id = workspace
-          )
-        ).map(r => new Repository(clientSet, r.repository.get))
-      }
+    processWorkspace(workspace).flatMap(workspace =>
+      GetOrCreateEntity.getOrCreate[Repository](
+        get = () => {
+          clientSet.versioningService.VersioningService_GetRepository(
+            id_named_id_workspace_name = workspace,
+            id_named_id_name = name
+          ).map(r => new Repository(clientSet, r.repository.get))
+        },
+        create = () => {
+          clientSet.versioningService.VersioningService_CreateRepository(
+            id_named_id_workspace_name = workspace,
+            body = VersioningRepository(
+              name = Some(name)
+            )
+          ).map(r => new Repository(clientSet, r.repository.get))
+        }
+      )
     )
   }
 
@@ -110,9 +115,86 @@ class Client(conn: ClientConnection) {
     ).map(_ => ())
   }
 
-  /** Get the user's personal workspace. Currently, only returns "personal"
+  private def processWorkspace(workspace: Option[String])(implicit ec: ExecutionContext): Try[String] =
+    if (workspace.isDefined)
+      Success(workspace.get)
+    else
+      getPersonalWorkspace()
+
+  /** Get the user's personal workspace name.
    */
-  private def getPersonalWorkspace()(implicit ec: ExecutionContext): String = {
-    "personal"
+  private def getPersonalWorkspace()(implicit ec: ExecutionContext): Try[String] = {
+    if (conn.auth.email.isEmpty)
+      Success("personal")
+    else // Assume that if email is set, then it's not OSS setup.
+      clientSet.uacService.UACService_getCurrentUser()
+        .map(response => response.verta_info.get)
+        .map(info => info.username.get)
+  }
+
+  /** Gets a dataset by its name. If no such dataset exists, creates it.
+   *  @param name name of the dataset.
+   *  @param workspace name of the workspace.
+   *  @return the retrieved or created dataset.
+   */
+  def getOrCreateDataset(name: String, workspace: Option[String] = None)(implicit ec: ExecutionContext): Try[Dataset] =
+    processWorkspace(workspace).flatMap(workspace =>
+      GetOrCreateEntity.getOrCreate[Dataset](
+        get = () => {
+          clientSet.datasetService.DatasetService_getDatasetByName(
+            name = Some(name),
+            workspace_name = Some(workspace)
+          ).flatMap(r => {
+            if (r.dataset_by_user.isDefined)
+              Success(new Dataset(clientSet, r.dataset_by_user.get))
+            else if (r.shared_datasets.isDefined && r.shared_datasets.get.length > 0)
+              Success(new Dataset(clientSet, r.shared_datasets.get(0)))
+            else
+              Failure(new IllegalArgumentException("No dataset with such name exists."))
+          })
+        },
+        create = () => {
+          clientSet.datasetService.DatasetService_createDataset(ModeldbCreateDataset(
+            name = Some(name),
+            workspace_name = Some(workspace)
+          )).map(r => new Dataset(clientSet, r.dataset.get))
+        }
+      )
+    )
+
+  /** Gets a dataset by its id.
+   *  @param id ID of the dataset.
+   *  @return the retrieved dataset, if exists.
+   */
+  def getDatasetById(id: String)(implicit ec: ExecutionContext): Try[Dataset] =
+    clientSet.datasetService.DatasetService_getDatasetById(Some(id))
+      .map(r => new Dataset(clientSet, r.dataset.get))
+
+  /** Gets a dataset by its name.
+   *  @param name name of the dataset.
+   *  @param workspace name of the workspace.
+   *  @return the retrieved dataset, if exists.
+   */
+  def getDatasetByName(name: String, workspace: Option[String] = None)(implicit ec: ExecutionContext): Try[Dataset] =
+    processWorkspace(workspace).flatMap(workspace =>
+      clientSet.datasetService.DatasetService_getDatasetByName(
+        name = Some(name),
+        workspace_name = Some(workspace)
+      ).flatMap(r => {
+        if (r.dataset_by_user.isDefined)
+          Success(new Dataset(clientSet, r.dataset_by_user.get))
+        else if (r.shared_datasets.isDefined && r.shared_datasets.get.length > 0)
+          Success(new Dataset(clientSet, r.shared_datasets.get(0)))
+        else
+          Failure(new IllegalArgumentException("No dataset with such name exists."))
+      })
+    )
+
+  /** Deletes the dataset.
+   *  @param id id of the dataset.
+   */
+  def deleteDataset(id: String)(implicit ec: ExecutionContext): Try[Unit] = {
+    clientSet.datasetService.DatasetService_deleteDataset(ModeldbDeleteDataset(Some(id)))
+      .map(_ => ())
   }
 }

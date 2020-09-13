@@ -512,7 +512,8 @@ public class ModelDBUtils {
     }
     LOGGER.warn(
         "Detected exception of type {}, which is not categorized as retryable",
-        communicationsException.getCause().getClass());
+        ex,
+        communicationsException);
     return false;
   }
 
