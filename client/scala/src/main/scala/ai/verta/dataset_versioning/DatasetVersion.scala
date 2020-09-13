@@ -3,7 +3,7 @@ package ai.verta.dataset_versioning
 import scala.util.{Try, Success, Failure}
 import scala.concurrent.ExecutionContext
 
-import ai.verta.client.entities.Taggable
+import ai.verta.client.entities.{Taggable, CachedEntity}
 import ai.verta.blobs.dataset.PathBlob
 import ai.verta.client.entities.utils._
 import ai.verta.swagger._public.modeldb.model._
@@ -16,9 +16,12 @@ class DatasetVersion(
   private val clientSet: ClientSet,
   private val dataset: Dataset,
   private val datasetVersion: ModeldbDatasetVersion
-) extends Taggable {
+) extends Taggable with CachedEntity[ModeldbDatasetVersion] {
   /** ID of the dataset version. */
   def id = datasetVersion.id.get
+
+  // initialize cached message
+  protected var cachedMessage: Try[ModeldbDatasetVersion] = Success(datasetVersion)
 
   // TODO: add overwrite
   /** Add tags to this dataset version.
@@ -29,7 +32,7 @@ class DatasetVersion(
       id = Some(id),
       tags = Some(tags))
     )
-      .map(_ => ())
+      .map(_ => clearCache())
 
   /** Delete tags from this dataset version.
    *  @param tags tags to delete.
@@ -39,7 +42,7 @@ class DatasetVersion(
       id = Some(id),
       tags = Some(tags)
     ))
-      .map(_ => ())
+      .map(_ => clearCache())
 
   /** Gets all the tags of this dataset version.
    *  @return tags of this dataset version.
@@ -56,7 +59,7 @@ class DatasetVersion(
       clientSet.datasetVersionService.DatasetVersionService_addDatasetVersionAttributes(ModeldbAddDatasetVersionAttributes(
         id = Some(id),
         attributes = valsList.toOption
-      )).map(_ => {})
+      )).map(_ => clearCache())
   }
 
   /** Adds an attribute to this dataset version.
@@ -87,7 +90,7 @@ class DatasetVersion(
     getAttributes().map(attributes => attributes.get(key))
 
   // get the latest version of the proto message
-  private def getMessage()(implicit ec: ExecutionContext): Try[ModeldbDatasetVersion] =
+  override protected def fetchMessage()(implicit ec: ExecutionContext): Try[ModeldbDatasetVersion] =
     clientSet.datasetVersionService.DatasetVersionService_getDatasetVersionById(Some(id)).map(
       response => response.dataset_version.get
     )
