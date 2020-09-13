@@ -17,7 +17,6 @@ class DatasetVersion(
   private val dataset: Dataset,
   private val datasetVersion: ModeldbDatasetVersion
 ) extends Taggable {
-) {
   /** ID of the dataset version. */
   def id = datasetVersion.id.get
 
