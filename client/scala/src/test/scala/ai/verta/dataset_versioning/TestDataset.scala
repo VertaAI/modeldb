@@ -80,9 +80,6 @@ class TestDataset extends FunSuite {
       val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
       val version = f.dataset.createPathVersion(List(testDir)).get
 
-      assert(version.getAttributes().get.equals(
-        Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
-      ))
       assert(f.dataset.getVersion(version.id).get.id == version.id)
       assert(f.dataset.getLatestVersion().get.id == version.id)
 
