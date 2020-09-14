@@ -58,17 +58,20 @@ object AtlasHiveDatasetBlob {
           relationshipAttributesMap <- getSubMap(entityMap, "relationshipAttributes");
           dbRelationshipAttributesMap <- getSubMap(relationshipAttributesMap, "db");
           parametersMap <- getSubMap(attributesMap, "parameters")
-        ) yield {
-          val tableName: String = attributesMap.get("name").map(JsonConverter.fromJsonString).get
-          val databaseName: String = dbRelationshipAttributesMap.get("displayText").map(JsonConverter.fromJsonString).get
-          val atlasQuery = f"select * from ${databaseName}.${tableName}"
+        )
+        yield {
+          for (
+            tableName <- attributesMap.get("name").map(JsonConverter.fromJsonString)
+            databaseName <- dbRelationshipAttributesMap.get("displayText").map(JsonConverter.fromJsonString)
+          )
+          yield {
+            val atlasQuery = f"select * from ${databaseName}.${tableName}"
+            val numRecords: BigInt = parametersMap.get("numRows").map(JsonConverter.fromJsonInteger).get
+            // this is based on the Python client, but is it correct?
+            val executionTimestamp = System.currentTimeMillis()
 
-          val numRecords: BigInt = parametersMap.get("numRows").map(JsonConverter.fromJsonInteger).get
-
-          // this is based on the Python client, but is it correct?
-          val executionTimestamp = System.currentTimeMillis()
-
-          new AtlasHiveDatasetBlob(atlasQuery, atlasSourceURI, Some(numRecords), Some(executionTimestamp))
+            new AtlasHiveDatasetBlob(atlasQuery, atlasSourceURI, Some(numRecords), Some(executionTimestamp))
+          }
         }
       }
       case _ => Failure(throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}"))
