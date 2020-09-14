@@ -837,6 +837,10 @@ public class App implements ApplicationContextAware {
     return storeClientCreationTimestamp;
   }
 
+  public Boolean setStoreClientCreationTimestamp(Boolean storeClientCreationTimestamp) {
+    return this.storeClientCreationTimestamp = storeClientCreationTimestamp;
+  }
+
   public String getServiceUserEmail() {
     return serviceUserEmail;
   }
