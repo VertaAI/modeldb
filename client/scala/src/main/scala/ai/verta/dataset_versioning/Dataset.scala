@@ -112,20 +112,26 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
     case queryDatasetBlob: QueryDatasetBlob => QueryDatasetBlob.toVersioningBlob(queryDatasetBlob).dataset.get
   }
 
-  /** Creates path dataset version.
+  /** Creates a path dataset version.
    *  @param paths Dataset version paths.
    *  @return Dataset version from paths.
    */
   def createPathVersion(paths: List[String])(implicit ec: ExecutionContext): Try[DatasetVersion] =
     PathBlob(paths).flatMap(createVersionFromBlob)
 
-  /** Creates S3 dataset version.
+  /** Creates a S3 dataset version.
    *  @param paths S3 locations.
    *  @return Dataset version from S3 locations.
    */
   def createS3Version(locations: List[S3Location])(implicit ec: ExecutionContext): Try[DatasetVersion] =
     S3(locations).flatMap(createVersionFromBlob)
 
+  /** Creates a RDBMS dataset version.
+   *  @param query database query
+   *  @param  dbConnectionStr connection to database.
+   *  @param numRecords number of records of the dataset.
+   *  @param executionTimestamp timestamp of the query execution.
+   */
   def createRDBMSVersion(
     query: String,
     dbConnectionStr: String,

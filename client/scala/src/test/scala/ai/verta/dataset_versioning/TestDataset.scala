@@ -171,4 +171,19 @@ class TestDataset extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("create version from a query") {
+    val f = fixture
+
+    try {
+      val query = "SELECT * FROM ner-table"
+      val dbConnectionStr = "localhost:6543"
+      val numRecords = 100
+
+      val version = dataset.createRDBMSVersion(query, dbConnectionStr, Some(numRecords)).get
+      assert(version.id == dataset.getLatestVersion().get.id)
+    } finally {
+      cleanup(f)
+    }
+  }
 }
