@@ -42,7 +42,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -1362,65 +1361,6 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("FindDatasetVersions by datasetVersion EndTime test stop..........");
   }
 
-  /** Find DatasetVersion by attribute with pagination */
-  @Test
-  @Ignore
-  public void findDatasetVersionsByAtrributeWithPaginationTest() {
-    LOGGER.info("FindDatasetVersions by attribute with pagination test start...........");
-
-    Value numValue = Value.newBuilder().setStringValue("0.6543210").build();
-    KeyValueQuery keyValueQuery2 =
-        KeyValueQuery.newBuilder()
-            .setKey("attributes.attribute_1")
-            .setValue(numValue)
-            .setOperator(OperatorEnum.Operator.LTE)
-            .build();
-
-    int pageLimit = 2;
-    boolean isExpectedResultFound = false;
-    for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
-      FindDatasetVersions findDatasetVersions =
-          FindDatasetVersions.newBuilder()
-              .setDatasetId(dataset1.getId())
-              .addAllDatasetVersionIds(datasetVersionMap.keySet())
-              .addPredicates(keyValueQuery2)
-              .setPageLimit(pageLimit)
-              .setPageNumber(pageNumber)
-              .setAscending(true)
-              .setSortKey("version")
-              .build();
-
-      FindDatasetVersions.Response response =
-          datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
-
-      assertEquals(
-          "Total records count not matched with expected records count",
-          3,
-          response.getTotalRecords());
-
-      if (response.getDatasetVersionsList() != null
-          && response.getDatasetVersionsList().size() > 0) {
-        isExpectedResultFound = true;
-        for (DatasetVersion datasetVersion : response.getDatasetVersionsList()) {
-          assertEquals(
-              "DatasetVersion not match with expected datasetVersion",
-              datasetVersionMap.get(datasetVersion.getId()),
-              datasetVersion);
-        }
-      } else {
-        if (isExpectedResultFound) {
-          LOGGER.warn("More DatasetVersion not found in database");
-          assertTrue(true);
-        } else {
-          fail("Expected datasetVersion not found in response");
-        }
-        break;
-      }
-    }
-
-    LOGGER.info("FindDatasetVersions by attribute with pagination test stop...........");
-  }
-
   /** Find datasetVersion with value of tags */
   @Test
   public void findDatasetVersionsByTagsTest() {
@@ -1543,131 +1483,6 @@ public class FindDatasetEntitiesTest {
         response.getTotalRecords());
 
     LOGGER.info("FindDatasetVersions by tags test stop................................");
-  }
-
-  /** Find datasetVersions with attribute predicates and sort by attribute key */
-  @Test
-  @Ignore
-  public void findAndSortDatasetVersionsByAttributeTest() {
-    LOGGER.info("Find and Sort DatasetVersions By attribute test start................");
-
-    Value numValueLoss = Value.newBuilder().setStringValue("0.6543210").build();
-    KeyValueQuery keyValueQueryAttribute_1 =
-        KeyValueQuery.newBuilder()
-            .setKey("attributes.attribute_1")
-            .setValue(numValueLoss)
-            .setOperator(OperatorEnum.Operator.LTE)
-            .build();
-
-    FindDatasetVersions findDatasetVersions =
-        FindDatasetVersions.newBuilder()
-            .setDatasetId(dataset1.getId())
-            .addAllDatasetVersionIds(datasetVersionMap.keySet())
-            .addPredicates(keyValueQueryAttribute_1)
-            .setAscending(false)
-            .setSortKey("attributes.attribute_1")
-            .build();
-
-    FindDatasetVersions.Response response =
-        datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
-    assertEquals(
-        "DatasetVersion count not match with expected datasetVersion count",
-        3,
-        response.getDatasetVersionsCount());
-
-    KeyValueQuery keyValueQueryAccuracy =
-        KeyValueQuery.newBuilder()
-            .setKey("attributes.attribute_2")
-            .setValue(Value.newBuilder().setStringValue("0.6543210").build())
-            .setOperator(OperatorEnum.Operator.LTE)
-            .build();
-    findDatasetVersions =
-        FindDatasetVersions.newBuilder()
-            .setDatasetId(dataset1.getId())
-            .addAllDatasetVersionIds(datasetVersionMap.keySet())
-            .addPredicates(keyValueQueryAttribute_1)
-            .addPredicates(keyValueQueryAccuracy)
-            .setAscending(false)
-            .setSortKey("attributes.attribute_1")
-            .build();
-    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
-    assertEquals(
-        "DatasetVersion count not match with expected datasetVersion count",
-        2,
-        response.getDatasetVersionsCount());
-
-    numValueLoss = Value.newBuilder().setStringValue("0.6543210").build();
-    keyValueQueryAttribute_1 =
-        KeyValueQuery.newBuilder()
-            .setKey("attributes.attribute_1")
-            .setValue(numValueLoss)
-            .setOperator(OperatorEnum.Operator.LTE)
-            .build();
-
-    findDatasetVersions =
-        FindDatasetVersions.newBuilder()
-            .setDatasetId(dataset1.getId())
-            .addAllDatasetVersionIds(datasetVersionMap.keySet())
-            .addPredicates(keyValueQueryAttribute_1)
-            .setAscending(false)
-            .setIdsOnly(true)
-            .setSortKey("attributes.attribute_1")
-            .build();
-
-    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
-    assertEquals(
-        "DatasetVersion count not match with expected datasetVersion count",
-        3,
-        response.getDatasetVersionsCount());
-
-    for (int index = 0; index < response.getDatasetVersionsCount(); index++) {
-      DatasetVersion datasetVersion = response.getDatasetVersionsList().get(index);
-      if (index == 0) {
-        assertEquals(
-            "DatasetVersion not match with expected datasetVersion",
-            datasetVersion3,
-            datasetVersion);
-        assertEquals(
-            "DatasetVersion Id not match with expected datasetVersion Id",
-            datasetVersion3.getId(),
-            datasetVersion.getId());
-      } else if (index == 1) {
-        assertEquals(
-            "DatasetVersion not match with expected datasetVersion",
-            datasetVersion2,
-            datasetVersion);
-        assertEquals(
-            "DatasetVersion Id not match with expected datasetVersion Id",
-            datasetVersion2.getId(),
-            datasetVersion.getId());
-      } else if (index == 2) {
-        assertEquals(
-            "DatasetVersion not match with expected datasetVersion",
-            datasetVersion1,
-            datasetVersion);
-        assertEquals(
-            "DatasetVersion Id not match with expected datasetVersion Id",
-            datasetVersion1.getId(),
-            datasetVersion.getId());
-      }
-    }
-
-    LOGGER.info("Find and Sort DatasetVersions By attribute test stop................");
   }
 
   /** Find datasetVersions by workspace */
