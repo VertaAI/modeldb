@@ -44,50 +44,59 @@ object AtlasHiveDatasetBlob {
         Some((atlasUserName, atlasPassword)) // authentication
       ),
       Duration.Inf
-    )
+    ).flatten
   }
 
-  /** TODO: Make this method safe. */
-  private def fromJson(value: JValue, atlasSourceURI: String): AtlasHiveDatasetBlob =
+  private def fromJson(value: JValue, atlasSourceURI: String): Try[AtlasHiveDatasetBlob] =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
 
-        val entity = fieldsMap.get("entities").map(
-          (x: JValue) => x match {
-            case JArray(elements) => elements(0)
-            case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")
-          }
+        for (
+          entityMap <- extractEntity(fieldsMap);
+          attributesMap <- getSubMap(entityMap, "attributes");
+          relationshipAttributesMap <- getSubMap(entityMap, "relationshipAttributes");
+          dbRelationshipAttributesMap <- getSubMap(relationshipAttributesMap, "db");
+          parametersMap <- getSubMap(attributesMap, "parameters")
         )
+        yield {
+          for (
+            tableName <- attributesMap.get("name").map(JsonConverter.fromJsonString)
+            databaseName <- dbRelationshipAttributesMap.get("displayText").map(JsonConverter.fromJsonString)
+          )
+          yield {
+            val atlasQuery = f"select * from ${databaseName}.${tableName}"
+            val numRecords: BigInt = parametersMap.get("numRows").map(JsonConverter.fromJsonInteger).get
+            // this is based on the Python client, but is it correct?
+            val executionTimestamp = System.currentTimeMillis()
 
-        val entityMap = entity match {
-          case Some(JObject(entityFields)) => entityFields.map(f => (f.name, f.value)).toMap
+            new AtlasHiveDatasetBlob(atlasQuery, atlasSourceURI, Some(numRecords), Some(executionTimestamp))
+          }
         }
-
-        val attributesMap = getSubMap(entityMap, "attributes")
-        val tableName: String = attributesMap.get("name").map(JsonConverter.fromJsonString).get
-
-        val relationshipAttributesMap = getSubMap(entityMap, "relationshipAttributes")
-        val dbRelationshipAttributesMap = getSubMap(relationshipAttributesMap, "db")
-
-        val databaseName: String = dbRelationshipAttributesMap.get("displayText").map(JsonConverter.fromJsonString).get
-        val atlasQuery = f"select * from ${databaseName}.${tableName}"
-
-        val parametersMap = getSubMap(attributesMap, "parameters")
-        val numRecords: BigInt = parametersMap.get("numRows").map(JsonConverter.fromJsonInteger).get
-
-        // this is based on the Python client, but is it correct?
-        val executionTimestamp = System.currentTimeMillis()
-
-        new AtlasHiveDatasetBlob(atlasQuery, atlasSourceURI, Some(numRecords), Some(executionTimestamp))
       }
-      case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
+      case _ => Failure(throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}"))
     }
 
-    private def getSubMap(map: Map[String, JValue], key: String): Map[String, JValue] =
-      map.get(key) match {
-        case Some(JObject(fields)) => fields.map(f => (f.name, f.value)).toMap
-        case Some(other) => throw new IllegalArgumentException(s"unknown type ${other.getClass.toString}")
-        case None => throw new IllegalArgumentException(f"key ${key} is not in map")
+  // get the first entity.
+  private def extractEntity(fieldsMap: Map[String, JValue]): Try[Map[String, JValue]] = {
+    fieldsMap.get("entities") match {
+      case Some(JArray(elements)) => {
+        val head = elements.head
+
+        head match {
+          case JObject(entityFields) => Success(entityFields.map(f => (f.name, f.value)).toMap)
+          case _ => Failure(new IllegalArgumentException(s"unknown type ${head.getClass.toString}"))
+        }
       }
+      case Some(other) => Failure(new IllegalArgumentException(s"unknown type ${other.getClass.toString}"))
+      case None => Failure(new IllegalArgumentException("\"entities\" field not found."))
+    }
+  }
+
+  private def getSubMap(map: Map[String, JValue], key: String): Try[Map[String, JValue]] =
+    map.get(key) match {
+      case Some(JObject(fields)) => Success(fields.map(f => (f.name, f.value)).toMap)
+      case Some(other) => Failure(new IllegalArgumentException(s"unknown type ${other.getClass.toString}"))
+      case None => Failure(new IllegalArgumentException(f"key ${key} is not in map"))
+    }
 }
