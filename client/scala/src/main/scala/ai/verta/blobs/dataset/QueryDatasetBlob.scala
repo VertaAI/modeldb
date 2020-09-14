@@ -47,7 +47,7 @@ object QueryDatasetBlob {
   }
 
   /** Convert a QueryDatasetBlob instance to a VersioningBlob
-   *  @param blob RDBMSDatasetBlob instance
+   *  @param blob QueryDatasetBlob instance
    *  @return equivalent VersioningBlob instance
    */
   def toVersioningBlob(blob: QueryDatasetBlob) = VersioningBlob(
