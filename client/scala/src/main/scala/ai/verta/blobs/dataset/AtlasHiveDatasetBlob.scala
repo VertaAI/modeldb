@@ -32,10 +32,12 @@ object AtlasHiveDatasetBlob {
       httpClient.request(
         "GET",
         atlasEntityEndpoint,
-        Map(),
+        Map(
+          "guid" -> guid
+        ),
         null,
         jsonVal => fromJson(jsonVal, atlasSourceURI), // parser
-        (atlasUserName, atlasPassword) // authentication
+        Some((atlasUserName, atlasPassword)) // authentication
       ),
       Duration.Inf
     )
@@ -67,7 +69,10 @@ object AtlasHiveDatasetBlob {
         }
         val numRecords: BigInt = parametersMap.get("numRows").map(JsonConverter.fromJsonInteger).get
 
-        new AtlasHiveDatasetBlob(atlasQuery, atlasSourceURI, Some(numRecords))
+        // this is based on the Python client, but is it correct?
+        val executionTimestamp = System.currentTimeMillis()
+
+        new AtlasHiveDatasetBlob(atlasQuery, atlasSourceURI, Some(numRecords), Some(executionTimestamp))
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
     }
