@@ -8,6 +8,8 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Try, Success, Failure}
 import scala.concurrent.duration.Duration
 
+/** Represents a dataset from a query to an Atlas Hive table.
+ */
 class AtlasHiveDatasetBlob(
   private val atlasQuery: String,
   private val atlasSourceURI: String,
@@ -15,6 +17,8 @@ class AtlasHiveDatasetBlob(
   override val executionTimestamp: Option[BigInt] = None
 ) extends QueryDatasetBlob {
   // cannot make this a case class due to constructor conflict.
+
+  override val query = Some(atlasQuery)
   override val dataSourceURI = Some(atlasSourceURI)
 }
 
@@ -33,7 +37,7 @@ object AtlasHiveDatasetBlob {
         "GET",
         atlasEntityEndpoint,
         Map(
-          "guid" -> guid
+          "guid" -> List(guid)
         ),
         null,
         jsonVal => fromJson(jsonVal, atlasSourceURI), // parser
