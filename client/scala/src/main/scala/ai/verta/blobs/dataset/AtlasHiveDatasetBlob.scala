@@ -1,6 +1,6 @@
 package ai.verta.blobs.dataset
 
-import net.liftweb.json.{JValue, JObject}
+import net.liftweb.json._
 import ai.verta.swagger.client.objects._
 import ai.verta.swagger.client.HttpClient
 
@@ -53,14 +53,14 @@ object AtlasHiveDatasetBlob {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
 
         val entity = fieldsMap.get("entities").map(
-          (x: JValue) x match {
-            case JArray(elements) => elements.get(0)
+          (x: JValue) => x match {
+            case JArray(elements) => elements(0)
             case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")
           }
         )
 
-        val entityMap = entity.match {
-          case JObject(entityFields) => entityFields.map(f => (f.name, f.value)).toMap
+        val entityMap = entity match {
+          case Some(JObject(entityFields)) => entityFields.map(f => (f.name, f.value)).toMap
         }
 
         val attributesMap = entityMap.get("attributes") match {
