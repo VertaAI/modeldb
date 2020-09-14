@@ -29,7 +29,14 @@ object AtlasHiveDatasetBlob {
     val atlasSourceURI = f"${atlasURL}/index.html#!/detailPage/${guid}"
     val httpClient = new HttpClient(atlasURL, Map())
     Await.result(
-      httpClient.request("GET", atlasEntityEndpoint, Map(), null, jsonVal => fromJson(jsonVal, atlasSourceURI)),
+      httpClient.request(
+        "GET",
+        atlasEntityEndpoint,
+        Map(),
+        null,
+        jsonVal => fromJson(jsonVal, atlasSourceURI), // parser
+        (atlasUserName, atlasPassword) // authentication
+      ),
       Duration.Inf
     )
   }
