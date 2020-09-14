@@ -64,25 +64,16 @@ object AtlasHiveDatasetBlob {
           case Some(JObject(entityFields)) => entityFields.map(f => (f.name, f.value)).toMap
         }
 
-        val attributesMap = entityMap.get("attributes") match {
-          case Some(JObject(attributes)) => attributes.map(f => (f.name, f.value)).toMap
-        }
-
-        val relationshipAttributesMap = entityMap.get("relationshipAttributes") match {
-          case Some(JObject(relationshipAttributes)) => relationshipAttributes.map(f => (f.name, f.value)).toMap
-        }
+        val attributesMap = getSubMap(entityMap, "attributes")
         val tableName: String = attributesMap.get("name").map(JsonConverter.fromJsonString).get
 
-        val dbRelationshipAttributesMap = relationshipAttributesMap.get("db") match {
-          case Some(JObject(db)) => db.map(f => (f.name, f.value)).toMap
-        }
-        val databaseName: String = dbRelationshipAttributesMap.get("displayText").map(JsonConverter.fromJsonString).get
+        val relationshipAttributesMap = getSubMap(entityMap, "relationshipAttributes")
+        val dbRelationshipAttributesMap = getSubMap(relationshipAttributesMap, "db")
 
+        val databaseName: String = dbRelationshipAttributesMap.get("displayText").map(JsonConverter.fromJsonString).get
         val atlasQuery = f"select * from ${databaseName}.${tableName}"
 
-        val parametersMap = attributesMap.get("parameters") match {
-          case Some(JObject(parameters)) => parameters.map(f => (f.name, f.value)).toMap
-        }
+        val parametersMap = getSubMap(attributesMap, "parameters")
         val numRecords: BigInt = parametersMap.get("numRows").map(JsonConverter.fromJsonInteger).get
 
         // this is based on the Python client, but is it correct?
@@ -92,4 +83,11 @@ object AtlasHiveDatasetBlob {
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
     }
+
+    private def getSubMap(map: Map[String, JValue], key: String): Map[String, JValue] =
+      map.get(key) match {
+        case Some(JObject(fields)) => fields.map(f => (f.name, f.value)).toMap
+        case Some(other) => throw new IllegalArgumentException(s"unknown type ${other.getClass.toString}")
+        case None => throw new IllegalArgumentException(f"key ${key} is not in map")
+      }
 }
