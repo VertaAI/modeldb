@@ -38,7 +38,7 @@ object QueryDatasetBlob {
    *  @return equivalent QueryDatasetBlob instance
    */
   def apply(queryVersioningBlob: VersioningQueryDatasetBlob) = new QueryDatasetBlob {
-    private val extractedComponent = queryVersioningBlob.components.get.head
+    private val extractedComponent = queryVersioningBlob.components.get.head // always exists.
 
     override val query = extractedComponent.query
     override val dataSourceURI = extractedComponent.data_source_uri
