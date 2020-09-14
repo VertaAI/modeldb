@@ -396,7 +396,7 @@ public class DatasetToRepositoryMigration {
                     criteriaBuilder.and(
                         criteriaBuilder.equal(root.get("deleted"), false),
                         criteriaBuilder.equal(root.get("dataset_id"), datasetId)))
-                .orderBy(criteriaBuilder.desc(root.get("time_logged")));
+                .orderBy(criteriaBuilder.desc(root.get(ModelDBConstants.TIME_LOGGED)));
 
         TypedQuery<DatasetVersionEntity> typedQuery = session1.createQuery(selectQuery);
 
