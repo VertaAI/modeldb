@@ -8,7 +8,7 @@ import ai.verta.client.entities.utils._
 import ai.verta.client.entities.utils._
 import net.liftweb.json._
 
-import ai.verta.blobs.dataset.{PathBlob, S3, S3Location}
+import ai.verta.blobs.dataset.{PathBlob, S3, S3Location, RDBMSDatasetBlob, QueryDatasetBlob}
 import ai.verta.swagger._public.modeldb.model._
 import ai.verta.swagger.client.ClientSet
 
@@ -109,6 +109,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
   private def blobToVersioningDatasetBlob(blob: ai.verta.blobs.dataset.Dataset) = blob match {
     case s3Blob: S3 => S3.toVersioningBlob(s3Blob).dataset.get
     case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob).dataset.get
+    case queryDatasetBlob: QueryDatasetBlob => QueryDatasetBlob.toVersioningBlob(queryDatasetBlob).dataset.get
   }
 
   /** Creates path dataset version.
@@ -124,6 +125,14 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
    */
   def createS3Version(locations: List[S3Location])(implicit ec: ExecutionContext): Try[DatasetVersion] =
     S3(locations).flatMap(createVersionFromBlob)
+
+  def createRDBMSVersion(
+    query: String,
+    dbConnectionStr: String,
+    numRecords: Option[BigInt] = None,
+    executionTimestamp: Option[BigInt] = None
+  )(implicit ec: ExecutionContext) =
+    createVersionFromBlob(RDBMSDatasetBlob(query, dbConnectionStr, numRecords, executionTimestamp))
 
   /** Gets a version of the dataset by its ID.
    *  @param id ID of the dataset version.
