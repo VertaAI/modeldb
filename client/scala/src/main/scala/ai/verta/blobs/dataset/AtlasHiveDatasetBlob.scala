@@ -35,7 +35,7 @@ object AtlasHiveDatasetBlob {
         Map(),
         null,
         jsonVal => fromJson(jsonVal, atlasSourceURI), // parser
-        (atlasUserName, atlasPassword) // authentication
+        Some((atlasUserName, atlasPassword)) // authentication
       ),
       Duration.Inf
     )
