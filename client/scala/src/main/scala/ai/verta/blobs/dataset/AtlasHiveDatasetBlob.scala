@@ -26,8 +26,8 @@ object AtlasHiveDatasetBlob {
   def apply(
     guid: String,
     atlasURL: String,
-    atlasUserName: String,
-    atlasPassword: String,
+    atlasUserName: String = sys.env.get("ATLAS_USERNAME"),
+    atlasPassword: String = sys.env.get("ATLAS_PASSOWRD"),
     atlasEntityEndpoint: String = "/api/atlas/v2/entity/bulk"
   )(implicit ec: ExecutionContext): Try[AtlasHiveDatasetBlob] = {
     val atlasSourceURI = f"${atlasURL}/index.html#!/detailPage/${guid}"
