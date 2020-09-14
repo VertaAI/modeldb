@@ -6,8 +6,8 @@ import ai.verta.blobs._
 /** Captures metadata about a dataset from a RMDBS database query.
  */
 case class RDBMSDatasetBlob(
-  val rdbmsQuery: String,
-  val dbConnectionStr: String,
+  private val rdbmsQuery: String,
+  private val dbConnectionStr: String,
   override val numRecords: Option[BigInt] = None,
   override val executionTimestamp: Option[BigInt] = None
 ) extends QueryDatasetBlob {
