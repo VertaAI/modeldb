@@ -8,6 +8,8 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Try, Success, Failure}
 import scala.concurrent.duration.Duration
 
+/** Represents a dataset from a query to an Atlas Hive table.
+ */
 class AtlasHiveDatasetBlob(
   private val atlasQuery: String,
   private val atlasSourceURI: String,
@@ -15,6 +17,8 @@ class AtlasHiveDatasetBlob(
   override val executionTimestamp: Option[BigInt] = None
 ) extends QueryDatasetBlob {
   // cannot make this a case class due to constructor conflict.
+
+  override val query = Some(atlasQuery)
   override val dataSourceURI = Some(atlasSourceURI)
 }
 
@@ -33,7 +37,7 @@ object AtlasHiveDatasetBlob {
         "GET",
         atlasEntityEndpoint,
         Map(
-          "guid" -> guid
+          "guid" -> List(guid)
         ),
         null,
         jsonVal => fromJson(jsonVal, atlasSourceURI), // parser
@@ -48,11 +52,22 @@ object AtlasHiveDatasetBlob {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
 
-        val attributesMap = fieldsMap.get("attributes") match {
+        val entity = fieldsMap.get("entities").map(
+          (x: JValue) x match {
+            case JArray(elements) => elements.get(0)
+            case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")
+          }
+        )
+
+        val entityMap = entity.match {
+          case JObject(entityFields) => entityFields.map(f => (f.name, f.value)).toMap
+        }
+
+        val attributesMap = entityMap.get("attributes") match {
           case Some(JObject(attributes)) => attributes.map(f => (f.name, f.value)).toMap
         }
 
-        val relationshipAttributesMap = fieldsMap.get("relationshipAttributes") match {
+        val relationshipAttributesMap = entityMap.get("relationshipAttributes") match {
           case Some(JObject(relationshipAttributes)) => relationshipAttributes.map(f => (f.name, f.value)).toMap
         }
         val tableName: String = attributesMap.get("name").map(JsonConverter.fromJsonString).get
