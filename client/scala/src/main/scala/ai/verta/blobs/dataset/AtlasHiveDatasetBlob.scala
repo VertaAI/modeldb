@@ -44,7 +44,7 @@ object AtlasHiveDatasetBlob {
         Some((atlasUserName, atlasPassword)) // authentication
       ),
       Duration.Inf
-    ).flatten
+    ).flatten // Try[Try[AtlasHiveDatasetBlob]] to Try[AtlasHiveDatasetBlob]
   }
 
   private def fromJson(value: JValue, atlasSourceURI: String): Try[AtlasHiveDatasetBlob] =
@@ -75,6 +75,7 @@ object AtlasHiveDatasetBlob {
     }
 
   // get the first entity.
+  // equivalent to table_obj["entities"][0]
   private def extractEntity(fieldsMap: Map[String, JValue]): Try[Map[String, JValue]] = {
     fieldsMap.get("entities") match {
       case Some(JArray(elements)) => {
@@ -90,6 +91,7 @@ object AtlasHiveDatasetBlob {
     }
   }
 
+  // extract a certain field from a json map, which in turn is another map
   private def getSubMap(map: Map[String, JValue], key: String): Try[Map[String, JValue]] =
     map.get(key) match {
       case Some(JObject(fields)) => Success(fields.map(f => (f.name, f.value)).toMap)
