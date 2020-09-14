@@ -25,7 +25,7 @@ class AtlasHiveDatasetBlob(
 object AtlasHiveDatasetBlob {
   def apply(
     guid: String,
-    atlasURL: String,
+    atlasURL: String = sys.env.get("ATLAS_URL"),
     atlasUserName: String = sys.env.get("ATLAS_USERNAME"),
     atlasPassword: String = sys.env.get("ATLAS_PASSOWRD"),
     atlasEntityEndpoint: String = "/api/atlas/v2/entity/bulk"
