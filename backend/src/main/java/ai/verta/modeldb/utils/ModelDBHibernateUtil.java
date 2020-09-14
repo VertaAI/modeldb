@@ -41,6 +41,7 @@ import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.config.HyperparameterSetConfigBlobEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
+import ai.verta.modeldb.entities.dataset.QueryDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.S3DatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.environment.DockerEnvironmentBlobEntity;
 import ai.verta.modeldb.entities.environment.EnvironmentBlobEntity;
@@ -167,7 +168,8 @@ public class ModelDBHibernateUtil {
     MetadataPropertyMappingEntity.class,
     DatasetRepositoryMappingEntity.class,
     UploadStatusEntity.class,
-    KeyValuePropertyMappingEntity.class
+    KeyValuePropertyMappingEntity.class,
+    QueryDatasetComponentBlobEntity.class
   };
 
   private ModelDBHibernateUtil() {}

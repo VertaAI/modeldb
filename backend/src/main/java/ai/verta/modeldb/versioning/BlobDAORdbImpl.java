@@ -604,6 +604,9 @@ public class BlobDAORdbImpl implements BlobDAO {
                   .map(S3DatasetComponentBlob::getPath)
                   .map(this::getPathInfo)
                   .collect(Collectors.toList());
+        } else if (dataset.hasQuery()) {
+          components = Collections.emptyList();
+          LOGGER.info("Found query dataset. Skipping populating datasetinfo");
         } else {
           LOGGER.error("unexpected error");
           throw new ModelDBException("Unknown blob type");
