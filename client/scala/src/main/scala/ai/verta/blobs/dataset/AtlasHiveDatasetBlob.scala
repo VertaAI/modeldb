@@ -12,7 +12,7 @@ class AtlasHiveDatasetBlob(
   private val atlasQuery: String,
   private val atlasSourceURI: String,
   override val numRecords: Option[BigInt] = None,
-  override val executionTimestamp: Option[String] = None
+  override val executionTimestamp: Option[BigInt] = None
 ) extends QueryDatasetBlob {
   // cannot make this a case class due to constructor conflict.
   override val dataSourceURI = Some(atlasSourceURI)
@@ -60,7 +60,7 @@ object AtlasHiveDatasetBlob {
         }
         val numRecords: BigInt = parametersMap.get("numRows").map(JsonConverter.fromJsonInteger).get
 
-        AtlasHiveDatasetBlob(atlasQuery, atlasSourceURI, Some(numRecords))
+        new AtlasHiveDatasetBlob(atlasQuery, atlasSourceURI, Some(numRecords))
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
     }
