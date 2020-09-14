@@ -1895,6 +1895,112 @@ public class Visitor {
     return null;
   }
 
+  public void preVisitListOfAutogenQueryDatasetComponentDiff(
+      List<AutogenQueryDatasetComponentDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenQueryDatasetComponentDiff val : lst) {
+      preVisitAutogenQueryDatasetComponentDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenQueryDatasetComponentDiff(
+      List<AutogenQueryDatasetComponentDiff> lst) throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenQueryDatasetComponentDiff val : lst) {
+      preVisitDeepAutogenQueryDatasetComponentDiff(val);
+    }
+  }
+
+  public List<AutogenQueryDatasetComponentDiff> postVisitListOfAutogenQueryDatasetComponentDiff(
+      List<AutogenQueryDatasetComponentDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenQueryDatasetComponentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenQueryDatasetComponentDiff val : lst) {
+      collect.add(postVisitAutogenQueryDatasetComponentDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenQueryDatasetComponentDiff> postVisitDeepListOfAutogenQueryDatasetComponentDiff(
+      List<AutogenQueryDatasetComponentDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenQueryDatasetComponentDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenQueryDatasetComponentDiff val : lst) {
+      collect.add(postVisitDeepAutogenQueryDatasetComponentDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenQueryDatasetComponentDiff(AutogenQueryDatasetComponentDiff blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenQueryDatasetComponentDiff(AutogenQueryDatasetComponentDiff blob)
+      throws ModelDBException {}
+
+  public AutogenQueryDatasetComponentDiff postVisitAutogenQueryDatasetComponentDiff(
+      AutogenQueryDatasetComponentDiff blob) throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenQueryDatasetComponentDiff postVisitDeepAutogenQueryDatasetComponentDiff(
+      AutogenQueryDatasetComponentDiff blob) throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
+  public void preVisitListOfAutogenQueryDatasetDiff(List<AutogenQueryDatasetDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenQueryDatasetDiff val : lst) {
+      preVisitAutogenQueryDatasetDiff(val);
+    }
+  }
+
+  public void preVisitDeepListOfAutogenQueryDatasetDiff(List<AutogenQueryDatasetDiff> lst)
+      throws ModelDBException {
+    if (lst == null) return;
+    for (AutogenQueryDatasetDiff val : lst) {
+      preVisitDeepAutogenQueryDatasetDiff(val);
+    }
+  }
+
+  public List<AutogenQueryDatasetDiff> postVisitListOfAutogenQueryDatasetDiff(
+      List<AutogenQueryDatasetDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenQueryDatasetDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenQueryDatasetDiff val : lst) {
+      collect.add(postVisitAutogenQueryDatasetDiff(val));
+    }
+    return collect;
+  }
+
+  public List<AutogenQueryDatasetDiff> postVisitDeepListOfAutogenQueryDatasetDiff(
+      List<AutogenQueryDatasetDiff> lst) throws ModelDBException {
+    if (lst == null) return null;
+    final List<AutogenQueryDatasetDiff> collect = new ArrayList<>(lst.size());
+    for (AutogenQueryDatasetDiff val : lst) {
+      collect.add(postVisitDeepAutogenQueryDatasetDiff(val));
+    }
+    return collect;
+  }
+
+  public void preVisitAutogenQueryDatasetDiff(AutogenQueryDatasetDiff blob)
+      throws ModelDBException {}
+
+  public void preVisitDeepAutogenQueryDatasetDiff(AutogenQueryDatasetDiff blob)
+      throws ModelDBException {}
+
+  public AutogenQueryDatasetDiff postVisitAutogenQueryDatasetDiff(AutogenQueryDatasetDiff blob)
+      throws ModelDBException {
+    return blob;
+  }
+
+  public AutogenQueryDatasetDiff postVisitDeepAutogenQueryDatasetDiff(AutogenQueryDatasetDiff blob)
+      throws ModelDBException {
+    if (blob != null) return blob.postVisitDeep(this);
+    return null;
+  }
+
   public void preVisitListOfAutogenS3DatasetBlob(List<AutogenS3DatasetBlob> lst)
       throws ModelDBException {
     if (lst == null) return;
@@ -2671,6 +2777,14 @@ public class Visitor {
     if (b instanceof AutogenQueryDatasetComponentBlob) {
       return Utils.removeEmpty(
           (T) postVisitDeepAutogenQueryDatasetComponentBlob((AutogenQueryDatasetComponentBlob) b));
+    }
+    if (b instanceof AutogenQueryDatasetComponentDiff) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenQueryDatasetComponentDiff((AutogenQueryDatasetComponentDiff) b));
+    }
+    if (b instanceof AutogenQueryDatasetDiff) {
+      return Utils.removeEmpty(
+          (T) postVisitDeepAutogenQueryDatasetDiff((AutogenQueryDatasetDiff) b));
     }
     if (b instanceof AutogenS3DatasetBlob) {
       return Utils.removeEmpty((T) postVisitDeepAutogenS3DatasetBlob((AutogenS3DatasetBlob) b));
