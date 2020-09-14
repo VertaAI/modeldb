@@ -84,10 +84,10 @@ object AtlasHiveDatasetBlob {
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")
     }
 
-    private def getSubMap(map: Map[String, JValue], key: String): Map[String, JValue] =
-      map.get(key) match {
-        case Some(JObject(fields)) => fields.map(f => (f.name, f.value)).toMap
-        case Some(other) => throw new IllegalArgumentException(s"unknown type ${other.getClass.toString}")
-        case None => throw new IllegalArgumentException(f"key ${key} is not in map")
-      }
+  private def getSubMap(map: Map[String, JValue], key: String): Map[String, JValue] =
+    map.get(key) match {
+      case Some(JObject(fields)) => fields.map(f => (f.name, f.value)).toMap
+      case Some(other) => throw new IllegalArgumentException(s"unknown type ${other.getClass.toString}")
+      case None => throw new IllegalArgumentException(f"key ${key} is not in map")
+    }
 }
