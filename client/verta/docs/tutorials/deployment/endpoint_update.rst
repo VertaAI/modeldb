@@ -15,7 +15,7 @@ process for updating it with a new model is the same:
 
 .. code-block:: python
 
-    from verta.deployment.update import DirectUpdateStrategy
+    from verta.endpoint.update import DirectUpdateStrategy
 
     endpoint.update(model_version, DirectUpdateStrategy())
 
@@ -24,7 +24,7 @@ The first argument to :meth:`Endpoint.update() <verta.endpoint._endpoint.Endpoin
 its Python environment logged.
 
 The second argument is a strategy to use for the update. Here, you would be using a simple
-:class:`~verta.deployment.update._strategies.DirectUpdateStrategy` that will fully transition the
+:class:`~verta.endpoint.update._strategies.DirectUpdateStrategy` that will fully transition the
 endpoint to use your new model.
 
 You can also update an endpoint with an :class:`~verta._tracking.experimentrun.ExperimentRun`:

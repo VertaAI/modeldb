@@ -186,6 +186,16 @@ public class BlobEquality {
   }
 
   @Property
+  public void equalityAutogenQueryDatasetBlob(AutogenQueryDatasetBlob b) {
+    assertTrue(b.equals(b));
+  }
+
+  @Property
+  public void equalityAutogenQueryDatasetComponentBlob(AutogenQueryDatasetComponentBlob b) {
+    assertTrue(b.equals(b));
+  }
+
+  @Property
   public void equalityAutogenS3DatasetBlob(AutogenS3DatasetBlob b) {
     assertTrue(b.equals(b));
   }

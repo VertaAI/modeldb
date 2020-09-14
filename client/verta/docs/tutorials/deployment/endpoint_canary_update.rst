@@ -13,12 +13,12 @@ Using the client
 ----------------
 
 Before, a new model was deployed using a direct update strategy. This time, a
-:class:`~verta.deployment.update._strategies.CanaryUpdateStrategy` will be used:
+:class:`~verta.endpoint.update._strategies.CanaryUpdateStrategy` will be used:
 
 .. code-block:: python
 
-    from verta.deployment.update import CanaryUpdateStrategy
-    from verta.deployment.update.rules import MaximumRequestErrorPercentageThresholdRule
+    from verta.endpoint.update import CanaryUpdateStrategy
+    from verta.endpoint.update.rules import MaximumRequestErrorPercentageThresholdRule
 
     strategy = CanaryUpdateStrategy(interval=10, step=0.2)
     strategy.add_rule(MaximumRequestErrorPercentageThresholdRule(0.1))

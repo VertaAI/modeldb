@@ -61,7 +61,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1028,59 +1027,6 @@ public class DatasetTest {
     assertTrue(deleteDatasetResponse.getStatus());
 
     LOGGER.info("Add Dataset tags Negative test stop................................");
-  }
-
-  @Test
-  @Ignore
-  public void getDatasetTags() {
-    LOGGER.info("Get Dataset Tags test start................................");
-
-    DatasetServiceBlockingStub datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-
-    // Create dataset
-    CreateDataset createDatasetRequest = getDatasetRequest("dataset_n_sprt");
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    Dataset dataset = createDatasetResponse.getDataset();
-    LOGGER.info("Dataset created successfully");
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
-
-    GetTags deleteDatasetTagsRequest = GetTags.newBuilder().setId(dataset.getId()).build();
-    GetTags.Response response = datasetServiceStub.getDatasetTags(deleteDatasetTagsRequest);
-    LOGGER.info("Tags deleted in server : " + response.getTagsList());
-    assertTrue(dataset.getTagsList().containsAll(response.getTagsList()));
-
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
-    LOGGER.info("Get Dataset tags test stop................................");
-  }
-
-  @Test
-  @Ignore
-  public void getDatasetTagsNegativeTest() {
-    LOGGER.info("Get Dataset Tags Negative test start................................");
-
-    DatasetServiceBlockingStub datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-
-    GetTags deleteDatasetTagsRequest = GetTags.newBuilder().build();
-
-    try {
-      datasetServiceStub.getDatasetTags(deleteDatasetTagsRequest);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    LOGGER.info("Get Dataset tags Negative test stop................................");
   }
 
   @Test

@@ -293,6 +293,8 @@ class Component(object):
     ----------
     path : str
         File path.
+    base_path : str
+        Prefix of `path`.
     size : int
         File size.
     last_modified : int
@@ -319,7 +321,7 @@ class Component(object):
         self.md5 = md5
 
         # base path
-        self._base_path = base_path
+        self.base_path = base_path
 
         # ModelDB versioning
         self._internal_versioned_path = internal_versioned_path
@@ -328,6 +330,8 @@ class Component(object):
     def __repr__(self):
         lines = [self.path]
 
+        if self.base_path:
+            lines.append("base path: {}".format(self.base_path))
         if self.size:
             lines.append("{} bytes".format(self.size))
         if self.last_modified:
@@ -354,6 +358,7 @@ class Component(object):
             sha256=component_msg.sha256 or None,
             md5=component_msg.md5 or None,
             internal_versioned_path=component_msg.internal_versioned_path or None,
+            base_path=component_msg.base_path,
         )
 
     def _as_proto(self):
@@ -364,6 +369,7 @@ class Component(object):
             sha256=self.sha256 or "",
             md5=self.md5 or "",
             internal_versioned_path=self._internal_versioned_path or "",
+            base_path=self.base_path or "",
         )
 
 

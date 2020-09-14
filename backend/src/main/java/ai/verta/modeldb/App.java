@@ -2,6 +2,7 @@ package ai.verta.modeldb;
 
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
@@ -127,6 +128,7 @@ public class App implements ApplicationContextAware {
   private String awsRegion = null;
 
   // Artifact store
+  private boolean disabledArtifactStore = false;
   private Boolean pickArtifactStoreHostFromConfig = null;
   private String artifactStoreServerHost = null;
   private String artifactStoreUrlProtocol = null;
@@ -357,6 +359,8 @@ public class App implements ApplicationContextAware {
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
       app.setPublicSharingEnabled(
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
+      app.disabledArtifactStore =
+          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_ARTIFACT_STORE, false);
     }
 
     Map<String, Object> starterProjectDetail =
@@ -365,8 +369,10 @@ public class App implements ApplicationContextAware {
       app.starterProjectID = (String) starterProjectDetail.get(ModelDBConstants.STARTER_PROJECT_ID);
     }
     // --------------- Start Initialize Cloud Config ---------------------------------------------
-    ArtifactStoreService artifactStoreService =
-        initializeServicesBaseOnArtifactStoreType(propertiesMap);
+    ArtifactStoreService artifactStoreService = null;
+    if (!app.disabledArtifactStore) {
+      artifactStoreService = initializeServicesBaseOnArtifactStoreType(propertiesMap);
+    }
 
     // --------------- Start Initialize Database base on configuration --------------------------
     if (databasePropMap.isEmpty()) {
@@ -424,7 +430,13 @@ public class App implements ApplicationContextAware {
             authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
-    ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
+    ArtifactStoreDAO artifactStoreDAO;
+    if (artifactStoreService != null) {
+      artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
+    } else {
+      artifactStoreDAO = new ArtifactStoreDAODisabled();
+    }
+
     CommentDAO commentDAO = new CommentDAORdbImpl(authService);
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
     LineageDAO lineageDAO = new LineageDAORdbImpl();

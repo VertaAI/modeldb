@@ -273,7 +273,7 @@ class S3Dataset(PathDataset):
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         if key is not None and key_prefix is not None:
@@ -310,7 +310,7 @@ class LocalDataset(PathDataset):
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         version_info = FilesystemDatasetVersionInfo(path)
@@ -346,7 +346,7 @@ class BigQueryDataset(QueryDataset):
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         version_info = BigQueryDatasetVersionInfo(job_id=job_id, location=location)
@@ -391,7 +391,7 @@ class RDBMSDataset(QueryDataset):
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         version_info = RDBMSDatasetVersionInfo(
@@ -457,6 +457,17 @@ class AtlasHiveDataset(QueryDataset):
 
 
 class DatasetVersion(object):
+    """
+    A version of a dataset at a particular point in time.
+
+    Attributes
+    ----------
+    id : str
+        ID of this dataset version.
+    base_path : str
+        Base path of this dataset version's components.
+
+    """
     # TODO: visibility not done
     # TODO: delete version not implemented
     def __init__(self, conn, conf,
@@ -514,11 +525,17 @@ class DatasetVersion(object):
         self._dataset_type = dataset_version.dataset_type
         self.dataset_version = dataset_version
 
-        version_info_field = 'dataset_version_info'
-        if dataset_version.HasField(version_info_field):
-            self.dataset_version_info = getattr(dataset_version, dataset_version.WhichOneof(version_info_field))
+        version_info_oneof = dataset_version.WhichOneof('dataset_version_info')
+        if version_info_oneof:
+            self.dataset_version_info = getattr(dataset_version, version_info_oneof)
         else:
             self.dataset_version_info = None
+
+        # assign base_path to proto msg to restore a level of backwards-compatibility
+        try:
+            self.dataset_version.path_dataset_version_info.base_path = self.base_path
+        except AttributeError:  # unsupported non-path dataset or multiple base_paths
+            pass
 
     def __repr__(self):
         if self.dataset_version:
@@ -619,13 +636,56 @@ class DatasetVersion(object):
                             version=None):
         raise NotImplementedError('this function must be implemented by subclasses')
 
+    @property
+    def base_path(self):
+        components = self.list_components()
+        base_paths = set(component.base_path for component in components)
+
+        if len(base_paths) == 1:
+            return base_paths.pop()
+        else:  # shouldn't happen: DVs don't have an interface to have different base paths
+            raise AttributeError("multiple base paths among components: {}".format(base_paths))
+
+    def list_components(self):
+        """
+        Returns a list of this dataset version's components.
+
+        Returns
+        -------
+        list of :class:`~verta.dataset._dataset.Component`
+
+        """
+        # there's a circular import if imported at module-level
+        # which I don't fully understand, and even breaks in Python 3
+        # so this import is deferred to this function body
+        from .dataset import _dataset
+
+        blob = self.dataset_version.dataset_blob
+
+        content_oneof = blob.WhichOneof('content')
+        if content_oneof:
+            # determine component type
+            if content_oneof == "s3":
+                component_cls = _dataset.S3Component
+            elif content_oneof == "path":
+                component_cls = _dataset.Component
+            else:  # shouldn't happen
+                raise RuntimeError(
+                    "found unexpected dataset type {};"
+                    " please notify the Verta development team".format(content_oneof)
+                )
+
+            # return list of component objects
+            components = getattr(blob, content_oneof).components
+            return list(map(component_cls._from_proto, components))
+
+        return []
+
 
 class RawDatasetVersion(DatasetVersion):
     def __init__(self, *args, **kwargs):
         super(RawDatasetVersion, self).__init__(*args, **kwargs)
         self.dataset_version_info = self.dataset_version.raw_dataset_version_info
-        # TODO: this is hacky, we should store dataset_version
-        self.dataset_version = None
 
     @staticmethod
     def make_create_message(dataset_id, dataset_type,
@@ -653,8 +713,6 @@ class PathDatasetVersion(DatasetVersion):
     def __init__(self, *args, **kwargs):
         super(PathDatasetVersion, self).__init__(*args, **kwargs)
         self.dataset_version_info = self.dataset_version.path_dataset_version_info
-        # TODO: this is hacky, we should store dataset_version
-        self.dataset_version = None
 
     @staticmethod
     def make_create_message(dataset_id, dataset_type,
@@ -684,8 +742,6 @@ class QueryDatasetVersion(DatasetVersion):
     def __init__(self, *args, **kwargs):
         super(QueryDatasetVersion, self).__init__(*args, **kwargs)
         self.dataset_version_info = self.dataset_version.query_dataset_version_info
-        # TODO: this is hacky, we should store dataset_version
-        self.dataset_version = None
 
     @staticmethod
     def make_create_message(dataset_id, dataset_type,
