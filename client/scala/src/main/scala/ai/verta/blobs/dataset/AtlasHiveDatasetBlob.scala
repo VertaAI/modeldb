@@ -47,6 +47,7 @@ object AtlasHiveDatasetBlob {
     )
   }
 
+  /** TODO: Make this method safe. */
   private def fromJson(value: JValue, atlasSourceURI: String): AtlasHiveDatasetBlob =
     value match {
       case JObject(fields) => {
