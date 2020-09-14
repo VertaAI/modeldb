@@ -191,8 +191,10 @@ public class DiffComputer {
             .setPath(
                 computeDiff(
                     a, b, AutogenDatasetBlob::getPath, DiffComputer::computePathDatasetDiff))
-            .setS3(
-                computeDiff(a, b, AutogenDatasetBlob::getS3, DiffComputer::computeS3DatasetDiff)));
+            .setS3(computeDiff(a, b, AutogenDatasetBlob::getS3, DiffComputer::computeS3DatasetDiff))
+            .setQuery(
+                computeDiff(
+                    a, b, AutogenDatasetBlob::getQuery, DiffComputer::computeQueryDatasetDiff)));
   }
 
   public static AutogenPathDatasetDiff computePathDatasetDiff(
