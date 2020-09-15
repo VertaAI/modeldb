@@ -197,7 +197,6 @@ class TestDataset extends FunSuite {
       assert(version.id == f.dataset.getLatestVersion().get.id)
 
       val blob = AtlasHiveDatasetBlob(guid).get
-      assert(version.getTags() == blob.tags)
       assert(version.getAttributes().get == blob.attributes)
     } finally {
       cleanup(f)
