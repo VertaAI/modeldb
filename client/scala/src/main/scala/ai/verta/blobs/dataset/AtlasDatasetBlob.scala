@@ -2,7 +2,7 @@ package ai.verta.blobs.dataset
 
 import net.liftweb.json._
 import ai.verta.swagger.client.objects._
-import ai.verta.swagger.client.{HttpClient, BasicAuthorization}
+import ai.verta.swagger.client.{HttpClient, BasicAuthentication}
 import ai.verta.client.entities.utils._
 
 import scala.concurrent.{Await, ExecutionContext}
@@ -44,7 +44,7 @@ object AtlasDatasetBlob {
         ),
         null,
         jsonVal => fromJson(jsonVal, atlasSourceURI), // parser
-        Some(BasicAuthorization(atlasUserName, atlasPassword)) // authentication
+        Some(BasicAuthentication(atlasUserName, atlasPassword)) // authentication
       ),
       Duration.Inf
     ).flatten // Try[Try[AtlasHiveDatasetBlob]] to Try[AtlasHiveDatasetBlob]

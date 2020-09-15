@@ -31,7 +31,7 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
         .reduce((p1, p2) => p1 + "&" + p2)
   }
 
-  def request[T1, T2](method: String, path: String, query: Map[String, List[String]], body: T1, parser: JValue => T2, auth: Option[BasicAuthorization] = None)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
+  def request[T1, T2](method: String, path: String, query: Map[String, List[String]], body: T1, parser: JValue => T2, auth: Option[BasicAuthentication] = None)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
     val safePath = path.split("/").map(urlEncodeUTF8).mkString("/")
 
     if (body == null)
@@ -43,7 +43,7 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
       }
   }
 
-  def requestInternal[T2](method: String, path: String, query: Map[String, List[String]], body: String, parser: JValue => T2, auth: Option[BasicAuthorization] = None)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
+  def requestInternal[T2](method: String, path: String, query: Map[String, List[String]], body: String, parser: JValue => T2, auth: Option[BasicAuthentication] = None)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
     val requestWithAuth = if (auth.isDefined) basicRequest.auth.basic(auth.get.userName, auth.get.password) else basicRequest
     val request = if (body != null) requestWithAuth.body(body) else requestWithAuth
 
