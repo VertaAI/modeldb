@@ -154,7 +154,8 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
     atlasPassword: String = sys.env.get("ATLAS_PASSOWRD").getOrElse(""),
     atlasEntityEndpoint: String = "/api/atlas/v2/entity/bulk"
   )(implicit ec: ExecutionContext) =
-    createVersionFromBlob(AtlasHiveDatasetBlob(guid, atlasURL, atlasUserName, atlasPassword, atlasEntityEndpoint))
+    AtlasHiveDatasetBlob(guid, atlasURL, atlasUserName, atlasPassword, atlasEntityEndpoint)
+      .flatMap(createVersionFromBlob)
 
   /** Gets a version of the dataset by its ID.
    *  @param id ID of the dataset version.
