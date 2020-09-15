@@ -73,7 +73,7 @@ class Resources(object):
 
     def _as_dict(self):
         return {
-            'cpu_millis': int(self.cpu*1000),
+            'cpu_millis': None if self.cpu is None else int(self.cpu*1000),
             'memory': self.memory,
         }
 
