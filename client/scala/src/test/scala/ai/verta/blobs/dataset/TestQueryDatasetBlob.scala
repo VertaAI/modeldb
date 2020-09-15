@@ -16,13 +16,13 @@ class TestQueryDatasetBlob extends FunSuite {
       val query = "SELECT * FROM ner-table"
       val dbConnectionStr = "localhost:6543"
       val numRecords = 100
-      val rdbmsBlob = RDBMSDatasetBlob(query, dbConnectionStr, Some(numRecords))
+      val dbBlob = DBDatasetBlob(query, dbConnectionStr, Some(numRecords))
     }
 
   test("RDBMS blob should save the correct query and connection") {
     val f = fixture
-    assert(f.rdbmsBlob.query.get == f.query)
-    assert(f.rdbmsBlob.dataSourceURI.get == f.dbConnectionStr)
-    assert(f.rdbmsBlob.numRecords.get == f.numRecords)
+    assert(f.dbBlob.query.get == f.query)
+    assert(f.dbBlob.dataSourceURI.get == f.dbConnectionStr)
+    assert(f.dbBlob.numRecords.get == f.numRecords)
   }
 }

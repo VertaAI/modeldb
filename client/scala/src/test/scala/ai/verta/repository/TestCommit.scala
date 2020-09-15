@@ -27,11 +27,11 @@ class TestCommit extends FunSuite {
         val commit = repo.getCommitByBranch().get
         val pathBlob = PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir").get
         val s3Blob = S3(S3Location("s3://verta-scala-test/testdir/testsubdir/testfile2").get).get
-        val rdbmsBlob = RDBMSDatasetBlob(query, dbConnectionStr, Some(numRecords))
+        val dbBlob = DBDatasetBlob(query, dbConnectionStr, Some(numRecords))
     }
 
   def cleanup(
-    f: AnyRef{val client: Client; val repo: Repository; val commit: Commit; val pathBlob: PathBlob; val s3Blob: S3; val rdbmsBlob: RDBMSDatasetBlob}
+    f: AnyRef{val client: Client; val repo: Repository; val commit: Commit; val pathBlob: PathBlob; val s3Blob: S3; val dbBlob: DBDatasetBlob}
   ) = {
     f.client.deleteRepository(f.repo.id)
     f.client.close()
@@ -158,7 +158,7 @@ class TestCommit extends FunSuite {
 
     try {
       val newId = f.commit.update("abc/def", f.pathBlob)
-                          .flatMap(_.update("path/to/query", f.rdbmsBlob))
+                          .flatMap(_.update("path/to/query", f.dbBlob))
                           .flatMap(_.save("Some msg"))
                           .get.id.get
 
