@@ -54,6 +54,11 @@ object AtlasHiveDatasetBlob {
 
         for (
           entityMap <- extractEntity(fieldsMap);
+          checkEntityType <- // return Failure right away if type is not hive table
+            (if (getEntityType(entityMap) == "hive_table")
+              Success(())
+            else
+              Failure(new IllegalArgumentException("Atlas dataset currently supported only for Hive tables.")));
           attributesMap <- getSubMap(entityMap, "attributes");
           relationshipAttributesMap <- getSubMap(entityMap, "relationshipAttributes");
           dbRelationshipAttributesMap <- getSubMap(relationshipAttributesMap, "db");
@@ -90,6 +95,9 @@ object AtlasHiveDatasetBlob {
       case None => Failure(new IllegalArgumentException("\"entities\" field not found."))
     }
   }
+
+  private def getEntityType(entityMap: Map[String, JValue]) =
+    entityMap.get("typeName").map(JsonConverter.fromJsonString).get
 
   // extract a certain field from a json map, which in turn is another map
   private def getSubMap(map: Map[String, JValue], key: String): Try[Map[String, JValue]] =
