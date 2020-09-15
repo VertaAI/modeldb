@@ -151,7 +151,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
     guid: String,
     atlasURL: String = sys.env.get("ATLAS_URL").getOrElse(""),
     atlasUserName: String = sys.env.get("ATLAS_USERNAME").getOrElse(""),
-    atlasPassword: String = sys.env.get("ATLAS_PASSOWRD").getOrElse(""),
+    atlasPassword: String = sys.env.get("ATLAS_PASSWORD").getOrElse(""),
     atlasEntityEndpoint: String = "/api/atlas/v2/entity/bulk"
   )(implicit ec: ExecutionContext) =
     AtlasHiveDatasetBlob(guid, atlasURL, atlasUserName, atlasPassword, atlasEntityEndpoint)
