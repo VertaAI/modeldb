@@ -186,4 +186,17 @@ class TestDataset extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("create version from an atlas hive query") {
+    val f = fixture
+
+    try {
+      val guid: String = ???
+      val version = f.dataset.createAtlasHiveVersion(guid).get
+
+      assert(version.id == f.dataset.getLatestVersion().get.id)
+    } finally {
+      cleanup(f)
+    }
+  }
 }
