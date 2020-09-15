@@ -608,7 +608,7 @@ public class BlobDAORdbImpl implements BlobDAO {
           components = Collections.emptyList();
           LOGGER.info("Found query dataset. Skipping populating datasetinfo");
         } else {
-          LOGGER.error("unexpected error");
+          LOGGER.info("Unknown blob type");
           throw new ModelDBException("Unknown blob type");
         }
         Optional<Long> sum = components.stream().map(DatasetPartInfo::getSize).reduce(Long::sum);

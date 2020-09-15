@@ -104,12 +104,12 @@ public class DeleteEntitiesCron extends TimerTask {
       if (ex instanceof StatusRuntimeException) {
         StatusRuntimeException exception = (StatusRuntimeException) ex;
         if (exception.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-          LOGGER.error("DeleteEntitiesCron Exception: {}", ex.getMessage());
+          LOGGER.info("DeleteEntitiesCron Exception: {}", ex.getMessage());
         } else {
-          LOGGER.error("DeleteEntitiesCron Exception: ", ex);
+          LOGGER.info("DeleteEntitiesCron Exception: ", ex);
         }
       } else {
-        LOGGER.error("DeleteEntitiesCron Exception: ", ex);
+        LOGGER.debug("DeleteEntitiesCron Exception: ", ex);
       }
     } finally {
       ModelDBUtils.unregisteredBackgroundUtilsCount();
@@ -135,7 +135,6 @@ public class DeleteEntitiesCron extends TimerTask {
     Query projectDeleteQuery = session.createQuery(deleteProjectsQueryString);
     projectDeleteQuery.setParameter("deleted", true);
     projectDeleteQuery.setMaxResults(this.recordUpdateLimit);
-    LOGGER.debug("Project delete query: {}", projectDeleteQuery.getQueryString());
     List<ProjectEntity> projectEntities = projectDeleteQuery.list();
 
     List<String> projectIds = new ArrayList<>();
@@ -146,7 +145,7 @@ public class DeleteEntitiesCron extends TimerTask {
       try {
         deleteRoleBindingsForProjects(projectEntities);
       } catch (Exception ex) {
-        LOGGER.error(
+        LOGGER.debug(
             "DeleteEntitiesCron : deleteProjects : deleteRoleBindingsForProjects : Exception: {}",
             ex.getMessage());
       }
@@ -174,7 +173,7 @@ public class DeleteEntitiesCron extends TimerTask {
           session.delete(projectEntity);
         }
       } catch (Exception ex) {
-        LOGGER.error("DeleteEntitiesCron : deleteProjects : Exception: ", ex);
+        LOGGER.debug("DeleteEntitiesCron : deleteProjects : Exception: ", ex);
       } finally {
         transaction.commit();
       }
@@ -252,7 +251,6 @@ public class DeleteEntitiesCron extends TimerTask {
     Query experimentDeleteQuery = session.createQuery(deleteExperimentQueryString);
     experimentDeleteQuery.setParameter("deleted", true);
     experimentDeleteQuery.setMaxResults(this.recordUpdateLimit);
-    LOGGER.debug("Experiment delete query: {}", experimentDeleteQuery.getQueryString());
     List<ExperimentEntity> experimentEntities = experimentDeleteQuery.list();
 
     List<String> experimentIds = new ArrayList<>();
@@ -264,7 +262,7 @@ public class DeleteEntitiesCron extends TimerTask {
       try {
         deleteRoleBindingsForExperiments(experimentEntities);
       } catch (Exception ex) {
-        LOGGER.error(
+        LOGGER.debug(
             "DeleteEntitiesCron : deleteExperiments : deleteRoleBindingsForExperiments : Exception: {}",
             ex.getMessage());
       }
@@ -292,7 +290,7 @@ public class DeleteEntitiesCron extends TimerTask {
           session.delete(experimentEntity);
         }
       } catch (Exception ex) {
-        LOGGER.error("DeleteEntitiesCron : deleteExperiments : Exception:", ex);
+        LOGGER.debug("DeleteEntitiesCron : deleteExperiments : Exception:", ex);
       } finally {
         transaction.commit();
       }
@@ -333,7 +331,6 @@ public class DeleteEntitiesCron extends TimerTask {
     Query experimentRunDeleteQuery = session.createQuery(deleteExperimentRunQueryString);
     experimentRunDeleteQuery.setParameter("deleted", true);
     experimentRunDeleteQuery.setMaxResults(this.recordUpdateLimit);
-    LOGGER.debug("ExperimentRun delete query: {}", experimentRunDeleteQuery.getQueryString());
     List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
 
     List<String> experimentRunIds = new ArrayList<>();
@@ -344,7 +341,7 @@ public class DeleteEntitiesCron extends TimerTask {
       try {
         deleteRoleBindingsForExperimentRuns(experimentRunEntities);
       } catch (Exception ex) {
-        LOGGER.error(
+        LOGGER.debug(
             "DeleteEntitiesCron : deleteExperimentRuns : deleteRoleBindingsForExperimentRuns : Exception: {}",
             ex.getMessage());
       }
@@ -361,7 +358,7 @@ public class DeleteEntitiesCron extends TimerTask {
           session.delete(experimentRunEntity);
         }
       } catch (Exception ex) {
-        LOGGER.error("DeleteEntitiesCron : deleteExperimentRuns : Exception:", ex);
+        LOGGER.debug("DeleteEntitiesCron : deleteExperimentRuns : Exception:", ex);
       } finally {
         transaction.commit();
       }
@@ -403,7 +400,6 @@ public class DeleteEntitiesCron extends TimerTask {
     Query commentDeleteQuery = session.createQuery(commentDeleteHql);
     commentDeleteQuery.setParameterList("entityIds", entityIds);
     commentDeleteQuery.setParameter("entityName", entityName);
-    LOGGER.debug("Comments delete query : {}", commentDeleteQuery.getQueryString());
     List<CommentEntity> commentEntities = commentDeleteQuery.list();
     for (CommentEntity commentEntity : commentEntities) {
       session.delete(commentEntity);
@@ -427,7 +423,6 @@ public class DeleteEntitiesCron extends TimerTask {
     Query datasetDeleteQuery = session.createQuery(deleteDatasetsQueryString);
     datasetDeleteQuery.setParameter("deleted", true);
     datasetDeleteQuery.setMaxResults(this.recordUpdateLimit);
-    LOGGER.debug("Dataset delete query: {}", datasetDeleteQuery.getQueryString());
     List<DatasetEntity> datasetEntities = datasetDeleteQuery.list();
 
     List<String> datasetIds = new ArrayList<>();
@@ -438,7 +433,7 @@ public class DeleteEntitiesCron extends TimerTask {
       try {
         deleteRoleBindingsForDatasets(datasetEntities);
       } catch (Exception ex) {
-        LOGGER.error(
+        LOGGER.debug(
             "DeleteEntitiesCron : deleteDatasets : deleteRoleBindingsForDatasets : Exception: {}",
             ex.getMessage());
       }
@@ -466,7 +461,7 @@ public class DeleteEntitiesCron extends TimerTask {
           session.delete(datasetEntity);
         }
       } catch (Exception ex) {
-        LOGGER.error("DeleteEntitiesCron : deleteDatasets : Exception:", ex);
+        LOGGER.debug("DeleteEntitiesCron : deleteDatasets : Exception:", ex);
       } finally {
         transaction.commit();
       }
@@ -587,14 +582,13 @@ public class DeleteEntitiesCron extends TimerTask {
             .toString();
     Query datasetVersionDeleteQuery = session.createQuery(deleteDatasetVersionsQueryString);
     datasetVersionDeleteQuery.setParameter("deleted", true);
-    LOGGER.debug("DatasetVersion delete query: {}", datasetVersionDeleteQuery.getQueryString());
     List<DatasetVersionEntity> datasetVersionEntities = datasetVersionDeleteQuery.list();
 
     try {
       // Remove all role bindings
       deleteRoleBindingsForDatasetVersions(datasetVersionEntities);
     } catch (Exception ex) {
-      LOGGER.error(
+      LOGGER.debug(
           "DeleteEntitiesCron : deleteDatasetVersions : deleteRoleBindingsForDatasetVersions : Exception: {}",
           ex.getMessage());
     }
@@ -605,7 +599,7 @@ public class DeleteEntitiesCron extends TimerTask {
         session.delete(datasetVersionEntity);
       }
     } catch (Exception ex) {
-      LOGGER.error("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
+      LOGGER.debug("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
     } finally {
       transaction.commit();
     }
@@ -651,7 +645,6 @@ public class DeleteEntitiesCron extends TimerTask {
             .toString();
     Query repositoryDeleteQuery = session.createQuery(deleteRepositoriesQueryString);
     repositoryDeleteQuery.setParameter("deleted", true);
-    LOGGER.debug("Repository delete query: {}", repositoryDeleteQuery.getQueryString());
     List<RepositoryEntity> repositoryEntities = repositoryDeleteQuery.list();
 
     if (!repositoryEntities.isEmpty()) {
@@ -659,7 +652,7 @@ public class DeleteEntitiesCron extends TimerTask {
         try {
           deleteRoleBindingsOfRepositories(Collections.singletonList(repository));
         } catch (Exception ex) {
-          LOGGER.error(
+          LOGGER.debug(
               "DeleteEntitiesCron : deleteRepositories : deleteRoleBindingsOfRepositories : Exception: {}",
               ex.getMessage());
         }
@@ -746,7 +739,7 @@ public class DeleteEntitiesCron extends TimerTask {
               });
           session.delete(repository);
         } catch (Exception ex) {
-          LOGGER.error("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
+          LOGGER.debug("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
         } finally {
           transaction.commit();
         }
