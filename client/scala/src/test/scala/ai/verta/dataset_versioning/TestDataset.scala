@@ -38,7 +38,7 @@ class TestDataset extends FunSuite {
       val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
       val version = f.dataset.createPathVersion(List(testDir)).get
 
-      assert(version.getTags().get == Nil)
+      assert(version.getTags().get.isEmpty)
       version.addTag("tag-1")
       version.addTags(List("tag-2", "tag-3"))
 
@@ -55,7 +55,7 @@ class TestDataset extends FunSuite {
     val f = fixture
 
     try {
-      assert(f.dataset.getTags().get == Nil)
+      assert(f.dataset.getTags().get.isEmpty)
       f.dataset.addTag("tag-1")
       f.dataset.addTags(List("tag-2", "tag-3"))
 
