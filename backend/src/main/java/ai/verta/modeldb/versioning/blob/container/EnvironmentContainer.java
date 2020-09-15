@@ -102,7 +102,7 @@ public class EnvironmentContainer extends BlobContainer {
         }
         break;
       default:
-        throw new ModelDBException("Blob unknown type", Code.INTERNAL);
+        throw new ModelDBException("ENVIRONMENT_BLOB has unknown type", Code.INTERNAL);
     }
     if (!blobHashes.contains(environmentBlobEntity.getBlob_hash())) {
       entities.add(environmentBlobEntity);

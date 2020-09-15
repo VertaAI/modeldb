@@ -118,7 +118,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteProjects(Session session) {
-    LOGGER.debug("Project deleting");
+    LOGGER.trace("Project deleting");
     String alias = "pr";
     String deleteProjectsQueryString =
         new StringBuilder("FROM ")
@@ -239,7 +239,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteExperiments(Session session) {
-    LOGGER.debug("Experiment deleting");
+    LOGGER.trace("Experiment deleting");
     String deleteExperimentQueryString =
         new StringBuilder("FROM ")
             .append(ExperimentEntity.class.getSimpleName())
@@ -319,7 +319,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteExperimentRuns(Session session) {
-    LOGGER.debug("ExperimentRun deleting");
+    LOGGER.trace("ExperimentRun deleting");
     String deleteExperimentRunQueryString =
         new StringBuilder("FROM ")
             .append(ExperimentRunEntity.class.getSimpleName())
@@ -407,7 +407,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteDatasets(Session session) {
-    LOGGER.debug("Dataset deleting");
+    LOGGER.trace("Dataset deleting");
     String alias = "dt";
     String deleteDatasetsQueryString =
         new StringBuilder("FROM ")
@@ -567,7 +567,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteDatasetVersions(Session session) {
-    LOGGER.debug("DatasetVersion deleting");
+    LOGGER.trace("DatasetVersion deleting");
     String alias = "dv";
     String deleteDatasetVersionsQueryString =
         new StringBuilder("FROM ")
@@ -630,7 +630,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteRepositories(Session session) {
-    LOGGER.debug("Repository deleting");
+    LOGGER.trace("Repository deleting");
     String alias = "rp";
     String deleteRepositoriesQueryString =
         new StringBuilder("FROM ")

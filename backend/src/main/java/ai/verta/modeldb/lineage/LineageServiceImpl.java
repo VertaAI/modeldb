@@ -150,7 +150,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       case DATASET_VERSION:
         return commitDAO.isCommitExists(session, id);
       default:
-        throw new ModelDBException("Unexpected type", Code.INTERNAL);
+        throw new ModelDBException("Unexpected LineageEntryType found", Code.INTERNAL);
     }
   }
 }
