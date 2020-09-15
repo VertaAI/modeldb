@@ -154,8 +154,13 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
     atlasPassword: String = sys.env.get("ATLAS_PASSWORD").getOrElse(""),
     atlasEntityEndpoint: String = "/api/atlas/v2/entity/bulk"
   )(implicit ec: ExecutionContext) =
-    AtlasHiveDatasetBlob(guid, atlasURL, atlasUserName, atlasPassword, atlasEntityEndpoint)
-      .flatMap(createVersionFromBlob)
+    for (
+      blob <- AtlasHiveDatasetBlob(guid, atlasURL, atlasUserName, atlasPassword, atlasEntityEndpoint);
+      datasetVersion <- createVersionFromBlob(blob);
+      // skip adding tags and attributes if they are empty:
+      _ <- if (blob.tags.isEmpty) Success(()) else datasetVersion.addTags(blob.tags);
+      _ <- if (blob.attributes.isEmpty) Success(()) else datasetVersion.addAttributes(blob.attributes)
+    ) yield datasetVersion
 
   /** Gets a version of the dataset by its ID.
    *  @param id ID of the dataset version.

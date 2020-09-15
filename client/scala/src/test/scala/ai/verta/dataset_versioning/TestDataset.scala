@@ -2,7 +2,7 @@ package ai.verta.dataset_versioning
 
 import ai.verta.client._
 import ai.verta.dataset_versioning._
-import ai.verta.blobs.dataset.S3Location
+import ai.verta.blobs.dataset.{S3Location, AtlasHiveDatasetBlob}
 import ai.verta.client.entities.utils.ValueType
 import ai.verta.client.entities.utils.ValueType
 import ai.verta.blobs.dataset.S3Location
@@ -195,6 +195,10 @@ class TestDataset extends FunSuite {
       val version = f.dataset.createAtlasHiveVersion(guid).get
 
       assert(version.id == f.dataset.getLatestVersion().get.id)
+
+      val blob = AtlasHiveDatasetBlob(guid).get
+      assert(version.getTags() == blob.tags)
+      assert(version.getAttributes().get == blob.attributes)
     } finally {
       cleanup(f)
     }
