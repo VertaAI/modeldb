@@ -140,6 +140,13 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
   )(implicit ec: ExecutionContext) =
     createVersionFromBlob(DBDatasetBlob(query, dbConnectionStr, numRecords, executionTimestamp))
 
+  /** Creates a dataset version from an Atlas Hive table.
+   *  @param guid guid of the table
+   *  @param atlasURL Atlas url. Picked up from environment by default.
+   *  @param atlasUserName Atlas user name. Picked up from environment by default.
+   *  @param atlasPassword Atlas password. Picked up from environment by default.
+   *  @param atlasEntityEndpoint Atlas endpoint to query.
+   */
   def createAtlasHiveVersion(
     guid: String,
     atlasURL: String = sys.env.get("ATLAS_URL").getOrElse(""),
