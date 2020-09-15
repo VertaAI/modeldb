@@ -191,7 +191,7 @@ class TestDataset extends FunSuite {
     val f = fixture
 
     try {
-      val guid: String = ???
+      val guid: String = sys.env.get("GUID").get
       val version = f.dataset.createAtlasHiveVersion(guid).get
 
       assert(version.id == f.dataset.getLatestVersion().get.id)
