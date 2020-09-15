@@ -8,7 +8,7 @@ import ai.verta.client.entities.utils._
 import ai.verta.client.entities.utils._
 import net.liftweb.json._
 
-import ai.verta.blobs.dataset.{PathBlob, S3, S3Location, RDBMSDatasetBlob, QueryDatasetBlob}
+import ai.verta.blobs.dataset.{PathBlob, S3, S3Location, DBDatasetBlob, AtlasHiveDatasetBlob, QueryDatasetBlob}
 import ai.verta.swagger._public.modeldb.model._
 import ai.verta.swagger.client.ClientSet
 
@@ -126,19 +126,28 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
   def createS3Version(locations: List[S3Location])(implicit ec: ExecutionContext): Try[DatasetVersion] =
     S3(locations).flatMap(createVersionFromBlob)
 
-  /** Creates a RDBMS dataset version.
+  /** Creates a database dataset version.
    *  @param query database query
    *  @param  dbConnectionStr connection to database.
    *  @param numRecords number of records of the dataset.
    *  @param executionTimestamp timestamp of the query execution.
    */
-  def createRDBMSVersion(
+  def createDBVersion(
     query: String,
     dbConnectionStr: String,
     numRecords: Option[BigInt] = None,
     executionTimestamp: Option[BigInt] = None
   )(implicit ec: ExecutionContext) =
-    createVersionFromBlob(RDBMSDatasetBlob(query, dbConnectionStr, numRecords, executionTimestamp))
+    createVersionFromBlob(DBDatasetBlob(query, dbConnectionStr, numRecords, executionTimestamp))
+
+  def createAtlasHiveVersion(
+    guid: String,
+    atlasURL: String = sys.env.get("ATLAS_URL").getOrElse(""),
+    atlasUserName: String = sys.env.get("ATLAS_USERNAME").getOrElse(""),
+    atlasPassword: String = sys.env.get("ATLAS_PASSOWRD").getOrElse(""),
+    atlasEntityEndpoint: String = "/api/atlas/v2/entity/bulk"
+  )(implicit ec: ExecutionContext) =
+    createVersionFromBlob(AtlasHiveDatasetBlob(guid, atlasURL, atlasUserName, atlasPassword, atlasEntityEndpoint))
 
   /** Gets a version of the dataset by its ID.
    *  @param id ID of the dataset version.
