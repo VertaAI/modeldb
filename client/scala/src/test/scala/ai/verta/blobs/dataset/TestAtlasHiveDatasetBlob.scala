@@ -17,13 +17,12 @@ class TestAtlasHiveDatasetBlob extends FunSuite {
   test("Atlas hive blob should save the correct query and connection") {
     val guid: String = sys.env.get("GUID").get
     val expectedNumRecords: BigInt = 8279779
-    // val expectedDatabaseName: String = hive_table
-    // val expectedTableName: String = "trip_details_by_zone"
-    // val expectedQuery: String = f"select * from ${expectedDatabaseName}.${expectedTableName}"
+    val expectedDatabaseName: String = "default"
+    val expectedTableName: String = "trip_details_by_zone"
+    val expectedQuery: String = f"select * from ${expectedDatabaseName}.${expectedTableName}"
 
     val atlasHiveBlob = AtlasHiveDatasetBlob(guid).get
-    // assert(atlasHiveBlob.query.get == expectedQuery)
-    println(atlasHiveBlob.query.get)
+    assert(atlasHiveBlob.query.get == expectedQuery)
     assert(atlasHiveBlob.numRecords.get == expectedNumRecords)
   }
 }
