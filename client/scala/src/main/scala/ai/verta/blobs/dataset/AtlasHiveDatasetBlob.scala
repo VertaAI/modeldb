@@ -96,7 +96,7 @@ object AtlasHiveDatasetBlob {
     if (getEntityType(entityMap) == "hive_table")
       Success(())
     else
-      Failure(new IllegalArgumentException("Atlas dataset currently supported only for Hive tables.")
+      Failure(new IllegalArgumentException("Atlas dataset currently supported only for Hive tables."))
 
   private def getEntityType(entityMap: Map[String, JValue]) =
     entityMap.get("typeName").map(JsonConverter.fromJsonString).get
