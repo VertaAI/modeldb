@@ -85,13 +85,10 @@ object AtlasHiveDatasetBlob {
   // equivalent to table_obj["entities"][0]
   private def extractEntity(fieldsMap: Map[String, JValue]): Try[Map[String, JValue]] = {
     fieldsMap.get("entities") match {
-      case Some(JArray(elements)) => {
-        val head = elements.head
-
-        head match {
-          case JObject(entityFields) => Success(entityFields.map(f => (f.name, f.value)).toMap)
-          case _ => Failure(new IllegalArgumentException(s"unknown type ${head.getClass.toString}"))
-        }
+      case Some(JArray(elements)) => elements.headOption match {
+        case Some(JObject(entityFields)) => Success(entityFields.map(f => (f.name, f.value)).toMap)
+        case Some(other) => Failure(new IllegalArgumentException(s"unknown type ${other.getClass.toString}")) // does this case happen?
+        case None => Failure(new IllegalArgumentException(s"no entity found."))
       }
       case Some(other) => Failure(new IllegalArgumentException(s"unknown type ${other.getClass.toString}"))
       case None => Failure(new IllegalArgumentException("\"entities\" field not found."))
