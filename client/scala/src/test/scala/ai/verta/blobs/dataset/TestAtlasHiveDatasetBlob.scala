@@ -33,5 +33,8 @@ class TestAtlasHiveDatasetBlob extends FunSuite {
     assert(attributes.get("type").get.asString.get == expectedType)
     assert(attributes.get("created_time").isDefined)
     assert(attributes.get("updated_time").isDefined)
+
+    /** TODO: find a dataset with non-empty tags */
+    assert(atlasHiveBlob.tags.isEmpty)
   }
 }
