@@ -8,7 +8,7 @@ import ai.verta.client.entities.utils._
 import ai.verta.client.entities.utils._
 import net.liftweb.json._
 
-import ai.verta.blobs.dataset.{PathBlob, S3, S3Location, DBDatasetBlob, AtlasHiveDatasetBlob, QueryDatasetBlob}
+import ai.verta.blobs.dataset.{PathBlob, S3, S3Location, DBDatasetBlob, AtlasDatasetBlob, QueryDatasetBlob}
 import ai.verta.swagger._public.modeldb.model._
 import ai.verta.swagger.client.ClientSet
 
@@ -42,7 +42,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
    *  @return tags of this dataset.
    */
   def getTags()(implicit ec: ExecutionContext): Try[List[String]] =
-    getMessage().map(dataset => dataset.tags.get)
+    getMessage().map(dataset => dataset.tags.getOrElse(Nil))
 
   private def getMessage()(implicit ec: ExecutionContext): Try[ModeldbDataset] =
     clientSet.datasetService.DatasetService_getDatasetById(Some(id))
@@ -147,7 +147,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
    *  @param atlasPassword Atlas password. Picked up from environment by default.
    *  @param atlasEntityEndpoint Atlas endpoint to query.
    */
-  def createAtlasHiveVersion(
+  def createAtlasVersion(
     guid: String,
     atlasURL: String = sys.env.get("ATLAS_URL").getOrElse(""),
     atlasUserName: String = sys.env.get("ATLAS_USERNAME").getOrElse(""),
@@ -155,7 +155,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
     atlasEntityEndpoint: String = "/api/atlas/v2/entity/bulk"
   )(implicit ec: ExecutionContext) =
     for (
-      blob <- AtlasHiveDatasetBlob(guid, atlasURL, atlasUserName, atlasPassword, atlasEntityEndpoint);
+      blob <- AtlasDatasetBlob(guid, atlasURL, atlasUserName, atlasPassword, atlasEntityEndpoint);
       datasetVersion <- createVersionFromBlob(blob);
       // skip adding tags and attributes if they are empty:
       _ <- if (blob.tags.isEmpty) Success(()) else datasetVersion.addTags(blob.tags);

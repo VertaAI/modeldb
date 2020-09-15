@@ -2,7 +2,7 @@ package ai.verta.dataset_versioning
 
 import ai.verta.client._
 import ai.verta.dataset_versioning._
-import ai.verta.blobs.dataset.{S3Location, AtlasHiveDatasetBlob}
+import ai.verta.blobs.dataset.{S3Location, AtlasDatasetBlob}
 import ai.verta.client.entities.utils.ValueType
 import ai.verta.client.entities.utils.ValueType
 import ai.verta.blobs.dataset.S3Location
@@ -38,6 +38,7 @@ class TestDataset extends FunSuite {
       val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
       val version = f.dataset.createPathVersion(List(testDir)).get
 
+      assert(version.getTags().get.isEmpty)
       version.addTag("tag-1")
       version.addTags(List("tag-2", "tag-3"))
 
@@ -54,6 +55,7 @@ class TestDataset extends FunSuite {
     val f = fixture
 
     try {
+      assert(f.dataset.getTags().get.isEmpty)
       f.dataset.addTag("tag-1")
       f.dataset.addTags(List("tag-2", "tag-3"))
 
@@ -75,6 +77,7 @@ class TestDataset extends FunSuite {
       val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
       val version = f.dataset.createPathVersion(List(testDir)).get
 
+      assert(version.getAttributes().get.isEmpty)
       version.addAttribute("some", 0.5)
       version.addAttribute("int", 4)
       version.addAttributes(Map("other" -> 0.3, "string" -> "desc"))
@@ -96,6 +99,8 @@ class TestDataset extends FunSuite {
     val f = fixture
 
     try {
+      assert(f.dataset.getAttributes().get.isEmpty)
+
       f.dataset.addAttribute("some", 0.5)
       f.dataset.addAttribute("int", 4)
       f.dataset.addAttributes(Map("other" -> 0.3, "string" -> "desc"))
@@ -192,11 +197,11 @@ class TestDataset extends FunSuite {
 
     try {
       val guid: String = sys.env.get("GUID").get
-      val version = f.dataset.createAtlasHiveVersion(guid).get
+      val version = f.dataset.createAtlasVersion(guid).get
 
       assert(version.id == f.dataset.getLatestVersion().get.id)
 
-      val blob = AtlasHiveDatasetBlob(guid).get
+      val blob = AtlasDatasetBlob(guid).get
       assert(version.getTags().get == blob.tags)
       assert(version.getAttributes().get == blob.attributes)
     } finally {
