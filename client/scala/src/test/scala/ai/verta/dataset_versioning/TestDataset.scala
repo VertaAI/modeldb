@@ -180,7 +180,7 @@ class TestDataset extends FunSuite {
       val dbConnectionStr = "localhost:6543"
       val numRecords = 100
 
-      val version = f.dataset.createRDBMSVersion(query, dbConnectionStr, Some(numRecords)).get
+      val version = f.dataset.createDBVersion(query, dbConnectionStr, Some(numRecords)).get
       assert(version.id == f.dataset.getLatestVersion().get.id)
     } finally {
       cleanup(f)
