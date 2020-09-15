@@ -11,7 +11,7 @@ import org.scalatest.Assertions._
 
 import java.io.FileNotFoundException
 
-class TestAtlasHiveDatasetBlob extends FunSuite {
+class TestAtlasDatasetBlob extends FunSuite {
   implicit val ec = ExecutionContext.global
 
   test("Atlas hive blob should save the correct query and connection") {
@@ -22,12 +22,12 @@ class TestAtlasHiveDatasetBlob extends FunSuite {
     val expectedType = "hive_table"
     val expectedQuery = f"select * from ${expectedDatabaseName}.${expectedTableName}"
 
-    val atlasHiveBlob = AtlasHiveDatasetBlob(guid).get
+    val atlasBlob = AtlasDatasetBlob(guid).get
 
-    assert(atlasHiveBlob.query.get == expectedQuery)
-    assert(atlasHiveBlob.numRecords.get == expectedNumRecords)
+    assert(atlasBlob.query.get == expectedQuery)
+    assert(atlasBlob.numRecords.get == expectedNumRecords)
 
-    val attributes = atlasHiveBlob.attributes
+    val attributes = atlasBlob.attributes
     assert(attributes.get("table_name").get.asString.get == expectedTableName)
     assert(attributes.get("database_name").get.asString.get == expectedDatabaseName)
     assert(attributes.get("type").get.asString.get == expectedType)
@@ -35,6 +35,6 @@ class TestAtlasHiveDatasetBlob extends FunSuite {
     assert(attributes.get("updated_time").isDefined)
 
     /** TODO: find a dataset with non-empty tags */
-    assert(atlasHiveBlob.tags.isEmpty)
+    assert(atlasBlob.tags.isEmpty)
   }
 }

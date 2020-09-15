@@ -9,9 +9,9 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Try, Success, Failure}
 import scala.concurrent.duration.Duration
 
-/** Represents a dataset from a query to an Atlas Hive table.
+/** Represents a dataset from a query to Atlas. Currently only supports hive tables.
  */
-class AtlasHiveDatasetBlob(
+class AtlasDatasetBlob(
   private val atlasQuery: String,
   private val atlasSourceURI: String,
   override val numRecords: Option[BigInt] = None,
@@ -25,14 +25,14 @@ class AtlasHiveDatasetBlob(
   override val dataSourceURI = Some(atlasSourceURI)
 }
 
-object AtlasHiveDatasetBlob {
+object AtlasDatasetBlob {
   def apply(
     guid: String,
     atlasURL: String = sys.env.get("ATLAS_URL").getOrElse(""),
     atlasUserName: String = sys.env.get("ATLAS_USERNAME").getOrElse(""),
     atlasPassword: String = sys.env.get("ATLAS_PASSWORD").getOrElse(""),
     atlasEntityEndpoint: String = "/api/atlas/v2/entity/bulk"
-  )(implicit ec: ExecutionContext): Try[AtlasHiveDatasetBlob] = {
+  )(implicit ec: ExecutionContext): Try[AtlasDatasetBlob] = {
     val atlasSourceURI = f"${atlasURL}/index.html#!/detailPage/${guid}"
     val httpClient = new HttpClient(atlasURL, Map())
     Await.result(
@@ -50,7 +50,7 @@ object AtlasHiveDatasetBlob {
     ).flatten // Try[Try[AtlasHiveDatasetBlob]] to Try[AtlasHiveDatasetBlob]
   }
 
-  private def fromJson(value: JValue, atlasSourceURI: String): Try[AtlasHiveDatasetBlob] =
+  private def fromJson(value: JValue, atlasSourceURI: String): Try[AtlasDatasetBlob] =
     value match {
       case JObject(fields) => {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
@@ -75,7 +75,7 @@ object AtlasHiveDatasetBlob {
           // this is based on the Python client, but is it correct?
           val executionTimestamp = System.currentTimeMillis()
 
-          new AtlasHiveDatasetBlob(atlasQuery, atlasSourceURI, Some(numRecords), Some(executionTimestamp), tags, attributes)
+          new AtlasDatasetBlob(atlasQuery, atlasSourceURI, Some(numRecords), Some(executionTimestamp), tags, attributes)
         }
       }
       case _ => Failure(throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}"))
