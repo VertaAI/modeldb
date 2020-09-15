@@ -54,7 +54,7 @@ object AtlasHiveDatasetBlob {
 
         for (
           entityMap <- extractEntity(fieldsMap);
-          checkEntityType <- checkEntityType() // return Failure right away if type is not hive table
+          checkEntityType <- checkEntityType(); // return Failure right away if type is not hive table
           attributesMap <- getSubMap(entityMap, "attributes");
           relationshipAttributesMap <- getSubMap(entityMap, "relationshipAttributes");
           dbRelationshipAttributesMap <- getSubMap(relationshipAttributesMap, "db");
