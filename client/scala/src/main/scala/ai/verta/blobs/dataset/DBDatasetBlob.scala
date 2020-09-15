@@ -3,7 +3,7 @@ package ai.verta.blobs.dataset
 import ai.verta.swagger._public.modeldb.versioning.model._
 import ai.verta.blobs._
 
-/** Captures metadata about a dataset from a RMDBS database query.
+/** Captures metadata about a dataset from a database query.
  */
 case class DBDatasetBlob(
   private val rdbmsQuery: String,

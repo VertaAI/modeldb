@@ -7,7 +7,7 @@ import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.ExecutionContext
 
-/** Captures metadata about a dataset from a database query.
+/** Captures metadata about a dataset from a query.
  */
 trait QueryDatasetBlob extends Dataset {
   val query: Option[String] = None
