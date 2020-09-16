@@ -20,6 +20,22 @@ class DatasetVersion(
   /** ID of the dataset version. */
   def id = datasetVersion.id.get
 
+  /** Sets the description of this dataset version.
+   *  @param description Description to set.
+   */
+  def setDescription(description: String)(implicit ec: ExecutionContext): Try[Unit] =
+    clientSet.datasetVersionService.DatasetVersionService_updateDatasetVersionDescription(ModeldbUpdateDatasetVersionDescription(
+      description = Some(description),
+      id = Some(id)
+    ))
+      .map(_ => ())
+
+  /** Gets the description of this dataset version.
+   *  @return Description of this dataset version.
+   */
+  def getDescription()(implicit ec: ExecutionContext): Try[String] =
+    getMessage().map(datasetVersion => datasetVersion.description.getOrElse(""))
+
   // TODO: add overwrite
   /** Add tags to this dataset version.
    *  @param tags tags to add.
