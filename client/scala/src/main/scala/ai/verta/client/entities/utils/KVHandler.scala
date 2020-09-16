@@ -13,6 +13,8 @@ object KVHandler {
       Success(v.int_value.get)
     else if (v.string_value.isDefined)
       Success(v.string_value.get)
+    else if (v.list_value.isDefined)
+      Try(v.list_value.get.map(obj => convertToValueType(obj, err)).map(_.get))
     else
       Failure(new IllegalArgumentException(err))
   }
@@ -22,6 +24,9 @@ object KVHandler {
       case IntValueType(x) => Success(new GenericObject(int_value = Some(x)))
       case DoubleValueType(x) => Success(new GenericObject(double_value = Some(x)))
       case StringValueType(x) => Success(new GenericObject(string_value = Some(x)))
+      case ListValueType(xs) =>
+        Try(xs.map(x => convertFromValueType(x, err)).map(_.get))
+          .map(list => new GenericObject(list_value = Some(list)))
     }
   }
 
