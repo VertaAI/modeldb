@@ -570,6 +570,17 @@ public class BlobDAORdbImpl implements BlobDAO {
         if (labels.size() > 0) {
           datasetVersionBuilder.addAllTags(labels);
         }
+        String version =
+            metadataDAO.getProperty(
+                session,
+                IdentificationType.newBuilder()
+                    .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+                    .setStringId(compositeId)
+                    .build(),
+                ModelDBConstants.VERSION);
+        if (version != null) {
+          datasetVersionBuilder.setVersion(Long.parseLong(version));
+        }
         datasetVersionBuilder.setDatasetVersionVisibilityValue(
             repositoryEntity.getRepository_visibility());
         datasetVersionBuilder.addAllAttributes(getComponentResponse.getAttributesList());
@@ -593,6 +604,9 @@ public class BlobDAORdbImpl implements BlobDAO {
                   .map(S3DatasetComponentBlob::getPath)
                   .map(this::getPathInfo)
                   .collect(Collectors.toList());
+        } else if (dataset.hasQuery()) {
+          components = Collections.emptyList();
+          LOGGER.info("Found query dataset. Skipping populating datasetinfo");
         } else {
           LOGGER.error("unexpected error");
           throw new ModelDBException("Unknown blob type");
@@ -1219,6 +1233,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     Commit internalCommit =
         Commit.newBuilder()
             .setDateCreated(timeCreated)
+            .setDateUpdated(timeCreated)
             .setAuthor(author)
             .setMessage(commitMessage)
             .setCommitSha(commitSha)

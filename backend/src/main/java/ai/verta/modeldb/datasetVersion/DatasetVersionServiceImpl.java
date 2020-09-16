@@ -101,6 +101,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       throws ModelDBException {
     DatasetVersion.Builder datasetVersionBuilder =
         DatasetVersion.newBuilder()
+            .setVersion(request.getVersion())
             .setDatasetId(request.getDatasetId())
             .setDescription(request.getDescription())
             .addAllTags(request.getTagsList())
@@ -337,26 +338,54 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
       }
 
-      // TODO: Implement sort key in future
-      /*String sortKey =
-      request.getSortKey().isEmpty() ? ModelDBConstants.TIME_LOGGED : request.getSortKey();*/
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
 
-      int pageNumber = request.getAscending() ? 2 : 1;
-      DatasetVersionDTO datasetVersionDTO =
-          getDatasetVersionDTOByDatasetId(
-              request.getDatasetId(), pageNumber, 1, request.getAscending());
-
-      if (datasetVersionDTO.getDatasetVersions().size() != 1) {
+      FindRepositoriesBlobs.Builder findRepositoriesBlobs =
+          FindRepositoriesBlobs.newBuilder()
+              .addRepoIds(Integer.parseInt(request.getDatasetId()))
+              .setPageLimit(1)
+              .setPageNumber(1);
+      String sortKey =
+          request.getSortKey().isEmpty() ? ModelDBConstants.DATE_CREATED : request.getSortKey();
+      CommitPaginationDTO commitPaginationDTO =
+          commitDAO.findCommits(
+              findRepositoriesBlobs.build(),
+              currentLoginUserInfo,
+              false,
+              false,
+              true,
+              sortKey,
+              request.getAscending());
+      if (commitPaginationDTO.getCommitEntities().size() != 1) {
         logAndThrowError(
             "No datasetVersion found for dataset '" + request.getDatasetId() + "'",
             Code.NOT_FOUND_VALUE,
             Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
       }
 
+      RepositoryEntity repositoryEntity = null;
+      if (!request.getDatasetId().isEmpty()) {
+        RepositoryIdentification repositoryIdentification =
+            RepositoryIdentification.newBuilder()
+                .setRepoId(Long.parseLong(request.getDatasetId()))
+                .build();
+        repositoryEntity =
+            repositoryDAO.getProtectedRepositoryById(repositoryIdentification, false);
+      }
+      List<DatasetVersion> datasetVersions =
+          new ArrayList<>(
+              convertRepoDatasetVersions(repositoryEntity, commitPaginationDTO.getCommits()));
+
+      if (datasetVersions.size() != 1) {
+        logAndThrowError(
+            "No datasetVersion found for dataset '" + request.getDatasetId() + "'",
+            Code.NOT_FOUND_VALUE,
+            Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
+      }
       /*Build response*/
       responseObserver.onNext(
           GetLatestDatasetVersionByDatasetId.Response.newBuilder()
-              .setDatasetVersion(datasetVersionDTO.getDatasetVersions().get(0))
+              .setDatasetVersion(datasetVersions.get(0))
               .build());
       responseObserver.onCompleted();
 

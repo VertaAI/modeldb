@@ -79,7 +79,7 @@ class Path(_dataset._Dataset):
                 component.path = path
 
                 # track base path
-                component._base_path = base_path
+                component.base_path = base_path
 
         self._components_map.update({
             component.path: component
@@ -145,8 +145,8 @@ class Path(_dataset._Dataset):
 
         for component in self._components_map.values():
             # reconstruct original filepaths with removed `base_path`s
-            if component._base_path:
-                filepath = os.path.join(component._base_path, component.path)
+            if component.base_path:
+                filepath = os.path.join(component.base_path, component.path)
             else:
                 filepath = component.path
             filepath = os.path.abspath(filepath)

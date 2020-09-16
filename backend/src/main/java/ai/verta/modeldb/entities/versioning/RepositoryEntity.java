@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.common.KeyValue;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -42,8 +43,21 @@ public class RepositoryEntity {
       throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
-    this.date_created = new Date().getTime();
-    this.date_updated = new Date().getTime();
+    if (App.getInstance().getStoreClientCreationTimestamp()) {
+      if (repository.getDateCreated() != 0L) {
+        this.date_created = repository.getDateCreated();
+      } else {
+        this.date_created = new Date().getTime();
+      }
+      if (repository.getDateUpdated() != 0L) {
+        this.date_updated = repository.getDateUpdated();
+      } else {
+        this.date_updated = new Date().getTime();
+      }
+    } else {
+      this.date_created = new Date().getTime();
+      this.date_updated = new Date().getTime();
+    }
     this.repository_visibility = repository.getRepositoryVisibilityValue();
     if (workspaceDTO.getWorkspaceId() != null) {
       this.workspace_id = workspaceDTO.getWorkspaceId();

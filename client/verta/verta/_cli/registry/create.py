@@ -24,10 +24,10 @@ def create():
 
 @create.command(name="registeredmodel")
 @click.argument("model_name", nargs=1, required=True)
+@click.option("--description", "-d", help="Description.")
 @click.option("--label", "-l", multiple=True, help="Labels to be associated with the object.")
 @click.option("--visibility", "-v", default="private", show_default=True, type=click.Choice(["private", "org"], case_sensitive=False), help="Visibility level of the object.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-@click.option("--description", "-d", help="Description.")
 def create_model(model_name, label, visibility, workspace, description):
     """Create a new registeredmodel entry.
     """
@@ -42,16 +42,16 @@ def create_model(model_name, label, visibility, workspace, description):
 @create.command(name="registeredmodelversion")
 @click.argument("model_name", nargs=1, required=True)
 @click.argument("version_name", nargs=1, required=True)
-@click.option("--label", "-l", multiple=True, help="Labels to be associated with the object.")
-@click.option("--model", help="Path to the model.")
-@click.option("--custom-module", type=click.Path(exists=True), multiple=True, help="Path to custom module file or directory.")
-@click.option("--no-custom-modules", help="Flag to not upload any custom modules.", is_flag=True)
 @click.option("--artifact", type=str, multiple=True, help="Path to an artifact required for the model. The format is --artifact artifact_key=path_to_artifact.")
-@click.option("--workspace", "-w", help="Workspace to use.")
-@click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
+@click.option("--attribute", type=str, multiple=True, help="Attribute to be associated with the model version. The format is --attribute attribute_key=value.")
+@click.option("--custom-module", type=click.Path(exists=True), multiple=True, help="Path to custom module file or directory.")
 @click.option("--from-run", type=str, help="ID of the Experiment Run to enter into the model registry. This option cannot be provided alongside other options, except for --workspace.")
 @click.option("--description", "-d", help="Description.")
-@click.option("--attribute", type=str, multiple=True, help="Attribute to be associated with the model version. The format is --attribute attribute_key=value.")
+@click.option("--label", "-l", multiple=True, help="Labels to be associated with the object.")
+@click.option("--model", help="Path to the model.")
+@click.option("--no-custom-modules", help="Flag to not upload any custom modules.", is_flag=True)
+@click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
+@click.option("--workspace", "-w", help="Workspace to use.")
 @click.pass_context
 def create_model_version(ctx, model_name, version_name, label, model, custom_module,
                          no_custom_modules, artifact, workspace, requirements, from_run,

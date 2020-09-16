@@ -74,4 +74,31 @@
         <tagDatabase tag="db_version_2.2"/>
     </changeSet>
 
+    <changeSet id="create-query_dataset_component_blob-table" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="query_dataset_component_blob"/>
+            </not>
+        </preConditions>
+        <createTable tableName="query_dataset_component_blob">
+            <column name="query_dataset_blob_id" type="varchar(64)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_query_dataset_component"/>
+            </column>
+            <column name="blob_hash" type="varchar(64)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_query_dataset_component"/>
+            </column>
+            <column name="query" type="text"/>
+            <column name="data_source_uri" type="text"/>
+            <column name="execution_timestamp" type="int8"/>
+            <column name="num_records" type="int8"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="query_dataset_component_blob"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.3" author="anandJ">
+        <tagDatabase tag="db_version_2.3"/>
+    </changeSet>
+
 </databaseChangeLog>
