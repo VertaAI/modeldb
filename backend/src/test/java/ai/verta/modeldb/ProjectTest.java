@@ -65,7 +65,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -2426,123 +2425,6 @@ public class ProjectTest {
     }
 
     LOGGER.info("Get Project ReadMe test stop................................");
-  }
-
-  @Ignore("to be revisited after workspace stabilization")
-  @Test
-  public void o_getPublicProjects() {
-    LOGGER.info("Get Public Project test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ProjectServiceBlockingStub client2ProjectServiceStub =
-        ProjectServiceGrpc.newBlockingStub(client2Channel);
-    List<Project> expectedPublicProjectList = new ArrayList<>();
-    // Create public project
-    // Public project 1
-    CreateProject createProjectRequest = getCreateProjectRequest("project_apptct");
-    createProjectRequest =
-        createProjectRequest.toBuilder().setProjectVisibility(ProjectVisibility.PUBLIC).build();
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project publicProject1 = createProjectResponse.getProject();
-    assertEquals(
-        "Public project name not match with expected public project name",
-        createProjectRequest.getName(),
-        publicProject1.getName());
-    assertEquals(
-        "Project visibility not match with expected project visibility",
-        createProjectRequest.getProjectVisibility(),
-        publicProject1.getProjectVisibility());
-    LOGGER.info("Public project created successfully");
-    expectedPublicProjectList.add(publicProject1);
-
-    // Public project 2
-    createProjectRequest = getCreateProjectRequest("project_spptct");
-    createProjectRequest =
-        createProjectRequest.toBuilder().setProjectVisibility(ProjectVisibility.PUBLIC).build();
-    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-    Project publicProject2 = createProjectResponse.getProject();
-    assertEquals(
-        "Public project name not match with expected public project name",
-        createProjectRequest.getName(),
-        publicProject2.getName());
-    assertEquals(
-        "Project visibility not match with expected project visibility",
-        createProjectRequest.getProjectVisibility(),
-        publicProject2.getProjectVisibility());
-    LOGGER.info("Public project created successfully");
-    expectedPublicProjectList.add(publicProject2);
-
-    // Create private project
-    createProjectRequest = getCreateProjectRequest("project_spct_private");
-    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-    Project privateProject = createProjectResponse.getProject();
-    LOGGER.info("Private project created successfully");
-    assertEquals(
-        "Private project name not match with expected Private project name",
-        createProjectRequest.getName(),
-        privateProject.getName());
-    assertEquals(
-        "Private visibility not match with expected project visibility",
-        createProjectRequest.getProjectVisibility(),
-        privateProject.getProjectVisibility());
-
-    GetPublicProjects getPublicProjects =
-        GetPublicProjects.newBuilder().setUserId(publicProject1.getOwner()).build();
-
-    GetPublicProjects.Response response = projectServiceStub.getPublicProjects(getPublicProjects);
-    LOGGER.info(
-        "GetPublicProjects Count : "
-            + response.getProjectsCount()
-            + " Expected Count : "
-            + expectedPublicProjectList.size());
-
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      assertEquals(
-          "Public projects count not match with expected public projects count",
-          expectedPublicProjectList.size(),
-          response.getProjectsCount());
-    } else {
-      assertEquals(
-          "Public projects count not match with expected public projects count",
-          3,
-          response.getProjectsCount());
-    }
-
-    response = client2ProjectServiceStub.getPublicProjects(GetPublicProjects.newBuilder().build());
-    LOGGER.info(
-        "GetPublicProjects Count : "
-            + response.getProjectsCount()
-            + " Expected Count : "
-            + expectedPublicProjectList.size());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      assertEquals(
-          "Public projects count not match with expected public projects count",
-          expectedPublicProjectList.size(),
-          response.getProjectsCount());
-    } else {
-      assertEquals(
-          "Public projects count not match with expected public projects count",
-          3,
-          response.getProjectsCount());
-    }
-
-    for (Project publicProject : expectedPublicProjectList) {
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(publicProject.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-    }
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(privateProject.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    LOGGER.info("Get Public project test stop................................");
   }
 
   @Test

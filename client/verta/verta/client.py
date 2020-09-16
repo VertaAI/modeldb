@@ -592,23 +592,21 @@ class Client(object):
             else:
                 workspace_str = "workspace {}".format(workspace)
 
-            try:
-                repo = _repository.Repository._create(self._conn, name=name, workspace=workspace)
-            except requests.HTTPError as e:
-                if e.response.status_code == 403:  # cannot create in other workspace
-                    repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
-                    if repo is None:  # not accessible in other workspace
-                        six.raise_from(e, None)
-                elif e.response.status_code == 409:  # already exists
-                    repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
-                    if repo is None:  # already exists, but couldn't get it
+            repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
+
+            if not repo:  # not found
+                try:
+                    repo = _repository.Repository._create(self._conn, name=name, workspace=workspace)
+                except requests.HTTPError as e:
+                    if e.response.status_code == 409:  # already exists
                         raise RuntimeError("unable to get Repository from ModelDB;"
                                            " please notify the Verta development team")
-                else:
-                    six.raise_from(e, None)
-                print("set existing Repository: {} from {}".format(name, workspace_str))
-            else:
+                    else:
+                        six.raise_from(e, None)
                 print("created new Repository: {} in {}".format(name, workspace_str))
+            else:
+                print("set existing Repository: {} from {}".format(name, workspace_str))
+
             return repo
         else:
             raise ValueError("must specify either `name` or `id`")

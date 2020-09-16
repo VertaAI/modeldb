@@ -41,6 +41,7 @@ import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.config.HyperparameterSetConfigBlobEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
+import ai.verta.modeldb.entities.dataset.QueryDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.S3DatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.environment.DockerEnvironmentBlobEntity;
 import ai.verta.modeldb.entities.environment.EnvironmentBlobEntity;
@@ -167,7 +168,8 @@ public class ModelDBHibernateUtil {
     MetadataPropertyMappingEntity.class,
     DatasetRepositoryMappingEntity.class,
     UploadStatusEntity.class,
-    KeyValuePropertyMappingEntity.class
+    KeyValuePropertyMappingEntity.class,
+    QueryDatasetComponentBlobEntity.class
   };
 
   private ModelDBHibernateUtil() {}
@@ -232,7 +234,7 @@ public class ModelDBHibernateUtil {
         settings.put(Environment.HBM2DDL_AUTO, "validate");
         settings.put(Environment.SHOW_SQL, "false");
         settings.put("hibernate.c3p0.testConnectionOnCheckin", "true");
-        //Reduce this time period if stale connections still exist
+        // Reduce this time period if stale connections still exist
         settings.put("hibernate.c3p0.idleConnectionTestPeriod", "100");
         settings.put("hibernate.c3p0.preferredTestQuery", "Select 1");
         configuration.setProperties(settings);
