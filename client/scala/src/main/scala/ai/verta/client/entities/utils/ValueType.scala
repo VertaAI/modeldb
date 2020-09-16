@@ -2,7 +2,7 @@ package ai.verta.client.entities.utils
 
 import scala.language.implicitConversions
 
-/** Union type of (Big)Int, String, and Double
+/** Union type of (Big)Int, String, Double, and List
  *  Represent the possible type of observations, metrics, hyperparameters, etc.
  *  Instances of subtypes of this trait should be instantiated via implicit conversion
  *  Use asBigInt, asString, asDouble to get the actual value
