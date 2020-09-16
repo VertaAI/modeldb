@@ -45,7 +45,7 @@ class DatasetVersion(
    *  @return tags of this dataset version.
    */
   def getTags()(implicit ec: ExecutionContext): Try[List[String]] =
-    getMessage().map(dataset_version => dataset_version.tags.get)
+    getMessage().map(dataset_version => dataset_version.tags.getOrElse(Nil))
 
   /** Adds potentially multiple attributes to this dataset version.
    *  @param vals Attributes name and value (String, Int, or Double)

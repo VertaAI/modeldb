@@ -42,7 +42,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
    *  @return tags of this dataset.
    */
   def getTags()(implicit ec: ExecutionContext): Try[List[String]] =
-    getMessage().map(dataset => dataset.tags.get)
+    getMessage().map(dataset => dataset.tags.getOrElse(Nil))
 
   private def getMessage()(implicit ec: ExecutionContext): Try[ModeldbDataset] =
     clientSet.datasetService.DatasetService_getDatasetById(Some(id))
