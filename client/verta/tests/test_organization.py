@@ -95,5 +95,6 @@ class TestOrganization:
         assert dataset.id != new_dataset.id
         assert repository.id != new_repository.id
 
+        project.delete()  # have to delete manually because creating dataset makes project untracked by client context.
         new_project.delete()
         repository.delete()
