@@ -51,6 +51,23 @@ class TestDataset extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("getDescription should retrieve the correct description of dataset version") {
+    val f = fixture
+
+    try {
+      val workingDir = System.getProperty("user.dir")
+      val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
+      val version = f.dataset.createPathVersion(List(testDir)).get
+
+      assert(version.getDescription().get.isEmpty)
+      version.setDescription("some description")
+      assert(version.getDescription().get == "some description")
+    } finally {
+      cleanup(f)
+    }
+  }
+
   test("Dataset tags CRUD") {
     val f = fixture
 
