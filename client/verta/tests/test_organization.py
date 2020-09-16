@@ -78,7 +78,7 @@ class TestOrganization:
         new_project = client.create_project(project_name)
         new_exp = client.create_experiment(exp_name)
         new_run = client.create_experiment_run(run_name)
-        new_repository = client.get_or_create_repository(name=repository_name)
+        new_repository = client.get_or_create_repository(name=repository_name, workspace=organization.name)
 
         new_dataset = client._create_dataset2(dataset_name)
         created_datasets.append(new_dataset)
