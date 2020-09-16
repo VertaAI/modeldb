@@ -95,8 +95,10 @@ public class DatasetToRepositoryMigration {
     experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
-
+    Boolean oldStoreClientCreationTimestampValue = app.getStoreClientCreationTimestamp();
+    app.setStoreClientCreationTimestamp(true);
     migrateDatasetsToRepositories();
+    app.setStoreClientCreationTimestamp(oldStoreClientCreationTimestampValue);
   }
 
   private static void migrateDatasetsToRepositories() {
@@ -394,7 +396,7 @@ public class DatasetToRepositoryMigration {
                     criteriaBuilder.and(
                         criteriaBuilder.equal(root.get("deleted"), false),
                         criteriaBuilder.equal(root.get("dataset_id"), datasetId)))
-                .orderBy(criteriaBuilder.asc(root.get("id")));
+                .orderBy(criteriaBuilder.desc(root.get(ModelDBConstants.TIME_LOGGED)));
 
         TypedQuery<DatasetVersionEntity> typedQuery = session1.createQuery(selectQuery);
 
