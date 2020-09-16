@@ -105,6 +105,20 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
   def getAttribute(key: String)(implicit ec: ExecutionContext): Try[Option[ValueType]] =
     getAttributes().map(attributes => attributes.get(key))
 
+  /** Delete the attribute with the given key of this dataset.
+   *  @param key key of the attribute.
+   */
+  def delAttribute(key: String)(implicit ec: ExecutionContext) = delAttributes(List(key))
+
+  /** Delete attributes with the given keys of this dataset.
+   *  @param keys keys of the attribute.
+   */
+  def delAttributes(keys: List[String])(implicit ec: ExecutionContext): Try[Unit] =
+    clientSet.datasetService.DatasetService_deleteDatasetAttributes(ModeldbDeleteDatasetAttributes(
+      id = Some(id),
+      attribute_keys = Some(keys)
+    )).map(_ => {})
+
   private def convertModel(
     datasetMessage: ai.verta.swagger._public.modeldb.versioning.model.VersioningDatasetBlob
   ): VersioningDatasetBlob = modelFromJson(modelToJson(datasetMessage))
