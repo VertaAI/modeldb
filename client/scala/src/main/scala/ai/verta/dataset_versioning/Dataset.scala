@@ -92,12 +92,12 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
   /** Delete the attribute with the given key of this dataset.
    *  @param key key of the attribute.
    */
-  def deleteAttribute(key: String)(implicit ec: ExecutionContext) = deleteAttributes(List(key))
+  def delAttribute(key: String)(implicit ec: ExecutionContext) = deleteAttributes(List(key))
 
   /** Delete attributes with the given keys of this dataset.
    *  @param keys keys of the attribute.
    */
-  def deleteAttributes(keys: List[String])(implicit ec: ExecutionContext): Try[Unit] =
+  def delAttributes(keys: List[String])(implicit ec: ExecutionContext): Try[Unit] =
     clientSet.datasetService.DatasetService_deleteDatasetAttributes(ModeldbDeleteDatasetAttributes(
       id = Some(id),
       attribute_keys = Some(keys)

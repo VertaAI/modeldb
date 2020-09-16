@@ -88,8 +88,8 @@ class TestDataset extends FunSuite {
         Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
       ))
 
-      version.deleteAttribute("some")
-      version.deleteAttributes(List("int", "other", "not-exist"))
+      version.delAttribute("some")
+      version.delAttributes(List("int", "other", "not-exist"))
 
       assert(version.getAttributes().get.equals(
         Map[String, ValueType]("string" -> "desc")
@@ -116,8 +116,8 @@ class TestDataset extends FunSuite {
         Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
       ))
 
-      f.dataset.deleteAttribute("some")
-      f.dataset.deleteAttributes(List("int", "other", "not-exist"))
+      f.dataset.delAttribute("some")
+      f.dataset.delAttributes(List("int", "other", "not-exist"))
 
       assert(f.dataset.getAttributes().get.equals(
         Map[String, ValueType]("string" -> "desc")
