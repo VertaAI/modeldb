@@ -35,19 +35,24 @@ object AtlasDatasetBlob {
   )(implicit ec: ExecutionContext): Try[AtlasDatasetBlob] = {
     val atlasSourceURI = f"${atlasURL}/index.html#!/detailPage/${guid}"
     val httpClient = new HttpClient(atlasURL, Map())
-    Await.result(
-      httpClient.request(
-        "GET",
-        atlasEntityEndpoint,
-        Map(
-          "guid" -> List(guid)
+
+    try {
+      Await.result(
+        httpClient.request(
+          "GET",
+          atlasEntityEndpoint,
+          Map(
+            "guid" -> List(guid)
+          ),
+          null,
+          jsonVal => fromJson(jsonVal, atlasSourceURI), // parser
+          Some(BasicAuthentication(atlasUserName, atlasPassword)) // authentication
         ),
-        null,
-        jsonVal => fromJson(jsonVal, atlasSourceURI), // parser
-        Some(BasicAuthentication(atlasUserName, atlasPassword)) // authentication
-      ),
-      Duration.Inf
-    ).flatten // Try[Try[AtlasHiveDatasetBlob]] to Try[AtlasHiveDatasetBlob]
+        Duration.Inf
+      ).flatten // Try[Try[AtlasHiveDatasetBlob]] to Try[AtlasHiveDatasetBlob]
+    } finally {
+      httpClient.close()
+    }
   }
 
   private def fromJson(value: JValue, atlasSourceURI: String): Try[AtlasDatasetBlob] =
