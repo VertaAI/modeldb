@@ -11,7 +11,7 @@ class TestDatasetVersion:
         dataset_version = dataset.create_path_version(paths=["modelapi_hypothesis/"])
         dataset_version2 = dataset.create_path_version(paths=["modelapi_hypothesis/api_generator.py"])
 
-        assert dataset_version.id == client._get_dataset_version2(id=dataset_version.id).id
+        assert dataset_version.id == client._get_dataset_version2(dataset_version.id).id
         assert dataset_version2.id == client._get_dataset_version2(id=dataset_version2.id).id
         assert dataset_version2.id == dataset.get_latest_version().id
 
