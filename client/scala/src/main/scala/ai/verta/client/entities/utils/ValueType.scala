@@ -5,7 +5,7 @@ import scala.language.implicitConversions
 /** Union type of (Big)Int, String, Double, and List.
  *  Represent the possible type of observations, metrics, hyperparameters, attribute values, etc.
  *  Instances of subtypes of this trait should be instantiated via implicit conversion.
- *  Use asBigInt, asString, asDouble to get the actual value.
+ *  Use asBigInt, asString, asDouble, asList to get the actual value.
  */
 sealed trait ValueType {
   def asBigInt: Option[BigInt] = None
