@@ -35,7 +35,7 @@ case class DoubleValueType(private val d: Double) extends ValueType {
   override def asDouble = Some(d)
 }
 
-/** Represent list values of attributes.
+/** Represent list values.
  *  User should not instantiate this class themselves but rely on implicit conversion
  */
 case class ListValueType(private val l: List[ValueType]) extends ValueType {
