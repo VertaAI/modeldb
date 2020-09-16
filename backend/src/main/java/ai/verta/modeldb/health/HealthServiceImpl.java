@@ -19,7 +19,6 @@
 
 package ai.verta.modeldb.health;
 
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -40,8 +39,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -97,13 +97,14 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
     statusMap.remove(service);
   }
 
-  @GetMapping(value = {ModelDBConstants.SPRING_HEALTH_CHECK_METHOD_NAME})
-  public ResponseEntity<String> check(
-      @RequestParam(ModelDBConstants.HEALTH_CHECK_SERVICE_FIELD) String service) {
+  @RequestMapping(
+      value = "/check/{service}",
+      method = RequestMethod.GET,
+      produces = "application/json")
+  public ResponseEntity<String> check(@PathVariable("service") String service) {
     LOGGER.trace("Spring custom health check called");
     QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBConstants.SPRING_HEALTH_CHECK_METHOD_NAME)) {
+    try (RequestLatencyResource latencyResource = new RequestLatencyResource("check/" + service)) {
       HealthCheckRequest request = HealthCheckRequest.newBuilder().setService(service).build();
       ServingStatus status = getServingStatus(request);
       if (status == null) {
