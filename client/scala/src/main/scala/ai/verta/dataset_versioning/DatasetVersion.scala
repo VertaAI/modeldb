@@ -86,6 +86,20 @@ class DatasetVersion(
   def getAttribute(key: String)(implicit ec: ExecutionContext): Try[Option[ValueType]] =
     getAttributes().map(attributes => attributes.get(key))
 
+  /** Delete the attribute with the given key of this dataset version.
+   *  @param key key of the attribute.
+   */
+  def deleteAttribute(key: String)(implicit ec: ExecutionContext) = deleteAttributes(List(key))
+
+  /** Delete attributes with the given keys of this dataset version.
+   *  @param keys keys of the attribute.
+   */
+  def deleteAttributes(keys: List[String])(implicit ec: ExecutionContext): Try[Unit] =
+    clientSet.datasetVersionService.DatasetVersionService_deleteDatasetVersionAttributes(ModeldbDeleteDatasetVersionAttributes(
+      id = Some(id),
+      attribute_keys = Some(keys)
+    )).map(_ => {})
+
   // get the latest version of the proto message
   private def getMessage()(implicit ec: ExecutionContext): Try[ModeldbDatasetVersion] =
     clientSet.datasetVersionService.DatasetVersionService_getDatasetVersionById(Some(id)).map(

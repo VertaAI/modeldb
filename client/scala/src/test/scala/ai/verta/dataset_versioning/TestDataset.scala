@@ -67,7 +67,7 @@ class TestDataset extends FunSuite {
     }
   }
 
-  test("add and retrieve version's attributes") {
+  test("version's attributes CRUD") {
     val f = fixture
 
     try {
@@ -87,12 +87,19 @@ class TestDataset extends FunSuite {
       assert(version.getAttributes().get.equals(
         Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
       ))
+
+      version.deleteAttribute("some")
+      version.deleteAttributes(List("int", "other", "not-exist"))
+
+      assert(version.getAttributes().get.equals(
+        Map[String, ValueType]("string" -> "desc")
+      ))
       } finally {
       cleanup(f)
     }
   }
 
-  test("add and retrieve attributes") {
+  test("dataset attributes CRUD") {
     val f = fixture
 
     try {
@@ -107,6 +114,13 @@ class TestDataset extends FunSuite {
 
       assert(f.dataset.getAttributes().get.equals(
         Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
+      ))
+
+      f.dataset.deleteAttribute("some")
+      f.dataset.deleteAttributes(List("int", "other", "not-exist"))
+
+      assert(f.dataset.getAttributes().get.equals(
+        Map[String, ValueType]("string" -> "desc")
       ))
       } finally {
       cleanup(f)
