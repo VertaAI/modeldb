@@ -30,6 +30,18 @@ class TestDataset extends FunSuite {
     f.client.close()
   }
 
+  test("getDescription should retrieve the correct description of dataset") {
+    val f = fixture
+
+    try {
+      assert(f.dataset.getDescription().get.isEmpty)
+      f.dataset.setDescription("some description")
+      assert(f.dataset.getDescription().get == "some description")
+    } finally {
+      cleanup(f)
+    }
+  }
+
   test("Dataset version tags CRUD") {
     val f = fixture
 
