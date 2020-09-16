@@ -174,7 +174,8 @@ class TestEndpoint:
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
-    def test_update_wait(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_wait(self, client, created_endpoints, experiment_run, model_version, model_for_deployment):
+        """This tests endpoint.update(..., wait=True), including the case of build error"""
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
@@ -185,6 +186,15 @@ class TestEndpoint:
         status = endpoint.update(experiment_run, DirectUpdateStrategy(), True)
 
         assert status["status"] == "active"
+
+        model_version.log_model(model_for_deployment['model'], custom_modules=[])
+        model_version.log_environment(Python(requirements=['blahblahblah==3.6.0']))
+
+        with pytest.raises(RuntimeError) as excinfo:
+            endpoint.update(model_version, DirectUpdateStrategy(), True) # this should fail, and not take forever!
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in excinfo_value
 
     def test_canary_update(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
