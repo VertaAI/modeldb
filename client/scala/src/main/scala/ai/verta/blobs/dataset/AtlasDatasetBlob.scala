@@ -72,7 +72,6 @@ object AtlasDatasetBlob {
 
           val numRecords: BigInt = parametersMap.get("numRows").map(JsonConverter.fromJsonInteger).get
 
-          // this is based on the Python client, but is it correct?
           val executionTimestamp = System.currentTimeMillis()
 
           new AtlasDatasetBlob(atlasQuery, atlasSourceURI, Some(numRecords), Some(executionTimestamp), tags, attributes)
@@ -87,7 +86,7 @@ object AtlasDatasetBlob {
     fieldsMap.get("entities") match {
       case Some(JArray(elements)) => elements.headOption match {
         case Some(JObject(entityFields)) => Success(entityFields.map(f => (f.name, f.value)).toMap)
-        case Some(other) => Failure(new IllegalArgumentException(s"unknown type ${other.getClass.toString}")) // does this case happen?
+        case Some(other) => Failure(new IllegalArgumentException(s"unknown type ${other.getClass.toString}"))
         case None => Failure(new IllegalArgumentException(s"no entity found."))
       }
       case Some(other) => Failure(new IllegalArgumentException(s"unknown type ${other.getClass.toString}"))
