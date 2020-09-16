@@ -21,6 +21,22 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
   /** Name of the dataset. */
   def name: String = dataset.name.get
 
+  /** Sets the description of this dataset.
+   *  @param description Description to set.
+   */
+  def setDescription(description: String)(implicit ec: ExecutionContext): Try[Unit] =
+    clientSet.datasetService.DatasetService_updateDatasetDescription(ModeldbUpdateDatasetDescription(
+      description = Some(description),
+      id = Some(id)
+    ))
+      .map(_ => ())
+
+  /** Gets the description of this dataset.
+   *  @return Description of this dataset.
+   */
+  def getDescription()(implicit ec: ExecutionContext): Try[String] =
+    getMessage().map(dataset => dataset.description.getOrElse(""))
+
   /** Add multiple tags to this dataset.
    *  @param tags tags to add.
    */
