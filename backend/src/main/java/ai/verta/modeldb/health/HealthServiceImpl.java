@@ -23,6 +23,8 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.health.v1.HealthCheckRequest;
@@ -36,6 +38,7 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -111,8 +114,15 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       } else {
         LOGGER.trace("Spring custom health check returned");
         HealthCheckResponse response = HealthCheckResponse.newBuilder().setStatus(status).build();
-        return ResponseEntity.ok(response.toString());
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(ModelDBUtils.getStringFromProtoObject(response));
       }
+    } catch (InvalidProtocolBufferException ex) {
+      LOGGER.warn("Spring custom health check returned with response entity parsing", ex);
+      throw new ResponseStatusException(
+          HttpStatus.EXPECTATION_FAILED,
+          "Unknown HealthCheckResponse parsing error : " + ex.getMessage());
     }
   }
 }
