@@ -2,7 +2,7 @@ package ai.verta.dataset_versioning
 
 import ai.verta.client._
 import ai.verta.dataset_versioning._
-import ai.verta.blobs.dataset.S3Location
+import ai.verta.blobs.dataset.{S3Location, AtlasDatasetBlob}
 import ai.verta.client.entities.utils.ValueType
 import ai.verta.client.entities.utils.ValueType
 import ai.verta.blobs.dataset.S3Location
@@ -172,6 +172,38 @@ class TestDataset extends FunSuite {
 
       val getByIdAttempt = f.client.getDatasetById("wrong-id")
       assert(getByIdAttempt.isFailure) // message differs in OSS and dev setup.
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("create version from a query") {
+    val f = fixture
+
+    try {
+      val query = "SELECT * FROM ner-table"
+      val dbConnectionStr = "localhost:6543"
+      val numRecords = 100
+
+      val version = f.dataset.createDBVersion(query, dbConnectionStr, Some(numRecords)).get
+      assert(version.id == f.dataset.getLatestVersion().get.id)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("create version from an atlas hive query") {
+    val f = fixture
+
+    try {
+      val guid: String = sys.env.get("GUID").get
+      val version = f.dataset.createAtlasVersion(guid).get
+
+      assert(version.id == f.dataset.getLatestVersion().get.id)
+
+      val blob = AtlasDatasetBlob(guid).get
+      assert(version.getTags().get == blob.tags)
+      assert(version.getAttributes().get == blob.attributes)
     } finally {
       cleanup(f)
     }
