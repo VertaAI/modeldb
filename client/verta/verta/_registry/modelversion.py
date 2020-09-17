@@ -507,7 +507,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         # check if multipart upload ok
         url_for_artifact = self._get_url_for_artifact(key, "PUT", artifact_type, part_num=1)
 
-        print("uploading {} to ModelDB".format(key))
+        print("uploading {} to Registry".format(key))
         if url_for_artifact.multipart_upload_ok:
             # TODO: parallelize this
             file_parts = iter(lambda: file_handle.read(part_size), b'')

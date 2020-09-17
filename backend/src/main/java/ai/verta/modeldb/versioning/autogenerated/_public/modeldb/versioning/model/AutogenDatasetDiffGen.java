@@ -23,6 +23,10 @@ public class AutogenDatasetDiffGen extends Generator<AutogenDatasetDiff> {
       obj.setPath(Utils.removeEmpty(gen().type(AutogenPathDatasetDiff.class).generate(r, status)));
     }
     if (r.nextBoolean()) {
+      obj.setQuery(
+          Utils.removeEmpty(gen().type(AutogenQueryDatasetDiff.class).generate(r, status)));
+    }
+    if (r.nextBoolean()) {
       obj.setS3(Utils.removeEmpty(gen().type(AutogenS3DatasetDiff.class).generate(r, status)));
     }
     return obj;

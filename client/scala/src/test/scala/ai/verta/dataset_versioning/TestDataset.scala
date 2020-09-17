@@ -2,7 +2,7 @@ package ai.verta.dataset_versioning
 
 import ai.verta.client._
 import ai.verta.dataset_versioning._
-import ai.verta.blobs.dataset.S3Location
+import ai.verta.blobs.dataset.{S3Location, AtlasDatasetBlob}
 import ai.verta.client.entities.utils.ValueType
 import ai.verta.client.entities.utils.ValueType
 import ai.verta.blobs.dataset.S3Location
@@ -30,6 +30,18 @@ class TestDataset extends FunSuite {
     f.client.close()
   }
 
+  test("getDescription should retrieve the correct description of dataset") {
+    val f = fixture
+
+    try {
+      assert(f.dataset.getDescription().get.isEmpty)
+      f.dataset.setDescription("some description")
+      assert(f.dataset.getDescription().get == "some description")
+    } finally {
+      cleanup(f)
+    }
+  }
+
   test("Dataset version tags CRUD") {
     val f = fixture
 
@@ -38,6 +50,7 @@ class TestDataset extends FunSuite {
       val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
       val version = f.dataset.createPathVersion(List(testDir)).get
 
+      assert(version.getTags().get.isEmpty)
       version.addTag("tag-1")
       version.addTags(List("tag-2", "tag-3"))
 
@@ -50,10 +63,28 @@ class TestDataset extends FunSuite {
       cleanup(f)
     }
   }
+
+  test("getDescription should retrieve the correct description of dataset version") {
+    val f = fixture
+
+    try {
+      val workingDir = System.getProperty("user.dir")
+      val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
+      val version = f.dataset.createPathVersion(List(testDir)).get
+
+      assert(version.getDescription().get.isEmpty)
+      version.setDescription("some description")
+      assert(version.getDescription().get == "some description")
+    } finally {
+      cleanup(f)
+    }
+  }
+
   test("Dataset tags CRUD") {
     val f = fixture
 
     try {
+      assert(f.dataset.getTags().get.isEmpty)
       f.dataset.addTag("tag-1")
       f.dataset.addTags(List("tag-2", "tag-3"))
 
@@ -67,7 +98,7 @@ class TestDataset extends FunSuite {
     }
   }
 
-  test("add and retrieve version's attributes") {
+  test("version's attributes CRUD") {
     val f = fixture
 
     try {
@@ -75,6 +106,7 @@ class TestDataset extends FunSuite {
       val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
       val version = f.dataset.createPathVersion(List(testDir)).get
 
+      assert(version.getAttributes().get.isEmpty)
       version.addAttribute("some", 0.5)
       version.addAttribute("int", 4)
       version.addAttributes(Map("other" -> 0.3, "string" -> "desc"))
@@ -87,15 +119,24 @@ class TestDataset extends FunSuite {
       assert(version.getAttributes().get.equals(
         Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
       ))
+
+      version.delAttribute("some")
+      version.delAttributes(List("int", "other", "not-exist"))
+
+      assert(version.getAttributes().get.equals(
+        Map[String, ValueType]("string" -> "desc")
+      ))
       } finally {
       cleanup(f)
     }
   }
 
-  test("add and retrieve attributes") {
+  test("dataset attributes CRUD") {
     val f = fixture
 
     try {
+      assert(f.dataset.getAttributes().get.isEmpty)
+
       f.dataset.addAttribute("some", 0.5)
       f.dataset.addAttribute("int", 4)
       f.dataset.addAttributes(Map("other" -> 0.3, "string" -> "desc"))
@@ -107,6 +148,13 @@ class TestDataset extends FunSuite {
 
       assert(f.dataset.getAttributes().get.equals(
         Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
+      ))
+
+      f.dataset.delAttribute("some")
+      f.dataset.delAttributes(List("int", "other", "not-exist"))
+
+      assert(f.dataset.getAttributes().get.equals(
+        Map[String, ValueType]("string" -> "desc")
       ))
       } finally {
       cleanup(f)
@@ -167,6 +215,38 @@ class TestDataset extends FunSuite {
 
       val getByIdAttempt = f.client.getDatasetById("wrong-id")
       assert(getByIdAttempt.isFailure) // message differs in OSS and dev setup.
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("create version from a query") {
+    val f = fixture
+
+    try {
+      val query = "SELECT * FROM ner-table"
+      val dbConnectionStr = "localhost:6543"
+      val numRecords = 100
+
+      val version = f.dataset.createDBVersion(query, dbConnectionStr, Some(numRecords)).get
+      assert(version.id == f.dataset.getLatestVersion().get.id)
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("create version from an atlas hive query") {
+    val f = fixture
+
+    try {
+      val guid: String = sys.env.get("GUID").get
+      val version = f.dataset.createAtlasVersion(guid).get
+
+      assert(version.id == f.dataset.getLatestVersion().get.id)
+
+      val blob = AtlasDatasetBlob(guid).get
+      assert(version.getTags().get == blob.tags)
+      assert(version.getAttributes().get == blob.attributes)
     } finally {
       cleanup(f)
     }

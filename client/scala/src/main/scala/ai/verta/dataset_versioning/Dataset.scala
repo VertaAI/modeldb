@@ -8,7 +8,7 @@ import ai.verta.client.entities.utils._
 import ai.verta.client.entities.utils._
 import net.liftweb.json._
 
-import ai.verta.blobs.dataset.{PathBlob, S3, S3Location}
+import ai.verta.blobs.dataset.{PathBlob, S3, S3Location, DBDatasetBlob, AtlasDatasetBlob, QueryDatasetBlob}
 import ai.verta.swagger._public.modeldb.model._
 import ai.verta.swagger.client.ClientSet
 
@@ -26,6 +26,22 @@ class Dataset(
 
   // initialize cached message
   protected var cachedMessage: Try[ModeldbDataset] = Success(dataset)
+
+  /** Sets the description of this dataset.
+   *  @param description Description to set.
+   */
+  def setDescription(description: String)(implicit ec: ExecutionContext): Try[Unit] =
+    clientSet.datasetService.DatasetService_updateDatasetDescription(ModeldbUpdateDatasetDescription(
+      description = Some(description),
+      id = Some(id)
+    ))
+      .map(_ => clearCache())
+
+  /** Gets the description of this dataset.
+   *  @return Description of this dataset.
+   */
+  def getDescription()(implicit ec: ExecutionContext): Try[String] =
+    getMessage().map(dataset => dataset.description.getOrElse(""))
 
   /** Add multiple tags to this dataset.
    *  @param tags tags to add.
@@ -48,7 +64,7 @@ class Dataset(
    *  @return tags of this dataset.
    */
   def getTags()(implicit ec: ExecutionContext): Try[List[String]] =
-    getMessage().map(dataset => dataset.tags.get)
+    getMessage().map(dataset => dataset.tags.getOrElse(Nil))
 
   override protected def fetchMessage()(implicit ec: ExecutionContext): Try[ModeldbDataset] =
     clientSet.datasetService.DatasetService_getDatasetById(Some(id))
@@ -94,6 +110,20 @@ class Dataset(
   def getAttribute(key: String)(implicit ec: ExecutionContext): Try[Option[ValueType]] =
     getAttributes().map(attributes => attributes.get(key))
 
+  /** Delete the attribute with the given key of this dataset.
+   *  @param key key of the attribute.
+   */
+  def delAttribute(key: String)(implicit ec: ExecutionContext) = delAttributes(List(key))
+
+  /** Delete attributes with the given keys of this dataset.
+   *  @param keys keys of the attribute.
+   */
+  def delAttributes(keys: List[String])(implicit ec: ExecutionContext): Try[Unit] =
+    clientSet.datasetService.DatasetService_deleteDatasetAttributes(ModeldbDeleteDatasetAttributes(
+      id = Some(id),
+      attribute_keys = Some(keys)
+    )).map(_ => clearCache())
+
   private def convertModel(
     datasetMessage: ai.verta.swagger._public.modeldb.versioning.model.VersioningDatasetBlob
   ): VersioningDatasetBlob = modelFromJson(modelToJson(datasetMessage))
@@ -114,21 +144,58 @@ class Dataset(
   private def blobToVersioningDatasetBlob(blob: ai.verta.blobs.dataset.Dataset) = blob match {
     case s3Blob: S3 => S3.toVersioningBlob(s3Blob).dataset.get
     case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob).dataset.get
+    case queryDatasetBlob: QueryDatasetBlob => QueryDatasetBlob.toVersioningBlob(queryDatasetBlob).dataset.get
   }
 
-  /** Creates path dataset version.
+  /** Creates a path dataset version.
    *  @param paths Dataset version paths.
    *  @return Dataset version from paths.
    */
   def createPathVersion(paths: List[String])(implicit ec: ExecutionContext): Try[DatasetVersion] =
     PathBlob(paths).flatMap(createVersionFromBlob)
 
-  /** Creates S3 dataset version.
+  /** Creates a S3 dataset version.
    *  @param paths S3 locations.
    *  @return Dataset version from S3 locations.
    */
   def createS3Version(locations: List[S3Location])(implicit ec: ExecutionContext): Try[DatasetVersion] =
     S3(locations).flatMap(createVersionFromBlob)
+
+  /** Creates a database dataset version.
+   *  @param query database query
+   *  @param  dbConnectionStr connection to database.
+   *  @param numRecords number of records of the dataset.
+   *  @param executionTimestamp timestamp of the query execution.
+   */
+  def createDBVersion(
+    query: String,
+    dbConnectionStr: String,
+    numRecords: Option[BigInt] = None,
+    executionTimestamp: Option[BigInt] = None
+  )(implicit ec: ExecutionContext) =
+    createVersionFromBlob(DBDatasetBlob(query, dbConnectionStr, numRecords, executionTimestamp))
+
+  /** Creates a dataset version from an Atlas Hive table query.
+   *  @param guid guid of the table
+   *  @param atlasURL Atlas url. Picked up from environment by default.
+   *  @param atlasUserName Atlas user name. Picked up from environment by default.
+   *  @param atlasPassword Atlas password. Picked up from environment by default.
+   *  @param atlasEntityEndpoint Atlas endpoint to query.
+   */
+  def createAtlasVersion(
+    guid: String,
+    atlasURL: String = sys.env.get("ATLAS_URL").getOrElse(""),
+    atlasUserName: String = sys.env.get("ATLAS_USERNAME").getOrElse(""),
+    atlasPassword: String = sys.env.get("ATLAS_PASSWORD").getOrElse(""),
+    atlasEntityEndpoint: String = "/api/atlas/v2/entity/bulk"
+  )(implicit ec: ExecutionContext) =
+    for (
+      blob <- AtlasDatasetBlob(guid, atlasURL, atlasUserName, atlasPassword, atlasEntityEndpoint);
+      datasetVersion <- createVersionFromBlob(blob);
+      // skip adding tags and attributes if they are empty:
+      _ <- if (blob.tags.isEmpty) Success(()) else datasetVersion.addTags(blob.tags);
+      _ <- if (blob.attributes.isEmpty) Success(()) else datasetVersion.addAttributes(blob.attributes)
+    ) yield datasetVersion
 
   /** Gets a version of the dataset by its ID.
    *  @param id ID of the dataset version.

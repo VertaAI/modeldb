@@ -72,10 +72,13 @@ class Resources(object):
             raise ValueError(self.MEMORY_ERR_MSG)
 
     def _as_dict(self):
-        return {
-            'cpu_millis': int(self.cpu*1000),
-            'memory': self.memory,
-        }
+        d = dict()
+        if self.cpu is not None:
+            d['cpu_millis'] = int(self.cpu*1000)
+        if self.memory is not None:
+            d['memory'] = self.memory
+
+        return d
 
     @classmethod
     def _from_dict(cls, rule_dict):
