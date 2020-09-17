@@ -34,6 +34,7 @@ class TestExperimentRun extends FunSuite {
   def cleanup(f: AnyRef{val client: Client; val repo: Repository; val project: Project; val expRun: ExperimentRun; val dataset: Dataset}) = {
     f.client.deleteRepository(f.repo.id)
     f.client.deleteProject(f.project.proj.id.get)
+    f.client.deleteDataset(f.dataset.id)
     f.client.close()
   }
 
