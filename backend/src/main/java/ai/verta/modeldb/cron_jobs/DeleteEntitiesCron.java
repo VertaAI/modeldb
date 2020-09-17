@@ -104,12 +104,12 @@ public class DeleteEntitiesCron extends TimerTask {
       if (ex instanceof StatusRuntimeException) {
         StatusRuntimeException exception = (StatusRuntimeException) ex;
         if (exception.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-          LOGGER.info("DeleteEntitiesCron Exception: {}", ex.getMessage());
+          LOGGER.warn("DeleteEntitiesCron Exception: {}", ex.getMessage());
         } else {
-          LOGGER.info("DeleteEntitiesCron Exception: ", ex);
+          LOGGER.warn("DeleteEntitiesCron Exception: ", ex);
         }
       } else {
-        LOGGER.debug("DeleteEntitiesCron Exception: ", ex);
+        LOGGER.warn("DeleteEntitiesCron Exception: ", ex);
       }
     } finally {
       ModelDBUtils.unregisteredBackgroundUtilsCount();
@@ -144,10 +144,14 @@ public class DeleteEntitiesCron extends TimerTask {
       }
       try {
         deleteRoleBindingsForProjects(projectEntities);
-      } catch (Exception ex) {
+      } catch (StatusRuntimeException ex) {
         LOGGER.debug(
             "DeleteEntitiesCron : deleteProjects : deleteRoleBindingsForProjects : Exception: {}",
             ex.getMessage());
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "DeleteEntitiesCron : deleteProjects : deleteRoleBindingsForProjects : Exception: ",
+            ex);
       }
 
       Transaction transaction = session.beginTransaction();
@@ -172,8 +176,10 @@ public class DeleteEntitiesCron extends TimerTask {
         for (ProjectEntity projectEntity : projectEntities) {
           session.delete(projectEntity);
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteProjects : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
-        LOGGER.debug("DeleteEntitiesCron : deleteProjects : Exception: ", ex);
+        LOGGER.warn("DeleteEntitiesCron : deleteProjects : Exception: ", ex);
       } finally {
         transaction.commit();
       }
@@ -261,10 +267,14 @@ public class DeleteEntitiesCron extends TimerTask {
 
       try {
         deleteRoleBindingsForExperiments(experimentEntities);
-      } catch (Exception ex) {
+      } catch (StatusRuntimeException ex) {
         LOGGER.debug(
             "DeleteEntitiesCron : deleteExperiments : deleteRoleBindingsForExperiments : Exception: {}",
             ex.getMessage());
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "DeleteEntitiesCron : deleteExperiments : deleteRoleBindingsForExperiments : Exception: ",
+            ex);
       }
 
       Transaction transaction = session.beginTransaction();
@@ -289,8 +299,10 @@ public class DeleteEntitiesCron extends TimerTask {
         for (ExperimentEntity experimentEntity : experimentEntities) {
           session.delete(experimentEntity);
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteExperiments : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
-        LOGGER.debug("DeleteEntitiesCron : deleteExperiments : Exception:", ex);
+        LOGGER.warn("DeleteEntitiesCron : deleteExperiments : Exception:", ex);
       } finally {
         transaction.commit();
       }
@@ -340,10 +352,14 @@ public class DeleteEntitiesCron extends TimerTask {
       }
       try {
         deleteRoleBindingsForExperimentRuns(experimentRunEntities);
-      } catch (Exception ex) {
-        LOGGER.debug(
+      } catch (StatusRuntimeException ex) {
+        LOGGER.info(
             "DeleteEntitiesCron : deleteExperimentRuns : deleteRoleBindingsForExperimentRuns : Exception: {}",
             ex.getMessage());
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "DeleteEntitiesCron : deleteExperimentRuns : deleteRoleBindingsForExperimentRuns : Exception: ",
+            ex);
       }
 
       Transaction transaction = session.beginTransaction();
@@ -357,6 +373,8 @@ public class DeleteEntitiesCron extends TimerTask {
         for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
           session.delete(experimentRunEntity);
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteExperimentRuns : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
         LOGGER.debug("DeleteEntitiesCron : deleteExperimentRuns : Exception:", ex);
       } finally {
@@ -432,10 +450,14 @@ public class DeleteEntitiesCron extends TimerTask {
       }
       try {
         deleteRoleBindingsForDatasets(datasetEntities);
-      } catch (Exception ex) {
-        LOGGER.debug(
+      } catch (OptimisticLockException ex) {
+        LOGGER.info(
             "DeleteEntitiesCron : deleteDatasets : deleteRoleBindingsForDatasets : Exception: {}",
             ex.getMessage());
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "DeleteEntitiesCron : deleteDatasets : deleteRoleBindingsForDatasets : Exception: ",
+            ex);
       }
 
       Transaction transaction = session.beginTransaction();
@@ -460,8 +482,10 @@ public class DeleteEntitiesCron extends TimerTask {
         for (DatasetEntity datasetEntity : datasetEntities) {
           session.delete(datasetEntity);
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteDatasets : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
-        LOGGER.debug("DeleteEntitiesCron : deleteDatasets : Exception:", ex);
+        LOGGER.warn("DeleteEntitiesCron : deleteDatasets : Exception:", ex);
       } finally {
         transaction.commit();
       }
@@ -587,10 +611,14 @@ public class DeleteEntitiesCron extends TimerTask {
     try {
       // Remove all role bindings
       deleteRoleBindingsForDatasetVersions(datasetVersionEntities);
-    } catch (Exception ex) {
-      LOGGER.debug(
+    } catch (StatusRuntimeException ex) {
+      LOGGER.info(
           "DeleteEntitiesCron : deleteDatasetVersions : deleteRoleBindingsForDatasetVersions : Exception: {}",
           ex.getMessage());
+    } catch (Exception ex) {
+      LOGGER.warn(
+          "DeleteEntitiesCron : deleteDatasetVersions : deleteRoleBindingsForDatasetVersions : Exception: ",
+          ex);
     }
 
     Transaction transaction = session.beginTransaction();
@@ -598,8 +626,10 @@ public class DeleteEntitiesCron extends TimerTask {
       for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
         session.delete(datasetVersionEntity);
       }
+    } catch (OptimisticLockException ex) {
+      LOGGER.info("DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
     } catch (Exception ex) {
-      LOGGER.debug("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
+      LOGGER.warn("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
     } finally {
       transaction.commit();
     }
@@ -651,10 +681,14 @@ public class DeleteEntitiesCron extends TimerTask {
       for (RepositoryEntity repository : repositoryEntities) {
         try {
           deleteRoleBindingsOfRepositories(Collections.singletonList(repository));
-        } catch (Exception ex) {
-          LOGGER.debug(
+        } catch (OptimisticLockException ex) {
+          LOGGER.info(
               "DeleteEntitiesCron : deleteRepositories : deleteRoleBindingsOfRepositories : Exception: {}",
               ex.getMessage());
+        } catch (Exception ex) {
+          LOGGER.warn(
+              "DeleteEntitiesCron : deleteRepositories : deleteRoleBindingsOfRepositories : Exception: ",
+              ex);
         }
 
         Transaction transaction = session.beginTransaction();
@@ -738,8 +772,10 @@ public class DeleteEntitiesCron extends TimerTask {
                 }
               });
           session.delete(repository);
+        } catch (OptimisticLockException ex) {
+          LOGGER.info("DeleteEntitiesCron : deleteRepositories : Exception: {}", ex.getMessage());
         } catch (Exception ex) {
-          LOGGER.debug("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
+          LOGGER.warn("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
         } finally {
           transaction.commit();
         }

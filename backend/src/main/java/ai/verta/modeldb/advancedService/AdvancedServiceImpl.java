@@ -579,7 +579,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           GetHydratedExperimentRunById.Response.newBuilder();
       if (!hydratedExperimentRuns.isEmpty()) {
         if (hydratedExperimentRuns.size() > 1) {
-          LOGGER.info(
+          LOGGER.warn(
               "Multiple ({}) ExperimentRun found for given ID : {}",
               hydratedExperimentRuns.size(),
               request.getId());

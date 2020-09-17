@@ -317,7 +317,12 @@ public class ModelDBUtils {
    * @param defaultResponse : Method reference to identify the error block
    */
   public static void logAndThrowError(String errorMessage, int errorCode, Any defaultResponse) {
-    LOGGER.info(errorMessage);
+    boolean isClientError = isClientError(errorCode);
+    if (isClientError) {
+      LOGGER.info(errorMessage);
+    } else {
+      LOGGER.warn(errorMessage);
+    }
     Status status =
         Status.newBuilder()
             .setCode(errorCode)
@@ -456,7 +461,7 @@ public class ModelDBUtils {
                 .build();
       } else if (e instanceof ModelDBException) {
         ModelDBException modelDBException = (ModelDBException) e;
-        logBasedOnTheErrorCode(modelDBException.getCode().value(), modelDBException);
+        logBasedOnTheErrorCode(isClientError(modelDBException.getCode().value()), modelDBException);
         status =
             Status.newBuilder()
                 .setCode(modelDBException.getCode().value())
@@ -491,7 +496,15 @@ public class ModelDBUtils {
     responseObserver.onError(statusRuntimeException);
   }
 
-  public static void logBasedOnTheErrorCode(int grpcCodeValue, Throwable e) {
+  public static void logBasedOnTheErrorCode(boolean isClientError, Throwable e) {
+    if (isClientError) {
+      LOGGER.info("Exception occurred:{} {}", e.getClass(), e.getMessage());
+    } else {
+      LOGGER.warn("Exception occurred:{} {}", e.getClass(), e.getMessage());
+    }
+  }
+
+  public static boolean isClientError(int grpcCodeValue) {
     switch (grpcCodeValue) {
       case 0: // OK : 200 OK
       case 1: // CANCELLED : 499 Client Closed Request
@@ -504,8 +517,7 @@ public class ModelDBUtils {
       case 10: // ABORTED: 409 Conflict
       case 11: // OUT_OF_RANGE: 400 Bad Request
       case 16: // UNAUTHENTICATED: 401 Unauthorized
-        LOGGER.info("Exception occurred:{} {}", e.getClass(), e.getMessage());
-        break;
+        return true;
       case 2: // UNKNOWN: 500 Internal Server Error
       case 4: // DEADLINE_EXCEEDED: 504 Gateway Timeout
       case 12: // UNIMPLEMENTED: 501 Not Implemented
@@ -513,7 +525,7 @@ public class ModelDBUtils {
       case 14: // UNAVAILABLE: 503 Service Unavailable
       case 15: // DATA_LOSS: 500 Internal Server Error
       default:
-        LOGGER.warn("Exception occurred:{} {}", e.getClass(), e.getMessage());
+        return false;
     }
   }
 

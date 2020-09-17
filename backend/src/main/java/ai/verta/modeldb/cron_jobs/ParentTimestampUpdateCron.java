@@ -4,6 +4,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.TimerTask;
+import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -28,9 +29,8 @@ public class ParentTimestampUpdateCron extends TimerTask {
       try {
         updateExperimentByExperimentRunTimestamp(session);
       } catch (Exception ex) {
-        LOGGER.debug(
-            "ParentTimestampUpdateCron : updateExperimentByExperimentRunTimestamp Exception: {}",
-            ex.getMessage());
+        LOGGER.warn(
+            "ParentTimestampUpdateCron : updateExperimentByExperimentRunTimestamp Exception: ", ex);
       } finally {
         session.getTransaction().commit();
       }
@@ -40,9 +40,8 @@ public class ParentTimestampUpdateCron extends TimerTask {
       try {
         updateProjectByExperimentTimestamp(session);
       } catch (Exception ex) {
-        LOGGER.debug(
-            "ParentTimestampUpdateCron : updateProjectByExperimentTimestamp Exception: {}",
-            ex.getMessage());
+        LOGGER.warn(
+            "ParentTimestampUpdateCron : updateProjectByExperimentTimestamp Exception: ", ex);
       } finally {
         session.getTransaction().commit();
       }
@@ -52,9 +51,8 @@ public class ParentTimestampUpdateCron extends TimerTask {
       try {
         updateDatasetByDatasetVersionTimestamp(session);
       } catch (Exception ex) {
-        LOGGER.debug(
-            "ParentTimestampUpdateCron : updateDatasetByDatasetVersionTimestamp Exception: {}",
-            ex.getMessage());
+        LOGGER.warn(
+            "ParentTimestampUpdateCron : updateDatasetByDatasetVersionTimestamp Exception: ", ex);
       } finally {
         session.getTransaction().commit();
       }
@@ -64,14 +62,15 @@ public class ParentTimestampUpdateCron extends TimerTask {
       try {
         updateRepositoryByCommitTimestamp(session);
       } catch (Exception ex) {
-        LOGGER.debug(
-            "ParentTimestampUpdateCron : updateRepositoryByCommitTimestamp Exception: {}",
-            ex.getMessage());
+        LOGGER.warn(
+            "ParentTimestampUpdateCron : updateRepositoryByCommitTimestamp Exception: ", ex);
       } finally {
         session.getTransaction().commit();
       }
+    } catch (OptimisticLockException ex) {
+      LOGGER.info("ParentTimestampUpdateCron Exception: {}", ex.getMessage());
     } catch (Exception ex) {
-      LOGGER.debug("ParentTimestampUpdateCron Exception: ", ex);
+      LOGGER.warn("ParentTimestampUpdateCron Exception: ", ex);
       if (ModelDBUtils.needToRetry(ex)) {
         run();
       }
