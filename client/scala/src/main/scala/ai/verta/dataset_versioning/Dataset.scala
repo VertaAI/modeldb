@@ -134,7 +134,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
       dataset_id = Some(id),
       dataset_blob = Some(convertModel(blobToVersioningDatasetBlob(blob)))
     ))
-      .map(response => new DatasetVersion(clientSet, this, response.dataset_version.get))
+      .map(response => new DatasetVersion(clientSet, response.dataset_version.get))
 
   private def blobToVersioningDatasetBlob(blob: ai.verta.blobs.dataset.Dataset) = blob match {
     case s3Blob: S3 => S3.toVersioningBlob(s3Blob).dataset.get
@@ -197,9 +197,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
    *  @return the version with the given ID.
    */
   def getVersion(id: String)(implicit ec: ExecutionContext): Try[DatasetVersion] =
-    clientSet.datasetVersionService.DatasetVersionService_getDatasetVersionById(Some(id)).map(
-      response => new DatasetVersion(clientSet, this, response.dataset_version.get)
-    )
+    DatasetVersion.getDatasetVersionById(clientSet, id)
 
   /** Gets the latest dataset version.
    *  @return the latest version of this dataset.
@@ -208,5 +206,5 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
     clientSet.datasetVersionService.DatasetVersionService_getLatestDatasetVersionByDatasetId(
       dataset_id = Some(id)
     )
-      .map(response => new DatasetVersion(clientSet, this, response.dataset_version.get))
+      .map(response => new DatasetVersion(clientSet, response.dataset_version.get))
 }

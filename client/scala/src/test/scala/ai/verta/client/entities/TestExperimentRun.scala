@@ -3,8 +3,9 @@ package ai.verta.client.entities
 import ai.verta.client._
 import ai.verta.repository._
 import ai.verta.blobs._
-import ai.verta.blobs.dataset._
+import ai.verta.blobs.dataset.PathBlob
 import ai.verta.client.entities.utils.ValueType
+import ai.verta.dataset_versioning._
 
 import scala.language.reflectiveCalls
 import scala.concurrent.ExecutionContext
@@ -27,9 +28,10 @@ class TestExperimentRun extends FunSuite {
       val project = client.getOrCreateProject("scala test").get
       val expRun = project.getOrCreateExperiment("experiment")
                           .flatMap(_.getOrCreateExperimentRun()).get
+      val dataset = client.getOrCreateDataset("my dataset").get
     }
 
-  def cleanup(f: AnyRef{val client: Client; val repo: Repository; val project: Project; val expRun: ExperimentRun}) = {
+  def cleanup(f: AnyRef{val client: Client; val repo: Repository; val project: Project; val expRun: ExperimentRun; val dataset: Dataset}) = {
     f.client.deleteRepository(f.repo.id)
     f.client.deleteProject(f.project.proj.id.get)
     f.client.close()
@@ -372,6 +374,37 @@ class TestExperimentRun extends FunSuite {
 
       assert(logAttempt2.isFailure)
       assert(logAttempt2 match {case Failure(e) => e.getMessage contains "Artifact being logged already exists"})
+    } finally {
+      cleanup(f)
+    }
+  }
+
+  test("log/get dataset version") {
+    val f = fixture
+
+    try {
+      assert(f.expRun.getDatasetVersions().get.isEmpty)
+
+      val workingDir = System.getProperty("user.dir")
+      val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"
+      val pathVersion = f.dataset.createPathVersion(List(testDir)).get
+
+      val queryVersion = f.dataset.createDBVersion("SELECT * FROM my-table", "database.com").get
+
+      assert(f.expRun.logDatasetVersion("path", pathVersion).isSuccess)
+      assert(f.expRun.logDatasetVersion("query", queryVersion).isSuccess)
+
+      assert(f.expRun.getDatasetVersion("path").get.id == pathVersion.id)
+      assert(f.expRun.getDatasetVersions().get.mapValues(_.id) == Map("path" -> pathVersion.id, "query" -> queryVersion.id))
+
+      val queryVersion2 = f.dataset.createDBVersion("SELECT * FROM other-table", "database.com").get
+
+      val overwriteAttempt = f.expRun.logDatasetVersion("query", queryVersion2)
+      assert(overwriteAttempt.isFailure)
+      assert(overwriteAttempt match {case Failure(e) => e.getMessage contains "Dataset being logged already exists"})
+
+      assert(f.expRun.logDatasetVersion("query", queryVersion2, true).isSuccess)
+      assert(f.expRun.getDatasetVersion("query").get.id == queryVersion2.id)
     } finally {
       cleanup(f)
     }
