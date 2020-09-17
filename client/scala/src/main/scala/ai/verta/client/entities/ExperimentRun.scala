@@ -462,18 +462,23 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return the dataset version with the given key.
    */
   def getDatasetVersion(key: String)(implicit ec: ExecutionContext): Try[DatasetVersion] =
-    getDatasetVersions().flatMap(versions => versions.get(key) match {
-      case Some(version) => Success(version)
-      case None => Failure(new IllegalArgumentException(f"no such dataset version with the given key associated with the experiment run."))
-    })
+    getDatasetVersionsId()
+      .flatMap(versions => versions.get(key) match {
+        case Some(version) => Success(version)
+        case None => Failure(new IllegalArgumentException(f"no dataset version with the key \'${key}\' associated with the experiment run."))
+      })
+      .flatMap(datasetVersionId => DatasetVersion.getDatasetVersionById(clientSet, datasetVersionId))
 
   /** Gets all Verta dataset versions associated with this experiment run.
    *  @return dataset versions associated with this experiment run, along with the keys they were logged with.
    */
   def getDatasetVersions()(implicit ec: ExecutionContext): Try[Map[String, DatasetVersion]] =
+    getDatasetVersionsId()
+      .map(_.mapValues(datasetVersionId => DatasetVersion.getDatasetVersionById(clientSet, datasetVersionId))) // Try[Map[String, Try[DatasetVersion]]]
+      .flatMap(m => Try(m.mapValues(_.get))) // Try[Map[String, DatasetVersion]]
+
+  private def getDatasetVersionsId()(implicit ec: ExecutionContext): Try[Map[String, String]] =
     clientSet.experimentRunService.ExperimentRunService_getDatasets(Some(id))
       .map(r => r.datasets.getOrElse(Nil)) // Try[List[CommonArtifact]]
       .map(_.map(artifact => artifact.key.get -> artifact.linked_artifact_id.get).toMap) // Try[Map[String, String]]
-      .map(_.mapValues(datasetVersionId => DatasetVersion.getDatasetVersionById(clientSet, datasetVersionId))) // Try[Map[String, Try[DatasetVersion]]]
-      .flatMap(m => Try(m.mapValues(_.get))) // Try[Map[String, DatasetVersion]]
 }

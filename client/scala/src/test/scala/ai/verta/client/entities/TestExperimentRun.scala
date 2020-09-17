@@ -397,10 +397,14 @@ class TestExperimentRun extends FunSuite {
       assert(f.expRun.getDatasetVersion("path").get.id == pathVersion.id)
       assert(f.expRun.getDatasetVersions().get.mapValues(_.id) == Map("path" -> pathVersion.id, "query" -> queryVersion.id))
 
+      val getAttempt = f.expRun.getDatasetVersion("not-exist")
+      assert(getAttempt match {
+        case Failure(e) => e.getMessage contains "no dataset version with the key \'not-exist\' associated with the experiment run"
+      })
+
       val queryVersion2 = f.dataset.createDBVersion("SELECT * FROM other-table", "database.com").get
 
       val overwriteAttempt = f.expRun.logDatasetVersion("query", queryVersion2)
-      assert(overwriteAttempt.isFailure)
       assert(overwriteAttempt match {case Failure(e) => e.getMessage contains "Dataset being logged already exists"})
 
       assert(f.expRun.logDatasetVersion("query", queryVersion2, true).isSuccess)
