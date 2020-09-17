@@ -110,12 +110,18 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       if (status == null) {
         LOGGER.trace("Spring custom health check returned with unknown service");
         throw new ResponseStatusException(
-            HttpStatus.NOT_FOUND,
+            HttpStatus.INTERNAL_SERVER_ERROR,
             "Unknown service found on health check request : '" + request.getService() + "'");
-      } else {
-        LOGGER.trace("Spring custom health check returned");
-        HealthCheckResponse response = HealthCheckResponse.newBuilder().setStatus(status).build();
+      }
+
+      LOGGER.trace("Spring custom health check returned: {}", status);
+      HealthCheckResponse response = HealthCheckResponse.newBuilder().setStatus(status).build();
+      if (status.equals(ServingStatus.SERVING)) {
         return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(ModelDBUtils.getStringFromProtoObject(response));
+      } else {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .contentType(MediaType.APPLICATION_JSON)
             .body(ModelDBUtils.getStringFromProtoObject(response));
       }
