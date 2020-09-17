@@ -2377,10 +2377,14 @@ public class CommitTest {
             "blob count not match with expected blob count",
             2,
             listCommitBlobsResponse.getBlobsCount());
-        Assert.assertEquals(
-            "blob count not match with expected blob count",
-            datasetBlob,
-            listCommitBlobsResponse.getBlobsList().get(1).getBlob());
+        boolean match = false;
+        for(BlobExpanded blobExpanded: listCommitBlobsResponse.getBlobsList()){
+          if (datasetBlob.equals(blobExpanded.getBlob())){
+            match = true;
+          }
+        }
+        Assert.assertTrue(
+            "blob count not match with expected blob count", match);
       }
 
     } finally {
