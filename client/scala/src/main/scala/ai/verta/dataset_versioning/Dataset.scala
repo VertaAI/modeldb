@@ -25,7 +25,7 @@ class Dataset(
   def name: String = dataset.name.get
 
   // initialize cached message
-  protected var cachedMessage: Try[ModeldbDataset] = Success(dataset)
+  updateCache(Success(dataset), Success(System.currentTimeMillis()))
 
   /** Sets the description of this dataset.
    *  @param description Description to set.

@@ -21,7 +21,7 @@ class DatasetVersion(
   def id = datasetVersion.id.get
 
   // initialize cached message
-  protected var cachedMessage: Try[ModeldbDatasetVersion] = Success(datasetVersion)
+  updateCache(Success(datasetVersion), Success(System.currentTimeMillis()))
 
   /** Sets the description of this dataset version.
    *  @param description Description to set.

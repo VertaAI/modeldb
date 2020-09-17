@@ -8,10 +8,11 @@ trait CachedEntity[T] {
   // T is type of the cached message
 
   // Needs to supply these when create subclass:
-  protected var cachedMessage: Try[T] // current version of the cached message
   protected def fetchMessage()(implicit ec: ExecutionContext): Try[T] // fetch message, without side effect
 
-  protected var cachedTime: Try[Long] = Success(System.currentTimeMillis()) // time of current cached value.
+  // current version of the cached message
+  private var cachedMessage: Try[T] = Failure(new IllegalStateException("cached message is uninitialized."))
+  private var cachedTime: Try[Long] = Failure(new IllegalStateException("cached message is uninitialized."))
 
   protected def getMessage()(implicit ec: ExecutionContext): Try[T] = {
     val now = System.currentTimeMillis()
@@ -24,14 +25,14 @@ trait CachedEntity[T] {
 
   // refresh current cached value.
   private def refreshCache(now: Long)(implicit ec: ExecutionContext): Unit = fetchMessage() match {
-    case Success(m) => {
-      cachedTime = Success(now)
-      cachedMessage = Success(m)
-    }
-    case Failure(e) => {
-      cachedTime = Failure(e)
-      cachedMessage = Failure(e)
-    }
+    case Success(m) => updateCache(Success(m), Success(now))
+    case Failure(e) => updateCache(Failure(e), Failure(e))
+  }
+
+  // call this when initialized object
+  protected def updateCache(newMessage: Try[T], newTime: Try[Long]): Unit = {
+    cachedMessage = newMessage
+    cachedTime = newTime
   }
 
   // clear current cached value.
