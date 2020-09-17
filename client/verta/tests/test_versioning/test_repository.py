@@ -247,7 +247,7 @@ class TestCommit:
         retrieved_commit, retrieved_key_paths = experiment_run.get_commit()
         assert retrieved_commit.id == commit.id
 
-        utils.delete_repository(repository.id, client._conn)
+        repository.delete()
 
     def test_log_to_run_diff_workspaces_no_access_error(self, client_2, experiment_run):
         repository_name = _utils.generate_default_name()
@@ -261,7 +261,7 @@ class TestCommit:
         assert "403" in excinfo_value
         assert "Access Denied" in excinfo_value
 
-        utils.delete_repository(repository.id, client_2._conn)
+        repository.delete()
 
 
 class TestBranch:
