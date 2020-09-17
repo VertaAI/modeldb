@@ -87,7 +87,7 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableAutoConfiguration
 @EnableConfigurationProperties({FileStorageProperties.class})
 // Remove bracket () code if in future define any @component outside of the defined basePackages.
-@ComponentScan(basePackages = "${scan.packages}")
+@ComponentScan(basePackages = "${scan.packages}, ai.verta.modeldb.health")
 @SuppressWarnings("unchecked")
 public class App implements ApplicationContextAware {
 
@@ -713,6 +713,10 @@ public class App implements ApplicationContextAware {
         throw new ModelDBException("Configure valid artifact store name in config.yaml file.");
     }
     // ------------- Finish Initialize Cloud storage base on configuration ------------------
+
+    HealthStatusManager healthStatusManager =
+        new HealthStatusManager(app.applicationContext.getBean(HealthServiceImpl.class));
+    healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
     LOGGER.info(
         "ArtifactStore service initialized and resolved storage dependency before server start");
