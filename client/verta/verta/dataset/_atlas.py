@@ -28,8 +28,8 @@ class AtlasDataset(QueryDataset):
 
         super(AtlasDataset, self).__init__(query, data_source_uri, execution_timestamp, num_records)
 
-        self.attributes = self.get_attributes(table_obj)
-        self.tags = self.get_tags(table_obj)
+        self.attributes = AtlasDataset.get_attributes(table_obj)
+        self.tags = AtlasDataset.get_tags(table_obj)
 
     @staticmethod
     def get_tags(table_obj):
