@@ -159,6 +159,8 @@ public class DeleteEntitiesCron extends TimerTask {
             LOGGER.info("DeleteEntitiesCron : deleteProjects : Exception: {}", ex.getMessage());
           }
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteProjects : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
         LOGGER.warn("DeleteEntitiesCron : deleteProjects : Exception: ", ex);
       }
@@ -285,6 +287,8 @@ public class DeleteEntitiesCron extends TimerTask {
             LOGGER.info("DeleteEntitiesCron : deleteExperiments : Exception: {}", ex.getMessage());
           }
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteExperiments : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
         LOGGER.warn("DeleteEntitiesCron : deleteExperiments : Exception:", ex);
       }
@@ -363,6 +367,8 @@ public class DeleteEntitiesCron extends TimerTask {
                 "DeleteEntitiesCron : deleteExperimentRuns : Exception: {}", ex.getMessage());
           }
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteExperimentRuns : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
         LOGGER.debug("DeleteEntitiesCron : deleteExperimentRuns : Exception:", ex);
       }
@@ -475,6 +481,8 @@ public class DeleteEntitiesCron extends TimerTask {
             LOGGER.info("DeleteEntitiesCron : deleteDatasets : Exception: {}", ex.getMessage());
           }
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteDatasets : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
         LOGGER.warn("DeleteEntitiesCron : deleteDatasets : Exception:", ex);
       }
@@ -621,6 +629,8 @@ public class DeleteEntitiesCron extends TimerTask {
               "DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
         }
       }
+    } catch (OptimisticLockException ex) {
+      LOGGER.info("DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
     } catch (Exception ex) {
       LOGGER.warn("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
     }

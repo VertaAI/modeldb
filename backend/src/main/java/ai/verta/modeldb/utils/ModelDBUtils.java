@@ -62,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.exception.LockAcquisitionException;
 import org.yaml.snakeyaml.Yaml;
 
 public class ModelDBUtils {
@@ -459,6 +460,15 @@ public class ModelDBUtils {
                 .setMessage(errorMessage + throwable.getMessage())
                 .addDetails(Any.pack(defaultInstance))
                 .build();
+      } else if (e instanceof LockAcquisitionException) {
+        String errorMessage = "Encountered deadlock in database connection.";
+        LOGGER.info(errorMessage + "{}", e.getMessage());
+        status =
+            Status.newBuilder()
+                .setCode(Code.ABORTED_VALUE)
+                .setMessage(errorMessage + throwable.getMessage())
+                .addDetails(Any.pack(defaultInstance))
+                .build();
       } else if (e instanceof ModelDBException) {
         ModelDBException modelDBException = (ModelDBException) e;
         logBasedOnTheErrorCode(isClientError(modelDBException.getCode().value()), modelDBException);
@@ -547,6 +557,10 @@ public class ModelDBUtils {
         LOGGER.warn("DB could not be reached");
       }
       return true;
+    } else if ((communicationsException.getCause() instanceof LockAcquisitionException)) {
+      LOGGER.warn(communicationsException.getMessage());
+      LOGGER.warn("Retrying since could not get lock");
+      return true;
     }
     LOGGER.debug(
         "Detected exception of type {}, which is not categorized as retryable",
@@ -563,7 +577,8 @@ public class ModelDBUtils {
     while (rootCause.getCause() != null
         && !(rootCause.getCause() instanceof CJCommunicationsException
             || rootCause.getCause() instanceof CommunicationsException
-            || rootCause.getCause() instanceof SocketException)) {
+            || rootCause.getCause() instanceof SocketException
+            || rootCause.getCause() instanceof LockAcquisitionException)) {
       rootCause = rootCause.getCause();
     }
     return rootCause;

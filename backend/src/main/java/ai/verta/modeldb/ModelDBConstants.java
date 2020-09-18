@@ -158,6 +158,7 @@ public interface ModelDBConstants {
   String EMAIL = "email";
   String USERNAME = "username";
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
+  String HEALTH_CHECK_SERVICE_FIELD = "service";
   String DELETED = "deleted";
   String DEV_KEY = "devKey";
   String REQUEST_TIMEOUT = "requestTimeout";

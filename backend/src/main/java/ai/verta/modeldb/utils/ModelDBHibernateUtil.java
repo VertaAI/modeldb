@@ -101,6 +101,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.exception.JDBCConnectionException;
 import org.hibernate.query.Query;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
@@ -518,6 +519,11 @@ public class ModelDBHibernateUtil {
             });
 
         return valid[0];
+      } catch (JDBCConnectionException ex) {
+        LOGGER.error(
+            "ModelDBHibernateUtil ping() : DB connection not found, got error: {}",
+            ex.getMessage());
+        // ModelDBHibernateUtil.sessionFactory = null;
       }
     }
     return false;
