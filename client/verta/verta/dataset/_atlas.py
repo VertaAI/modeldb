@@ -23,9 +23,7 @@ class AtlasDataset(QueryDataset):
 
         execution_timestamp = _utils.now()
         data_source_uri = "{}/index.html#!/detailPage/{}".format(atlas_url, guid)
-
         query = AtlasDataset.generate_query(table_obj)
-        #TODO: extract the query template
         num_records = int(table_obj['attributes']['parameters']['numRows'])
 
         super(AtlasDataset, self).__init__(query, data_source_uri, execution_timestamp, num_records)
