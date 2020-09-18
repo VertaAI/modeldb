@@ -1019,7 +1019,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       } else if (projects.size() != 1) {
         String errorMessage = "Multiple projects found for given EntityId";
-        LOGGER.info(errorMessage);
+        LOGGER.warn(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.UNKNOWN_VALUE)

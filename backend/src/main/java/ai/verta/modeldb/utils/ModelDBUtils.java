@@ -300,7 +300,7 @@ public class ModelDBUtils {
           } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
             LOGGER.info("skipping " + collaborator.getVertaId() + " because it is not found");
           } else {
-            LOGGER.error(ex.getMessage(), ex);
+            LOGGER.debug(ex.getMessage(), ex);
             throw ex;
           }
         }
@@ -318,7 +318,12 @@ public class ModelDBUtils {
    * @param defaultResponse : Method reference to identify the error block
    */
   public static void logAndThrowError(String errorMessage, int errorCode, Any defaultResponse) {
-    LOGGER.warn(errorMessage);
+    boolean isClientError = isClientError(errorCode);
+    if (isClientError) {
+      LOGGER.info(errorMessage);
+    } else {
+      LOGGER.warn(errorMessage);
+    }
     Status status =
         Status.newBuilder()
             .setCode(errorCode)
@@ -465,12 +470,12 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else if (e instanceof ModelDBException) {
-        LOGGER.warn("Exception occurred:{} {}", e.getClass(), e.getMessage());
-        ModelDBException ModelDBException = (ModelDBException) e;
+        ModelDBException modelDBException = (ModelDBException) e;
+        logBasedOnTheErrorCode(isClientError(modelDBException.getCode().value()), modelDBException);
         status =
             Status.newBuilder()
-                .setCode(ModelDBException.getCode().value())
-                .setMessage(ModelDBException.getMessage())
+                .setCode(modelDBException.getCode().value())
+                .setMessage(modelDBException.getMessage())
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else {
@@ -501,6 +506,39 @@ public class ModelDBUtils {
     responseObserver.onError(statusRuntimeException);
   }
 
+  public static void logBasedOnTheErrorCode(boolean isClientError, Throwable e) {
+    if (isClientError) {
+      LOGGER.info("Exception occurred:{} {}", e.getClass(), e.getMessage());
+    } else {
+      LOGGER.warn("Exception occurred:{} {}", e.getClass(), e.getMessage());
+    }
+  }
+
+  public static boolean isClientError(int grpcCodeValue) {
+    switch (grpcCodeValue) {
+      case 0: // OK : 200 OK
+      case 1: // CANCELLED : 499 Client Closed Request
+      case 3: // INVALID_ARGUMENT: 400 Bad Request
+      case 5: // NOT_FOUND: 404 Not Found
+      case 7: // PERMISSION_DENIED: 403 Forbidden
+      case 6: // ALREADY_EXISTS: 409 Conflict
+      case 8: // RESOURCE_EXHAUSTED: 429 Too Many Requests
+      case 9: // FAILED_PRECONDITION: 400 Bad Request
+      case 10: // ABORTED: 409 Conflict
+      case 11: // OUT_OF_RANGE: 400 Bad Request
+      case 16: // UNAUTHENTICATED: 401 Unauthorized
+        return true;
+      case 2: // UNKNOWN: 500 Internal Server Error
+      case 4: // DEADLINE_EXCEEDED: 504 Gateway Timeout
+      case 12: // UNIMPLEMENTED: 501 Not Implemented
+      case 13: // INTERNAL: 500 Internal Server Error
+      case 14: // UNAVAILABLE: 503 Service Unavailable
+      case 15: // DATA_LOSS: 500 Internal Server Error
+      default:
+        return false;
+    }
+  }
+
   public static boolean needToRetry(Exception ex) {
     Throwable communicationsException = findCommunicationsFailedCause(ex);
     if ((communicationsException.getCause() instanceof CommunicationsException)
@@ -524,7 +562,7 @@ public class ModelDBUtils {
       LOGGER.warn("Retrying since could not get lock");
       return true;
     }
-    LOGGER.warn(
+    LOGGER.debug(
         "Detected exception of type {}, which is not categorized as retryable",
         ex,
         communicationsException);
@@ -590,7 +628,7 @@ public class ModelDBUtils {
   public static Object retryOrThrowException(
       StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
     String errorMessage = ex.getMessage();
-    LOGGER.warn(errorMessage);
+    LOGGER.debug(errorMessage);
     if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
       errorMessage = "UAC Service unavailable : " + errorMessage;
       if (retry && retryCallInterface != null) {

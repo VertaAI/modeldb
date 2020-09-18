@@ -190,6 +190,9 @@ public class S3Service implements ArtifactStoreService {
         initializeS3ClientWithTemporaryCredentials(awsRegion);
       }
       return doesBucketExist(bucketName);
+    } catch (Exception ex) {
+      LOGGER.info(ex.getMessage());
+      throw ex;
     }
   }
 
@@ -345,12 +348,12 @@ public class S3Service implements ArtifactStoreService {
             s3Client.getObject(bucketName, artifactPath).getObjectContent());
       } else {
         String errorMessage = "File not found " + artifactPath;
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         throw new ModelDBException(errorMessage);
       }
     } catch (ModelDBException ex) {
       String errorMessage = "File not found " + artifactPath;
-      LOGGER.warn(errorMessage, ex);
+      LOGGER.info(errorMessage, ex);
       throw new ModelDBException(errorMessage, ex);
     }
   }
