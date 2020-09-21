@@ -2171,4 +2171,56 @@ public class DatasetTest {
 
     LOGGER.info("Create and delete Dataset test stop................................");
   }
+
+  @Test
+  public void datasetFeaturesTest() {
+    LOGGER.info("Dataset features test start................................");
+
+    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
+        DatasetServiceGrpc.newBlockingStub(channel);
+
+    CreateDataset.Response response = null;
+    try {
+      CreateDataset createDatasetRequest = getDatasetRequest(NAME);
+      createDatasetRequest =
+          createDatasetRequest
+              .toBuilder()
+              .addFeatures(
+                  KeyValue.newBuilder()
+                      .setKey("Feature-1")
+                      .setValue(Value.newBuilder().setStringValue("add dataset feature").build())
+                      .setValueType(ValueType.STRING)
+                      .build())
+              .build();
+      response = datasetServiceStub.createDataset(createDatasetRequest);
+      LOGGER.info("CreateDataset Response : \n" + response.getDataset());
+      assertEquals(
+          "Dataset not match with expected dataset",
+          createDatasetRequest.getName(),
+          response.getDataset().getName());
+      assertEquals(
+          "Feature count not match with expected feature count",
+          createDatasetRequest.getFeaturesCount(),
+          response.getDataset().getFeaturesCount());
+      boolean match = false;
+      for (KeyValue feature : response.getDataset().getFeaturesList()) {
+        if (feature.getKey().equals("Feature-1")) {
+          match = true;
+        }
+      }
+      assertTrue("Feature not match with expected feature", match);
+    } finally {
+      if (response != null) {
+        DeleteDataset deleteDataset =
+            DeleteDataset.newBuilder().setId(response.getDataset().getId()).build();
+        DeleteDataset.Response deleteDatasetResponse =
+            datasetServiceStub.deleteDataset(deleteDataset);
+        LOGGER.info("Dataset deleted successfully");
+        LOGGER.info(deleteDatasetResponse.toString());
+        assertTrue(deleteDatasetResponse.getStatus());
+      }
+    }
+
+    LOGGER.info("Dataset features test stop................................");
+  }
 }

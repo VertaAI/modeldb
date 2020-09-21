@@ -32,7 +32,10 @@ public interface MetadataDAO {
 
   boolean deleteProperty(IdentificationType id, String key);
 
-  void addOrUpdateKeyValueProperties(AddKeyValuePropertiesRequest request);
+  void addOrUpdateKeyValuePropertiesWithActiveTransaction(AddKeyValuePropertiesRequest request);
+
+  void addOrUpdateKeyValuePropertiesWithActiveTransaction(
+      Session session, AddKeyValuePropertiesRequest request);
 
   List<KeyValueStringProperty> getKeyValueProperties(GetKeyValuePropertiesRequest request);
 

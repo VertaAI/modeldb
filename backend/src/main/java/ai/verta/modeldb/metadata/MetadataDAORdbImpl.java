@@ -356,24 +356,31 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public void addOrUpdateKeyValueProperties(AddKeyValuePropertiesRequest request) {
+  public void addOrUpdateKeyValuePropertiesWithActiveTransaction(
+      AddKeyValuePropertiesRequest request) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      for (KeyValueStringProperty keyValue : request.getKeyValuePropertyList()) {
-        KeyValuePropertyMappingEntity.KeyValuePropertyMappingId id0 =
-            KeyValuePropertyMappingEntity.createId(
-                request.getId(), keyValue.getKey(), request.getPropertyName());
-        KeyValuePropertyMappingEntity existingEntity =
-            session.get(KeyValuePropertyMappingEntity.class, id0);
-        if (existingEntity == null) {
-          existingEntity = new KeyValuePropertyMappingEntity(id0, keyValue.getValue());
-          session.saveOrUpdate(existingEntity);
-        } else {
-          existingEntity.setValue(keyValue.getValue());
-          session.update(existingEntity);
-        }
-      }
+      addOrUpdateKeyValuePropertiesWithActiveTransaction(session, request);
       transaction.commit();
+    }
+  }
+
+  @Override
+  public void addOrUpdateKeyValuePropertiesWithActiveTransaction(
+      Session session, AddKeyValuePropertiesRequest request) {
+    for (KeyValueStringProperty keyValue : request.getKeyValuePropertyList()) {
+      KeyValuePropertyMappingEntity.KeyValuePropertyMappingId id0 =
+          KeyValuePropertyMappingEntity.createId(
+              request.getId(), keyValue.getKey(), request.getPropertyName());
+      KeyValuePropertyMappingEntity existingEntity =
+          session.get(KeyValuePropertyMappingEntity.class, id0);
+      if (existingEntity == null) {
+        existingEntity = new KeyValuePropertyMappingEntity(id0, keyValue.getValue());
+        session.saveOrUpdate(existingEntity);
+      } else {
+        existingEntity.setValue(keyValue.getValue());
+        session.update(existingEntity);
+      }
     }
   }
 

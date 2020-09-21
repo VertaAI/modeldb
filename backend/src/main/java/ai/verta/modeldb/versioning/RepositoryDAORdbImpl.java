@@ -2,6 +2,7 @@ package ai.verta.modeldb.versioning;
 
 import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
@@ -25,7 +26,10 @@ import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.metadata.AddKeyValuePropertiesRequest;
+import ai.verta.modeldb.metadata.GetKeyValuePropertiesRequest;
 import ai.verta.modeldb.metadata.IdentificationType;
+import ai.verta.modeldb.metadata.KeyValueStringProperty;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -38,6 +42,7 @@ import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Value;
 import com.google.rpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
@@ -366,7 +371,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               userInfo,
               null,
               create,
-              RepositoryTypeEnum.REGULAR);
+              RepositoryTypeEnum.REGULAR,
+              null);
       return SetRepository.Response.newBuilder().setRepository(repository.toProto()).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -387,7 +393,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       UserInfo userInfo,
       WorkspaceDTO workspaceDTO,
       boolean create,
-      RepositoryTypeEnum repositoryType)
+      RepositoryTypeEnum repositoryType,
+      List<KeyValue> features)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     ModelDBUtils.validateEntityNameWithColonAndSlash(repository.getName());
     RepositoryEntity repositoryEntity;
@@ -456,6 +463,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 .build(),
             tagList);
       }
+
+      addFeatures(metadataDAO, session, repositoryEntity, features);
     }
     session.getTransaction().commit();
     if (create) {
@@ -473,6 +482,37 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
 
     return repositoryEntity;
+  }
+
+  private void addFeatures(
+      MetadataDAO metadataDAO,
+      Session session,
+      RepositoryEntity repositoryEntity,
+      List<KeyValue> features)
+      throws InvalidProtocolBufferException {
+    if (features != null && !features.isEmpty()) {
+      List<KeyValueStringProperty> keyValueStringProperties = new ArrayList<>();
+      for (KeyValue attribute : features) {
+        keyValueStringProperties.add(
+            KeyValueStringProperty.newBuilder()
+                .setKey(attribute.getKey())
+                .setValue(ModelDBUtils.getStringFromProtoObject(attribute.getValue()))
+                .build());
+      }
+
+      AddKeyValuePropertiesRequest addKeyValuePropertiesRequest =
+          AddKeyValuePropertiesRequest.newBuilder()
+              .setId(
+                  IdentificationType.newBuilder()
+                      .setIdType(VERSIONING_REPOSITORY)
+                      .setIntId(repositoryEntity.getId())
+                      .build())
+              .addAllKeyValueProperty(keyValueStringProperties)
+              .setPropertyName(ModelDBConstants.FEATURES)
+              .build();
+      metadataDAO.addOrUpdateKeyValuePropertiesWithActiveTransaction(
+          session, addKeyValuePropertiesRequest);
+    }
   }
 
   private void setRepositoryTypeInQueryBuilder(
@@ -640,7 +680,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             userInfo,
             workspaceDTO,
             create,
-            RepositoryTypeEnum.DATASET);
+            RepositoryTypeEnum.DATASET,
+            dataset.getFeaturesList());
     return repositoryEntity.toProto();
   }
 
@@ -686,7 +727,48 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 .setIntId(repositoryEntity.getId())
                 .build());
     dataset.addAllTags(tags);
+
+    setFeatureInDataset(metadataDAO, repositoryEntity, dataset);
     return dataset.build();
+  }
+
+  private void setFeatureInDataset(
+      MetadataDAO metadataDAO, RepositoryEntity repositoryEntity, Dataset.Builder dataset)
+      throws ModelDBException {
+    GetKeyValuePropertiesRequest featureRequest =
+        GetKeyValuePropertiesRequest.newBuilder()
+            .setId(
+                IdentificationType.newBuilder()
+                    .setIdType(VERSIONING_REPOSITORY)
+                    .setIntId(repositoryEntity.getId())
+                    .build())
+            .setPropertyName(ModelDBConstants.FEATURES)
+            .setGetAll(true)
+            .build();
+    List<KeyValueStringProperty> featureList = metadataDAO.getKeyValueProperties(featureRequest);
+
+    LOGGER.info(
+        "ModelDB experimentRun service get {} count: {}",
+        ModelDBConstants.FEATURES,
+        featureList.size());
+    List<KeyValue> keyValues = new ArrayList<>();
+    try {
+      for (KeyValueStringProperty keyValueStringProperty : featureList) {
+        Value.Builder valueBuilder = Value.newBuilder();
+        ModelDBUtils.getProtoObjectFromString(keyValueStringProperty.getValue(), valueBuilder);
+        keyValues.add(
+            KeyValue.newBuilder()
+                .setKey(keyValueStringProperty.getKey())
+                .setValue(valueBuilder.build())
+                .build());
+      }
+    } catch (InvalidProtocolBufferException ex) {
+      LOGGER.warn(
+          "Error generating builder for {} while preparing dataset proto message",
+          ModelDBConstants.FEATURES);
+      throw new ModelDBException(ex.getMessage(), Code.INTERNAL);
+    }
+    dataset.addAllFeatures(keyValues);
   }
 
   @Override

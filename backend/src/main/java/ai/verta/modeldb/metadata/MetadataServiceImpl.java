@@ -193,7 +193,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      metadataDAO.addOrUpdateKeyValueProperties(request);
+      metadataDAO.addOrUpdateKeyValuePropertiesWithActiveTransaction(request);
       responseObserver.onNext(AddKeyValuePropertiesRequest.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
