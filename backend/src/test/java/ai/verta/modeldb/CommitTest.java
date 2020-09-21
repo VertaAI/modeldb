@@ -2378,13 +2378,12 @@ public class CommitTest {
             2,
             listCommitBlobsResponse.getBlobsCount());
         boolean match = false;
-        for(BlobExpanded blobExpanded: listCommitBlobsResponse.getBlobsList()){
-          if (datasetBlob.equals(blobExpanded.getBlob())){
+        for (BlobExpanded blobExpanded : listCommitBlobsResponse.getBlobsList()) {
+          if (datasetBlob.equals(blobExpanded.getBlob())) {
             match = true;
           }
         }
-        Assert.assertTrue(
-            "blob count not match with expected blob count", match);
+        Assert.assertTrue("blob count not match with expected blob count", match);
       }
 
     } finally {
