@@ -369,10 +369,37 @@ public class App implements ApplicationContextAware {
       app.starterProjectID = (String) starterProjectDetail.get(ModelDBConstants.STARTER_PROJECT_ID);
     }
     // --------------- Start Initialize Cloud Config ---------------------------------------------
+    Map<String, Object> springServerMap =
+        (Map<String, Object>) propertiesMap.get(ModelDBConstants.SPRING_SERVER);
+    if (springServerMap == null) {
+      throw new ModelDBException("springServer configuration not found in properties.");
+    }
+
+    Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
+    LOGGER.trace("spring server port number found");
+    System.getProperties().put("server.port", String.valueOf(springServerPort));
+
+    Object object = springServerMap.get(ModelDBConstants.SHUTDOWN_TIMEOUT);
+    if (object instanceof Integer) {
+      app.shutdownTimeout = ((Integer) object).longValue();
+    } else {
+      app.shutdownTimeout = ModelDBConstants.DEFAULT_SHUTDOWN_TIMEOUT;
+    }
+
     ArtifactStoreService artifactStoreService = null;
     if (!app.disabledArtifactStore) {
-      artifactStoreService = initializeServicesBaseOnArtifactStoreType(propertiesMap);
+      Map<String, Object> artifactStoreConfigMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.ARTIFACT_STORE_CONFIG);
+
+      artifactStoreService = initializeServicesBaseOnArtifactStoreType(artifactStoreConfigMap);
+    } else {
+      System.getProperties().put("scan.packages", "dummyPackageName");
+      SpringApplication.run(App.class);
     }
+
+    HealthStatusManager healthStatusManager =
+        new HealthStatusManager(app.applicationContext.getBean(HealthServiceImpl.class));
+    healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
     // --------------- Start Initialize Database base on configuration --------------------------
     if (databasePropMap.isEmpty()) {
@@ -574,20 +601,7 @@ public class App implements ApplicationContextAware {
   }
 
   private static ArtifactStoreService initializeServicesBaseOnArtifactStoreType(
-      Map<String, Object> propertiesMap) throws ModelDBException {
-
-    Map<String, Object> springServerMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.SPRING_SERVER);
-    if (springServerMap == null) {
-      throw new ModelDBException("springServer configuration not found in properties.");
-    }
-
-    Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
-    LOGGER.trace("spring server port number found");
-    System.getProperties().put("server.port", String.valueOf(springServerPort));
-
-    Map<String, Object> artifactStoreConfigMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.ARTIFACT_STORE_CONFIG);
+      Map<String, Object> artifactStoreConfigMap) throws ModelDBException {
 
     String artifactStoreType =
         (String) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_STORE_TYPE);
@@ -595,13 +609,6 @@ public class App implements ApplicationContextAware {
     // ------------- Start Initialize Cloud storage base on configuration ------------------
     ArtifactStoreService artifactStoreService;
     App app = App.getInstance();
-
-    Object object = springServerMap.get(ModelDBConstants.SHUTDOWN_TIMEOUT);
-    if (object instanceof Integer) {
-      app.shutdownTimeout = ((Integer) object).longValue();
-    } else {
-      app.shutdownTimeout = ModelDBConstants.DEFAULT_SHUTDOWN_TIMEOUT;
-    }
 
     app.pickArtifactStoreHostFromConfig =
         (Boolean)
@@ -713,10 +720,6 @@ public class App implements ApplicationContextAware {
         throw new ModelDBException("Configure valid artifact store name in config.yaml file.");
     }
     // ------------- Finish Initialize Cloud storage base on configuration ------------------
-
-    HealthStatusManager healthStatusManager =
-        new HealthStatusManager(app.applicationContext.getBean(HealthServiceImpl.class));
-    healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
     LOGGER.info(
         "ArtifactStore service initialized and resolved storage dependency before server start");
