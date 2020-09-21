@@ -248,7 +248,7 @@ class TestClientDatasetVersionFunctions:
         same_version = client.get_dataset_version(id=version.id)
         assert version.id == same_version.id
 
-    def test_get_versions(self, client, created_datasets):
+    def test_get_versions(self, client, created_datasets, capsys):
         dataset = client.set_dataset(type="local")
         created_datasets.append(dataset)
 
@@ -266,6 +266,9 @@ class TestClientDatasetVersionFunctions:
 
         version = dataset.get_latest_version(ascending=True)
         assert version.id == version1.id
+
+        captured = capsys.readouterr()
+        assert "got existing dataset version: {}".format(version.id) in captured.out
 
     def test_dataset_version_info(self, client, created_datasets):
         botocore = pytest.importorskip("botocore")
