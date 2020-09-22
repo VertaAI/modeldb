@@ -23,7 +23,7 @@ and checksum.
 
 The Verta client library provides a variety of APIs to perform operations on datasets and dataset
 versions. Once dataset versions have been created, any experiment run can be associated with one
-or more dataset versions using ``run.log_dataset_version()`` as shown in this guide.
+or more dataset versions using :meth:`ExperimentRun.log_dataset_version() <verta._tracking.ExperimentRun.log_dataset_version>` as shown in this guide.
 
 
 Setup
