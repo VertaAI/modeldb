@@ -8,7 +8,7 @@ This tutorial will go through how to create a registered model using the Client 
 Using the client
 ----------------
 
-Registered models can be created with :meth:`Client.create_registered_model() <verta.client.Client.create_registered_model()>` as follows:
+Registered models can be created with :meth:`Client.create_registered_model() <verta.client.Client.create_registered_model>` as follows:
 
 .. code-block:: python
 
@@ -16,7 +16,7 @@ Registered models can be created with :meth:`Client.create_registered_model() <v
 
 Notice that we have assigned the labels ``"research-purpose"`` and ``"team-a"`` to the registered model. Labels are great tools for quickly filtering for a list of relevant registered models.
 
-Labels can also be added after the registered model has been created with :meth:`RegisteredModel.add_label() <verta._registry.model.RegisteredModel.add_label()>`:
+Labels can also be added after the registered model has been created with :meth:`RegisteredModel.add_label() <verta._registry.model.RegisteredModel.add_label>`:
 
 .. code-block:: python
 
