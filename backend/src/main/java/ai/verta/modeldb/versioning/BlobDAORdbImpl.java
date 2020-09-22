@@ -1874,6 +1874,12 @@ public class BlobDAORdbImpl implements BlobDAO {
         getUploadStatusEntity(session, computeSha, contentCase);
     UploadStatusEntity uploadStatusEntity = null;
     if (uploadStatusEntities != null && !uploadStatusEntities.isEmpty()) {
+      if (uploadStatusEntities.size() > 1) {
+        LOGGER.warn(
+            "Multiple upload status found for datasetComponentPathId : "
+                + computeSha
+                + ", go ahead with first upload status");
+      }
       uploadStatusEntity = uploadStatusEntities.get(0);
     }
 
