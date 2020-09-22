@@ -11,7 +11,7 @@ Repositories
 ^^^^^^^^^^^^
 
 Repositories are containers of source information, just like in Git. You can create a repository
-like this:
+using :meth:`Client.get_or_create_repository <verta.client.Client.get_or_create_repository>`:
 
 .. code-block:: python
 
@@ -43,7 +43,7 @@ At this stage, this is what the repository looks like:
 Commit operations
 ^^^^^^^^^^^^^^^^^
 
-As a first example of versioning the ingredients, let's add some local files as a dataset:
+As a first example of versioning the ingredients, let's add some local files as a dataset with :meth:`Commit.update() <verta._repository.commit.Commit.update>`:
 
 .. code-block:: python
 
@@ -68,7 +68,7 @@ As a first example of versioning the ingredients, let's add some local files as 
 
 As we can see, the dataset was added to the commit but it has not been saved yet. This allows you to
 experiment and adjust the commit in a staging area until you're ready to save to the server. Once you
-are, we can use:
+are, we can use :meth:`Commit.save() <verta._repository.commit.Commit.save>`:
 
 .. code-block:: python
 
@@ -81,7 +81,7 @@ are, we can use:
     #
 
 The commit is now saved in the server and the branch has been updated. You can also check the lineage of
-commits up to the current:
+commits up to the current with :meth:`Commit.log() <verta._repository.commit.Commit.log>`:
 
 .. code-block:: python
 
@@ -113,7 +113,7 @@ Branch operations
 ^^^^^^^^^^^^^^^^^
 
 Next, let's version the environment that we want to use to train models. We'll use the previous commit
-as the base for a new branch to build on:
+as the base for a new branch to build on using :meth:`Commit.new_branch() <verta._repository.commit.Commit.new_branch>`:
 
 .. code-block:: python
 
