@@ -103,11 +103,10 @@ public class OwnerRoleBindingRepositoryUtils {
                     String.valueOf(repositoryEntity.getId()),
                     ModelDBServiceResourceTypes.REPOSITORY);
               } catch (Exception e) {
-                e.printStackTrace();
                 LOGGER.error(e.getMessage());
               }
             } else {
-              LOGGER.error(
+              LOGGER.info(
                   "Repository owner not found from UAC response list : RepositoryId - {} & userId - {}",
                   repositoryEntity.getId(),
                   repositoryEntity.getOwner());

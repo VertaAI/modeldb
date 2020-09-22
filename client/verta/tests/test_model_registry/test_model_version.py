@@ -8,6 +8,7 @@ import zipfile
 import glob
 import shutil
 import sys
+import json
 
 import cloudpickle
 
@@ -44,6 +45,31 @@ class TestMDBIntegration:
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
         assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
 
+    def test_from_run_diff_workspaces(self, client, experiment_run, organization, created_registered_models):
+        registered_model = client.create_registered_model(workspace=organization.name)
+        created_registered_models.append(registered_model)
+
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id,
+            name="From Run {}".format(experiment_run.id)
+        )
+
+        assert model_version.workspace != experiment_run.workspace
+
+    def test_from_run_diff_workspaces_no_access_error(self, experiment_run, client_2, created_registered_models):
+        registered_model = client_2.create_registered_model()
+        created_registered_models.append(registered_model)
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            model_version = registered_model.create_version_from_run(
+                run_id=experiment_run.id,
+                name="From Run {}".format(experiment_run.id)
+            )
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "403" in excinfo_value
+        assert "Access Denied" in excinfo_value
+
 
 class TestModelVersion:
     def test_create(self, registered_model):
@@ -55,6 +81,12 @@ class TestModelVersion:
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
 
+    def test_set(self, registered_model):
+        name = verta._internal_utils._utils.generate_default_name()
+        version = registered_model.set_version(name=name)
+
+        assert registered_model.set_version(name=version.name).id == version.id
+        
     def test_get_by_name(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
         retrieved_model_version = registered_model.get_version(name=model_version.name)
@@ -206,6 +238,11 @@ class TestModelVersion:
         model_version.log_environment(env)
 
         model_version = registered_model.get_version(id=model_version.id)
+        assert str(env) == str(model_version.get_environment())
+
+        with pytest.raises(ValueError):
+            model_version.log_environment(env)
+        model_version.log_environment(env, overwrite=True)
         assert str(env) == str(model_version.get_environment())
 
     def test_del_environment(self, registered_model):

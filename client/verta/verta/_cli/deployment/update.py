@@ -15,21 +15,28 @@ from ..._registry import RegisteredModelVersion
 
 @deployment.group()
 def update():
+    """Update an entity related to deployment.
+
+    For example, to update an endpoint with a new model version, run
+
+    `verta deployment update endpoint "<endpoint path>" -m "<model version id>" -s direct`
+
+    """
     pass
 
 @update.command(name="endpoint")
 @click.argument("path", nargs=1, required=True)
-@click.option("--run-id", "-r", help="Experiment Run to deploy. Cannot be used alongside --model-version-id.")
-@click.option("--model-version-id", "-m", help="Model Version to deploy. Cannot be used alongside --run-id.")
-@click.option("--filename", "-f", type=click.Path(exists=True, dir_okay=False), help="Path to JSON or YAML config file. Can't be used alongside other options except for --workspace.")
-@click.option("--strategy", "-s", type=click.Choice(['direct', 'canary'], case_sensitive=False), help="Strategy to use to roll out new deployment.")
-@click.option("--resources", help="Resources allowed for the updated endpoint.")
-@click.option("--canary-rule", "-c", multiple=True, help="Rule to use for canary deployment. Can only be used alongside --strategy=canary.")
-@click.option("--canary-interval", "-i", type=click.IntRange(min=0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary.")
-@click.option("--canary-step", type=click.FloatRange(min=0.0, max=1.0), help="Ratio of deployment to roll out per interval. Can only be used alongside --strategy=canary.")
 @click.option("--autoscaling", help="Quantities for autoscaling. Must also provide --autoscaling-metric.")
 @click.option("--autoscaling-metric", multiple=True, help="Metrics for autoscaling. Can only be used alongside --autoscaling.")
+@click.option("--canary-interval", "-i", type=click.IntRange(min=0), help="Rollout interval, in seconds. Can only be used alongside --strategy=canary.")
+@click.option("--canary-rule", "-c", multiple=True, help="Rule to use for canary deployment. Can only be used alongside --strategy=canary.")
+@click.option("--canary-step", type=click.FloatRange(min=0.0, max=1.0), help="Ratio of deployment to roll out per interval. Can only be used alongside --strategy=canary.")
 @click.option("--env-vars", type=str, help="Environment variables to set for the model build. The format is --env-vars '{\"VERTA_HOST\": \"app.verta.ai\"}'.")
+@click.option("--model-version-id", "-m", help="Model Version to deploy. Cannot be used alongside --run-id.")
+@click.option("--filename", "-f", type=click.Path(exists=True, dir_okay=False), help="Path to JSON or YAML config file. Can't be used alongside other options except for --workspace.")
+@click.option("--resources", help="Resources allowed for the updated endpoint.")
+@click.option("--run-id", "-r", help="Experiment Run to deploy. Cannot be used alongside --model-version-id.")
+@click.option("--strategy", "-s", type=click.Choice(['direct', 'canary'], case_sensitive=False), help="Strategy to use to roll out new deployment.")
 @click.option("--workspace", "-w", help="Workspace to use.")
 # TODO: more options
 def update_endpoint(path, run_id, model_version_id, filename, strategy, resources, canary_rule, canary_interval, canary_step, autoscaling, autoscaling_metric, env_vars, workspace):
@@ -93,9 +100,9 @@ def update_endpoint(path, run_id, model_version_id, filename, strategy, resource
             strategy_obj.add_rule(_UpdateRule._from_dict(json.loads(rule)))
 
     if resources:
-        resources_list = Resources._from_dict(json.loads(resources))
+        resources = Resources._from_dict(json.loads(resources))
     else:
-        resources_list = None
+        resources = None
 
     if autoscaling:
         autoscaling_obj = Autoscaling._from_dict(json.loads(autoscaling))
@@ -109,4 +116,4 @@ def update_endpoint(path, run_id, model_version_id, filename, strategy, resource
     else:
         env_vars_dict = None
 
-    endpoint.update(model_reference, strategy_obj, resources=resources_list, autoscaling=autoscaling_obj, env_vars=env_vars_dict)
+    endpoint.update(model_reference, strategy_obj, resources=resources, autoscaling=autoscaling_obj, env_vars=env_vars_dict)

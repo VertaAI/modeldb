@@ -423,24 +423,36 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         del self._msg.artifacts[ind]
         self._update(self._msg, method="PUT")
 
-    def log_environment(self, env):
+    def log_environment(self, env, overwrite=False):
         """
         Logs an environment to this Model Version.
 
         Parameters
         ----------
-        environment : `verta.environment.Python.`
+        env : :class:`~verta.environment.Python`
             Environment to log.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
 
         """
         if not isinstance(env, _Environment):
             raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
 
-        self._fetch_with_no_cache()
-        self._msg.environment.CopyFrom(env._msg)
-        self._update(self._msg, method="PUT")
-        # probably error on backend
-        #self._update(self.ModelVersionMessage(environment=env._msg))
+        if self.has_environment and not overwrite:
+            raise ValueError("environment already exists; consider setting overwrite=True")
+
+        if overwrite:
+            self._fetch_with_no_cache()
+            self._msg.environment.CopyFrom(env._msg)
+            self._update(self._msg, method="PUT")
+        else:
+            self._update(self.ModelVersionMessage(environment=env._msg), method="PATCH",
+                         update_mask={"paths": ["environment.python.version.major",
+                                                "environment.python.version.minor",
+                                                "environment.python.version.patch",
+                                                "environment.python.requirements",
+                                                "environment.command_line", "environment.docker",
+                                                "environment.environment_variables"]})
 
     def del_environment(self):
         """
@@ -457,7 +469,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
 
         Returns
         -------
-        :class:`verta.environment._Environment`
+        :class:`~verta.environment.Python`
             Environment of this ModelVersion.
 
         """
@@ -495,7 +507,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         # check if multipart upload ok
         url_for_artifact = self._get_url_for_artifact(key, "PUT", artifact_type, part_num=1)
 
-        print("uploading {} to ModelDB".format(key))
+        print("uploading {} to Registry".format(key))
         if url_for_artifact.multipart_upload_ok:
             # TODO: parallelize this
             file_parts = iter(lambda: file_handle.read(part_size), b'')
@@ -515,20 +527,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
                 part_stream = six.BytesIO(file_part)
 
                 # upload part
-                #     Retry connection errors, to make large multipart uploads more robust.
-                MAX_TRIES = 3
-                for i in range(MAX_TRIES):
-                    try:
-                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-                    except requests.ConnectionError as err:  # e.g. broken pipe
-                        time.sleep(1)
-
-                        if i == MAX_TRIES - 1:
-                            raise err
-
-                        continue  # try again
-                    else:
-                        break
+                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                 _utils.raise_for_http_error(response)
 
                 # commit part
@@ -683,7 +682,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         self._refresh_cache()
         return self._msg.labels
 
-    def download_docker_context(self, download_to_path):
+    def download_docker_context(self, download_to_path, self_contained=False):
         """
         Downloads this Model Version's Docker context ``tgz``.
 
@@ -691,6 +690,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         ----------
         download_to_path : str
             Path to download Docker context to.
+        self_contained : bool, default False
+            Whether the downloaded Docker context should be self-contained.
 
         Returns
         -------
@@ -704,7 +705,8 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             self._conn.socket,
         )
         body = {
-            "model_version_id": self.id
+            "model_version_id": self.id,
+            "self_contained": self_contained,
         }
 
         with _utils.make_request("POST", endpoint, self._conn, json=body, stream=True) as response:
@@ -832,12 +834,21 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
             self._update(self._msg, method="PUT")
 
 
-    def _update(self, msg, method="PATCH"):
-        self._refresh_cache()  # to have `self._msg.registered_model_id` for URL
-        response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
-                                                 .format(self._msg.registered_model_id, self.id),
-                                                 body=msg, include_default=False)
+    def _update(self, msg, method="PATCH", update_mask=None):
         Message = _RegistryService.SetModelVersion
+        self._refresh_cache()  # to have `self._msg.registered_model_id` for URL
+        if update_mask:
+            url = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/full_body".format(
+                self._conn.scheme,
+                self._conn.socket, self._msg.registered_model_id, self.id
+            )
+            # proto converter for update_mask is missing
+            data = {"model_version": _utils.proto_to_json(msg, False), "update_mask": update_mask}
+            response = _utils.make_request(method, url, self._conn, json=data)
+        else:
+            response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
+                                                     .format(self._msg.registered_model_id, self.id),
+                                                     body=msg, include_default=False)
         if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
             raise ValueError("Model not found")
         self._clear_cache()

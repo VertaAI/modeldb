@@ -1,28 +1,43 @@
 import pytest
 
 from verta.endpoint.resources import Resources
+from verta.endpoint.update import DirectUpdateStrategy
 
 
-@pytest.mark.parametrize("data", [3, 64])
-def test_cpu_milli(data):
-    Resources(cpu_millis=data)
+@pytest.mark.parametrize("data", [3, 64, 0.25])
+def test_cpu_milli(client, data, in_tempdir):
+    resources = Resources(cpu=data)
+
+    # test that `resources` can acutally be used
+    client.download_endpoint_manifest(
+        "deployment.yaml", "/production-prediction", "production-prediction",
+        strategy=DirectUpdateStrategy(),
+        resources=resources,
+    )
 
 
 @pytest.mark.parametrize("data", [-12, 0])
 def test_cpu_milli_negative(data):
     with pytest.raises(ValueError):
-        Resources(cpu_millis=data)
+        Resources(cpu=data)
 
 
-@pytest.mark.parametrize("data", ["T", 0.5])
+@pytest.mark.parametrize("data", ["T", "0.5"])
 def test_cpu_milli_negative_type(data):
     with pytest.raises(TypeError):
-        Resources(cpu_millis=data)
+        Resources(cpu=data)
 
 
 @pytest.mark.parametrize("data", ['128974848', '129e6', '129M', '123Mi'])
-def test_memory(data):
-    Resources(memory=data)
+def test_memory(client, data, in_tempdir):
+    resources = Resources(memory=data)
+
+    # test that `resources` can acutally be used
+    client.download_endpoint_manifest(
+        "deployment.yaml", "/production-prediction", "production-prediction",
+        strategy=DirectUpdateStrategy(),
+        resources=resources,
+    )
 
 
 @pytest.mark.parametrize("data", ['12M3M', 'e12M3M', 'G', '123e6.3Gi', '123.3', '-5'])

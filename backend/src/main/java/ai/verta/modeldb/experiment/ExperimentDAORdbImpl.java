@@ -979,13 +979,11 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       Query query = session.createQuery(GET_EXPERIMENT_BY_ID_QUERY);
       query.setParameter("id", experimentId);
       ExperimentEntity experimentEntity = (ExperimentEntity) query.uniqueResult();
-      String errorMessage = null;
       if (experimentEntity == null) {
-        errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-      }
-
-      if (errorMessage != null) {
-        ModelDBUtils.logAndThrowError(errorMessage, Code.INTERNAL_VALUE, Any.newBuilder().build());
+        ModelDBUtils.logAndThrowError(
+            ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId,
+            Code.NOT_FOUND_VALUE,
+            Any.newBuilder().build());
       }
 
       assert experimentEntity != null;

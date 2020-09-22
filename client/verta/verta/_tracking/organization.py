@@ -88,3 +88,14 @@ class Organization:
                                            "/api/v1/uac-proxy/organization/addUser",
                                            body=Message(org_id=self.id, share_with=share_with))
         status = self.conn.must_proto_response(response, Message.Response).status
+
+    def delete(self):
+        """
+        Deletes this organization.
+
+        """
+        Message = _Organization.DeleteOrganization
+        endpoint = "/api/v1/uac-proxy/organization/deleteOrganization"
+        msg = Message(org_id=self.id)
+        response = self.conn.make_proto_request("POST", endpoint, body=msg)
+        self.conn.must_proto_response(response, Message.Response)

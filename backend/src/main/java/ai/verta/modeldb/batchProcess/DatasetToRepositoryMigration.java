@@ -95,8 +95,10 @@ public class DatasetToRepositoryMigration {
     experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
-
+    Boolean oldStoreClientCreationTimestampValue = app.getStoreClientCreationTimestamp();
+    app.setStoreClientCreationTimestamp(true);
     migrateDatasetsToRepositories();
+    app.setStoreClientCreationTimestamp(oldStoreClientCreationTimestampValue);
   }
 
   private static void migrateDatasetsToRepositories() {
@@ -295,8 +297,8 @@ public class DatasetToRepositoryMigration {
       migrateDatasetCollaborators(datasetId, repository);
     } catch (Exception e) {
       if (e instanceof StatusRuntimeException) {
-        LOGGER.error("Getting error while migrating {} dataset", datasetId);
-        LOGGER.error(e.getMessage());
+        LOGGER.info("Getting error while migrating {} dataset", datasetId);
+        LOGGER.info(e.getMessage());
         Status status = Status.fromThrowable(e);
         if (status.getCode().equals(Status.Code.ALREADY_EXISTS)) {
           repository =
@@ -394,7 +396,7 @@ public class DatasetToRepositoryMigration {
                     criteriaBuilder.and(
                         criteriaBuilder.equal(root.get("deleted"), false),
                         criteriaBuilder.equal(root.get("dataset_id"), datasetId)))
-                .orderBy(criteriaBuilder.asc(root.get("id")));
+                .orderBy(criteriaBuilder.desc(root.get(ModelDBConstants.TIME_LOGGED)));
 
         TypedQuery<DatasetVersionEntity> typedQuery = session1.createQuery(selectQuery);
 
@@ -426,7 +428,7 @@ public class DatasetToRepositoryMigration {
                       commitHash);
                 }
               } else {
-                LOGGER.warn(
+                LOGGER.info(
                     "DatasetVersion found with versionInfo type : {}",
                     newDatasetVersion.getDatasetVersionInfoCase());
               }

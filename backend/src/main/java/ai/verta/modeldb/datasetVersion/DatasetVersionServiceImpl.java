@@ -101,6 +101,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       throws ModelDBException {
     DatasetVersion.Builder datasetVersionBuilder =
         DatasetVersion.newBuilder()
+            .setVersion(request.getVersion())
             .setDatasetId(request.getDatasetId())
             .setDescription(request.getDescription())
             .addAllTags(request.getTagsList())
@@ -152,7 +153,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       /*Parameter validation*/
       if (request.getDatasetId().isEmpty()) {
-        logAndThrowError(
+        ModelDBUtils.logAndThrowError(
             ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(CreateDatasetVersion.Response.getDefaultInstance()));
@@ -201,7 +202,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       /*Parameter validation*/
 
       if (request.getDatasetId().isEmpty()) {
-        logAndThrowError(
+        ModelDBUtils.logAndThrowError(
             ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(GetAllDatasetVersionsByDatasetId.Response.getDefaultInstance()));
@@ -296,7 +297,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
-        logAndThrowError(
+        ModelDBUtils.logAndThrowError(
             ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST,
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()));
@@ -331,32 +332,60 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       /*Parameter validation*/
       if (request.getDatasetId().isEmpty()) {
-        logAndThrowError(
+        ModelDBUtils.logAndThrowError(
             ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
       }
 
-      // TODO: Implement sort key in future
-      /*String sortKey =
-      request.getSortKey().isEmpty() ? ModelDBConstants.TIME_LOGGED : request.getSortKey();*/
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
 
-      int pageNumber = request.getAscending() ? 2 : 1;
-      DatasetVersionDTO datasetVersionDTO =
-          getDatasetVersionDTOByDatasetId(
-              request.getDatasetId(), pageNumber, 1, request.getAscending());
-
-      if (datasetVersionDTO.getDatasetVersions().size() != 1) {
-        logAndThrowError(
+      FindRepositoriesBlobs.Builder findRepositoriesBlobs =
+          FindRepositoriesBlobs.newBuilder()
+              .addRepoIds(Integer.parseInt(request.getDatasetId()))
+              .setPageLimit(1)
+              .setPageNumber(1);
+      String sortKey =
+          request.getSortKey().isEmpty() ? ModelDBConstants.DATE_CREATED : request.getSortKey();
+      CommitPaginationDTO commitPaginationDTO =
+          commitDAO.findCommits(
+              findRepositoriesBlobs.build(),
+              currentLoginUserInfo,
+              false,
+              false,
+              true,
+              sortKey,
+              request.getAscending());
+      if (commitPaginationDTO.getCommitEntities().size() != 1) {
+        ModelDBUtils.logAndThrowError(
             "No datasetVersion found for dataset '" + request.getDatasetId() + "'",
             Code.NOT_FOUND_VALUE,
             Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
       }
 
+      RepositoryEntity repositoryEntity = null;
+      if (!request.getDatasetId().isEmpty()) {
+        RepositoryIdentification repositoryIdentification =
+            RepositoryIdentification.newBuilder()
+                .setRepoId(Long.parseLong(request.getDatasetId()))
+                .build();
+        repositoryEntity =
+            repositoryDAO.getProtectedRepositoryById(repositoryIdentification, false);
+      }
+      List<DatasetVersion> datasetVersions =
+          new ArrayList<>(
+              convertRepoDatasetVersions(repositoryEntity, commitPaginationDTO.getCommits()));
+
+      if (datasetVersions.size() != 1) {
+        ModelDBUtils.logAndThrowError(
+            "No datasetVersion found for dataset '" + request.getDatasetId() + "'",
+            Code.NOT_FOUND_VALUE,
+            Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
+      }
       /*Build response*/
       responseObserver.onNext(
           GetLatestDatasetVersionByDatasetId.Response.newBuilder()
-              .setDatasetVersion(datasetVersionDTO.getDatasetVersions().get(0))
+              .setDatasetVersion(datasetVersions.get(0))
               .build());
       responseObserver.onCompleted();
 
@@ -364,25 +393,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       ModelDBUtils.observeError(
           responseObserver, e, GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance());
     }
-  }
-
-  /**
-   * internal utility function to reduce lines of code
-   *
-   * @param errorMessage
-   * @param errorCode
-   * @param defaultResponse
-   */
-  // TODO: check if this could be bumped up to utils so it can be used across files
-  private void logAndThrowError(String errorMessage, int errorCode, Any defaultResponse) {
-    LOGGER.warn(errorMessage);
-    Status status =
-        Status.newBuilder()
-            .setCode(errorCode)
-            .setMessage(errorMessage)
-            .addDetails(defaultResponse)
-            .build();
-    throw StatusProto.toStatusRuntimeException(status);
   }
 
   // FIXME: moving to versioning based datset versions we only support KeyValue Query on Attribute
@@ -832,7 +842,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       /*Parameter validation*/
       if (request.getIdsList().isEmpty()) {
-        logAndThrowError(
+        ModelDBUtils.logAndThrowError(
             ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST,
             Code.INVALID_ARGUMENT_VALUE,
             Any.pack(DeleteDatasetVersions.Response.getDefaultInstance()));
@@ -897,8 +907,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       errorMessage = "Method is not found in GetUrlForDatasetBlobVersioned request";
     }
     if (errorMessage != null) {
-      LOGGER.warn(errorMessage);
-      throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      LOGGER.info(errorMessage);
+      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
     }
   }
 
@@ -915,8 +925,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
-        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+        LOGGER.info(errorMessage);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
 
       blobDAO.commitVersionedDatasetBlobArtifactPart(

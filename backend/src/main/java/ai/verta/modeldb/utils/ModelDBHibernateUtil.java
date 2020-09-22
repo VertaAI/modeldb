@@ -8,6 +8,7 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
+import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.ArtifactStoreMapping;
@@ -40,6 +41,7 @@ import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.config.HyperparameterSetConfigBlobEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
+import ai.verta.modeldb.entities.dataset.QueryDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.S3DatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.environment.DockerEnvironmentBlobEntity;
 import ai.verta.modeldb.entities.environment.EnvironmentBlobEntity;
@@ -99,6 +101,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.exception.JDBCConnectionException;
 import org.hibernate.query.Query;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
@@ -166,7 +169,8 @@ public class ModelDBHibernateUtil {
     MetadataPropertyMappingEntity.class,
     DatasetRepositoryMappingEntity.class,
     UploadStatusEntity.class,
-    KeyValuePropertyMappingEntity.class
+    KeyValuePropertyMappingEntity.class,
+    QueryDatasetComponentBlobEntity.class
   };
 
   private ModelDBHibernateUtil() {}
@@ -230,6 +234,10 @@ public class ModelDBHibernateUtil {
         settings.put(Environment.DIALECT, rDBDialect);
         settings.put(Environment.HBM2DDL_AUTO, "validate");
         settings.put(Environment.SHOW_SQL, "false");
+        settings.put("hibernate.c3p0.testConnectionOnCheckin", "true");
+        // Reduce this time period if stale connections still exist
+        settings.put("hibernate.c3p0.idleConnectionTestPeriod", "100");
+        settings.put("hibernate.c3p0.preferredTestQuery", "Select 1");
         configuration.setProperties(settings);
 
         LOGGER.trace("connectionString {}", connectionString);
@@ -288,6 +296,7 @@ public class ModelDBHibernateUtil {
 
   private static SessionFactory loopBack(SessionFactory sessionFactory) {
     try {
+      LOGGER.debug("ModelDBHibernateUtil checking DB connection");
       boolean dbConnectionLive =
           checkDBConnection(
               rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
@@ -527,6 +536,11 @@ public class ModelDBHibernateUtil {
             });
 
         return valid[0];
+      } catch (JDBCConnectionException ex) {
+        LOGGER.error(
+            "ModelDBHibernateUtil ping() : DB connection not found, got error: {}",
+            ex.getMessage());
+        // ModelDBHibernateUtil.sessionFactory = null;
       }
     }
     return false;
@@ -687,6 +701,21 @@ public class ModelDBHibernateUtil {
                             CompletableFuture.supplyAsync(
                                 () -> {
                                   OwnerRoleBindingRepositoryUtils.execute();
+                                  return true;
+                                });
+                        completableFutures[index] = futureTask;
+                        index = index + 1;
+                      }
+                      if (migrationName.equals(ModelDBConstants.POPULATE_VERSION_MIGRATION)) {
+                        // Manual migration for populate RoleBinding of repository
+                        CompletableFuture<Boolean> futureTask =
+                            CompletableFuture.supplyAsync(
+                                () -> {
+                                  int recordUpdateLimit =
+                                      (int)
+                                          migrationDetailMap.getOrDefault(
+                                              ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+                                  PopulateVersionMigration.execute(recordUpdateLimit);
                                   return true;
                                 });
                         completableFutures[index] = futureTask;
