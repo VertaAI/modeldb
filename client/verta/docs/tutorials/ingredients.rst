@@ -153,7 +153,7 @@ added in the new branch.
 .. image:: /_static/gifs/tutorial-ingredients-2.gif
 
 Once we're done with the changes in our branch, we can merge it back into the `master` branch so that
-others can benefit from our changes:
+others can benefit from our changes, using :meth:`Commit.merge() <verta._repository.commit.Commit.merge>`:
 
 .. code-block:: python
 
