@@ -40,7 +40,7 @@ database:
   DBType: relational
   timeout: 4
   liquibaseLockThreshold: 60 #time in second
-  changeSetToRevertUntilTag: db_version_1.4
+  changeSetToRevertUntilTag: #ex: version_1.0
   RdbConfiguration:
     RdbDatabaseName:
     RdbDriver: "org.postgresql.Driver"
@@ -103,3 +103,7 @@ cron_job:
     frequency: 60 #frequency to delete entities in second, default 60
 
 populateConnectionsBasedOnPrivileges: false
+
+#If liquibase have same changes then 'LIQUIBASE_MIGRATION' should have true otherwise default is false
+LIQUIBASE_MIGRATION: false
+RUN_LIQUIBASE_SEPARATE: false
