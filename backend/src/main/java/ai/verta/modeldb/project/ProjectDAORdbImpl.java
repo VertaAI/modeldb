@@ -8,6 +8,7 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.CloneExperimentRun;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
@@ -708,8 +709,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       List<ExperimentRun> experimentRuns =
           this.experimentRunDAO.getExperimentRuns(experimentLevelFilter);
       for (ExperimentRun srcExperimentRun : experimentRuns) {
-        this.experimentRunDAO.deepCopyExperimentRunForUser(
-            srcExperimentRun, newExperiment, newProject, newOwner);
+        CloneExperimentRun cloneExperimentRun =
+            CloneExperimentRun.newBuilder()
+                .setSrcExperimentRunId(srcExperimentRun.getId())
+                .setDestExperimentId(newExperiment.getId())
+                .setDestProjectId(newProject.getId())
+                .setNewOwner(authService.getVertaIdFromUserInfo(newOwner))
+                .build();
+        this.experimentRunDAO.cloneExperimentRun(cloneExperimentRun);
       }
     }
 

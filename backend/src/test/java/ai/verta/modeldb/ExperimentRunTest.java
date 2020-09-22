@@ -11256,4 +11256,149 @@ public class ExperimentRunTest {
 
     LOGGER.info("Delete ExperimentRun Observations test stop................................");
   }
+
+  @Test
+  public void cloneExperimentRun() throws ModelDBException, NoSuchAlgorithmException {
+    LOGGER.info("Clone experimentRun test start................................");
+
+    ProjectTest projectTest = new ProjectTest();
+    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    ExperimentServiceBlockingStub experimentServiceStub =
+        ExperimentServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStub =
+        ExperimentRunServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
+        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long repoId =
+        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+    Commit commit =
+        Commit.newBuilder()
+            .setMessage("this is the test commit message")
+            .setDateCreated(111)
+            .addParentShas(getBranchResponse.getCommit().getCommitSha())
+            .build();
+    Location location1 = Location.newBuilder().addLocation("dataset").addLocation("train").build();
+    Location location2 =
+        Location.newBuilder().addLocation("test-1").addLocation("test1.json").build();
+    Location location3 =
+        Location.newBuilder().addLocation("test-2").addLocation("test2.json").build();
+    Location location4 =
+        Location.newBuilder().addLocation("test-location-4").addLocation("test4.json").build();
+
+    CreateCommitRequest createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setCommit(commit)
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .addAllLocation(location1.getLocationList())
+                    .build())
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.CONFIG))
+                    .addAllLocation(location2.getLocationList())
+                    .build())
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .addAllLocation(location3.getLocationList())
+                    .build())
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getHyperparameterConfigBlob(0.14F, 0.10F))
+                    .addAllLocation(location4.getLocationList())
+                    .build())
+            .build();
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+    commit = commitResponse.getCommit();
+
+    // Create project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("experimentRun_project_ferh");
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project = createProjectResponse.getProject();
+    LOGGER.info("Project created successfully");
+
+    try {
+      // Create two experiment of above project
+      CreateExperiment createExperimentRequest =
+          ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_1");
+      CreateExperiment.Response createExperimentResponse =
+          experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment1 = createExperimentResponse.getExperiment();
+      LOGGER.info("Experiment created successfully");
+
+      Map<String, Location> locationMap = new HashMap<>();
+      locationMap.put("location-1", location1);
+
+      CreateExperimentRun createExperimentRunRequest =
+          getCreateExperimentRunRequest(
+              project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+      KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .addHyperparameters(hyperparameter1)
+              .build();
+      CreateExperimentRun.Response createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
+      ExperimentRun srcExperimentRun = createExperimentRunResponse.getExperimentRun();
+
+      CloneExperimentRun cloneExperimentRun =
+          CloneExperimentRun.newBuilder().setSrcExperimentRunId(srcExperimentRun.getId()).build();
+      CloneExperimentRun.Response cloneResponse =
+          experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
+      assertNotEquals(
+          "Clone run id should not be match with source run id",
+          srcExperimentRun.getId(),
+          cloneResponse.getRun().getId());
+      srcExperimentRun =
+          srcExperimentRun
+              .toBuilder()
+              .setId(cloneResponse.getRun().getId())
+              .setName(cloneResponse.getRun().getName())
+              .build();
+      assertEquals(
+          "CLone experimentRun can not match with expected experimentRun",
+          srcExperimentRun,
+          cloneResponse.getRun());
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
+    }
+
+    LOGGER.info("Clone experimentRun test stop................................");
+  }
 }
