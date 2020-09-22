@@ -591,6 +591,11 @@ def is_in_venv(path):
     if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
         return True
 
+    pycache_str = os.path.join(os.sep, "bin", "__pycache__")
+    i = path.find(pycache_str)
+    if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+        return True
+
     # Debian's system-level packages from apt
     #     https://wiki.debian.org/Python#Deviations_from_upstream
     dist_pkg_pattern = re.compile(r"/usr(/local)?/lib/python[0-9.]+/dist-packages")
