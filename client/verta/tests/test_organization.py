@@ -34,7 +34,7 @@ class TestOrganization:
 
         org.delete()
 
-    def test_create_same_name_diff_workspace(self, client, organization, in_tempdir, created_endpoints, created_registered_models, created_datasets):
+    def test_create_same_name_diff_workspace(self, client, organization, created_endpoints, created_registered_models, created_datasets):
         # creating some entities:
         project_name = _utils.generate_default_name()
         exp_name = _utils.generate_default_name()
@@ -59,28 +59,17 @@ class TestOrganization:
         endpoint = client.create_endpoint(path=endpoint_path)
         created_endpoints.append(endpoint)
 
-        # Switching workspace name:
-        client_config = {
-            "workspace": organization.name
-        }
-
-        filepath = "verta_config.json"
-        with open(filepath, "w") as f:
-            json.dump(client_config, f)
-
-        client = Client()
-
         # create entities with same name, but different workspace:
-        new_model = client.create_registered_model(name=model_name)
+        new_model = client.create_registered_model(name=model_name, workspace=organization.name)
         new_version = new_model.create_version(name=version_name)
-        new_endpoint = client.create_endpoint(path=endpoint_path)
+        new_endpoint = client.create_endpoint(path=endpoint_path, workspace=organization.name)
 
-        new_project = client.create_project(project_name)
+        new_project = client.create_project(project_name, workspace=organization.name)
         new_exp = client.create_experiment(exp_name)
         new_run = client.create_experiment_run(run_name)
         new_repository = client.get_or_create_repository(name=repository_name, workspace=organization.name)
 
-        new_dataset = client._create_dataset2(dataset_name)
+        new_dataset = client._create_dataset2(dataset_name, workspace=organization.name)
         created_datasets.append(new_dataset)
 
         created_endpoints.append(new_endpoint)
