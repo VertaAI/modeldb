@@ -716,12 +716,19 @@ public class ModelDBUtils {
     return envVarVal != null && !envVarVal.isEmpty();
   }
 
-  public static void validateEntityNameWithColonAndSlash(String name) throws ModelDBException {
-    if (name != null
-        && !name.isEmpty()
-        && (name.contains(":") || name.contains("/") || name.contains("\\"))) {
-      throw new ModelDBException(
-          "Name can not contain ':' or '/' or '\\\\'", Code.INVALID_ARGUMENT);
+  public static void validateEntityNameWithColonAndSlash(String name, boolean validateOnlyColon)
+      throws ModelDBException {
+    if (name != null && !name.isEmpty()) {
+      if (validateOnlyColon) {
+        if (name.contains(":")) {
+          throw new ModelDBException("Name can not contain ':'", Code.INVALID_ARGUMENT);
+        }
+      } else {
+        if (name.contains(":") || name.contains("/") || name.contains("\\")) {
+          throw new ModelDBException(
+              "Name can not contain ':' or '/' or '\\\\'", Code.INVALID_ARGUMENT);
+        }
+      }
     }
   }
 }

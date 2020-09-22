@@ -2171,4 +2171,51 @@ public class DatasetTest {
 
     LOGGER.info("Create and delete Dataset test stop................................");
   }
+
+  @Test
+  public void checkDatasetNameWithColonAndSlashesTest() {
+    LOGGER.info("check dataset name with colon and slashes test start...........");
+
+    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
+        DatasetServiceGrpc.newBlockingStub(channel);
+
+    CreateDataset createDatasetRequest = getDatasetRequest("Dataset: colons test dataset");
+    CreateDataset.Response createDatasetResponse =
+        datasetServiceStub.createDataset(createDatasetRequest);
+    Dataset dataset1 = createDatasetResponse.getDataset();
+    LOGGER.info("CreateDataset Response : \n" + dataset1);
+    assertEquals(
+        "Dataset name not match with expected dataset name",
+        createDatasetRequest.getName(),
+        dataset1.getName());
+
+    createDatasetRequest = getDatasetRequest("Dataset/ colons test dataset");
+    createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
+    Dataset dataset2 = createDatasetResponse.getDataset();
+    LOGGER.info("CreateDataset Response : \n" + dataset2);
+    assertEquals(
+        "Dataset name not match with expected dataset name",
+        createDatasetRequest.getName(),
+        dataset2.getName());
+
+    createDatasetRequest = getDatasetRequest("Dataset\\\\ colons test dataset");
+    createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
+    Dataset dataset3 = createDatasetResponse.getDataset();
+    LOGGER.info("CreateDataset Response : \n" + dataset3);
+    assertEquals(
+        "Dataset name not match with expected dataset name",
+        createDatasetRequest.getName(),
+        dataset3.getName());
+
+    for (Dataset dataset : new Dataset[] {dataset1, dataset2, dataset3}) {
+      DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
+      DeleteDataset.Response deleteDatasetResponse =
+          datasetServiceStub.deleteDataset(deleteDataset);
+      LOGGER.info("Dataset deleted successfully");
+      LOGGER.info(deleteDatasetResponse.toString());
+      assertTrue(deleteDatasetResponse.getStatus());
+    }
+
+    LOGGER.info("check dataset name with colon and slashes test stop...........");
+  }
 }
