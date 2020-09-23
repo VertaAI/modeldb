@@ -272,14 +272,11 @@ public class DatasetContainer extends BlobContainer {
                                 + newAttribute.getKey())
                         .build();
                 throw StatusProto.toStatusRuntimeException(status);
-              } else {
-                newAttributeEntities.add(newAttribute);
               }
             }
           }
-        } else {
-          newAttributeEntities.addAll(newOrUpdatedAttributeEntities);
         }
+        newAttributeEntities.addAll(newOrUpdatedAttributeEntities);
       } else {
         if (!existingAttributes.isEmpty()) {
           for (AttributeEntity updatedAttributeObj : newOrUpdatedAttributeEntities) {
