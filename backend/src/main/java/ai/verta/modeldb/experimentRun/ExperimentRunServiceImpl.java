@@ -2610,7 +2610,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             "Source ExperimentRun Id should not be empty", Code.INVALID_ARGUMENT);
       }
 
-      ExperimentRun clonedExperimentRun = experimentRunDAO.cloneExperimentRun(request);
+      ExperimentRun clonedExperimentRun =
+          experimentRunDAO.cloneExperimentRun(request, authService.getCurrentLoginUserInfo());
       responseObserver.onNext(
           CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build());
       responseObserver.onCompleted();

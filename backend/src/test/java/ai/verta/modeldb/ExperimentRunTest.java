@@ -11326,27 +11326,38 @@ public class ExperimentRunTest {
 
     // Create project
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ferh");
+        projectTest.getCreateProjectRequest("experimentRun_project_ferh_1");
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
+    Project project1 = createProjectResponse.getProject();
+    LOGGER.info("Project1 created successfully");
+
+    createProjectRequest = projectTest.getCreateProjectRequest("experimentRun_project_ferh_2");
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    Project project2 = createProjectResponse.getProject();
+    LOGGER.info("Project2 created successfully");
 
     try {
       // Create two experiment of above project
       CreateExperiment createExperimentRequest =
-          ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_1");
+          ExperimentTest.getCreateExperimentRequest(project1.getId(), "Experiment_ferh_1");
       CreateExperiment.Response createExperimentResponse =
           experimentServiceStub.createExperiment(createExperimentRequest);
       Experiment experiment1 = createExperimentResponse.getExperiment();
-      LOGGER.info("Experiment created successfully");
+      LOGGER.info("Experiment1 created successfully");
+
+      createExperimentRequest =
+          ExperimentTest.getCreateExperimentRequest(project2.getId(), "Experiment_ferh_2");
+      createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment2 = createExperimentResponse.getExperiment();
+      LOGGER.info("Experiment2 created successfully");
 
       Map<String, Location> locationMap = new HashMap<>();
       locationMap.put("location-1", location1);
 
       CreateExperimentRun createExperimentRunRequest =
           getCreateExperimentRunRequest(
-              project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+              project1.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
       KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       createExperimentRunRequest =
           createExperimentRunRequest
@@ -11377,11 +11388,108 @@ public class ExperimentRunTest {
               .toBuilder()
               .setId(cloneResponse.getRun().getId())
               .setName(cloneResponse.getRun().getName())
+              .setDateCreated(cloneResponse.getRun().getDateCreated())
+              .setDateUpdated(cloneResponse.getRun().getDateUpdated())
+              .setStartTime(cloneResponse.getRun().getStartTime())
+              .setEndTime(cloneResponse.getRun().getEndTime())
               .build();
       assertEquals(
-          "CLone experimentRun can not match with expected experimentRun",
+          "Clone experimentRun can not match with expected experimentRun",
           srcExperimentRun,
           cloneResponse.getRun());
+
+      cloneExperimentRun =
+          CloneExperimentRun.newBuilder()
+              .setSrcExperimentRunId(srcExperimentRun.getId())
+              .setDestExperimentRunName("Test - " + Calendar.getInstance().getTimeInMillis())
+              .setDestProjectId(project2.getId())
+              .setDestExperimentId(experiment2.getId())
+              .build();
+      cloneResponse = experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
+      assertNotEquals(
+          "Clone run id should not be match with source run id",
+          srcExperimentRun.getId(),
+          cloneResponse.getRun().getId());
+      srcExperimentRun =
+          srcExperimentRun
+              .toBuilder()
+              .setId(cloneResponse.getRun().getId())
+              .setName(cloneExperimentRun.getDestExperimentRunName())
+              .setProjectId(cloneExperimentRun.getDestProjectId())
+              .setExperimentId(cloneExperimentRun.getDestExperimentId())
+              .setDateCreated(cloneResponse.getRun().getDateCreated())
+              .setDateUpdated(cloneResponse.getRun().getDateUpdated())
+              .setStartTime(cloneResponse.getRun().getStartTime())
+              .setEndTime(cloneResponse.getRun().getEndTime())
+              .build();
+      assertEquals(
+          "Clone experimentRun can not match with expected experimentRun",
+          srcExperimentRun,
+          cloneResponse.getRun());
+
+      try {
+        cloneExperimentRun =
+            CloneExperimentRun.newBuilder()
+                .setSrcExperimentRunId(srcExperimentRun.getId())
+                .setDestProjectId(project2.getId())
+                .build();
+        experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
+        fail();
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn(
+            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
+      }
+
+      try {
+        cloneExperimentRun =
+            CloneExperimentRun.newBuilder()
+                .setSrcExperimentRunId(srcExperimentRun.getId())
+                .setDestProjectId("XYZ")
+                .setDestExperimentId(experiment2.getId())
+                .build();
+        experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
+        fail();
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn(
+            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
+      }
+
+      try {
+        cloneExperimentRun =
+            CloneExperimentRun.newBuilder()
+                .setSrcExperimentRunId(srcExperimentRun.getId())
+                .setDestProjectId(project2.getId())
+                .setDestExperimentId("XYZ")
+                .build();
+        experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
+        fail();
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn(
+            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
+      }
+
+      try {
+        cloneExperimentRun =
+            CloneExperimentRun.newBuilder()
+                .setSrcExperimentRunId(srcExperimentRun.getId())
+                .setDestExperimentId(experiment2.getId())
+                .setDestProjectId(project1.getId())
+                .build();
+        experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
+        fail();
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn(
+            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      }
+
     } finally {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
@@ -11391,12 +11499,14 @@ public class ExperimentRunTest {
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
       Assert.assertTrue(deleteResult.getStatus());
 
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
+      for (Project project : new Project[] {project1, project2}) {
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            projectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
+      }
     }
 
     LOGGER.info("Clone experimentRun test stop................................");

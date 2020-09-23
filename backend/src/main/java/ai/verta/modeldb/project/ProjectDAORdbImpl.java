@@ -714,9 +714,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 .setSrcExperimentRunId(srcExperimentRun.getId())
                 .setDestExperimentId(newExperiment.getId())
                 .setDestProjectId(newProject.getId())
-                .setNewOwner(authService.getVertaIdFromUserInfo(newOwner))
                 .build();
-        this.experimentRunDAO.cloneExperimentRun(cloneExperimentRun);
+        this.experimentRunDAO.cloneExperimentRun(cloneExperimentRun, newOwner);
       }
     }
 

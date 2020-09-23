@@ -491,6 +491,6 @@ public interface ExperimentRunDAO {
       ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request)
       throws ModelDBException, InvalidProtocolBufferException;
 
-  ExperimentRun cloneExperimentRun(CloneExperimentRun cloneExperimentRun)
+  ExperimentRun cloneExperimentRun(CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException;
 }

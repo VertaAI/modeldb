@@ -1,5 +1,7 @@
 package ai.verta.modeldb.experimentRun;
 
+import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
+
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
@@ -83,19 +85,6 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaDelete;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -113,8 +102,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
@@ -2870,7 +2869,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun cloneExperimentRun(CloneExperimentRun cloneExperimentRun)
+  public ExperimentRun cloneExperimentRun(CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
     ExperimentRun srcExperimentRun = getExperimentRun(cloneExperimentRun.getSrcExperimentRunId());
 
@@ -2883,13 +2882,26 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     ExperimentRun.Builder desExperimentRunBuilder = srcExperimentRun.toBuilder().clone();
     desExperimentRunBuilder
         .setId(UUID.randomUUID().toString())
-        .setName(srcExperimentRun.getName() + " - Clone - " + new Date().getTime())
         .setDateCreated(Calendar.getInstance().getTimeInMillis())
         .setDateUpdated(Calendar.getInstance().getTimeInMillis())
         .setStartTime(Calendar.getInstance().getTimeInMillis())
         .setEndTime(Calendar.getInstance().getTimeInMillis());
 
+    if (!cloneExperimentRun.getDestExperimentRunName().isEmpty()) {
+      desExperimentRunBuilder.setName(cloneExperimentRun.getDestExperimentRunName());
+    } else {
+      desExperimentRunBuilder.setName(srcExperimentRun.getName() + " - " + new Date().getTime());
+    }
+
     if (!cloneExperimentRun.getDestProjectId().isEmpty()) {
+      if (cloneExperimentRun.getDestExperimentId().isEmpty()) {
+        throw new ModelDBException(
+            "dest_experiment_id not found for the destination project '"
+                + cloneExperimentRun.getDestProjectId()
+                + "'",
+            Code.NOT_FOUND);
+      }
+
       try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
         ProjectEntity destProjectEntity =
             session.get(ProjectEntity.class, cloneExperimentRun.getDestProjectId());
@@ -2930,15 +2942,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       desExperimentRunBuilder.setExperimentId(cloneExperimentRun.getDestExperimentId());
     }
 
-    UserInfo newOwner;
-    if (cloneExperimentRun.getNewOwner() != null && !cloneExperimentRun.getNewOwner().isEmpty()) {
-      newOwner =
-          authService.getUserInfo(
-              cloneExperimentRun.getNewOwner(), ModelDBConstants.UserIdentifier.VERTA_ID);
-    } else {
-      newOwner = authService.getCurrentLoginUserInfo();
-    }
-    desExperimentRunBuilder.clearOwner().setOwner(authService.getVertaIdFromUserInfo(newOwner));
-    return insertExperimentRun(desExperimentRunBuilder.build(), newOwner);
+    desExperimentRunBuilder.clearOwner().setOwner(authService.getVertaIdFromUserInfo(userInfo));
+    return insertExperimentRun(desExperimentRunBuilder.build(), userInfo);
   }
 }
