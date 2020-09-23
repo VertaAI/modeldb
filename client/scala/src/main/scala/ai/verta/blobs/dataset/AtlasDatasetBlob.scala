@@ -126,8 +126,8 @@ object AtlasDatasetBlob {
       val databaseName: String = dbRelationshipAttributesMap.get("displayText").map(JsonConverter.fromJsonString).get
       val createdTime: BigInt = entityMap.get("createTime").map(JsonConverter.fromJsonInteger).get
       val updatedTime: BigInt = entityMap.get("updateTime").map(JsonConverter.fromJsonInteger).get
-      val columnNames: List[ValueType] = getStringListField(relationshipAttributesMap, "columns")
-      val loadQueries: List[ValueType] = getStringListField(relationshipAttributesMap, "outputFromProcesses")
+      val columnNames: List[ValueType] = getListFieldDisplayText(relationshipAttributesMap, "columns")
+      val loadQueries: List[ValueType] = getListFieldDisplayText(relationshipAttributesMap, "outputFromProcesses")
 
       Map[String, ValueType](
         "type" -> "hive_table", // only supports hive table.
@@ -140,12 +140,13 @@ object AtlasDatasetBlob {
       )
     }
 
-    private def getStringListField(jsonMap: Map[String, JValue], fieldName: String): List[ValueType] =
+    // get display test of each object in a list field
+    private def getListFieldDisplayText(jsonMap: Map[String, JValue], fieldName: String): List[ValueType] =
       (jsonMap.get(fieldName) match {
-        case Some(JArray(columns)) => columns
+        case Some(JArray(objs)) => objs
         case _ => List()
       })
-        .flatMap(column => column match {
+        .flatMap(obj => obj match {
           case JObject(fields) =>
             fields
               .filter(field => field.name == "displayText")
