@@ -564,6 +564,17 @@ message ListBlobExperimentRunsRequest {
     }
 }
 
+message CloneExperimentRun {
+    string src_experiment_run_id = 1; // Which experimentRun want to clone [Compulsory]
+    string dest_experiment_id = 2; // Destination experiment_id to clone run into. if not define here then the backend take experiment_id which is exists in src_experiment_run. [Optional]
+    string dest_project_id = 3; // Destination project_id to clone run into. if not define here then the backend take project_id which is exists in src_experiment_run. [Optional]
+    string new_owner = 4; // Owner id of new cloned experiment_run. if not define here then the backend take the login user as a owner [Optional]
+
+    message Response {
+        ExperimentRun run = 1;
+    }
+}
+
 service ExperimentRunService {
 
     rpc createExperimentRun(CreateExperimentRun) returns (CreateExperimentRun.Response) {
@@ -968,6 +979,13 @@ service ExperimentRunService {
         DeleteHyperparameters.Response) {
         option (google.api.http) = {
             delete: "/v1/experiment-run/deleteHyperparameters"
+            body: "*"
+        };
+    };
+
+    rpc cloneExperimentRun(CloneExperimentRun) returns (CloneExperimentRun.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment-run/cloneExperimentRun"
             body: "*"
         };
     };
