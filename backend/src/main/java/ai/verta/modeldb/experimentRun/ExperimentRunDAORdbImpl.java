@@ -1,7 +1,5 @@
 package ai.verta.modeldb.experimentRun;
 
-import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
-
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
@@ -85,6 +83,19 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -102,18 +113,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaDelete;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
+
+import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
 public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
@@ -2882,17 +2883,53 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     ExperimentRun.Builder desExperimentRunBuilder = srcExperimentRun.toBuilder().clone();
     desExperimentRunBuilder
         .setId(UUID.randomUUID().toString())
-        .setName(srcExperimentRun.getName() + " - Clone - " + new Date().getTime());
+        .setName(srcExperimentRun.getName() + " - Clone - " + new Date().getTime())
+        .setDateCreated(Calendar.getInstance().getTimeInMillis())
+        .setDateUpdated(Calendar.getInstance().getTimeInMillis())
+        .setStartTime(Calendar.getInstance().getTimeInMillis())
+        .setEndTime(Calendar.getInstance().getTimeInMillis());
 
-    if (cloneExperimentRun.getDestExperimentId() != null
-        && !cloneExperimentRun.getDestExperimentId().isEmpty()) {
+    if (!cloneExperimentRun.getDestProjectId().isEmpty()) {
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        ProjectEntity destProjectEntity =
+            session.get(ProjectEntity.class, cloneExperimentRun.getDestProjectId());
+        if (destProjectEntity == null) {
+          throw new ModelDBException(
+              "Destination project '" + cloneExperimentRun.getDestProjectId() + "' not found",
+              Code.NOT_FOUND);
+        }
+      }
+      desExperimentRunBuilder.setProjectId(cloneExperimentRun.getDestProjectId());
+    }
+
+    if (!cloneExperimentRun.getDestExperimentId().isEmpty()) {
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        ExperimentEntity destExperimentEntity =
+            session.get(ExperimentEntity.class, cloneExperimentRun.getDestExperimentId());
+        if (destExperimentEntity == null) {
+          throw new ModelDBException(
+              "Destination experiment '" + cloneExperimentRun.getDestExperimentId() + "' not found",
+              Code.NOT_FOUND);
+        }
+
+        if (!cloneExperimentRun.getDestProjectId().isEmpty()
+            && !cloneExperimentRun
+                .getDestProjectId()
+                .equals(destExperimentEntity.getProject_id())) {
+          throw new ModelDBException(
+              "Destination experiment '"
+                  + cloneExperimentRun.getDestExperimentId()
+                  + "' is not a part of dest project '"
+                  + cloneExperimentRun.getDestProjectId()
+                  + "'",
+              Code.INVALID_ARGUMENT);
+        } else {
+          desExperimentRunBuilder.setProjectId(destExperimentEntity.getProject_id());
+        }
+      }
       desExperimentRunBuilder.setExperimentId(cloneExperimentRun.getDestExperimentId());
     }
 
-    if (cloneExperimentRun.getDestProjectId() != null
-        && !cloneExperimentRun.getDestProjectId().isEmpty()) {
-      desExperimentRunBuilder.setProjectId(cloneExperimentRun.getDestProjectId());
-    }
     UserInfo newOwner;
     if (cloneExperimentRun.getNewOwner() != null && !cloneExperimentRun.getNewOwner().isEmpty()) {
       newOwner =
