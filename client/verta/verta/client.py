@@ -557,7 +557,7 @@ class Client(object):
 
         return self._ctx.expt_run
 
-    def get_or_create_repository(self, name=None, workspace=None, id=None):
+    def get_or_create_repository(self, name=None, workspace=None, id=None, public_within_org=None):
         """
         Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
 
@@ -596,7 +596,8 @@ class Client(object):
 
             if not repo:  # not found
                 try:
-                    repo = _repository.Repository._create(self._conn, name=name, workspace=workspace)
+                    repo = _repository.Repository._create(self._conn, name=name, workspace=workspace,
+                                                          public_within_org=public_within_org)
                 except requests.HTTPError as e:
                     if e.response.status_code == 409:  # already exists
                         raise RuntimeError("unable to get Repository from ModelDB;"

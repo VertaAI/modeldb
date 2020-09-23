@@ -55,9 +55,19 @@ class Repository(object):
         raise NotImplementedError
 
     @classmethod
-    def _create(cls, conn, name, workspace):
+    def _create(cls, conn, name, workspace, public_within_org):
         msg = _VersioningService.Repository()
         msg.name = name
+        if public_within_org:
+            if workspace is None:
+                raise ValueError("cannot set `public_within_org` for personal workspace")
+            elif not _utils.is_org(workspace, conn):
+                raise ValueError(
+                    "cannot set `public_within_org`"
+                    " because workspace \"{}\" is not an organization".format(workspace)
+                )
+            else:
+                msg.repository_visibility = _VersioningService.RepositoryVisibilityEnum.ORG_SCOPED_PUBLIC
 
         data = _utils.proto_to_json(msg)
         endpoint = "{}://{}/api/v1/modeldb/versioning/workspaces/{}/repositories".format(

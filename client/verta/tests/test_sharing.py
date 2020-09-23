@@ -55,3 +55,35 @@ class TestSharing:
 
         assert client_2.get_project(id=project.id)
         assert client_2.get_project(name=project.name, workspace=organization.name)
+
+    def test_org_public_repository(self, client, organization, client_2, email_2):
+        """
+        User 2 tries to access a org-public repository created by a user in the same organization.
+        """
+        repository_name = _utils.generate_default_name()
+        repository = client.set_repository(repository_name, workspace=organization.name, public_within_org=True)
+
+        organization.add_member(email_2)
+
+        assert client_2.get_or_create_repository(id=repository.id)
+        assert client_2.get_or_create_repository(name=repository.name, workspace=organization.name).id == repository.id
+
+        repository.delete()
+
+    def test_non_org_public_repository_access_error(self, client, organization, client_2, email_2):
+        """
+        User 2 tries to access a non-org-public repository created by a user in the same organization.
+        """
+        repository_name = _utils.generate_default_name()
+        repository = client.set_repository(repository_name, workspace=organization.name, public_within_org=False)
+
+        organization.add_member(email_2)
+
+        # Shouldn't be able to access:
+        with pytest.raises(ValueError) as excinfo:
+            client_2.get_or_create_repository(id=repository.id)
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "no Repository found" in excinfo_value
+
+        repository.delete()
