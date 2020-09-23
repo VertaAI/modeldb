@@ -70,6 +70,7 @@ from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
 from .endpoint._endpoint import Endpoint
 from .endpoint._endpoints import Endpoints
+from .endpoint.update import DirectUpdateStrategy
 
 
 class Client(object):
@@ -1224,7 +1225,7 @@ class Client(object):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
     def download_endpoint_manifest(
-            self, download_to_path, path, name, strategy,
+            self, download_to_path, path, name, strategy=None,
             resources=None, autoscaling=None, env_vars=None,
             workspace=None):
         """
@@ -1238,8 +1239,9 @@ class Client(object):
             Path of the endpoint.
         name : str
             Name of the endpoint.
-        strategy : :ref:`update strategy <update-stategies>`
+        strategy : :ref:`update strategy <update-stategies>`, optional
             Strategy (direct or canary) for updating the endpoint.
+            Default value: DirectUpdateStrategy()
         resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated endpoint.
         autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
@@ -1258,6 +1260,9 @@ class Client(object):
         """
         if not path.startswith('/'):
             path = '/' + path
+
+        if not strategy:
+            strategy = DirectUpdateStrategy()
 
         data = {
             'endpoint': {'path': path},

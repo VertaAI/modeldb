@@ -163,7 +163,8 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    def update(self, model_reference, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
+    def update(self, model_reference, strategy=None, wait=False, resources=None,
+               autoscaling=None, env_vars=None):
         """
         Updates the Endpoint with a model logged in an Experiment Run or a Model Version.
 
@@ -171,8 +172,9 @@ class Endpoint(object):
         ----------
         model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta._registry.modelversion.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
-        strategy : :ref:`update strategy <update-stategies>`
+        strategy : :ref:`update strategy <update-stategies>`, optional
             Strategy (direct or canary) for updating the Endpoint.
+            Default value: DirectUpdateStrategy()
         wait : bool, default False
             Whether to wait for the Endpoint to finish updating before returning.
         resources : :class:`~verta.endpoint.resources.Resources`, optional
@@ -189,6 +191,9 @@ class Endpoint(object):
         """
         if not isinstance(model_reference, (RegisteredModelVersion, experimentrun.ExperimentRun)):
             raise TypeError("`model_reference` must be an ExperimentRun or RegisteredModelVersion")
+
+        if not strategy:
+            strategy = DirectUpdateStrategy()
 
         update_body = self._create_update_body(strategy, resources, autoscaling, env_vars)
 

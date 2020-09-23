@@ -4,14 +4,15 @@ from verta.endpoint.resources import Resources
 from verta.endpoint.update import DirectUpdateStrategy
 
 
-@pytest.mark.parametrize("data", [3, 64, 0.25])
+@pytest.mark.parametrize("data", [(3, DirectUpdateStrategy()), (64, None),
+                                  (0.25, DirectUpdateStrategy())])
 def test_cpu_milli(client, data, in_tempdir):
-    resources = Resources(cpu=data)
+    resources = Resources(cpu=data[0])
 
     # test that `resources` can acutally be used
     client.download_endpoint_manifest(
         "deployment.yaml", "/production-prediction", "production-prediction",
-        strategy=DirectUpdateStrategy(),
+        strategy=data[1],
         resources=resources,
     )
 
