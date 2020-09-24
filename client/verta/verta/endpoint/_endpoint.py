@@ -163,7 +163,7 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    def update(self, model_reference, strategy=DirectUpdateStrategy(), wait=False, resources=None,
+    def update(self, model_reference, strategy=None, wait=False, resources=None,
                autoscaling=None, env_vars=None):
         """
         Updates the Endpoint with a model logged in an Experiment Run or a Model Version.
