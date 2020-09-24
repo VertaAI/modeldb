@@ -16,6 +16,8 @@ import verta
 import verta._internal_utils._utils
 import json
 
+from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
+
 
 KWARGS = {
     'desc': [None, "A test."],
@@ -141,7 +143,10 @@ class TestClient:
                 client = verta.Client(_connect=connect)
                 conn = client._conn
 
-                assert conn.socket == HOST
+                back_end_url = urlparse(HOST)
+                socket = back_end_url.netloc + back_end_url.path.rstrip('/')
+
+                assert conn.socket == socket
                 assert conn.auth['Grpc-Metadata-email'] == EMAIL
                 assert conn.auth['Grpc-Metadata-developer_key'] == DEV_KEY
 
@@ -465,6 +470,27 @@ class TestExperimentRun:
         assert old_run_msg.hyperparameters == new_run_msg.hyperparameters
         assert old_run_msg.observations == new_run_msg.observations
         assert old_run_msg.artifacts == new_run_msg.artifacts
+
+    def test_log_attribute_overwrite(self, client):
+        initial_attrs = {"str-attr": "attr", "int-attr": 4, "float-attr": 0.5}
+        new_attrs = {"str-attr": "new-attr", "int-attr": 5, "float-attr": 0.3, "bool-attr": False}
+        single_new_attr = new_attrs.popitem()
+
+        experiment_run = client.set_experiment_run(attrs=initial_attrs)
+
+        with pytest.raises(ValueError) as excinfo:
+            experiment_run.log_attribute("str-attr", "some-attr")
+
+        assert "already exists" in str(excinfo.value)
+
+        experiment_run.log_attribute(*single_new_attr, overwrite=True)
+        experiment_run.log_attributes(new_attrs, True)
+
+        expected_attrs = initial_attrs.copy()
+        expected_attrs.update([single_new_attr])
+        expected_attrs.update(new_attrs)
+
+        assert experiment_run.get_attributes() == expected_attrs
 
 
 class TestExperimentRuns:

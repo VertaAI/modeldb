@@ -232,14 +232,16 @@ class Commit(
    */
   private def versioningBlobToBlob(vb: VersioningBlob): Blob = vb match {
     /** TODO: finish the pattern matching with other blob subclasses */
-    case VersioningBlob(_, _, Some(VersioningDatasetBlob(Some(path), _)), _) => PathBlob(path)
-    case VersioningBlob(_, _, Some(VersioningDatasetBlob(_, Some(s3))), _) => S3(s3)
+    case VersioningBlob(_, _, Some(VersioningDatasetBlob(Some(path), _, _)), _) => PathBlob(path)
+    case VersioningBlob(_, _, Some(VersioningDatasetBlob(_, _, Some(s3))), _) => S3(s3)
+    case VersioningBlob(_, _, Some(VersioningDatasetBlob(_, Some(query), _)), _) => QueryDatasetBlob(query)
   }
 
   private def blobToVersioningBlob(blob: Blob): VersioningBlob =  blob match {
     /** TODO: Add blob subtypes to pattern matching */
     case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
     case s3: S3 => S3.toVersioningBlob(s3)
+    case queryBlob: QueryDatasetBlob => QueryDatasetBlob.toVersioningBlob(queryBlob)
   }
 
 

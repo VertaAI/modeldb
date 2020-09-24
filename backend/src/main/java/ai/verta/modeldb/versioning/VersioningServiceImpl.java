@@ -132,6 +132,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           String vertaId = authService.getVertaIdFromUserInfo(userInfo);
           requestBuilder.setRepository(request.getRepository().toBuilder().setOwner(vertaId));
         }
+
+        ModelDBUtils.validateEntityNameWithColonAndSlash(requestBuilder.getRepository().getName());
+
         SetRepository.Response response =
             repositoryDAO.setRepository(commitDAO, requestBuilder.build(), userInfo, true);
 
@@ -158,6 +161,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           throw new ModelDBException("Repository name should not be empty", Code.INVALID_ARGUMENT);
         }
 
+        ModelDBUtils.validateEntityNameWithColonAndSlash(request.getRepository().getName());
         SetRepository.Response response =
             repositoryDAO.setRepository(commitDAO, request, null, false);
         responseObserver.onNext(response);

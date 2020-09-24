@@ -93,6 +93,14 @@ class ExperimentRunServiceApi(client: HttpClient, val basePath: String = "/v1") 
 
   def ExperimentRunService_addExperimentRunTags(body: ModeldbAddExperimentRunTags)(implicit ec: ExecutionContext): Try[ModeldbAddExperimentRunTagsResponse] = Await.result(ExperimentRunService_addExperimentRunTagsAsync(body), Duration.Inf)
 
+  def ExperimentRunService_cloneExperimentRunAsync(body: ModeldbCloneExperimentRun)(implicit ec: ExecutionContext): Future[Try[ModeldbCloneExperimentRunResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (body == null) throw new Exception("Missing required parameter \"body\"")
+    return client.request[ModeldbCloneExperimentRun, ModeldbCloneExperimentRunResponse]("POST", basePath + s"/experiment-run/cloneExperimentRun", __query.toMap, body, ModeldbCloneExperimentRunResponse.fromJson)
+  }
+
+  def ExperimentRunService_cloneExperimentRun(body: ModeldbCloneExperimentRun)(implicit ec: ExecutionContext): Try[ModeldbCloneExperimentRunResponse] = Await.result(ExperimentRunService_cloneExperimentRunAsync(body), Duration.Inf)
+
   def ExperimentRunService_commitArtifactPartAsync(body: ModeldbCommitArtifactPart)(implicit ec: ExecutionContext): Future[Try[ModeldbCommitArtifactPartResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (body == null) throw new Exception("Missing required parameter \"body\"")

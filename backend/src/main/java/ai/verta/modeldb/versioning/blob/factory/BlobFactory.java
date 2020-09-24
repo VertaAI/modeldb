@@ -11,6 +11,7 @@ public abstract class BlobFactory {
 
   public static final String S_3_DATASET_BLOB = "S3DatasetBlob";
   public static final String PATH_DATASET_BLOB = "PathDatasetBlob";
+  public static final String QUERY_DATASET_BLOB = "QueryDatasetBlob";
   public static final String PYTHON_ENVIRONMENT_BLOB = "PythonEnvironmentBlob";
   public static final String DOCKER_ENVIRONMENT_BLOB = "DockerEnvironmentBlob";
   public static final String GIT_CODE_BLOB = "GitCodeBlob";
@@ -29,6 +30,7 @@ public abstract class BlobFactory {
     switch (folderElementEntity.getElement_type()) {
       case S_3_DATASET_BLOB:
       case PATH_DATASET_BLOB:
+      case QUERY_DATASET_BLOB:
         return new DatasetBlobFactory(folderElementEntity);
       case PYTHON_ENVIRONMENT_BLOB:
       case DOCKER_ENVIRONMENT_BLOB:

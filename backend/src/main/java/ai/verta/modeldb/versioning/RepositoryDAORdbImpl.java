@@ -305,7 +305,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             ModelDBServiceActions.READ);
       }
     } catch (InvalidProtocolBufferException e) {
-      LOGGER.error(e);
+      LOGGER.info(e.getMessage());
       throw new ModelDBException("Unexpected error", e);
     }
     return repository;
@@ -665,10 +665,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   try {
                     return attributeEntity.getProtoObj();
                   } catch (InvalidProtocolBufferException e) {
-                    LOGGER.error("Unexpected error occured {}", e.getMessage());
+                    LOGGER.warn(
+                        "Error occurred while converting attributeEntity to proto object:  {}",
+                        e.getMessage());
                     Status status =
                         Status.newBuilder()
-                            .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
+                            .setCode(com.google.rpc.Code.INTERNAL_VALUE)
                             .setMessage(e.getMessage())
                             .build();
                     throw StatusProto.toStatusRuntimeException(status);
@@ -938,6 +940,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   private void saveBranch(
       Session session, String commitSHA, String branch, RepositoryEntity repository)
       throws ModelDBException {
+    ModelDBUtils.validateEntityNameWithColonAndSlash(branch);
     boolean exists =
         VersioningUtils.commitRepositoryMappingExists(session, commitSHA, repository.getId());
     if (!exists) {
@@ -1221,6 +1224,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         }
         throw ex;
       }
+    } catch (IllegalArgumentException ex) {
+      throw ModelDBUtils.getInvalidFieldException(ex);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return findRepositories(request);
@@ -1597,7 +1602,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       return new SimpleEntry<>(
           convertToDataset(session, metadataDAO, repositoryEntity), repositoryEntity.toProto());
     } catch (InvalidProtocolBufferException | ModelDBException e) {
-      LOGGER.error(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
+      LOGGER.warn(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
       Status status =
           Status.newBuilder()
               .setCode(com.google.rpc.Code.INTERNAL_VALUE)

@@ -1,3 +1,5 @@
+.. _endpoint-cli:
+
 Endpoint Command-Line Interface
 ===============================
 

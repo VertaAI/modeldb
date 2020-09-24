@@ -57,7 +57,7 @@ public class CodeContainer extends BlobContainer {
         }
         break;
       default:
-        throw new ModelDBException("Blob unknown type", Code.INTERNAL);
+        throw new ModelDBException("CODE_BLOB has unknown type", Code.INTERNAL);
     }
     rootTree.push(getLocationList(), blobHash, blobType);
   }

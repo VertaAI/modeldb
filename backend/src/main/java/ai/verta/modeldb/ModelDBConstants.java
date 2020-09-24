@@ -23,9 +23,12 @@ public interface ModelDBConstants {
   String HTTPS_STR = "https";
   String NFS = "NFS";
   String PICK_ARTIFACT_STORE_HOST_FROM_CONFIG = "pickArtifactStoreHostFromConfig";
+  String PICK_NFS_HOST_FROM_CONFIG = "pickNFSHostFromConfig";
   String NFS_ROOT_PATH = "nfsRootPath";
   String ARTIFACT_STORE_SERVER_HOST = "artifactStoreServerHost";
   String ARTIFACT_STORE_URL_PROTOCOL = "artifactStoreUrlProtocol";
+  String NFS_SERVER_HOST = "nfsServerHost";
+  String NFS_URL_PROTOCOL = "nfsUrlProtocol";
   String PATH = "path";
   String PORT = "port";
   String RELATIONAL = "relational";
@@ -39,8 +42,8 @@ public interface ModelDBConstants {
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
   String POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES = "populateConnectionsBasedOnPrivileges";
-  String LIQUIBASE_MIGRATION = "liquibaseMigration";
-  String RUN_LIQUIBASE_SEPARATE = "runLiquibaseSeparate";
+  String LIQUIBASE_MIGRATION = "LIQUIBASE_MIGRATION";
+  String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
 
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
@@ -52,6 +55,7 @@ public interface ModelDBConstants {
   String DISABLED_AUTHZ = "disabled-authz";
   String STORE_CLIENT_CREATION_TIMESTAMP = "store-client-creation-timestamp";
   String PUBLIC_SHARING_ENABLED = "public_sharing_enabled";
+  String DISABLED_ARTIFACT_STORE = "disabled-artifact-store";
 
   // Threshold Constant
   Long DEFAULT_SHUTDOWN_TIMEOUT = 30L; // timeout in second
@@ -156,6 +160,7 @@ public interface ModelDBConstants {
   String EMAIL = "email";
   String USERNAME = "username";
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
+  String HEALTH_CHECK_SERVICE_FIELD = "service";
   String DELETED = "deleted";
   String DEV_KEY = "devKey";
   String REQUEST_TIMEOUT = "requestTimeout";
@@ -195,6 +200,7 @@ public interface ModelDBConstants {
   String DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE =
       "Can't add new versioning entry, because an existing one has different repository or commit";
   String REPOSITORY_ENTITY = "repositoryEntity";
+  String POPULATE_VERSION_MIGRATION = "POPULATE_VERSION_MIGRATION";
 
   enum UserIdentifier {
     VERTA_ID,

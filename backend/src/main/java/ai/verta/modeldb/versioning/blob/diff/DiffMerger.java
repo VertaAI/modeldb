@@ -309,6 +309,14 @@ public class DiffMerger {
                     AutogenDatasetBlob::getS3,
                     AutogenDatasetDiff::getS3,
                     DiffMerger::mergeS3Dataset,
+                    conflictKeys))
+            .setQuery(
+                merge(
+                    a,
+                    d,
+                    AutogenDatasetBlob::getQuery,
+                    AutogenDatasetDiff::getQuery,
+                    DiffMerger::mergeQueryDataset,
                     conflictKeys)));
   }
 
@@ -334,6 +342,34 @@ public class DiffMerger {
   public static AutogenPathDatasetComponentBlob mergePathDatasetComponent(
       AutogenPathDatasetComponentBlob a,
       AutogenPathDatasetComponentDiff d,
+      HashSet<String> conflictKeys) {
+    return d.getB();
+  }
+
+  public static AutogenQueryDatasetBlob mergeQueryDataset(
+      AutogenQueryDatasetBlob a, AutogenQueryDatasetDiff d, HashSet<String> conflictKeys) {
+    return Utils.removeEmpty(
+        new AutogenQueryDatasetBlob()
+            .setComponents(
+                mergeList(
+                    a,
+                    d,
+                    AutogenQueryDatasetBlob::getComponents,
+                    AutogenQueryDatasetDiff::getComponents,
+                    AutogenQueryDatasetComponentBlob::toString,
+                    x ->
+                        Utils.either(
+                            x.getA(), x.getB(), AutogenQueryDatasetComponentBlob::toString),
+                    AutogenQueryDatasetComponentDiff::getStatus,
+                    AutogenQueryDatasetComponentDiff::getA,
+                    AutogenQueryDatasetComponentDiff::getB,
+                    null,
+                    conflictKeys)));
+  }
+
+  public static AutogenQueryDatasetComponentBlob mergeQueryDatasetComponent(
+      AutogenQueryDatasetComponentBlob a,
+      AutogenQueryDatasetComponentDiff d,
       HashSet<String> conflictKeys) {
     return d.getB();
   }

@@ -189,6 +189,21 @@ public class CommitDAORdbImpl implements CommitDAO {
             Status.Code.INVALID_ARGUMENT);
       }
 
+      CommitPaginationDTO commitPaginationDTO =
+          findCommits(
+              session,
+              FindRepositoriesBlobs.newBuilder()
+                  .setPageNumber(1)
+                  .setPageLimit(1)
+                  .addRepoIds(repositoryEntity.getId())
+                  .build(),
+              authService.getCurrentLoginUserInfo(),
+              false,
+              false,
+              true,
+              null,
+              false);
+
       CommitEntity commitEntity =
           saveCommitEntity(session, commit, rootSha, datasetVersion.getOwner(), repositoryEntity);
       blobDAO.setBlobsAttributes(
@@ -211,6 +226,38 @@ public class CommitDAORdbImpl implements CommitDAO {
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
               .build(),
           datasetVersion.getTagsList());
+
+      long version = datasetVersion.getVersion();
+      if (commitPaginationDTO.getCommitEntities() != null
+          && !commitPaginationDTO.getCommitEntities().isEmpty()
+          && version == 0) {
+        CommitEntity parentEntity = commitPaginationDTO.getCommitEntities().get(0);
+        String parentCompositeId =
+            VersioningUtils.getVersioningCompositeId(
+                repositoryEntity.getId(), parentEntity.getCommit_hash(), location);
+        String parentVersion =
+            metadataDAO.getProperty(
+                session,
+                IdentificationType.newBuilder()
+                    .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+                    .setStringId(parentCompositeId)
+                    .build(),
+                ModelDBConstants.VERSION);
+        if (parentVersion != null && !parentVersion.isEmpty()) {
+          version = Long.parseLong(parentVersion) + 1L;
+        }
+      }
+      if (version == 0) {
+        version = 1;
+      }
+      metadataDAO.addProperty(
+          session,
+          IdentificationType.newBuilder()
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+              .setStringId(compositeId)
+              .build(),
+          ModelDBConstants.VERSION,
+          String.valueOf(version));
       session.getTransaction().commit();
 
       repositoryDAO.setBranch(
@@ -902,7 +949,7 @@ public class CommitDAORdbImpl implements CommitDAO {
               request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
 
       String workspaceName = request.getWorkspaceName();
-      LOGGER.debug("Workspace {}", workspaceName);
+      LOGGER.debug("Workspace is : '{}'", workspaceName);
       if (workspaceName != null
           && !workspaceName.isEmpty()
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
@@ -922,7 +969,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           commitPaginationDTO.setTotalRecords(0L);
           return commitPaginationDTO;
         }
-      } else {
+      } else if (!isDatasetVersion || (workspaceName != null && !workspaceName.isEmpty())) {
         WorkspaceDTO workspaceDTO =
             roleService.getWorkspaceDTOByWorkspaceName(
                 currentLoginUserInfo, request.getWorkspaceName());
@@ -1194,7 +1241,11 @@ public class CommitDAORdbImpl implements CommitDAO {
           sortKey = ModelDBConstants.DATE_UPDATED;
         }
       } else {
-        sortKey = ModelDBConstants.DATE_UPDATED;
+        if (isDatasetVersion) {
+          sortKey = ModelDBConstants.DATE_CREATED;
+        } else {
+          sortKey = ModelDBConstants.DATE_UPDATED;
+        }
       }
 
       StringBuilder orderClause =

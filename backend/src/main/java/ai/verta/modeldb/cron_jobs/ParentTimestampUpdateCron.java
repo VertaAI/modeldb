@@ -4,6 +4,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.TimerTask;
+import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -66,6 +67,8 @@ public class ParentTimestampUpdateCron extends TimerTask {
       } finally {
         session.getTransaction().commit();
       }
+    } catch (OptimisticLockException ex) {
+      LOGGER.info("ParentTimestampUpdateCron Exception: {}", ex.getMessage());
     } catch (Exception ex) {
       LOGGER.warn("ParentTimestampUpdateCron Exception: ", ex);
       if (ModelDBUtils.needToRetry(ex)) {
@@ -77,12 +80,11 @@ public class ParentTimestampUpdateCron extends TimerTask {
   }
 
   private void updateProjectByExperimentTimestamp(Session session) {
-    LOGGER.debug("Project timestamp updating");
+    LOGGER.trace("Project timestamp updating");
     String projectUpdateQueryString = getProjectUpdateQueryString();
     Query query = session.createSQLQuery(projectUpdateQueryString);
-    LOGGER.debug("Project update timestamp query: {}", query.getQueryString());
     int count = query.executeUpdate();
-    LOGGER.debug("Project timestamp updated successfully : Updated projects count {}", count);
+    LOGGER.info("Project timestamp updated successfully : Updated projects count {}", count);
   }
 
   private String getProjectUpdateQueryString() {
@@ -113,12 +115,11 @@ public class ParentTimestampUpdateCron extends TimerTask {
   }
 
   private void updateExperimentByExperimentRunTimestamp(Session session) {
-    LOGGER.debug("Experiment timestamp updating");
+    LOGGER.trace("Experiment timestamp updating");
     String experimentUpdateQueryString = getExperimentUpdateQueryString();
     Query query = session.createSQLQuery(experimentUpdateQueryString);
-    LOGGER.debug("Experiment update timestamp query: {}", query.getQueryString());
     int count = query.executeUpdate();
-    LOGGER.debug("Experiment timestamp updated successfully : Updated experiments count {}", count);
+    LOGGER.info("Experiment timestamp updated successfully : Updated experiments count {}", count);
   }
 
   private String getExperimentUpdateQueryString() {
@@ -150,12 +151,11 @@ public class ParentTimestampUpdateCron extends TimerTask {
   }
 
   private void updateDatasetByDatasetVersionTimestamp(Session session) {
-    LOGGER.debug("Dataset timestamp updating");
+    LOGGER.trace("Dataset timestamp updating");
     String datasetUpdateQueryString = getDatasetUpdateQueryString();
     Query query = session.createSQLQuery(datasetUpdateQueryString);
-    LOGGER.debug("Dataset update timestamp query: {}", query.getQueryString());
     int count = query.executeUpdate();
-    LOGGER.debug("Dataset timestamp updated successfully : Updated datasets count {}", count);
+    LOGGER.info("Dataset timestamp updated successfully : Updated datasets count {}", count);
   }
 
   private String getDatasetUpdateQueryString() {
@@ -185,13 +185,11 @@ public class ParentTimestampUpdateCron extends TimerTask {
   }
 
   private void updateRepositoryByCommitTimestamp(Session session) {
-    LOGGER.debug("Repository timestamp updating");
+    LOGGER.trace("Repository timestamp updating");
     String repositoryUpdateQueryString = getRepositoryUpdateQueryString();
     Query query = session.createSQLQuery(repositoryUpdateQueryString);
-    LOGGER.debug("Repository update timestamp query: {}", query.getQueryString());
     int count = query.executeUpdate();
-    LOGGER.debug(
-        "Repository timestamp updated successfully : Updated repositories count {}", count);
+    LOGGER.info("Repository timestamp updated successfully : Updated repositories count {}", count);
   }
 
   private String getRepositoryUpdateQueryString() {
@@ -200,6 +198,9 @@ public class ParentTimestampUpdateCron extends TimerTask {
           .append(" ( SELECT rc.repository_id, MAX(cm.date_created) AS max_date ")
           .append(" FROM commit cm INNER JOIN repository_commit rc ")
           .append(" ON rc.commit_hash = cm.commit_hash ")
+          .append(" INNER JOIN commit_parent cp ")
+          .append(" ON cp.parent_hash IS NOT NULL ")
+          .append(" AND cp.child_hash = cm.commit_hash ")
           .append(" GROUP BY rc.repository_id limit ")
           .append(recordUpdateLimit)
           .append(" ) UPDATE repository as rp ")
@@ -212,6 +213,9 @@ public class ParentTimestampUpdateCron extends TimerTask {
           .append("(SELECT rc.repository_id, MAX(cm.date_created) AS max_date")
           .append(" FROM `commit` cm INNER JOIN repository_commit rc ")
           .append(" ON rc.commit_hash = cm.commit_hash ")
+          .append(" INNER JOIN commit_parent cp ")
+          .append(" ON cp.parent_hash IS NOT NULL ")
+          .append(" AND cp.child_hash = cm.commit_hash ")
           .append(" GROUP BY rc.repository_id LIMIT ")
           .append(recordUpdateLimit)
           .append(" ) cm_alias ")

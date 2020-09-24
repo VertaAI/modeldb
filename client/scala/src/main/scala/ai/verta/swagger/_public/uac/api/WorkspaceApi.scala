@@ -20,6 +20,16 @@ class WorkspaceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def WorkspaceService_getWorkspaceById(id: Option[BigInt]=None)(implicit ec: ExecutionContext): Try[UacWorkspace] = Await.result(WorkspaceService_getWorkspaceByIdAsync(id), Duration.Inf)
 
+  def WorkspaceService_getWorkspaceByLegacyIdAsync(id: Option[String]=None, workspace_type: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[UacWorkspace]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    if (id.isDefined) __query.update("id", client.toQuery(id.get))
+    if (workspace_type.isDefined) __query.update("workspace_type", client.toQuery(workspace_type.get))
+    val body: String = null
+    return client.request[String, UacWorkspace]("GET", basePath + s"/workspace/getWorkspaceByLegacyId", __query.toMap, body, UacWorkspace.fromJson)
+  }
+
+  def WorkspaceService_getWorkspaceByLegacyId(id: Option[String]=None, workspace_type: Option[String]=None)(implicit ec: ExecutionContext): Try[UacWorkspace] = Await.result(WorkspaceService_getWorkspaceByLegacyIdAsync(id, workspace_type), Duration.Inf)
+
   def WorkspaceService_getWorkspaceByNameAsync(name: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[UacWorkspace]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (name.isDefined) __query.update("name", client.toQuery(name.get))
