@@ -1239,9 +1239,8 @@ class Client(object):
             Path of the endpoint.
         name : str
             Name of the endpoint.
-        strategy : :ref:`update strategy <update-stategies>`, optional
+        strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the endpoint.
-            Default value: DirectUpdateStrategy()
         resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated endpoint.
         autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
