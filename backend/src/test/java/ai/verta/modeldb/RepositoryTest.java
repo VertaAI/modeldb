@@ -758,6 +758,44 @@ public class RepositoryTest {
           NAME_3,
           findRepositoriesResponse.getRepositories(0).getName());
 
+      findRepositoriesRequest =
+          FindRepositories.newBuilder()
+              .addPredicates(
+                  KeyValueQuery.newBuilder()
+                      .setKey("tags")
+                      .setValue(Value.newBuilder().setStringValue("Backend").build())
+                      .setOperator(OperatorEnum.Operator.EQ)
+                      .setValueType(ValueTypeEnum.ValueType.STRING)
+                      .build())
+              .build();
+      try {
+        versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+        fail();
+      } catch (StatusRuntimeException exc) {
+        Status status = Status.fromThrowable(exc);
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+        assertTrue(status.getDescription().contains(": tags"));
+      }
+
+      findRepositoriesRequest =
+          FindRepositories.newBuilder()
+              .addPredicates(
+                  KeyValueQuery.newBuilder()
+                      .setKey("tags")
+                      .setValue(Value.newBuilder().setStringValue("Backend").build())
+                      .setOperator(OperatorEnum.Operator.EQ)
+                      .setValueType(ValueTypeEnum.ValueType.STRING)
+                      .build())
+              .build();
+      try {
+        versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+        fail();
+      } catch (StatusRuntimeException exc) {
+        Status status = Status.fromThrowable(exc);
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+        assertTrue(status.getDescription().contains(": tags"));
+      }
+
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
         findRepositoriesRequest =
             FindRepositories.newBuilder()

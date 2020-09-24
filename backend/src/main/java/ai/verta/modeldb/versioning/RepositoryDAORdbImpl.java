@@ -1225,6 +1225,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         }
         throw ex;
       }
+    } catch (IllegalArgumentException ex) {
+      throw ModelDBUtils.getInvalidFieldException(ex);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return findRepositories(request);
