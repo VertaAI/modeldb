@@ -568,9 +568,6 @@ message CloneExperimentRun {
     string src_experiment_run_id = 1; // Source experiment_run to clone [Compulsory]
     string dest_experiment_run_name= 2; // Source experiment_run to clone [Optional]
     string dest_experiment_id = 3; // Destination experiment_id to clone run into. if not define here then value will be experiment_id of src_experiment_run_id[Optional]
-    string dest_project_id = 4; // Destination project_id to clone run into. if not define here then the value will be project_id of src_experiment_run_id[Optional].
-    //if both project ID and experiment ID are provided, then backend will check that the experiment is inside the project, otherwise throw a 400.
-    //if no project ID and yes experiment ID is provided, then backend will fill in project ID based on the experiment
 
     message Response {
         ExperimentRun run = 1;
