@@ -974,6 +974,15 @@ public class DatasetVersionTest {
         datasetVersion.getTimeUpdated(),
         response.getDatasetVersion().getTimeUpdated());
 
+    try {
+      datasetVersionServiceStub.addDatasetVersionAttributes(addDatasetVersionAttributesRequest);
+      fail();
+    } catch (StatusRuntimeException e) {
+      Status status = Status.fromThrowable(e);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+    }
+
     DeleteDatasetVersion deleteDatasetVersion =
         DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
     DeleteDatasetVersion.Response deleteDatasetVersionResponse =

@@ -16,6 +16,8 @@ import verta
 import verta._internal_utils._utils
 import json
 
+from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
+
 
 KWARGS = {
     'desc': [None, "A test."],
@@ -141,7 +143,10 @@ class TestClient:
                 client = verta.Client(_connect=connect)
                 conn = client._conn
 
-                assert conn.socket == HOST
+                back_end_url = urlparse(HOST)
+                socket = back_end_url.netloc + back_end_url.path.rstrip('/')
+
+                assert conn.socket == socket
                 assert conn.auth['Grpc-Metadata-email'] == EMAIL
                 assert conn.auth['Grpc-Metadata-developer_key'] == DEV_KEY
 

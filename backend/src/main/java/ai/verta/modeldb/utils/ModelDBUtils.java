@@ -724,4 +724,17 @@ public class ModelDBUtils {
           "Name can not contain ':' or '/' or '\\\\'", Code.INVALID_ARGUMENT);
     }
   }
+
+  public static ModelDBException getInvalidFieldException(IllegalArgumentException ex) {
+    if (ex.getCause() != null
+        && ex.getCause().getMessage() != null
+        && ex.getCause().getMessage().contains("could not resolve property: ")) {
+      String invalidFieldName = ex.getCause().getMessage();
+      invalidFieldName = invalidFieldName.substring("could not resolve property: ".length());
+      invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf(" of:"));
+      return new ModelDBException(
+          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+    }
+    throw ex;
+  }
 }

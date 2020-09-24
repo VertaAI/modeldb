@@ -40,6 +40,7 @@ database:
   DBType: relational
   timeout: 4
   liquibaseLockThreshold: 60 #time in second
+  changeSetToRevertUntilTag: #ex: version_1.0
   RdbConfiguration:
     RdbDatabaseName:
     RdbDriver: "org.postgresql.Driver"
@@ -54,6 +55,7 @@ test:
     DBType: relational
     timeout: 4
     liquibaseLockThreshold: 60 #time in second
+    changeSetToRevertUntilTag: #ex: version_1.0
     RdbConfiguration:
       RdbDatabaseName: test
       RdbDriver: "org.postgresql.Driver"

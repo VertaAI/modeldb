@@ -389,7 +389,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       boolean create,
       RepositoryTypeEnum repositoryType)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
-    ModelDBUtils.validateEntityNameWithColonAndSlash(repository.getName());
     RepositoryEntity repositoryEntity;
     if (create) {
       if (workspaceDTO == null) {
@@ -1225,6 +1224,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         }
         throw ex;
       }
+    } catch (IllegalArgumentException ex) {
+      throw ModelDBUtils.getInvalidFieldException(ex);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return findRepositories(request);

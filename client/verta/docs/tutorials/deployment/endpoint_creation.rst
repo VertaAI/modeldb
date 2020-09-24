@@ -8,13 +8,13 @@ This tutorial will go through how to create and retrieve such an endpoint using 
 Using the client
 ----------------
 
-Users can create an endpoint as follows:
+Users can create an endpoint using :meth:`Client.create_endpoint() <verta.client.Client.create_endpoint()>` as follows:
 
 .. code-block:: python
 
     endpoint = client.create_endpoint(path="/some-path")
 
-This endpoint can be retrieved later on via its path or its ID:
+This endpoint can be retrieved later on via its path or its ID using :meth:`Client.get_endpoint() <verta.client.Client.get_endpoint()>`:
 
 .. code-block:: python
 
@@ -26,7 +26,7 @@ This endpoint can be retrieved later on via its path or its ID:
 Using the CLI
 -------------
 
-We can achieve the same task using the CLI:
+We can achieve the same task using the :ref:`endpoint command-line interface <endpoint-cli>`:
 
 .. code-block:: sh
 
