@@ -100,16 +100,16 @@ public class ParentTimestampUpdateCron extends TimerTask {
               " from ex_alias WHERE p.id = ex_alias.project_id and p.date_updated < ex_alias.max_date")
           .toString();
     } else {
-      return new StringBuilder()
-          .append("UPDATE project p ")
-          .append("INNER JOIN ")
+      return new StringBuilder("UPDATE project p ")
+          .append(" INNER JOIN ")
           .append(" (SELECT ex.project_id, MAX(ex.date_updated) AS max_date ")
-          .append(" FROM experiment ex ")
+          .append(" FROM experiment ex INNER JOIN project p ")
+          .append(" ON  p.id = ex.project_id AND p.date_updated < ex.date_updated ")
           .append(" GROUP BY ex.project_id LIMIT ")
           .append(recordUpdateLimit)
           .append(" ) exp_alias ")
-          .append("ON  p.id = exp_alias.project_id AND p.date_updated < exp_alias.max_date ")
-          .append("SET p.date_updated = exp_alias.max_date WHERE p.id = exp_alias.project_id ")
+          .append(" ON  p.id = exp_alias.project_id ")
+          .append(" SET p.date_updated = exp_alias.max_date WHERE p.id = exp_alias.project_id")
           .toString();
     }
   }
@@ -137,15 +137,15 @@ public class ParentTimestampUpdateCron extends TimerTask {
           .toString();
     } else {
       return new StringBuilder("UPDATE experiment ex ")
-          .append("INNER JOIN ")
-          .append("(SELECT expr.experiment_id, MAX(expr.date_updated) AS max_date ")
-          .append(" FROM experiment_run expr ")
+          .append(" INNER JOIN ")
+          .append(" (SELECT expr.experiment_id, MAX(expr.date_updated) AS max_date ")
+          .append(" FROM experiment_run expr INNER JOIN experiment e ")
+          .append(" ON e.id = expr.experiment_id AND e.date_updated < expr.date_updated ")
           .append(" GROUP BY expr.experiment_id LIMIT ")
           .append(recordUpdateLimit)
-          .append(
-              " ) expr_alias ON ex.id = expr_alias.experiment_id AND ex.date_updated < expr_alias.max_date ")
-          .append(
-              "SET ex.date_updated = expr_alias.max_date WHERE ex.id = expr_alias.experiment_id ")
+          .append(" ) expr_alias  ON ex.id = expr_alias.experiment_id ")
+          .append(" SET ex.date_updated = expr_alias.max_date ")
+          .append(" WHERE ex.id = expr_alias.experiment_id ")
           .toString();
     }
   }
@@ -172,14 +172,15 @@ public class ParentTimestampUpdateCron extends TimerTask {
           .toString();
     } else {
       return new StringBuilder("UPDATE dataset d ")
-          .append("INNER JOIN ")
-          .append("(SELECT dv.dataset_id, MAX(dv.time_updated) AS max_date ")
-          .append(" FROM dataset_version dv ")
+          .append(" INNER JOIN ")
+          .append(" (SELECT dv.dataset_id, MAX(dv.time_updated) AS max_date ")
+          .append(" FROM dataset_version dv INNER JOIN dataset d ")
+          .append(" ON d.id = dv.dataset_id AND d.time_updated < dv.time_updated ")
           .append(" GROUP BY dv.dataset_id LIMIT ")
           .append(recordUpdateLimit)
           .append(" ) dv_alias ")
-          .append("ON d.id = dv_alias.dataset_id AND d.time_updated < dv_alias.max_date ")
-          .append("SET d.time_updated = dv_alias.max_date WHERE d.id = dv_alias.dataset_id ")
+          .append(" ON d.id = dv_alias.dataset_id ")
+          .append(" SET d.time_updated = dv_alias.max_date WHERE d.id = dv_alias.dataset_id ")
           .toString();
     }
   }
@@ -210,17 +211,19 @@ public class ParentTimestampUpdateCron extends TimerTask {
           .toString();
     } else {
       return new StringBuilder("UPDATE repository rp INNER JOIN ")
-          .append("(SELECT rc.repository_id, MAX(cm.date_created) AS max_date")
+          .append(" (SELECT rc.repository_id, MAX(cm.date_created) AS max_date ")
           .append(" FROM `commit` cm INNER JOIN repository_commit rc ")
           .append(" ON rc.commit_hash = cm.commit_hash ")
           .append(" INNER JOIN commit_parent cp ")
           .append(" ON cp.parent_hash IS NOT NULL ")
           .append(" AND cp.child_hash = cm.commit_hash ")
+          .append(" INNER JOIN repository rp ")
+          .append(" ON rp.id = rc.repository_id AND rp.date_updated < cm.date_created ")
           .append(" GROUP BY rc.repository_id LIMIT ")
           .append(recordUpdateLimit)
           .append(" ) cm_alias ")
           .append(" ON rp.id = cm_alias.repository_id AND rp.date_updated < cm_alias.max_date ")
-          .append("SET rp.date_updated = cm_alias.max_date WHERE rp.id = cm_alias.repository_id ")
+          .append(" SET rp.date_updated = cm_alias.max_date WHERE rp.id = cm_alias.repository_id")
           .toString();
     }
   }
