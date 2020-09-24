@@ -2893,27 +2893,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       desExperimentRunBuilder.setName(srcExperimentRun.getName() + " - " + new Date().getTime());
     }
 
-    if (!cloneExperimentRun.getDestProjectId().isEmpty()) {
-      if (cloneExperimentRun.getDestExperimentId().isEmpty()) {
-        throw new ModelDBException(
-            "dest_experiment_id not found for the destination project '"
-                + cloneExperimentRun.getDestProjectId()
-                + "'",
-            Code.NOT_FOUND);
-      }
-
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-        ProjectEntity destProjectEntity =
-            session.get(ProjectEntity.class, cloneExperimentRun.getDestProjectId());
-        if (destProjectEntity == null) {
-          throw new ModelDBException(
-              "Destination project '" + cloneExperimentRun.getDestProjectId() + "' not found",
-              Code.NOT_FOUND);
-        }
-      }
-      desExperimentRunBuilder.setProjectId(cloneExperimentRun.getDestProjectId());
-    }
-
     if (!cloneExperimentRun.getDestExperimentId().isEmpty()) {
       try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
         ExperimentEntity destExperimentEntity =
@@ -2924,20 +2903,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               Code.NOT_FOUND);
         }
 
-        if (!cloneExperimentRun.getDestProjectId().isEmpty()
-            && !cloneExperimentRun
-                .getDestProjectId()
-                .equals(destExperimentEntity.getProject_id())) {
-          throw new ModelDBException(
-              "Destination experiment '"
-                  + cloneExperimentRun.getDestExperimentId()
-                  + "' is not a part of dest project '"
-                  + cloneExperimentRun.getDestProjectId()
-                  + "'",
-              Code.INVALID_ARGUMENT);
-        } else {
-          desExperimentRunBuilder.setProjectId(destExperimentEntity.getProject_id());
-        }
+        // Validate if current user has access to the entity or not
+        roleService.validateEntityUserWithUserInfo(
+            ModelDBServiceResourceTypes.PROJECT,
+            destExperimentEntity.getProject_id(),
+            ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+        desExperimentRunBuilder.setProjectId(destExperimentEntity.getProject_id());
       }
       desExperimentRunBuilder.setExperimentId(cloneExperimentRun.getDestExperimentId());
     }

@@ -713,7 +713,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             CloneExperimentRun.newBuilder()
                 .setSrcExperimentRunId(srcExperimentRun.getId())
                 .setDestExperimentId(newExperiment.getId())
-                .setDestProjectId(newProject.getId())
                 .build();
         this.experimentRunDAO.cloneExperimentRun(cloneExperimentRun, newOwner);
       }

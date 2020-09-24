@@ -11402,7 +11402,6 @@ public class ExperimentRunTest {
           CloneExperimentRun.newBuilder()
               .setSrcExperimentRunId(srcExperimentRun.getId())
               .setDestExperimentRunName("Test - " + Calendar.getInstance().getTimeInMillis())
-              .setDestProjectId(project2.getId())
               .setDestExperimentId(experiment2.getId())
               .build();
       cloneResponse = experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
@@ -11415,7 +11414,7 @@ public class ExperimentRunTest {
               .toBuilder()
               .setId(cloneResponse.getRun().getId())
               .setName(cloneExperimentRun.getDestExperimentRunName())
-              .setProjectId(cloneExperimentRun.getDestProjectId())
+              .setProjectId(cloneResponse.getRun().getProjectId())
               .setExperimentId(cloneExperimentRun.getDestExperimentId())
               .setDateCreated(cloneResponse.getRun().getDateCreated())
               .setDateUpdated(cloneResponse.getRun().getDateUpdated())
@@ -11431,38 +11430,6 @@ public class ExperimentRunTest {
         cloneExperimentRun =
             CloneExperimentRun.newBuilder()
                 .setSrcExperimentRunId(srcExperimentRun.getId())
-                .setDestProjectId(project2.getId())
-                .build();
-        experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
-        fail();
-      } catch (StatusRuntimeException e) {
-        Status status = Status.fromThrowable(e);
-        LOGGER.warn(
-            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
-      }
-
-      try {
-        cloneExperimentRun =
-            CloneExperimentRun.newBuilder()
-                .setSrcExperimentRunId(srcExperimentRun.getId())
-                .setDestProjectId("XYZ")
-                .setDestExperimentId(experiment2.getId())
-                .build();
-        experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
-        fail();
-      } catch (StatusRuntimeException e) {
-        Status status = Status.fromThrowable(e);
-        LOGGER.warn(
-            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
-      }
-
-      try {
-        cloneExperimentRun =
-            CloneExperimentRun.newBuilder()
-                .setSrcExperimentRunId(srcExperimentRun.getId())
-                .setDestProjectId(project2.getId())
                 .setDestExperimentId("XYZ")
                 .build();
         experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
@@ -11472,22 +11439,6 @@ public class ExperimentRunTest {
         LOGGER.warn(
             "Error Code : " + status.getCode() + " Description : " + status.getDescription());
         assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
-      }
-
-      try {
-        cloneExperimentRun =
-            CloneExperimentRun.newBuilder()
-                .setSrcExperimentRunId(srcExperimentRun.getId())
-                .setDestExperimentId(experiment2.getId())
-                .setDestProjectId(project1.getId())
-                .build();
-        experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
-        fail();
-      } catch (StatusRuntimeException e) {
-        Status status = Status.fromThrowable(e);
-        LOGGER.warn(
-            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
       }
 
     } finally {
