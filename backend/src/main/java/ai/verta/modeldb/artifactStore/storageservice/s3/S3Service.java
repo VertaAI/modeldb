@@ -180,6 +180,7 @@ public class S3Service implements ArtifactStoreService {
     try {
       return s3Client.doesBucketExistV2(bucketName);
     } catch (AmazonServiceException e) {
+      logAmazonServiceExceptionErrorCodes(e);
       // If token based access is configured and getting issues checking bucket existence then try
       // refreshing credentials
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
@@ -200,6 +201,7 @@ public class S3Service implements ArtifactStoreService {
     try {
       return s3Client.doesObjectExist(bucketName, path);
     } catch (AmazonServiceException e) {
+      logAmazonServiceExceptionErrorCodes(e);
       // If token based access is configured and getting issues checking bucket existence then try
       // refreshing credentials
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
@@ -214,6 +216,13 @@ public class S3Service implements ArtifactStoreService {
       LOGGER.info(ex.getMessage());
       throw ex;
     }
+  }
+
+  private void logAmazonServiceExceptionErrorCodes(AmazonServiceException e) {
+    LOGGER.info("Amazon Service Status Code: " + e.getStatusCode());
+    LOGGER.info("Amazon Service Error Code: " + e.getErrorCode());
+    LOGGER.info("Amazon Service Error Type: " + e.getErrorType());
+    LOGGER.info("Amazon Service Error Message: " + e.getErrorMessage());
   }
 
   @Override
