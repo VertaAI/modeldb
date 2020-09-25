@@ -207,7 +207,7 @@ public class ModelDBHibernateUtil {
           timeout = (Integer) databasePropMap.get("timeout");
         }
         liquibaseLockThreshold =
-                Long.parseLong(databasePropMap.getOrDefault("liquibaseLockThreshold", "60").toString());
+            Long.parseLong(databasePropMap.getOrDefault("liquibaseLockThreshold", "60").toString());
         
         // Initialize background utils count
         ModelDBUtils.initializeBackgroundUtilsCount();
