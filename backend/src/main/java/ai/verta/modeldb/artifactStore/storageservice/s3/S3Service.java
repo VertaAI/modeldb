@@ -187,12 +187,20 @@ public class S3Service implements ArtifactStoreService {
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
         // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentails ");
-        LOGGER.warn(e.getErrorMessage());
+        initializeS3ClientWithTemporaryCredentials(awsRegion);
+      }
+      return doesBucketExist(bucketName);
+    } catch (SdkClientException e) {
+      LOGGER.warn(e.getMessage());
+      if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
+          && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
+        // this may spiral into an infinite loop due to incorrect configuration
+        LOGGER.info("Fetching temporary credentails ");
         initializeS3ClientWithTemporaryCredentials(awsRegion);
       }
       return doesBucketExist(bucketName);
     } catch (Exception ex) {
-      LOGGER.info(ex.getMessage());
+      LOGGER.warn(ex.getMessage());
       throw ex;
     }
   }
@@ -208,12 +216,20 @@ public class S3Service implements ArtifactStoreService {
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
         // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentails ");
-        LOGGER.warn(e.getErrorMessage());
+        initializeS3ClientWithTemporaryCredentials(awsRegion);
+      }
+      return doesObjectExist(bucketName, path);
+    } catch (SdkClientException e) {
+      LOGGER.warn(e.getMessage());
+      if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
+          && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
+        // this may spiral into an infinite loop due to incorrect configuration
+        LOGGER.info("Fetching temporary credentails ");
         initializeS3ClientWithTemporaryCredentials(awsRegion);
       }
       return doesObjectExist(bucketName, path);
     } catch (Exception ex) {
-      LOGGER.info(ex.getMessage());
+      LOGGER.warn(ex.getMessage());
       throw ex;
     }
   }
