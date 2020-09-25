@@ -206,13 +206,6 @@ public class ModelDBHibernateUtil {
         if (databasePropMap.containsKey("timeout")) {
           timeout = (Integer) databasePropMap.get("timeout");
         }
-        liquibaseLockThreshold =
-            Long.parseLong(databasePropMap.getOrDefault("liquibaseLockThreshold", "60").toString());
-
-        // Change liquibase default table names
-        System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
-        System.getProperties()
-            .put("liquibase.databaseChangeLogLockTableName", "database_change_log_lock");
 
         // Initialize background utils count
         ModelDBUtils.initializeBackgroundUtilsCount();
@@ -457,6 +450,11 @@ public class ModelDBHibernateUtil {
       GlobalConfiguration liquibaseConfiguration =
           LiquibaseConfiguration.getInstance().getConfiguration(GlobalConfiguration.class);
       liquibaseConfiguration.setDatabaseChangeLogLockWaitTime(1L);
+
+      // Change liquibase default table names
+      System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
+      System.getProperties()
+          .put("liquibase.databaseChangeLogLockTableName", "database_change_log_lock");
 
       // Initialize Liquibase and run the update
       Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
