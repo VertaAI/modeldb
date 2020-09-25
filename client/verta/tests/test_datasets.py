@@ -232,12 +232,13 @@ class TestClientDatasetFunctions:
     def test_dataset_features(self, client, created_datasets):
         features = {
             "int-features": 4,
-            "float-features": 0.3,
-            "dict-features": {"first-field": "some-field", "second-field": "other-field"}
+            "float-features": 0.3
         }
+        fields = set([field for field in features])
 
         dataset = client.set_dataset(type="local", attrs=features, features=features)
         created_datasets.append(dataset)
+        assert set(map(lambda feature: feature.key, dataset.features)) == fields
 
 
 class TestClientDatasetVersionFunctions:
