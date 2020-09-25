@@ -190,29 +190,7 @@ public class ModelDBHibernateUtil {
         App app = App.getInstance();
         Map<String, Object> databasePropMap = app.getDatabasePropMap();
 
-        Map<String, Object> rDBPropMap =
-            (Map<String, Object>) databasePropMap.get("RdbConfiguration");
-
-        databaseName = (String) rDBPropMap.get("RdbDatabaseName");
-        if (!app.getTraceEnabled()) {
-          rDBDriver = (String) rDBPropMap.get("RdbDriver");
-        } else {
-          rDBDriver = "io.opentracing.contrib.jdbc.TracingDriver";
-        }
-        rDBUrl = (String) rDBPropMap.get("RdbUrl");
-        rDBDialect = (String) rDBPropMap.get("RdbDialect");
-        configUsername = (String) rDBPropMap.get("RdbUsername");
-        configPassword = (String) rDBPropMap.get("RdbPassword");
-        if (databasePropMap.containsKey("timeout")) {
-          timeout = (Integer) databasePropMap.get("timeout");
-        }
-        liquibaseLockThreshold =
-            Long.parseLong(databasePropMap.getOrDefault("liquibaseLockThreshold", "60").toString());
-
-        // Change liquibase default table names
-        System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
-        System.getProperties()
-            .put("liquibase.databaseChangeLogLockTableName", "database_change_log_lock");
+        setDatabaseProperties(app, databasePropMap);
 
         // Initialize background utils count
         ModelDBUtils.initializeBackgroundUtilsCount();
@@ -282,6 +260,31 @@ public class ModelDBHibernateUtil {
     } else {
       return loopBack(sessionFactory);
     }
+  }
+
+  public static void setDatabaseProperties(App app, Map<String, Object> databasePropMap) {
+    Map<String, Object> rDBPropMap = (Map<String, Object>) databasePropMap.get("RdbConfiguration");
+
+    databaseName = (String) rDBPropMap.get("RdbDatabaseName");
+    if (!app.getTraceEnabled()) {
+      rDBDriver = (String) rDBPropMap.get("RdbDriver");
+    } else {
+      rDBDriver = "io.opentracing.contrib.jdbc.TracingDriver";
+    }
+    rDBUrl = (String) rDBPropMap.get("RdbUrl");
+    rDBDialect = (String) rDBPropMap.get("RdbDialect");
+    configUsername = (String) rDBPropMap.get("RdbUsername");
+    configPassword = (String) rDBPropMap.get("RdbPassword");
+    if (databasePropMap.containsKey("timeout")) {
+      timeout = (Integer) databasePropMap.get("timeout");
+    }
+    liquibaseLockThreshold =
+        Long.parseLong(databasePropMap.getOrDefault("liquibaseLockThreshold", "60").toString());
+
+    // Change liquibase default table names
+    System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
+    System.getProperties()
+        .put("liquibase.databaseChangeLogLockTableName", "database_change_log_lock");
   }
 
   public static SessionFactory getSessionFactory() {
@@ -838,5 +841,35 @@ public class ModelDBHibernateUtil {
       LOGGER.error(e.getMessage(), e);
       throw e;
     }
+  }
+
+  public static boolean runLiquibaseMigration(Map<String, Object> databasePropMap)
+      throws InterruptedException, LiquibaseException, SQLException, ClassNotFoundException {
+    setDatabaseProperties(App.getInstance(), databasePropMap);
+
+    // Check DB is up or not
+    boolean dbConnectionStatus =
+        ModelDBHibernateUtil.checkDBConnection(
+            rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
+    if (!dbConnectionStatus) {
+      ModelDBHibernateUtil.checkDBConnectionInLoop(true);
+    }
+
+    ModelDBHibernateUtil.releaseLiquibaseLock(
+        rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
+
+    String changeSetToRevertUntilTag = (String) databasePropMap.get("changeSetToRevertUntilTag");
+    // Run tables liquibase migration
+    ModelDBHibernateUtil.createTablesLiquibaseMigration(
+        rDBDriver, rDBUrl, databaseName, configUsername, configPassword, changeSetToRevertUntilTag);
+
+    LOGGER.info("Liquibase validation stop");
+
+    boolean runLiquibaseSeparate =
+        Boolean.parseBoolean(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE));
+    if (runLiquibaseSeparate) {
+      return true;
+    }
+    return false;
   }
 }
