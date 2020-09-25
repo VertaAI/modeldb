@@ -6,16 +6,21 @@ import ai.verta.modeldb.artifactStore.storageservice.nfs.UploadFileResponse;
 import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
+import com.amazonaws.services.s3.model.S3Object;
+import com.google.rpc.Status;
+import io.grpc.protobuf.StatusProto;
 import java.io.IOException;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -57,45 +62,36 @@ public class S3Controller {
   }
 
   @GetMapping(value = {"${artifactEndpoint.getArtifact}"})
-  public ResponseEntity<Resource> getArtifact(
-      @RequestParam("artifact_path") String artifactPath, HttpServletRequest request)
+  public ResponseEntity<Resource> getArtifact(@RequestParam("artifact_path") String artifactPath)
       throws ModelDBException {
     LOGGER.debug("getArtifact called");
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBConstants.GET_ARTIFACT_ENDPOINT)) {
+      LOGGER.debug("getArtifact started");
       // Load file as Resource
-      Resource resource = s3Service.loadFileAsResource(artifactPath);
-
-      // Try to determine file's content type
-      String contentType = getContentType(request, resource);
-
-      // Fallback to the default content type if type could not be determined
-      if (contentType == null) {
-        contentType = "binary/octet-stream";
+      S3Object resource = s3Service.loadFileAsResource(artifactPath);
+      HttpHeaders responseHeaders = new HttpHeaders();
+      for (Map.Entry<String, Object> header :
+          resource.getObjectMetadata().getRawMetadata().entrySet()) {
+        responseHeaders.add(header.getKey(), String.valueOf(header.getValue()));
       }
-      LOGGER.trace("getArtifact - file content type : {}", contentType);
 
       LOGGER.debug("getArtifact returned");
       return ResponseEntity.ok()
-          .contentType(MediaType.parseMediaType(contentType))
-          .header(
-              HttpHeaders.CONTENT_DISPOSITION,
-              "attachment; filename=\"" + resource.getFilename() + "\"")
-          .body(resource);
+          .cacheControl(CacheControl.noCache())
+          .headers(responseHeaders)
+          .body(new InputStreamResource(resource.getObjectContent()));
     } catch (ModelDBException e) {
       LOGGER.info(e.getMessage(), e);
       ErrorCountResource.inc(e);
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-    }
-  }
-
-  public String getContentType(HttpServletRequest request, Resource resource) {
-    try {
-      return request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-    } catch (Exception ex) {
-      LOGGER.info("Could not determine file type.");
-      return null;
+      Status status =
+          Status.newBuilder().setCode(e.getCode().value()).setMessage(e.getMessage()).build();
+      throw StatusProto.toStatusRuntimeException(status);
+    } catch (Exception e) {
+      LOGGER.warn(e.getMessage(), e);
+      ErrorCountResource.inc(e);
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
     }
   }
 }

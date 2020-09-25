@@ -27,6 +27,7 @@ import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PartETag;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.amazonaws.services.s3.transfer.TransferManager;
@@ -50,8 +51,6 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 
 public class S3Service implements ArtifactStoreService {
 
@@ -383,23 +382,25 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  public Resource loadFileAsResource(String artifactPath) throws ModelDBException {
+  public S3Object loadFileAsResource(String artifactPath) throws ModelDBException {
     LOGGER.trace("S3Service - loadFileAsResource called");
     try {
       if (doesObjectExist(bucketName, artifactPath)) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");
-        return new InputStreamResource(
-            s3Client.getObject(bucketName, artifactPath).getObjectContent());
+        return s3Client.getObject(bucketName, artifactPath);
       } else {
         String errorMessage = "File not found " + artifactPath;
         LOGGER.info(errorMessage);
-        throw new ModelDBException(errorMessage);
+        throw new ModelDBException(errorMessage, Code.NOT_FOUND);
       }
-    } catch (ModelDBException ex) {
-      String errorMessage = "File not found " + artifactPath;
-      LOGGER.info(errorMessage, ex);
-      throw new ModelDBException(errorMessage, ex);
+    } catch (AmazonServiceException e) {
+      // Amazon S3 couldn't be contacted for a response, or the client
+      // couldn't parse the response from Amazon S3.
+      String errorMessage = e.getMessage();
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(
+          errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
     }
   }
 
