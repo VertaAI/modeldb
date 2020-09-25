@@ -616,7 +616,7 @@ class Client(object):
                     desc=None, tags=None, attrs=None,
                     workspace=None,
                     public_within_org=None,
-                    id=None):
+                    id=None, features=None):
         """
         Attaches a Dataset to this Client.
 
@@ -645,6 +645,8 @@ class Client(object):
         id : str, optional
             ID of the Dataset. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
+        features : dict of str to {None, bool, float, int, str}, optional
+            Features of the Dataset.
 
         Returns
         -------
@@ -678,7 +680,7 @@ class Client(object):
                                name=name, desc=desc, tags=tags, attrs=attrs,
                                workspace=workspace,
                                public_within_org=public_within_org,
-                               _dataset_id=id)
+                               _dataset_id=id, features=features)
 
     def get_dataset(self, name=None, id=None):
         """

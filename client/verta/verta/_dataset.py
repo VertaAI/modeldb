@@ -30,7 +30,8 @@ class Dataset(object):
                  desc=None, tags=None, attrs=None,
                  workspace=None,
                  public_within_org=None,
-                 _dataset_id=None):
+                 _dataset_id=None,
+                 features=None):
         if name is not None and _dataset_id is not None:
             raise ValueError("cannot specify both `name` and `_dataset_id`")
 
@@ -49,7 +50,7 @@ class Dataset(object):
             if name is None:
                 name = Dataset._generate_default_name()
             try:
-                dataset = Dataset._create(conn, name, dataset_type, desc, tags, attrs, workspace, public_within_org)
+                dataset = Dataset._create(conn, name, dataset_type, desc, tags, attrs, workspace, public_within_org, features)
             except requests.HTTPError as e:
                 if e.response.status_code == 403:  # cannot create in other workspace
                     dataset = Dataset._get(conn, name, workspace)
@@ -58,10 +59,10 @@ class Dataset(object):
                     else:  # no accessible dataset in other workspace
                         six.raise_from(e, None)
                 elif e.response.status_code == 409:  # already exists
-                    if any(param is not None for param in (desc, tags, attrs, public_within_org)):
+                    if any(param is not None for param in (desc, tags, attrs, public_within_org, features)):
                         warnings.warn(
                             "Dataset with name {} already exists;"
-                            " cannot set `desc`, `tags`, `attrs`, or `public_within_org`".format(name)
+                            " cannot set `desc`, `tags`, `attrs`, `public_within_org`, or `features`".format(name)
                         )
                     dataset = Dataset._get(conn, name, workspace)
                     if dataset is not None:
@@ -87,6 +88,7 @@ class Dataset(object):
         self.desc = dataset.description
         self.attrs = dataset.attributes
         self.tags = dataset.tags
+        self.features = dataset.features
 
     def __repr__(self):
         return "<{} \"{}\">".format(self.__class__.__name__, self.name)
@@ -144,17 +146,21 @@ class Dataset(object):
             raise ValueError("insufficient arguments")
 
     @staticmethod
-    def _create(conn, dataset_name, dataset_type, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
+    def _create(conn, dataset_name, dataset_type, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, features=None):
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
         if attrs is not None:
             attrs = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                      for key, value in six.viewitems(attrs)]
 
+        if features:
+            features = [_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
+                     for key, value in six.viewitems(features)]
+
         Message = _DatasetService.CreateDataset
         msg = Message(name=dataset_name, dataset_type=dataset_type,
                       description=desc, tags=tags, attributes=attrs,
-                      workspace_name=workspace)
+                      workspace_name=workspace, features=features)
         if public_within_org:
             if workspace is None:
                 raise ValueError("cannot set `public_within_org` for personal workspace")
