@@ -3,6 +3,8 @@ import requests
 
 import verta
 
+pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
+
 
 class TestModel:
     def test_create(self, client, created_registered_models):

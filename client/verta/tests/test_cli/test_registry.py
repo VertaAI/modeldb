@@ -18,6 +18,7 @@ from verta.endpoint.update._strategies import DirectUpdateStrategy
 
 from ..utils import sys_path_manager
 
+pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
 
 class TestCreate:

@@ -3,6 +3,8 @@ import pytest
 from verta.endpoint.resources import Resources
 from verta.endpoint.update import DirectUpdateStrategy
 
+pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
+
 
 @pytest.mark.parametrize("data", [3, 64, 0.25])
 def test_cpu_milli(client, data, in_tempdir):

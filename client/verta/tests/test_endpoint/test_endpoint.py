@@ -20,6 +20,8 @@ from verta.utils import ModelAPI
 
 from ..utils import (get_build_ids, sys_path_manager)
 
+pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
+
 
 class TestEndpoint:
     def test_create(self, client, created_endpoints):
