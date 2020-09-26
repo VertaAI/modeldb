@@ -5,6 +5,7 @@ from __future__ import print_function
 import abc
 import copy
 import glob
+import importlib
 import os
 import re
 import shutil
@@ -215,9 +216,21 @@ class _DeployableEntity(_ModelDBEntity):
     def _custom_modules_as_artifact(self, paths=None):
         if isinstance(paths, six.string_types):
             paths = [paths]
+
         if paths is not None:
-            paths = list(map(os.path.expanduser, paths))
-            paths = list(map(os.path.abspath, paths))
+            new_paths = []
+            for p in paths:
+                abspath = os.path.abspath(os.path.expanduser(p))
+                if os.path.exists(abspath):
+                    new_paths.append(abspath)
+                else:
+                    try:
+                        mod = importlib.import_module(p)
+                        new_paths.extend(mod.__path__)
+                    except ImportError:
+                        raise ValueError("custom module {} does not correspond to an existing folder or module".format(p))
+
+            paths = new_paths
 
         # collect local sys paths
         local_sys_paths = copy.copy(sys.path)

@@ -1284,6 +1284,8 @@ class ExperimentRun(_DeployableEntity):
             Paths to local Python modules and other files that the deployed model depends on.
                 - If directories are provided, all files within—excluding virtual environments—will
                   be included.
+                - If module names are provided, all files within the corresponding module inside a
+                  folder in `sys.path` will be included.
                 - If not provided, all Python files located within `sys.path`—excluding virtual
                   environments—will be included.
         model_api : :class:`~verta.utils.ModelAPI`, optional
