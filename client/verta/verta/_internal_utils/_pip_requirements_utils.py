@@ -236,7 +236,7 @@ def set_version_pins(requirements):
             except (ImportError, AttributeError):
                 # fall back to checking pip
                 req_with_dash = req.replace("_", "-")
-                req_with_underscore = req.replace("_", "-")
+                req_with_underscore = req.replace("-", "_")
                 if req_with_dash in pip_pkg_vers:
                     ver = pip_pkg_vers[req_with_dash]
                 elif req_with_underscore in pip_pkg_vers:
