@@ -18,7 +18,8 @@ class TestConcurrency:
         def extract_obs_value(obs):
             return list(map(itemgetter(0), obs))
 
-        assert all(map(lambda res: extract_obs_value((res["run"].get_observation("obs"))) == res["obs"], result))
+        check_results = list(map(lambda res: extract_obs_value((res["run"].get_observation("obs"))) == res["obs"], result))
+        assert all(check_results)
         pool.close()
 
     def test_multiple_runs_upload_artifacts(self, client, in_tempdir):
@@ -28,5 +29,6 @@ class TestConcurrency:
         pool = multiprocessing.Pool(36)
         result = pool.map(partial(upload_artifact, client), range(5))
 
-        assert all(map(lambda res: res["run"].get_artifact("artifact").read() == res["artifact"], result))
+        check_results = list(map(lambda res: res["run"].get_artifact("artifact").read() == res["artifact"], result))
+        assert all(check_results)
         pool.close()
