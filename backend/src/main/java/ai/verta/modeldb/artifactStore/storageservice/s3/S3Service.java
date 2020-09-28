@@ -51,6 +51,11 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 
 public class S3Service implements ArtifactStoreService {
 
@@ -382,13 +387,25 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  public S3Object loadFileAsResource(String artifactPath) throws ModelDBException {
+  public ResponseEntity<Resource> loadFileAsResource(String artifactPath) throws ModelDBException {
     LOGGER.trace("S3Service - loadFileAsResource called");
     try {
       if (doesObjectExist(bucketName, artifactPath)) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");
-        return s3Client.getObject(bucketName, artifactPath);
+        S3Object resource = s3Client.getObject(bucketName, artifactPath);
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        for (Map.Entry<String, Object> header :
+            resource.getObjectMetadata().getRawMetadata().entrySet()) {
+          responseHeaders.add(header.getKey(), String.valueOf(header.getValue()));
+        }
+
+        LOGGER.debug("getArtifact returned");
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.noCache())
+            .headers(responseHeaders)
+            .body(new InputStreamResource(resource.getObjectContent()));
       } else {
         String errorMessage = "File not found " + artifactPath;
         LOGGER.info(errorMessage);
@@ -401,6 +418,12 @@ public class S3Service implements ArtifactStoreService {
       LOGGER.warn(errorMessage);
       throw new ModelDBException(
           errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
+    } catch (SdkClientException e) {
+      // Amazon S3 couldn't be contacted for a response, or the client
+      // couldn't parse the response from Amazon S3.
+      String errorMessage = e.getMessage();
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(errorMessage);
     }
   }
 

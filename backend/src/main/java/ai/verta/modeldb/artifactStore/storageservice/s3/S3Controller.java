@@ -6,19 +6,15 @@ import ai.verta.modeldb.artifactStore.storageservice.nfs.UploadFileResponse;
 import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
-import com.amazonaws.services.s3.model.S3Object;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.io.IOException;
-import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,18 +66,7 @@ public class S3Controller {
         new RequestLatencyResource(ModelDBConstants.GET_ARTIFACT_ENDPOINT)) {
       LOGGER.debug("getArtifact started");
       // Load file as Resource
-      S3Object resource = s3Service.loadFileAsResource(artifactPath);
-      HttpHeaders responseHeaders = new HttpHeaders();
-      for (Map.Entry<String, Object> header :
-          resource.getObjectMetadata().getRawMetadata().entrySet()) {
-        responseHeaders.add(header.getKey(), String.valueOf(header.getValue()));
-      }
-
-      LOGGER.debug("getArtifact returned");
-      return ResponseEntity.ok()
-          .cacheControl(CacheControl.noCache())
-          .headers(responseHeaders)
-          .body(new InputStreamResource(resource.getObjectContent()));
+      return s3Service.loadFileAsResource(artifactPath);
     } catch (ModelDBException e) {
       LOGGER.info(e.getMessage(), e);
       ErrorCountResource.inc(e);
