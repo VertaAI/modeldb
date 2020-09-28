@@ -15,6 +15,7 @@ def test_download_endpoint_manifest(client, data, strategy, in_tempdir):
         resources=resources,
     )
 
+
 @pytest.mark.parametrize("data", [3, 64, 0.25])
 def test_cpu_milli(client, data, in_tempdir):
     Resources(cpu=data)
