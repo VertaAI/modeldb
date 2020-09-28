@@ -6,16 +6,21 @@ from verta.endpoint.update import DirectUpdateStrategy
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
 
-@pytest.mark.parametrize("data", [3, 64, 0.25])
-def test_cpu_milli(client, data, in_tempdir):
+@pytest.mark.parametrize("data, strategy", [(3, DirectUpdateStrategy()), (64, None)])
+def test_download_endpoint_manifest(client, data, strategy, in_tempdir):
     resources = Resources(cpu=data)
 
-    # test that `resources` can acutally be used
+    # test that `resources` can actually be used
     client.download_endpoint_manifest(
         "deployment.yaml", "/production-prediction", "production-prediction",
-        strategy=DirectUpdateStrategy(),
+        strategy=strategy,
         resources=resources,
     )
+
+
+@pytest.mark.parametrize("data", [3, 64, 0.25])
+def test_cpu_milli(client, data, in_tempdir):
+    Resources(cpu=data)
 
 
 @pytest.mark.parametrize("data", [-12, 0])

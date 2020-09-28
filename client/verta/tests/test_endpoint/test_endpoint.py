@@ -607,7 +607,7 @@ class TestEndpoint:
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
-        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        endpoint.update(model_version, wait=True)
 
         # updating endpoint
         endpoint.update(new_model_version, DirectUpdateStrategy(), wait=True)
