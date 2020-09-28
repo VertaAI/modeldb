@@ -4,9 +4,9 @@ from verta.endpoint.resources import Resources
 from verta.endpoint.update import DirectUpdateStrategy
 
 
-@pytest.mark.parametrize("data", [(3, DirectUpdateStrategy()), (64, None),
+@pytest.mark.parametrize("data,strategy", [(3, DirectUpdateStrategy()), (64, None),
                                   (0.25, DirectUpdateStrategy())])
-def test_cpu_milli(client, data, in_tempdir):
+def test_cpu_milli(client, data, strategy, in_tempdir):
     resources = Resources(cpu=data[0])
 
     # test that `resources` can acutally be used
