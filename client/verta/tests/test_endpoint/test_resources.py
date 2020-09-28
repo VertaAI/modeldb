@@ -8,7 +8,7 @@ from verta.endpoint.update import DirectUpdateStrategy
 def test_download_endpoint_manifest(client, data, strategy, in_tempdir):
     resources = Resources(cpu=data)
 
-    # test that `resources` can acutally be used
+    # test that `resources` can actually be used
     client.download_endpoint_manifest(
         "deployment.yaml", "/production-prediction", "production-prediction",
         strategy=strategy,
