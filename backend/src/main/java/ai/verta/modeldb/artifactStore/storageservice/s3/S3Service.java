@@ -27,6 +27,7 @@ import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PartETag;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.amazonaws.services.s3.transfer.TransferManager;
@@ -52,6 +53,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 
 public class S3Service implements ArtifactStoreService {
 
@@ -383,23 +387,43 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  public Resource loadFileAsResource(String artifactPath) throws ModelDBException {
+  public ResponseEntity<Resource> loadFileAsResource(String artifactPath) throws ModelDBException {
     LOGGER.trace("S3Service - loadFileAsResource called");
     try {
       if (doesObjectExist(bucketName, artifactPath)) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");
-        return new InputStreamResource(
-            s3Client.getObject(bucketName, artifactPath).getObjectContent());
+        S3Object resource = s3Client.getObject(bucketName, artifactPath);
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        for (Map.Entry<String, Object> header :
+            resource.getObjectMetadata().getRawMetadata().entrySet()) {
+          responseHeaders.add(header.getKey(), String.valueOf(header.getValue()));
+        }
+
+        LOGGER.debug("getArtifact returned");
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.noCache())
+            .headers(responseHeaders)
+            .body(new InputStreamResource(resource.getObjectContent()));
       } else {
         String errorMessage = "File not found " + artifactPath;
         LOGGER.info(errorMessage);
-        throw new ModelDBException(errorMessage);
+        throw new ModelDBException(errorMessage, Code.NOT_FOUND);
       }
-    } catch (ModelDBException ex) {
-      String errorMessage = "File not found " + artifactPath;
-      LOGGER.info(errorMessage, ex);
-      throw new ModelDBException(errorMessage, ex);
+    } catch (AmazonServiceException e) {
+      // Amazon S3 couldn't be contacted for a response, or the client
+      // couldn't parse the response from Amazon S3.
+      String errorMessage = e.getMessage();
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(
+          errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
+    } catch (SdkClientException e) {
+      // Amazon S3 couldn't be contacted for a response, or the client
+      // couldn't parse the response from Amazon S3.
+      String errorMessage = e.getMessage();
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(errorMessage);
     }
   }
 
