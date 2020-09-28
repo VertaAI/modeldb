@@ -234,6 +234,7 @@ class TestCommit:
         assert retrieved_commit.id == commit.id
         assert retrieved_key_paths == key_paths
 
+    @pytest.mark.not_oss
     def test_log_to_run_diff_workspaces(self, client, experiment_run, organization):
         repository_name = _utils.generate_default_name()
         repository = client.get_or_create_repository(repository_name, workspace=organization.name)

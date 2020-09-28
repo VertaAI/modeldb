@@ -614,6 +614,7 @@ class TestEndpoint:
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), new_classifier.predict(test_data))
 
+    @pytest.mark.not_oss
     def test_update_from_run_diff_workspace(self, client, organization, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
@@ -625,6 +626,7 @@ class TestEndpoint:
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
         assert endpoint.workspace != experiment_run.workspace
 
+    @pytest.mark.not_oss
     def test_update_from_version_diff_workspace(self, client, model_version, organization, created_endpoints):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")

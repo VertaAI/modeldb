@@ -53,6 +53,7 @@ class TestCreate:
 
         created_endpoints.append(endpoint)
 
+    @pytest.mark.not_oss
     def test_create_workspace_config(self, client, organization, in_tempdir, created_endpoints):
         client_config = {
             "workspace": organization.name

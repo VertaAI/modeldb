@@ -47,6 +47,7 @@ class TestMDBIntegration:
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
         assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
 
+    @pytest.mark.not_oss
     def test_from_run_diff_workspaces(self, client, experiment_run, organization, created_registered_models):
         registered_model = client.create_registered_model(workspace=organization.name)
         created_registered_models.append(registered_model)
