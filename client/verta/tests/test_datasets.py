@@ -613,6 +613,7 @@ class TestLogDatasetVersion:
         path = retrieved_dataset_version.dataset_version.path_dataset_version_info.base_path
         assert path.endswith(__file__)
 
+    @pytest.mark.not_oss
     def test_log_dataset_version_diff_workspaces(self, client, organization, created_datasets, experiment_run):
         dataset = client.set_dataset(type="local", workspace=organization.name)
         created_datasets.append(dataset)
