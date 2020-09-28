@@ -570,6 +570,9 @@ class Client(object):
             current user's personal workspace will be used.
         id : str, optional
             ID of the Repository, to be provided instead of `name`.
+        public_within_org : bool, default False
+            If creating a Repository in an organization's workspace, whether to make this Repository
+            accessible to all members of that organization.
 
         Returns
         -------
