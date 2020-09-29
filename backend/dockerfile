@@ -21,4 +21,4 @@ ENV NAME modeldb-backend
 ENV VERTA_MODELDB_CONFIG /config/config.yaml
 
 ENTRYPOINT ["java"]
-CMD ["-jar", "modeldb-1.0-SNAPSHOT-client-build.jar"]
+CMD ["$JAVA_OPTS", "-jar", "modeldb-1.0-SNAPSHOT-client-build.jar"]
