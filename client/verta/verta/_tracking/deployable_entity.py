@@ -295,9 +295,6 @@ class _DeployableEntity(_ModelDBEntity):
             if init_filename not in zipf.namelist():
                 zipf.writestr(init_filename, b"")
 
-            if self._conf.debug:
-                print("[DEBUG] archive contains:")
-                zipf.printdir()
         bytestream.seek(0)
 
         return bytestream
