@@ -181,7 +181,6 @@ class TestCreate:
         assert result.exception
         assert error_message in result.output
 
-    @pytest.mark.not_oss
     def test_create_workspace_config(self, client, organization, in_tempdir, created_registered_models):
         model_name = _utils.generate_default_name()
         version_name = _utils.generate_default_name()
