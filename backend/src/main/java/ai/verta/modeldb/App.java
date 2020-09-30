@@ -205,9 +205,21 @@ public class App implements ApplicationContextAware {
     return app;
   }
 
+  private static int ONE_MB = 1024 * 1024;
+
   public static void main(String[] args) {
     try {
       LOGGER.info("Backend server starting.");
+
+      Runtime rt = Runtime.getRuntime();
+
+      long maxMemBytes = rt.maxMemory();
+      long usedMemBytes = rt.totalMemory() - rt.freeMemory();
+      long freeMemBytes = rt.maxMemory() - usedMemBytes;
+
+      LOGGER.info("Initial free memory: " + freeMemBytes / ONE_MB + "MB");
+      LOGGER.info("Max memory: " + maxMemBytes / ONE_MB + "MB");
+
       final java.util.logging.Logger logger =
           java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
       logger.setLevel(Level.WARNING);
@@ -296,32 +308,30 @@ public class App implements ApplicationContextAware {
       up.inc();
       LOGGER.info("Backend server started listening on {}", grpcServerPort);
 
-      Runtime.getRuntime()
-          .addShutdownHook(
-              new Thread(
-                  () -> {
-                    int activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
-                    while (activeRequestCount > 0) {
-                      activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
-                      System.err.println("Active Request Count in while: " + activeRequestCount);
-                      try {
-                        Thread.sleep(1000); // wait for 1s
-                      } catch (InterruptedException e) {
-                        e.printStackTrace();
-                      }
-                    }
-                    // Use stderr here since the logger may have been reset by its JVM shutdown
-                    // hook.
-                    System.err.println(
-                        "*** Shutting down gRPC server since JVM is shutting down ***");
-                    server.shutdown();
-                    try {
-                      server.awaitTermination();
-                    } catch (InterruptedException e) {
-                      e.printStackTrace();
-                    }
-                    System.err.println("*** Server Shutdown ***");
-                  }));
+      rt.addShutdownHook(
+          new Thread(
+              () -> {
+                int activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
+                while (activeRequestCount > 0) {
+                  activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
+                  System.err.println("Active Request Count in while: " + activeRequestCount);
+                  try {
+                    Thread.sleep(1000); // wait for 1s
+                  } catch (InterruptedException e) {
+                    e.printStackTrace();
+                  }
+                }
+                // Use stderr here since the logger may have been reset by its JVM shutdown
+                // hook.
+                System.err.println("*** Shutting down gRPC server since JVM is shutting down ***");
+                server.shutdown();
+                try {
+                  server.awaitTermination();
+                } catch (InterruptedException e) {
+                  e.printStackTrace();
+                }
+                System.err.println("*** Server Shutdown ***");
+              }));
 
       // ----------- Don't exit the main thread. Wait until server is terminated -----------
       server.awaitTermination();
