@@ -12,6 +12,7 @@ import requests
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from ._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
+from ._protos.public.modeldb.versioning import Dataset_pb2
 
 from .external import six
 
@@ -525,17 +526,17 @@ class DatasetVersion(object):
         self._dataset_type = dataset_version.dataset_type
         self.dataset_version = dataset_version
 
-        version_info_oneof = dataset_version.WhichOneof('dataset_version_info')
-        if version_info_oneof:
-            self.dataset_version_info = getattr(dataset_version, version_info_oneof)
-        else:
-            self.dataset_version_info = None
+        # version_info_oneof = dataset_version.WhichOneof('dataset_version_info')
+        # if version_info_oneof:
+        #     self.dataset_version_info = getattr(dataset_version, version_info_oneof)
+        # else:
+        #     self.dataset_version_info = None
 
-        # assign base_path to proto msg to restore a level of backwards-compatibility
-        try:
-            self.dataset_version.path_dataset_version_info.base_path = self.base_path
-        except AttributeError:  # unsupported non-path dataset or multiple base_paths
-            pass
+        # # assign base_path to proto msg to restore a level of backwards-compatibility
+        # try:
+        #     self.dataset_version.path_dataset_version_info.base_path = self.base_path
+        # except AttributeError:  # unsupported non-path dataset or multiple base_paths
+        #     pass
 
     def __repr__(self):
         if self.dataset_version:
@@ -752,18 +753,29 @@ class QueryDatasetVersion(DatasetVersion):
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
         Message = _DatasetVersionService.CreateDatasetVersion
-        version_msg = _DatasetVersionService.QueryDatasetVersionInfo
-        converted_dataset_version_info = version_msg(
-            query=dataset_version_info.query,
-            query_template=dataset_version_info.query_template, query_parameters=dataset_version_info.query_parameters,
-            data_source_uri=dataset_version_info.data_source_uri,
-            execution_timestamp=dataset_version_info.execution_timestamp, num_records=dataset_version_info.num_records
+        # version_msg = _DatasetVersionService.QueryDatasetVersionInfo
+        # converted_dataset_version_info = version_msg(
+        #     query=dataset_version_info.query,
+        #     query_template=dataset_version_info.query_template, query_parameters=dataset_version_info.query_parameters,
+        #     data_source_uri=dataset_version_info.data_source_uri,
+        #     execution_timestamp=dataset_version_info.execution_timestamp, num_records=dataset_version_info.num_records
+        # )
+        blob_msg = Dataset_pb2.DatasetBlob(
+            query=Dataset_pb2.QueryDatasetBlob(
+                components=[Dataset_pb2.QueryDatasetComponentBlob(
+                    query=dataset_version_info.query,
+                    data_source_uri=dataset_version_info.data_source_uri,
+                    execution_timestamp=dataset_version_info.execution_timestamp,
+                    num_records=dataset_version_info.num_records,
+                )]
+            )
         )
         msg = Message(dataset_id=dataset_id, parent_id=parent_id,
                       description=desc, tags=tags, dataset_type=dataset_type,
                       attributes=attrs, version=version,
+                      dataset_blob=blob_msg)
                       # different dataset versions
-                      query_dataset_version_info=converted_dataset_version_info)
+                    #   query_dataset_version_info=converted_dataset_version_info)
         return msg
 
 
