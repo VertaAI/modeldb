@@ -97,10 +97,10 @@ class Commit(
 
         // upload the artifacts given by blobsToVersion map then clean up
         val uploadAttempt: Try[Unit] = newCommit.flatMap(newCommit => {
-          val attempts = blobsToVersion
+          val attempts: Iterable[Try[Unit]] = blobsToVersion
             .mapValues(_.getAllMetadata) // Map[String, Iterable[FileMetadata]]
             .map(pair => pair._2.map(metadata => newCommit.uploadArtifact(pair._1, metadata.path, new File(metadata.localPath.get)))) // Map[String, Iterable[Try[Unit]]]
-            .values.flatten // Traversable[Try[Unit]]
+            .flatten
 
             Try(attempts.foreach(_.get)) // propagate the failure out. Try[Unit]
         })
