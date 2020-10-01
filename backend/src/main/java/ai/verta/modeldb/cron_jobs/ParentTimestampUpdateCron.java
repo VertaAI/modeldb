@@ -46,17 +46,6 @@ public class ParentTimestampUpdateCron extends TimerTask {
         session.getTransaction().commit();
       }
 
-      // Update experimentRun timestamp
-      session.beginTransaction();
-      try {
-        updateDatasetByDatasetVersionTimestamp(session);
-      } catch (Exception ex) {
-        LOGGER.warn(
-            "ParentTimestampUpdateCron : updateDatasetByDatasetVersionTimestamp Exception: ", ex);
-      } finally {
-        session.getTransaction().commit();
-      }
-
       // Update repository timestamp
       session.beginTransaction();
       try {
@@ -146,40 +135,6 @@ public class ParentTimestampUpdateCron extends TimerTask {
               " ) expr_alias ON ex.id = expr_alias.experiment_id AND ex.date_updated < expr_alias.max_date ")
           .append(
               "SET ex.date_updated = expr_alias.max_date WHERE ex.id = expr_alias.experiment_id ")
-          .toString();
-    }
-  }
-
-  private void updateDatasetByDatasetVersionTimestamp(Session session) {
-    LOGGER.trace("Dataset timestamp updating");
-    String datasetUpdateQueryString = getDatasetUpdateQueryString();
-    Query query = session.createSQLQuery(datasetUpdateQueryString);
-    int count = query.executeUpdate();
-    LOGGER.info("Dataset timestamp updated successfully : Updated datasets count {}", count);
-  }
-
-  private String getDatasetUpdateQueryString() {
-    if (ModelDBHibernateUtil.rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
-      return new StringBuilder("with dsv_alias as ")
-          .append(" ( SELECT dsv.dataset_id, MAX(dsv.time_updated) AS max_date ")
-          .append(" FROM dataset_version dsv ")
-          .append(" GROUP BY dsv.dataset_id limit ")
-          .append(recordUpdateLimit)
-          .append(" ) UPDATE dataset as ds ")
-          .append(" SET time_updated = dsv_alias.max_date ")
-          .append(
-              " from dsv_alias WHERE ds.id = dsv_alias.dataset_id and ds.time_updated < dsv_alias.max_date")
-          .toString();
-    } else {
-      return new StringBuilder("UPDATE dataset d ")
-          .append("INNER JOIN ")
-          .append("(SELECT dv.dataset_id, MAX(dv.time_updated) AS max_date ")
-          .append(" FROM dataset_version dv ")
-          .append(" GROUP BY dv.dataset_id LIMIT ")
-          .append(recordUpdateLimit)
-          .append(" ) dv_alias ")
-          .append("ON d.id = dv_alias.dataset_id AND d.time_updated < dv_alias.max_date ")
-          .append("SET d.time_updated = dv_alias.max_date WHERE d.id = dv_alias.dataset_id ")
           .toString();
     }
   }
