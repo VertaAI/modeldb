@@ -9,6 +9,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.CloneExperimentRun;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
 import ai.verta.modeldb.CommitArtifactPart.Response;
@@ -89,6 +90,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -2077,45 +2079,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun deepCopyExperimentRunForUser(
-      ExperimentRun srcExperimentRun,
-      Experiment newExperiment,
-      Project newProject,
-      UserInfo newOwner)
-      throws InvalidProtocolBufferException, ModelDBException {
-    checkIfEntityAlreadyExists(srcExperimentRun, false);
-
-    if (newExperiment == null || newProject == null || newOwner == null) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage(
-                  "New owner, new project or new Experiment not passed for cloning ExperimentRun.")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
-    ExperimentRun copyExperimentRun =
-        copyExperimentRunAndUpdateDetails(srcExperimentRun, newExperiment, newProject, newOwner);
-
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunObj =
-          RdbmsUtils.generateExperimentRunEntity(copyExperimentRun);
-      Transaction transaction = session.beginTransaction();
-      session.saveOrUpdate(experimentRunObj);
-      transaction.commit();
-      LOGGER.debug("ExperimentRun copied successfully");
-      ExperimentRun experimentRun = experimentRunObj.getProtoObject();
-      return populateFieldsBasedOnPrivileges(experimentRun);
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return deepCopyExperimentRunForUser(srcExperimentRun, newExperiment, newProject, newOwner);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
   public List<ExperimentRun> getExperimentRuns(List<KeyValue> keyValues)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -2903,5 +2866,54 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           "Final return total record count : {}", experimentRunPaginationDTO.getTotalRecords());
       return experimentRunPaginationDTO;
     }
+  }
+
+  @Override
+  public ExperimentRun cloneExperimentRun(CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
+      throws InvalidProtocolBufferException, ModelDBException {
+    ExperimentRun srcExperimentRun = getExperimentRun(cloneExperimentRun.getSrcExperimentRunId());
+
+    // Validate if current user has access to the entity or not
+    roleService.validateEntityUserWithUserInfo(
+        ModelDBServiceResourceTypes.PROJECT,
+        srcExperimentRun.getProjectId(),
+        ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+
+    ExperimentRun.Builder desExperimentRunBuilder = srcExperimentRun.toBuilder().clone();
+    desExperimentRunBuilder
+        .setId(UUID.randomUUID().toString())
+        .setDateCreated(Calendar.getInstance().getTimeInMillis())
+        .setDateUpdated(Calendar.getInstance().getTimeInMillis())
+        .setStartTime(Calendar.getInstance().getTimeInMillis())
+        .setEndTime(Calendar.getInstance().getTimeInMillis());
+
+    if (!cloneExperimentRun.getDestExperimentRunName().isEmpty()) {
+      desExperimentRunBuilder.setName(cloneExperimentRun.getDestExperimentRunName());
+    } else {
+      desExperimentRunBuilder.setName(srcExperimentRun.getName() + " - " + new Date().getTime());
+    }
+
+    if (!cloneExperimentRun.getDestExperimentId().isEmpty()) {
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        ExperimentEntity destExperimentEntity =
+            session.get(ExperimentEntity.class, cloneExperimentRun.getDestExperimentId());
+        if (destExperimentEntity == null) {
+          throw new ModelDBException(
+              "Destination experiment '" + cloneExperimentRun.getDestExperimentId() + "' not found",
+              Code.NOT_FOUND);
+        }
+
+        // Validate if current user has access to the entity or not
+        roleService.validateEntityUserWithUserInfo(
+            ModelDBServiceResourceTypes.PROJECT,
+            destExperimentEntity.getProject_id(),
+            ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+        desExperimentRunBuilder.setProjectId(destExperimentEntity.getProject_id());
+      }
+      desExperimentRunBuilder.setExperimentId(cloneExperimentRun.getDestExperimentId());
+    }
+
+    desExperimentRunBuilder.clearOwner().setOwner(authService.getVertaIdFromUserInfo(userInfo));
+    return insertExperimentRun(desExperimentRunBuilder.build(), userInfo);
   }
 }

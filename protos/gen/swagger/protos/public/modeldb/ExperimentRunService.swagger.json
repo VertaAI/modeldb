@@ -2437,9 +2437,6 @@
         },
         "dest_experiment_id": {
           "type": "string"
-        },
-        "dest_project_id": {
-          "type": "string"
         }
       }
     },

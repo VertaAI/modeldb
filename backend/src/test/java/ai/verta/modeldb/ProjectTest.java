@@ -2219,6 +2219,8 @@ public class ProjectTest {
   public void y_projectCascadeDeleteTest() {
     LOGGER.info("Project delete with cascading test start................................");
     try {
+      deleteEntitiesCron.run();
+
       ExperimentRunTest experimentRunTest = new ExperimentRunTest();
 
       Project project = null;

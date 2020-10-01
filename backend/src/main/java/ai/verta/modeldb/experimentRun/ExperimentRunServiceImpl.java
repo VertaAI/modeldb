@@ -8,6 +8,7 @@ import ai.verta.modeldb.AddExperimentRunAttributes;
 import ai.verta.modeldb.AddExperimentRunTag;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.CloneExperimentRun;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
 import ai.verta.modeldb.CommitMultipartArtifact;
@@ -2595,6 +2596,28 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, GetExperimentRunsByDatasetVersionId.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void cloneExperimentRun(
+      CloneExperimentRun request, StreamObserver<CloneExperimentRun.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getSrcExperimentRunId().isEmpty()) {
+        throw new ModelDBException(
+            "Source ExperimentRun Id should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ExperimentRun clonedExperimentRun =
+          experimentRunDAO.cloneExperimentRun(request, authService.getCurrentLoginUserInfo());
+      responseObserver.onNext(
+          CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, CloneExperimentRun.Response.getDefaultInstance());
     }
   }
 }
