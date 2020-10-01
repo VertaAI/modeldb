@@ -1,9 +1,11 @@
 import pytest
+import requests
 
 from .. import utils
 
 import verta.dataset
 import verta.environment
+from verta._internal_utils import _utils
 
 
 class TestRepository:
@@ -190,6 +192,30 @@ class TestCommit:
         # blob2 still present
         assert commit.get(loc2)
 
+    def test_revert_merge_commit(self, repository):
+        blob1 = verta.environment.Python(["pytest==1"])
+        blob2 = verta.environment.Python(["pytest==2"])
+        loc1 = "loc1"
+        loc2 = "loc2"
+
+        commit_a = repository.get_commit("master").new_branch("a")
+        commit_a.update(loc1, blob1)
+        commit_a.save("some message")
+
+        commit_b = repository.get_commit("master").new_branch("b")
+        commit_b.update(loc2, blob2)
+        commit_b.save("other message")
+
+        commit_a.merge(commit_b)
+        commit_a.revert()
+
+        # blob2 removed
+        with pytest.raises(LookupError):
+            commit_a.get(loc2)
+
+        # blob1 still present
+        assert commit_a.get(loc1)
+
     def test_log_to_run(self, experiment_run, commit):
         blob1 = verta.dataset.Path(__file__)
         reqs = verta.environment.Python.read_pip_environment()
@@ -207,6 +233,37 @@ class TestCommit:
         retrieved_commit, retrieved_key_paths = experiment_run.get_commit()
         assert retrieved_commit.id == commit.id
         assert retrieved_key_paths == key_paths
+
+    @pytest.mark.not_oss
+    def test_log_to_run_diff_workspaces(self, client, experiment_run, organization):
+        repository_name = _utils.generate_default_name()
+        repository = client.get_or_create_repository(repository_name, workspace=organization.name)
+
+        # TODO: Uncomment this check when repository.workspace is implemented
+        # assert repository.workspace != experiment_run.workspace
+
+        commit = repository.get_commit()
+        experiment_run.log_commit(commit)
+
+        retrieved_commit, retrieved_key_paths = experiment_run.get_commit()
+        assert retrieved_commit.id == commit.id
+
+        repository.delete()
+
+    def test_log_to_run_diff_workspaces_no_access_error(self, client_2, experiment_run):
+        repository_name = _utils.generate_default_name()
+        repository = client_2.get_or_create_repository(repository_name)
+        commit = repository.get_commit()
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            experiment_run.log_commit(commit)
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "403" in excinfo_value
+        assert "Access Denied" in excinfo_value
+
+        repository.delete()
+
 
 class TestBranch:
     def test_set(self, repository):

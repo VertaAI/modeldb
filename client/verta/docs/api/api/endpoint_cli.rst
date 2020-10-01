@@ -1,3 +1,5 @@
+.. _endpoint-cli:
+
 Endpoint Command-Line Interface
 ===============================
 
@@ -19,4 +21,8 @@ Endpoint Command-Line Interface
 
 .. click:: verta._cli.deployment:predict
     :prog: verta deployment predict
+    :show-nested:
+
+.. click:: verta._cli.deployment:download
+    :prog: verta deployment download
     :show-nested:

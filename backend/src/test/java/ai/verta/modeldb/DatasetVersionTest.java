@@ -16,6 +16,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
@@ -106,6 +107,7 @@ public class DatasetVersionTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -668,7 +670,6 @@ public class DatasetVersionTest {
   }
 
   @Test
-  @Ignore
   public void updateDatasetVersionDescriptionNegativeTest() {
     LOGGER.info(
         "Update DatasetVersion Description Negative test start................................");
@@ -974,6 +975,15 @@ public class DatasetVersionTest {
         "DatasetVersion date_updated field not update on database",
         datasetVersion.getTimeUpdated(),
         response.getDatasetVersion().getTimeUpdated());
+
+    try {
+      datasetVersionServiceStub.addDatasetVersionAttributes(addDatasetVersionAttributesRequest);
+      fail();
+    } catch (StatusRuntimeException e) {
+      Status status = Status.fromThrowable(e);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+    }
 
     DeleteDatasetVersion deleteDatasetVersion =
         DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
@@ -1514,80 +1524,6 @@ public class DatasetVersionTest {
   }
 
   @Test
-  @Ignore
-  public void setDatasetVersionVisibility() {
-    LOGGER.info("Set DatasetVersion visibility test start................................");
-
-    DatasetTest datasetTest = new DatasetTest();
-
-    DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
-        DatasetVersionServiceGrpc.newBlockingStub(channel);
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-
-    CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    Dataset dataset = createDatasetResponse.getDataset();
-    LOGGER.info("CreateDataset Response : \n" + dataset);
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
-
-    // Create public datasetVersion
-    // Public datasetVersion 1
-    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
-    createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
-            .setDatasetVersionVisibility(DatasetVisibility.PUBLIC)
-            .build();
-    CreateDatasetVersion.Response createDatasetVersionResponse =
-        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
-    DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
-    assertEquals(
-        "DatasetVersion visibility not match with expected datasetVersion visibility",
-        DatasetVisibility.PUBLIC,
-        datasetVersion.getDatasetVersionVisibility());
-    LOGGER.info("DatasetVersion created successfully");
-
-    SetDatasetVersionVisibilty setDatasetVersionVisibilty =
-        SetDatasetVersionVisibilty.newBuilder()
-            .setId(datasetVersion.getId())
-            .setDatasetVersionVisibility(DatasetVisibility.PRIVATE)
-            .build();
-    SetDatasetVersionVisibilty.Response response =
-        datasetVersionServiceStub.setDatasetVersionVisibility(setDatasetVersionVisibilty);
-    DatasetVersion visibilityDatasetVersion = response.getDatasetVersion();
-    assertEquals(
-        "DatasetVersion visibility not match with updated datasetVersion visibility",
-        DatasetVisibility.PRIVATE,
-        visibilityDatasetVersion.getDatasetVersionVisibility());
-    LOGGER.info("Set datasetVersion visibility successfully");
-    assertNotEquals(
-        "DatasetVersion date_updated field not update on database",
-        datasetVersion.getTimeUpdated(),
-        response.getDatasetVersion().getTimeUpdated());
-
-    DeleteDatasetVersion deleteDatasetVersion =
-        DeleteDatasetVersion.newBuilder().setId(datasetVersion.getId()).build();
-    DeleteDatasetVersion.Response deleteDatasetVersionResponse =
-        datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
-    LOGGER.info("DatasetVersion deleted successfully");
-    LOGGER.info(deleteDatasetVersionResponse.toString());
-
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
-    LOGGER.info("Set DatasetVersion visibility test stop................................");
-  }
-
-  @Test
   public void batchDeleteDatasetVersionTest() {
     LOGGER.info("batch delete DatasetVersion test start................................");
     DatasetTest datasetTest = new DatasetTest();
@@ -1974,5 +1910,168 @@ public class DatasetVersionTest {
     assertTrue(deleteDatasetResponse.getStatus());
 
     LOGGER.info("Get DatasetVersion by Id test stop................................");
+  }
+
+  @Test
+  public void checkVersionWithDatasetVersionsTest() {
+
+    DatasetTest datasetTest = new DatasetTest();
+
+    DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
+        DatasetVersionServiceGrpc.newBlockingStub(channel);
+    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
+        DatasetServiceGrpc.newBlockingStub(channel);
+
+    CreateDataset createDatasetRequest =
+        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
+    CreateDataset.Response createDatasetResponse =
+        datasetServiceStub.createDataset(createDatasetRequest);
+    Dataset dataset = createDatasetResponse.getDataset();
+    LOGGER.info("CreateDataset Response : \n" + dataset);
+    assertEquals(
+        "Dataset name not match with expected dataset name",
+        createDatasetRequest.getName(),
+        dataset.getName());
+
+    long version = 1L;
+    Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
+    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion.Response createDatasetVersionResponse =
+        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
+    DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
+    datasetVersionMap.put(datasetVersion1.getId(), datasetVersion1);
+    LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion1);
+    assertEquals(
+        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
+        dataset.getId(),
+        datasetVersion1.getDatasetId());
+    assertEquals(
+        "DatasetVersion version not match with expected DatasetVersion version",
+        version,
+        datasetVersion1.getVersion());
+
+    createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    createDatasetVersionResponse =
+        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
+    DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
+    datasetVersionMap.put(datasetVersion2.getId(), datasetVersion2);
+    LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion2);
+    assertEquals(
+        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
+        dataset.getId(),
+        datasetVersion2.getDatasetId());
+    assertEquals(
+        "DatasetVersion version not match with expected DatasetVersion version",
+        ++version,
+        datasetVersion2.getVersion());
+
+    createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    createDatasetVersionResponse =
+        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
+    DatasetVersion datasetVersion3 = createDatasetVersionResponse.getDatasetVersion();
+    datasetVersionMap.put(datasetVersion3.getId(), datasetVersion3);
+    LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion3);
+    assertEquals(
+        "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
+        dataset.getId(),
+        datasetVersion3.getDatasetId());
+    assertEquals(
+        "DatasetVersion version not match with expected DatasetVersion version",
+        ++version,
+        datasetVersion3.getVersion());
+
+    int pageLimit = 1;
+    boolean isExpectedResultFound = false;
+    for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
+      GetAllDatasetVersionsByDatasetId getAllDatasetVersionsByDatasetIdRequest =
+          GetAllDatasetVersionsByDatasetId.newBuilder()
+              .setDatasetId(dataset.getId())
+              .setPageNumber(pageNumber)
+              .setPageLimit(pageLimit)
+              .setAscending(false)
+              .setSortKey(ModelDBConstants.VERSION)
+              .build();
+
+      GetAllDatasetVersionsByDatasetId.Response getAllDatasetVersionsByDatasetIdResponse =
+          datasetVersionServiceStub.getAllDatasetVersionsByDatasetId(
+              getAllDatasetVersionsByDatasetIdRequest);
+
+      assertEquals(
+          "Total records count not matched with expected records count",
+          3,
+          getAllDatasetVersionsByDatasetIdResponse.getTotalRecords());
+
+      if (getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList() != null
+          && getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList().size() > 0) {
+        isExpectedResultFound = true;
+        LOGGER.info(
+            "GetAllDataset Response : "
+                + getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsCount());
+        for (DatasetVersion datasetVersion :
+            getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList()) {
+          assertEquals(
+              "DatasetVersion not match with expected DatasetVersion",
+              datasetVersionMap.get(datasetVersion.getId()),
+              datasetVersion);
+        }
+
+        if (pageNumber == 1) {
+          assertEquals(
+              "DatasetVersion not match with expected DatasetVersion",
+              datasetVersion3,
+              datasetVersionMap.get(
+                  getAllDatasetVersionsByDatasetIdResponse.getDatasetVersions(0).getId()));
+        } else if (pageNumber == 3) {
+          assertEquals(
+              "DatasetVersion not match with expected DatasetVersion",
+              datasetVersion1,
+              datasetVersionMap.get(
+                  getAllDatasetVersionsByDatasetIdResponse.getDatasetVersions(0).getId()));
+        }
+
+      } else {
+        if (isExpectedResultFound) {
+          LOGGER.warn("More DatasetVersion not found in database");
+          assertTrue(true);
+        } else {
+          fail("Expected DatasetVersion not found in response");
+        }
+        break;
+      }
+    }
+
+    GetAllDatasetVersionsByDatasetId getAllDatasetVersionsByDatasetIdRequest =
+        GetAllDatasetVersionsByDatasetId.newBuilder().setDatasetId(dataset.getId()).build();
+    GetAllDatasetVersionsByDatasetId.Response getAllDatasetVersionsByDatasetIdResponse =
+        datasetVersionServiceStub.getAllDatasetVersionsByDatasetId(
+            getAllDatasetVersionsByDatasetIdRequest);
+    assertEquals(
+        "DatasetVersions count not match with expected DatasetVersion count",
+        datasetVersionMap.size(),
+        getAllDatasetVersionsByDatasetIdResponse.getTotalRecords());
+
+    for (DatasetVersion datasetVersion :
+        getAllDatasetVersionsByDatasetIdResponse.getDatasetVersionsList()) {
+      assertEquals(
+          "DatasetVersion not match with expected DatasetVersion",
+          datasetVersionMap.get(datasetVersion.getId()),
+          datasetVersion);
+    }
+
+    for (String datasetVersionId : datasetVersionMap.keySet()) {
+      DeleteDatasetVersion deleteDatasetVersionRequest =
+          DeleteDatasetVersion.newBuilder().setId(datasetVersionId).build();
+      DeleteDatasetVersion.Response deleteDatasetVersionResponse =
+          datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
+      LOGGER.info("DeleteDatasetVersion deleted successfully");
+      LOGGER.info(deleteDatasetVersionResponse.toString());
+      assertTrue(true);
+    }
+
+    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
+    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
+    LOGGER.info("Dataset deleted successfully");
+    LOGGER.info(deleteDatasetResponse.toString());
+    assertTrue(deleteDatasetResponse.getStatus());
   }
 }

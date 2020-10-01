@@ -78,6 +78,18 @@ def dev_key():
     return os.environ.get("VERTA_DEV_KEY", DEFAULT_DEV_KEY)
 
 
+@pytest.fixture(scope='session')
+def email_2():
+    # For collaboration tests
+    return os.environ.get("VERTA_EMAIL_2")
+
+
+@pytest.fixture(scope='session')
+def dev_key_2():
+    # For collaboration tests
+    return os.environ.get("VERTA_DEV_KEY_2")
+
+
 @pytest.fixture
 def seed():
     return RANDOM_SEED
@@ -272,7 +284,21 @@ def client(host, port, email, dev_key):
 
     proj = client._ctx.proj
     if proj is not None:
-        utils.delete_project(proj.id, client._conn)
+        proj.delete()
+
+    print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
+
+
+@pytest.fixture
+def client_2(host, port, email_2, dev_key_2):
+    """For collaboration tests."""
+    if not (email_2 and dev_key_2):
+        pytest.skip("second account credentials not present")
+    print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
+
+    client = Client(host, port, email_2, dev_key_2, debug=True)
+
+    yield client
 
     print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
@@ -319,7 +345,7 @@ def repository(client):
 
     yield repo
 
-    utils.delete_repository(repo.id, client._conn)
+    repo.delete()
 
 
 @pytest.fixture
@@ -336,31 +362,45 @@ def created_datasets(client):
 
     yield created_datasets
 
-    if created_datasets:
-        utils.delete_datasets(list(set(dataset.id for dataset in created_datasets)), client._conn)
+    datasets_conn = {}  # prevent duplication
+    for dataset in created_datasets:
+        datasets_conn[dataset.id] = dataset._conn
+
+    for dataset_id in datasets_conn:
+        utils.delete_datasets([dataset_id], datasets_conn[dataset_id])
 
 
 @pytest.fixture
 def registered_model(client):
     model = client.get_or_create_registered_model()
     yield model
-    utils.delete_registered_model(model.id, client._conn)
+    model.delete()
 
 
 @pytest.fixture
-def created_registered_models(client):
+def created_registered_models():
     """Container to track and clean up `RegisteredModel`s created during tests."""
     to_delete = []
 
     yield to_delete
 
     for registered_model in to_delete:
-        utils.delete_registered_model(registered_model.id, client._conn)
+        registered_model.delete()
 
 
 @pytest.fixture
 def model_version(registered_model):
     yield registered_model.get_or_create_version()
+
+
+@pytest.fixture
+def created_endpoints():
+    to_delete = []
+
+    yield to_delete
+
+    for endpoint in to_delete:
+        endpoint.delete()
 
 
 @pytest.fixture
@@ -373,13 +413,13 @@ def endpoint(client, created_endpoints):
 
 
 @pytest.fixture
-def created_endpoints(client):
+def created_endpoints():
     to_delete = []
 
     yield to_delete
 
     for endpoint in to_delete:
-        utils.delete_endpoint(endpoint.id, endpoint.workspace, client._conn)
+        endpoint.delete()
 
 
 @pytest.fixture
@@ -389,7 +429,7 @@ def organization(client):
 
     yield org
 
-    utils.delete_organization(org.id, client._conn)
+    org.delete()
 
 
 @pytest.fixture

@@ -21,6 +21,7 @@ import zipfile
 import requests
 import yaml
 from verta._tracking.organization import Organization
+from ._dataset_versioning.dataset_version import DatasetVersion
 
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -69,6 +70,7 @@ from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
 from .endpoint._endpoint import Endpoint
 from .endpoint._endpoints import Endpoints
+from .endpoint.update import DirectUpdateStrategy
 
 
 class Client(object):
@@ -556,7 +558,7 @@ class Client(object):
 
         return self._ctx.expt_run
 
-    def get_or_create_repository(self, name=None, workspace=None, id=None):
+    def get_or_create_repository(self, name=None, workspace=None, id=None, public_within_org=None):
         """
         Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
 
@@ -569,6 +571,9 @@ class Client(object):
             current user's personal workspace will be used.
         id : str, optional
             ID of the Repository, to be provided instead of `name`.
+        public_within_org : bool, default False
+            If creating a Repository in an organization's workspace, whether to make this Repository
+            accessible to all members of that organization.
 
         Returns
         -------
@@ -591,23 +596,22 @@ class Client(object):
             else:
                 workspace_str = "workspace {}".format(workspace)
 
-            try:
-                repo = _repository.Repository._create(self._conn, name=name, workspace=workspace)
-            except requests.HTTPError as e:
-                if e.response.status_code == 403:  # cannot create in other workspace
-                    repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
-                    if repo is None:  # not accessible in other workspace
-                        six.raise_from(e, None)
-                elif e.response.status_code == 409:  # already exists
-                    repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
-                    if repo is None:  # already exists, but couldn't get it
+            repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
+
+            if not repo:  # not found
+                try:
+                    repo = _repository.Repository._create(self._conn, name=name, workspace=workspace,
+                                                          public_within_org=public_within_org)
+                except requests.HTTPError as e:
+                    if e.response.status_code == 409:  # already exists
                         raise RuntimeError("unable to get Repository from ModelDB;"
                                            " please notify the Verta development team")
-                else:
-                    six.raise_from(e, None)
-                print("set existing Repository: {} from {}".format(name, workspace_str))
-            else:
+                    else:
+                        six.raise_from(e, None)
                 print("created new Repository: {} in {}".format(name, workspace_str))
+            else:
+                print("set existing Repository: {} from {}".format(name, workspace_str))
+
             return repo
         else:
             raise ValueError("must specify either `name` or `id`")
@@ -649,7 +653,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset.Dataset`
+        `Dataset <dataset.html>`_
 
         Raises
         ------
@@ -694,7 +698,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset.Dataset`
+        `Dataset <dataset.html>`_
         """
         return _dataset.Dataset(self._conn, self._conf, name=name, _dataset_id=id)
 
@@ -725,7 +729,7 @@ class Client(object):
 
         Returns
         -------
-        list of :class:`~verta._dataset.Dataset`
+        list of `Dataset <dataset.html>`_
 
         """
         datasets = Datasets(self._conn, self._conf)
@@ -763,7 +767,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset.DatasetVersion`
+        `DatasetVersion <dataset.html>`_
         """
         return _dataset.DatasetVersion(self._conn, self._conf, _dataset_version_id=id)
 
@@ -1225,7 +1229,7 @@ class Client(object):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
     def download_endpoint_manifest(
-            self, download_to_path, path, name, strategy,
+            self, download_to_path, path, name, strategy=None,
             resources=None, autoscaling=None, env_vars=None,
             workspace=None):
         """
@@ -1239,7 +1243,7 @@ class Client(object):
             Path of the endpoint.
         name : str
             Name of the endpoint.
-        strategy : :ref:`update strategy <update-stategies>`
+        strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the endpoint.
         resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated endpoint.
@@ -1259,6 +1263,9 @@ class Client(object):
         """
         if not path.startswith('/'):
             path = '/' + path
+
+        if not strategy:
+            strategy = DirectUpdateStrategy()
 
         data = {
             'endpoint': {'path': path},
@@ -1428,8 +1435,27 @@ class Client(object):
         raise NotImplementedError
 
     def _get_dataset_version2(self, id):
+        """
+        Gets a Dataset version.
+
+        Parameters
+        ----------
+        id : str
+            ID of the Dataset version.
+
+        Returns
+        -------
+        `DatasetVersion <dataset.html>`_
+
+        """
         # TODO: when MVP, remove '2'
-        raise NotImplementedError
+        self._ctx = _Context(self._conn, self._conf)
+
+        dataset_version = DatasetVersion._get_by_id(self._conn, self._conf, id)
+
+        if dataset_version is None:
+            raise ValueError("Dataset Version not found")
+        return dataset_version
 
     def _create_organization(self, name, desc=None, collaborator_type=None, global_can_deploy=None):
         return Organization._create(self._conn, name, desc, collaborator_type, global_can_deploy)

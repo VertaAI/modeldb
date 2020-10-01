@@ -3602,6 +3602,69 @@ func (x *ListBlobExperimentRunsRequest) GetLocation() []string {
 	return nil
 }
 
+type CloneExperimentRun struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	SrcExperimentRunId    string `protobuf:"bytes,1,opt,name=src_experiment_run_id,json=srcExperimentRunId,proto3" json:"src_experiment_run_id,omitempty"`          // Source experiment_run to clone [Compulsory]
+	DestExperimentRunName string `protobuf:"bytes,2,opt,name=dest_experiment_run_name,json=destExperimentRunName,proto3" json:"dest_experiment_run_name,omitempty"` // Source experiment_run to clone [Optional]
+	DestExperimentId      string `protobuf:"bytes,3,opt,name=dest_experiment_id,json=destExperimentId,proto3" json:"dest_experiment_id,omitempty"`                  // Destination experiment_id to clone run into. if not define here then value will be experiment_id of src_experiment_run_id[Optional]
+}
+
+func (x *CloneExperimentRun) Reset() {
+	*x = CloneExperimentRun{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[53]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CloneExperimentRun) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CloneExperimentRun) ProtoMessage() {}
+
+func (x *CloneExperimentRun) ProtoReflect() protoreflect.Message {
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[53]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CloneExperimentRun.ProtoReflect.Descriptor instead.
+func (*CloneExperimentRun) Descriptor() ([]byte, []int) {
+	return file_modeldb_ExperimentRunService_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *CloneExperimentRun) GetSrcExperimentRunId() string {
+	if x != nil {
+		return x.SrcExperimentRunId
+	}
+	return ""
+}
+
+func (x *CloneExperimentRun) GetDestExperimentRunName() string {
+	if x != nil {
+		return x.DestExperimentRunName
+	}
+	return ""
+}
+
+func (x *CloneExperimentRun) GetDestExperimentId() string {
+	if x != nil {
+		return x.DestExperimentId
+	}
+	return ""
+}
+
 type LogVersionedInput_Response struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3611,7 +3674,7 @@ type LogVersionedInput_Response struct {
 func (x *LogVersionedInput_Response) Reset() {
 	*x = LogVersionedInput_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[55]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[56]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3624,7 +3687,7 @@ func (x *LogVersionedInput_Response) String() string {
 func (*LogVersionedInput_Response) ProtoMessage() {}
 
 func (x *LogVersionedInput_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[55]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[56]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3651,7 +3714,7 @@ type GetVersionedInput_Response struct {
 func (x *GetVersionedInput_Response) Reset() {
 	*x = GetVersionedInput_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[56]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[57]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3664,7 +3727,7 @@ func (x *GetVersionedInput_Response) String() string {
 func (*GetVersionedInput_Response) ProtoMessage() {}
 
 func (x *GetVersionedInput_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[56]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[57]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3698,7 +3761,7 @@ type CreateExperimentRun_Response struct {
 func (x *CreateExperimentRun_Response) Reset() {
 	*x = CreateExperimentRun_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[57]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[58]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3711,7 +3774,7 @@ func (x *CreateExperimentRun_Response) String() string {
 func (*CreateExperimentRun_Response) ProtoMessage() {}
 
 func (x *CreateExperimentRun_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[57]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[58]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3745,7 +3808,7 @@ type DeleteExperimentRun_Response struct {
 func (x *DeleteExperimentRun_Response) Reset() {
 	*x = DeleteExperimentRun_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[58]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[59]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3758,7 +3821,7 @@ func (x *DeleteExperimentRun_Response) String() string {
 func (*DeleteExperimentRun_Response) ProtoMessage() {}
 
 func (x *DeleteExperimentRun_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[58]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[59]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3793,7 +3856,7 @@ type GetExperimentRunsInProject_Response struct {
 func (x *GetExperimentRunsInProject_Response) Reset() {
 	*x = GetExperimentRunsInProject_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[59]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[60]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3806,7 +3869,7 @@ func (x *GetExperimentRunsInProject_Response) String() string {
 func (*GetExperimentRunsInProject_Response) ProtoMessage() {}
 
 func (x *GetExperimentRunsInProject_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[59]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[60]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3848,7 +3911,7 @@ type GetExperimentRunsInExperiment_Response struct {
 func (x *GetExperimentRunsInExperiment_Response) Reset() {
 	*x = GetExperimentRunsInExperiment_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[60]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[61]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3861,7 +3924,7 @@ func (x *GetExperimentRunsInExperiment_Response) String() string {
 func (*GetExperimentRunsInExperiment_Response) ProtoMessage() {}
 
 func (x *GetExperimentRunsInExperiment_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[60]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[61]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3902,7 +3965,7 @@ type GetExperimentRunById_Response struct {
 func (x *GetExperimentRunById_Response) Reset() {
 	*x = GetExperimentRunById_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[61]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[62]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3915,7 +3978,7 @@ func (x *GetExperimentRunById_Response) String() string {
 func (*GetExperimentRunById_Response) ProtoMessage() {}
 
 func (x *GetExperimentRunById_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[61]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[62]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3949,7 +4012,7 @@ type GetExperimentRunByName_Response struct {
 func (x *GetExperimentRunByName_Response) Reset() {
 	*x = GetExperimentRunByName_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[62]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[63]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3962,7 +4025,7 @@ func (x *GetExperimentRunByName_Response) String() string {
 func (*GetExperimentRunByName_Response) ProtoMessage() {}
 
 func (x *GetExperimentRunByName_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[62]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[63]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3994,7 +4057,7 @@ type UpdateExperimentRunName_Response struct {
 func (x *UpdateExperimentRunName_Response) Reset() {
 	*x = UpdateExperimentRunName_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[63]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[64]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4007,7 +4070,7 @@ func (x *UpdateExperimentRunName_Response) String() string {
 func (*UpdateExperimentRunName_Response) ProtoMessage() {}
 
 func (x *UpdateExperimentRunName_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[63]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[64]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4034,7 +4097,7 @@ type UpdateExperimentRunDescription_Response struct {
 func (x *UpdateExperimentRunDescription_Response) Reset() {
 	*x = UpdateExperimentRunDescription_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[64]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[65]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4047,7 +4110,7 @@ func (x *UpdateExperimentRunDescription_Response) String() string {
 func (*UpdateExperimentRunDescription_Response) ProtoMessage() {}
 
 func (x *UpdateExperimentRunDescription_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[64]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[65]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4081,7 +4144,7 @@ type AddExperimentRunTags_Response struct {
 func (x *AddExperimentRunTags_Response) Reset() {
 	*x = AddExperimentRunTags_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[65]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[66]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4094,7 +4157,7 @@ func (x *AddExperimentRunTags_Response) String() string {
 func (*AddExperimentRunTags_Response) ProtoMessage() {}
 
 func (x *AddExperimentRunTags_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[65]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[66]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4128,7 +4191,7 @@ type DeleteExperimentRunTags_Response struct {
 func (x *DeleteExperimentRunTags_Response) Reset() {
 	*x = DeleteExperimentRunTags_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[66]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[67]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4141,7 +4204,7 @@ func (x *DeleteExperimentRunTags_Response) String() string {
 func (*DeleteExperimentRunTags_Response) ProtoMessage() {}
 
 func (x *DeleteExperimentRunTags_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[66]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[67]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4175,7 +4238,7 @@ type AddExperimentRunTag_Response struct {
 func (x *AddExperimentRunTag_Response) Reset() {
 	*x = AddExperimentRunTag_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[67]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[68]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4188,7 +4251,7 @@ func (x *AddExperimentRunTag_Response) String() string {
 func (*AddExperimentRunTag_Response) ProtoMessage() {}
 
 func (x *AddExperimentRunTag_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[67]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[68]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4222,7 +4285,7 @@ type DeleteExperimentRunTag_Response struct {
 func (x *DeleteExperimentRunTag_Response) Reset() {
 	*x = DeleteExperimentRunTag_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[68]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[69]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4235,7 +4298,7 @@ func (x *DeleteExperimentRunTag_Response) String() string {
 func (*DeleteExperimentRunTag_Response) ProtoMessage() {}
 
 func (x *DeleteExperimentRunTag_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[68]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[69]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4267,7 +4330,7 @@ type AddExperimentRunAttributes_Response struct {
 func (x *AddExperimentRunAttributes_Response) Reset() {
 	*x = AddExperimentRunAttributes_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[69]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[70]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4280,7 +4343,7 @@ func (x *AddExperimentRunAttributes_Response) String() string {
 func (*AddExperimentRunAttributes_Response) ProtoMessage() {}
 
 func (x *AddExperimentRunAttributes_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[69]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[70]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4305,7 +4368,7 @@ type DeleteExperimentRunAttributes_Response struct {
 func (x *DeleteExperimentRunAttributes_Response) Reset() {
 	*x = DeleteExperimentRunAttributes_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[70]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[71]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4318,7 +4381,7 @@ func (x *DeleteExperimentRunAttributes_Response) String() string {
 func (*DeleteExperimentRunAttributes_Response) ProtoMessage() {}
 
 func (x *DeleteExperimentRunAttributes_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[70]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[71]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4343,7 +4406,7 @@ type LogExperimentRunCodeVersion_Response struct {
 func (x *LogExperimentRunCodeVersion_Response) Reset() {
 	*x = LogExperimentRunCodeVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[71]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[72]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4356,7 +4419,7 @@ func (x *LogExperimentRunCodeVersion_Response) String() string {
 func (*LogExperimentRunCodeVersion_Response) ProtoMessage() {}
 
 func (x *LogExperimentRunCodeVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[71]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[72]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4383,7 +4446,7 @@ type GetExperimentRunCodeVersion_Response struct {
 func (x *GetExperimentRunCodeVersion_Response) Reset() {
 	*x = GetExperimentRunCodeVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[72]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[73]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4396,7 +4459,7 @@ func (x *GetExperimentRunCodeVersion_Response) String() string {
 func (*GetExperimentRunCodeVersion_Response) ProtoMessage() {}
 
 func (x *GetExperimentRunCodeVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[72]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[73]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4428,7 +4491,7 @@ type LogObservation_Response struct {
 func (x *LogObservation_Response) Reset() {
 	*x = LogObservation_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[73]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[74]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4441,7 +4504,7 @@ func (x *LogObservation_Response) String() string {
 func (*LogObservation_Response) ProtoMessage() {}
 
 func (x *LogObservation_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[73]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[74]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4466,7 +4529,7 @@ type LogObservations_Response struct {
 func (x *LogObservations_Response) Reset() {
 	*x = LogObservations_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[74]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[75]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4479,7 +4542,7 @@ func (x *LogObservations_Response) String() string {
 func (*LogObservations_Response) ProtoMessage() {}
 
 func (x *LogObservations_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[74]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[75]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4506,7 +4569,7 @@ type GetObservations_Response struct {
 func (x *GetObservations_Response) Reset() {
 	*x = GetObservations_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[75]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[76]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4519,7 +4582,7 @@ func (x *GetObservations_Response) String() string {
 func (*GetObservations_Response) ProtoMessage() {}
 
 func (x *GetObservations_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[75]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[76]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4551,7 +4614,7 @@ type DeleteObservations_Response struct {
 func (x *DeleteObservations_Response) Reset() {
 	*x = DeleteObservations_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[76]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[77]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4564,7 +4627,7 @@ func (x *DeleteObservations_Response) String() string {
 func (*DeleteObservations_Response) ProtoMessage() {}
 
 func (x *DeleteObservations_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[76]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[77]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4589,7 +4652,7 @@ type LogMetric_Response struct {
 func (x *LogMetric_Response) Reset() {
 	*x = LogMetric_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[77]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[78]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4602,7 +4665,7 @@ func (x *LogMetric_Response) String() string {
 func (*LogMetric_Response) ProtoMessage() {}
 
 func (x *LogMetric_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[77]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[78]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4627,7 +4690,7 @@ type LogMetrics_Response struct {
 func (x *LogMetrics_Response) Reset() {
 	*x = LogMetrics_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[78]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[79]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4640,7 +4703,7 @@ func (x *LogMetrics_Response) String() string {
 func (*LogMetrics_Response) ProtoMessage() {}
 
 func (x *LogMetrics_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[78]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[79]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4667,7 +4730,7 @@ type GetMetrics_Response struct {
 func (x *GetMetrics_Response) Reset() {
 	*x = GetMetrics_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[79]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[80]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4680,7 +4743,7 @@ func (x *GetMetrics_Response) String() string {
 func (*GetMetrics_Response) ProtoMessage() {}
 
 func (x *GetMetrics_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[79]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[80]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4712,7 +4775,7 @@ type DeleteMetrics_Response struct {
 func (x *DeleteMetrics_Response) Reset() {
 	*x = DeleteMetrics_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[80]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[81]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4725,7 +4788,7 @@ func (x *DeleteMetrics_Response) String() string {
 func (*DeleteMetrics_Response) ProtoMessage() {}
 
 func (x *DeleteMetrics_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[80]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[81]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4750,7 +4813,7 @@ type LogDataset_Response struct {
 func (x *LogDataset_Response) Reset() {
 	*x = LogDataset_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[81]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[82]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4763,7 +4826,7 @@ func (x *LogDataset_Response) String() string {
 func (*LogDataset_Response) ProtoMessage() {}
 
 func (x *LogDataset_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[81]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[82]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4788,7 +4851,7 @@ type LogDatasets_Response struct {
 func (x *LogDatasets_Response) Reset() {
 	*x = LogDatasets_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[82]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[83]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4801,7 +4864,7 @@ func (x *LogDatasets_Response) String() string {
 func (*LogDatasets_Response) ProtoMessage() {}
 
 func (x *LogDatasets_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[82]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[83]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4828,7 +4891,7 @@ type GetDatasets_Response struct {
 func (x *GetDatasets_Response) Reset() {
 	*x = GetDatasets_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[83]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[84]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4841,7 +4904,7 @@ func (x *GetDatasets_Response) String() string {
 func (*GetDatasets_Response) ProtoMessage() {}
 
 func (x *GetDatasets_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[83]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[84]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4873,7 +4936,7 @@ type LogArtifact_Response struct {
 func (x *LogArtifact_Response) Reset() {
 	*x = LogArtifact_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[84]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[85]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4886,7 +4949,7 @@ func (x *LogArtifact_Response) String() string {
 func (*LogArtifact_Response) ProtoMessage() {}
 
 func (x *LogArtifact_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[84]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[85]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4911,7 +4974,7 @@ type LogArtifacts_Response struct {
 func (x *LogArtifacts_Response) Reset() {
 	*x = LogArtifacts_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[85]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[86]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4924,7 +4987,7 @@ func (x *LogArtifacts_Response) String() string {
 func (*LogArtifacts_Response) ProtoMessage() {}
 
 func (x *LogArtifacts_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[85]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[86]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4949,7 +5012,7 @@ type DeleteArtifact_Response struct {
 func (x *DeleteArtifact_Response) Reset() {
 	*x = DeleteArtifact_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[86]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[87]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4962,7 +5025,7 @@ func (x *DeleteArtifact_Response) String() string {
 func (*DeleteArtifact_Response) ProtoMessage() {}
 
 func (x *DeleteArtifact_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[86]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[87]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4987,7 +5050,7 @@ type LogHyperparameter_Response struct {
 func (x *LogHyperparameter_Response) Reset() {
 	*x = LogHyperparameter_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[87]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[88]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5000,7 +5063,7 @@ func (x *LogHyperparameter_Response) String() string {
 func (*LogHyperparameter_Response) ProtoMessage() {}
 
 func (x *LogHyperparameter_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[87]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[88]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5025,7 +5088,7 @@ type LogHyperparameters_Response struct {
 func (x *LogHyperparameters_Response) Reset() {
 	*x = LogHyperparameters_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[88]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[89]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5038,7 +5101,7 @@ func (x *LogHyperparameters_Response) String() string {
 func (*LogHyperparameters_Response) ProtoMessage() {}
 
 func (x *LogHyperparameters_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[88]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[89]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5065,7 +5128,7 @@ type GetHyperparameters_Response struct {
 func (x *GetHyperparameters_Response) Reset() {
 	*x = GetHyperparameters_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[89]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[90]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5078,7 +5141,7 @@ func (x *GetHyperparameters_Response) String() string {
 func (*GetHyperparameters_Response) ProtoMessage() {}
 
 func (x *GetHyperparameters_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[89]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[90]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5110,7 +5173,7 @@ type DeleteHyperparameters_Response struct {
 func (x *DeleteHyperparameters_Response) Reset() {
 	*x = DeleteHyperparameters_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[90]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[91]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5123,7 +5186,7 @@ func (x *DeleteHyperparameters_Response) String() string {
 func (*DeleteHyperparameters_Response) ProtoMessage() {}
 
 func (x *DeleteHyperparameters_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[90]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[91]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5148,7 +5211,7 @@ type LogAttribute_Response struct {
 func (x *LogAttribute_Response) Reset() {
 	*x = LogAttribute_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[91]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[92]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5161,7 +5224,7 @@ func (x *LogAttribute_Response) String() string {
 func (*LogAttribute_Response) ProtoMessage() {}
 
 func (x *LogAttribute_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[91]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[92]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5186,7 +5249,7 @@ type LogAttributes_Response struct {
 func (x *LogAttributes_Response) Reset() {
 	*x = LogAttributes_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[92]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[93]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5199,7 +5262,7 @@ func (x *LogAttributes_Response) String() string {
 func (*LogAttributes_Response) ProtoMessage() {}
 
 func (x *LogAttributes_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[92]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[93]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5227,7 +5290,7 @@ type FindExperimentRuns_Response struct {
 func (x *FindExperimentRuns_Response) Reset() {
 	*x = FindExperimentRuns_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[93]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[94]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5240,7 +5303,7 @@ func (x *FindExperimentRuns_Response) String() string {
 func (*FindExperimentRuns_Response) ProtoMessage() {}
 
 func (x *FindExperimentRuns_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[93]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[94]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5282,7 +5345,7 @@ type SortExperimentRuns_Response struct {
 func (x *SortExperimentRuns_Response) Reset() {
 	*x = SortExperimentRuns_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[94]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[95]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5295,7 +5358,7 @@ func (x *SortExperimentRuns_Response) String() string {
 func (*SortExperimentRuns_Response) ProtoMessage() {}
 
 func (x *SortExperimentRuns_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[94]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[95]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5336,7 +5399,7 @@ type TopExperimentRunsSelector_Response struct {
 func (x *TopExperimentRunsSelector_Response) Reset() {
 	*x = TopExperimentRunsSelector_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[95]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[96]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5349,7 +5412,7 @@ func (x *TopExperimentRunsSelector_Response) String() string {
 func (*TopExperimentRunsSelector_Response) ProtoMessage() {}
 
 func (x *TopExperimentRunsSelector_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[95]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[96]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5381,7 +5444,7 @@ type LogJobId_Response struct {
 func (x *LogJobId_Response) Reset() {
 	*x = LogJobId_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[96]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[97]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5394,7 +5457,7 @@ func (x *LogJobId_Response) String() string {
 func (*LogJobId_Response) ProtoMessage() {}
 
 func (x *LogJobId_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[96]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[97]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5421,7 +5484,7 @@ type GetJobId_Response struct {
 func (x *GetJobId_Response) Reset() {
 	*x = GetJobId_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[97]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[98]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5434,7 +5497,7 @@ func (x *GetJobId_Response) String() string {
 func (*GetJobId_Response) ProtoMessage() {}
 
 func (x *GetJobId_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[97]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[98]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5469,7 +5532,7 @@ type GetChildrenExperimentRuns_Response struct {
 func (x *GetChildrenExperimentRuns_Response) Reset() {
 	*x = GetChildrenExperimentRuns_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[98]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[99]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5482,7 +5545,7 @@ func (x *GetChildrenExperimentRuns_Response) String() string {
 func (*GetChildrenExperimentRuns_Response) ProtoMessage() {}
 
 func (x *GetChildrenExperimentRuns_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[98]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[99]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5521,7 +5584,7 @@ type SetParentExperimentRunId_Response struct {
 func (x *SetParentExperimentRunId_Response) Reset() {
 	*x = SetParentExperimentRunId_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[99]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[100]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5534,7 +5597,7 @@ func (x *SetParentExperimentRunId_Response) String() string {
 func (*SetParentExperimentRunId_Response) ProtoMessage() {}
 
 func (x *SetParentExperimentRunId_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[99]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[100]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5562,7 +5625,7 @@ type GetExperimentRunsByDatasetVersionId_Response struct {
 func (x *GetExperimentRunsByDatasetVersionId_Response) Reset() {
 	*x = GetExperimentRunsByDatasetVersionId_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[100]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[101]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5575,7 +5638,7 @@ func (x *GetExperimentRunsByDatasetVersionId_Response) String() string {
 func (*GetExperimentRunsByDatasetVersionId_Response) ProtoMessage() {}
 
 func (x *GetExperimentRunsByDatasetVersionId_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[100]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[101]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5616,7 +5679,7 @@ type DeleteExperimentRuns_Response struct {
 func (x *DeleteExperimentRuns_Response) Reset() {
 	*x = DeleteExperimentRuns_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[101]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[102]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5629,7 +5692,7 @@ func (x *DeleteExperimentRuns_Response) String() string {
 func (*DeleteExperimentRuns_Response) ProtoMessage() {}
 
 func (x *DeleteExperimentRuns_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[101]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[102]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5664,7 +5727,7 @@ type ListCommitExperimentRunsRequest_Response struct {
 func (x *ListCommitExperimentRunsRequest_Response) Reset() {
 	*x = ListCommitExperimentRunsRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[102]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[103]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5677,7 +5740,7 @@ func (x *ListCommitExperimentRunsRequest_Response) String() string {
 func (*ListCommitExperimentRunsRequest_Response) ProtoMessage() {}
 
 func (x *ListCommitExperimentRunsRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[102]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[103]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5719,7 +5782,7 @@ type ListBlobExperimentRunsRequest_Response struct {
 func (x *ListBlobExperimentRunsRequest_Response) Reset() {
 	*x = ListBlobExperimentRunsRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[103]
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[104]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5732,7 +5795,7 @@ func (x *ListBlobExperimentRunsRequest_Response) String() string {
 func (*ListBlobExperimentRunsRequest_Response) ProtoMessage() {}
 
 func (x *ListBlobExperimentRunsRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[103]
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[104]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5760,6 +5823,53 @@ func (x *ListBlobExperimentRunsRequest_Response) GetTotalRecords() int64 {
 		return x.TotalRecords
 	}
 	return 0
+}
+
+type CloneExperimentRun_Response struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Run *ExperimentRun `protobuf:"bytes,1,opt,name=run,proto3" json:"run,omitempty"`
+}
+
+func (x *CloneExperimentRun_Response) Reset() {
+	*x = CloneExperimentRun_Response{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_modeldb_ExperimentRunService_proto_msgTypes[105]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CloneExperimentRun_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CloneExperimentRun_Response) ProtoMessage() {}
+
+func (x *CloneExperimentRun_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_modeldb_ExperimentRunService_proto_msgTypes[105]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CloneExperimentRun_Response.ProtoReflect.Descriptor instead.
+func (*CloneExperimentRun_Response) Descriptor() ([]byte, []int) {
+	return file_modeldb_ExperimentRunService_proto_rawDescGZIP(), []int{53, 0}
+}
+
+func (x *CloneExperimentRun_Response) GetRun() *ExperimentRun {
+	if x != nil {
+		return x.Run
+	}
+	return nil
 }
 
 var File_modeldb_ExperimentRunService_proto protoreflect.FileDescriptor
@@ -6427,7 +6537,22 @@ var file_modeldb_ExperimentRunService_proto_rawDesc = []byte{
 	0x65, 0x6c, 0x64, 0x62, 0x2e, 0x45, 0x78, 0x70, 0x65, 0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x52,
 	0x75, 0x6e, 0x52, 0x04, 0x72, 0x75, 0x6e, 0x73, 0x12, 0x23, 0x0a, 0x0d, 0x74, 0x6f, 0x74, 0x61,
 	0x6c, 0x5f, 0x72, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52,
-	0x0c, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x32, 0xd3, 0x48,
+	0x0c, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x22, 0xed, 0x01,
+	0x0a, 0x12, 0x43, 0x6c, 0x6f, 0x6e, 0x65, 0x45, 0x78, 0x70, 0x65, 0x72, 0x69, 0x6d, 0x65, 0x6e,
+	0x74, 0x52, 0x75, 0x6e, 0x12, 0x31, 0x0a, 0x15, 0x73, 0x72, 0x63, 0x5f, 0x65, 0x78, 0x70, 0x65,
+	0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x72, 0x75, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x12, 0x73, 0x72, 0x63, 0x45, 0x78, 0x70, 0x65, 0x72, 0x69, 0x6d, 0x65,
+	0x6e, 0x74, 0x52, 0x75, 0x6e, 0x49, 0x64, 0x12, 0x37, 0x0a, 0x18, 0x64, 0x65, 0x73, 0x74, 0x5f,
+	0x65, 0x78, 0x70, 0x65, 0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x72, 0x75, 0x6e, 0x5f, 0x6e,
+	0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x15, 0x64, 0x65, 0x73, 0x74, 0x45,
+	0x78, 0x70, 0x65, 0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x75, 0x6e, 0x4e, 0x61, 0x6d, 0x65,
+	0x12, 0x2c, 0x0a, 0x12, 0x64, 0x65, 0x73, 0x74, 0x5f, 0x65, 0x78, 0x70, 0x65, 0x72, 0x69, 0x6d,
+	0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x10, 0x64, 0x65,
+	0x73, 0x74, 0x45, 0x78, 0x70, 0x65, 0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x49, 0x64, 0x1a, 0x3d,
+	0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x31, 0x0a, 0x03, 0x72, 0x75,
+	0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
+	0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2e, 0x45, 0x78, 0x70, 0x65, 0x72,
+	0x69, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x75, 0x6e, 0x52, 0x03, 0x72, 0x75, 0x6e, 0x32, 0xf1, 0x49,
 	0x0a, 0x14, 0x45, 0x78, 0x70, 0x65, 0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x75, 0x6e, 0x53,
 	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x9f, 0x01, 0x0a, 0x13, 0x63, 0x72, 0x65, 0x61, 0x74,
 	0x65, 0x45, 0x78, 0x70, 0x65, 0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x75, 0x6e, 0x12, 0x25,
@@ -7009,11 +7134,21 @@ var file_modeldb_ExperimentRunService_proto_rawDesc = []byte{
 	0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2d, 0x2a, 0x28, 0x2f, 0x76, 0x31, 0x2f, 0x65, 0x78, 0x70, 0x65,
 	0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x2d, 0x72, 0x75, 0x6e, 0x2f, 0x64, 0x65, 0x6c, 0x65, 0x74,
 	0x65, 0x48, 0x79, 0x70, 0x65, 0x72, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x65, 0x74, 0x65, 0x72, 0x73,
-	0x3a, 0x01, 0x2a, 0x42, 0x42, 0x50, 0x01, 0x5a, 0x3e, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
-	0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x64, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67,
-	0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x2f,
-	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x3a, 0x01, 0x2a, 0x12, 0x9b, 0x01, 0x0a, 0x12, 0x63, 0x6c, 0x6f, 0x6e, 0x65, 0x45, 0x78, 0x70,
+	0x65, 0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x75, 0x6e, 0x12, 0x24, 0x2e, 0x61, 0x69, 0x2e,
+	0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2e, 0x43, 0x6c,
+	0x6f, 0x6e, 0x65, 0x45, 0x78, 0x70, 0x65, 0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x75, 0x6e,
+	0x1a, 0x2d, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x64, 0x65,
+	0x6c, 0x64, 0x62, 0x2e, 0x43, 0x6c, 0x6f, 0x6e, 0x65, 0x45, 0x78, 0x70, 0x65, 0x72, 0x69, 0x6d,
+	0x65, 0x6e, 0x74, 0x52, 0x75, 0x6e, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x30, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2a, 0x22, 0x25, 0x2f, 0x76, 0x31, 0x2f, 0x65, 0x78, 0x70,
+	0x65, 0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x2d, 0x72, 0x75, 0x6e, 0x2f, 0x63, 0x6c, 0x6f, 0x6e,
+	0x65, 0x45, 0x78, 0x70, 0x65, 0x72, 0x69, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x75, 0x6e, 0x3a, 0x01,
+	0x2a, 0x42, 0x42, 0x50, 0x01, 0x5a, 0x3e, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64,
+	0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x2f, 0x6d, 0x6f,
+	0x64, 0x65, 0x6c, 0x64, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -7028,7 +7163,7 @@ func file_modeldb_ExperimentRunService_proto_rawDescGZIP() []byte {
 	return file_modeldb_ExperimentRunService_proto_rawDescData
 }
 
-var file_modeldb_ExperimentRunService_proto_msgTypes = make([]protoimpl.MessageInfo, 104)
+var file_modeldb_ExperimentRunService_proto_msgTypes = make([]protoimpl.MessageInfo, 106)
 var file_modeldb_ExperimentRunService_proto_goTypes = []interface{}{
 	(*ExperimentRun)(nil),                                // 0: ai.verta.modeldb.ExperimentRun
 	(*VersioningEntry)(nil),                              // 1: ai.verta.modeldb.VersioningEntry
@@ -7083,125 +7218,127 @@ var file_modeldb_ExperimentRunService_proto_goTypes = []interface{}{
 	(*DeleteExperimentRuns)(nil),                         // 50: ai.verta.modeldb.DeleteExperimentRuns
 	(*ListCommitExperimentRunsRequest)(nil),              // 51: ai.verta.modeldb.ListCommitExperimentRunsRequest
 	(*ListBlobExperimentRunsRequest)(nil),                // 52: ai.verta.modeldb.ListBlobExperimentRunsRequest
-	nil,                                                  // 53: ai.verta.modeldb.ExperimentRun.CodeVersionFromBlobEntry
-	nil,                                                  // 54: ai.verta.modeldb.VersioningEntry.KeyLocationMapEntry
-	(*LogVersionedInput_Response)(nil),                   // 55: ai.verta.modeldb.LogVersionedInput.Response
-	(*GetVersionedInput_Response)(nil),                   // 56: ai.verta.modeldb.GetVersionedInput.Response
-	(*CreateExperimentRun_Response)(nil),                 // 57: ai.verta.modeldb.CreateExperimentRun.Response
-	(*DeleteExperimentRun_Response)(nil),                 // 58: ai.verta.modeldb.DeleteExperimentRun.Response
-	(*GetExperimentRunsInProject_Response)(nil),          // 59: ai.verta.modeldb.GetExperimentRunsInProject.Response
-	(*GetExperimentRunsInExperiment_Response)(nil),       // 60: ai.verta.modeldb.GetExperimentRunsInExperiment.Response
-	(*GetExperimentRunById_Response)(nil),                // 61: ai.verta.modeldb.GetExperimentRunById.Response
-	(*GetExperimentRunByName_Response)(nil),              // 62: ai.verta.modeldb.GetExperimentRunByName.Response
-	(*UpdateExperimentRunName_Response)(nil),             // 63: ai.verta.modeldb.UpdateExperimentRunName.Response
-	(*UpdateExperimentRunDescription_Response)(nil),      // 64: ai.verta.modeldb.UpdateExperimentRunDescription.Response
-	(*AddExperimentRunTags_Response)(nil),                // 65: ai.verta.modeldb.AddExperimentRunTags.Response
-	(*DeleteExperimentRunTags_Response)(nil),             // 66: ai.verta.modeldb.DeleteExperimentRunTags.Response
-	(*AddExperimentRunTag_Response)(nil),                 // 67: ai.verta.modeldb.AddExperimentRunTag.Response
-	(*DeleteExperimentRunTag_Response)(nil),              // 68: ai.verta.modeldb.DeleteExperimentRunTag.Response
-	(*AddExperimentRunAttributes_Response)(nil),          // 69: ai.verta.modeldb.AddExperimentRunAttributes.Response
-	(*DeleteExperimentRunAttributes_Response)(nil),       // 70: ai.verta.modeldb.DeleteExperimentRunAttributes.Response
-	(*LogExperimentRunCodeVersion_Response)(nil),         // 71: ai.verta.modeldb.LogExperimentRunCodeVersion.Response
-	(*GetExperimentRunCodeVersion_Response)(nil),         // 72: ai.verta.modeldb.GetExperimentRunCodeVersion.Response
-	(*LogObservation_Response)(nil),                      // 73: ai.verta.modeldb.LogObservation.Response
-	(*LogObservations_Response)(nil),                     // 74: ai.verta.modeldb.LogObservations.Response
-	(*GetObservations_Response)(nil),                     // 75: ai.verta.modeldb.GetObservations.Response
-	(*DeleteObservations_Response)(nil),                  // 76: ai.verta.modeldb.DeleteObservations.Response
-	(*LogMetric_Response)(nil),                           // 77: ai.verta.modeldb.LogMetric.Response
-	(*LogMetrics_Response)(nil),                          // 78: ai.verta.modeldb.LogMetrics.Response
-	(*GetMetrics_Response)(nil),                          // 79: ai.verta.modeldb.GetMetrics.Response
-	(*DeleteMetrics_Response)(nil),                       // 80: ai.verta.modeldb.DeleteMetrics.Response
-	(*LogDataset_Response)(nil),                          // 81: ai.verta.modeldb.LogDataset.Response
-	(*LogDatasets_Response)(nil),                         // 82: ai.verta.modeldb.LogDatasets.Response
-	(*GetDatasets_Response)(nil),                         // 83: ai.verta.modeldb.GetDatasets.Response
-	(*LogArtifact_Response)(nil),                         // 84: ai.verta.modeldb.LogArtifact.Response
-	(*LogArtifacts_Response)(nil),                        // 85: ai.verta.modeldb.LogArtifacts.Response
-	(*DeleteArtifact_Response)(nil),                      // 86: ai.verta.modeldb.DeleteArtifact.Response
-	(*LogHyperparameter_Response)(nil),                   // 87: ai.verta.modeldb.LogHyperparameter.Response
-	(*LogHyperparameters_Response)(nil),                  // 88: ai.verta.modeldb.LogHyperparameters.Response
-	(*GetHyperparameters_Response)(nil),                  // 89: ai.verta.modeldb.GetHyperparameters.Response
-	(*DeleteHyperparameters_Response)(nil),               // 90: ai.verta.modeldb.DeleteHyperparameters.Response
-	(*LogAttribute_Response)(nil),                        // 91: ai.verta.modeldb.LogAttribute.Response
-	(*LogAttributes_Response)(nil),                       // 92: ai.verta.modeldb.LogAttributes.Response
-	(*FindExperimentRuns_Response)(nil),                  // 93: ai.verta.modeldb.FindExperimentRuns.Response
-	(*SortExperimentRuns_Response)(nil),                  // 94: ai.verta.modeldb.SortExperimentRuns.Response
-	(*TopExperimentRunsSelector_Response)(nil),           // 95: ai.verta.modeldb.TopExperimentRunsSelector.Response
-	(*LogJobId_Response)(nil),                            // 96: ai.verta.modeldb.LogJobId.Response
-	(*GetJobId_Response)(nil),                            // 97: ai.verta.modeldb.GetJobId.Response
-	(*GetChildrenExperimentRuns_Response)(nil),           // 98: ai.verta.modeldb.GetChildrenExperimentRuns.Response
-	(*SetParentExperimentRunId_Response)(nil),            // 99: ai.verta.modeldb.SetParentExperimentRunId.Response
-	(*GetExperimentRunsByDatasetVersionId_Response)(nil), // 100: ai.verta.modeldb.GetExperimentRunsByDatasetVersionId.Response
-	(*DeleteExperimentRuns_Response)(nil),                // 101: ai.verta.modeldb.DeleteExperimentRuns.Response
-	(*ListCommitExperimentRunsRequest_Response)(nil),     // 102: ai.verta.modeldb.ListCommitExperimentRunsRequest.Response
-	(*ListBlobExperimentRunsRequest_Response)(nil),       // 103: ai.verta.modeldb.ListBlobExperimentRunsRequest.Response
-	(*CodeVersion)(nil),                                  // 104: ai.verta.modeldb.CodeVersion
-	(*common.KeyValue)(nil),                              // 105: ai.verta.common.KeyValue
-	(*common.Artifact)(nil),                              // 106: ai.verta.common.Artifact
-	(*Feature)(nil),                                      // 107: ai.verta.modeldb.Feature
-	(*_struct.Value)(nil),                                // 108: google.protobuf.Value
-	(*common.KeyValueQuery)(nil),                         // 109: ai.verta.common.KeyValueQuery
-	(*versioning.RepositoryIdentification)(nil),          // 110: ai.verta.modeldb.versioning.RepositoryIdentification
-	(*common.Pagination)(nil),                            // 111: ai.verta.common.Pagination
-	(*GetTags)(nil),                                      // 112: ai.verta.modeldb.GetTags
-	(*GetAttributes)(nil),                                // 113: ai.verta.modeldb.GetAttributes
-	(*GetArtifacts)(nil),                                 // 114: ai.verta.modeldb.GetArtifacts
-	(*GetUrlForArtifact)(nil),                            // 115: ai.verta.modeldb.GetUrlForArtifact
-	(*CommitArtifactPart)(nil),                           // 116: ai.verta.modeldb.CommitArtifactPart
-	(*GetCommittedArtifactParts)(nil),                    // 117: ai.verta.modeldb.GetCommittedArtifactParts
-	(*CommitMultipartArtifact)(nil),                      // 118: ai.verta.modeldb.CommitMultipartArtifact
-	(*GetTags_Response)(nil),                             // 119: ai.verta.modeldb.GetTags.Response
-	(*GetAttributes_Response)(nil),                       // 120: ai.verta.modeldb.GetAttributes.Response
-	(*GetArtifacts_Response)(nil),                        // 121: ai.verta.modeldb.GetArtifacts.Response
-	(*GetUrlForArtifact_Response)(nil),                   // 122: ai.verta.modeldb.GetUrlForArtifact.Response
-	(*CommitArtifactPart_Response)(nil),                  // 123: ai.verta.modeldb.CommitArtifactPart.Response
-	(*GetCommittedArtifactParts_Response)(nil),           // 124: ai.verta.modeldb.GetCommittedArtifactParts.Response
-	(*CommitMultipartArtifact_Response)(nil),             // 125: ai.verta.modeldb.CommitMultipartArtifact.Response
+	(*CloneExperimentRun)(nil),                           // 53: ai.verta.modeldb.CloneExperimentRun
+	nil,                                                  // 54: ai.verta.modeldb.ExperimentRun.CodeVersionFromBlobEntry
+	nil,                                                  // 55: ai.verta.modeldb.VersioningEntry.KeyLocationMapEntry
+	(*LogVersionedInput_Response)(nil),                   // 56: ai.verta.modeldb.LogVersionedInput.Response
+	(*GetVersionedInput_Response)(nil),                   // 57: ai.verta.modeldb.GetVersionedInput.Response
+	(*CreateExperimentRun_Response)(nil),                 // 58: ai.verta.modeldb.CreateExperimentRun.Response
+	(*DeleteExperimentRun_Response)(nil),                 // 59: ai.verta.modeldb.DeleteExperimentRun.Response
+	(*GetExperimentRunsInProject_Response)(nil),          // 60: ai.verta.modeldb.GetExperimentRunsInProject.Response
+	(*GetExperimentRunsInExperiment_Response)(nil),       // 61: ai.verta.modeldb.GetExperimentRunsInExperiment.Response
+	(*GetExperimentRunById_Response)(nil),                // 62: ai.verta.modeldb.GetExperimentRunById.Response
+	(*GetExperimentRunByName_Response)(nil),              // 63: ai.verta.modeldb.GetExperimentRunByName.Response
+	(*UpdateExperimentRunName_Response)(nil),             // 64: ai.verta.modeldb.UpdateExperimentRunName.Response
+	(*UpdateExperimentRunDescription_Response)(nil),      // 65: ai.verta.modeldb.UpdateExperimentRunDescription.Response
+	(*AddExperimentRunTags_Response)(nil),                // 66: ai.verta.modeldb.AddExperimentRunTags.Response
+	(*DeleteExperimentRunTags_Response)(nil),             // 67: ai.verta.modeldb.DeleteExperimentRunTags.Response
+	(*AddExperimentRunTag_Response)(nil),                 // 68: ai.verta.modeldb.AddExperimentRunTag.Response
+	(*DeleteExperimentRunTag_Response)(nil),              // 69: ai.verta.modeldb.DeleteExperimentRunTag.Response
+	(*AddExperimentRunAttributes_Response)(nil),          // 70: ai.verta.modeldb.AddExperimentRunAttributes.Response
+	(*DeleteExperimentRunAttributes_Response)(nil),       // 71: ai.verta.modeldb.DeleteExperimentRunAttributes.Response
+	(*LogExperimentRunCodeVersion_Response)(nil),         // 72: ai.verta.modeldb.LogExperimentRunCodeVersion.Response
+	(*GetExperimentRunCodeVersion_Response)(nil),         // 73: ai.verta.modeldb.GetExperimentRunCodeVersion.Response
+	(*LogObservation_Response)(nil),                      // 74: ai.verta.modeldb.LogObservation.Response
+	(*LogObservations_Response)(nil),                     // 75: ai.verta.modeldb.LogObservations.Response
+	(*GetObservations_Response)(nil),                     // 76: ai.verta.modeldb.GetObservations.Response
+	(*DeleteObservations_Response)(nil),                  // 77: ai.verta.modeldb.DeleteObservations.Response
+	(*LogMetric_Response)(nil),                           // 78: ai.verta.modeldb.LogMetric.Response
+	(*LogMetrics_Response)(nil),                          // 79: ai.verta.modeldb.LogMetrics.Response
+	(*GetMetrics_Response)(nil),                          // 80: ai.verta.modeldb.GetMetrics.Response
+	(*DeleteMetrics_Response)(nil),                       // 81: ai.verta.modeldb.DeleteMetrics.Response
+	(*LogDataset_Response)(nil),                          // 82: ai.verta.modeldb.LogDataset.Response
+	(*LogDatasets_Response)(nil),                         // 83: ai.verta.modeldb.LogDatasets.Response
+	(*GetDatasets_Response)(nil),                         // 84: ai.verta.modeldb.GetDatasets.Response
+	(*LogArtifact_Response)(nil),                         // 85: ai.verta.modeldb.LogArtifact.Response
+	(*LogArtifacts_Response)(nil),                        // 86: ai.verta.modeldb.LogArtifacts.Response
+	(*DeleteArtifact_Response)(nil),                      // 87: ai.verta.modeldb.DeleteArtifact.Response
+	(*LogHyperparameter_Response)(nil),                   // 88: ai.verta.modeldb.LogHyperparameter.Response
+	(*LogHyperparameters_Response)(nil),                  // 89: ai.verta.modeldb.LogHyperparameters.Response
+	(*GetHyperparameters_Response)(nil),                  // 90: ai.verta.modeldb.GetHyperparameters.Response
+	(*DeleteHyperparameters_Response)(nil),               // 91: ai.verta.modeldb.DeleteHyperparameters.Response
+	(*LogAttribute_Response)(nil),                        // 92: ai.verta.modeldb.LogAttribute.Response
+	(*LogAttributes_Response)(nil),                       // 93: ai.verta.modeldb.LogAttributes.Response
+	(*FindExperimentRuns_Response)(nil),                  // 94: ai.verta.modeldb.FindExperimentRuns.Response
+	(*SortExperimentRuns_Response)(nil),                  // 95: ai.verta.modeldb.SortExperimentRuns.Response
+	(*TopExperimentRunsSelector_Response)(nil),           // 96: ai.verta.modeldb.TopExperimentRunsSelector.Response
+	(*LogJobId_Response)(nil),                            // 97: ai.verta.modeldb.LogJobId.Response
+	(*GetJobId_Response)(nil),                            // 98: ai.verta.modeldb.GetJobId.Response
+	(*GetChildrenExperimentRuns_Response)(nil),           // 99: ai.verta.modeldb.GetChildrenExperimentRuns.Response
+	(*SetParentExperimentRunId_Response)(nil),            // 100: ai.verta.modeldb.SetParentExperimentRunId.Response
+	(*GetExperimentRunsByDatasetVersionId_Response)(nil), // 101: ai.verta.modeldb.GetExperimentRunsByDatasetVersionId.Response
+	(*DeleteExperimentRuns_Response)(nil),                // 102: ai.verta.modeldb.DeleteExperimentRuns.Response
+	(*ListCommitExperimentRunsRequest_Response)(nil),     // 103: ai.verta.modeldb.ListCommitExperimentRunsRequest.Response
+	(*ListBlobExperimentRunsRequest_Response)(nil),       // 104: ai.verta.modeldb.ListBlobExperimentRunsRequest.Response
+	(*CloneExperimentRun_Response)(nil),                  // 105: ai.verta.modeldb.CloneExperimentRun.Response
+	(*CodeVersion)(nil),                                  // 106: ai.verta.modeldb.CodeVersion
+	(*common.KeyValue)(nil),                              // 107: ai.verta.common.KeyValue
+	(*common.Artifact)(nil),                              // 108: ai.verta.common.Artifact
+	(*Feature)(nil),                                      // 109: ai.verta.modeldb.Feature
+	(*_struct.Value)(nil),                                // 110: google.protobuf.Value
+	(*common.KeyValueQuery)(nil),                         // 111: ai.verta.common.KeyValueQuery
+	(*versioning.RepositoryIdentification)(nil),          // 112: ai.verta.modeldb.versioning.RepositoryIdentification
+	(*common.Pagination)(nil),                            // 113: ai.verta.common.Pagination
+	(*GetTags)(nil),                                      // 114: ai.verta.modeldb.GetTags
+	(*GetAttributes)(nil),                                // 115: ai.verta.modeldb.GetAttributes
+	(*GetArtifacts)(nil),                                 // 116: ai.verta.modeldb.GetArtifacts
+	(*GetUrlForArtifact)(nil),                            // 117: ai.verta.modeldb.GetUrlForArtifact
+	(*CommitArtifactPart)(nil),                           // 118: ai.verta.modeldb.CommitArtifactPart
+	(*GetCommittedArtifactParts)(nil),                    // 119: ai.verta.modeldb.GetCommittedArtifactParts
+	(*CommitMultipartArtifact)(nil),                      // 120: ai.verta.modeldb.CommitMultipartArtifact
+	(*GetTags_Response)(nil),                             // 121: ai.verta.modeldb.GetTags.Response
+	(*GetAttributes_Response)(nil),                       // 122: ai.verta.modeldb.GetAttributes.Response
+	(*GetArtifacts_Response)(nil),                        // 123: ai.verta.modeldb.GetArtifacts.Response
+	(*GetUrlForArtifact_Response)(nil),                   // 124: ai.verta.modeldb.GetUrlForArtifact.Response
+	(*CommitArtifactPart_Response)(nil),                  // 125: ai.verta.modeldb.CommitArtifactPart.Response
+	(*GetCommittedArtifactParts_Response)(nil),           // 126: ai.verta.modeldb.GetCommittedArtifactParts.Response
+	(*CommitMultipartArtifact_Response)(nil),             // 127: ai.verta.modeldb.CommitMultipartArtifact.Response
 }
 var file_modeldb_ExperimentRunService_proto_depIdxs = []int32{
-	104, // 0: ai.verta.modeldb.ExperimentRun.code_version_snapshot:type_name -> ai.verta.modeldb.CodeVersion
-	105, // 1: ai.verta.modeldb.ExperimentRun.attributes:type_name -> ai.verta.common.KeyValue
-	105, // 2: ai.verta.modeldb.ExperimentRun.hyperparameters:type_name -> ai.verta.common.KeyValue
-	106, // 3: ai.verta.modeldb.ExperimentRun.artifacts:type_name -> ai.verta.common.Artifact
-	106, // 4: ai.verta.modeldb.ExperimentRun.datasets:type_name -> ai.verta.common.Artifact
-	105, // 5: ai.verta.modeldb.ExperimentRun.metrics:type_name -> ai.verta.common.KeyValue
+	106, // 0: ai.verta.modeldb.ExperimentRun.code_version_snapshot:type_name -> ai.verta.modeldb.CodeVersion
+	107, // 1: ai.verta.modeldb.ExperimentRun.attributes:type_name -> ai.verta.common.KeyValue
+	107, // 2: ai.verta.modeldb.ExperimentRun.hyperparameters:type_name -> ai.verta.common.KeyValue
+	108, // 3: ai.verta.modeldb.ExperimentRun.artifacts:type_name -> ai.verta.common.Artifact
+	108, // 4: ai.verta.modeldb.ExperimentRun.datasets:type_name -> ai.verta.common.Artifact
+	107, // 5: ai.verta.modeldb.ExperimentRun.metrics:type_name -> ai.verta.common.KeyValue
 	5,   // 6: ai.verta.modeldb.ExperimentRun.observations:type_name -> ai.verta.modeldb.Observation
-	107, // 7: ai.verta.modeldb.ExperimentRun.features:type_name -> ai.verta.modeldb.Feature
+	109, // 7: ai.verta.modeldb.ExperimentRun.features:type_name -> ai.verta.modeldb.Feature
 	1,   // 8: ai.verta.modeldb.ExperimentRun.versioned_inputs:type_name -> ai.verta.modeldb.VersioningEntry
-	53,  // 9: ai.verta.modeldb.ExperimentRun.code_version_from_blob:type_name -> ai.verta.modeldb.ExperimentRun.CodeVersionFromBlobEntry
-	54,  // 10: ai.verta.modeldb.VersioningEntry.key_location_map:type_name -> ai.verta.modeldb.VersioningEntry.KeyLocationMapEntry
+	54,  // 9: ai.verta.modeldb.ExperimentRun.code_version_from_blob:type_name -> ai.verta.modeldb.ExperimentRun.CodeVersionFromBlobEntry
+	55,  // 10: ai.verta.modeldb.VersioningEntry.key_location_map:type_name -> ai.verta.modeldb.VersioningEntry.KeyLocationMapEntry
 	1,   // 11: ai.verta.modeldb.LogVersionedInput.versioned_inputs:type_name -> ai.verta.modeldb.VersioningEntry
-	105, // 12: ai.verta.modeldb.Observation.attribute:type_name -> ai.verta.common.KeyValue
-	106, // 13: ai.verta.modeldb.Observation.artifact:type_name -> ai.verta.common.Artifact
-	108, // 14: ai.verta.modeldb.Observation.epoch_number:type_name -> google.protobuf.Value
-	104, // 15: ai.verta.modeldb.CreateExperimentRun.code_version_snapshot:type_name -> ai.verta.modeldb.CodeVersion
-	105, // 16: ai.verta.modeldb.CreateExperimentRun.attributes:type_name -> ai.verta.common.KeyValue
-	105, // 17: ai.verta.modeldb.CreateExperimentRun.hyperparameters:type_name -> ai.verta.common.KeyValue
-	106, // 18: ai.verta.modeldb.CreateExperimentRun.artifacts:type_name -> ai.verta.common.Artifact
-	106, // 19: ai.verta.modeldb.CreateExperimentRun.datasets:type_name -> ai.verta.common.Artifact
-	105, // 20: ai.verta.modeldb.CreateExperimentRun.metrics:type_name -> ai.verta.common.KeyValue
+	107, // 12: ai.verta.modeldb.Observation.attribute:type_name -> ai.verta.common.KeyValue
+	108, // 13: ai.verta.modeldb.Observation.artifact:type_name -> ai.verta.common.Artifact
+	110, // 14: ai.verta.modeldb.Observation.epoch_number:type_name -> google.protobuf.Value
+	106, // 15: ai.verta.modeldb.CreateExperimentRun.code_version_snapshot:type_name -> ai.verta.modeldb.CodeVersion
+	107, // 16: ai.verta.modeldb.CreateExperimentRun.attributes:type_name -> ai.verta.common.KeyValue
+	107, // 17: ai.verta.modeldb.CreateExperimentRun.hyperparameters:type_name -> ai.verta.common.KeyValue
+	108, // 18: ai.verta.modeldb.CreateExperimentRun.artifacts:type_name -> ai.verta.common.Artifact
+	108, // 19: ai.verta.modeldb.CreateExperimentRun.datasets:type_name -> ai.verta.common.Artifact
+	107, // 20: ai.verta.modeldb.CreateExperimentRun.metrics:type_name -> ai.verta.common.KeyValue
 	5,   // 21: ai.verta.modeldb.CreateExperimentRun.observations:type_name -> ai.verta.modeldb.Observation
-	107, // 22: ai.verta.modeldb.CreateExperimentRun.features:type_name -> ai.verta.modeldb.Feature
+	109, // 22: ai.verta.modeldb.CreateExperimentRun.features:type_name -> ai.verta.modeldb.Feature
 	1,   // 23: ai.verta.modeldb.CreateExperimentRun.versioned_inputs:type_name -> ai.verta.modeldb.VersioningEntry
-	105, // 24: ai.verta.modeldb.AddExperimentRunAttributes.attributes:type_name -> ai.verta.common.KeyValue
-	104, // 25: ai.verta.modeldb.LogExperimentRunCodeVersion.code_version:type_name -> ai.verta.modeldb.CodeVersion
+	107, // 24: ai.verta.modeldb.AddExperimentRunAttributes.attributes:type_name -> ai.verta.common.KeyValue
+	106, // 25: ai.verta.modeldb.LogExperimentRunCodeVersion.code_version:type_name -> ai.verta.modeldb.CodeVersion
 	5,   // 26: ai.verta.modeldb.LogObservation.observation:type_name -> ai.verta.modeldb.Observation
 	5,   // 27: ai.verta.modeldb.LogObservations.observations:type_name -> ai.verta.modeldb.Observation
-	105, // 28: ai.verta.modeldb.LogMetric.metric:type_name -> ai.verta.common.KeyValue
-	105, // 29: ai.verta.modeldb.LogMetrics.metrics:type_name -> ai.verta.common.KeyValue
-	106, // 30: ai.verta.modeldb.LogDataset.dataset:type_name -> ai.verta.common.Artifact
-	106, // 31: ai.verta.modeldb.LogDatasets.datasets:type_name -> ai.verta.common.Artifact
-	106, // 32: ai.verta.modeldb.LogArtifact.artifact:type_name -> ai.verta.common.Artifact
-	106, // 33: ai.verta.modeldb.LogArtifacts.artifacts:type_name -> ai.verta.common.Artifact
-	105, // 34: ai.verta.modeldb.LogHyperparameter.hyperparameter:type_name -> ai.verta.common.KeyValue
-	105, // 35: ai.verta.modeldb.LogHyperparameters.hyperparameters:type_name -> ai.verta.common.KeyValue
-	105, // 36: ai.verta.modeldb.LogAttribute.attribute:type_name -> ai.verta.common.KeyValue
-	105, // 37: ai.verta.modeldb.LogAttributes.attributes:type_name -> ai.verta.common.KeyValue
-	109, // 38: ai.verta.modeldb.FindExperimentRuns.predicates:type_name -> ai.verta.common.KeyValueQuery
-	110, // 39: ai.verta.modeldb.ListCommitExperimentRunsRequest.repository_id:type_name -> ai.verta.modeldb.versioning.RepositoryIdentification
-	111, // 40: ai.verta.modeldb.ListCommitExperimentRunsRequest.pagination:type_name -> ai.verta.common.Pagination
-	110, // 41: ai.verta.modeldb.ListBlobExperimentRunsRequest.repository_id:type_name -> ai.verta.modeldb.versioning.RepositoryIdentification
-	111, // 42: ai.verta.modeldb.ListBlobExperimentRunsRequest.pagination:type_name -> ai.verta.common.Pagination
-	104, // 43: ai.verta.modeldb.ExperimentRun.CodeVersionFromBlobEntry.value:type_name -> ai.verta.modeldb.CodeVersion
+	107, // 28: ai.verta.modeldb.LogMetric.metric:type_name -> ai.verta.common.KeyValue
+	107, // 29: ai.verta.modeldb.LogMetrics.metrics:type_name -> ai.verta.common.KeyValue
+	108, // 30: ai.verta.modeldb.LogDataset.dataset:type_name -> ai.verta.common.Artifact
+	108, // 31: ai.verta.modeldb.LogDatasets.datasets:type_name -> ai.verta.common.Artifact
+	108, // 32: ai.verta.modeldb.LogArtifact.artifact:type_name -> ai.verta.common.Artifact
+	108, // 33: ai.verta.modeldb.LogArtifacts.artifacts:type_name -> ai.verta.common.Artifact
+	107, // 34: ai.verta.modeldb.LogHyperparameter.hyperparameter:type_name -> ai.verta.common.KeyValue
+	107, // 35: ai.verta.modeldb.LogHyperparameters.hyperparameters:type_name -> ai.verta.common.KeyValue
+	107, // 36: ai.verta.modeldb.LogAttribute.attribute:type_name -> ai.verta.common.KeyValue
+	107, // 37: ai.verta.modeldb.LogAttributes.attributes:type_name -> ai.verta.common.KeyValue
+	111, // 38: ai.verta.modeldb.FindExperimentRuns.predicates:type_name -> ai.verta.common.KeyValueQuery
+	112, // 39: ai.verta.modeldb.ListCommitExperimentRunsRequest.repository_id:type_name -> ai.verta.modeldb.versioning.RepositoryIdentification
+	113, // 40: ai.verta.modeldb.ListCommitExperimentRunsRequest.pagination:type_name -> ai.verta.common.Pagination
+	112, // 41: ai.verta.modeldb.ListBlobExperimentRunsRequest.repository_id:type_name -> ai.verta.modeldb.versioning.RepositoryIdentification
+	113, // 42: ai.verta.modeldb.ListBlobExperimentRunsRequest.pagination:type_name -> ai.verta.common.Pagination
+	106, // 43: ai.verta.modeldb.ExperimentRun.CodeVersionFromBlobEntry.value:type_name -> ai.verta.modeldb.CodeVersion
 	2,   // 44: ai.verta.modeldb.VersioningEntry.KeyLocationMapEntry.value:type_name -> ai.verta.modeldb.Location
 	1,   // 45: ai.verta.modeldb.GetVersionedInput.Response.versioned_inputs:type_name -> ai.verta.modeldb.VersioningEntry
 	0,   // 46: ai.verta.modeldb.CreateExperimentRun.Response.experiment_run:type_name -> ai.verta.modeldb.ExperimentRun
@@ -7214,11 +7351,11 @@ var file_modeldb_ExperimentRunService_proto_depIdxs = []int32{
 	0,   // 53: ai.verta.modeldb.DeleteExperimentRunTags.Response.experiment_run:type_name -> ai.verta.modeldb.ExperimentRun
 	0,   // 54: ai.verta.modeldb.AddExperimentRunTag.Response.experiment_run:type_name -> ai.verta.modeldb.ExperimentRun
 	0,   // 55: ai.verta.modeldb.DeleteExperimentRunTag.Response.experiment_run:type_name -> ai.verta.modeldb.ExperimentRun
-	104, // 56: ai.verta.modeldb.GetExperimentRunCodeVersion.Response.code_version:type_name -> ai.verta.modeldb.CodeVersion
+	106, // 56: ai.verta.modeldb.GetExperimentRunCodeVersion.Response.code_version:type_name -> ai.verta.modeldb.CodeVersion
 	5,   // 57: ai.verta.modeldb.GetObservations.Response.observations:type_name -> ai.verta.modeldb.Observation
-	105, // 58: ai.verta.modeldb.GetMetrics.Response.metrics:type_name -> ai.verta.common.KeyValue
-	106, // 59: ai.verta.modeldb.GetDatasets.Response.datasets:type_name -> ai.verta.common.Artifact
-	105, // 60: ai.verta.modeldb.GetHyperparameters.Response.hyperparameters:type_name -> ai.verta.common.KeyValue
+	107, // 58: ai.verta.modeldb.GetMetrics.Response.metrics:type_name -> ai.verta.common.KeyValue
+	108, // 59: ai.verta.modeldb.GetDatasets.Response.datasets:type_name -> ai.verta.common.Artifact
+	107, // 60: ai.verta.modeldb.GetHyperparameters.Response.hyperparameters:type_name -> ai.verta.common.KeyValue
 	0,   // 61: ai.verta.modeldb.FindExperimentRuns.Response.experiment_runs:type_name -> ai.verta.modeldb.ExperimentRun
 	0,   // 62: ai.verta.modeldb.SortExperimentRuns.Response.experiment_runs:type_name -> ai.verta.modeldb.ExperimentRun
 	0,   // 63: ai.verta.modeldb.TopExperimentRunsSelector.Response.experiment_runs:type_name -> ai.verta.modeldb.ExperimentRun
@@ -7226,123 +7363,126 @@ var file_modeldb_ExperimentRunService_proto_depIdxs = []int32{
 	0,   // 65: ai.verta.modeldb.GetExperimentRunsByDatasetVersionId.Response.experiment_runs:type_name -> ai.verta.modeldb.ExperimentRun
 	0,   // 66: ai.verta.modeldb.ListCommitExperimentRunsRequest.Response.runs:type_name -> ai.verta.modeldb.ExperimentRun
 	0,   // 67: ai.verta.modeldb.ListBlobExperimentRunsRequest.Response.runs:type_name -> ai.verta.modeldb.ExperimentRun
-	6,   // 68: ai.verta.modeldb.ExperimentRunService.createExperimentRun:input_type -> ai.verta.modeldb.CreateExperimentRun
-	7,   // 69: ai.verta.modeldb.ExperimentRunService.deleteExperimentRun:input_type -> ai.verta.modeldb.DeleteExperimentRun
-	8,   // 70: ai.verta.modeldb.ExperimentRunService.getExperimentRunsInProject:input_type -> ai.verta.modeldb.GetExperimentRunsInProject
-	9,   // 71: ai.verta.modeldb.ExperimentRunService.getExperimentRunsInExperiment:input_type -> ai.verta.modeldb.GetExperimentRunsInExperiment
-	10,  // 72: ai.verta.modeldb.ExperimentRunService.getExperimentRunById:input_type -> ai.verta.modeldb.GetExperimentRunById
-	11,  // 73: ai.verta.modeldb.ExperimentRunService.getExperimentRunByName:input_type -> ai.verta.modeldb.GetExperimentRunByName
-	12,  // 74: ai.verta.modeldb.ExperimentRunService.updateExperimentRunName:input_type -> ai.verta.modeldb.UpdateExperimentRunName
-	13,  // 75: ai.verta.modeldb.ExperimentRunService.updateExperimentRunDescription:input_type -> ai.verta.modeldb.UpdateExperimentRunDescription
-	14,  // 76: ai.verta.modeldb.ExperimentRunService.addExperimentRunTags:input_type -> ai.verta.modeldb.AddExperimentRunTags
-	112, // 77: ai.verta.modeldb.ExperimentRunService.getExperimentRunTags:input_type -> ai.verta.modeldb.GetTags
-	15,  // 78: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunTags:input_type -> ai.verta.modeldb.DeleteExperimentRunTags
-	16,  // 79: ai.verta.modeldb.ExperimentRunService.addExperimentRunTag:input_type -> ai.verta.modeldb.AddExperimentRunTag
-	17,  // 80: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunTag:input_type -> ai.verta.modeldb.DeleteExperimentRunTag
-	22,  // 81: ai.verta.modeldb.ExperimentRunService.logObservation:input_type -> ai.verta.modeldb.LogObservation
-	23,  // 82: ai.verta.modeldb.ExperimentRunService.logObservations:input_type -> ai.verta.modeldb.LogObservations
-	24,  // 83: ai.verta.modeldb.ExperimentRunService.getObservations:input_type -> ai.verta.modeldb.GetObservations
-	26,  // 84: ai.verta.modeldb.ExperimentRunService.logMetric:input_type -> ai.verta.modeldb.LogMetric
-	27,  // 85: ai.verta.modeldb.ExperimentRunService.logMetrics:input_type -> ai.verta.modeldb.LogMetrics
-	28,  // 86: ai.verta.modeldb.ExperimentRunService.getMetrics:input_type -> ai.verta.modeldb.GetMetrics
-	30,  // 87: ai.verta.modeldb.ExperimentRunService.logDataset:input_type -> ai.verta.modeldb.LogDataset
-	31,  // 88: ai.verta.modeldb.ExperimentRunService.logDatasets:input_type -> ai.verta.modeldb.LogDatasets
-	32,  // 89: ai.verta.modeldb.ExperimentRunService.getDatasets:input_type -> ai.verta.modeldb.GetDatasets
-	36,  // 90: ai.verta.modeldb.ExperimentRunService.logHyperparameter:input_type -> ai.verta.modeldb.LogHyperparameter
-	37,  // 91: ai.verta.modeldb.ExperimentRunService.logHyperparameters:input_type -> ai.verta.modeldb.LogHyperparameters
-	38,  // 92: ai.verta.modeldb.ExperimentRunService.getHyperparameters:input_type -> ai.verta.modeldb.GetHyperparameters
-	40,  // 93: ai.verta.modeldb.ExperimentRunService.logAttribute:input_type -> ai.verta.modeldb.LogAttribute
-	41,  // 94: ai.verta.modeldb.ExperimentRunService.logAttributes:input_type -> ai.verta.modeldb.LogAttributes
-	113, // 95: ai.verta.modeldb.ExperimentRunService.getExperimentRunAttributes:input_type -> ai.verta.modeldb.GetAttributes
-	18,  // 96: ai.verta.modeldb.ExperimentRunService.addExperimentRunAttributes:input_type -> ai.verta.modeldb.AddExperimentRunAttributes
-	19,  // 97: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunAttributes:input_type -> ai.verta.modeldb.DeleteExperimentRunAttributes
-	20,  // 98: ai.verta.modeldb.ExperimentRunService.logExperimentRunCodeVersion:input_type -> ai.verta.modeldb.LogExperimentRunCodeVersion
-	21,  // 99: ai.verta.modeldb.ExperimentRunService.getExperimentRunCodeVersion:input_type -> ai.verta.modeldb.GetExperimentRunCodeVersion
-	33,  // 100: ai.verta.modeldb.ExperimentRunService.logArtifact:input_type -> ai.verta.modeldb.LogArtifact
-	34,  // 101: ai.verta.modeldb.ExperimentRunService.logArtifacts:input_type -> ai.verta.modeldb.LogArtifacts
-	114, // 102: ai.verta.modeldb.ExperimentRunService.getArtifacts:input_type -> ai.verta.modeldb.GetArtifacts
-	35,  // 103: ai.verta.modeldb.ExperimentRunService.deleteArtifact:input_type -> ai.verta.modeldb.DeleteArtifact
-	115, // 104: ai.verta.modeldb.ExperimentRunService.getUrlForArtifact:input_type -> ai.verta.modeldb.GetUrlForArtifact
-	116, // 105: ai.verta.modeldb.ExperimentRunService.commitArtifactPart:input_type -> ai.verta.modeldb.CommitArtifactPart
-	117, // 106: ai.verta.modeldb.ExperimentRunService.getCommittedArtifactParts:input_type -> ai.verta.modeldb.GetCommittedArtifactParts
-	118, // 107: ai.verta.modeldb.ExperimentRunService.commitMultipartArtifact:input_type -> ai.verta.modeldb.CommitMultipartArtifact
-	42,  // 108: ai.verta.modeldb.ExperimentRunService.findExperimentRuns:input_type -> ai.verta.modeldb.FindExperimentRuns
-	43,  // 109: ai.verta.modeldb.ExperimentRunService.sortExperimentRuns:input_type -> ai.verta.modeldb.SortExperimentRuns
-	44,  // 110: ai.verta.modeldb.ExperimentRunService.getTopExperimentRuns:input_type -> ai.verta.modeldb.TopExperimentRunsSelector
-	45,  // 111: ai.verta.modeldb.ExperimentRunService.logJobId:input_type -> ai.verta.modeldb.LogJobId
-	46,  // 112: ai.verta.modeldb.ExperimentRunService.getJobId:input_type -> ai.verta.modeldb.GetJobId
-	47,  // 113: ai.verta.modeldb.ExperimentRunService.getChildrenExperimentRuns:input_type -> ai.verta.modeldb.GetChildrenExperimentRuns
-	48,  // 114: ai.verta.modeldb.ExperimentRunService.setParentExperimentRunId:input_type -> ai.verta.modeldb.SetParentExperimentRunId
-	49,  // 115: ai.verta.modeldb.ExperimentRunService.getExperimentRunsByDatasetVersionId:input_type -> ai.verta.modeldb.GetExperimentRunsByDatasetVersionId
-	50,  // 116: ai.verta.modeldb.ExperimentRunService.deleteExperimentRuns:input_type -> ai.verta.modeldb.DeleteExperimentRuns
-	3,   // 117: ai.verta.modeldb.ExperimentRunService.logVersionedInput:input_type -> ai.verta.modeldb.LogVersionedInput
-	4,   // 118: ai.verta.modeldb.ExperimentRunService.getVersionedInputs:input_type -> ai.verta.modeldb.GetVersionedInput
-	51,  // 119: ai.verta.modeldb.ExperimentRunService.ListCommitExperimentRuns:input_type -> ai.verta.modeldb.ListCommitExperimentRunsRequest
-	52,  // 120: ai.verta.modeldb.ExperimentRunService.ListBlobExperimentRuns:input_type -> ai.verta.modeldb.ListBlobExperimentRunsRequest
-	25,  // 121: ai.verta.modeldb.ExperimentRunService.deleteObservations:input_type -> ai.verta.modeldb.DeleteObservations
-	29,  // 122: ai.verta.modeldb.ExperimentRunService.deleteMetrics:input_type -> ai.verta.modeldb.DeleteMetrics
-	39,  // 123: ai.verta.modeldb.ExperimentRunService.deleteHyperparameters:input_type -> ai.verta.modeldb.DeleteHyperparameters
-	57,  // 124: ai.verta.modeldb.ExperimentRunService.createExperimentRun:output_type -> ai.verta.modeldb.CreateExperimentRun.Response
-	58,  // 125: ai.verta.modeldb.ExperimentRunService.deleteExperimentRun:output_type -> ai.verta.modeldb.DeleteExperimentRun.Response
-	59,  // 126: ai.verta.modeldb.ExperimentRunService.getExperimentRunsInProject:output_type -> ai.verta.modeldb.GetExperimentRunsInProject.Response
-	60,  // 127: ai.verta.modeldb.ExperimentRunService.getExperimentRunsInExperiment:output_type -> ai.verta.modeldb.GetExperimentRunsInExperiment.Response
-	61,  // 128: ai.verta.modeldb.ExperimentRunService.getExperimentRunById:output_type -> ai.verta.modeldb.GetExperimentRunById.Response
-	62,  // 129: ai.verta.modeldb.ExperimentRunService.getExperimentRunByName:output_type -> ai.verta.modeldb.GetExperimentRunByName.Response
-	63,  // 130: ai.verta.modeldb.ExperimentRunService.updateExperimentRunName:output_type -> ai.verta.modeldb.UpdateExperimentRunName.Response
-	64,  // 131: ai.verta.modeldb.ExperimentRunService.updateExperimentRunDescription:output_type -> ai.verta.modeldb.UpdateExperimentRunDescription.Response
-	65,  // 132: ai.verta.modeldb.ExperimentRunService.addExperimentRunTags:output_type -> ai.verta.modeldb.AddExperimentRunTags.Response
-	119, // 133: ai.verta.modeldb.ExperimentRunService.getExperimentRunTags:output_type -> ai.verta.modeldb.GetTags.Response
-	66,  // 134: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunTags:output_type -> ai.verta.modeldb.DeleteExperimentRunTags.Response
-	67,  // 135: ai.verta.modeldb.ExperimentRunService.addExperimentRunTag:output_type -> ai.verta.modeldb.AddExperimentRunTag.Response
-	68,  // 136: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunTag:output_type -> ai.verta.modeldb.DeleteExperimentRunTag.Response
-	73,  // 137: ai.verta.modeldb.ExperimentRunService.logObservation:output_type -> ai.verta.modeldb.LogObservation.Response
-	74,  // 138: ai.verta.modeldb.ExperimentRunService.logObservations:output_type -> ai.verta.modeldb.LogObservations.Response
-	75,  // 139: ai.verta.modeldb.ExperimentRunService.getObservations:output_type -> ai.verta.modeldb.GetObservations.Response
-	77,  // 140: ai.verta.modeldb.ExperimentRunService.logMetric:output_type -> ai.verta.modeldb.LogMetric.Response
-	78,  // 141: ai.verta.modeldb.ExperimentRunService.logMetrics:output_type -> ai.verta.modeldb.LogMetrics.Response
-	79,  // 142: ai.verta.modeldb.ExperimentRunService.getMetrics:output_type -> ai.verta.modeldb.GetMetrics.Response
-	81,  // 143: ai.verta.modeldb.ExperimentRunService.logDataset:output_type -> ai.verta.modeldb.LogDataset.Response
-	82,  // 144: ai.verta.modeldb.ExperimentRunService.logDatasets:output_type -> ai.verta.modeldb.LogDatasets.Response
-	83,  // 145: ai.verta.modeldb.ExperimentRunService.getDatasets:output_type -> ai.verta.modeldb.GetDatasets.Response
-	87,  // 146: ai.verta.modeldb.ExperimentRunService.logHyperparameter:output_type -> ai.verta.modeldb.LogHyperparameter.Response
-	88,  // 147: ai.verta.modeldb.ExperimentRunService.logHyperparameters:output_type -> ai.verta.modeldb.LogHyperparameters.Response
-	89,  // 148: ai.verta.modeldb.ExperimentRunService.getHyperparameters:output_type -> ai.verta.modeldb.GetHyperparameters.Response
-	91,  // 149: ai.verta.modeldb.ExperimentRunService.logAttribute:output_type -> ai.verta.modeldb.LogAttribute.Response
-	92,  // 150: ai.verta.modeldb.ExperimentRunService.logAttributes:output_type -> ai.verta.modeldb.LogAttributes.Response
-	120, // 151: ai.verta.modeldb.ExperimentRunService.getExperimentRunAttributes:output_type -> ai.verta.modeldb.GetAttributes.Response
-	69,  // 152: ai.verta.modeldb.ExperimentRunService.addExperimentRunAttributes:output_type -> ai.verta.modeldb.AddExperimentRunAttributes.Response
-	70,  // 153: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunAttributes:output_type -> ai.verta.modeldb.DeleteExperimentRunAttributes.Response
-	71,  // 154: ai.verta.modeldb.ExperimentRunService.logExperimentRunCodeVersion:output_type -> ai.verta.modeldb.LogExperimentRunCodeVersion.Response
-	72,  // 155: ai.verta.modeldb.ExperimentRunService.getExperimentRunCodeVersion:output_type -> ai.verta.modeldb.GetExperimentRunCodeVersion.Response
-	84,  // 156: ai.verta.modeldb.ExperimentRunService.logArtifact:output_type -> ai.verta.modeldb.LogArtifact.Response
-	85,  // 157: ai.verta.modeldb.ExperimentRunService.logArtifacts:output_type -> ai.verta.modeldb.LogArtifacts.Response
-	121, // 158: ai.verta.modeldb.ExperimentRunService.getArtifacts:output_type -> ai.verta.modeldb.GetArtifacts.Response
-	86,  // 159: ai.verta.modeldb.ExperimentRunService.deleteArtifact:output_type -> ai.verta.modeldb.DeleteArtifact.Response
-	122, // 160: ai.verta.modeldb.ExperimentRunService.getUrlForArtifact:output_type -> ai.verta.modeldb.GetUrlForArtifact.Response
-	123, // 161: ai.verta.modeldb.ExperimentRunService.commitArtifactPart:output_type -> ai.verta.modeldb.CommitArtifactPart.Response
-	124, // 162: ai.verta.modeldb.ExperimentRunService.getCommittedArtifactParts:output_type -> ai.verta.modeldb.GetCommittedArtifactParts.Response
-	125, // 163: ai.verta.modeldb.ExperimentRunService.commitMultipartArtifact:output_type -> ai.verta.modeldb.CommitMultipartArtifact.Response
-	93,  // 164: ai.verta.modeldb.ExperimentRunService.findExperimentRuns:output_type -> ai.verta.modeldb.FindExperimentRuns.Response
-	94,  // 165: ai.verta.modeldb.ExperimentRunService.sortExperimentRuns:output_type -> ai.verta.modeldb.SortExperimentRuns.Response
-	95,  // 166: ai.verta.modeldb.ExperimentRunService.getTopExperimentRuns:output_type -> ai.verta.modeldb.TopExperimentRunsSelector.Response
-	96,  // 167: ai.verta.modeldb.ExperimentRunService.logJobId:output_type -> ai.verta.modeldb.LogJobId.Response
-	97,  // 168: ai.verta.modeldb.ExperimentRunService.getJobId:output_type -> ai.verta.modeldb.GetJobId.Response
-	98,  // 169: ai.verta.modeldb.ExperimentRunService.getChildrenExperimentRuns:output_type -> ai.verta.modeldb.GetChildrenExperimentRuns.Response
-	99,  // 170: ai.verta.modeldb.ExperimentRunService.setParentExperimentRunId:output_type -> ai.verta.modeldb.SetParentExperimentRunId.Response
-	100, // 171: ai.verta.modeldb.ExperimentRunService.getExperimentRunsByDatasetVersionId:output_type -> ai.verta.modeldb.GetExperimentRunsByDatasetVersionId.Response
-	101, // 172: ai.verta.modeldb.ExperimentRunService.deleteExperimentRuns:output_type -> ai.verta.modeldb.DeleteExperimentRuns.Response
-	55,  // 173: ai.verta.modeldb.ExperimentRunService.logVersionedInput:output_type -> ai.verta.modeldb.LogVersionedInput.Response
-	56,  // 174: ai.verta.modeldb.ExperimentRunService.getVersionedInputs:output_type -> ai.verta.modeldb.GetVersionedInput.Response
-	102, // 175: ai.verta.modeldb.ExperimentRunService.ListCommitExperimentRuns:output_type -> ai.verta.modeldb.ListCommitExperimentRunsRequest.Response
-	103, // 176: ai.verta.modeldb.ExperimentRunService.ListBlobExperimentRuns:output_type -> ai.verta.modeldb.ListBlobExperimentRunsRequest.Response
-	76,  // 177: ai.verta.modeldb.ExperimentRunService.deleteObservations:output_type -> ai.verta.modeldb.DeleteObservations.Response
-	80,  // 178: ai.verta.modeldb.ExperimentRunService.deleteMetrics:output_type -> ai.verta.modeldb.DeleteMetrics.Response
-	90,  // 179: ai.verta.modeldb.ExperimentRunService.deleteHyperparameters:output_type -> ai.verta.modeldb.DeleteHyperparameters.Response
-	124, // [124:180] is the sub-list for method output_type
-	68,  // [68:124] is the sub-list for method input_type
-	68,  // [68:68] is the sub-list for extension type_name
-	68,  // [68:68] is the sub-list for extension extendee
-	0,   // [0:68] is the sub-list for field type_name
+	0,   // 68: ai.verta.modeldb.CloneExperimentRun.Response.run:type_name -> ai.verta.modeldb.ExperimentRun
+	6,   // 69: ai.verta.modeldb.ExperimentRunService.createExperimentRun:input_type -> ai.verta.modeldb.CreateExperimentRun
+	7,   // 70: ai.verta.modeldb.ExperimentRunService.deleteExperimentRun:input_type -> ai.verta.modeldb.DeleteExperimentRun
+	8,   // 71: ai.verta.modeldb.ExperimentRunService.getExperimentRunsInProject:input_type -> ai.verta.modeldb.GetExperimentRunsInProject
+	9,   // 72: ai.verta.modeldb.ExperimentRunService.getExperimentRunsInExperiment:input_type -> ai.verta.modeldb.GetExperimentRunsInExperiment
+	10,  // 73: ai.verta.modeldb.ExperimentRunService.getExperimentRunById:input_type -> ai.verta.modeldb.GetExperimentRunById
+	11,  // 74: ai.verta.modeldb.ExperimentRunService.getExperimentRunByName:input_type -> ai.verta.modeldb.GetExperimentRunByName
+	12,  // 75: ai.verta.modeldb.ExperimentRunService.updateExperimentRunName:input_type -> ai.verta.modeldb.UpdateExperimentRunName
+	13,  // 76: ai.verta.modeldb.ExperimentRunService.updateExperimentRunDescription:input_type -> ai.verta.modeldb.UpdateExperimentRunDescription
+	14,  // 77: ai.verta.modeldb.ExperimentRunService.addExperimentRunTags:input_type -> ai.verta.modeldb.AddExperimentRunTags
+	114, // 78: ai.verta.modeldb.ExperimentRunService.getExperimentRunTags:input_type -> ai.verta.modeldb.GetTags
+	15,  // 79: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunTags:input_type -> ai.verta.modeldb.DeleteExperimentRunTags
+	16,  // 80: ai.verta.modeldb.ExperimentRunService.addExperimentRunTag:input_type -> ai.verta.modeldb.AddExperimentRunTag
+	17,  // 81: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunTag:input_type -> ai.verta.modeldb.DeleteExperimentRunTag
+	22,  // 82: ai.verta.modeldb.ExperimentRunService.logObservation:input_type -> ai.verta.modeldb.LogObservation
+	23,  // 83: ai.verta.modeldb.ExperimentRunService.logObservations:input_type -> ai.verta.modeldb.LogObservations
+	24,  // 84: ai.verta.modeldb.ExperimentRunService.getObservations:input_type -> ai.verta.modeldb.GetObservations
+	26,  // 85: ai.verta.modeldb.ExperimentRunService.logMetric:input_type -> ai.verta.modeldb.LogMetric
+	27,  // 86: ai.verta.modeldb.ExperimentRunService.logMetrics:input_type -> ai.verta.modeldb.LogMetrics
+	28,  // 87: ai.verta.modeldb.ExperimentRunService.getMetrics:input_type -> ai.verta.modeldb.GetMetrics
+	30,  // 88: ai.verta.modeldb.ExperimentRunService.logDataset:input_type -> ai.verta.modeldb.LogDataset
+	31,  // 89: ai.verta.modeldb.ExperimentRunService.logDatasets:input_type -> ai.verta.modeldb.LogDatasets
+	32,  // 90: ai.verta.modeldb.ExperimentRunService.getDatasets:input_type -> ai.verta.modeldb.GetDatasets
+	36,  // 91: ai.verta.modeldb.ExperimentRunService.logHyperparameter:input_type -> ai.verta.modeldb.LogHyperparameter
+	37,  // 92: ai.verta.modeldb.ExperimentRunService.logHyperparameters:input_type -> ai.verta.modeldb.LogHyperparameters
+	38,  // 93: ai.verta.modeldb.ExperimentRunService.getHyperparameters:input_type -> ai.verta.modeldb.GetHyperparameters
+	40,  // 94: ai.verta.modeldb.ExperimentRunService.logAttribute:input_type -> ai.verta.modeldb.LogAttribute
+	41,  // 95: ai.verta.modeldb.ExperimentRunService.logAttributes:input_type -> ai.verta.modeldb.LogAttributes
+	115, // 96: ai.verta.modeldb.ExperimentRunService.getExperimentRunAttributes:input_type -> ai.verta.modeldb.GetAttributes
+	18,  // 97: ai.verta.modeldb.ExperimentRunService.addExperimentRunAttributes:input_type -> ai.verta.modeldb.AddExperimentRunAttributes
+	19,  // 98: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunAttributes:input_type -> ai.verta.modeldb.DeleteExperimentRunAttributes
+	20,  // 99: ai.verta.modeldb.ExperimentRunService.logExperimentRunCodeVersion:input_type -> ai.verta.modeldb.LogExperimentRunCodeVersion
+	21,  // 100: ai.verta.modeldb.ExperimentRunService.getExperimentRunCodeVersion:input_type -> ai.verta.modeldb.GetExperimentRunCodeVersion
+	33,  // 101: ai.verta.modeldb.ExperimentRunService.logArtifact:input_type -> ai.verta.modeldb.LogArtifact
+	34,  // 102: ai.verta.modeldb.ExperimentRunService.logArtifacts:input_type -> ai.verta.modeldb.LogArtifacts
+	116, // 103: ai.verta.modeldb.ExperimentRunService.getArtifacts:input_type -> ai.verta.modeldb.GetArtifacts
+	35,  // 104: ai.verta.modeldb.ExperimentRunService.deleteArtifact:input_type -> ai.verta.modeldb.DeleteArtifact
+	117, // 105: ai.verta.modeldb.ExperimentRunService.getUrlForArtifact:input_type -> ai.verta.modeldb.GetUrlForArtifact
+	118, // 106: ai.verta.modeldb.ExperimentRunService.commitArtifactPart:input_type -> ai.verta.modeldb.CommitArtifactPart
+	119, // 107: ai.verta.modeldb.ExperimentRunService.getCommittedArtifactParts:input_type -> ai.verta.modeldb.GetCommittedArtifactParts
+	120, // 108: ai.verta.modeldb.ExperimentRunService.commitMultipartArtifact:input_type -> ai.verta.modeldb.CommitMultipartArtifact
+	42,  // 109: ai.verta.modeldb.ExperimentRunService.findExperimentRuns:input_type -> ai.verta.modeldb.FindExperimentRuns
+	43,  // 110: ai.verta.modeldb.ExperimentRunService.sortExperimentRuns:input_type -> ai.verta.modeldb.SortExperimentRuns
+	44,  // 111: ai.verta.modeldb.ExperimentRunService.getTopExperimentRuns:input_type -> ai.verta.modeldb.TopExperimentRunsSelector
+	45,  // 112: ai.verta.modeldb.ExperimentRunService.logJobId:input_type -> ai.verta.modeldb.LogJobId
+	46,  // 113: ai.verta.modeldb.ExperimentRunService.getJobId:input_type -> ai.verta.modeldb.GetJobId
+	47,  // 114: ai.verta.modeldb.ExperimentRunService.getChildrenExperimentRuns:input_type -> ai.verta.modeldb.GetChildrenExperimentRuns
+	48,  // 115: ai.verta.modeldb.ExperimentRunService.setParentExperimentRunId:input_type -> ai.verta.modeldb.SetParentExperimentRunId
+	49,  // 116: ai.verta.modeldb.ExperimentRunService.getExperimentRunsByDatasetVersionId:input_type -> ai.verta.modeldb.GetExperimentRunsByDatasetVersionId
+	50,  // 117: ai.verta.modeldb.ExperimentRunService.deleteExperimentRuns:input_type -> ai.verta.modeldb.DeleteExperimentRuns
+	3,   // 118: ai.verta.modeldb.ExperimentRunService.logVersionedInput:input_type -> ai.verta.modeldb.LogVersionedInput
+	4,   // 119: ai.verta.modeldb.ExperimentRunService.getVersionedInputs:input_type -> ai.verta.modeldb.GetVersionedInput
+	51,  // 120: ai.verta.modeldb.ExperimentRunService.ListCommitExperimentRuns:input_type -> ai.verta.modeldb.ListCommitExperimentRunsRequest
+	52,  // 121: ai.verta.modeldb.ExperimentRunService.ListBlobExperimentRuns:input_type -> ai.verta.modeldb.ListBlobExperimentRunsRequest
+	25,  // 122: ai.verta.modeldb.ExperimentRunService.deleteObservations:input_type -> ai.verta.modeldb.DeleteObservations
+	29,  // 123: ai.verta.modeldb.ExperimentRunService.deleteMetrics:input_type -> ai.verta.modeldb.DeleteMetrics
+	39,  // 124: ai.verta.modeldb.ExperimentRunService.deleteHyperparameters:input_type -> ai.verta.modeldb.DeleteHyperparameters
+	53,  // 125: ai.verta.modeldb.ExperimentRunService.cloneExperimentRun:input_type -> ai.verta.modeldb.CloneExperimentRun
+	58,  // 126: ai.verta.modeldb.ExperimentRunService.createExperimentRun:output_type -> ai.verta.modeldb.CreateExperimentRun.Response
+	59,  // 127: ai.verta.modeldb.ExperimentRunService.deleteExperimentRun:output_type -> ai.verta.modeldb.DeleteExperimentRun.Response
+	60,  // 128: ai.verta.modeldb.ExperimentRunService.getExperimentRunsInProject:output_type -> ai.verta.modeldb.GetExperimentRunsInProject.Response
+	61,  // 129: ai.verta.modeldb.ExperimentRunService.getExperimentRunsInExperiment:output_type -> ai.verta.modeldb.GetExperimentRunsInExperiment.Response
+	62,  // 130: ai.verta.modeldb.ExperimentRunService.getExperimentRunById:output_type -> ai.verta.modeldb.GetExperimentRunById.Response
+	63,  // 131: ai.verta.modeldb.ExperimentRunService.getExperimentRunByName:output_type -> ai.verta.modeldb.GetExperimentRunByName.Response
+	64,  // 132: ai.verta.modeldb.ExperimentRunService.updateExperimentRunName:output_type -> ai.verta.modeldb.UpdateExperimentRunName.Response
+	65,  // 133: ai.verta.modeldb.ExperimentRunService.updateExperimentRunDescription:output_type -> ai.verta.modeldb.UpdateExperimentRunDescription.Response
+	66,  // 134: ai.verta.modeldb.ExperimentRunService.addExperimentRunTags:output_type -> ai.verta.modeldb.AddExperimentRunTags.Response
+	121, // 135: ai.verta.modeldb.ExperimentRunService.getExperimentRunTags:output_type -> ai.verta.modeldb.GetTags.Response
+	67,  // 136: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunTags:output_type -> ai.verta.modeldb.DeleteExperimentRunTags.Response
+	68,  // 137: ai.verta.modeldb.ExperimentRunService.addExperimentRunTag:output_type -> ai.verta.modeldb.AddExperimentRunTag.Response
+	69,  // 138: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunTag:output_type -> ai.verta.modeldb.DeleteExperimentRunTag.Response
+	74,  // 139: ai.verta.modeldb.ExperimentRunService.logObservation:output_type -> ai.verta.modeldb.LogObservation.Response
+	75,  // 140: ai.verta.modeldb.ExperimentRunService.logObservations:output_type -> ai.verta.modeldb.LogObservations.Response
+	76,  // 141: ai.verta.modeldb.ExperimentRunService.getObservations:output_type -> ai.verta.modeldb.GetObservations.Response
+	78,  // 142: ai.verta.modeldb.ExperimentRunService.logMetric:output_type -> ai.verta.modeldb.LogMetric.Response
+	79,  // 143: ai.verta.modeldb.ExperimentRunService.logMetrics:output_type -> ai.verta.modeldb.LogMetrics.Response
+	80,  // 144: ai.verta.modeldb.ExperimentRunService.getMetrics:output_type -> ai.verta.modeldb.GetMetrics.Response
+	82,  // 145: ai.verta.modeldb.ExperimentRunService.logDataset:output_type -> ai.verta.modeldb.LogDataset.Response
+	83,  // 146: ai.verta.modeldb.ExperimentRunService.logDatasets:output_type -> ai.verta.modeldb.LogDatasets.Response
+	84,  // 147: ai.verta.modeldb.ExperimentRunService.getDatasets:output_type -> ai.verta.modeldb.GetDatasets.Response
+	88,  // 148: ai.verta.modeldb.ExperimentRunService.logHyperparameter:output_type -> ai.verta.modeldb.LogHyperparameter.Response
+	89,  // 149: ai.verta.modeldb.ExperimentRunService.logHyperparameters:output_type -> ai.verta.modeldb.LogHyperparameters.Response
+	90,  // 150: ai.verta.modeldb.ExperimentRunService.getHyperparameters:output_type -> ai.verta.modeldb.GetHyperparameters.Response
+	92,  // 151: ai.verta.modeldb.ExperimentRunService.logAttribute:output_type -> ai.verta.modeldb.LogAttribute.Response
+	93,  // 152: ai.verta.modeldb.ExperimentRunService.logAttributes:output_type -> ai.verta.modeldb.LogAttributes.Response
+	122, // 153: ai.verta.modeldb.ExperimentRunService.getExperimentRunAttributes:output_type -> ai.verta.modeldb.GetAttributes.Response
+	70,  // 154: ai.verta.modeldb.ExperimentRunService.addExperimentRunAttributes:output_type -> ai.verta.modeldb.AddExperimentRunAttributes.Response
+	71,  // 155: ai.verta.modeldb.ExperimentRunService.deleteExperimentRunAttributes:output_type -> ai.verta.modeldb.DeleteExperimentRunAttributes.Response
+	72,  // 156: ai.verta.modeldb.ExperimentRunService.logExperimentRunCodeVersion:output_type -> ai.verta.modeldb.LogExperimentRunCodeVersion.Response
+	73,  // 157: ai.verta.modeldb.ExperimentRunService.getExperimentRunCodeVersion:output_type -> ai.verta.modeldb.GetExperimentRunCodeVersion.Response
+	85,  // 158: ai.verta.modeldb.ExperimentRunService.logArtifact:output_type -> ai.verta.modeldb.LogArtifact.Response
+	86,  // 159: ai.verta.modeldb.ExperimentRunService.logArtifacts:output_type -> ai.verta.modeldb.LogArtifacts.Response
+	123, // 160: ai.verta.modeldb.ExperimentRunService.getArtifacts:output_type -> ai.verta.modeldb.GetArtifacts.Response
+	87,  // 161: ai.verta.modeldb.ExperimentRunService.deleteArtifact:output_type -> ai.verta.modeldb.DeleteArtifact.Response
+	124, // 162: ai.verta.modeldb.ExperimentRunService.getUrlForArtifact:output_type -> ai.verta.modeldb.GetUrlForArtifact.Response
+	125, // 163: ai.verta.modeldb.ExperimentRunService.commitArtifactPart:output_type -> ai.verta.modeldb.CommitArtifactPart.Response
+	126, // 164: ai.verta.modeldb.ExperimentRunService.getCommittedArtifactParts:output_type -> ai.verta.modeldb.GetCommittedArtifactParts.Response
+	127, // 165: ai.verta.modeldb.ExperimentRunService.commitMultipartArtifact:output_type -> ai.verta.modeldb.CommitMultipartArtifact.Response
+	94,  // 166: ai.verta.modeldb.ExperimentRunService.findExperimentRuns:output_type -> ai.verta.modeldb.FindExperimentRuns.Response
+	95,  // 167: ai.verta.modeldb.ExperimentRunService.sortExperimentRuns:output_type -> ai.verta.modeldb.SortExperimentRuns.Response
+	96,  // 168: ai.verta.modeldb.ExperimentRunService.getTopExperimentRuns:output_type -> ai.verta.modeldb.TopExperimentRunsSelector.Response
+	97,  // 169: ai.verta.modeldb.ExperimentRunService.logJobId:output_type -> ai.verta.modeldb.LogJobId.Response
+	98,  // 170: ai.verta.modeldb.ExperimentRunService.getJobId:output_type -> ai.verta.modeldb.GetJobId.Response
+	99,  // 171: ai.verta.modeldb.ExperimentRunService.getChildrenExperimentRuns:output_type -> ai.verta.modeldb.GetChildrenExperimentRuns.Response
+	100, // 172: ai.verta.modeldb.ExperimentRunService.setParentExperimentRunId:output_type -> ai.verta.modeldb.SetParentExperimentRunId.Response
+	101, // 173: ai.verta.modeldb.ExperimentRunService.getExperimentRunsByDatasetVersionId:output_type -> ai.verta.modeldb.GetExperimentRunsByDatasetVersionId.Response
+	102, // 174: ai.verta.modeldb.ExperimentRunService.deleteExperimentRuns:output_type -> ai.verta.modeldb.DeleteExperimentRuns.Response
+	56,  // 175: ai.verta.modeldb.ExperimentRunService.logVersionedInput:output_type -> ai.verta.modeldb.LogVersionedInput.Response
+	57,  // 176: ai.verta.modeldb.ExperimentRunService.getVersionedInputs:output_type -> ai.verta.modeldb.GetVersionedInput.Response
+	103, // 177: ai.verta.modeldb.ExperimentRunService.ListCommitExperimentRuns:output_type -> ai.verta.modeldb.ListCommitExperimentRunsRequest.Response
+	104, // 178: ai.verta.modeldb.ExperimentRunService.ListBlobExperimentRuns:output_type -> ai.verta.modeldb.ListBlobExperimentRunsRequest.Response
+	77,  // 179: ai.verta.modeldb.ExperimentRunService.deleteObservations:output_type -> ai.verta.modeldb.DeleteObservations.Response
+	81,  // 180: ai.verta.modeldb.ExperimentRunService.deleteMetrics:output_type -> ai.verta.modeldb.DeleteMetrics.Response
+	91,  // 181: ai.verta.modeldb.ExperimentRunService.deleteHyperparameters:output_type -> ai.verta.modeldb.DeleteHyperparameters.Response
+	105, // 182: ai.verta.modeldb.ExperimentRunService.cloneExperimentRun:output_type -> ai.verta.modeldb.CloneExperimentRun.Response
+	126, // [126:183] is the sub-list for method output_type
+	69,  // [69:126] is the sub-list for method input_type
+	69,  // [69:69] is the sub-list for extension type_name
+	69,  // [69:69] is the sub-list for extension extendee
+	0,   // [0:69] is the sub-list for field type_name
 }
 
 func init() { file_modeldb_ExperimentRunService_proto_init() }
@@ -7988,8 +8128,8 @@ func file_modeldb_ExperimentRunService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ExperimentRunService_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogVersionedInput_Response); i {
+		file_modeldb_ExperimentRunService_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CloneExperimentRun); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8001,7 +8141,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetVersionedInput_Response); i {
+			switch v := v.(*LogVersionedInput_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8013,7 +8153,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CreateExperimentRun_Response); i {
+			switch v := v.(*GetVersionedInput_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8025,7 +8165,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteExperimentRun_Response); i {
+			switch v := v.(*CreateExperimentRun_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8037,7 +8177,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetExperimentRunsInProject_Response); i {
+			switch v := v.(*DeleteExperimentRun_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8049,7 +8189,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetExperimentRunsInExperiment_Response); i {
+			switch v := v.(*GetExperimentRunsInProject_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8061,7 +8201,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetExperimentRunById_Response); i {
+			switch v := v.(*GetExperimentRunsInExperiment_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8073,7 +8213,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetExperimentRunByName_Response); i {
+			switch v := v.(*GetExperimentRunById_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8085,7 +8225,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[63].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateExperimentRunName_Response); i {
+			switch v := v.(*GetExperimentRunByName_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8097,7 +8237,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[64].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateExperimentRunDescription_Response); i {
+			switch v := v.(*UpdateExperimentRunName_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8109,7 +8249,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddExperimentRunTags_Response); i {
+			switch v := v.(*UpdateExperimentRunDescription_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8121,7 +8261,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteExperimentRunTags_Response); i {
+			switch v := v.(*AddExperimentRunTags_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8133,7 +8273,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[67].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddExperimentRunTag_Response); i {
+			switch v := v.(*DeleteExperimentRunTags_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8145,7 +8285,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[68].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteExperimentRunTag_Response); i {
+			switch v := v.(*AddExperimentRunTag_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8157,7 +8297,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[69].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddExperimentRunAttributes_Response); i {
+			switch v := v.(*DeleteExperimentRunTag_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8169,7 +8309,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteExperimentRunAttributes_Response); i {
+			switch v := v.(*AddExperimentRunAttributes_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8181,7 +8321,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogExperimentRunCodeVersion_Response); i {
+			switch v := v.(*DeleteExperimentRunAttributes_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8193,7 +8333,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[72].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetExperimentRunCodeVersion_Response); i {
+			switch v := v.(*LogExperimentRunCodeVersion_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8205,7 +8345,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[73].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogObservation_Response); i {
+			switch v := v.(*GetExperimentRunCodeVersion_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8217,7 +8357,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[74].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogObservations_Response); i {
+			switch v := v.(*LogObservation_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8229,7 +8369,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[75].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetObservations_Response); i {
+			switch v := v.(*LogObservations_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8241,7 +8381,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[76].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteObservations_Response); i {
+			switch v := v.(*GetObservations_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8253,7 +8393,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[77].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogMetric_Response); i {
+			switch v := v.(*DeleteObservations_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8265,7 +8405,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[78].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogMetrics_Response); i {
+			switch v := v.(*LogMetric_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8277,7 +8417,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[79].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMetrics_Response); i {
+			switch v := v.(*LogMetrics_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8289,7 +8429,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[80].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteMetrics_Response); i {
+			switch v := v.(*GetMetrics_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8301,7 +8441,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[81].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogDataset_Response); i {
+			switch v := v.(*DeleteMetrics_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8313,7 +8453,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[82].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogDatasets_Response); i {
+			switch v := v.(*LogDataset_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8325,7 +8465,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[83].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDatasets_Response); i {
+			switch v := v.(*LogDatasets_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8337,7 +8477,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[84].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogArtifact_Response); i {
+			switch v := v.(*GetDatasets_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8349,7 +8489,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[85].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogArtifacts_Response); i {
+			switch v := v.(*LogArtifact_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8361,7 +8501,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[86].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteArtifact_Response); i {
+			switch v := v.(*LogArtifacts_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8373,7 +8513,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[87].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogHyperparameter_Response); i {
+			switch v := v.(*DeleteArtifact_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8385,7 +8525,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[88].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogHyperparameters_Response); i {
+			switch v := v.(*LogHyperparameter_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8397,7 +8537,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[89].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetHyperparameters_Response); i {
+			switch v := v.(*LogHyperparameters_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8409,7 +8549,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[90].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteHyperparameters_Response); i {
+			switch v := v.(*GetHyperparameters_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8421,7 +8561,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[91].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogAttribute_Response); i {
+			switch v := v.(*DeleteHyperparameters_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8433,7 +8573,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[92].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogAttributes_Response); i {
+			switch v := v.(*LogAttribute_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8445,7 +8585,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[93].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FindExperimentRuns_Response); i {
+			switch v := v.(*LogAttributes_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8457,7 +8597,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[94].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SortExperimentRuns_Response); i {
+			switch v := v.(*FindExperimentRuns_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8469,7 +8609,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[95].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TopExperimentRunsSelector_Response); i {
+			switch v := v.(*SortExperimentRuns_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8481,7 +8621,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[96].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogJobId_Response); i {
+			switch v := v.(*TopExperimentRunsSelector_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8493,7 +8633,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[97].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetJobId_Response); i {
+			switch v := v.(*LogJobId_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8505,7 +8645,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[98].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetChildrenExperimentRuns_Response); i {
+			switch v := v.(*GetJobId_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8517,7 +8657,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[99].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetParentExperimentRunId_Response); i {
+			switch v := v.(*GetChildrenExperimentRuns_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8529,7 +8669,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[100].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetExperimentRunsByDatasetVersionId_Response); i {
+			switch v := v.(*SetParentExperimentRunId_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8541,7 +8681,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[101].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteExperimentRuns_Response); i {
+			switch v := v.(*GetExperimentRunsByDatasetVersionId_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8553,7 +8693,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[102].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListCommitExperimentRunsRequest_Response); i {
+			switch v := v.(*DeleteExperimentRuns_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8565,7 +8705,31 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			}
 		}
 		file_modeldb_ExperimentRunService_proto_msgTypes[103].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ListCommitExperimentRunsRequest_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_modeldb_ExperimentRunService_proto_msgTypes[104].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListBlobExperimentRunsRequest_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_modeldb_ExperimentRunService_proto_msgTypes[105].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CloneExperimentRun_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8591,7 +8755,7 @@ func file_modeldb_ExperimentRunService_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_modeldb_ExperimentRunService_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   104,
+			NumMessages:   106,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -8693,6 +8857,7 @@ type ExperimentRunServiceClient interface {
 	DeleteObservations(ctx context.Context, in *DeleteObservations, opts ...grpc.CallOption) (*DeleteObservations_Response, error)
 	DeleteMetrics(ctx context.Context, in *DeleteMetrics, opts ...grpc.CallOption) (*DeleteMetrics_Response, error)
 	DeleteHyperparameters(ctx context.Context, in *DeleteHyperparameters, opts ...grpc.CallOption) (*DeleteHyperparameters_Response, error)
+	CloneExperimentRun(ctx context.Context, in *CloneExperimentRun, opts ...grpc.CallOption) (*CloneExperimentRun_Response, error)
 }
 
 type experimentRunServiceClient struct {
@@ -9207,6 +9372,15 @@ func (c *experimentRunServiceClient) DeleteHyperparameters(ctx context.Context, 
 	return out, nil
 }
 
+func (c *experimentRunServiceClient) CloneExperimentRun(ctx context.Context, in *CloneExperimentRun, opts ...grpc.CallOption) (*CloneExperimentRun_Response, error) {
+	out := new(CloneExperimentRun_Response)
+	err := c.cc.Invoke(ctx, "/ai.verta.modeldb.ExperimentRunService/cloneExperimentRun", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExperimentRunServiceServer is the server API for ExperimentRunService service.
 type ExperimentRunServiceServer interface {
 	CreateExperimentRun(context.Context, *CreateExperimentRun) (*CreateExperimentRun_Response, error)
@@ -9285,6 +9459,7 @@ type ExperimentRunServiceServer interface {
 	DeleteObservations(context.Context, *DeleteObservations) (*DeleteObservations_Response, error)
 	DeleteMetrics(context.Context, *DeleteMetrics) (*DeleteMetrics_Response, error)
 	DeleteHyperparameters(context.Context, *DeleteHyperparameters) (*DeleteHyperparameters_Response, error)
+	CloneExperimentRun(context.Context, *CloneExperimentRun) (*CloneExperimentRun_Response, error)
 }
 
 // UnimplementedExperimentRunServiceServer can be embedded to have forward compatible implementations.
@@ -9458,6 +9633,9 @@ func (*UnimplementedExperimentRunServiceServer) DeleteMetrics(context.Context, *
 }
 func (*UnimplementedExperimentRunServiceServer) DeleteHyperparameters(context.Context, *DeleteHyperparameters) (*DeleteHyperparameters_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteHyperparameters not implemented")
+}
+func (*UnimplementedExperimentRunServiceServer) CloneExperimentRun(context.Context, *CloneExperimentRun) (*CloneExperimentRun_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CloneExperimentRun not implemented")
 }
 
 func RegisterExperimentRunServiceServer(s *grpc.Server, srv ExperimentRunServiceServer) {
@@ -10472,6 +10650,24 @@ func _ExperimentRunService_DeleteHyperparameters_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExperimentRunService_CloneExperimentRun_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CloneExperimentRun)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExperimentRunServiceServer).CloneExperimentRun(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ai.verta.modeldb.ExperimentRunService/CloneExperimentRun",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExperimentRunServiceServer).CloneExperimentRun(ctx, req.(*CloneExperimentRun))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _ExperimentRunService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ai.verta.modeldb.ExperimentRunService",
 	HandlerType: (*ExperimentRunServiceServer)(nil),
@@ -10699,6 +10895,10 @@ var _ExperimentRunService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "deleteHyperparameters",
 			Handler:    _ExperimentRunService_DeleteHyperparameters_Handler,
+		},
+		{
+			MethodName: "cloneExperimentRun",
+			Handler:    _ExperimentRunService_CloneExperimentRun_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

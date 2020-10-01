@@ -37,6 +37,53 @@ Release Notes
      <>`__
 
 
+v0.15.4 (2020-09-09)
+--------------------
+
+Bug Fixes
+^^^^^^^^^
+- `fix bug where a DatasetVersion could not be retrieved for certain protobuf
+  configurations
+  <https://github.com/VertaAI/modeldb/pull/1471>`__
+
+
+v0.15.3 (2020-09-08)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add DatasetVersion.list_components() and DatasetVersion.base_path
+  <https://github.com/VertaAI/modeldb/pull/1448>`__
+- `enable cloning a run into another experiment
+  <https://github.com/VertaAI/modeldb/pull/1420>`__
+- `add delete() to most entities
+  <https://github.com/VertaAI/modeldb/pull/1372>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `support Python 3.8
+  <https://github.com/VertaAI/modeldb/pull/1418>`__
+- `add self_contained param to download_docker_context()
+  <https://github.com/VertaAI/modeldb/pull/1425>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix bug where log_model(overwrite=True) didn't work with custom model
+  artifacts
+  <https://github.com/VertaAI/modeldb/pull/1447>`__
+- `properly raise an error when re-logging an environment to a model version
+  <https://github.com/VertaAI/modeldb/pull/1439>`__
+
+
+v0.15.2 (2020-08-28)
+--------------------
+
+Enhancements
+^^^^^^^^^^^^
+- `add retries for all client connection errors
+  <https://github.com/VertaAI/modeldb/pull/1407>`__
+
+
 v0.15.1 (2020-08-24)
 --------------------
 
@@ -66,6 +113,8 @@ Bug Fixes
 - `fix bug where multipart upload loop may have an undefined variable in the
   event of connection errors
   <https://github.com/VertaAI/modeldb/pull/1362>`__
+- `fix bug where getting a dataset version from another workspace may fail
+  <https://github.com/VertaAI/modeldb/pull/1349>`__
 
 
 v0.14.17 (2020-08-13)

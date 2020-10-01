@@ -3,6 +3,8 @@ import requests
 
 import verta
 
+pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
+
 
 class TestModel:
     def test_create(self, client, created_registered_models):
@@ -59,7 +61,7 @@ class TestModel:
         assert str(registered_model.get_labels()) in repr
 
     def test_find(self, client, created_registered_models):
-        name = "registered_model_new_test"
+        name = verta._internal_utils._utils.generate_default_name()
         registered_model = client.set_registered_model(name)
         created_registered_models.append(registered_model)
 

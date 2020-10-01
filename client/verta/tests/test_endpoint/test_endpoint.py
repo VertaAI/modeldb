@@ -20,6 +20,8 @@ from verta.utils import ModelAPI
 
 from ..utils import (get_build_ids, sys_path_manager)
 
+pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
+
 
 class TestEndpoint:
     def test_create(self, client, created_endpoints):
@@ -174,7 +176,8 @@ class TestEndpoint:
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
-    def test_update_wait(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_wait(self, client, created_endpoints, experiment_run, model_version, model_for_deployment):
+        """This tests endpoint.update(..., wait=True), including the case of build error"""
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
@@ -185,6 +188,15 @@ class TestEndpoint:
         status = endpoint.update(experiment_run, DirectUpdateStrategy(), True)
 
         assert status["status"] == "active"
+
+        model_version.log_model(model_for_deployment['model'], custom_modules=[])
+        model_version.log_environment(Python(requirements=['blahblahblah==3.6.0']))
+
+        with pytest.raises(RuntimeError) as excinfo:
+            endpoint.update(model_version, DirectUpdateStrategy(), True) # this should fail, and not take forever!
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in excinfo_value
 
     def test_canary_update(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -228,8 +240,8 @@ class TestEndpoint:
             "run_id": experiment_run.id,
             "strategy": "canary",
             "canary_strategy": {
-                "progress_step": 0.05,
-                "progress_interval_seconds": 30,
+                "progress_step": 0.5,
+                "progress_interval_seconds": 1,
                 "rules": [
                     {"rule": "latency_avg_max",
                      "rule_parameters": [
@@ -270,8 +282,8 @@ class TestEndpoint:
             "run_id": experiment_run.id,
             "strategy": "canary",
             "canary_strategy": {
-                "progress_step": 0.05,
-                "progress_interval_seconds": 30,
+                "progress_step": 0.5,
+                "progress_interval_seconds": 1,
                 "rules": [
                     {"rule": "latency_avg_max",
                      "rule_parameters": [
@@ -429,8 +441,8 @@ class TestEndpoint:
             "model_version_id": model_version.id,
             "strategy": "canary",
             "canary_strategy": {
-                "progress_step": 0.05,
-                "progress_interval_seconds": 30,
+                "progress_step": 0.5,
+                "progress_interval_seconds": 1,
                 "rules": [
                     {"rule": "latency_avg_max",
                      "rule_parameters": [
@@ -453,7 +465,8 @@ class TestEndpoint:
         endpoint.update_from_config(filepath, wait=True)
 
         test_data = np.random.random((4, 12))
-        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
+        prediction = endpoint.get_deployed_model().predict(test_data)
+        assert np.array_equal(prediction, classifier.predict(test_data))
 
     def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -497,7 +510,7 @@ class TestEndpoint:
             model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
             model_version.log_model(classifier, custom_modules=["models/"], model_api=model_api)
 
-            env = Python(requirements=["torch==1.0.0"])
+            env = Python(requirements=["torch={}".format(torch.__version__)])
             model_version.log_environment(env)
 
 
@@ -594,9 +607,77 @@ class TestEndpoint:
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
-        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        endpoint.update(model_version, wait=True)
 
         # updating endpoint
         endpoint.update(new_model_version, DirectUpdateStrategy(), wait=True)
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), new_classifier.predict(test_data))
+
+    def test_update_from_run_diff_workspace(self, client, organization, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.create_endpoint(path, workspace=organization.name)
+        created_endpoints.append(endpoint)
+
+        endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
+        assert endpoint.workspace != experiment_run.workspace
+
+    def test_update_from_version_diff_workspace(self, client, model_version, organization, created_endpoints):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client.create_endpoint(path, workspace=organization.name)
+        created_endpoints.append(endpoint)
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        assert endpoint.workspace != model_version.workspace
+
+    def test_update_from_run_diff_workspace_no_access_error(self, client_2, created_endpoints, experiment_run, model_for_deployment):
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client_2.create_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "403" in excinfo_value
+        assert "Access Denied" in excinfo_value
+
+    def test_update_from_version_diff_workspace_no_access_error(self, client_2, model_version, created_endpoints):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        env = Python(requirements=["scikit-learn"])
+        model_version.log_environment(env)
+
+        path = verta._internal_utils._utils.generate_default_name()
+        endpoint = client_2.create_endpoint(path)
+        created_endpoints.append(endpoint)
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "403" in excinfo_value
+        assert "Access Denied" in excinfo_value

@@ -1,8 +1,7 @@
 package ai.verta.modeldb;
 
 import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.EntitiesEnum;
@@ -24,6 +23,7 @@ import ai.verta.modeldb.metadata.DeleteLabelsRequest;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
@@ -129,6 +129,7 @@ public class RepositoryTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -759,6 +760,44 @@ public class RepositoryTest {
           NAME_3,
           findRepositoriesResponse.getRepositories(0).getName());
 
+      findRepositoriesRequest =
+          FindRepositories.newBuilder()
+              .addPredicates(
+                  KeyValueQuery.newBuilder()
+                      .setKey("tags")
+                      .setValue(Value.newBuilder().setStringValue("Backend").build())
+                      .setOperator(OperatorEnum.Operator.EQ)
+                      .setValueType(ValueTypeEnum.ValueType.STRING)
+                      .build())
+              .build();
+      try {
+        versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+        fail();
+      } catch (StatusRuntimeException exc) {
+        Status status = Status.fromThrowable(exc);
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+        assertTrue(status.getDescription().contains(": tags"));
+      }
+
+      findRepositoriesRequest =
+          FindRepositories.newBuilder()
+              .addPredicates(
+                  KeyValueQuery.newBuilder()
+                      .setKey("tags")
+                      .setValue(Value.newBuilder().setStringValue("Backend").build())
+                      .setOperator(OperatorEnum.Operator.EQ)
+                      .setValueType(ValueTypeEnum.ValueType.STRING)
+                      .build())
+              .build();
+      try {
+        versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
+        fail();
+      } catch (StatusRuntimeException exc) {
+        Status status = Status.fromThrowable(exc);
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+        assertTrue(status.getDescription().contains(": tags"));
+      }
+
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
         findRepositoriesRequest =
             FindRepositories.newBuilder()
@@ -1363,5 +1402,38 @@ public class RepositoryTest {
 
     LOGGER.info(
         "FindRepositories by owner fuzzy search test stop ................................");
+  }
+
+  @Test
+  public void checkRepositoryNameWithColonAndSlashesTest() {
+    LOGGER.info(
+        "check repository name with colon and slashes test start................................");
+
+    VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    try {
+      createRepository(versioningServiceBlockingStub, "Repo: colons test repository");
+      fail();
+    } catch (StatusRuntimeException e) {
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), e.getStatus().getCode());
+    }
+
+    try {
+      createRepository(versioningServiceBlockingStub, "Repo/ colons test repository");
+      fail();
+    } catch (StatusRuntimeException e) {
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), e.getStatus().getCode());
+    }
+
+    try {
+      createRepository(versioningServiceBlockingStub, "Repo\\\\ colons test repository");
+      fail();
+    } catch (StatusRuntimeException e) {
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), e.getStatus().getCode());
+    }
+
+    LOGGER.info(
+        "check repository name with colon and slashes test end................................");
   }
 }

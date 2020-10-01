@@ -27,6 +27,7 @@ import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PartETag;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.amazonaws.services.s3.transfer.TransferManager;
@@ -52,6 +53,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 
 public class S3Service implements ArtifactStoreService {
 
@@ -180,17 +184,65 @@ public class S3Service implements ArtifactStoreService {
     try {
       return s3Client.doesBucketExistV2(bucketName);
     } catch (AmazonServiceException e) {
+      logAmazonServiceExceptionErrorCodes(e);
       // If token based access is configured and getting issues checking bucket existence then try
       // refreshing credentials
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
         // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentails ");
-        LOGGER.warn(e.getErrorMessage());
         initializeS3ClientWithTemporaryCredentials(awsRegion);
       }
       return doesBucketExist(bucketName);
+    } catch (SdkClientException e) {
+      LOGGER.warn(e.getMessage());
+      if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
+          && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
+        // this may spiral into an infinite loop due to incorrect configuration
+        LOGGER.info("Fetching temporary credentails ");
+        initializeS3ClientWithTemporaryCredentials(awsRegion);
+      }
+      return doesBucketExist(bucketName);
+    } catch (Exception ex) {
+      LOGGER.warn(ex.getMessage());
+      throw ex;
     }
+  }
+
+  private Boolean doesObjectExist(String bucketName, String path) {
+    try {
+      return s3Client.doesObjectExist(bucketName, path);
+    } catch (AmazonServiceException e) {
+      logAmazonServiceExceptionErrorCodes(e);
+      // If token based access is configured and getting issues checking bucket existence then try
+      // refreshing credentials
+      if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
+          && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
+        // this may spiral into an infinite loop due to incorrect configuration
+        LOGGER.info("Fetching temporary credentails ");
+        initializeS3ClientWithTemporaryCredentials(awsRegion);
+      }
+      return doesObjectExist(bucketName, path);
+    } catch (SdkClientException e) {
+      LOGGER.warn(e.getMessage());
+      if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
+          && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
+        // this may spiral into an infinite loop due to incorrect configuration
+        LOGGER.info("Fetching temporary credentails ");
+        initializeS3ClientWithTemporaryCredentials(awsRegion);
+      }
+      return doesObjectExist(bucketName, path);
+    } catch (Exception ex) {
+      LOGGER.warn(ex.getMessage());
+      throw ex;
+    }
+  }
+
+  private void logAmazonServiceExceptionErrorCodes(AmazonServiceException e) {
+    LOGGER.info("Amazon Service Status Code: " + e.getStatusCode());
+    LOGGER.info("Amazon Service Error Code: " + e.getErrorCode());
+    LOGGER.info("Amazon Service Error Type: " + e.getErrorType());
+    LOGGER.info("Amazon Service Error Message: " + e.getErrorMessage());
   }
 
   @Override
@@ -335,23 +387,43 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  public Resource loadFileAsResource(String artifactPath) throws ModelDBException {
+  public ResponseEntity<Resource> loadFileAsResource(String artifactPath) throws ModelDBException {
     LOGGER.trace("S3Service - loadFileAsResource called");
     try {
-      if (s3Client.doesObjectExist(bucketName, artifactPath)) {
+      if (doesObjectExist(bucketName, artifactPath)) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");
-        return new InputStreamResource(
-            s3Client.getObject(bucketName, artifactPath).getObjectContent());
+        S3Object resource = s3Client.getObject(bucketName, artifactPath);
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        for (Map.Entry<String, Object> header :
+            resource.getObjectMetadata().getRawMetadata().entrySet()) {
+          responseHeaders.add(header.getKey(), String.valueOf(header.getValue()));
+        }
+
+        LOGGER.debug("getArtifact returned");
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.noCache())
+            .headers(responseHeaders)
+            .body(new InputStreamResource(resource.getObjectContent()));
       } else {
         String errorMessage = "File not found " + artifactPath;
-        LOGGER.warn(errorMessage);
-        throw new ModelDBException(errorMessage);
+        LOGGER.info(errorMessage);
+        throw new ModelDBException(errorMessage, Code.NOT_FOUND);
       }
-    } catch (ModelDBException ex) {
-      String errorMessage = "File not found " + artifactPath;
-      LOGGER.warn(errorMessage, ex);
-      throw new ModelDBException(errorMessage, ex);
+    } catch (AmazonServiceException e) {
+      // Amazon S3 couldn't be contacted for a response, or the client
+      // couldn't parse the response from Amazon S3.
+      String errorMessage = e.getMessage();
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(
+          errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
+    } catch (SdkClientException e) {
+      // Amazon S3 couldn't be contacted for a response, or the client
+      // couldn't parse the response from Amazon S3.
+      String errorMessage = e.getMessage();
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(errorMessage);
     }
   }
 

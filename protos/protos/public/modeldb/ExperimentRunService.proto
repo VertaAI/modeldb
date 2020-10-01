@@ -564,6 +564,16 @@ message ListBlobExperimentRunsRequest {
     }
 }
 
+message CloneExperimentRun {
+    string src_experiment_run_id = 1; // Source experiment_run to clone [Compulsory]
+    string dest_experiment_run_name= 2; // Source experiment_run to clone [Optional]
+    string dest_experiment_id = 3; // Destination experiment_id to clone run into. if not define here then value will be experiment_id of src_experiment_run_id[Optional]
+
+    message Response {
+        ExperimentRun run = 1;
+    }
+}
+
 service ExperimentRunService {
 
     rpc createExperimentRun(CreateExperimentRun) returns (CreateExperimentRun.Response) {
@@ -968,6 +978,13 @@ service ExperimentRunService {
         DeleteHyperparameters.Response) {
         option (google.api.http) = {
             delete: "/v1/experiment-run/deleteHyperparameters"
+            body: "*"
+        };
+    };
+
+    rpc cloneExperimentRun(CloneExperimentRun) returns (CloneExperimentRun.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment-run/cloneExperimentRun"
             body: "*"
         };
     };

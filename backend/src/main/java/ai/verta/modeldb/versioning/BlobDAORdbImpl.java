@@ -570,6 +570,17 @@ public class BlobDAORdbImpl implements BlobDAO {
         if (labels.size() > 0) {
           datasetVersionBuilder.addAllTags(labels);
         }
+        String version =
+            metadataDAO.getProperty(
+                session,
+                IdentificationType.newBuilder()
+                    .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+                    .setStringId(compositeId)
+                    .build(),
+                ModelDBConstants.VERSION);
+        if (version != null) {
+          datasetVersionBuilder.setVersion(Long.parseLong(version));
+        }
         datasetVersionBuilder.setDatasetVersionVisibilityValue(
             repositoryEntity.getRepository_visibility());
         datasetVersionBuilder.addAllAttributes(getComponentResponse.getAttributesList());
@@ -593,9 +604,13 @@ public class BlobDAORdbImpl implements BlobDAO {
                   .map(S3DatasetComponentBlob::getPath)
                   .map(this::getPathInfo)
                   .collect(Collectors.toList());
+        } else if (dataset.hasQuery()) {
+          components = Collections.emptyList();
+          LOGGER.info("Found query dataset. Skipping populating datasetinfo");
         } else {
-          LOGGER.error("unexpected error");
-          throw new ModelDBException("Unknown blob type");
+          String errorMessage = "Unknown blob type found while converting Blob to DatasetVersion";
+          LOGGER.warn(errorMessage);
+          throw new ModelDBException(errorMessage);
         }
         Optional<Long> sum = components.stream().map(DatasetPartInfo::getSize).reduce(Long::sum);
         sum.ifPresent(builderPathDatasetVersion::setSize);
@@ -1219,6 +1234,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     Commit internalCommit =
         Commit.newBuilder()
             .setDateCreated(timeCreated)
+            .setDateUpdated(timeCreated)
             .setAuthor(author)
             .setMessage(commitMessage)
             .setCommitSha(commitSha)
@@ -1854,7 +1870,19 @@ public class BlobDAORdbImpl implements BlobDAO {
       boolean partNumberSpecified,
       S3KeyFunction initializeMultipart)
       throws ModelDBException {
-    UploadStatusEntity uploadStatusEntity = getUploadStatusEntity(session, computeSha, contentCase);
+    List<UploadStatusEntity> uploadStatusEntities =
+        getUploadStatusEntity(session, computeSha, contentCase);
+    UploadStatusEntity uploadStatusEntity = null;
+    if (uploadStatusEntities != null && !uploadStatusEntities.isEmpty()) {
+      if (uploadStatusEntities.size() > 1) {
+        LOGGER.warn(
+            "Multiple upload status found for datasetComponentPathId : "
+                + computeSha
+                + ", go ahead with first upload status");
+      }
+      uploadStatusEntity = uploadStatusEntities.get(0);
+    }
+
     String uploadId;
     if (partNumberSpecified) {
       uploadId =
@@ -1901,7 +1929,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     return new AbstractMap.SimpleEntry<>(internalVersionedPath, uploadId);
   }
 
-  private UploadStatusEntity getUploadStatusEntity(
+  private List<UploadStatusEntity> getUploadStatusEntity(
       Session session, String datasetComponentPathId, DatasetBlob.ContentCase contentCase)
       throws ModelDBException {
     StringBuilder getUploadStatusQuery =
@@ -1918,7 +1946,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
     Query query = session.createQuery(getUploadStatusQuery.toString());
     query.setParameter("pathId", datasetComponentPathId);
-    return (UploadStatusEntity) query.uniqueResult();
+    return query.list();
   }
 
   @Override
@@ -2096,15 +2124,22 @@ public class BlobDAORdbImpl implements BlobDAO {
             "Invalid Blob type found for given location", Status.Code.INVALID_ARGUMENT);
       }
 
-      UploadStatusEntity uploadStatusEntity =
+      List<UploadStatusEntity> uploadStatusEntities =
           getUploadStatusEntity(session, computeSha, blob.getDataset().getContentCase());
-      if (uploadStatusEntity == null
-          || uploadStatusEntity.getUploadId() == null
-          || uploadStatusEntity.getUploadId().isEmpty()) {
-        String message = "Multipart wasn't initialized";
-        LOGGER.info(message);
-        throw new ModelDBException(message, Status.Code.FAILED_PRECONDITION);
+      UploadStatusEntity uploadStatusEntity;
+      if (uploadStatusEntities == null || uploadStatusEntities.size() == 0) {
+        throw new ModelDBException(
+            "Multipart wasn't initialized OR Artifact upload status not found in DB datasetComponentPathId : "
+                + computeSha,
+            Status.Code.FAILED_PRECONDITION);
+      } else if (uploadStatusEntities.size() > 1) {
+        throw new ModelDBException(
+            "Multiple upload status found for datasetComponentPathId : " + computeSha,
+            Status.Code.FAILED_PRECONDITION);
+      } else {
+        uploadStatusEntity = uploadStatusEntities.get(0);
       }
+
       Set<ArtifactPartEntity> artifactPartEntities =
           VersioningUtils.getArtifactPartEntities(
               session, computeSha, ArtifactPartEntity.VERSION_BLOB_ARTIFACT);

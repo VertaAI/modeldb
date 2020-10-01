@@ -109,6 +109,38 @@
         ]
       }
     },
+    "/experiment-run/cloneExperimentRun": {
+      "post": {
+        "operationId": "ExperimentRunService_cloneExperimentRun",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbCloneExperimentRunResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbCloneExperimentRun"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
     "/experiment-run/commitArtifactPart": {
       "post": {
         "operationId": "ExperimentRunService_commitArtifactPart",
@@ -2390,6 +2422,28 @@
       "type": "object",
       "properties": {
         "experiment_run": {
+          "$ref": "#/definitions/modeldbExperimentRun"
+        }
+      }
+    },
+    "modeldbCloneExperimentRun": {
+      "type": "object",
+      "properties": {
+        "src_experiment_run_id": {
+          "type": "string"
+        },
+        "dest_experiment_run_name": {
+          "type": "string"
+        },
+        "dest_experiment_id": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbCloneExperimentRunResponse": {
+      "type": "object",
+      "properties": {
+        "run": {
           "$ref": "#/definitions/modeldbExperimentRun"
         }
       }

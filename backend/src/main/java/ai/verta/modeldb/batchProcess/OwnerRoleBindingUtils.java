@@ -120,7 +120,7 @@ public class OwnerRoleBindingUtils {
                 LOGGER.error(e.getMessage());
               }
             } else {
-              LOGGER.error(
+              LOGGER.info(
                   "Experiment owner not found from UAC response list : experimentId - {} & userId - {}",
                   experimentEntity.getId(),
                   experimentEntity.getOwner());
@@ -204,7 +204,7 @@ public class OwnerRoleBindingUtils {
               LOGGER.error(e.getMessage());
             }
           } else {
-            LOGGER.error(
+            LOGGER.info(
                 "ExperimentRun owner not found from UAC response list : ExperimentRunId - {} & userId - {}",
                 experimentRunEntity.getId(),
                 experimentRunEntity.getOwner());
@@ -287,7 +287,7 @@ public class OwnerRoleBindingUtils {
                 LOGGER.error(e.getMessage());
               }
             } else {
-              LOGGER.error(
+              LOGGER.info(
                   "DatasetVersion owner not found from UAC response list : DatasetVersionId - {} & userId - {}",
                   datasetVersionEntity.getId(),
                   datasetVersionEntity.getOwner());
@@ -373,7 +373,7 @@ public class OwnerRoleBindingUtils {
                 LOGGER.error(e.getMessage());
               }
             } else {
-              LOGGER.error(
+              LOGGER.info(
                   "Repository owner not found from UAC response list : RepositoryId - {} & userId - {}",
                   repositoryEntity.getId(),
                   repositoryEntity.getOwner());

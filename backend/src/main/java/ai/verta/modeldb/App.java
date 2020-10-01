@@ -2,6 +2,7 @@ package ai.verta.modeldb;
 
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
@@ -86,7 +87,7 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableAutoConfiguration
 @EnableConfigurationProperties({FileStorageProperties.class})
 // Remove bracket () code if in future define any @component outside of the defined basePackages.
-@ComponentScan(basePackages = "${scan.packages}")
+@ComponentScan(basePackages = "${scan.packages}, ai.verta.modeldb.health")
 @SuppressWarnings("unchecked")
 public class App implements ApplicationContextAware {
 
@@ -127,6 +128,7 @@ public class App implements ApplicationContextAware {
   private String awsRegion = null;
 
   // Artifact store
+  private boolean disabledArtifactStore = false;
   private Boolean pickArtifactStoreHostFromConfig = null;
   private String artifactStoreServerHost = null;
   private String artifactStoreUrlProtocol = null;
@@ -189,7 +191,11 @@ public class App implements ApplicationContextAware {
 
   @Bean
   public S3Service getS3Service() throws ModelDBException {
-    return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
+    String bucketName = System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME);
+    if (bucketName != null && !bucketName.isEmpty()) {
+      return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
+    }
+    return null;
   }
 
   public static App getInstance() {
@@ -209,6 +215,17 @@ public class App implements ApplicationContextAware {
       Map<String, Object> propertiesMap =
           ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
       // --------------- End reading properties --------------------------
+
+      Map<String, Object> databasePropMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
+
+      boolean liquibaseMigration =
+          Boolean.parseBoolean(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION));
+      if (liquibaseMigration) {
+        LOGGER.info("Liquibase validation starting");
+
+        if (ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap)) return;
+      }
 
       // --------------- Start Initialize modelDB gRPC server --------------------------
       Map<String, Object> grpcServerMap =
@@ -259,9 +276,6 @@ public class App implements ApplicationContextAware {
         authService = new AuthServiceUtils();
         app.roleService = new RoleServiceUtils(authService);
       }
-
-      Map<String, Object> databasePropMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
 
       HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
       serverBuilder.addService(healthStatusManager.getHealthService());
@@ -353,6 +367,8 @@ public class App implements ApplicationContextAware {
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
       app.setPublicSharingEnabled(
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
+      app.disabledArtifactStore =
+          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_ARTIFACT_STORE, false);
     }
 
     Map<String, Object> starterProjectDetail =
@@ -361,8 +377,37 @@ public class App implements ApplicationContextAware {
       app.starterProjectID = (String) starterProjectDetail.get(ModelDBConstants.STARTER_PROJECT_ID);
     }
     // --------------- Start Initialize Cloud Config ---------------------------------------------
-    ArtifactStoreService artifactStoreService =
-        initializeServicesBaseOnArtifactStoreType(propertiesMap);
+    Map<String, Object> springServerMap =
+        (Map<String, Object>) propertiesMap.get(ModelDBConstants.SPRING_SERVER);
+    if (springServerMap == null) {
+      throw new ModelDBException("springServer configuration not found in properties.");
+    }
+
+    Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
+    LOGGER.trace("spring server port number found");
+    System.getProperties().put("server.port", String.valueOf(springServerPort));
+
+    Object object = springServerMap.get(ModelDBConstants.SHUTDOWN_TIMEOUT);
+    if (object instanceof Integer) {
+      app.shutdownTimeout = ((Integer) object).longValue();
+    } else {
+      app.shutdownTimeout = ModelDBConstants.DEFAULT_SHUTDOWN_TIMEOUT;
+    }
+
+    ArtifactStoreService artifactStoreService = null;
+    if (!app.disabledArtifactStore) {
+      Map<String, Object> artifactStoreConfigMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.ARTIFACT_STORE_CONFIG);
+
+      artifactStoreService = initializeServicesBaseOnArtifactStoreType(artifactStoreConfigMap);
+    } else {
+      System.getProperties().put("scan.packages", "dummyPackageName");
+      SpringApplication.run(App.class);
+    }
+
+    HealthStatusManager healthStatusManager =
+        new HealthStatusManager(app.applicationContext.getBean(HealthServiceImpl.class));
+    healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
     // --------------- Start Initialize Database base on configuration --------------------------
     if (databasePropMap.isEmpty()) {
@@ -420,7 +465,13 @@ public class App implements ApplicationContextAware {
             authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
-    ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
+    ArtifactStoreDAO artifactStoreDAO;
+    if (artifactStoreService != null) {
+      artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
+    } else {
+      artifactStoreDAO = new ArtifactStoreDAODisabled();
+    }
+
     CommentDAO commentDAO = new CommentDAORdbImpl(authService);
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
     LineageDAO lineageDAO = new LineageDAORdbImpl();
@@ -558,20 +609,7 @@ public class App implements ApplicationContextAware {
   }
 
   private static ArtifactStoreService initializeServicesBaseOnArtifactStoreType(
-      Map<String, Object> propertiesMap) throws ModelDBException {
-
-    Map<String, Object> springServerMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.SPRING_SERVER);
-    if (springServerMap == null) {
-      throw new ModelDBException("springServer configuration not found in properties.");
-    }
-
-    Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
-    LOGGER.trace("spring server port number found");
-    System.getProperties().put("server.port", String.valueOf(springServerPort));
-
-    Map<String, Object> artifactStoreConfigMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.ARTIFACT_STORE_CONFIG);
+      Map<String, Object> artifactStoreConfigMap) throws ModelDBException {
 
     String artifactStoreType =
         (String) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_STORE_TYPE);
@@ -579,13 +617,6 @@ public class App implements ApplicationContextAware {
     // ------------- Start Initialize Cloud storage base on configuration ------------------
     ArtifactStoreService artifactStoreService;
     App app = App.getInstance();
-
-    Object object = springServerMap.get(ModelDBConstants.SHUTDOWN_TIMEOUT);
-    if (object instanceof Integer) {
-      app.shutdownTimeout = ((Integer) object).longValue();
-    } else {
-      app.shutdownTimeout = ModelDBConstants.DEFAULT_SHUTDOWN_TIMEOUT;
-    }
 
     app.pickArtifactStoreHostFromConfig =
         (Boolean)
@@ -603,14 +634,14 @@ public class App implements ApplicationContextAware {
                 ModelDBConstants.ARTIFACT_STORE_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
     LOGGER.debug("ArtifactStore URL protocol found : {}", app.artifactStoreUrlProtocol);
 
-    Map<String, Object> nfsArtifactEndpointConfigMap =
+    Map<String, Object> artifactStoreEndpointConfigMap =
         (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
-    if (nfsArtifactEndpointConfigMap != null && !nfsArtifactEndpointConfigMap.isEmpty()) {
+    if (artifactStoreEndpointConfigMap != null && !artifactStoreEndpointConfigMap.isEmpty()) {
       app.getArtifactEndpoint =
-          (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
+          (String) artifactStoreEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
       LOGGER.trace("ArtifactStore Get artifact endpoint found : {}", app.getArtifactEndpoint);
       app.storeArtifactEndpoint =
-          (String) nfsArtifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
+          (String) artifactStoreEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
       LOGGER.trace("ArtifactStore Store artifact endpoint found : {}", app.storeArtifactEndpoint);
 
       System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
@@ -652,6 +683,40 @@ public class App implements ApplicationContextAware {
         LOGGER.trace("NFS server root path {}", rootDir);
         app.storeTypePathPrefix = "nfs://" + rootDir + ModelDBConstants.PATH_DELIMITER;
 
+        if (!artifactStoreConfigMap.containsKey(
+            ModelDBConstants.PICK_ARTIFACT_STORE_HOST_FROM_CONFIG)) {
+          app.pickArtifactStoreHostFromConfig =
+              (Boolean)
+                  nfsConfigMap.getOrDefault(ModelDBConstants.PICK_NFS_HOST_FROM_CONFIG, false);
+          LOGGER.trace("NFS pick host from config flag : {}", app.pickArtifactStoreHostFromConfig);
+        }
+        if (!artifactStoreConfigMap.containsKey(ModelDBConstants.ARTIFACT_STORE_SERVER_HOST)) {
+          app.artifactStoreServerHost =
+              (String) nfsConfigMap.getOrDefault(ModelDBConstants.NFS_SERVER_HOST, "");
+          LOGGER.trace("NFS server host URL found : {}", app.artifactStoreServerHost);
+        }
+        if (!artifactStoreConfigMap.containsKey(ModelDBConstants.ARTIFACT_STORE_URL_PROTOCOL)) {
+          app.artifactStoreUrlProtocol =
+              (String)
+                  nfsConfigMap.getOrDefault(
+                      ModelDBConstants.NFS_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
+          LOGGER.debug("NFS URL protocol found : {}", app.artifactStoreUrlProtocol);
+        }
+
+        if (artifactStoreEndpointConfigMap == null || artifactStoreEndpointConfigMap.isEmpty()) {
+          Map<String, Object> artifactEndpointConfigMap =
+              (Map<String, Object>) nfsConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
+          if (artifactEndpointConfigMap != null && !artifactEndpointConfigMap.isEmpty()) {
+            app.getArtifactEndpoint =
+                (String) artifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
+            LOGGER.trace("Get artifact endpoint found : {}", app.getArtifactEndpoint);
+            app.storeArtifactEndpoint =
+                (String) artifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
+            LOGGER.trace("Store artifact endpoint found : {}", app.storeArtifactEndpoint);
+          }
+          System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
+          System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
+        }
         System.getProperties().put("file.upload-dir", rootDir);
         System.getProperties()
             .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
@@ -785,6 +850,10 @@ public class App implements ApplicationContextAware {
 
   public Boolean getStoreClientCreationTimestamp() {
     return storeClientCreationTimestamp;
+  }
+
+  public Boolean setStoreClientCreationTimestamp(Boolean storeClientCreationTimestamp) {
+    return this.storeClientCreationTimestamp = storeClientCreationTimestamp;
   }
 
   public String getServiceUserEmail() {

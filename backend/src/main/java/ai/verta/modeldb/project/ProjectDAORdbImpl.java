@@ -8,6 +8,7 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.CloneExperimentRun;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
@@ -655,7 +656,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
   @Override
   public Project deepCopyProjectForUser(String srcProjectID, UserInfo newOwner)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     // if no project id specified , default to the one captured from config.yaml
     // TODO: extend the starter project to be set of projects, so parameterizing this function makes
     // sense
@@ -708,8 +709,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       List<ExperimentRun> experimentRuns =
           this.experimentRunDAO.getExperimentRuns(experimentLevelFilter);
       for (ExperimentRun srcExperimentRun : experimentRuns) {
-        this.experimentRunDAO.deepCopyExperimentRunForUser(
-            srcExperimentRun, newExperiment, newProject, newOwner);
+        CloneExperimentRun cloneExperimentRun =
+            CloneExperimentRun.newBuilder()
+                .setSrcExperimentRunId(srcExperimentRun.getId())
+                .setDestExperimentId(newExperiment.getId())
+                .build();
+        this.experimentRunDAO.cloneExperimentRun(cloneExperimentRun, newOwner);
       }
     }
 

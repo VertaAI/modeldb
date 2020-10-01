@@ -16,6 +16,8 @@ import verta
 import verta._internal_utils._utils
 import json
 
+from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
+
 
 KWARGS = {
     'desc': [None, "A test."],
@@ -44,7 +46,7 @@ class TestClient:
 
             assert client.set_project()
 
-            utils.delete_project(client.proj.id, client._conn)
+            client.proj.delete()
         finally:
             if EMAIL is not None:
                 os.environ[EMAIL_KEY] = EMAIL
@@ -141,7 +143,10 @@ class TestClient:
                 client = verta.Client(_connect=connect)
                 conn = client._conn
 
-                assert conn.socket == HOST
+                back_end_url = urlparse(HOST)
+                socket = back_end_url.netloc + back_end_url.path.rstrip('/')
+
+                assert conn.socket == socket
                 assert conn.auth['Grpc-Metadata-email'] == EMAIL
                 assert conn.auth['Grpc-Metadata-developer_key'] == DEV_KEY
 
@@ -152,7 +157,7 @@ class TestClient:
                         assert client.expt.name == EXPERIMENT_NAME
                     finally:
                         if client.proj is not None:
-                            utils.delete_project(client.proj.id, conn)
+                            client.proj.delete()
                     dataset = client.set_dataset()
                     try:
                         assert dataset.name == DATASET_NAME
@@ -435,6 +440,58 @@ class TestExperimentRun:
         assert old_run_msg.code_version_snapshot == new_run_art_code_msg.code_version_snapshot
 
         assert old_run_msg.datasets == new_run_art_code_data_msg.datasets
+
+    def test_clone_into_expt(self, client):
+        expt1 = client.set_experiment()
+
+        expt2 = client.set_experiment()
+        assert expt1.id != expt2.id  # of course, but just to be sure
+
+        old_run = client.set_experiment_run()
+        assert old_run._msg.experiment_id == expt2.id  # of course, but just to be sure
+
+        old_run.log_hyperparameters({"hpp1" : 1, "hpp2" : 2, "hpp3" : "hpp3"})
+        old_run.log_metrics({"metric1" : 0.5, "metric2" : 0.6})
+        old_run.log_tags(["tag1", "tag2"])
+        old_run.log_attributes({"attr1" : 10, "attr2" : {"abc": 1}})
+        old_run.log_artifact("my-artifact", "README.md")
+
+        new_run = old_run.clone(copy_artifacts=True, experiment_id=expt1.id)
+
+        old_run_msg = old_run._get_proto_by_id(old_run._conn, old_run.id)
+        new_run_msg = new_run._get_proto_by_id(new_run._conn, new_run.id)
+
+        assert old_run_msg.id != new_run_msg.id
+        assert new_run_msg.experiment_id == expt1.id
+
+        assert old_run_msg.description == new_run_msg.description
+        assert old_run_msg.tags == new_run_msg.tags
+        assert old_run_msg.metrics == new_run_msg.metrics
+        assert old_run_msg.hyperparameters == new_run_msg.hyperparameters
+        assert old_run_msg.observations == new_run_msg.observations
+        assert old_run_msg.artifacts == new_run_msg.artifacts
+
+    def test_log_attribute_overwrite(self, client):
+        initial_attrs = {"str-attr": "attr", "int-attr": 4, "float-attr": 0.5}
+        new_attrs = {"str-attr": "new-attr", "int-attr": 5, "float-attr": 0.3, "bool-attr": False}
+        single_new_attr = new_attrs.popitem()
+
+        experiment_run = client.set_experiment_run(attrs=initial_attrs)
+
+        with pytest.raises(ValueError) as excinfo:
+            experiment_run.log_attribute("str-attr", "some-attr")
+
+        assert "already exists" in str(excinfo.value)
+
+        experiment_run.log_attribute(*single_new_attr, overwrite=True)
+        experiment_run.log_attributes(new_attrs, True)
+
+        expected_attrs = initial_attrs.copy()
+        expected_attrs.update([single_new_attr])
+        expected_attrs.update(new_attrs)
+
+        assert experiment_run.get_attributes() == expected_attrs
+
 
 class TestExperimentRuns:
     def test_getitem(self, client):

@@ -22,6 +22,7 @@ import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -61,7 +62,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -119,6 +119,7 @@ public class DatasetTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -1028,59 +1029,6 @@ public class DatasetTest {
     assertTrue(deleteDatasetResponse.getStatus());
 
     LOGGER.info("Add Dataset tags Negative test stop................................");
-  }
-
-  @Test
-  @Ignore
-  public void getDatasetTags() {
-    LOGGER.info("Get Dataset Tags test start................................");
-
-    DatasetServiceBlockingStub datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-
-    // Create dataset
-    CreateDataset createDatasetRequest = getDatasetRequest("dataset_n_sprt");
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    Dataset dataset = createDatasetResponse.getDataset();
-    LOGGER.info("Dataset created successfully");
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
-
-    GetTags deleteDatasetTagsRequest = GetTags.newBuilder().setId(dataset.getId()).build();
-    GetTags.Response response = datasetServiceStub.getDatasetTags(deleteDatasetTagsRequest);
-    LOGGER.info("Tags deleted in server : " + response.getTagsList());
-    assertTrue(dataset.getTagsList().containsAll(response.getTagsList()));
-
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
-    LOGGER.info("Get Dataset tags test stop................................");
-  }
-
-  @Test
-  @Ignore
-  public void getDatasetTagsNegativeTest() {
-    LOGGER.info("Get Dataset Tags Negative test start................................");
-
-    DatasetServiceBlockingStub datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-
-    GetTags deleteDatasetTagsRequest = GetTags.newBuilder().build();
-
-    try {
-      datasetServiceStub.getDatasetTags(deleteDatasetTagsRequest);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
-
-    LOGGER.info("Get Dataset tags Negative test stop................................");
   }
 
   @Test
@@ -2224,5 +2172,52 @@ public class DatasetTest {
     assertTrue(deleteDatasetResponse.getStatus());
 
     LOGGER.info("Create and delete Dataset test stop................................");
+  }
+
+  @Test
+  public void checkDatasetNameWithColonAndSlashesTest() {
+    LOGGER.info("check dataset name with colon and slashes test start...........");
+
+    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
+        DatasetServiceGrpc.newBlockingStub(channel);
+
+    CreateDataset createDatasetRequest = getDatasetRequest("Dataset: colons test dataset");
+    CreateDataset.Response createDatasetResponse =
+        datasetServiceStub.createDataset(createDatasetRequest);
+    Dataset dataset1 = createDatasetResponse.getDataset();
+    LOGGER.info("CreateDataset Response : \n" + dataset1);
+    assertEquals(
+        "Dataset name not match with expected dataset name",
+        createDatasetRequest.getName(),
+        dataset1.getName());
+
+    createDatasetRequest = getDatasetRequest("Dataset/ colons test dataset");
+    createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
+    Dataset dataset2 = createDatasetResponse.getDataset();
+    LOGGER.info("CreateDataset Response : \n" + dataset2);
+    assertEquals(
+        "Dataset name not match with expected dataset name",
+        createDatasetRequest.getName(),
+        dataset2.getName());
+
+    createDatasetRequest = getDatasetRequest("Dataset\\\\ colons test dataset");
+    createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
+    Dataset dataset3 = createDatasetResponse.getDataset();
+    LOGGER.info("CreateDataset Response : \n" + dataset3);
+    assertEquals(
+        "Dataset name not match with expected dataset name",
+        createDatasetRequest.getName(),
+        dataset3.getName());
+
+    for (Dataset dataset : new Dataset[] {dataset1, dataset2, dataset3}) {
+      DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
+      DeleteDataset.Response deleteDatasetResponse =
+          datasetServiceStub.deleteDataset(deleteDataset);
+      LOGGER.info("Dataset deleted successfully");
+      LOGGER.info(deleteDatasetResponse.toString());
+      assertTrue(deleteDatasetResponse.getStatus());
+    }
+
+    LOGGER.info("check dataset name with colon and slashes test stop...........");
   }
 }

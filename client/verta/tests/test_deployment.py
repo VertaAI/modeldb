@@ -11,6 +11,7 @@ import tarfile
 import tempfile
 import time
 import zipfile
+import cloudpickle
 
 import requests
 
@@ -20,7 +21,7 @@ import verta
 from verta._tracking.deployable_entity import _CACHE_DIR
 from verta._internal_utils import _histogram_utils
 from verta._internal_utils import _utils
-
+from verta.endpoint.update import DirectUpdateStrategy
 
 pytestmark = pytest.mark.not_oss
 
@@ -207,6 +208,32 @@ class TestLogModel:
                 artifacts=strs[1:],
             )
 
+    def test_overwrite_artifacts(self, experiment_run, endpoint, in_tempdir):
+        key = "foo"
+        val = {'a': 1}
+
+        class ModelWithDependency(object):
+            def __init__(self, artifacts):
+                with open(artifacts[key], 'rb') as f:  # should not KeyError
+                    if cloudpickle.load(f) != val:
+                        raise ValueError  # should not ValueError
+
+            def predict(self, x):
+                return x
+
+        # first log junk artifact, to test `overwrite`
+        bad_key = "bar"
+        bad_val = {'b': 2}
+        experiment_run.log_artifact(bad_key, bad_val)
+        experiment_run.log_model(ModelWithDependency, custom_modules=[], artifacts=[bad_key])
+
+        # log real artifact using `overwrite`
+        experiment_run.log_artifact(key, val)
+        experiment_run.log_model(ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True)
+        experiment_run.log_requirements(requirements=[])
+
+        endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
+        assert val == endpoint.get_deployed_model().predict(val)
 
 class TestFetchArtifacts:
     def test_fetch_artifacts(self, experiment_run, strs, flat_dicts):

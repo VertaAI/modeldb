@@ -60,56 +60,32 @@ public class DeleteEntitiesCron extends TimerTask {
     ModelDBUtils.registeredBackgroundUtilsCount();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       // Update project timestamp
-      try {
-        deleteProjects(session);
-      } catch (OptimisticLockException ex) {
-        deleteProjects(session);
-      }
+      deleteProjects(session);
 
       // Update experiment timestamp
-      try {
-        deleteExperiments(session);
-      } catch (OptimisticLockException ex) {
-        deleteExperiments(session);
-      }
+      deleteExperiments(session);
 
       // Update dataset timestamp
-      try {
-        deleteDatasets(session);
-      } catch (OptimisticLockException ex) {
-        deleteDatasets(session);
-      }
+      deleteDatasets(session);
 
       // Update datasetVersion timestamp
-      try {
-        deleteDatasetVersions(session);
-      } catch (OptimisticLockException ex) {
-        deleteDatasetVersions(session);
-      }
+      deleteDatasetVersions(session);
 
       // Update repository timestamp
-      try {
-        deleteRepositories(session);
-      } catch (OptimisticLockException ex) {
-        deleteRepositories(session);
-      }
+      deleteRepositories(session);
 
       // Update experimentRun timestamp
-      try {
-        deleteExperimentRuns(session);
-      } catch (OptimisticLockException ex) {
-        deleteExperimentRuns(session);
-      }
+      deleteExperimentRuns(session);
     } catch (Exception ex) {
       if (ex instanceof StatusRuntimeException) {
         StatusRuntimeException exception = (StatusRuntimeException) ex;
         if (exception.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-          LOGGER.error("DeleteEntitiesCron Exception: {}", ex.getMessage());
+          LOGGER.warn("DeleteEntitiesCron Exception: {}", ex.getMessage());
         } else {
-          LOGGER.error("DeleteEntitiesCron Exception: ", ex);
+          LOGGER.warn("DeleteEntitiesCron Exception: ", ex);
         }
       } else {
-        LOGGER.error("DeleteEntitiesCron Exception: ", ex);
+        LOGGER.warn("DeleteEntitiesCron Exception: ", ex);
       }
     } finally {
       ModelDBUtils.unregisteredBackgroundUtilsCount();
@@ -118,7 +94,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteProjects(Session session) {
-    LOGGER.debug("Project deleting");
+    LOGGER.trace("Project deleting");
     String alias = "pr";
     String deleteProjectsQueryString =
         new StringBuilder("FROM ")
@@ -135,7 +111,6 @@ public class DeleteEntitiesCron extends TimerTask {
     Query projectDeleteQuery = session.createQuery(deleteProjectsQueryString);
     projectDeleteQuery.setParameter("deleted", true);
     projectDeleteQuery.setMaxResults(this.recordUpdateLimit);
-    LOGGER.debug("Project delete query: {}", projectDeleteQuery.getQueryString());
     List<ProjectEntity> projectEntities = projectDeleteQuery.list();
 
     List<String> projectIds = new ArrayList<>();
@@ -145,14 +120,18 @@ public class DeleteEntitiesCron extends TimerTask {
       }
       try {
         deleteRoleBindingsForProjects(projectEntities);
-      } catch (Exception ex) {
-        LOGGER.error(
+      } catch (StatusRuntimeException ex) {
+        LOGGER.debug(
             "DeleteEntitiesCron : deleteProjects : deleteRoleBindingsForProjects : Exception: {}",
             ex.getMessage());
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "DeleteEntitiesCron : deleteProjects : deleteRoleBindingsForProjects : Exception: ",
+            ex);
       }
 
-      Transaction transaction = session.beginTransaction();
       try {
+        Transaction transaction = session.beginTransaction();
         String updateDeletedStatusExperimentQueryString =
             new StringBuilder("UPDATE ")
                 .append(ExperimentEntity.class.getSimpleName())
@@ -169,14 +148,21 @@ public class DeleteEntitiesCron extends TimerTask {
         deletedExperimentQuery.setParameter("deleted", true);
         deletedExperimentQuery.setParameter("projectIds", projectIds);
         deletedExperimentQuery.executeUpdate();
+        transaction.commit();
 
         for (ProjectEntity projectEntity : projectEntities) {
-          session.delete(projectEntity);
+          try {
+            transaction = session.beginTransaction();
+            session.delete(projectEntity);
+            transaction.commit();
+          } catch (OptimisticLockException ex) {
+            LOGGER.info("DeleteEntitiesCron : deleteProjects : Exception: {}", ex.getMessage());
+          }
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteProjects : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
-        LOGGER.error("DeleteEntitiesCron : deleteProjects : Exception: ", ex);
-      } finally {
-        transaction.commit();
+        LOGGER.warn("DeleteEntitiesCron : deleteProjects : Exception: ", ex);
       }
     }
 
@@ -240,7 +226,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteExperiments(Session session) {
-    LOGGER.debug("Experiment deleting");
+    LOGGER.trace("Experiment deleting");
     String deleteExperimentQueryString =
         new StringBuilder("FROM ")
             .append(ExperimentEntity.class.getSimpleName())
@@ -252,7 +238,6 @@ public class DeleteEntitiesCron extends TimerTask {
     Query experimentDeleteQuery = session.createQuery(deleteExperimentQueryString);
     experimentDeleteQuery.setParameter("deleted", true);
     experimentDeleteQuery.setMaxResults(this.recordUpdateLimit);
-    LOGGER.debug("Experiment delete query: {}", experimentDeleteQuery.getQueryString());
     List<ExperimentEntity> experimentEntities = experimentDeleteQuery.list();
 
     List<String> experimentIds = new ArrayList<>();
@@ -263,14 +248,18 @@ public class DeleteEntitiesCron extends TimerTask {
 
       try {
         deleteRoleBindingsForExperiments(experimentEntities);
-      } catch (Exception ex) {
-        LOGGER.error(
+      } catch (StatusRuntimeException ex) {
+        LOGGER.debug(
             "DeleteEntitiesCron : deleteExperiments : deleteRoleBindingsForExperiments : Exception: {}",
             ex.getMessage());
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "DeleteEntitiesCron : deleteExperiments : deleteRoleBindingsForExperiments : Exception: ",
+            ex);
       }
 
-      Transaction transaction = session.beginTransaction();
       try {
+        Transaction transaction = session.beginTransaction();
         String updateDeletedStatusExperimentRunQueryString =
             new StringBuilder("UPDATE ")
                 .append(ExperimentRunEntity.class.getSimpleName())
@@ -287,14 +276,21 @@ public class DeleteEntitiesCron extends TimerTask {
         deletedExperimentRunQuery.setParameter("deleted", true);
         deletedExperimentRunQuery.setParameter("experimentIds", experimentIds);
         deletedExperimentRunQuery.executeUpdate();
+        transaction.commit();
 
         for (ExperimentEntity experimentEntity : experimentEntities) {
-          session.delete(experimentEntity);
+          try {
+            transaction = session.beginTransaction();
+            session.delete(experimentEntity);
+            transaction.commit();
+          } catch (OptimisticLockException ex) {
+            LOGGER.info("DeleteEntitiesCron : deleteExperiments : Exception: {}", ex.getMessage());
+          }
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteExperiments : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
-        LOGGER.error("DeleteEntitiesCron : deleteExperiments : Exception:", ex);
-      } finally {
-        transaction.commit();
+        LOGGER.warn("DeleteEntitiesCron : deleteExperiments : Exception:", ex);
       }
     }
 
@@ -321,7 +317,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteExperimentRuns(Session session) {
-    LOGGER.debug("ExperimentRun deleting");
+    LOGGER.trace("ExperimentRun deleting");
     String deleteExperimentRunQueryString =
         new StringBuilder("FROM ")
             .append(ExperimentRunEntity.class.getSimpleName())
@@ -333,7 +329,6 @@ public class DeleteEntitiesCron extends TimerTask {
     Query experimentRunDeleteQuery = session.createQuery(deleteExperimentRunQueryString);
     experimentRunDeleteQuery.setParameter("deleted", true);
     experimentRunDeleteQuery.setMaxResults(this.recordUpdateLimit);
-    LOGGER.debug("ExperimentRun delete query: {}", experimentRunDeleteQuery.getQueryString());
     List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
 
     List<String> experimentRunIds = new ArrayList<>();
@@ -343,27 +338,39 @@ public class DeleteEntitiesCron extends TimerTask {
       }
       try {
         deleteRoleBindingsForExperimentRuns(experimentRunEntities);
-      } catch (Exception ex) {
-        LOGGER.error(
+      } catch (StatusRuntimeException ex) {
+        LOGGER.info(
             "DeleteEntitiesCron : deleteExperimentRuns : deleteRoleBindingsForExperimentRuns : Exception: {}",
             ex.getMessage());
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "DeleteEntitiesCron : deleteExperimentRuns : deleteRoleBindingsForExperimentRuns : Exception: ",
+            ex);
       }
 
-      Transaction transaction = session.beginTransaction();
       try {
         // Delete the ExperimentRun comments
+        Transaction transaction = session.beginTransaction();
         if (!experimentRunIds.isEmpty()) {
           removeEntityComments(
               session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
         }
+        transaction.commit();
 
         for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-          session.delete(experimentRunEntity);
+          try {
+            transaction = session.beginTransaction();
+            session.delete(experimentRunEntity);
+            transaction.commit();
+          } catch (OptimisticLockException ex) {
+            LOGGER.info(
+                "DeleteEntitiesCron : deleteExperimentRuns : Exception: {}", ex.getMessage());
+          }
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteExperimentRuns : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
-        LOGGER.error("DeleteEntitiesCron : deleteExperimentRuns : Exception:", ex);
-      } finally {
-        transaction.commit();
+        LOGGER.debug("DeleteEntitiesCron : deleteExperimentRuns : Exception:", ex);
       }
     }
 
@@ -403,7 +410,6 @@ public class DeleteEntitiesCron extends TimerTask {
     Query commentDeleteQuery = session.createQuery(commentDeleteHql);
     commentDeleteQuery.setParameterList("entityIds", entityIds);
     commentDeleteQuery.setParameter("entityName", entityName);
-    LOGGER.debug("Comments delete query : {}", commentDeleteQuery.getQueryString());
     List<CommentEntity> commentEntities = commentDeleteQuery.list();
     for (CommentEntity commentEntity : commentEntities) {
       session.delete(commentEntity);
@@ -411,7 +417,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteDatasets(Session session) {
-    LOGGER.debug("Dataset deleting");
+    LOGGER.trace("Dataset deleting");
     String alias = "dt";
     String deleteDatasetsQueryString =
         new StringBuilder("FROM ")
@@ -427,7 +433,6 @@ public class DeleteEntitiesCron extends TimerTask {
     Query datasetDeleteQuery = session.createQuery(deleteDatasetsQueryString);
     datasetDeleteQuery.setParameter("deleted", true);
     datasetDeleteQuery.setMaxResults(this.recordUpdateLimit);
-    LOGGER.debug("Dataset delete query: {}", datasetDeleteQuery.getQueryString());
     List<DatasetEntity> datasetEntities = datasetDeleteQuery.list();
 
     List<String> datasetIds = new ArrayList<>();
@@ -437,14 +442,18 @@ public class DeleteEntitiesCron extends TimerTask {
       }
       try {
         deleteRoleBindingsForDatasets(datasetEntities);
-      } catch (Exception ex) {
-        LOGGER.error(
+      } catch (OptimisticLockException ex) {
+        LOGGER.info(
             "DeleteEntitiesCron : deleteDatasets : deleteRoleBindingsForDatasets : Exception: {}",
             ex.getMessage());
+      } catch (Exception ex) {
+        LOGGER.warn(
+            "DeleteEntitiesCron : deleteDatasets : deleteRoleBindingsForDatasets : Exception: ",
+            ex);
       }
 
-      Transaction transaction = session.beginTransaction();
       try {
+        Transaction transaction = session.beginTransaction();
         String updateDeletedStatusDatasetVersionQueryString =
             new StringBuilder("UPDATE ")
                 .append(DatasetVersionEntity.class.getSimpleName())
@@ -461,14 +470,21 @@ public class DeleteEntitiesCron extends TimerTask {
         deletedDatasetVersionQuery.setParameter("deleted", true);
         deletedDatasetVersionQuery.setParameter("datasetIds", datasetIds);
         deletedDatasetVersionQuery.executeUpdate();
+        transaction.commit();
 
         for (DatasetEntity datasetEntity : datasetEntities) {
-          session.delete(datasetEntity);
+          try {
+            transaction = session.beginTransaction();
+            session.delete(datasetEntity);
+            transaction.commit();
+          } catch (OptimisticLockException ex) {
+            LOGGER.info("DeleteEntitiesCron : deleteDatasets : Exception: {}", ex.getMessage());
+          }
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteDatasets : Exception: {}", ex.getMessage());
       } catch (Exception ex) {
-        LOGGER.error("DeleteEntitiesCron : deleteDatasets : Exception:", ex);
-      } finally {
-        transaction.commit();
+        LOGGER.warn("DeleteEntitiesCron : deleteDatasets : Exception:", ex);
       }
     }
     LOGGER.debug("Dataset Deleted successfully : Deleted datasets count {}", datasetIds.isEmpty());
@@ -572,7 +588,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteDatasetVersions(Session session) {
-    LOGGER.debug("DatasetVersion deleting");
+    LOGGER.trace("DatasetVersion deleting");
     String alias = "dv";
     String deleteDatasetVersionsQueryString =
         new StringBuilder("FROM ")
@@ -587,27 +603,36 @@ public class DeleteEntitiesCron extends TimerTask {
             .toString();
     Query datasetVersionDeleteQuery = session.createQuery(deleteDatasetVersionsQueryString);
     datasetVersionDeleteQuery.setParameter("deleted", true);
-    LOGGER.debug("DatasetVersion delete query: {}", datasetVersionDeleteQuery.getQueryString());
     List<DatasetVersionEntity> datasetVersionEntities = datasetVersionDeleteQuery.list();
 
     try {
       // Remove all role bindings
       deleteRoleBindingsForDatasetVersions(datasetVersionEntities);
-    } catch (Exception ex) {
-      LOGGER.error(
+    } catch (StatusRuntimeException ex) {
+      LOGGER.info(
           "DeleteEntitiesCron : deleteDatasetVersions : deleteRoleBindingsForDatasetVersions : Exception: {}",
           ex.getMessage());
+    } catch (Exception ex) {
+      LOGGER.warn(
+          "DeleteEntitiesCron : deleteDatasetVersions : deleteRoleBindingsForDatasetVersions : Exception: ",
+          ex);
     }
 
-    Transaction transaction = session.beginTransaction();
     try {
       for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
-        session.delete(datasetVersionEntity);
+        try {
+          Transaction transaction = session.beginTransaction();
+          session.delete(datasetVersionEntity);
+          transaction.commit();
+        } catch (OptimisticLockException ex) {
+          LOGGER.info(
+              "DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
+        }
       }
+    } catch (OptimisticLockException ex) {
+      LOGGER.info("DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
     } catch (Exception ex) {
-      LOGGER.error("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
-    } finally {
-      transaction.commit();
+      LOGGER.warn("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
     }
     LOGGER.debug(
         "DatasetVersion Deleted successfully : Deleted datasetVersions count {}",
@@ -636,7 +661,7 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   private void deleteRepositories(Session session) {
-    LOGGER.debug("Repository deleting");
+    LOGGER.trace("Repository deleting");
     String alias = "rp";
     String deleteRepositoriesQueryString =
         new StringBuilder("FROM ")
@@ -651,17 +676,20 @@ public class DeleteEntitiesCron extends TimerTask {
             .toString();
     Query repositoryDeleteQuery = session.createQuery(deleteRepositoriesQueryString);
     repositoryDeleteQuery.setParameter("deleted", true);
-    LOGGER.debug("Repository delete query: {}", repositoryDeleteQuery.getQueryString());
     List<RepositoryEntity> repositoryEntities = repositoryDeleteQuery.list();
 
     if (!repositoryEntities.isEmpty()) {
       for (RepositoryEntity repository : repositoryEntities) {
         try {
           deleteRoleBindingsOfRepositories(Collections.singletonList(repository));
-        } catch (Exception ex) {
-          LOGGER.error(
+        } catch (OptimisticLockException ex) {
+          LOGGER.info(
               "DeleteEntitiesCron : deleteRepositories : deleteRoleBindingsOfRepositories : Exception: {}",
               ex.getMessage());
+        } catch (Exception ex) {
+          LOGGER.warn(
+              "DeleteEntitiesCron : deleteRepositories : deleteRoleBindingsOfRepositories : Exception: ",
+              ex);
         }
 
         Transaction transaction = session.beginTransaction();
@@ -745,8 +773,10 @@ public class DeleteEntitiesCron extends TimerTask {
                 }
               });
           session.delete(repository);
+        } catch (OptimisticLockException ex) {
+          LOGGER.info("DeleteEntitiesCron : deleteRepositories : Exception: {}", ex.getMessage());
         } catch (Exception ex) {
-          LOGGER.error("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
+          LOGGER.warn("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
         } finally {
           transaction.commit();
         }

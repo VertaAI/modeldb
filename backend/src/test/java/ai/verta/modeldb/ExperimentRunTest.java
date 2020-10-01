@@ -26,6 +26,7 @@ import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -72,7 +73,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -129,6 +129,7 @@ public class ExperimentRunTest {
       app.setRoleService(new RoleServiceUtils(authService));
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, app.getRoleService());
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -323,7 +324,7 @@ public class ExperimentRunTest {
                     .setKey("Google developer Observation artifact")
                     .setPath("This is data artifact type in Google developer Observation artifact")
                     .setArtifactType(ArtifactType.DATA))
-            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis() + 1)
             .setEpochNumber(Value.newBuilder().setNumberValue(1))
             .build());
     stringValue =
@@ -337,7 +338,7 @@ public class ExperimentRunTest {
                     .setKey("Observation Key " + Calendar.getInstance().getTimeInMillis())
                     .setValue(stringValue)
                     .setValueType(ValueType.STRING))
-            .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setTimestamp(Calendar.getInstance().getTimeInMillis() + 2)
             .setEpochNumber(Value.newBuilder().setNumberValue(123))
             .build());
 
@@ -2934,12 +2935,10 @@ public class ExperimentRunTest {
   }
 
   @Test
-  @Ignore
   public void h_LogObservationEpochTest() {
     LOGGER.info("Get Observation from ExperimentRun test start................................");
 
     ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     ExperimentServiceBlockingStub experimentServiceStub =
@@ -2957,7 +2956,7 @@ public class ExperimentRunTest {
 
     // Create an experiment of above project
     CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_h_loet_abc");
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_h_loet_abc");
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment = createExperimentResponse.getExperiment();
@@ -2997,13 +2996,17 @@ public class ExperimentRunTest {
         GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     GetExperimentRunById.Response response =
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    Assert.assertTrue(
+    LOGGER.debug("observation epoch should be 0 Response: {}", response);
+    assertEquals(
         "there should be exactly one observation",
-        response.getExperimentRun().getObservationsCount() == 1);
+        1,
+        response.getExperimentRun().getObservationsCount());
     Observation responseObservation = response.getExperimentRun().getObservations(0);
-    Assert.assertTrue(
+    assertEquals(
         "observation epoch should be 0",
-        responseObservation.getEpochNumber().getNumberValue() == 0);
+        0,
+        responseObservation.getEpochNumber().getNumberValue(),
+        0.0);
 
     // observation with epoch should set the value passed
     observation =
@@ -3028,14 +3031,15 @@ public class ExperimentRunTest {
 
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    Assert.assertTrue(
-        "there should be two observations",
-        response.getExperimentRun().getObservationsCount() == 2);
+    LOGGER.debug("observation epoch should be 123 Response: {}", response);
+    assertEquals(
+        "there should be two observations", 2, response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 1
     responseObservation = response.getExperimentRun().getObservations(1);
-    Assert.assertTrue(
+    assertEquals(
         "observation epoch should be 123",
-        (long) responseObservation.getEpochNumber().getNumberValue() == 123);
+        123,
+        (long) responseObservation.getEpochNumber().getNumberValue());
 
     // Subsequent call to log observation without epoch should set value to old max +1
     observation =
@@ -3059,14 +3063,17 @@ public class ExperimentRunTest {
 
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    Assert.assertTrue(
+    LOGGER.debug("observation epoch should be 123 + 1 Response: {}", response);
+    assertEquals(
         "there should be three observations",
-        response.getExperimentRun().getObservationsCount() == 3);
+        3,
+        response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 2
     responseObservation = response.getExperimentRun().getObservations(2);
-    Assert.assertTrue(
+    assertEquals(
         "observation epoch should be 123 + 1",
-        (long) responseObservation.getEpochNumber().getNumberValue() == 124);
+        124,
+        (long) responseObservation.getEpochNumber().getNumberValue());
 
     // call to log observation with epoch but o not a different key should set value to 0
     observation =
@@ -3090,14 +3097,15 @@ public class ExperimentRunTest {
 
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    Assert.assertTrue(
-        "there should be four observations",
-        response.getExperimentRun().getObservationsCount() == 4);
+    LOGGER.debug("observation epoch should be 0 again Response: {}", response);
+    assertEquals(
+        "there should be four observations", 4, response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 3
     responseObservation = response.getExperimentRun().getObservations(3);
-    Assert.assertTrue(
+    assertEquals(
         "observation epoch should be 0",
-        (long) responseObservation.getEpochNumber().getNumberValue() == 0);
+        0,
+        (long) responseObservation.getEpochNumber().getNumberValue());
 
     // same epoch_number, same key stores duplicate
     observation =
@@ -3122,21 +3130,19 @@ public class ExperimentRunTest {
 
     getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-    Assert.assertTrue(
-        "there should be five observations",
-        response.getExperimentRun().getObservationsCount() == 5);
+    assertEquals(
+        "there should be five observations", 5, response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 3
     responseObservation = response.getExperimentRun().getObservations(1);
     Observation responseObservation2 = response.getExperimentRun().getObservations(4);
-    Assert.assertTrue(
+    assertEquals(
         "observations have same key",
-        responseObservation
-            .getAttribute()
-            .getKey()
-            .equals(responseObservation2.getAttribute().getKey()));
-    Assert.assertTrue(
+        responseObservation.getAttribute().getKey(),
+        responseObservation2.getAttribute().getKey());
+    assertEquals(
         "observations have same epoch number",
-        responseObservation.getEpochNumber().equals(responseObservation2.getEpochNumber()));
+        responseObservation.getEpochNumber(),
+        responseObservation2.getEpochNumber());
 
     // call to log observation with non numeric epoch throws error
     observation =
@@ -6544,13 +6550,11 @@ public class ExperimentRunTest {
     LOGGER.info("SortExperimentRuns Negative test stop................................");
   }
 
-  @Ignore("ordering")
   @Test
   public void u_getTopExperimentRunsTest() {
     LOGGER.info("TopExperimentRuns test start................................");
 
     ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     ExperimentServiceBlockingStub experimentServiceStub =
@@ -6572,7 +6576,7 @@ public class ExperimentRunTest {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment1 = createExperimentResponse.getExperiment();
@@ -6652,7 +6656,7 @@ public class ExperimentRunTest {
 
     // experiment2 of above project
     createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
     createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment2 = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
@@ -8558,9 +8562,15 @@ public class ExperimentRunTest {
         getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
         getVersionedInputResponse =
             experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
-        assertTrue(
-            "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-            getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
+        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          assertTrue(
+              "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+              getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
+        } else {
+          assertFalse(
+              "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
+              getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
+        }
       }
     } finally {
       DeleteRepositoryRequest deleteRepository =
@@ -9531,10 +9541,17 @@ public class ExperimentRunTest {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        assertEquals(
-            "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
-            1,
-            response.getExperimentRuns(0).getHyperparametersCount());
+        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          assertEquals(
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
+              1,
+              response.getExperimentRuns(0).getHyperparametersCount());
+        } else {
+          assertEquals(
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
+              3,
+              response.getExperimentRuns(0).getHyperparametersCount());
+        }
 
         addCollaboratorRequest =
             AddCollaboratorRequest.newBuilder()
@@ -9565,10 +9582,17 @@ public class ExperimentRunTest {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        assertEquals(
-            "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
-            3,
-            response.getExperimentRuns(0).getHyperparametersCount());
+        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          assertEquals(
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
+              3,
+              response.getExperimentRuns(0).getHyperparametersCount());
+        } else {
+          assertEquals(
+              "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
+              3,
+              response.getExperimentRuns(0).getHyperparametersCount());
+        }
       }
     } finally {
       DeleteRepositoryRequest deleteRepository =
@@ -9591,7 +9615,6 @@ public class ExperimentRunTest {
   }
 
   @Test
-  @Ignore
   public void findExperimentRunsHyperparameterWithSortKeyRepository()
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("FindExperimentRuns test start................................");
@@ -9683,11 +9706,6 @@ public class ExperimentRunTest {
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
-            .addHyperparameters(
-                KeyValue.newBuilder()
-                    .setKey("C")
-                    .setValue(Value.newBuilder().setStringValue("abc").build())
-                    .build())
             .setVersionedInputs(
                 VersioningEntry.newBuilder()
                     .setRepositoryId(repoId)
@@ -9759,266 +9777,277 @@ public class ExperimentRunTest {
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     LOGGER.info("ExperimentRun created successfully");
 
-    Value hyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
-    KeyValueQuery keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.train")
-            .setValue(hyperparameterFilter)
-            .setOperator(Operator.GTE)
-            .setValueType(ValueType.NUMBER)
-            .build();
+    try {
+      Value hyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
+      KeyValueQuery keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.train")
+              .setValue(hyperparameterFilter)
+              .setOperator(Operator.GTE)
+              .setValueType(ValueType.NUMBER)
+              .build();
 
-    FindExperimentRuns findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.train")
-            .build();
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.train")
+              .build();
 
-    FindExperimentRuns.Response response =
-        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      FindExperimentRuns.Response response =
+          experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        2,
-        response.getExperimentRunsCount());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        experimentRunConfig2.getId(),
-        response.getExperimentRuns(0).getId());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          2,
+          response.getExperimentRunsCount());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          experimentRunConfig2.getId(),
+          response.getExperimentRuns(0).getId());
 
-    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
-      ExperimentRun exprRun = response.getExperimentRuns(index);
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("C")) {
-          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
-        } else if (kv.getKey().equals("train")) {
-          if (index == 0) {
-            assertEquals("Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
-          } else {
-            assertEquals("Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
+      for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+        ExperimentRun exprRun = response.getExperimentRuns(index);
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("C")) {
+            assertTrue(
+                "Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
+          } else if (kv.getKey().equals("train")) {
+            if (index == 0) {
+              assertEquals(
+                  "Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
+            } else {
+              assertEquals(
+                  "Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
+            }
           }
         }
       }
-    }
 
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(true)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.train")
-            .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(true)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.train")
+              .build();
 
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        2,
-        response.getExperimentRunsCount());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        experimentRunConfig1.getId(),
-        response.getExperimentRuns(0).getId());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          2,
+          response.getExperimentRunsCount());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          experimentRunConfig1.getId(),
+          response.getExperimentRuns(0).getId());
 
-    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
-      ExperimentRun exprRun = response.getExperimentRuns(index);
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("C")) {
-          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
-        } else if (kv.getKey().equals("train")) {
-          if (index == 0) {
-            assertEquals("Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
-          } else {
-            assertEquals("Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
+      for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+        ExperimentRun exprRun = response.getExperimentRuns(index);
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("C")) {
+            assertTrue(
+                "Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() >= 0.0001);
+          } else if (kv.getKey().equals("train")) {
+            if (index == 0) {
+              assertEquals(
+                  "Value should be GTE 1 " + kv, 3.0F, kv.getValue().getNumberValue(), 0.0);
+            } else {
+              assertEquals(
+                  "Value should be GTE 1 " + kv, 5.0F, kv.getValue().getNumberValue(), 0.0);
+            }
           }
         }
       }
-    }
 
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setPageLimit(1)
-            .setPageNumber(1)
-            .setSortKey("hyperparameters.train")
-            .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setPageLimit(1)
+              .setPageNumber(1)
+              .setSortKey("hyperparameters.train")
+              .build();
 
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        1,
-        response.getExperimentRunsCount());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        experimentRunConfig2.getId(),
-        response.getExperimentRuns(0).getId());
-    for (ExperimentRun exprRun : response.getExperimentRunsList()) {
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("train")) {
-          assertTrue("Value should be GTE 1 " + kv, kv.getValue().getNumberValue() > 1);
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          1,
+          response.getExperimentRunsCount());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          experimentRunConfig2.getId(),
+          response.getExperimentRuns(0).getId());
+      for (ExperimentRun exprRun : response.getExperimentRunsList()) {
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("train")) {
+            assertTrue("Value should be GTE 1 " + kv, kv.getValue().getNumberValue() > 1);
+          }
         }
       }
-    }
 
-    Value oldHyperparameterFilter = Value.newBuilder().setNumberValue(0.0002).build();
-    KeyValueQuery oldKeyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.C")
-            .setValue(oldHyperparameterFilter)
-            .setOperator(Operator.GTE)
-            .setValueType(ValueType.NUMBER)
-            .build();
+      Value oldHyperparameterFilter = Value.newBuilder().setNumberValue(0.0002).build();
+      KeyValueQuery oldKeyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.C")
+              .setValue(oldHyperparameterFilter)
+              .setOperator(Operator.GTE)
+              .setValueType(ValueType.NUMBER)
+              .build();
 
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(oldKeyValueQuery)
-            .setAscending(true)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.C")
-            .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(oldKeyValueQuery)
+              .setAscending(true)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.C")
+              .build();
 
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
 
-    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
-      ExperimentRun exprRun = response.getExperimentRuns(index);
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("C")) {
-          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+      for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+        ExperimentRun exprRun = response.getExperimentRuns(index);
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("C")) {
+            assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+          }
         }
       }
-    }
 
-    oldHyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
-    oldKeyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.train")
-            .setValue(oldHyperparameterFilter)
-            .setOperator(Operator.GTE)
-            .setValueType(ValueType.NUMBER)
-            .build();
+      oldHyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
+      oldKeyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.train")
+              .setValue(oldHyperparameterFilter)
+              .setOperator(Operator.GTE)
+              .setValueType(ValueType.NUMBER)
+              .build();
 
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(oldKeyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.C")
-            .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(oldKeyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.C")
+              .build();
 
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
 
-    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
-      ExperimentRun exprRun = response.getExperimentRuns(index);
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("C")) {
-          assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+      for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+        ExperimentRun exprRun = response.getExperimentRuns(index);
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("C")) {
+            assertTrue("Value should be GTE 0.0001 " + kv, kv.getValue().getNumberValue() > 0.0001);
+          }
         }
       }
+
+      hyperparameterFilter = Value.newBuilder().setNumberValue(5).build();
+      keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.train")
+              .setValue(hyperparameterFilter)
+              .setOperator(Operator.NE)
+              .setValueType(ValueType.NUMBER)
+              .build();
+
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.train")
+              .build();
+
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+      assertEquals(
+          "Total records count not matched with expected records count",
+          3,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          3,
+          response.getExperimentRunsCount());
+
+      // FIX ME: Fix findExperimentRun with string value predicate
+      /*hyperparameterFilter = Value.newBuilder().setStringValue("abc").build();
+      keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.C")
+              .setValue(hyperparameterFilter)
+              .setOperator(Operator.CONTAIN)
+              .setValueType(ValueType.STRING)
+              .build();
+
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.train")
+              .build();
+
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+
+      assertEquals(
+          "Total records count not matched with expected records count",
+          1,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          1,
+          response.getExperimentRunsCount());*/
+
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
     }
-
-    hyperparameterFilter = Value.newBuilder().setNumberValue(5).build();
-    keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.train")
-            .setValue(hyperparameterFilter)
-            .setOperator(Operator.NE)
-            .setValueType(ValueType.NUMBER)
-            .build();
-
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.train")
-            .build();
-
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        3,
-        response.getExperimentRunsCount());
-
-    hyperparameterFilter = Value.newBuilder().setStringValue("abc").build();
-    keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.C")
-            .setValue(hyperparameterFilter)
-            .setOperator(Operator.CONTAIN)
-            .setValueType(ValueType.STRING)
-            .build();
-
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.train")
-            .build();
-
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        1,
-        response.getExperimentRunsCount());
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("FindExperimentRuns test stop................................");
   }
@@ -10111,122 +10140,155 @@ public class ExperimentRunTest {
     Experiment experiment1 = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
 
-    Map<String, Location> locationMap = new HashMap<>();
-    locationMap.put("location-1", datasetLocation);
+    try {
+      Map<String, Location> locationMap = new HashMap<>();
+      locationMap.put("location-1", datasetLocation);
 
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
-    KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap)
-                    .build())
-            .addHyperparameters(hyperparameter1)
-            .build();
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
+      CreateExperimentRun createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+      KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .addHyperparameters(hyperparameter1)
+              .build();
+      CreateExperimentRun.Response createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
 
-    locationMap.put("location-2", test1Location);
+      locationMap.put("location-2", test1Location);
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap)
-                    .build())
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
+      LOGGER.info("ExperimentRun created successfully");
 
-    // experiment2 of above project
-    createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
+      // experiment2 of above project
+      createExperimentRequest =
+          ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
+      createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment2 = createExperimentResponse.getExperiment();
+      LOGGER.info("Experiment created successfully");
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
-    hyperparameter1 = generateNumericKeyValue("C", 0.0001);
-    Map<String, Location> locationMap2 = new HashMap<>();
-    locationMap2.put("location-111", test2Location);
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap2)
-                    .build())
-            .addHyperparameters(hyperparameter1)
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
+      hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+      Map<String, Location> locationMap2 = new HashMap<>();
+      locationMap2.put("location-111", test2Location);
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap2)
+                      .build())
+              .addHyperparameters(hyperparameter1)
+              .build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
+      LOGGER.info("ExperimentRun created successfully");
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
-    hyperparameter1 = generateNumericKeyValue("C", 1e-6);
-    createExperimentRunRequest =
-        createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
+      hyperparameter1 = generateNumericKeyValue("C", 1e-6);
+      createExperimentRunRequest =
+          createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
 
-    FindExperimentRuns findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .setAscending(false)
-            .setIdsOnly(false)
-            .build();
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .setAscending(false)
+              .setIdsOnly(false)
+              .build();
 
-    FindExperimentRuns.Response response =
-        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      FindExperimentRuns.Response response =
+          experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        4,
-        response.getTotalRecords());
-    assertEquals(
-        "ExperimentRun count not match with expected experimentRun count",
-        4,
-        response.getExperimentRunsCount());
-    for (ExperimentRun exprRun : response.getExperimentRunsList()) {
-      if (exprRun.getId().equals(experimentRun2.getId())) {
-        String locationKey =
-            ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          4,
+          response.getTotalRecords());
+      assertEquals(
+          "ExperimentRun count not match with expected experimentRun count",
+          4,
+          response.getExperimentRunsCount());
+      for (ExperimentRun exprRun : response.getExperimentRunsList()) {
+        if (exprRun.getId().equals(experimentRun2.getId())) {
+          String locationKey =
+              ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
+          if (app.isPopulateConnectionsBasedOnPrivileges()) {
+            assertFalse(
+                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+          } else {
+            assertTrue(
+                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+            assertFalse(
+                "Expected code config not found in map",
+                exprRun
+                    .getCodeVersionFromBlobOrThrow(locationKey)
+                    .getGitSnapshot()
+                    .getFilepathsList()
+                    .isEmpty());
+          }
+        } else if (exprRun.getId().equals(experimentRun3.getId())) {
+          String locationKey =
+              ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
+          if (app.isPopulateConnectionsBasedOnPrivileges()) {
+            assertFalse(
+                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+          } else {
+            assertTrue(
+                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+            assertTrue(
+                "Expected code config not found in map",
+                exprRun
+                    .getCodeVersionFromBlobOrThrow(locationKey)
+                    .getGitSnapshot()
+                    .getFilepathsList()
+                    .isEmpty());
+          }
+        }
+      }
+
+      GetExperimentRunById.Response getHydratedExperimentRunsResponse =
+          experimentRunServiceStub.getExperimentRunById(
+              GetExperimentRunById.newBuilder().setId(experimentRun2.getId()).build());
+      ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
+      String locationKey =
+          ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
+      if (app.isPopulateConnectionsBasedOnPrivileges()) {
+        assertFalse("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+      } else {
         assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-        assertTrue(
-            "Expected code config not found in map",
-            !exprRun
-                .getCodeVersionFromBlobOrThrow(locationKey)
-                .getGitSnapshot()
-                .getFilepathsList()
-                .isEmpty());
-      } else if (exprRun.getId().equals(experimentRun3.getId())) {
-        String locationKey =
-            ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
-        assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-        assertTrue(
+        assertFalse(
             "Expected code config not found in map",
             exprRun
                 .getCodeVersionFromBlobOrThrow(locationKey)
@@ -10234,35 +10296,23 @@ public class ExperimentRunTest {
                 .getFilepathsList()
                 .isEmpty());
       }
+    } finally {
+
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
     }
-
-    GetExperimentRunById.Response getHydratedExperimentRunsResponse =
-        experimentRunServiceStub.getExperimentRunById(
-            GetExperimentRunById.newBuilder().setId(experimentRun2.getId()).build());
-    ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
-    String locationKey = ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-    assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-    assertFalse(
-        "Expected code config not found in map",
-        exprRun
-            .getCodeVersionFromBlobOrThrow(locationKey)
-            .getGitSnapshot()
-            .getFilepathsList()
-            .isEmpty());
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("FindExperimentRuns test stop................................");
   }
@@ -10853,10 +10903,17 @@ public class ExperimentRunTest {
             "ExperimentRun count not match with expected experimentRun count",
             1,
             response.getExperimentRunsCount());
-        assertEquals(
-            "ExperimentRun not match with expected experimentRun",
-            0,
-            response.getExperimentRuns(0).getDatasetsCount());
+        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          assertEquals(
+              "ExperimentRun not match with expected experimentRun",
+              0,
+              response.getExperimentRuns(0).getDatasetsCount());
+        } else {
+          assertEquals(
+              "ExperimentRun not match with expected experimentRun",
+              2,
+              response.getExperimentRuns(0).getDatasetsCount());
+        }
       }
     } finally {
       for (String datasetVersionId : datasetVersionIds) {
@@ -11213,5 +11270,211 @@ public class ExperimentRunTest {
     }
 
     LOGGER.info("Delete ExperimentRun Observations test stop................................");
+  }
+
+  @Test
+  public void cloneExperimentRun() throws ModelDBException, NoSuchAlgorithmException {
+    LOGGER.info("Clone experimentRun test start................................");
+
+    ProjectTest projectTest = new ProjectTest();
+    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    ExperimentServiceBlockingStub experimentServiceStub =
+        ExperimentServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStub =
+        ExperimentRunServiceGrpc.newBlockingStub(channel);
+    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
+        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
+    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
+        VersioningServiceGrpc.newBlockingStub(channel);
+
+    long repoId =
+        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+    Commit commit =
+        Commit.newBuilder()
+            .setMessage("this is the test commit message")
+            .setDateCreated(111)
+            .addParentShas(getBranchResponse.getCommit().getCommitSha())
+            .build();
+    Location location1 = Location.newBuilder().addLocation("dataset").addLocation("train").build();
+    Location location2 =
+        Location.newBuilder().addLocation("test-1").addLocation("test1.json").build();
+    Location location3 =
+        Location.newBuilder().addLocation("test-2").addLocation("test2.json").build();
+    Location location4 =
+        Location.newBuilder().addLocation("test-location-4").addLocation("test4.json").build();
+
+    CreateCommitRequest createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+            .setCommit(commit)
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .addAllLocation(location1.getLocationList())
+                    .build())
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.CONFIG))
+                    .addAllLocation(location2.getLocationList())
+                    .build())
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .addAllLocation(location3.getLocationList())
+                    .build())
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(CommitTest.getHyperparameterConfigBlob(0.14F, 0.10F))
+                    .addAllLocation(location4.getLocationList())
+                    .build())
+            .build();
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+    commit = commitResponse.getCommit();
+
+    // Create project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("experimentRun_project_ferh_1");
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project1 = createProjectResponse.getProject();
+    LOGGER.info("Project1 created successfully");
+
+    createProjectRequest = projectTest.getCreateProjectRequest("experimentRun_project_ferh_2");
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    Project project2 = createProjectResponse.getProject();
+    LOGGER.info("Project2 created successfully");
+
+    try {
+      // Create two experiment of above project
+      CreateExperiment createExperimentRequest =
+          ExperimentTest.getCreateExperimentRequest(project1.getId(), "Experiment_ferh_1");
+      CreateExperiment.Response createExperimentResponse =
+          experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment1 = createExperimentResponse.getExperiment();
+      LOGGER.info("Experiment1 created successfully");
+
+      createExperimentRequest =
+          ExperimentTest.getCreateExperimentRequest(project2.getId(), "Experiment_ferh_2");
+      createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
+      Experiment experiment2 = createExperimentResponse.getExperiment();
+      LOGGER.info("Experiment2 created successfully");
+
+      Map<String, Location> locationMap = new HashMap<>();
+      locationMap.put("location-1", location1);
+
+      CreateExperimentRun createExperimentRunRequest =
+          getCreateExperimentRunRequest(
+              project1.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+      KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .addHyperparameters(hyperparameter1)
+              .build();
+      CreateExperimentRun.Response createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
+      ExperimentRun srcExperimentRun = createExperimentRunResponse.getExperimentRun();
+
+      CloneExperimentRun cloneExperimentRun =
+          CloneExperimentRun.newBuilder().setSrcExperimentRunId(srcExperimentRun.getId()).build();
+      CloneExperimentRun.Response cloneResponse =
+          experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
+      assertNotEquals(
+          "Clone run id should not be match with source run id",
+          srcExperimentRun.getId(),
+          cloneResponse.getRun().getId());
+      srcExperimentRun =
+          srcExperimentRun
+              .toBuilder()
+              .setId(cloneResponse.getRun().getId())
+              .setName(cloneResponse.getRun().getName())
+              .setDateCreated(cloneResponse.getRun().getDateCreated())
+              .setDateUpdated(cloneResponse.getRun().getDateUpdated())
+              .setStartTime(cloneResponse.getRun().getStartTime())
+              .setEndTime(cloneResponse.getRun().getEndTime())
+              .build();
+      assertEquals(
+          "Clone experimentRun can not match with expected experimentRun",
+          srcExperimentRun,
+          cloneResponse.getRun());
+
+      cloneExperimentRun =
+          CloneExperimentRun.newBuilder()
+              .setSrcExperimentRunId(srcExperimentRun.getId())
+              .setDestExperimentRunName("Test - " + Calendar.getInstance().getTimeInMillis())
+              .setDestExperimentId(experiment2.getId())
+              .build();
+      cloneResponse = experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
+      assertNotEquals(
+          "Clone run id should not be match with source run id",
+          srcExperimentRun.getId(),
+          cloneResponse.getRun().getId());
+      srcExperimentRun =
+          srcExperimentRun
+              .toBuilder()
+              .setId(cloneResponse.getRun().getId())
+              .setName(cloneExperimentRun.getDestExperimentRunName())
+              .setProjectId(cloneResponse.getRun().getProjectId())
+              .setExperimentId(cloneExperimentRun.getDestExperimentId())
+              .setDateCreated(cloneResponse.getRun().getDateCreated())
+              .setDateUpdated(cloneResponse.getRun().getDateUpdated())
+              .setStartTime(cloneResponse.getRun().getStartTime())
+              .setEndTime(cloneResponse.getRun().getEndTime())
+              .build();
+      assertEquals(
+          "Clone experimentRun can not match with expected experimentRun",
+          srcExperimentRun,
+          cloneResponse.getRun());
+
+      try {
+        cloneExperimentRun =
+            CloneExperimentRun.newBuilder()
+                .setSrcExperimentRunId(srcExperimentRun.getId())
+                .setDestExperimentId("XYZ")
+                .build();
+        experimentRunServiceStub.cloneExperimentRun(cloneExperimentRun);
+        fail();
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn(
+            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
+      }
+
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+
+      for (Project project : new Project[] {project1, project2}) {
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            projectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
+      }
+    }
+
+    LOGGER.info("Clone experimentRun test stop................................");
   }
 }

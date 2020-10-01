@@ -1,3 +1,5 @@
+.. _registry-cli:
+
 Registry Command-Line Interface
 ===============================
 
