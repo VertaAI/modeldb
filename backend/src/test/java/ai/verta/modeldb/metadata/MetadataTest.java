@@ -13,6 +13,7 @@ import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceBlockingStub;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import io.grpc.ManagedChannel;
@@ -81,6 +82,7 @@ public class MetadataTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());

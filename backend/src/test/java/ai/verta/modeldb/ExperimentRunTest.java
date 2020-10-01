@@ -26,6 +26,7 @@ import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -128,6 +129,7 @@ public class ExperimentRunTest {
       app.setRoleService(new RoleServiceUtils(authService));
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, app.getRoleService());
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -10242,27 +10244,37 @@ public class ExperimentRunTest {
         if (exprRun.getId().equals(experimentRun2.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-          assertTrue(
-              "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-          assertFalse(
-              "Expected code config not found in map",
-              exprRun
-                  .getCodeVersionFromBlobOrThrow(locationKey)
-                  .getGitSnapshot()
-                  .getFilepathsList()
-                  .isEmpty());
+          if (app.isPopulateConnectionsBasedOnPrivileges()) {
+            assertFalse(
+                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+          } else {
+            assertTrue(
+                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+            assertFalse(
+                "Expected code config not found in map",
+                exprRun
+                    .getCodeVersionFromBlobOrThrow(locationKey)
+                    .getGitSnapshot()
+                    .getFilepathsList()
+                    .isEmpty());
+          }
         } else if (exprRun.getId().equals(experimentRun3.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
-          assertTrue(
-              "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-          assertTrue(
-              "Expected code config not found in map",
-              exprRun
-                  .getCodeVersionFromBlobOrThrow(locationKey)
-                  .getGitSnapshot()
-                  .getFilepathsList()
-                  .isEmpty());
+          if (app.isPopulateConnectionsBasedOnPrivileges()) {
+            assertFalse(
+                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+          } else {
+            assertTrue(
+                "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+            assertTrue(
+                "Expected code config not found in map",
+                exprRun
+                    .getCodeVersionFromBlobOrThrow(locationKey)
+                    .getGitSnapshot()
+                    .getFilepathsList()
+                    .isEmpty());
+          }
         }
       }
 
@@ -10272,15 +10284,18 @@ public class ExperimentRunTest {
       ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
       String locationKey =
           ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-      assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
-      assertFalse(
-          "Expected code config not found in map",
-          exprRun
-              .getCodeVersionFromBlobOrThrow(locationKey)
-              .getGitSnapshot()
-              .getFilepathsList()
-              .isEmpty());
-
+      if (app.isPopulateConnectionsBasedOnPrivileges()) {
+        assertFalse("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+      } else {
+        assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
+        assertFalse(
+            "Expected code config not found in map",
+            exprRun
+                .getCodeVersionFromBlobOrThrow(locationKey)
+                .getGitSnapshot()
+                .getFilepathsList()
+                .isEmpty());
+      }
     } finally {
 
       DeleteRepositoryRequest deleteRepository =

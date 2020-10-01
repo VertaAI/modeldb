@@ -19,6 +19,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
@@ -106,6 +107,7 @@ public class LineageTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());

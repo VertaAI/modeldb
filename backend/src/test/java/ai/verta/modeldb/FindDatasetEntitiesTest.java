@@ -17,6 +17,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -107,6 +108,7 @@ public class FindDatasetEntitiesTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());

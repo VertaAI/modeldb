@@ -22,6 +22,7 @@ import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -118,6 +119,7 @@ public class DatasetTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
