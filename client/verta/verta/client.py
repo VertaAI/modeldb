@@ -70,6 +70,7 @@ from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
 from .endpoint._endpoint import Endpoint
 from .endpoint._endpoints import Endpoints
+from .endpoint.update import DirectUpdateStrategy
 
 
 class Client(object):
@@ -557,7 +558,7 @@ class Client(object):
 
         return self._ctx.expt_run
 
-    def get_or_create_repository(self, name=None, workspace=None, id=None):
+    def get_or_create_repository(self, name=None, workspace=None, id=None, public_within_org=None):
         """
         Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
 
@@ -570,6 +571,9 @@ class Client(object):
             current user's personal workspace will be used.
         id : str, optional
             ID of the Repository, to be provided instead of `name`.
+        public_within_org : bool, default False
+            If creating a Repository in an organization's workspace, whether to make this Repository
+            accessible to all members of that organization.
 
         Returns
         -------
@@ -596,7 +600,8 @@ class Client(object):
 
             if not repo:  # not found
                 try:
-                    repo = _repository.Repository._create(self._conn, name=name, workspace=workspace)
+                    repo = _repository.Repository._create(self._conn, name=name, workspace=workspace,
+                                                          public_within_org=public_within_org)
                 except requests.HTTPError as e:
                     if e.response.status_code == 409:  # already exists
                         raise RuntimeError("unable to get Repository from ModelDB;"
@@ -1224,7 +1229,7 @@ class Client(object):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
     def download_endpoint_manifest(
-            self, download_to_path, path, name, strategy,
+            self, download_to_path, path, name, strategy=None,
             resources=None, autoscaling=None, env_vars=None,
             workspace=None):
         """
@@ -1238,7 +1243,7 @@ class Client(object):
             Path of the endpoint.
         name : str
             Name of the endpoint.
-        strategy : :ref:`update strategy <update-stategies>`
+        strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the endpoint.
         resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated endpoint.
@@ -1258,6 +1263,9 @@ class Client(object):
         """
         if not path.startswith('/'):
             path = '/' + path
+
+        if not strategy:
+            strategy = DirectUpdateStrategy()
 
         data = {
             'endpoint': {'path': path},

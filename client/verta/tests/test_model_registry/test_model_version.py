@@ -22,6 +22,8 @@ from verta.environment import Python
 from verta._tracking.deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
 
+pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
+
 
 class TestMDBIntegration:
     def test_from_run(self, experiment_run, model_for_deployment, registered_model):

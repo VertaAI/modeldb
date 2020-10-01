@@ -64,12 +64,10 @@ import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
@@ -226,7 +224,7 @@ public class App implements ApplicationContextAware {
       if (liquibaseMigration) {
         LOGGER.info("Liquibase validation starting");
 
-        if (runLiquibaseMigration(databasePropMap)) return;
+        if (ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap)) return;
       }
 
       // --------------- Start Initialize modelDB gRPC server --------------------------
@@ -333,46 +331,6 @@ public class App implements ApplicationContextAware {
       initiateShutdown(0);
       System.exit(0);
     }
-  }
-
-  private static boolean runLiquibaseMigration(Map<String, Object> databasePropMap)
-      throws InterruptedException, LiquibaseException, SQLException, ClassNotFoundException {
-    Map<String, Object> rDBPropMap = (Map<String, Object>) databasePropMap.get("RdbConfiguration");
-
-    String databaseName = (String) rDBPropMap.get("RdbDatabaseName");
-    String rDBDriver = (String) rDBPropMap.get("RdbDriver");
-    String rDBUrl = (String) rDBPropMap.get("RdbUrl");
-    String configUsername = (String) rDBPropMap.get("RdbUsername");
-    String configPassword = (String) rDBPropMap.get("RdbPassword");
-    int timeout = 4;
-    if (databasePropMap.containsKey("timeout")) {
-      timeout = (Integer) databasePropMap.get("timeout");
-    }
-    String changeSetToRevertUntilTag = (String) databasePropMap.get("changeSetToRevertUntilTag");
-
-    // Check DB is up or not
-    boolean dbConnectionStatus =
-        ModelDBHibernateUtil.checkDBConnection(
-            rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
-    if (!dbConnectionStatus) {
-      ModelDBHibernateUtil.checkDBConnectionInLoop(true);
-    }
-
-    ModelDBHibernateUtil.releaseLiquibaseLock(
-        rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
-
-    // Run tables liquibase migration
-    ModelDBHibernateUtil.createTablesLiquibaseMigration(
-        rDBDriver, rDBUrl, databaseName, configUsername, configPassword, changeSetToRevertUntilTag);
-
-    LOGGER.info("Liquibase validation stop");
-
-    boolean runLiquibaseSeparate =
-        Boolean.parseBoolean(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE));
-    if (runLiquibaseSeparate) {
-      return true;
-    }
-    return false;
   }
 
   public static void initializeServicesBaseOnDataBase(
