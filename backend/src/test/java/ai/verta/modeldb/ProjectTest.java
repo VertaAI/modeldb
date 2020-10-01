@@ -56,8 +56,10 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -176,11 +178,6 @@ public class ProjectTest {
     experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
     experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
     commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
-
-    // Create all entities
-    createProjectEntities();
-    createExperimentEntities();
-    createExperimentRunEntities();
   }
 
   @AfterClass
@@ -188,7 +185,7 @@ public class ProjectTest {
     App.initiateShutdown(0);
 
     // Remove all entities
-    removeEntities();
+    // removeEntities();
     // Delete entities by cron job
     deleteEntitiesCron.run();
 
@@ -196,7 +193,16 @@ public class ProjectTest {
     serverBuilder.build().shutdownNow();
   }
 
-  private static void removeEntities() {
+  @Before
+  public void createEntities() {
+    // Create all entities
+    createProjectEntities();
+    createExperimentEntities();
+    createExperimentRunEntities();
+  }
+
+  @After
+  public void removeEntities() {
     for (String projectId : projectMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
       DeleteProject.Response deleteProjectResponse =
@@ -205,6 +211,17 @@ public class ProjectTest {
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
     }
+    project = null;
+    project2 = null;
+    project3 = null;
+
+    // Experiment Entities
+    experiment = null;
+
+    // ExperimentRun Entities
+    experimentRun = null;
+
+    projectMap = new HashMap<>();
   }
 
   private static void createProjectEntities() {
@@ -1182,8 +1199,6 @@ public class ProjectTest {
   public void hhh_deleteProjectTag() {
     LOGGER.info("Delete Project Tag test start................................");
 
-    fff_addProjectTag();
-
     DeleteProjectTag deleteProjectTagRequest =
         DeleteProjectTag.newBuilder()
             .setId(project.getId())
@@ -1193,7 +1208,7 @@ public class ProjectTest {
     DeleteProjectTag.Response response =
         projectServiceStub.deleteProjectTag(deleteProjectTagRequest);
     LOGGER.info("Tag deleted in server : " + response.getProject().getTagsList());
-    assertEquals(0, response.getProject().getTagsList().size());
+    assertEquals(project.getTagsCount() - 1, response.getProject().getTagsList().size());
     assertNotEquals(
         "Project date_updated field not update on database",
         project.getDateUpdated(),
@@ -1308,7 +1323,7 @@ public class ProjectTest {
     List<KeyValue> attributes = project.getAttributesList();
     LOGGER.info("Attributes size : " + attributes.size());
     assertEquals(
-        "Attribute list size not match with expected attribute list size", 5, attributes.size());
+        "Attribute list size not match with expected attribute list size", 3, attributes.size());
     List<String> keys = new ArrayList<>();
     if (attributes.size() > 1) {
       for (int index = 0; index < attributes.size() - 1; index++) {
@@ -1695,17 +1710,17 @@ public class ProjectTest {
 
     assertEquals(
         "Projects order not match with expected projects order",
-        project,
+        project3,
         response.getProjectsList().get(0));
 
     assertEquals(
         "Projects order not match with expected projects order",
-        project3,
+        project2,
         response.getProjectsList().get(1));
 
     assertEquals(
         "Projects order not match with expected projects order",
-        project2,
+        project,
         response.getProjectsList().get(2));
     LOGGER.info("Get project on descending order test stop................................");
   }
