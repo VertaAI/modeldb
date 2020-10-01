@@ -15,7 +15,6 @@ import ai.verta.swagger.client.objects._
 case class ModeldbCloneExperimentRun (
   dest_experiment_id: Option[String] = None,
   dest_experiment_run_name: Option[String] = None,
-  dest_project_id: Option[String] = None,
   src_experiment_run_id: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbCloneExperimentRun.toJson(this)
@@ -27,7 +26,6 @@ object ModeldbCloneExperimentRun {
       List[Option[JField]](
         obj.dest_experiment_id.map(x => JField("dest_experiment_id", JString(x))),
         obj.dest_experiment_run_name.map(x => JField("dest_experiment_run_name", JString(x))),
-        obj.dest_project_id.map(x => JField("dest_project_id", JString(x))),
         obj.src_experiment_run_id.map(x => JField("src_experiment_run_id", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -44,7 +42,6 @@ object ModeldbCloneExperimentRun {
           // TODO: handle required
           dest_experiment_id = fieldsMap.get("dest_experiment_id").map(JsonConverter.fromJsonString),
           dest_experiment_run_name = fieldsMap.get("dest_experiment_run_name").map(JsonConverter.fromJsonString),
-          dest_project_id = fieldsMap.get("dest_project_id").map(JsonConverter.fromJsonString),
           src_experiment_run_id = fieldsMap.get("src_experiment_run_id").map(JsonConverter.fromJsonString)
         )
       }

@@ -14,6 +14,8 @@ from verta.endpoint.resources import Resources
 
 from ..utils import get_build_ids
 
+pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
+
 
 class TestList:
     def test_list_endpoint(self, created_endpoints):
