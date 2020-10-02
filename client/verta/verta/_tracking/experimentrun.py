@@ -452,18 +452,12 @@ class ExperimentRun(_DeployableEntity):
         else:
             return dataset.path, dataset.path_only, dataset.linked_artifact_id
 
-    def clone(self, copy_artifacts=False, copy_code_version=False, copy_datasets=False, experiment_id=None):
+    def clone(self, experiment_id=None):
         """
         Returns a newly-created copy of this experiment run.
 
         Parameters
         ----------
-        copy_artifacts : bool, default False
-            Whether to also copy this experiment run's artifacts.
-        copy_code_version : bool, default False
-            Whether to also copy this experiment run's code version.
-        copy_datasets : bool, default False
-            Whether to also copy this experiment run's dataset versions.
         experiment_id : str, optional
             ID of experiment to clone this run into. If not provided, the new
             run will be cloned into this run's experiment.
@@ -474,66 +468,13 @@ class ExperimentRun(_DeployableEntity):
 
         """
         # get info for the current run
-        current_run = self._get_proto_by_id(self._conn, self.id)
+        Message = _ExperimentRunService.CloneExperimentRun
+        msg = Message(src_experiment_run_id=self.id, dest_experiment_id=experiment_id)
+        response = self._conn.make_proto_request("POST",
+                                           "/api/v1/modeldb/experiment-run/cloneExperimentRun",
+                                           body=msg)
 
-        # there's a circular import if `experiment` is imported at module-level
-        #     experimentrun <- experiment <- experimentruns <- experimentrun
-        # so this import is deferred to this function body to work in Py2
-        from .experiment import Experiment
-        if experiment_id is not None:
-            project_id = Experiment._get_proto_by_id(self._conn, experiment_id).project_id
-        else:
-            project_id = current_run.project_id
-            experiment_id = current_run.experiment_id
-
-        # clone the current run
-        Message = _ExperimentRunService.CreateExperimentRun
-        msg = Message(
-            project_id=project_id,
-            experiment_id=experiment_id,
-            name=ExperimentRun._generate_default_name(),
-            description=current_run.description,
-            tags=current_run.tags,
-            attributes=current_run.attributes,
-            observations=current_run.observations,
-            metrics=current_run.metrics,
-            hyperparameters=current_run.hyperparameters,
-            parent_id=current_run.parent_id,
-        )
-
-        msg_artifact = Message()
-        msg_code_version = Message()
-        msg_datasets = Message()
-
-        if copy_artifacts:
-            msg_artifact = Message(
-                artifacts=current_run.artifacts,
-            )
-
-        if copy_code_version:
-            msg_code_version = Message(
-                code_version_snapshot=current_run.code_version_snapshot,
-            )
-
-        if copy_datasets:
-            msg_datasets = Message(
-                datasets=current_run.datasets,
-            )
-
-        msg.MergeFrom(msg_artifact)
-        msg.MergeFrom(msg_code_version)
-        msg.MergeFrom(msg_datasets)
-
-        # create the new run
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("POST",
-                                       "{}://{}/api/v1/modeldb/experiment-run/createExperimentRun".format(
-                                           self._conn.scheme, self._conn.socket), self._conn, json=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
-        new_run_msg = response_msg.experiment_run
-        print("created new ExperimentRun: {}".format(new_run_msg.name))
+        new_run_msg = self._conn.maybe_proto_response(response, Message.Response).run
         new_run = ExperimentRun(self._conn, self._conf, new_run_msg)
 
         return new_run
