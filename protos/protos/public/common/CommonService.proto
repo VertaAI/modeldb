@@ -69,6 +69,7 @@ message ModelDBResourceEnum {
         DATASET_VERSION = 6;
         DASHBOARD = 7;
         REPOSITORY = 8;
+        REGISTERED_MODEL = 9;
     }
 };
 
@@ -105,4 +106,41 @@ message Artifact {
     ArtifactTypeEnum.ArtifactType artifact_type = 4;
     string linked_artifact_id = 5;
     string filename_extension = 6;
+}
+
+message KeyValueQuery {
+    string key = 1; //entity field key
+    google.protobuf.Value value = 2; //entity field value
+    common.ValueTypeEnum.ValueType value_type = 3; // Default = STRING
+    OperatorEnum.Operator operator = 4; // Default = EQ
+}
+
+message ArtifactPart {
+    uint64 part_number = 1;
+    string etag = 2;  // checksum returned by S3
+}
+
+message OperatorEnum {
+    enum Operator {
+        EQ = 0;
+        NE = 1;
+        GT = 2;
+        GTE = 3;
+        LT = 4;
+        LTE = 5;
+        CONTAIN = 6;
+        NOT_CONTAIN = 7;
+        IN = 8; // This is not fully supported by backend.
+    }
+}
+
+message VisibilityEnum {
+    enum Visibility {
+        //Default to private
+        PRIVATE = 0;
+        //Not supported
+        PUBLIC = 1;
+        //Uses access setup by organization
+        ORG_SCOPED_PUBLIC = 2;
+    }
 }

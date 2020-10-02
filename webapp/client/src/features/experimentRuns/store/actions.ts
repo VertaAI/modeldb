@@ -401,9 +401,10 @@ const saveExperimentRunsOptionInUrl = (history: History, option: IOption) => {
       urlSearchParams.delete('sortKey');
       urlSearchParams.delete('sortDirection');
     } else {
+      const sortKey = option.data.columnName ? `${option.data.columnName}.${option.data.fieldName}` : option.data.fieldName;
       urlSearchParams.set(
         'sortKey',
-        `${option.data.columnName}.${option.data.fieldName}`
+        sortKey
       );
       urlSearchParams.set('sortDirection', option.data.direction);
     }
@@ -422,7 +423,7 @@ const getExperimentRunsOptionsFromUrl = (): IExperimentRunsOptions => {
     const sortKeyFromUrl = urlSearchParams.get('sortKey');
     const sortDirectionFromUrl = urlSearchParams.get('sortDirection');
     if (sortKeyFromUrl && sortDirectionFromUrl) {
-      const [columnName, fieldName] = sortKeyFromUrl.split('.');
+      const [columnName, fieldName] = sortKeyFromUrl.includes('.') ? sortKeyFromUrl.split('.') : [undefined, sortKeyFromUrl];
       return {
         columnName,
         fieldName,

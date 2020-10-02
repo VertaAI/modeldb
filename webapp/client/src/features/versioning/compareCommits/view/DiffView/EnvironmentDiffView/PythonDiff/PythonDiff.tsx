@@ -9,7 +9,7 @@ import {
   getArrayElemDiffStyles,
   needHighlightCellBackground,
 } from '../utils';
-import { IComparedCommitsInfo, getCssDiffColor } from '../../../model';
+import { IComparedCommitsInfo } from '../../../model';
 import { makeHighlightCellBackground } from '../../shared/makeHighlightCellBackground';
 import { DiffType } from 'shared/models/Versioning/Blob/Diff';
 import ComparePropertiesTable from '../../shared/ComparePropertiesTable/ComparePropertiesTable';

@@ -48,7 +48,7 @@ class Notebook(_code._Code):
             notebook_path = _utils.get_notebook_filepath()
             try:
                 _utils.save_notebook(notebook_path)
-            except OSError:
+            except (ImportError, OSError):
                 print("unable to automatically save current Notebook;"
                       " capturing latest checkpoint on disk")
 

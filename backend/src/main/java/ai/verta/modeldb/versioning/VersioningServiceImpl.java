@@ -6,6 +6,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.QPSCountResource;
@@ -131,6 +132,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           String vertaId = authService.getVertaIdFromUserInfo(userInfo);
           requestBuilder.setRepository(request.getRepository().toBuilder().setOwner(vertaId));
         }
+
+        ModelDBUtils.validateEntityNameWithColonAndSlash(requestBuilder.getRepository().getName());
+
         SetRepository.Response response =
             repositoryDAO.setRepository(commitDAO, requestBuilder.build(), userInfo, true);
 
@@ -149,10 +153,15 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        if (request.getRepository().getName().isEmpty()) {
-          throw new ModelDBException("Repository name is empty", Code.INVALID_ARGUMENT);
+        if (request.getRepository().getName().isEmpty()
+            && request.getRepository().getDescription().isEmpty()) {
+          throw new ModelDBException(
+              "Repository name and description is empty", Code.INVALID_ARGUMENT);
+        } else if (request.getRepository().getName().isEmpty()) {
+          throw new ModelDBException("Repository name should not be empty", Code.INVALID_ARGUMENT);
         }
 
+        ModelDBUtils.validateEntityNameWithColonAndSlash(request.getRepository().getName());
         SetRepository.Response response =
             repositoryDAO.setRepository(commitDAO, request, null, false);
         responseObserver.onNext(response);
@@ -172,7 +181,12 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
         DeleteRepositoryRequest.Response response =
-            repositoryDAO.deleteRepository(request, commitDAO, experimentRunDAO);
+            repositoryDAO.deleteRepository(
+                request,
+                commitDAO,
+                experimentRunDAO,
+                true,
+                RepositoryEnums.RepositoryTypeEnum.REGULAR);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -191,7 +205,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ListCommitsRequest.Response response =
           commitDAO.listCommits(
               request,
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()));
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              false);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -264,6 +279,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               authService.getVertaIdFromUserInfo(currentLoginUserInfo),
               request.getCommit(),
               (session) -> blobDAO.setBlobs(session, blobContainers, fileHasher),
+              (session, repoId, commitHash) ->
+                  blobDAO.setBlobsAttributes(session, repoId, commitHash, blobContainers, true),
               repositoryFunction);
 
       responseObserver.onNext(response);
@@ -305,8 +322,11 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        DeleteCommitRequest.Response response = commitDAO.deleteCommit(request, repositoryDAO);
-        responseObserver.onNext(response);
+        commitDAO.deleteCommits(
+            request.getRepositoryId(),
+            Collections.singletonList(request.getCommitSha()),
+            repositoryDAO);
+        responseObserver.onNext(DeleteCommitRequest.Response.newBuilder().build());
         responseObserver.onCompleted();
       }
     } catch (Exception e) {
@@ -336,58 +356,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, ListCommitBlobsRequest.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
-  public void listCommitExperimentRuns(
-      ListCommitExperimentRunsRequest request,
-      StreamObserver<ListCommitExperimentRunsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-      if (request.getCommitSha().isEmpty()) {
-        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
-      }
-
-      ListCommitExperimentRunsRequest.Response response =
-          experimentRunDAO.listCommitExperimentRuns(
-              projectDAO,
-              request,
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
-              (session, repository) ->
-                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, ListCommitExperimentRunsRequest.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
-  public void listBlobExperimentRuns(
-      ListBlobExperimentRunsRequest request,
-      StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-      if (request.getCommitSha().isEmpty()) {
-        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
-      }
-
-      ListBlobExperimentRunsRequest.Response response =
-          experimentRunDAO.listBlobExperimentRuns(
-              projectDAO,
-              request,
-              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
-              (session, repository) ->
-                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
     }
   }
 
@@ -495,7 +463,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        GetBranchRequest.Response response = repositoryDAO.getBranch(request);
+        GetBranchRequest.Response response =
+            repositoryDAO.getBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -512,7 +481,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        SetBranchRequest.Response response = repositoryDAO.setBranch(request);
+        SetBranchRequest.Response response =
+            repositoryDAO.setBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -655,7 +625,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(request);
+
+        FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(commitDAO, request);
         responseObserver.onNext(response);
         responseObserver.onCompleted();
       }
@@ -748,7 +719,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
-              request);
+              request.getLocationList(),
+              request.getPathDatasetComponentBlobPath(),
+              request.getArtifactPart());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -784,7 +757,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
-              request);
+              request.getLocationList(),
+              request.getPathDatasetComponentBlobPath());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -826,7 +800,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
-              request,
+              request.getLocationList(),
+              request.getPathDatasetComponentBlobPath(),
               artifactStoreDAO::commitMultipart);
       responseObserver.onNext(response);
       responseObserver.onCompleted();

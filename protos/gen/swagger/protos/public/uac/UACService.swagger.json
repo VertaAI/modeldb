@@ -14,7 +14,7 @@
     "/uac/createUser": {
       "post": {
         "summary": "For now, any user can create a new user",
-        "operationId": "createUser",
+        "operationId": "UACService_createUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -47,7 +47,7 @@
     "/uac/deleteUser": {
       "post": {
         "summary": "Only current user can delete themselves",
-        "operationId": "deleteUser",
+        "operationId": "UACService_deleteUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -80,7 +80,7 @@
     "/uac/getCurrentUser": {
       "get": {
         "summary": "Get the current user information verifying JWT token",
-        "operationId": "getCurrentUser",
+        "operationId": "UACService_getCurrentUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -103,7 +103,7 @@
     "/uac/getUser": {
       "get": {
         "summary": "Get the current user information verifying JWT token",
-        "operationId": "getUser",
+        "operationId": "UACService_getUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -145,7 +145,7 @@
     },
     "/uac/getUsers": {
       "post": {
-        "operationId": "getUsers",
+        "operationId": "UACService_getUsers",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -177,7 +177,7 @@
     },
     "/uac/getUsersFuzzy": {
       "post": {
-        "operationId": "getUsersFuzzy",
+        "operationId": "UACService_getUsersFuzzy",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -210,7 +210,7 @@
     "/uac/updateUser": {
       "post": {
         "summary": "Only current user can update themselves",
-        "operationId": "updateUser",
+        "operationId": "UACService_updateUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -475,6 +475,9 @@
         },
         "publicProfile": {
           "$ref": "#/definitions/uacFlagEnum"
+        },
+        "workspace_id": {
+          "type": "string"
         }
       }
     },

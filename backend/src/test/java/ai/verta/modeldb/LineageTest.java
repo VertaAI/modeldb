@@ -19,6 +19,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
@@ -106,6 +107,7 @@ public class LineageTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -481,7 +483,10 @@ public class LineageTest {
   private void deleteAll(List<DatasetVersion> datasetVersionList, Project project) {
     for (DatasetVersion datasetVersion1 : datasetVersionList) {
       DeleteDatasetVersion deleteDatasetVersionRequest =
-          DeleteDatasetVersion.newBuilder().setId(datasetVersion1.getId()).build();
+          DeleteDatasetVersion.newBuilder()
+              .setDatasetId(datasetVersion1.getDatasetId())
+              .setId(datasetVersion1.getId())
+              .build();
       DeleteDatasetVersion.Response deleteDatasetVersionResponse =
           datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
       LOGGER.info("DeleteDatasetVersion deleted successfully");
@@ -543,6 +548,7 @@ public class LineageTest {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+
     CreateDatasetVersion createDatasetVersionRequest =
         datasetVersionTest.getDatasetVersionRequest(dataset.getId());
     CreateDatasetVersion.Response createDatasetVersionResponse =

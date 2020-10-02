@@ -14,7 +14,7 @@
     "/organization/addUser": {
       "post": {
         "summary": "Adds the given user to the organization\nOnly enabled if the requester is the creator of the organization",
-        "operationId": "addUser",
+        "operationId": "OrganizationService_addUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -47,7 +47,7 @@
     "/organization/deleteOrganization": {
       "post": {
         "summary": "Delete an existing organization\nOnly enabled if the person deleting is the creator",
-        "operationId": "deleteOrganization",
+        "operationId": "OrganizationService_deleteOrganization",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -80,7 +80,7 @@
     "/organization/getOrganizationById": {
       "get": {
         "summary": "Gets information from a given organization",
-        "operationId": "getOrganizationById",
+        "operationId": "OrganizationService_getOrganizationById",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -111,7 +111,7 @@
     "/organization/getOrganizationByName": {
       "get": {
         "summary": "Gets information from a given organization",
-        "operationId": "getOrganizationByName",
+        "operationId": "OrganizationService_getOrganizationByName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -142,7 +142,7 @@
     "/organization/getOrganizationByShortName": {
       "get": {
         "summary": "Gets information from a given organization",
-        "operationId": "getOrganizationByShortName",
+        "operationId": "OrganizationService_getOrganizationByShortName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -173,7 +173,7 @@
     "/organization/listMyOrganizations": {
       "get": {
         "summary": "Lists the organizations that the current user can see",
-        "operationId": "listMyOrganizations",
+        "operationId": "OrganizationService_listMyOrganizations",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -196,7 +196,7 @@
     "/organization/listTeams": {
       "get": {
         "summary": "List teams that are part of an organization\nOnly available for users inside the organization itself",
-        "operationId": "listTeams",
+        "operationId": "OrganizationService_listTeams",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -227,7 +227,7 @@
     "/organization/listUsers": {
       "get": {
         "summary": "List users inside an organization\nOnly available for users inside the organization itself",
-        "operationId": "listUsers",
+        "operationId": "OrganizationService_listUsers",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -258,7 +258,7 @@
     "/organization/removeUser": {
       "post": {
         "summary": "Removes the given user to the organization\nOnly enabled if the requester is the creator of the organization\nThe owner can never be removed",
-        "operationId": "removeUser",
+        "operationId": "OrganizationService_removeUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -291,7 +291,7 @@
     "/organization/setOrganization": {
       "post": {
         "summary": "Create or update an organization\nAutomatically sets the user making the call as owner and adds to the organization",
-        "operationId": "setOrganization",
+        "operationId": "OrganizationService_setOrganization",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -507,6 +507,15 @@
         },
         "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "default_registered_model_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "workspace_id": {
+          "type": "string"
+        },
+        "registered_model_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },

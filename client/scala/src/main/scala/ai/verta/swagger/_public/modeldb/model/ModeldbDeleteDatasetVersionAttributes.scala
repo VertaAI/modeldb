@@ -15,6 +15,7 @@ import ai.verta.swagger.client.objects._
 
 case class ModeldbDeleteDatasetVersionAttributes (
   attribute_keys: Option[List[String]] = None,
+  dataset_id: Option[String] = None,
   delete_all: Option[Boolean] = None,
   id: Option[String] = None
 ) extends BaseSwagger {
@@ -26,6 +27,7 @@ object ModeldbDeleteDatasetVersionAttributes {
     new JObject(
       List[Option[JField]](
         obj.attribute_keys.map(x => JField("attribute_keys", ((x: List[String]) => JArray(x.map(JString)))(x))),
+        obj.dataset_id.map(x => JField("dataset_id", JString(x))),
         obj.delete_all.map(x => JField("delete_all", JBool(x))),
         obj.id.map(x => JField("id", JString(x)))
       ).flatMap(x => x match {
@@ -42,6 +44,7 @@ object ModeldbDeleteDatasetVersionAttributes {
         ModeldbDeleteDatasetVersionAttributes(
           // TODO: handle required
           attribute_keys = fieldsMap.get("attribute_keys").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          dataset_id = fieldsMap.get("dataset_id").map(JsonConverter.fromJsonString),
           delete_all = fieldsMap.get("delete_all").map(JsonConverter.fromJsonBoolean),
           id = fieldsMap.get("id").map(JsonConverter.fromJsonString)
         )

@@ -3,7 +3,6 @@ import * as React from 'react';
 import { Action } from 'shared/view/elements/PileWithActions/PileWithActions';
 import PilePopup from 'shared/view/elements/PileWithActions/PipePopup/PipePopup';
 import { IconType } from 'shared/view/elements/Icon/Icon';
-import { EntityType } from 'shared/models/Common';
 import { IAttribute } from 'shared/models/Attribute';
 
 import styles from './InfoAction.module.css';
@@ -82,7 +81,7 @@ const FieldList = ({
   return (
     <PilePopup.Field label={label}>
       <div className={styles.listBlock}>
-        {children.map(item => {
+        {children.map((item) => {
           return (
             <div className={styles.listFieldValue} key={String(item)}>
               {String(item)}

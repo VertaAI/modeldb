@@ -5,12 +5,10 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.versioning.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.versioning.model.DiffStatusEnumDiffStatus._
 import ai.verta.swagger._public.modeldb.versioning.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
 import ai.verta.swagger._public.modeldb.versioning.model.RepositoryVisibilityEnumRepositoryVisibility._
-import ai.verta.swagger._public.modeldb.versioning.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.versioning.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
 import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
@@ -18,6 +16,7 @@ import ai.verta.swagger.client.objects._
 
 case class VersioningDatasetDiff (
   path: Option[VersioningPathDatasetDiff] = None,
+  query: Option[VersioningQueryDatasetDiff] = None,
   s3: Option[VersioningS3DatasetDiff] = None
 ) extends BaseSwagger {
   def toJson(): JValue = VersioningDatasetDiff.toJson(this)
@@ -28,6 +27,7 @@ object VersioningDatasetDiff {
     new JObject(
       List[Option[JField]](
         obj.path.map(x => JField("path", ((x: VersioningPathDatasetDiff) => VersioningPathDatasetDiff.toJson(x))(x))),
+        obj.query.map(x => JField("query", ((x: VersioningQueryDatasetDiff) => VersioningQueryDatasetDiff.toJson(x))(x))),
         obj.s3.map(x => JField("s3", ((x: VersioningS3DatasetDiff) => VersioningS3DatasetDiff.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -43,6 +43,7 @@ object VersioningDatasetDiff {
         VersioningDatasetDiff(
           // TODO: handle required
           path = fieldsMap.get("path").map(VersioningPathDatasetDiff.fromJson),
+          query = fieldsMap.get("query").map(VersioningQueryDatasetDiff.fromJson),
           s3 = fieldsMap.get("s3").map(VersioningS3DatasetDiff.fromJson)
         )
       }

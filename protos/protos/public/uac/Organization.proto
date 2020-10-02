@@ -22,6 +22,9 @@ message Organization {
     common.CollaboratorTypeEnum.CollaboratorType default_repo_collaborator_type = 10;
     common.CollaboratorTypeEnum.CollaboratorType default_endpoint_collaborator_type = 11;
     common.CollaboratorTypeEnum.CollaboratorType default_dataset_collaborator_type = 12;
+    common.CollaboratorTypeEnum.CollaboratorType default_registered_model_collaborator_type = 13;
+    string workspace_id = 14;
+    common.TernaryEnum.Ternary registered_model_can_deploy = 15;
 }
 
 message GetOrganizationById {

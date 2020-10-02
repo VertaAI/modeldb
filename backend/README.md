@@ -39,6 +39,19 @@ Run gRPC server using the following command
 java -jar target/modeldb-1.0-SNAPSHOT-client-build.jar
 ```
 
+The execution assumes the database schema matches the schema expected by hibernate entities. To run liquibase to 
+create the required tables or modify the schema set the environment variable `LIQUIBASE_MIGRATION`:
+
+```
+LIQUIBASE_MIGRATION: true
+```
+
+If the execution should just update the database schema then set the variable `LIQUIBASE_MIGRATION`:
+
+```
+RUN_LIQUIBASE_SEPARATE: false
+```
+
 ### Running Tests
 
 The tests require a relational database to be running. Ensure the required JDBC connector is available in pom.xml. Set the details in config.yaml

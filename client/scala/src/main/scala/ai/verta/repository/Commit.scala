@@ -11,10 +11,10 @@ import scala.collection.immutable.Map
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 
-import java.io.{File, FileInputStream, FileOutputStream, ByteArrayInputStream}
+import java.io.{File, InputStream, FileInputStream, FileOutputStream, ByteArrayInputStream}
 import java.nio.file.{Files, StandardCopyOption}
 
-/** Commit within a ModelDB Repository
+/** Commit within a ModelDB Repository.
  *  There should not be a need to instantiate this class directly; please use Repository.getCommit methods
  */
 class Commit(
@@ -57,7 +57,7 @@ class Commit(
       }
     )
 
-  /** Adds blob to this commit at path
+  /** Adds blob to this commit at path.
    *  If path is already in this Commit, it will be updated to the new blob
    *  @param path Location to add blob to
    *  @param blob Instance of Blob subclass.
@@ -126,7 +126,7 @@ class Commit(
     diffs: Option[List[VersioningBlobDiff]] = None,
     updateBranch: Boolean = true
   )(implicit ec: ExecutionContext) = {
-      clientSet.versioningService.CreateCommit2(
+      clientSet.versioningService.VersioningService_CreateCommit2(
         body = VersioningCreateCommitRequest(
           commit = Some(addMessage(message)),
           blobs = blobs,
@@ -197,7 +197,7 @@ class Commit(
   private def loadBlobsFromId(
     id: String
   )(implicit ec: ExecutionContext): Try[Map[String, Blob]] = {
-    clientSet.versioningService.ListCommitBlobs2(
+    clientSet.versioningService.VersioningService_ListCommitBlobs2(
       commit_sha = id,
       repository_id_repo_id = repo.id
     ) // Try[VersioningListCommitBlobsRequestResponse]
@@ -232,25 +232,27 @@ class Commit(
    */
   private def versioningBlobToBlob(vb: VersioningBlob): Blob = vb match {
     /** TODO: finish the pattern matching with other blob subclasses */
-    case VersioningBlob(_, _, Some(VersioningDatasetBlob(Some(path), _)), _) => PathBlob(path)
-    case VersioningBlob(_, _, Some(VersioningDatasetBlob(_, Some(s3))), _) => S3(s3)
+    case VersioningBlob(_, _, Some(VersioningDatasetBlob(Some(path), _, _)), _) => PathBlob(path)
+    case VersioningBlob(_, _, Some(VersioningDatasetBlob(_, _, Some(s3))), _) => S3(s3)
+    case VersioningBlob(_, _, Some(VersioningDatasetBlob(_, Some(query), _)), _) => QueryDatasetBlob(query)
   }
 
   private def blobToVersioningBlob(blob: Blob): VersioningBlob =  blob match {
     /** TODO: Add blob subtypes to pattern matching */
     case pathBlob: PathBlob => PathBlob.toVersioningBlob(pathBlob)
     case s3: S3 => S3.toVersioningBlob(s3)
+    case queryBlob: QueryDatasetBlob => QueryDatasetBlob.toVersioningBlob(queryBlob)
   }
 
 
-  /** Creates a branch at this Commit and returns the checked-out branch
+  /** Creates a branch at this Commit and returns the checked-out branch.
    *  If the branch already exists, it will be moved to this commit.
    *  @param branch branch name
    *  @return if not saved, a failure; otherwise, this commit as the head of `branch`
    */
   def newBranch(branch: String)(implicit ec: ExecutionContext) = {
     checkSaved("Commit must be saved before it can be attached to a branch").flatMap(_ =>
-      clientSet.versioningService.SetBranch2(
+      clientSet.versioningService.VersioningService_SetBranch2(
         body = commit.commit_sha.get,
         branch = branch,
         repository_id_repo_id = repo.id
@@ -263,7 +265,7 @@ class Commit(
    */
   def tag(tag: String)(implicit ec: ExecutionContext) = {
     checkSaved("Commit must be saved before it can be tagged").flatMap(_ =>
-      clientSet.versioningService.SetTag2(
+      clientSet.versioningService.VersioningService_SetTag2(
           body = commit.commit_sha.get,
           repository_id_repo_id = repo.id,
           tag = tag
@@ -271,7 +273,7 @@ class Commit(
     ).map(_ => ())
   }
 
-  /** Merges a branch headed by other into this commit
+  /** Merges a branch headed by other into this commit.
    *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
    *  @param other Commit to be merged
    *  @param message Description of the merge. If not provided, a default message will be used
@@ -281,7 +283,7 @@ class Commit(
     checkSaved("This commit must be saved").flatMap(_ => other.checkSaved("Other commit must be saved"))
       .flatMap(_ => checkSameRepository(other))
       .flatMap(_ => {
-        clientSet.versioningService.MergeRepositoryCommits2(
+        clientSet.versioningService.VersioningService_MergeRepositoryCommits2(
           /** TODO: is dry run? */
           body = VersioningMergeRepositoryCommitsRequest(
             commit_sha_a = other.id,
@@ -302,7 +304,7 @@ class Commit(
     )
   }
 
-  /** Helper function to convert the versioning commit instance to commit instance
+  /** Helper function to convert the versioning commit instance to commit instance.
    *  If the current instance has a branch associated with it, the new commit will become the head of the branch.
    *  Useful for createCommit, merge, and revert
    *  @param versioningCommit the versioning commit instance
@@ -329,7 +331,7 @@ class Commit(
     // (the base of the modification)
     val commitSHA = commit.commit_sha.getOrElse(commit.parent_shas.get.head)
 
-    clientSet.versioningService.ListCommitsLog4(
+    clientSet.versioningService.VersioningService_ListCommitsLog4(
       repository_id_repo_id = repo.id,
       commit_sha = commitSHA
     ) // Try[VersioningListCommitsLogRequestResponse]
@@ -341,7 +343,7 @@ class Commit(
   }
 
   /** Reverts other.
-   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object
+   *  This method creates and returns a new Commit in ModelDB, and assigns a new ID to this object.
    *  Currently reverting a merge commit is not supported. Unexpected behavior might occur.
    *  @param other Base for the revert. If not provided, this commit will be reverted
    *  @param message Description of the revert. If not provided, a default message will be used
@@ -351,7 +353,7 @@ class Commit(
     checkSaved("This commit must be saved").flatMap(_ => other.checkSaved("Other commit must be saved"))
       .flatMap(_ => checkSameRepository(other))
       .flatMap(_ =>
-        clientSet.versioningService.RevertRepositoryCommits2(
+        clientSet.versioningService.VersioningService_RevertRepositoryCommits2(
           body = VersioningRevertRepositoryCommitsRequest(
             base_commit_sha = Some(id.get),
             commit_to_revert_sha = Some(other.id.get),
@@ -374,7 +376,7 @@ class Commit(
                  .flatMap(_ => checkSameRepository(reference.get))
       else
         Success(())
-    ).flatMap(_ => clientSet.versioningService.ComputeRepositoryDiff2(
+    ).flatMap(_ => clientSet.versioningService.VersioningService_ComputeRepositoryDiff2(
         repository_id_repo_id = repo.id,
         commit_a = Some(
           if (reference.isDefined) reference.get.id.get else commit.parent_shas.get.head
@@ -401,7 +403,7 @@ class Commit(
    *  @param message error message if this commit is not saved
    *  @return Failure if the commit is not saved. Success otherwise
    */
-  def checkSaved(message: String): Try[Unit] = {
+  private[verta] def checkSaved(message: String): Try[Unit] = {
     if (!saved)
       Failure(new IllegalCommitSavedStateException(message))
     else
@@ -440,7 +442,7 @@ class Commit(
    *  @return the folder, if succeeds
    */
   def getFolder(location: PathList)(implicit ec: ExecutionContext): Try[Folder] = {
-    clientSet.versioningService.GetCommitComponent2(
+    clientSet.versioningService.VersioningService_GetCommitComponent2(
       commit_sha = id.get,
       repository_id_repo_id = repo.id,
       location = if (location.components.length > 0) Some(location.components) else None
@@ -500,8 +502,8 @@ class Commit(
    *  @return Some dataset, if the blob is a dataset; otherwise None
    */
   private def toMDBVersioningDataset(blob: Blob): Option[Dataset] = blob match {
-    case PathBlob(contents, enableMDBVersioning) => Some(PathBlob(contents, enableMDBVersioning))
-    case S3(contents, enableMDBVersioning) => Some(S3(contents, enableMDBVersioning))
+    case path: PathBlob => Some(path)
+    case s3: S3 => Some(s3)
     case _ => None
   }
 
@@ -514,23 +516,24 @@ class Commit(
   private def getURLForArtifact(
     blobPath: String,
     datasetComponentPath: String,
-    method: String
-  )(implicit ec: ExecutionContext): Try[String] = {
-    clientSet.versioningService.getUrlForBlobVersioned2(
+    method: String,
+    partNum: Int = 0
+  )(implicit ec: ExecutionContext): Try[VersioningGetUrlForBlobVersionedResponse] = {
+    clientSet.versioningService.VersioningService_getUrlForBlobVersioned2(
       VersioningGetUrlForBlobVersioned(
         commit_sha = id,
         location = Some(pathToLocation(blobPath)),
         method = Some(method),
-        part_number = Some(BigInt(0)),
+        part_number = Some(BigInt(partNum)),
         path_dataset_component_blob_path = Some(datasetComponentPath),
         repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
       ),
       id.get,
       repoId
-    ).map(_.url.get)
+    )
   }
 
-  /** Helper method to upload the file to ModelDB. Currently not supporting multi-part upload
+  /** Helper method to upload the file to ModelDB.
    *  @param blobPath path to the blob in the commit
    *  @param datasetComponentPath path to the component in the blob
    *  @return whether the upload attempt succeeds
@@ -538,47 +541,129 @@ class Commit(
   private def uploadArtifact(
     blobPath: String,
     datasetComponentPath: String,
-    file: File
+    file: File,
+    partSize: Int = 1024 * 1024 * 64 // 64 MB
   )(implicit ec: ExecutionContext): Try[Unit] = {
-    /** TODO: implement multi-part upload */
-    getURLForArtifact(blobPath, datasetComponentPath, "PUT").flatMap(url =>
-      Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
-        try {
-          Await.result(clientSet.client.requestRaw("PUT", url, null, Map("Content-Length" -> file.length.toString), inputStream), Duration.Inf)
-            .map(_ => ())
-        } finally {
-          inputStream.close()
-        }
-      })
-    )
+    getURLForArtifact(blobPath, datasetComponentPath, "PUT", 1).flatMap(resp => {
+      if (resp.multipart_upload_ok.isDefined && resp.multipart_upload_ok.get) {
+        var buffer = new Array[Byte](partSize)
+
+        Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
+          try {
+            uploadPart(blobPath, datasetComponentPath, inputStream, buffer)
+              .flatMap(_ => clientSet.versioningService.VersioningService_commitMultipartVersionedBlobArtifact(
+                VersioningCommitMultipartVersionedBlobArtifact(
+                  commit_sha = id,
+                  location = Some(pathToLocation(blobPath)),
+                  path_dataset_component_blob_path = Some(datasetComponentPath),
+                  repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
+                )
+              ))
+              .map(_ => ())
+          } finally {
+            inputStream.close()
+          }
+        })
+      }
+      else {
+        Try (new FileInputStream(file)).flatMap(inputStream => { // loan pattern
+          try {
+            Await.result(clientSet.client.requestRaw("PUT", resp.url.get, null, Map("Content-Length" -> file.length.toString), inputStream), Duration.Inf)
+              .map(_ => ())
+          } finally {
+            inputStream.close()
+          }
+        })
+      }
+    })
+  }
+
+  /** Upload a part of the input stream
+   *  @param blobPath path to the blob in the commit
+   *  @param datasetComponentPath path to the component in the blob
+   *  @param inputStream the stream of input to uploaded
+   *  @param partNum the index of the current part
+   *  @return The number of parts uploaded, if succeeds
+   */
+  private def uploadPart(
+    blobPath: String,
+    datasetComponentPath: String,
+    inputStream: InputStream,
+    buffer: Array[Byte],
+    partNum: Int = 1
+  )(implicit ec: ExecutionContext): Try[Int] = {
+    getURLForArtifact(blobPath, datasetComponentPath, "PUT", partNum).map(_.url.get).flatMap(url => {
+      var readLen = inputStream.read(buffer)
+
+      if (readLen < 0)
+        Success(partNum - 1)
+      else
+        retry (
+          Try(new ByteArrayInputStream(buffer)).flatMap(filepart => {
+            try {
+              Await.result(clientSet.client.requestRaw("PUT", url, null, Map("Content-Length" -> readLen.toString), filepart), Duration.Inf)
+                .flatMap(resp => clientSet.versioningService.VersioningService_commitVersionedBlobArtifactPart(
+                  VersioningCommitVersionedBlobArtifactPart(
+                    artifact_part = Some(CommonArtifactPart(
+                      etag = Some(resp.headers("ETag").get),
+                      part_number = Some(BigInt(partNum))
+                    )),
+                    commit_sha = id,
+                    location = Some(pathToLocation(blobPath)),
+                    path_dataset_component_blob_path = Some(datasetComponentPath),
+                    repository_id = Some(VersioningRepositoryIdentification(repo_id = Some(repoId)))
+                  )
+                ))
+                .flatMap(_ => uploadPart(blobPath, datasetComponentPath, inputStream, buffer, partNum + 1))
+            } finally {
+              filepart.close()
+            }
+          }),
+          3, // number of upload attempts
+          f"Uploading part ${partNum} of component ${datasetComponentPath} of blob at ${blobPath} fails."
+        )
+    })
+  }
+
+  /** Helper function to retry failable function.
+   *  @param f function to (re)try
+   *  @param attemptsLeft number of attempts left (including current attempt)
+   *  @param errorMessage error message if out of attempts
+   *  @return the result of f, if succeeds
+   */
+  private def retry[T](f: => Try[T], attemptsLeft: Int, errorMessage: String): Try[T] = {
+    if (attemptsLeft <= 0)
+      Failure(new IllegalArgumentException(errorMessage))
+    else
+      f.orElse(retry(f, attemptsLeft - 1, errorMessage))
   }
 
   /** Helper method to download a component of a blob.
    *  @param blobPath path to the blob in the commit
    *  @param datasetComponentPath path to the component in the blob
-   *  @param file File to write the downloaded content to
-   *  @return whether the download attempt succeeds
+   *  @return The temporary file which the downloaded content were written to, if the download attempt succeeds
    */
   private def downloadComponent(
     blobPath: String,
-    datasetComponentPath: String,
-    file: File
-  )(implicit ec: ExecutionContext): Try[Unit] = {
-    getURLForArtifact(blobPath, datasetComponentPath, "GET").flatMap(url =>
-      Await.result(
-        clientSet.client.requestRaw("GET", url, null, null, null)
-          .map(resp => resp match {
-            case Success(response) => Try(new ByteArrayInputStream(response)).flatMap(inputStream => {
-              try {
-                Try(Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
-              }
-              finally {
-                inputStream.close()
-              }
-            })
-            case Failure(e) => Failure(e)
-          }),
-        Duration.Inf)
-    )
+    datasetComponentPath: String
+  )(implicit ec: ExecutionContext): Try[File] = {
+    getURLForArtifact(blobPath, datasetComponentPath, "GET").map(_.url.get).flatMap(url =>
+      Try(File.createTempFile(datasetComponentPath, null)).flatMap(file =>
+        Await.result(
+          clientSet.client.requestRaw("GET", url, null, null, null)
+            .map(resp => resp match {
+              case Success(response) => Try(new ByteArrayInputStream(response.body)).flatMap(inputStream => {
+                try {
+                  Try(Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING))
+                    .map(_ => file)
+                }
+                finally {
+                  inputStream.close()
+                }
+              })
+              case Failure(e) => Failure(e)
+            }),
+          Duration.Inf)
+    ))
   }
 }

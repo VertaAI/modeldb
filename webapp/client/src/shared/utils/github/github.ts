@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 import { URL, SHHUrl } from '../types';
 
 export type GithubRemoteRepoUrl = SHHUrl | URL;
@@ -30,7 +32,7 @@ export const parseGithubRemoteRepoUrl = (
   remoteRepoUrl: GithubRemoteRepoUrl
 ): Result<IGithubRemoteRepoUrlComponents, string> => {
   if (remoteRepoUrl.startsWith('git@')) {
-    const [_, userName, repoName] = /git@github.com:(.+)\/(.+).git/.exec(
+    const [, userName, repoName] = /git@github.com:(.+)\/(.+).git/.exec(
       remoteRepoUrl
     );
     return {
@@ -45,11 +47,11 @@ export const parseGithubRemoteRepoUrl = (
     };
   }
   if (
-    ['https://github.com', 'http://github.com', 'github.com'].some(t =>
+    ['https://github.com', 'http://github.com', 'github.com'].some((t) =>
       remoteRepoUrl.startsWith(t)
     )
   ) {
-    const [_, pathname = ''] = remoteRepoUrl.split('github.com/');
+    const [, pathname = ''] = remoteRepoUrl.split('github.com/');
     const userNameAndRepo = pathname.split('/');
     if (userNameAndRepo.length >= 2) {
       return {
@@ -79,21 +81,15 @@ export const parseGithubRemoteRepoUrl = (
 export const makeRepoUrl = (
   components: IGithubRemoteRepoUrlComponents
 ): URL => {
-  return `https://github.com/${components.userName}/${
-    components.repositoryInfo.name
-  }`;
+  return `https://github.com/${components.userName}/${components.repositoryInfo.name}`;
 };
 
 export const makeRepoBlobUrl = (
   components: IGithubRemoteRepoUrlComponents,
   { commitHash, execPath }: { commitHash: string; execPath: string }
 ): URL => {
-  return `https://github.com/${components.userName}/${
-    components.repositoryInfo.name
-  }/blob/${commitHash}/${execPath}`;
+  return `https://github.com/${components.userName}/${components.repositoryInfo.name}/blob/${commitHash}/${execPath}`;
 };
-
-import * as R from 'ramda';
 
 export const makeCompareCommitsUrl = ({
   repoWithCommitHash1,
@@ -122,9 +118,7 @@ export const makeCompareCommitsUrl = ({
 export const makeRepoShortName = (
   components: IGithubRemoteRepoUrlComponents
 ): string => {
-  return `${components.userName}/${
-    components.repositoryInfo.nameWithExtension
-  }`;
+  return `${components.userName}/${components.repositoryInfo.nameWithExtension}`;
 };
 
 export const makeRepoUrlWithRepoShortName = (
@@ -140,9 +134,7 @@ export const makeCommitUrl = (
   components: IGithubRemoteRepoUrlComponents,
   commitHash: string
 ): URL => {
-  return `https://github.com/${components.userName}/${
-    components.repositoryInfo.name
-  }/commit/${commitHash}`;
+  return `https://github.com/${components.userName}/${components.repositoryInfo.name}/commit/${commitHash}`;
 };
 
 export const makeTagUrl = (

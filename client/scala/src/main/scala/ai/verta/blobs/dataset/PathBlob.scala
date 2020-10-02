@@ -9,7 +9,7 @@ import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 import scala.annotation.tailrec
 
-/** Captures metadata about files
+/** Captures metadata about files.
  *  To create a new instance, use the constructor taking a list of paths (each is a string) or a single path:
  *  {{{
  *  val pathList = List("some-path1", "some-path2")
@@ -20,7 +20,8 @@ import scala.annotation.tailrec
  */
 case class PathBlob(
   protected val contents: HashMap[String, FileMetadata],
-  val enableMDBVersioning: Boolean = false
+  val enableMDBVersioning: Boolean = false,
+  val downloadable: Boolean = false
 ) extends Dataset {
   /** Prepare the PathBlob for uploading
    *  @return whether the attempt succeeds
@@ -112,9 +113,9 @@ object PathBlob {
       comp => comp.path.get -> Dataset.toMetadata(comp)
     )
 
-    // if internal versioned path of a component is defined, then the blob enables MDB Versioning
-    val enableMDBVersioning = pathVersioningBlob.components.get.head.internal_versioned_path.isDefined
-    new PathBlob(HashMap(metadataList: _*), enableMDBVersioning)
+    // if internal versioned path of a component is defined, then the blob is downloadable
+    val downloadable = pathVersioningBlob.components.get.head.internal_versioned_path.isDefined
+    new PathBlob(HashMap(metadataList: _*), downloadable = downloadable)
   }
 
   /** Convert a PathBlob instance to a VersioningBlob

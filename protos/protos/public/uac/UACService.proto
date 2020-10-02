@@ -67,6 +67,7 @@ message VertaUserInfo {
     uint64 last_login_timestamp = 4;
     string user_id = 5;
     FlagEnum publicProfile = 6;
+    string workspace_id = 7;
 }
 
 message UserInfo {

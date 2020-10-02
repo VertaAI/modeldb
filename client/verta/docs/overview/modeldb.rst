@@ -30,21 +30,21 @@ well as regulatory inquiries.
 
 Building an ML model involves a lot of trial and error and the building of hundreds to thousands of models.
 Each of these experiments in model building are essential to the development of the final model and for
-analyzing and debugging the preformance of diffeerent models.
+analyzing and debugging the performance of different models.
 
 Use ModelDB to version the models built in a project and manage the experiments via intuitive dashboards,
 reporting, and model analysis functionality.
 
 
-3. Increase Data Science and  ML Visibility Across the organization
+3. Increase Data Science and ML Visibility Across the organization
 --------------------------------------------------------------------
 
-As more models are built across a team or organization, there are productivity benefits to be obtained by sharing
+As more models are built across a team or an organization, there are productivity benefits to be obtained by sharing
 ML know-how and models across team members.
-Towards this, a central model repository such as one providee\d by ModelDB can enable model sharing, 
+Towards this, a central model repository such as one provided by ModelDB can enable model sharing, 
 collaboration, and reuse.
 
-4. Managing the  Model Lifecycle
+4. Managing the Model Lifecycle
 ----------------------------------------------------------------
 
 Once models are built, they go through different steps in their lifecycle as they are packaged, deployed,

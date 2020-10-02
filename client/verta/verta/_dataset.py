@@ -9,23 +9,18 @@ import warnings
 
 import requests
 
-try:
-    from google.cloud import bigquery
-except ImportError:  # BigQuery not installed
-    bigquery = None
-
-try:
-    import boto3
-except ImportError:  # Boto 3 not installed
-    boto3 = None
-
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from ._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 
 from .external import six
 
-from ._internal_utils import _utils
+from ._internal_utils import (
+    _utils,
+    importer,
+)
+
+from ._dataset_versioning.dataset_versions import DatasetVersions
 
 
 class Dataset(object):
@@ -193,10 +188,7 @@ class Dataset(object):
         list of DatasetVersions for this Dataset
 
         """
-        Message = _DatasetVersionService.GetAllDatasetVersionsByDatasetId
-        msg = Message(dataset_id=self.id)
-        endpoint = "{}://{}/api/v1/modeldb/dataset-version/getAllDatasetVersionsByDatasetId"
-        return DatasetVersionLazyList(self._conn, self._conf, msg, endpoint, "GET")
+        return DatasetVersions(self._conn, self._conf).with_dataset(self)
 
     # TODO: sorting seems to be incorrect
     def get_latest_version(self, ascending=None, sort_key=None):
@@ -281,7 +273,7 @@ class S3Dataset(PathDataset):
 
         Returns
         -------
-        DatasetVersion
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         if key is not None and key_prefix is not None:
@@ -318,7 +310,7 @@ class LocalDataset(PathDataset):
 
         Returns
         -------
-        DatasetVersion
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         version_info = FilesystemDatasetVersionInfo(path)
@@ -354,7 +346,7 @@ class BigQueryDataset(QueryDataset):
 
         Returns
         -------
-        DatasetVersion
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         version_info = BigQueryDatasetVersionInfo(job_id=job_id, location=location)
@@ -399,7 +391,7 @@ class RDBMSDataset(QueryDataset):
 
         Returns
         -------
-        DatasetVersion
+        :class:`~verta._dataset.DatasetVersion`
             Returns the newly created dataset version
         """
         version_info = RDBMSDatasetVersionInfo(
@@ -448,7 +440,7 @@ class AtlasHiveDataset(QueryDataset):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             Returns the newly created dataset version
         """
         version_info = AtlasHiveDatasetVersionInfo(
@@ -465,6 +457,17 @@ class AtlasHiveDataset(QueryDataset):
 
 
 class DatasetVersion(object):
+    """
+    A version of a dataset at a particular point in time.
+
+    Attributes
+    ----------
+    id : str
+        ID of this dataset version.
+    base_path : str
+        Base path of this dataset version's components.
+
+    """
     # TODO: visibility not done
     # TODO: delete version not implemented
     def __init__(self, conn, conf,
@@ -521,7 +524,18 @@ class DatasetVersion(object):
         self.version = dataset_version.version
         self._dataset_type = dataset_version.dataset_type
         self.dataset_version = dataset_version
-        self.dataset_version_info = None
+
+        version_info_oneof = dataset_version.WhichOneof('dataset_version_info')
+        if version_info_oneof:
+            self.dataset_version_info = getattr(dataset_version, version_info_oneof)
+        else:
+            self.dataset_version_info = None
+
+        # assign base_path to proto msg to restore a level of backwards-compatibility
+        try:
+            self.dataset_version.path_dataset_version_info.base_path = self.base_path
+        except AttributeError:  # unsupported non-path dataset or multiple base_paths
+            pass
 
     def __repr__(self):
         if self.dataset_version:
@@ -531,8 +545,8 @@ class DatasetVersion(object):
             return msg_copy.__repr__()
         elif self.dataset_version_info:
             msg_copy = self.dataset_version_info.__class__()
-            msg_copy.CopyFrom(self.dataset_version_info)
-            return msg_copy.__repr__()
+            msg_copy.CopyFrom(self.dataset_version_info)  # pylint: disable=no-member
+            return msg_copy.__repr__()  # pylint: disable=no-member
         else:
             return "<{} \"{}\">".format(self.__class__.__name__, self.version)
 
@@ -622,13 +636,56 @@ class DatasetVersion(object):
                             version=None):
         raise NotImplementedError('this function must be implemented by subclasses')
 
+    @property
+    def base_path(self):
+        components = self.list_components()
+        base_paths = set(component.base_path for component in components)
+
+        if len(base_paths) == 1:
+            return base_paths.pop()
+        else:  # shouldn't happen: DVs don't have an interface to have different base paths
+            raise AttributeError("multiple base paths among components: {}".format(base_paths))
+
+    def list_components(self):
+        """
+        Returns a list of this dataset version's components.
+
+        Returns
+        -------
+        list of :class:`~verta.dataset._dataset.Component`
+
+        """
+        # there's a circular import if imported at module-level
+        # which I don't fully understand, and even breaks in Python 3
+        # so this import is deferred to this function body
+        from .dataset import _dataset
+
+        blob = self.dataset_version.dataset_blob
+
+        content_oneof = blob.WhichOneof('content')
+        if content_oneof:
+            # determine component type
+            if content_oneof == "s3":
+                component_cls = _dataset.S3Component
+            elif content_oneof == "path":
+                component_cls = _dataset.Component
+            else:  # shouldn't happen
+                raise RuntimeError(
+                    "found unexpected dataset type {};"
+                    " please notify the Verta development team".format(content_oneof)
+                )
+
+            # return list of component objects
+            components = getattr(blob, content_oneof).components
+            return list(map(component_cls._from_proto, components))
+
+        return []
+
 
 class RawDatasetVersion(DatasetVersion):
     def __init__(self, *args, **kwargs):
         super(RawDatasetVersion, self).__init__(*args, **kwargs)
         self.dataset_version_info = self.dataset_version.raw_dataset_version_info
-        # TODO: this is hacky, we should store dataset_version
-        self.dataset_version = None
 
     @staticmethod
     def make_create_message(dataset_id, dataset_type,
@@ -656,8 +713,6 @@ class PathDatasetVersion(DatasetVersion):
     def __init__(self, *args, **kwargs):
         super(PathDatasetVersion, self).__init__(*args, **kwargs)
         self.dataset_version_info = self.dataset_version.path_dataset_version_info
-        # TODO: this is hacky, we should store dataset_version
-        self.dataset_version = None
 
     @staticmethod
     def make_create_message(dataset_id, dataset_type,
@@ -687,8 +742,6 @@ class QueryDatasetVersion(DatasetVersion):
     def __init__(self, *args, **kwargs):
         super(QueryDatasetVersion, self).__init__(*args, **kwargs)
         self.dataset_version_info = self.dataset_version.query_dataset_version_info
-        # TODO: this is hacky, we should store dataset_version
-        self.dataset_version = None
 
     @staticmethod
     def make_create_message(dataset_id, dataset_type,
@@ -781,6 +834,7 @@ class S3DatasetVersionInfo(PathDatasetVersionInfo):
         self.compute_dataset_size()
 
     def get_dataset_part_infos(self):
+        boto3 = importer.maybe_dependency("boto3")
         if boto3 is None:  # Boto 3 not installed
             six.raise_from(ImportError("Boto 3 is not installed; try `pip install boto3`"), None)
 
@@ -929,6 +983,7 @@ class BigQueryDatasetVersionInfo(QueryDatasetVersionInfo):
 
     @staticmethod
     def get_bq_job(job_id, location):
+        bigquery = importer.maybe_dependency("google.cloud.bigquery")
         if bigquery is None:  # BigQuery not installed
             six.raise_from(ImportError("BigQuery is not installed;"
                                        " try `pip install google-cloud-bigquery`"),
@@ -947,25 +1002,3 @@ class RDBMSDatasetVersionInfo(QueryDatasetVersionInfo):
         self.query_template = query_template
         self.query_parameters = query_parameters
         self.num_records = num_records
-
-
-class DatasetLazyList(_utils.LazyList):
-    def __repr__(self):
-        return "<list-like of {} Dataset(s)>".format(self.__len__())
-
-    def _get_records(self, response_msg):
-        return response_msg.datasets
-
-    def _create_element(self, id_):
-        return Dataset(self._conn, self._conf, _dataset_id=id_)
-
-
-class DatasetVersionLazyList(_utils.LazyList):
-    def __repr__(self):
-        return "<list-like of {} DatasetVersion(s)>".format(self.__len__())
-
-    def _get_records(self, response_msg):
-        return response_msg.dataset_versions
-
-    def _create_element(self, id_):
-        return DatasetVersion(self._conn, self._conf, _dataset_version_id=id_)

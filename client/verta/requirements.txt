@@ -14,14 +14,19 @@ pytest>=4.3
 # unit testing dependencies
 boto3
 google-cloud-bigquery
-matplotlib<3.0
+matplotlib<3.0; python_version < '3.8'
+matplotlib>=3.2; python_version >= '3.8'
 numpy<1.17
 pandas
 pillow<7.0
-scikit-learn<0.21
-scipy<1.3
-spacy
-tensorflow<2.0
+scikit-learn<0.21; python_version < '3.8'  # https://scikit-learn.org/stable/install.html
+scikit-learn>=0.22; python_version >= '3.8'
+scipy<1.3; python_version < '3.8'
+scipy>=1.4; python_version >= '3.8'
+spacy!=2.3.1; python_version == '2.7'  # https://github.com/explosion/spaCy/issues/5729
+spacy; python_version != '2.7'
+tensorflow<2.0; python_version < '3.8'
+tensorflow>=2.2; python_version >= '3.8'  # https://www.tensorflow.org/install/pip
 torch
 xgboost
 

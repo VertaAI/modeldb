@@ -2,12 +2,15 @@ package ai.verta.modeldb.versioning.blob.factory;
 
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
+import ai.verta.modeldb.entities.dataset.QueryDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.S3DatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.DatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
+import ai.verta.modeldb.versioning.QueryDatasetBlob;
+import ai.verta.modeldb.versioning.QueryDatasetComponentBlob;
 import ai.verta.modeldb.versioning.S3DatasetBlob;
 import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
 import io.grpc.Status;
@@ -30,15 +33,22 @@ public class DatasetBlobFactory extends BlobFactory {
     DatasetBlob.Builder datasetBlobBuilder = DatasetBlob.newBuilder();
     switch (getElementType()) {
       case S_3_DATASET_BLOB:
-        return Blob.newBuilder()
-            .setDataset(datasetBlobBuilder.setS3(getS3Blob(session, getElementSha())))
-            .build();
+        datasetBlobBuilder.setS3(getS3Blob(session, getElementSha()));
+        break;
       case PATH_DATASET_BLOB:
         final PathDatasetBlob pathBlob = getPathBlob(session, getElementSha());
         if (pathBlob == null) {
           throw new ModelDBException("Path blob not found", Code.INTERNAL);
         }
-        return Blob.newBuilder().setDataset(datasetBlobBuilder.setPath(pathBlob)).build();
+        datasetBlobBuilder.setPath(pathBlob);
+        break;
+      case QUERY_DATASET_BLOB:
+        final QueryDatasetBlob queryBlob = getQueryBlob(session, getElementSha());
+        if (queryBlob == null) {
+          throw new ModelDBException("Query blob not found", Code.INTERNAL);
+        }
+        datasetBlobBuilder.setQuery(queryBlob);
+        break;
     }
     return Blob.newBuilder().setDataset(datasetBlobBuilder).build();
   }
@@ -82,6 +92,29 @@ public class DatasetBlobFactory extends BlobFactory {
               .map(PathDatasetComponentBlobEntity::toProto)
               .collect(Collectors.toList());
       return PathDatasetBlob.newBuilder().addAllComponents(componentBlobs).build();
+    } else {
+      return null;
+    }
+  }
+
+  static QueryDatasetBlob getQueryBlob(Session session, String blobHash) {
+    String pathComponentQueryHQL =
+        "From "
+            + QueryDatasetComponentBlobEntity.class.getSimpleName()
+            + " q WHERE q.id.query_dataset_blob_id = :blobShas";
+
+    Query<QueryDatasetComponentBlobEntity> queryComponentQuery =
+        session.createQuery(pathComponentQueryHQL);
+    queryComponentQuery.setParameter("blobShas", blobHash);
+    List<QueryDatasetComponentBlobEntity> queryDatasetComponentBlobEntities =
+        queryComponentQuery.list();
+
+    if (queryDatasetComponentBlobEntities != null && queryDatasetComponentBlobEntities.size() > 0) {
+      List<QueryDatasetComponentBlob> componentBlobs =
+          queryDatasetComponentBlobEntities.stream()
+              .map(QueryDatasetComponentBlobEntity::toProto)
+              .collect(Collectors.toList());
+      return QueryDatasetBlob.newBuilder().addAllComponents(componentBlobs).build();
     } else {
       return null;
     }

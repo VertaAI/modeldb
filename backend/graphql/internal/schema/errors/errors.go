@@ -7,6 +7,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
+	pcommon "github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
 	"github.com/vektah/gqlparser/gqlerror"
 )
 
@@ -25,6 +26,15 @@ func OwnerAccess(ctx context.Context) *gqlerror.Error {
 		Path:    graphql.GetResolverContext(ctx).Path(),
 		Extensions: map[string]interface{}{
 			"http-code": http.StatusBadRequest,
+		},
+	}
+}
+func UnknownVisibility(ctx context.Context, visibility common.VisibilityEnum_Visibility) *gqlerror.Error {
+	return &gqlerror.Error{
+		Message: fmt.Sprintf("Unknown visibility %s", visibility),
+		Path:    graphql.GetResolverContext(ctx).Path(),
+		Extensions: map[string]interface{}{
+			"http-code": http.StatusNotImplemented,
 		},
 	}
 }
@@ -76,6 +86,15 @@ func NextOrQuery(ctx context.Context) *gqlerror.Error {
 func UnknownOperator(ctx context.Context, op string) error {
 	return &gqlerror.Error{
 		Message: fmt.Sprintf("Unknown operator \"%s\"", op),
+		Path:    graphql.GetResolverContext(ctx).Path(),
+		Extensions: map[string]interface{}{
+			"http-code": http.StatusBadRequest,
+		},
+	}
+}
+func UnknownWorkspaceType(ctx context.Context, workspaceType common.WorkspaceTypeEnum_WorkspaceType) error {
+	return &gqlerror.Error{
+		Message: fmt.Sprintf("Unknown workspace type \"%s\"", workspaceType),
 		Path:    graphql.GetResolverContext(ctx).Path(),
 		Extensions: map[string]interface{}{
 			"http-code": http.StatusBadRequest,
@@ -147,9 +166,9 @@ func UnknownStatus(ctx context.Context) *gqlerror.Error {
 		},
 	}
 }
-func UnknownCollaboratorType(ctx context.Context, t common.EntitiesEnum_EntitiesTypes) *gqlerror.Error {
+func UnknownCollaboratorType(ctx context.Context, t pcommon.EntitiesEnum_EntitiesTypes) *gqlerror.Error {
 	return &gqlerror.Error{
-		Message: fmt.Sprintf("Unknown entity type \"%s\"; please report", common.EntitiesEnum_EntitiesTypes_name[int32(t)]),
+		Message: fmt.Sprintf("Unknown entity type \"%s\"; please report", pcommon.EntitiesEnum_EntitiesTypes_name[int32(t)]),
 		Path:    graphql.GetResolverContext(ctx).Path(),
 		Extensions: map[string]interface{}{
 			"http-code": http.StatusBadGateway,

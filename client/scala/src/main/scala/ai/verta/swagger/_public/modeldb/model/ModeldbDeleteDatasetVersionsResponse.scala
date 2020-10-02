@@ -14,7 +14,6 @@ import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbDeleteDatasetVersionsResponse (
-  status: Option[Boolean] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbDeleteDatasetVersionsResponse.toJson(this)
 }
@@ -23,7 +22,6 @@ object ModeldbDeleteDatasetVersionsResponse {
   def toJson(obj: ModeldbDeleteDatasetVersionsResponse): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.status.map(x => JField("status", JBool(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -37,7 +35,6 @@ object ModeldbDeleteDatasetVersionsResponse {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbDeleteDatasetVersionsResponse(
           // TODO: handle required
-          status = fieldsMap.get("status").map(JsonConverter.fromJsonBoolean)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

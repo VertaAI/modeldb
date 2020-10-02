@@ -13,7 +13,7 @@
   "paths": {
     "/experiment-run/addExperimentRunAttributes": {
       "post": {
-        "operationId": "addExperimentRunAttributes",
+        "operationId": "ExperimentRunService_addExperimentRunAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -46,7 +46,7 @@
     "/experiment-run/addExperimentRunTag": {
       "post": {
         "summary": "tag",
-        "operationId": "addExperimentRunTag",
+        "operationId": "ExperimentRunService_addExperimentRunTag",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -79,7 +79,7 @@
     "/experiment-run/addExperimentRunTags": {
       "post": {
         "summary": "tags",
-        "operationId": "addExperimentRunTags",
+        "operationId": "ExperimentRunService_addExperimentRunTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -109,9 +109,41 @@
         ]
       }
     },
+    "/experiment-run/cloneExperimentRun": {
+      "post": {
+        "operationId": "ExperimentRunService_cloneExperimentRun",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbCloneExperimentRunResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbCloneExperimentRun"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
     "/experiment-run/commitArtifactPart": {
       "post": {
-        "operationId": "commitArtifactPart",
+        "operationId": "ExperimentRunService_commitArtifactPart",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -143,7 +175,7 @@
     },
     "/experiment-run/commitMultipartArtifact": {
       "post": {
-        "operationId": "commitMultipartArtifact",
+        "operationId": "ExperimentRunService_commitMultipartArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -175,7 +207,7 @@
     },
     "/experiment-run/createExperimentRun": {
       "post": {
-        "operationId": "createExperimentRun",
+        "operationId": "ExperimentRunService_createExperimentRun",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -207,7 +239,7 @@
     },
     "/experiment-run/deleteArtifact": {
       "delete": {
-        "operationId": "deleteArtifact",
+        "operationId": "ExperimentRunService_deleteArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -239,7 +271,7 @@
     },
     "/experiment-run/deleteExperimentRun": {
       "delete": {
-        "operationId": "deleteExperimentRun",
+        "operationId": "ExperimentRunService_deleteExperimentRun",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -271,7 +303,7 @@
     },
     "/experiment-run/deleteExperimentRunAttributes": {
       "delete": {
-        "operationId": "deleteExperimentRunAttributes",
+        "operationId": "ExperimentRunService_deleteExperimentRunAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -303,7 +335,7 @@
     },
     "/experiment-run/deleteExperimentRunTag": {
       "delete": {
-        "operationId": "deleteExperimentRunTag",
+        "operationId": "ExperimentRunService_deleteExperimentRunTag",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -335,7 +367,7 @@
     },
     "/experiment-run/deleteExperimentRunTags": {
       "delete": {
-        "operationId": "deleteExperimentRunTags",
+        "operationId": "ExperimentRunService_deleteExperimentRunTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -367,7 +399,7 @@
     },
     "/experiment-run/deleteExperimentRuns": {
       "delete": {
-        "operationId": "deleteExperimentRuns",
+        "operationId": "ExperimentRunService_deleteExperimentRuns",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -397,10 +429,106 @@
         ]
       }
     },
+    "/experiment-run/deleteHyperparameters": {
+      "delete": {
+        "operationId": "ExperimentRunService_deleteHyperparameters",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteHyperparametersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteHyperparameters"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/experiment-run/deleteMetrics": {
+      "delete": {
+        "operationId": "ExperimentRunService_deleteMetrics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteMetricsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteMetrics"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/experiment-run/deleteObservations": {
+      "delete": {
+        "operationId": "ExperimentRunService_deleteObservations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteObservationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbDeleteObservations"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
     "/experiment-run/findExperimentRuns": {
       "post": {
         "summary": "queries",
-        "operationId": "findExperimentRuns",
+        "operationId": "ExperimentRunService_findExperimentRuns",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -432,7 +560,7 @@
     },
     "/experiment-run/getArtifacts": {
       "get": {
-        "operationId": "getArtifacts",
+        "operationId": "ExperimentRunService_getArtifacts",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -468,7 +596,7 @@
     },
     "/experiment-run/getAttributes": {
       "get": {
-        "operationId": "getExperimentRunAttributes",
+        "operationId": "ExperimentRunService_getExperimentRunAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -515,7 +643,7 @@
     },
     "/experiment-run/getChildrenExperimentRuns": {
       "get": {
-        "operationId": "getChildrenExperimentRuns",
+        "operationId": "ExperimentRunService_getChildrenExperimentRuns",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -572,7 +700,7 @@
     },
     "/experiment-run/getCommittedArtifactParts": {
       "get": {
-        "operationId": "getCommittedArtifactParts",
+        "operationId": "ExperimentRunService_getCommittedArtifactParts",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -608,7 +736,7 @@
     },
     "/experiment-run/getDatasets": {
       "get": {
-        "operationId": "getDatasets",
+        "operationId": "ExperimentRunService_getDatasets",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -638,7 +766,7 @@
     },
     "/experiment-run/getExperimentRunById": {
       "get": {
-        "operationId": "getExperimentRunById",
+        "operationId": "ExperimentRunService_getExperimentRunById",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -668,7 +796,7 @@
     },
     "/experiment-run/getExperimentRunByName": {
       "get": {
-        "operationId": "getExperimentRunByName",
+        "operationId": "ExperimentRunService_getExperimentRunByName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -704,7 +832,7 @@
     },
     "/experiment-run/getExperimentRunCodeVersion": {
       "get": {
-        "operationId": "getExperimentRunCodeVersion",
+        "operationId": "ExperimentRunService_getExperimentRunCodeVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -734,7 +862,7 @@
     },
     "/experiment-run/getExperimentRunTags": {
       "get": {
-        "operationId": "getExperimentRunTags",
+        "operationId": "ExperimentRunService_getExperimentRunTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -764,7 +892,7 @@
     },
     "/experiment-run/getExperimentRunsByDatasetVersionId": {
       "get": {
-        "operationId": "getExperimentRunsByDatasetVersionId",
+        "operationId": "ExperimentRunService_getExperimentRunsByDatasetVersionId",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -781,7 +909,7 @@
         },
         "parameters": [
           {
-            "name": "datset_version_id",
+            "name": "dataset_version_id",
             "in": "query",
             "required": false,
             "type": "string"
@@ -821,7 +949,7 @@
     },
     "/experiment-run/getExperimentRunsInExperiment": {
       "get": {
-        "operationId": "getExperimentRunsInExperiment",
+        "operationId": "ExperimentRunService_getExperimentRunsInExperiment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -879,7 +1007,7 @@
     "/experiment-run/getExperimentRunsInProject": {
       "get": {
         "summary": "basic queries",
-        "operationId": "getExperimentRunsInProject",
+        "operationId": "ExperimentRunService_getExperimentRunsInProject",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -936,7 +1064,7 @@
     },
     "/experiment-run/getHyperparameters": {
       "get": {
-        "operationId": "getHyperparameters",
+        "operationId": "ExperimentRunService_getHyperparameters",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -966,7 +1094,7 @@
     },
     "/experiment-run/getJobId": {
       "get": {
-        "operationId": "getJobId",
+        "operationId": "ExperimentRunService_getJobId",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -996,7 +1124,7 @@
     },
     "/experiment-run/getMetrics": {
       "get": {
-        "operationId": "getMetrics",
+        "operationId": "ExperimentRunService_getMetrics",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1026,7 +1154,7 @@
     },
     "/experiment-run/getObservations": {
       "get": {
-        "operationId": "getObservations",
+        "operationId": "ExperimentRunService_getObservations",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1062,7 +1190,7 @@
     },
     "/experiment-run/getTopExperimentRuns": {
       "get": {
-        "operationId": "getTopExperimentRuns",
+        "operationId": "ExperimentRunService_getTopExperimentRuns",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1135,7 +1263,7 @@
     },
     "/experiment-run/getUrlForArtifact": {
       "post": {
-        "operationId": "getUrlForArtifact",
+        "operationId": "ExperimentRunService_getUrlForArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1167,7 +1295,7 @@
     },
     "/experiment-run/getVersionedInput": {
       "get": {
-        "operationId": "getVersionedInputs",
+        "operationId": "ExperimentRunService_getVersionedInputs",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1198,7 +1326,7 @@
     "/experiment-run/logArtifact": {
       "post": {
         "summary": "artifact",
-        "operationId": "logArtifact",
+        "operationId": "ExperimentRunService_logArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1231,7 +1359,7 @@
     "/experiment-run/logArtifacts": {
       "post": {
         "summary": "artifacts",
-        "operationId": "logArtifacts",
+        "operationId": "ExperimentRunService_logArtifacts",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1264,7 +1392,7 @@
     "/experiment-run/logAttribute": {
       "post": {
         "summary": "attribute",
-        "operationId": "logAttribute",
+        "operationId": "ExperimentRunService_logAttribute",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1297,7 +1425,7 @@
     "/experiment-run/logAttributes": {
       "post": {
         "summary": "attributes",
-        "operationId": "logAttributes",
+        "operationId": "ExperimentRunService_logAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1330,7 +1458,7 @@
     "/experiment-run/logDataset": {
       "post": {
         "summary": "dataset",
-        "operationId": "logDataset",
+        "operationId": "ExperimentRunService_logDataset",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1363,7 +1491,7 @@
     "/experiment-run/logDatasets": {
       "post": {
         "summary": "datasets",
-        "operationId": "logDatasets",
+        "operationId": "ExperimentRunService_logDatasets",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1396,7 +1524,7 @@
     "/experiment-run/logExperimentRunCodeVersion": {
       "post": {
         "summary": "code version",
-        "operationId": "logExperimentRunCodeVersion",
+        "operationId": "ExperimentRunService_logExperimentRunCodeVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1429,7 +1557,7 @@
     "/experiment-run/logHyperparameter": {
       "post": {
         "summary": "hyperparameter",
-        "operationId": "logHyperparameter",
+        "operationId": "ExperimentRunService_logHyperparameter",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1462,7 +1590,7 @@
     "/experiment-run/logHyperparameters": {
       "post": {
         "summary": "hyperparameters",
-        "operationId": "logHyperparameters",
+        "operationId": "ExperimentRunService_logHyperparameters",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1495,7 +1623,7 @@
     "/experiment-run/logJobId": {
       "get": {
         "summary": "jobs",
-        "operationId": "logJobId",
+        "operationId": "ExperimentRunService_logJobId",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1532,7 +1660,7 @@
     "/experiment-run/logMetric": {
       "post": {
         "summary": "metric",
-        "operationId": "logMetric",
+        "operationId": "ExperimentRunService_logMetric",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1565,7 +1693,7 @@
     "/experiment-run/logMetrics": {
       "post": {
         "summary": "metrics",
-        "operationId": "logMetrics",
+        "operationId": "ExperimentRunService_logMetrics",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1598,7 +1726,7 @@
     "/experiment-run/logObservation": {
       "post": {
         "summary": "observation",
-        "operationId": "logObservation",
+        "operationId": "ExperimentRunService_logObservation",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1631,7 +1759,7 @@
     "/experiment-run/logObservations": {
       "post": {
         "summary": "observations",
-        "operationId": "logObservations",
+        "operationId": "ExperimentRunService_logObservations",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1663,7 +1791,7 @@
     },
     "/experiment-run/logVersionedInput": {
       "post": {
-        "operationId": "logVersionedInput",
+        "operationId": "ExperimentRunService_logVersionedInput",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1695,7 +1823,7 @@
     },
     "/experiment-run/setParentExperimentRunId": {
       "post": {
-        "operationId": "setParentExperimentRunId",
+        "operationId": "ExperimentRunService_setParentExperimentRunId",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1727,7 +1855,7 @@
     },
     "/experiment-run/sortExperimentRuns": {
       "get": {
-        "operationId": "sortExperimentRuns",
+        "operationId": "ExperimentRunService_sortExperimentRuns",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1781,7 +1909,7 @@
     },
     "/experiment-run/updateExperimentRunDescription": {
       "post": {
-        "operationId": "updateExperimentRunDescription",
+        "operationId": "ExperimentRunService_updateExperimentRunDescription",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1813,7 +1941,7 @@
     },
     "/experiment-run/updateExperimentRunName": {
       "post": {
-        "operationId": "updateExperimentRunName",
+        "operationId": "ExperimentRunService_updateExperimentRunName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1836,6 +1964,282 @@
             "schema": {
               "$ref": "#/definitions/modeldbUpdateExperimentRunName"
             }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path/runs": {
+      "get": {
+        "summary": "Getting ExperimentRuns linked to a blob",
+        "operationId": "ExperimentRunService_ListBlobExperimentRuns2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbListBlobExperimentRunsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "commit_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/runs": {
+      "get": {
+        "summary": "Getting ExperimentRuns linked to a commit",
+        "operationId": "ExperimentRunService_ListCommitExperimentRuns2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbListCommitExperimentRunsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "commit_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path/runs": {
+      "get": {
+        "summary": "Getting ExperimentRuns linked to a blob",
+        "operationId": "ExperimentRunService_ListBlobExperimentRuns",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbListBlobExperimentRunsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commit_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/runs": {
+      "get": {
+        "summary": "Getting ExperimentRuns linked to a commit",
+        "operationId": "ExperimentRunService_ListCommitExperimentRuns",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbListCommitExperimentRunsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commit_sha",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -1917,6 +2321,18 @@
         }
       }
     },
+    "commonArtifactPart": {
+      "type": "object",
+      "properties": {
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "etag": {
+          "type": "string"
+        }
+      }
+    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -1929,6 +2345,23 @@
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "commonKeyValueQuery": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },
@@ -1993,15 +2426,25 @@
         }
       }
     },
-    "modeldbArtifactPart": {
+    "modeldbCloneExperimentRun": {
       "type": "object",
       "properties": {
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "etag": {
+        "src_experiment_run_id": {
           "type": "string"
+        },
+        "dest_experiment_run_name": {
+          "type": "string"
+        },
+        "dest_experiment_id": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbCloneExperimentRunResponse": {
+      "type": "object",
+      "properties": {
+        "run": {
+          "$ref": "#/definitions/modeldbExperimentRun"
         }
       }
     },
@@ -2031,7 +2474,7 @@
           "type": "string"
         },
         "artifact_part": {
-          "$ref": "#/definitions/modeldbArtifactPart"
+          "$ref": "#/definitions/commonArtifactPart"
         }
       }
     },
@@ -2273,6 +2716,75 @@
         }
       }
     },
+    "modeldbDeleteHyperparameters": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "hyperparameter_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "delete HyperParameters corresponding to the keys"
+        },
+        "delete_all": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "if true delete all hyper parameters corresponding to the run, ignoring hyperparameter_keys"
+        }
+      }
+    },
+    "modeldbDeleteHyperparametersResponse": {
+      "type": "object"
+    },
+    "modeldbDeleteMetrics": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "metric_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "delete metrics corresponding to the keys"
+        },
+        "delete_all": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "if true delete all metrics corresponding to the run, ignoring metric_keys"
+        }
+      }
+    },
+    "modeldbDeleteMetricsResponse": {
+      "type": "object"
+    },
+    "modeldbDeleteObservations": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "observation_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "delete all observations corresponding to the keys"
+        },
+        "delete_all": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "if true delete all observations corresponding to the run, ignoring observation_keys"
+        }
+      }
+    },
+    "modeldbDeleteObservationsResponse": {
+      "type": "object"
+    },
     "modeldbExperimentRun": {
       "type": "object",
       "properties": {
@@ -2408,7 +2920,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "ids_only": {
@@ -2494,7 +3006,7 @@
         "artifact_parts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifactPart"
+            "$ref": "#/definitions/commonArtifactPart"
           }
         }
       }
@@ -2698,20 +3210,33 @@
         }
       }
     },
-    "modeldbKeyValueQuery": {
+    "modeldbListBlobExperimentRunsRequestResponse": {
       "type": "object",
       "properties": {
-        "key": {
-          "type": "string"
+        "runs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbExperimentRun"
+          }
         },
-        "value": {
-          "type": "object"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "modeldbListCommitExperimentRunsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "runs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbExperimentRun"
+          }
         },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
-        },
-        "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -3107,6 +3632,45 @@
           }
         }
       }
+    },
+    "versioningRepositoryIdentification": {
+      "type": "object",
+      "properties": {
+        "named_id": {
+          "$ref": "#/definitions/versioningRepositoryNamedIdentification"
+        },
+        "repo_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+    },
+    "versioningRepositoryNamedIdentification": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "workspace_name": {
+          "type": "string"
+        }
+      },
+      "title": "CRUD for repositories"
+    },
+    "vertacommonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     },
     "vertamodeldbLocation": {
       "type": "object",

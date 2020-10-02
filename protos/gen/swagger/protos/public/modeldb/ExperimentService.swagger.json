@@ -13,7 +13,7 @@
   "paths": {
     "/experiment/addAttribute": {
       "post": {
-        "operationId": "addAttribute",
+        "operationId": "ExperimentService_addAttribute",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/experiment/addExperimentAttributes": {
       "post": {
-        "operationId": "addExperimentAttributes",
+        "operationId": "ExperimentService_addExperimentAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -77,7 +77,7 @@
     },
     "/experiment/addExperimentTag": {
       "post": {
-        "operationId": "addExperimentTag",
+        "operationId": "ExperimentService_addExperimentTag",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -109,7 +109,7 @@
     },
     "/experiment/addExperimentTags": {
       "post": {
-        "operationId": "addExperimentTags",
+        "operationId": "ExperimentService_addExperimentTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -141,7 +141,7 @@
     },
     "/experiment/createExperiment": {
       "post": {
-        "operationId": "createExperiment",
+        "operationId": "ExperimentService_createExperiment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -173,7 +173,7 @@
     },
     "/experiment/deleteArtifact": {
       "delete": {
-        "operationId": "deleteArtifact",
+        "operationId": "ExperimentService_deleteArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -205,7 +205,7 @@
     },
     "/experiment/deleteExperiment": {
       "delete": {
-        "operationId": "deleteExperiment",
+        "operationId": "ExperimentService_deleteExperiment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -237,7 +237,7 @@
     },
     "/experiment/deleteExperimentAttributes": {
       "delete": {
-        "operationId": "deleteExperimentAttributes",
+        "operationId": "ExperimentService_deleteExperimentAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -284,7 +284,7 @@
     },
     "/experiment/deleteExperimentTag": {
       "delete": {
-        "operationId": "deleteExperimentTag",
+        "operationId": "ExperimentService_deleteExperimentTag",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -316,7 +316,7 @@
     },
     "/experiment/deleteExperimentTags": {
       "delete": {
-        "operationId": "deleteExperimentTags",
+        "operationId": "ExperimentService_deleteExperimentTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -348,7 +348,7 @@
     },
     "/experiment/deleteExperiments": {
       "delete": {
-        "operationId": "deleteExperiments",
+        "operationId": "ExperimentService_deleteExperiments",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -381,7 +381,7 @@
     "/experiment/findExperiments": {
       "post": {
         "summary": "queries",
-        "operationId": "findExperiments",
+        "operationId": "ExperimentService_findExperiments",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -413,7 +413,7 @@
     },
     "/experiment/getArtifacts": {
       "get": {
-        "operationId": "getArtifacts",
+        "operationId": "ExperimentService_getArtifacts",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -449,7 +449,7 @@
     },
     "/experiment/getExperimentAttributes": {
       "get": {
-        "operationId": "getExperimentAttributes",
+        "operationId": "ExperimentService_getExperimentAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -496,7 +496,7 @@
     },
     "/experiment/getExperimentById": {
       "get": {
-        "operationId": "getExperimentById",
+        "operationId": "ExperimentService_getExperimentById",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -526,7 +526,7 @@
     },
     "/experiment/getExperimentByName": {
       "get": {
-        "operationId": "getExperimentByName",
+        "operationId": "ExperimentService_getExperimentByName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -562,7 +562,7 @@
     },
     "/experiment/getExperimentCodeVersion": {
       "get": {
-        "operationId": "getExperimentCodeVersion",
+        "operationId": "ExperimentService_getExperimentCodeVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -592,7 +592,7 @@
     },
     "/experiment/getExperimentTags": {
       "get": {
-        "operationId": "getExperimentTags",
+        "operationId": "ExperimentService_getExperimentTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -622,7 +622,7 @@
     },
     "/experiment/getExperimentsInProject": {
       "get": {
-        "operationId": "getExperimentsInProject",
+        "operationId": "ExperimentService_getExperimentsInProject",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -680,7 +680,7 @@
     "/experiment/getUrlForArtifact": {
       "post": {
         "summary": "artifacts",
-        "operationId": "getUrlForArtifact",
+        "operationId": "ExperimentService_getUrlForArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -713,7 +713,7 @@
     "/experiment/logArtifacts": {
       "post": {
         "summary": "artifacts",
-        "operationId": "logArtifacts",
+        "operationId": "ExperimentService_logArtifacts",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -746,7 +746,7 @@
     "/experiment/logExperimentCodeVersion": {
       "post": {
         "summary": "code version",
-        "operationId": "logExperimentCodeVersion",
+        "operationId": "ExperimentService_logExperimentCodeVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -778,7 +778,7 @@
     },
     "/experiment/updateExperimentDescription": {
       "post": {
-        "operationId": "updateExperimentDescription",
+        "operationId": "ExperimentService_updateExperimentDescription",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -810,7 +810,7 @@
     },
     "/experiment/updateExperimentName": {
       "post": {
-        "operationId": "updateExperimentName",
+        "operationId": "ExperimentService_updateExperimentName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -842,7 +842,7 @@
     },
     "/experiment/updateExperimentNameOrDescription": {
       "post": {
-        "operationId": "updateExperimentNameOrDescription",
+        "operationId": "ExperimentService_updateExperimentNameOrDescription",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -958,6 +958,23 @@
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "commonKeyValueQuery": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },
@@ -1282,7 +1299,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "ids_only": {
@@ -1453,23 +1470,6 @@
         },
         "is_dirty": {
           "$ref": "#/definitions/TernaryEnumTernary"
-        }
-      }
-    },
-    "modeldbKeyValueQuery": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
-        },
-        "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },

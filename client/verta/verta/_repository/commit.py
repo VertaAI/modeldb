@@ -224,15 +224,7 @@ class Commit(object):
                 part_stream = six.BytesIO(file_part)
 
                 # upload part
-                #     Retry connection errors, to make large multipart uploads more robust.
-                for _ in range(3):
-                    try:
-                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-                    except requests.ConnectionError:  # e.g. broken pipe
-                        time.sleep(1)
-                        continue  # try again
-                    else:
-                        break
+                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                 _utils.raise_for_http_error(response)
 
                 # commit part
@@ -399,7 +391,7 @@ class Commit(object):
         ----------
         path : str
             Location to add `blob` to.
-        blob : :class:`~verta._repository.blob.Blob`
+        blob : :ref:`Blob <blobs>`
             ModelDB versioning blob.
 
         """
@@ -424,7 +416,7 @@ class Commit(object):
 
         Returns
         -------
-        blob : :class:`~verta._repository.blob.Blob`
+        blob : :ref:`Blob <blobs>`
             ModelDB versioning blob.
 
         Raises

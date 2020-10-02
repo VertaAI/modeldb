@@ -1,5 +1,5 @@
 image: vertaaiofficial/modeldb-backend
-imageTag: latest
+imageTag: 2.0.8.1
 tolerations: []
 resources:
   limits:
@@ -16,7 +16,7 @@ service:
 
 proxy:
   image: vertaaiofficial/modeldb-proxy
-  imageTag: latest
+  imageTag: 2.0.8.1
   resources:
     limits:
       cpu: 500m
@@ -37,6 +37,14 @@ hpa:
 pdb:
   enabled: false
 labels: {}
+
+## Pod Security Context
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+##
+securityContext:
+  enabled: false
+  fsGroup: 1001
+  runAsUser: 1001
 
 config:
   grpcServer:

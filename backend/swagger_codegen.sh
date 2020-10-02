@@ -372,7 +372,7 @@ public class DiffAndMerge {
     }
 
 EOF
-for f in $(find $TARGET -type f | grep '\(Blob\).java$' | sed 's,Blob,,' | sort | grep -v "Autogen\(S3DatasetComponent\|HyperparameterSetConfig\|PythonRequirementEnvironment\|PathDatasetComponent\|EnvironmentVariables\|HyperparameterConfig\|HyperparameterValuesConfig\|DiscreteHyperparameterSetConfig\|ContinuousHyperparameterSetConfig\)" )
+for f in $(find $TARGET -type f | grep '\(Blob\).java$' | sed 's,Blob,,' | sort | grep -v "Autogen\(QueryDatasetComponent\|S3DatasetComponent\|HyperparameterSetConfig\|PythonRequirementEnvironment\|PathDatasetComponent\|EnvironmentVariables\|HyperparameterConfig\|HyperparameterValuesConfig\|DiscreteHyperparameterSetConfig\|ContinuousHyperparameterSetConfig\)" )
 do
     type=$(basename $f | sed 's,\.java$,,')
     if [ "${type}" = "Autogen" ]

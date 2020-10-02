@@ -33,7 +33,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return list of all the tags of this run, if succeeds
    */
   override def getTags()(implicit ec: ExecutionContext): Try[List[String]] = {
-    clientSet.experimentRunService.getExperimentRunTags(run.id)
+    clientSet.experimentRunService.ExperimentRunService_getExperimentRunTags(run.id)
       .map(r => r.tags.getOrElse(Nil))
   }
 
@@ -43,7 +43,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return whether the attempt succeeds
    */
   override def delTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
-    clientSet.experimentRunService.deleteExperimentRunTags(ModeldbDeleteExperimentRunTags(
+    clientSet.experimentRunService.ExperimentRunService_deleteExperimentRunTags(ModeldbDeleteExperimentRunTags(
       id = run.id,
       tags = Some(tags)
     ))
@@ -55,7 +55,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return whether the attempt succeeds
    */
   override def addTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
-    clientSet.experimentRunService.addExperimentRunTags(ModeldbAddExperimentRunTags(
+    clientSet.experimentRunService.ExperimentRunService_addExperimentRunTags(ModeldbAddExperimentRunTags(
       id = run.id,
       tags = Some(tags)
     ))
@@ -75,7 +75,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   def logHyperparameters(vals: Map[String, ValueType])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
-      clientSet.experimentRunService.logHyperparameters(ModeldbLogHyperparameters(
+      clientSet.experimentRunService.ExperimentRunService_logHyperparameters(ModeldbLogHyperparameters(
         id = run.id,
         hyperparameters = valsList.toOption
       )).map(_ => {})
@@ -92,7 +92,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return Names and values of all hyperparameters
    */
   def getHyperparameters()(implicit ec: ExecutionContext): Try[Map[String, ValueType]] = {
-    clientSet.experimentRunService.getHyperparameters(
+    clientSet.experimentRunService.ExperimentRunService_getHyperparameters(
       id = run.id
     )
       .flatMap(r => {
@@ -123,13 +123,13 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   def logMetrics(vals: Map[String, ValueType])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
-      clientSet.experimentRunService.logMetrics(ModeldbLogMetrics(
+      clientSet.experimentRunService.ExperimentRunService_logMetrics(ModeldbLogMetrics(
         id = run.id,
         metrics = valsList.toOption
       )).map(_ => {})
   }
 
-  /** Logs a metric to this Experiment Run
+  /** Logs a metric to this Experiment Run.
    *  If the metadatum of interest might recur, logObservation() should be used instead
    *  @param key Name of the metric
    *  @param value Value of the metric
@@ -142,7 +142,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return Names and values of all metrics
    */
   def getMetrics()(implicit ec: ExecutionContext): Try[Map[String, ValueType]] = {
-    clientSet.experimentRunService.getMetrics(
+    clientSet.experimentRunService.ExperimentRunService_getMetrics(
       id = run.id
     )
       .flatMap(r => {
@@ -173,7 +173,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
   def logAttributes(vals: Map[String, ValueType])(implicit ec: ExecutionContext): Try[Unit] = {
     val valsList = utils.KVHandler.mapToKVList(vals)
     if (valsList.isFailure) Failure(valsList.failed.get) else
-      clientSet.experimentRunService.logAttributes(ModeldbLogAttributes(
+      clientSet.experimentRunService.ExperimentRunService_logAttributes(ModeldbLogAttributes(
         id = run.id,
         attributes = valsList.toOption
       )).map(_ => {})
@@ -191,7 +191,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return Values of the attributes (String, Int, or Double)
    */
   def getAttributes(keys: List[String] = Nil)(implicit ec: ExecutionContext): Try[Map[String, ValueType]] = {
-    clientSet.experimentRunService.getExperimentRunAttributes(
+    clientSet.experimentRunService.ExperimentRunService_getExperimentRunAttributes(
       id = run.id,
       attribute_keys = Some(keys),
       get_all = Some(keys.isEmpty)
@@ -221,7 +221,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
 
     val convertedValue = KVHandler.convertFromValueType(value, s"unknown type for observation ${key}: ${value.toString} (${value.getClass.toString})")
     convertedValue.flatMap(newValue => {
-      clientSet.experimentRunService.logObservation(ModeldbLogObservation(
+      clientSet.experimentRunService.ExperimentRunService_logObservation(ModeldbLogObservation(
         id = run.id,
         observation = Some(ModeldbObservation(
           attribute = Some(CommonKeyValue(
@@ -240,7 +240,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return Values of observation series
    */
   def getObservation(key: String)(implicit ec: ExecutionContext) = {
-    clientSet.experimentRunService.getObservations(id = run.id, observation_key = Some(key))
+    clientSet.experimentRunService.ExperimentRunService_getObservations(id = run.id, observation_key = Some(key))
       .map(res => {
         res.observations.map(obs => {
           obs.map(o => {
@@ -257,7 +257,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return Names and values of all observation series
    */
   def getObservations()(implicit ec: ExecutionContext) = {
-    clientSet.experimentRunService.getExperimentRunById(run.id)
+    clientSet.experimentRunService.ExperimentRunService_getExperimentRunById(run.id)
       .flatMap(runResp => Try {
         val observations = runResp.experiment_run.get.observations
         val obsMap = new mutable.HashMap[String, List[(LocalDateTime, ValueType)]]()
@@ -317,7 +317,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
     val artifactHash = hashResult._1
     val artifactPath = artifactHash + "/" + key
 
-    clientSet.experimentRunService.logArtifact(ModeldbLogArtifact(
+    clientSet.experimentRunService.ExperimentRunService_logArtifact(ModeldbLogArtifact(
       id = run.id,
       artifact = Some(CommonArtifact(
         key = Some(key),
@@ -328,7 +328,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       ))
     ))
       .flatMap(_ => {
-        clientSet.experimentRunService.getUrlForArtifact(ModeldbGetUrlForArtifact(
+        clientSet.experimentRunService.ExperimentRunService_getUrlForArtifact(ModeldbGetUrlForArtifact(
           id = run.id,
           key = Some(key),
           method = Some("PUT"),
@@ -360,7 +360,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return The output stream
    */
   def getArtifact(key: String)(implicit ec: ExecutionContext) = {
-    clientSet.experimentRunService.getUrlForArtifact(ModeldbGetUrlForArtifact(
+    clientSet.experimentRunService.ExperimentRunService_getUrlForArtifact(ModeldbGetUrlForArtifact(
       id = run.id,
       key = Some(key),
       method = Some("GET"),
@@ -372,7 +372,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
             .map(resp => {
               resp match {
                 case Success(response) => {
-                  val arr = new ByteArrayInputStream(response)
+                  val arr = new ByteArrayInputStream(response.body)
                   Success(arr)
                 }
                 case Failure(x) => Failure(x)
@@ -396,7 +396,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
         _.mapValues(location => VertamodeldbLocation(Some(location.split("/").toList)))
       )
 
-      clientSet.experimentRunService.logVersionedInput(
+      clientSet.experimentRunService.ExperimentRunService_logVersionedInput(
         body = ModeldbLogVersionedInput(
           id = run.id, versioned_inputs = Some(ModeldbVersioningEntry(
             commit = commit.id,
@@ -412,7 +412,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
    *  @return ExperimentRunCommit instance, containing the commit and key-path map.
    */
   def getCommit()(implicit ec: ExecutionContext): Try[ExperimentRunCommit] = {
-    clientSet.experimentRunService.getVersionedInputs(id = run.id).flatMap(response =>
+    clientSet.experimentRunService.ExperimentRunService_getVersionedInputs(id = run.id).flatMap(response =>
       if (response.versioned_inputs.isEmpty || response.versioned_inputs.get.commit.isEmpty)
         Failure(new IllegalStateException("No commit is associated with this experiment run"))
       else {
@@ -421,7 +421,7 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
           _.map(pair => (pair._1, pair._2.location.get.mkString("/")))
         )
 
-        clientSet.versioningService.GetRepository2(id_repo_id = versioningEntry.repository_id.get)
+        clientSet.versioningService.VersioningService_GetRepository2(id_repo_id = versioningEntry.repository_id.get)
           .map(r => new Repository(clientSet, r.repository.get))
           .flatMap(_.getCommitById(versioningEntry.commit.get))
           .map(commit => ExperimentRunCommit(commit, keyPaths))
