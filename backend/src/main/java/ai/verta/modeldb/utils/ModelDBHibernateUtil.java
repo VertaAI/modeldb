@@ -111,7 +111,6 @@ public class ModelDBHibernateUtil {
   private static StandardServiceRegistry registry;
   private static SessionFactory sessionFactory;
   private static String databaseName;
-
   private static String rDBDriver;
   private static String rDBUrl;
   public static String rDBDialect;
@@ -884,9 +883,5 @@ public class ModelDBHibernateUtil {
       return true;
     }
     return false;
-  }
-
-  public static String getDatabaseName() {
-    return databaseName;
   }
 }
