@@ -71,7 +71,7 @@ public class FetchTemporaryS3Token extends TimerTask {
     AssumeRoleWithWebIdentityResult roleResponse = stsClient.assumeRoleWithWebIdentity(roleRequest);
     LOGGER.debug("Received response for AssumeRoleWithWebIdentityRequest");
     Credentials credentials = roleResponse.getCredentials();
-    S3Service.setTemporarySessionCredentials(credentials);
+    S3Service.setTemporarySessionCredentials(credentials, clientRegion);
     LOGGER.debug("Refreshed session credentials");
   }
 

@@ -271,4 +271,5 @@ public interface ModelDBConstants {
   String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
   String DELETE_ENTITIES = "delete_entities";
   String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
+  String EXPIRED_TOKEN = "ExpiredToken";
 }
