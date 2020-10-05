@@ -6,6 +6,7 @@ import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.GetDatasetById;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.ResourceDAO;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -18,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import org.hibernate.Session;
 
-public interface RepositoryDAO {
+public interface RepositoryDAO extends ResourceDAO<RepositoryEntity> {
 
   GetRepositoryRequest.Response getRepository(GetRepositoryRequest request) throws Exception;
 

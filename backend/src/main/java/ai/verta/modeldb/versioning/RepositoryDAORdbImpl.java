@@ -187,6 +187,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(ModelDBConstants.ID)
           .append(" = :repoId")
           .toString();
+  public static final String SIMPLE_NAME = RepositoryEntity.class.getSimpleName();
+  private static final String NON_DELETED_REPOSITORIES_IDS_AND_WORKSPACE_WITH_TYPE =
+      String.format(
+          "select new %s(id, workspace_id) From %s p where p.deleted = false and "
+              + "p.workspace_type = :workspace_type",
+          SIMPLE_NAME, SIMPLE_NAME);
 
   public RepositoryDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
@@ -563,9 +569,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException {
     List<String> allowedRepositoryIds =
         roleService.getAccessibleResourceIdsByActions(
-            ModelDBServiceResourceTypes.REPOSITORY,
-            ModelDBServiceActions.DELETE,
-            Collections.singletonList(String.valueOf(repositoryIds)));
+            ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.DELETE, repositoryIds);
     if (allowedRepositoryIds.isEmpty()) {
       throw new ModelDBException(
           "Delete Access Denied for given repository Ids : " + repositoryIds,
@@ -1658,5 +1662,27 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         throw ex;
       }
     }
+  }
+
+  @Override
+  public List<RepositoryEntity> getOrganizationResources() {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      return session
+          .createQuery(NON_DELETED_REPOSITORIES_IDS_AND_WORKSPACE_WITH_TYPE, RepositoryEntity.class)
+          .setParameter("workspace_type", WorkspaceType.ORGANIZATION_VALUE)
+          .list();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getOrganizationResources();
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public void deleteResources(List<String> resourceIds, ExperimentRunDAO experimentRunDAO)
+      throws ModelDBException {
+    deleteRepositories(resourceIds, experimentRunDAO);
   }
 }

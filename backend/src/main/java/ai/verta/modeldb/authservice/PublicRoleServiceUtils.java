@@ -192,6 +192,14 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
+  public List<String> getSelfAllowedResources(
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBServiceActions modelDBServiceActions,
+      List<String> requestedIdList) {
+    return Collections.emptyList();
+  }
+
+  @Override
   public List<String> getSelfDirectlyAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions) {

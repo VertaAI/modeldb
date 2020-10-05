@@ -27,6 +27,11 @@ public class ProjectEntity {
 
   public ProjectEntity() {}
 
+  public ProjectEntity(String id, String workspace) {
+    this.id = id;
+    this.workspace = workspace;
+  }
+
   public ProjectEntity(Project project) throws InvalidProtocolBufferException {
     setId(project.getId());
     setName(project.getName());

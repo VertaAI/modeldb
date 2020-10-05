@@ -270,5 +270,6 @@ public interface ModelDBConstants {
   String CRON_JOB = "cron_job";
   String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
   String DELETE_ENTITIES = "delete_entities";
+  String FIX_DELETED_ORG_RESOURCES = "fix_deleted_org_resources";
   String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
 }

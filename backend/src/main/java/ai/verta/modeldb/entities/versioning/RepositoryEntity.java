@@ -38,6 +38,11 @@ public class RepositoryEntity {
 
   public RepositoryEntity() {}
 
+  public RepositoryEntity(Long id, String workspace_id) {
+    this.id = id;
+    this.workspace_id = workspace_id;
+  }
+
   public RepositoryEntity(
       Repository repository, WorkspaceDTO workspaceDTO, RepositoryTypeEnum repositoryTypeEnum)
       throws InvalidProtocolBufferException {

@@ -7,15 +7,17 @@ import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
+import ai.verta.modeldb.ResourceDAO;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 import java.util.Map;
 
-public interface ProjectDAO {
+public interface ProjectDAO extends ResourceDAO<ProjectEntity> {
 
   /**
    * Insert Project entity in database.

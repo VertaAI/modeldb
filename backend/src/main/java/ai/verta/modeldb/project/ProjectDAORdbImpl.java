@@ -133,6 +133,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       "Select Count(id) From ProjectEntity p where p.deleted = false AND p.id = :projectId";
   private static final String NON_DELETED_PROJECT_IDS =
       "select id  From ProjectEntity p where p.deleted = false";
+  private static final String NON_DELETED_PROJECT_IDS_AND_WORKSPACE_WITH_TYPE =
+      "select new ProjectEntity(p.id, p.workspace) From ProjectEntity p where p.deleted = false "
+          + "and p.workspace_type = :workspace_type";
   private static final String NON_DELETED_PROJECT_IDS_BY_IDS =
       NON_DELETED_PROJECT_IDS + " AND p.id in (:" + ModelDBConstants.PROJECT_IDS + ")";
   private static final String IDS_FILTERED_BY_WORKSPACE =
@@ -1432,5 +1435,26 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         throw ex;
       }
     }
+  }
+
+  @Override
+  public List<ProjectEntity> getOrganizationResources() {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      return session
+          .createQuery(NON_DELETED_PROJECT_IDS_AND_WORKSPACE_WITH_TYPE, ProjectEntity.class)
+          .setParameter("workspace_type", WorkspaceType.ORGANIZATION_VALUE)
+          .list();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getOrganizationResources();
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  @Override
+  public void deleteResources(List<String> resourceIds, ExperimentRunDAO experimentRunDAO) {
+    deleteProjects(resourceIds);
   }
 }

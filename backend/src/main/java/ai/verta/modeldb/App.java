@@ -18,6 +18,7 @@ import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.OrganizationResourceDAOs;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -416,6 +417,7 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("Database properties found");
 
     String dbType = (String) databasePropMap.get(ModelDBConstants.DB_TYPE);
+    OrganizationResourceDAOs organizationResourceDAOs;
     switch (dbType) {
       case ModelDBConstants.RELATIONAL:
 
@@ -430,8 +432,9 @@ public class App implements ApplicationContextAware {
         // --------------
 
         // -- Start Initialize relational Service and modelDB services --
-        initializeRelationalDBServices(
-            serverBuilder, artifactStoreService, authService, roleService);
+        organizationResourceDAOs =
+            initializeRelationalDBServices(
+                serverBuilder, artifactStoreService, authService, roleService);
         // -- Start Initialize relational Service and modelDB services --
         break;
       default:
@@ -444,10 +447,11 @@ public class App implements ApplicationContextAware {
     initializeTelemetryBasedOnConfig(propertiesMap);
 
     // Initialize cron jobs
-    CronJobUtils.initializeBasedOnConfig(propertiesMap, authService, roleService);
+    CronJobUtils.initializeBasedOnConfig(
+        propertiesMap, authService, roleService, organizationResourceDAOs);
   }
 
-  private static void initializeRelationalDBServices(
+  private static OrganizationResourceDAOs initializeRelationalDBServices(
       ServerBuilder<?> serverBuilder,
       ArtifactStoreService artifactStoreService,
       AuthService authService,
@@ -494,6 +498,7 @@ public class App implements ApplicationContextAware {
         blobDAO,
         authService,
         roleService);
+    return new OrganizationResourceDAOs(projectDAO, repositoryDAO, experimentRunDAO);
   }
 
   private static void initializeBackendServices(

@@ -710,13 +710,24 @@ public class RoleServiceUtils implements RoleService {
   public List<String> getSelfAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions) {
-    return getSelfAllowedResources(true, modelDBServiceResourceTypes, modelDBServiceActions);
+    return getSelfAllowedResources(
+        modelDBServiceResourceTypes, modelDBServiceActions, Collections.emptyList());
+  }
+
+  @Override
+  public List<String> getSelfAllowedResources(
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBServiceActions modelDBServiceActions,
+      List<String> requestedIdList) {
+    return getSelfAllowedResources(
+        true, modelDBServiceResourceTypes, modelDBServiceActions, requestedIdList);
   }
 
   private List<String> getSelfAllowedResources(
       boolean retry,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions) {
+      ModelDBServiceActions modelDBServiceActions,
+      List<String> requestedIdList) {
     Action action =
         Action.newBuilder()
             .setService(ServiceEnum.Service.MODELDB_SERVICE)
@@ -743,8 +754,18 @@ public class RoleServiceUtils implements RoleService {
 
       if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
         List<String> resourcesIds = new ArrayList<>();
-        for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
-          resourcesIds.addAll(resources.getResourceIdsList());
+        // means that everything allowed
+        if (getAllowedResourcesResponse.getResourcesList().size() == 1
+            && getAllowedResourcesResponse
+                .getResourcesList()
+                .get(0)
+                .getResourceIdsList()
+                .isEmpty()) {
+          resourcesIds.addAll(requestedIdList);
+        } else {
+          for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
+            resourcesIds.addAll(resources.getResourceIdsList());
+          }
         }
         return resourcesIds;
       } else {
@@ -758,7 +779,10 @@ public class RoleServiceUtils implements RoleService {
               (ModelDBUtils.RetryCallInterface<List<String>>)
                   (retry1) ->
                       getSelfAllowedResources(
-                          retry1, modelDBServiceResourceTypes, modelDBServiceActions));
+                          retry1,
+                          modelDBServiceResourceTypes,
+                          modelDBServiceActions,
+                          requestedIdList));
     }
   }
 
@@ -1050,7 +1074,8 @@ public class RoleServiceUtils implements RoleService {
       return requestedIdList;
     } else {
       List<String> allowedResourceIdList =
-          getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
+          getSelfAllowedResources(
+              modelDBServiceResourceTypes, modelDBServiceActions, requestedIdList);
       // Validate if current user has access to the entity or not
       allowedResourceIdList.retainAll(requestedIdList);
       return allowedResourceIdList;

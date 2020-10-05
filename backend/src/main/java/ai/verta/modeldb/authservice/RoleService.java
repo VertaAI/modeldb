@@ -97,6 +97,11 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions);
 
+  List<String> getSelfAllowedResources(
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBServiceActions modelDBServiceActions,
+      List<String> requestedIdList);
+
   List<String> getSelfDirectlyAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions);
