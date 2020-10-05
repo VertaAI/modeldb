@@ -565,7 +565,7 @@ public class ModelDBHibernateUtil {
 
   public static boolean tableExists(Connection conn, String tableName) throws SQLException {
     boolean tExists = false;
-    try (ResultSet rs = conn.getMetaData().getTables(null, null, tableName, null)) {
+    try (ResultSet rs = getTableBasedOnDialect(conn, tableName, databaseName, rDBDialect)) {
       while (rs.next()) {
         String tName = rs.getString("TABLE_NAME");
         if (tName != null && tName.equals(tableName)) {
@@ -575,6 +575,16 @@ public class ModelDBHibernateUtil {
       }
     }
     return tExists;
+  }
+
+  private static ResultSet getTableBasedOnDialect(
+      Connection conn, String tableName, String dbName, String rDBDialect) throws SQLException {
+    if (rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
+      //TODO: make postgres implementation multitenant as well.
+      return conn.getMetaData().getTables(null, null, tableName, null);
+    } else {
+      return conn.getMetaData().getTables(dbName, null, tableName, null);
+    }
   }
 
   public static void checkIfEntityAlreadyExists(
