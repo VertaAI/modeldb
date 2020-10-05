@@ -5,7 +5,6 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
-import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.AdvancedQueryDatasetVersionsResponse;
 import ai.verta.modeldb.AdvancedQueryDatasetsResponse;
 import ai.verta.modeldb.AdvancedQueryExperimentRunsResponse;
@@ -85,7 +84,6 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.Metadata;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
@@ -97,7 +95,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -239,43 +236,17 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               .build();
       projectPaginationDTO =
           projectDAO.findProjects(findProjects, null, userInfo, ProjectVisibility.PRIVATE);
-      List<Project> allProjects = projectPaginationDTO.getProjects();
-      if (allProjects == null) {
-        allProjects = Collections.emptyList();
-      }
-      List<String> wrongProjects = new LinkedList<>();
-      List<Project> projects =
-          allProjects.stream()
-              .filter(
-                  project -> {
-                    if (project.getWorkspaceType() == WorkspaceType.ORGANIZATION) {
-                      try {
-                        roleService.getOrgByName(project.getWorkspaceId());
-                      } catch (StatusRuntimeException ex) {
-                        if (ex.getStatus().getCode().equals(io.grpc.Status.Code.NOT_FOUND)) {
-                          wrongProjects.add(project.getId());
-                          return false;
-                        }
-                        throw ex;
-                      }
-                    }
-                    return true;
-                  })
-              .collect(Collectors.toList());
-
-      if (!wrongProjects.isEmpty()) {
-        projectDAO.deleteProjects(wrongProjects);
-      }
+      List<Project> projects = projectPaginationDTO.getProjects();
 
       List<HydratedProject> hydratedProjects = new ArrayList<>();
-      if (!projects.isEmpty()) {
+      if (projects != null && !projects.isEmpty()) {
         hydratedProjects = getHydratedProjects(projects);
       }
 
       responseObserver.onNext(
           GetHydratedProjects.Response.newBuilder()
               .addAllHydratedProjects(hydratedProjects)
-              .setTotalRecords(projectPaginationDTO.getTotalRecords() - wrongProjects.size())
+              .setTotalRecords(projectPaginationDTO.getTotalRecords())
               .build());
       responseObserver.onCompleted();
 
