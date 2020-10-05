@@ -580,6 +580,7 @@ public class ModelDBHibernateUtil {
   private static ResultSet getTableBasedOnDialect(
       Connection conn, String tableName, String dbName, String rDBDialect) throws SQLException {
     if (rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
+      //TODO: make postgres implementation multitenant as well.
       return conn.getMetaData().getTables(null, null, tableName, null);
     } else {
       return conn.getMetaData().getTables(dbName, null, tableName, null);
