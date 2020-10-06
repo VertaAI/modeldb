@@ -141,7 +141,7 @@ public class S3Service implements ArtifactStoreService {
   private synchronized void initializeS3ClientWithTemporaryCredentials(
       Regions clientRegion, AmazonServiceException ex) {
 
-    if (ex == null) {
+    if (ex == null && s3Client != null) {
       try {
         s3Client.doesBucketExistV2(bucketName);
         return;
