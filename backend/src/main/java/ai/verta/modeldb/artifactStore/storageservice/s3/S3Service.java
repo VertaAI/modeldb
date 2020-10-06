@@ -160,7 +160,7 @@ public class S3Service implements ArtifactStoreService {
     // Create a BasicSessionCredentials object that contains the credentials you just retrieved.
     BasicSessionCredentials awsCredentials =
         new BasicSessionCredentials(
-            temporarySessionCredentials.getAccessKeyId(),
+            temporarySessionCredentials.getAccessKeyId() +"1",
             temporarySessionCredentials.getSecretAccessKey(),
             temporarySessionCredentials.getSessionToken());
 
