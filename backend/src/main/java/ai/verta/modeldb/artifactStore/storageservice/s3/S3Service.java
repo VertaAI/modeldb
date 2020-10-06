@@ -138,8 +138,20 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  private void initializeS3ClientWithTemporaryCredentials(
+  private synchronized void initializeS3ClientWithTemporaryCredentials(
       Regions clientRegion, AmazonServiceException ex) {
+
+    if (ex == null) {
+      try {
+        s3Client.doesBucketExistV2(bucketName);
+        return;
+      } catch (AmazonServiceException e) {
+        logAmazonServiceExceptionErrorCodes(e);
+        ex = e;
+      } catch (SdkClientException e) {
+        LOGGER.warn(e.getMessage());
+      }
+    }
 
     if (ex != null && ex.getErrorCode().equals(ModelDBConstants.EXPIRED_TOKEN)) {
       RefreshCredentialsAndSchedule(clientRegion.getName());
@@ -165,6 +177,10 @@ public class S3Service implements ArtifactStoreService {
 
   private void RefreshCredentialsAndSchedule(String region) {
     LOGGER.debug("fetching token for s3 access");
+    if (task != null) {
+      task.cancel();
+      task = null;
+    }
 
     LOGGER.debug(
         "credentials before refresh {}",
@@ -173,7 +189,7 @@ public class S3Service implements ArtifactStoreService {
     scheduleTimer(region);
   }
 
-  public static void scheduleTimer(String region) {
+  public static synchronized void scheduleTimer(String region) {
     if (task == null) {
       task = new FetchTemporaryS3Token(region);
       task.run();
