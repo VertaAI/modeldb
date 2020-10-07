@@ -138,13 +138,20 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  private synchronized void initializeS3ClientWithTemporaryCredentials(
+  /**
+   * returns if s3client is valid after refreshing temporary credentials
+   *
+   * @param clientRegion
+   * @param ex
+   * @return
+   */
+  private synchronized boolean initializeS3ClientWithTemporaryCredentials(
       Regions clientRegion, AmazonServiceException ex) {
 
     if (ex == null && s3Client != null) {
       try {
         s3Client.doesBucketExistV2(bucketName);
-        return;
+        return true;
       } catch (AmazonServiceException e) {
         logAmazonServiceExceptionErrorCodes(e);
         ex = e;
@@ -172,7 +179,17 @@ public class S3Service implements ArtifactStoreService {
             .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
             .withRegion(clientRegion)
             .build();
-    LOGGER.debug("s3client refreshed with temporary credentials");
+    try {
+      s3Client.doesBucketExistV2(bucketName);
+      LOGGER.debug("s3client refreshed with temporary credentials");
+      return true;
+    } catch (AmazonServiceException e) {
+      logAmazonServiceExceptionErrorCodes(e);
+      ex = e;
+    } catch (SdkClientException e) {
+      LOGGER.warn(e.getMessage());
+    }
+    return false;
   }
 
   private void RefreshCredentialsAndSchedule(String region) {
@@ -186,15 +203,18 @@ public class S3Service implements ArtifactStoreService {
         "credentials before refresh {}",
         temporarySessionCredentials != null ? temporarySessionCredentials.hashCode() : null);
 
-    scheduleTimer(region);
+    prescheduleTimer(region);
   }
 
-  public static synchronized void scheduleTimer(String region) {
+  public static synchronized void prescheduleTimer(String region) {
     if (task == null) {
       task = new FetchTemporaryS3Token(region);
       task.run();
       return;
     }
+  }
+
+  public static synchronized void scheduleTimer(String region) {
 
     task.cancel();
     task = new FetchTemporaryS3Token(region);
@@ -222,20 +242,34 @@ public class S3Service implements ArtifactStoreService {
       // refreshing credentials
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-        // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
-        initializeS3ClientWithTemporaryCredentials(awsRegion, e);
+        if (initializeS3ClientWithTemporaryCredentials(awsRegion, e)) {
+          return doesBucketExist(bucketName);
+        }
       }
-      return doesBucketExist(bucketName);
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existance for artifact store : "
+                      + e.getErrorMessage())
+              .build());
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-        // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
-        initializeS3ClientWithTemporaryCredentials(awsRegion, null);
+        if (initializeS3ClientWithTemporaryCredentials(awsRegion, null)) {
+          return doesBucketExist(bucketName);
+        }
       }
-      return doesBucketExist(bucketName);
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existance for artifact store : "
+                      + e.getMessage())
+              .build());
     } catch (Exception ex) {
       LOGGER.warn(ex.getMessage());
       throw ex;
@@ -251,20 +285,34 @@ public class S3Service implements ArtifactStoreService {
       // refreshing credentials
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-        // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
-        initializeS3ClientWithTemporaryCredentials(awsRegion, e);
+        if (initializeS3ClientWithTemporaryCredentials(awsRegion, e)) {
+          return doesObjectExist(bucketName, path);
+        }
       }
-      return doesObjectExist(bucketName, path);
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existance for artifact store : "
+                      + e.getErrorMessage())
+              .build());
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-        // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
-        initializeS3ClientWithTemporaryCredentials(awsRegion, null);
+        if (initializeS3ClientWithTemporaryCredentials(awsRegion, null)) {
+          return doesObjectExist(bucketName, path);
+        }
       }
-      return doesObjectExist(bucketName, path);
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existance for artifact store : "
+                      + e.getMessage())
+              .build());
     } catch (Exception ex) {
       LOGGER.warn(ex.getMessage());
       throw ex;
@@ -367,7 +415,6 @@ public class S3Service implements ArtifactStoreService {
   public static void setTemporarySessionCredentials(
       Credentials temporarySessionCredentials, String region) {
     S3Service.temporarySessionCredentials = temporarySessionCredentials;
-    scheduleTimer(region);
   }
 
   public String uploadFile(
