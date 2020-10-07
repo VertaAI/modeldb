@@ -138,13 +138,13 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  private synchronized void initializeS3ClientWithTemporaryCredentials(
+  private synchronized boolean initializeS3ClientWithTemporaryCredentials(
       Regions clientRegion, AmazonServiceException ex) {
 
     if (ex == null && s3Client != null) {
       try {
         s3Client.doesBucketExistV2(bucketName);
-        return;
+        return true;
       } catch (AmazonServiceException e) {
         logAmazonServiceExceptionErrorCodes(e);
         ex = e;
@@ -160,7 +160,7 @@ public class S3Service implements ArtifactStoreService {
     // Create a BasicSessionCredentials object that contains the credentials you just retrieved.
     BasicSessionCredentials awsCredentials =
         new BasicSessionCredentials(
-            temporarySessionCredentials.getAccessKeyId() +"1",
+            temporarySessionCredentials.getAccessKeyId() + "1",
             temporarySessionCredentials.getSecretAccessKey(),
             temporarySessionCredentials.getSessionToken());
 
@@ -172,7 +172,17 @@ public class S3Service implements ArtifactStoreService {
             .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
             .withRegion(clientRegion)
             .build();
-    LOGGER.debug("s3client refreshed with temporary credentials");
+    try {
+      s3Client.doesBucketExistV2(bucketName);
+      LOGGER.debug("s3client refreshed with temporary credentials");
+      return true;
+    } catch (AmazonServiceException e) {
+      logAmazonServiceExceptionErrorCodes(e);
+      ex = e;
+    } catch (SdkClientException e) {
+      LOGGER.warn(e.getMessage());
+    }
+    return false;
   }
 
   private void RefreshCredentialsAndSchedule(String region) {
@@ -224,18 +234,22 @@ public class S3Service implements ArtifactStoreService {
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
         // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
-        initializeS3ClientWithTemporaryCredentials(awsRegion, e);
+        if (initializeS3ClientWithTemporaryCredentials(awsRegion, e)) {
+          return doesBucketExist(bucketName);
+        }
       }
-      return doesBucketExist(bucketName);
+      throw e;
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
         // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
-        initializeS3ClientWithTemporaryCredentials(awsRegion, null);
+        if (initializeS3ClientWithTemporaryCredentials(awsRegion, null)) {
+          return doesBucketExist(bucketName);
+        }
       }
-      return doesBucketExist(bucketName);
+      throw e;
     } catch (Exception ex) {
       LOGGER.warn(ex.getMessage());
       throw ex;
@@ -253,18 +267,22 @@ public class S3Service implements ArtifactStoreService {
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
         // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
-        initializeS3ClientWithTemporaryCredentials(awsRegion, e);
+        if (initializeS3ClientWithTemporaryCredentials(awsRegion, e)) {
+          return doesObjectExist(bucketName, path);
+        }
       }
-      return doesObjectExist(bucketName, path);
+      throw e;
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
         // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
-        initializeS3ClientWithTemporaryCredentials(awsRegion, null);
+        if (initializeS3ClientWithTemporaryCredentials(awsRegion, null)) {
+          return doesObjectExist(bucketName, path);
+        }
       }
-      return doesObjectExist(bucketName, path);
+      throw e;
     } catch (Exception ex) {
       LOGGER.warn(ex.getMessage());
       throw ex;
