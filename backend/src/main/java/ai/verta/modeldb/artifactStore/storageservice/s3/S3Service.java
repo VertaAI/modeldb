@@ -123,7 +123,8 @@ public class S3Service implements ArtifactStoreService {
   private void fetchCredentialsAndInitializeS3ClientWithTemporaryCredentials(Regions clientRegion) {
 
     try {
-      RefreshCredentialsAndSchedule(clientRegion.toString());
+      RefreshCredentialsAndSchedule(
+          clientRegion.toString(), ModelDBConstants.RETRY_INIT_TIME_AWS_TEMP_CREDENTIALS);
 
       initializeS3ClientWithTemporaryCredentials(clientRegion, null);
 
@@ -153,7 +154,7 @@ public class S3Service implements ArtifactStoreService {
         s3Client.doesBucketExistV2(bucketName);
         return true;
       } catch (AmazonServiceException e) {
-        logAmazonServiceExceptionErrorCodes(e);
+        ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
         ex = e;
       } catch (SdkClientException e) {
         LOGGER.warn(e.getMessage());
@@ -161,7 +162,8 @@ public class S3Service implements ArtifactStoreService {
     }
 
     if (ex != null && ex.getErrorCode().equals(ModelDBConstants.EXPIRED_TOKEN)) {
-      RefreshCredentialsAndSchedule(clientRegion.getName());
+      RefreshCredentialsAndSchedule(
+          clientRegion.getName(), FetchTemporaryS3Token.retryTimeForAwsCredentials);
     }
 
     // Create a BasicSessionCredentials object that contains the credentials you just retrieved.
@@ -184,15 +186,14 @@ public class S3Service implements ArtifactStoreService {
       LOGGER.debug("s3client refreshed with temporary credentials");
       return true;
     } catch (AmazonServiceException e) {
-      logAmazonServiceExceptionErrorCodes(e);
-      ex = e;
+      ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
     }
     return false;
   }
 
-  private void RefreshCredentialsAndSchedule(String region) {
+  private void RefreshCredentialsAndSchedule(String region, int retryTimeForAwsCredentials) {
     LOGGER.debug("fetching token for s3 access");
     if (task != null) {
       task.cancel();
@@ -203,21 +204,29 @@ public class S3Service implements ArtifactStoreService {
         "credentials before refresh {}",
         temporarySessionCredentials != null ? temporarySessionCredentials.hashCode() : null);
 
-    prescheduleTimer(region);
+    preScheduleTimer(region, retryTimeForAwsCredentials);
   }
 
-  public static synchronized void prescheduleTimer(String region) {
+  public static synchronized void preScheduleTimer(String region, int retryTimeForAwsCredentials) {
     if (task == null) {
-      task = new FetchTemporaryS3Token(region);
+      task = new FetchTemporaryS3Token(region, retryTimeForAwsCredentials);
       task.run();
-      return;
+    }
+
+    if (temporarySessionCredentials == null) {
+      LOGGER.warn(
+          "After retrying to fetch new credentials till {} second, temporarySessionCredentials is not initialize",
+          retryTimeForAwsCredentials);
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage("Getting problem to connect amazon service")
+              .build());
     }
   }
 
   public static synchronized void scheduleTimer(String region) {
-
     task.cancel();
-    task = new FetchTemporaryS3Token(region);
 
     LOGGER.debug(
         "credentials after refresh {}",
@@ -229,6 +238,7 @@ public class S3Service implements ArtifactStoreService {
     long diffInSec = Math.abs(expiration.getTime() - now.getTime()) / 1000;
     long delay = diffInSec / 2;
     LOGGER.info("scheduled cron for credential refresh in {} seconds", delay);
+    task = new FetchTemporaryS3Token(region, Long.valueOf(delay).intValue());
     ModelDBUtils.scheduleTask(task, delay, delay, TimeUnit.SECONDS);
     LOGGER.debug("scheduled periodic task to fetch token for s3 access");
   }
@@ -237,7 +247,7 @@ public class S3Service implements ArtifactStoreService {
     try {
       return s3Client.doesBucketExistV2(bucketName);
     } catch (AmazonServiceException e) {
-      logAmazonServiceExceptionErrorCodes(e);
+      ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
       // If token based access is configured and getting issues checking bucket existence then try
       // refreshing credentials
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
@@ -280,7 +290,7 @@ public class S3Service implements ArtifactStoreService {
     try {
       return s3Client.doesObjectExist(bucketName, path);
     } catch (AmazonServiceException e) {
-      logAmazonServiceExceptionErrorCodes(e);
+      ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
       // If token based access is configured and getting issues checking bucket existence then try
       // refreshing credentials
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
@@ -317,13 +327,6 @@ public class S3Service implements ArtifactStoreService {
       LOGGER.warn(ex.getMessage());
       throw ex;
     }
-  }
-
-  private void logAmazonServiceExceptionErrorCodes(AmazonServiceException e) {
-    LOGGER.info("Amazon Service Status Code: " + e.getStatusCode());
-    LOGGER.info("Amazon Service Error Code: " + e.getErrorCode());
-    LOGGER.info("Amazon Service Error Type: " + e.getErrorType());
-    LOGGER.info("Amazon Service Error Message: " + e.getErrorMessage());
   }
 
   @Override
@@ -412,8 +415,7 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  public static void setTemporarySessionCredentials(
-      Credentials temporarySessionCredentials, String region) {
+  public static void setTemporarySessionCredentials(Credentials temporarySessionCredentials) {
     S3Service.temporarySessionCredentials = temporarySessionCredentials;
   }
 

@@ -50,6 +50,7 @@ public interface ModelDBConstants {
   String DEFAULT_AWS_REGION = "us-east-1";
   String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
   String AWS_WEB_IDENTITY_TOKEN = "AWS_WEB_IDENTITY_TOKEN";
+  Integer RETRY_INIT_TIME_AWS_TEMP_CREDENTIALS = 10 * 60; // Time in second
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
