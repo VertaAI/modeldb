@@ -138,6 +138,13 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
+  /**
+   * returns if s3client is valid after refreshing temporary credentials
+   *
+   * @param clientRegion
+   * @param ex
+   * @return
+   */
   private synchronized boolean initializeS3ClientWithTemporaryCredentials(
       Regions clientRegion, AmazonServiceException ex) {
 
@@ -196,15 +203,18 @@ public class S3Service implements ArtifactStoreService {
         "credentials before refresh {}",
         temporarySessionCredentials != null ? temporarySessionCredentials.hashCode() : null);
 
-    scheduleTimer(region);
+    prescheduleTimer(region);
   }
 
-  public static synchronized void scheduleTimer(String region) {
+  public static synchronized void prescheduleTimer(String region) {
     if (task == null) {
       task = new FetchTemporaryS3Token(region);
       task.run();
       return;
     }
+  }
+
+  public static synchronized void scheduleTimer(String region) {
 
     task.cancel();
     task = new FetchTemporaryS3Token(region);
@@ -232,7 +242,6 @@ public class S3Service implements ArtifactStoreService {
       // refreshing credentials
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-        // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
         if (initializeS3ClientWithTemporaryCredentials(awsRegion, e)) {
           return doesBucketExist(bucketName);
@@ -249,7 +258,6 @@ public class S3Service implements ArtifactStoreService {
       LOGGER.warn(e.getMessage());
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-        // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
         if (initializeS3ClientWithTemporaryCredentials(awsRegion, null)) {
           return doesBucketExist(bucketName);
@@ -277,7 +285,6 @@ public class S3Service implements ArtifactStoreService {
       // refreshing credentials
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-        // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
         if (initializeS3ClientWithTemporaryCredentials(awsRegion, e)) {
           return doesObjectExist(bucketName, path);
@@ -294,7 +301,6 @@ public class S3Service implements ArtifactStoreService {
       LOGGER.warn(e.getMessage());
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
           && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-        // this may spiral into an infinite loop due to incorrect configuration
         LOGGER.info("Fetching temporary credentials ");
         if (initializeS3ClientWithTemporaryCredentials(awsRegion, null)) {
           return doesObjectExist(bucketName, path);
@@ -409,7 +415,6 @@ public class S3Service implements ArtifactStoreService {
   public static void setTemporarySessionCredentials(
       Credentials temporarySessionCredentials, String region) {
     S3Service.temporarySessionCredentials = temporarySessionCredentials;
-    scheduleTimer(region);
   }
 
   public String uploadFile(
