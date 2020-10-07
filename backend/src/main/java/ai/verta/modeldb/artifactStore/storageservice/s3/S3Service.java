@@ -238,7 +238,13 @@ public class S3Service implements ArtifactStoreService {
           return doesBucketExist(bucketName);
         }
       }
-      throw e;
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existance for artifact store : "
+                      + e.getErrorMessage())
+              .build());
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
@@ -249,7 +255,13 @@ public class S3Service implements ArtifactStoreService {
           return doesBucketExist(bucketName);
         }
       }
-      throw e;
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existance for artifact store : "
+                      + e.getMessage())
+              .build());
     } catch (Exception ex) {
       LOGGER.warn(ex.getMessage());
       throw ex;
@@ -271,7 +283,13 @@ public class S3Service implements ArtifactStoreService {
           return doesObjectExist(bucketName, path);
         }
       }
-      throw e;
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existance for artifact store : "
+                      + e.getErrorMessage())
+              .build());
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
       if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
@@ -282,7 +300,13 @@ public class S3Service implements ArtifactStoreService {
           return doesObjectExist(bucketName, path);
         }
       }
-      throw e;
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existance for artifact store : "
+                      + e.getMessage())
+              .build());
     } catch (Exception ex) {
       LOGGER.warn(ex.getMessage());
       throw ex;
