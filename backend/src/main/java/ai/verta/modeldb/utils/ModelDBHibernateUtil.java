@@ -219,8 +219,8 @@ public class ModelDBHibernateUtil {
         settings.put(Environment.C3P0_MIN_SIZE, 5);
         settings.put(Environment.C3P0_MAX_SIZE, 20);
         settings.put(Environment.C3P0_TIMEOUT, 300);
-        settings.put(Environment.QUERY_PLAN_CACHE_MAX_SIZE, 40);
-        settings.put(Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, 40);
+        settings.put(Environment.QUERY_PLAN_CACHE_MAX_SIZE, 200);
+        settings.put(Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, 20);
         configuration.setProperties(settings);
 
         LOGGER.trace("connectionString {}", connectionString);
