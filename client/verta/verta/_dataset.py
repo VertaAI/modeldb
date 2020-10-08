@@ -844,12 +844,10 @@ class S3DatasetVersionInfo(PathDatasetVersionInfo):
             # look up object by key
             obj = conn.head_object(Bucket=self.bucket_name, Key=self.key)
             self._append_s3_object_info(dataset_part_infos, obj, self.key)
-            dataset_part_infos.append(self.get_s3_object_info(obj, self.key))
         elif self.key_prefix is not None:
             # look up objects by key prefix
             for obj in conn.list_objects(Bucket=self.bucket_name, Prefix=self.key_prefix)['Contents']:
                 self._append_s3_object_info(dataset_part_infos, obj)
-                dataset_part_infos.append(self.get_s3_object_info(obj))
         else:
             # look up all objects in bucket
             for obj in conn.list_objects(Bucket=self.bucket_name)['Contents']:
