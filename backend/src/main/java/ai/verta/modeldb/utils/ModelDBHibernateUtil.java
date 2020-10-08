@@ -284,23 +284,20 @@ public class ModelDBHibernateUtil {
     if (databasePropMap.containsKey("timeout")) {
       timeout = (Integer) databasePropMap.get("timeout");
     }
-    if (databasePropMap.containsKey(ModelDBConstants.MIN_CONNECTION_POOL_SIZE)) {
-      minConnectionPoolSize =
-          (Integer) databasePropMap.get(ModelDBConstants.MIN_CONNECTION_POOL_SIZE);
-    } else {
-      minConnectionPoolSize = ModelDBConstants.MIN_CONNECTION_SIZE_DEFAULT;
-    }
-    if (databasePropMap.containsKey(ModelDBConstants.MAX_CONNECTION_POOL_SIZE)) {
-      maxConnectionPoolSize =
-          (Integer) databasePropMap.get(ModelDBConstants.MAX_CONNECTION_POOL_SIZE);
-    } else {
-      maxConnectionPoolSize = ModelDBConstants.MAX_CONNECTION_SIZE_DEFAULT;
-    }
-    if (databasePropMap.containsKey(ModelDBConstants.CONNECTION_TIMEOUT)) {
-      connectionTimeout = (Integer) databasePropMap.get(ModelDBConstants.CONNECTION_TIMEOUT);
-    } else {
-      connectionTimeout = ModelDBConstants.CONNECTION_TIMEOUT_DEFAULT;
-    }
+    minConnectionPoolSize =
+        (Integer)
+            databasePropMap.getOrDefault(
+                ModelDBConstants.MIN_CONNECTION_POOL_SIZE,
+                ModelDBConstants.MIN_CONNECTION_SIZE_DEFAULT);
+    maxConnectionPoolSize =
+        (Integer)
+            databasePropMap.getOrDefault(
+                ModelDBConstants.MAX_CONNECTION_POOL_SIZE,
+                ModelDBConstants.MAX_CONNECTION_SIZE_DEFAULT);
+    connectionTimeout =
+        (Integer)
+            databasePropMap.getOrDefault(
+                ModelDBConstants.CONNECTION_TIMEOUT, ModelDBConstants.CONNECTION_TIMEOUT_DEFAULT);
     liquibaseLockThreshold =
         Long.parseLong(databasePropMap.getOrDefault("liquibaseLockThreshold", "60").toString());
 
