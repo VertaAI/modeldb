@@ -56,6 +56,7 @@ public interface ModelDBConstants {
   String DEFAULT_AWS_REGION = "us-east-1";
   String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
   String AWS_WEB_IDENTITY_TOKEN = "AWS_WEB_IDENTITY_TOKEN";
+  Integer RETRY_INIT_TIME_AWS_TEMP_CREDENTIALS = 10 * 60; // Time in second
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
@@ -277,4 +278,5 @@ public interface ModelDBConstants {
   String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
   String DELETE_ENTITIES = "delete_entities";
   String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
+  String EXPIRED_TOKEN = "ExpiredToken";
 }
