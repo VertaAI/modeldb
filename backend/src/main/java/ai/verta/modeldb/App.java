@@ -82,8 +82,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
-import javax.net.ssl.SSLContext;
-
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
 @EnableAutoConfiguration
@@ -213,9 +211,6 @@ public class App implements ApplicationContextAware {
       final java.util.logging.Logger logger =
           java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
       logger.setLevel(Level.WARNING);
-
-      // https://bugs.openjdk.java.net/browse/JDK-8210985#:~:text=The%20default%20value%20for%20the,entry%20timeout%20is%2024%20hours.
-      SSLContext.getDefault().getServerSessionContext().setSessionCacheSize(20480);
 
       // --------------- Start reading properties --------------------------
       Map<String, Object> propertiesMap =
