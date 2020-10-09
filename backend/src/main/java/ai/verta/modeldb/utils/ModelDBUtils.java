@@ -26,6 +26,7 @@ import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ShareViaEnum;
 import ai.verta.uac.UserInfo;
+import com.amazonaws.AmazonServiceException;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -736,5 +737,12 @@ public class ModelDBUtils {
           "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     }
     throw ex;
+  }
+
+  public static void logAmazonServiceExceptionErrorCodes(Logger LOGGER, AmazonServiceException e) {
+    LOGGER.info("Amazon Service Status Code: " + e.getStatusCode());
+    LOGGER.info("Amazon Service Error Code: " + e.getErrorCode());
+    LOGGER.info("Amazon Service Error Type: " + e.getErrorType());
+    LOGGER.info("Amazon Service Error Message: " + e.getErrorMessage());
   }
 }

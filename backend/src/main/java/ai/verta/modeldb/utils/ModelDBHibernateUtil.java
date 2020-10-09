@@ -172,6 +172,9 @@ public class ModelDBHibernateUtil {
     KeyValuePropertyMappingEntity.class,
     QueryDatasetComponentBlobEntity.class
   };
+  private static Integer minConnectionPoolSize;
+  private static Integer maxConnectionPoolSize;
+  private static Integer connectionTimeout;
 
   private ModelDBHibernateUtil() {}
 
@@ -216,9 +219,9 @@ public class ModelDBHibernateUtil {
         // Reduce this time period if stale connections still exist
         settings.put("hibernate.c3p0.idleConnectionTestPeriod", "100");
         settings.put("hibernate.c3p0.preferredTestQuery", "Select 1");
-        settings.put(Environment.C3P0_MIN_SIZE, 5);
-        settings.put(Environment.C3P0_MAX_SIZE, 20);
-        settings.put(Environment.C3P0_TIMEOUT, 300);
+        settings.put(Environment.C3P0_MIN_SIZE, minConnectionPoolSize);
+        settings.put(Environment.C3P0_MAX_SIZE, maxConnectionPoolSize);
+        settings.put(Environment.C3P0_TIMEOUT, connectionTimeout);
         settings.put(Environment.QUERY_PLAN_CACHE_MAX_SIZE, 200);
         settings.put(Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, 20);
         configuration.setProperties(settings);
@@ -283,6 +286,20 @@ public class ModelDBHibernateUtil {
     if (databasePropMap.containsKey("timeout")) {
       timeout = (Integer) databasePropMap.get("timeout");
     }
+    minConnectionPoolSize =
+        (Integer)
+            databasePropMap.getOrDefault(
+                ModelDBConstants.MIN_CONNECTION_POOL_SIZE,
+                ModelDBConstants.MIN_CONNECTION_SIZE_DEFAULT);
+    maxConnectionPoolSize =
+        (Integer)
+            databasePropMap.getOrDefault(
+                ModelDBConstants.MAX_CONNECTION_POOL_SIZE,
+                ModelDBConstants.MAX_CONNECTION_SIZE_DEFAULT);
+    connectionTimeout =
+        (Integer)
+            databasePropMap.getOrDefault(
+                ModelDBConstants.CONNECTION_TIMEOUT, ModelDBConstants.CONNECTION_TIMEOUT_DEFAULT);
     liquibaseLockThreshold =
         Long.parseLong(databasePropMap.getOrDefault("liquibaseLockThreshold", "60").toString());
 
@@ -582,7 +599,7 @@ public class ModelDBHibernateUtil {
   private static ResultSet getTableBasedOnDialect(
       Connection conn, String tableName, String dbName, String rDBDialect) throws SQLException {
     if (rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
-      //TODO: make postgres implementation multitenant as well.
+      // TODO: make postgres implementation multitenant as well.
       return conn.getMetaData().getTables(null, null, tableName, null);
     } else {
       return conn.getMetaData().getTables(dbName, null, tableName, null);

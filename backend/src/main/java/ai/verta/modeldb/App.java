@@ -211,7 +211,6 @@ public class App implements ApplicationContextAware {
       final java.util.logging.Logger logger =
           java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
       logger.setLevel(Level.WARNING);
-
       // --------------- Start reading properties --------------------------
       Map<String, Object> propertiesMap =
           ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
