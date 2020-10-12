@@ -53,6 +53,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -278,7 +279,7 @@ public class ProjectTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt_abc");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -477,7 +478,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -546,7 +547,7 @@ public class ProjectTest {
     }
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -584,7 +585,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -662,7 +663,7 @@ public class ProjectTest {
     }
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -688,7 +689,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -779,7 +780,7 @@ public class ProjectTest {
     }
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -805,7 +806,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -898,7 +899,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -968,7 +969,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1052,7 +1053,7 @@ public class ProjectTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1088,7 +1089,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1168,7 +1169,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1219,7 +1220,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1299,7 +1300,7 @@ public class ProjectTest {
     }
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1333,7 +1334,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1404,7 +1405,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1494,7 +1495,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_iiidpat");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1578,7 +1579,7 @@ public class ProjectTest {
     }
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1613,7 +1614,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1674,7 +1675,7 @@ public class ProjectTest {
         ProjectServiceGrpc.newBlockingStub(client2Channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         client2ProjectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1724,7 +1725,7 @@ public class ProjectTest {
       }
 
       // Create project
-      createProjectRequest = getCreateProjectRequest("project_f_apt");
+      createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
       createProjectResponse = projectServiceStub.createProject(createProjectRequest);
       Project selfProject = createProjectResponse.getProject();
       LOGGER.info("Project created successfully");
@@ -1788,7 +1789,7 @@ public class ProjectTest {
     getUserRequest = GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectRequest =
         createProjectRequest
             .toBuilder()
@@ -1816,7 +1817,7 @@ public class ProjectTest {
     assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
 
     // Create project
-    createProjectRequest = getCreateProjectRequest("project_f_apt");
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project selfProject = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
@@ -1905,9 +1906,13 @@ public class ProjectTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
+    GetProjects getProjects = GetProjects.newBuilder().build();
+    GetProjects.Response response = projectServiceStub.getProjects(getProjects);
+    long alreadyExistsProjCount = response.getTotalRecords();
+
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest("project_1");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -1919,7 +1924,7 @@ public class ProjectTest {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest("project_2");
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -1929,20 +1934,19 @@ public class ProjectTest {
         createProjectRequest.getName(),
         project2.getName());
 
-    GetProjects getProjects = GetProjects.newBuilder().build();
-    GetProjects.Response response = projectServiceStub.getProjects(getProjects);
-    LOGGER.info("GetProjects Count : " + response.getProjectsCount());
-    LOGGER.info("Response List : " + response.getProjectsList());
+    getProjects = GetProjects.newBuilder().build();
+    response = projectServiceStub.getProjects(getProjects);
+    List<Project> responseList = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectsMap.containsKey(project.getId())) {
+        responseList.add(project);
+      }
+    }
+    LOGGER.info("GetProjects Count : " + responseList.size());
     assertEquals(
         "Projects count not match with expected projects count",
         projectsMap.size(),
-        response.getProjectsList().size());
-
-    for (Project project : response.getProjectsList()) {
-      if (projectsMap.get(project.getId()) == null) {
-        fail("Project not found in the expected project list");
-      }
-    }
+        responseList.size());
 
     for (String projectId : projectsMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
@@ -1964,7 +1968,7 @@ public class ProjectTest {
 
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest("project_1");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -1976,7 +1980,7 @@ public class ProjectTest {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest("project_2");
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -1989,27 +1993,23 @@ public class ProjectTest {
     GetProjects getProjects = GetProjects.newBuilder().build();
     GetProjects.Response response = projectServiceStub.getProjects(getProjects);
     LOGGER.info("GetProjects Count : " + response.getProjectsCount());
-    LOGGER.info("Response List : " + response.getProjectsList());
-    assertEquals(
-        "Projects count not match with expected projects count",
-        projectsMap.size(),
-        response.getProjectsList().size());
-
+    List<Project> responseList = new ArrayList<>();
     for (Project project : response.getProjectsList()) {
-      if (projectsMap.get(project.getId()) == null) {
-        fail("Project not found in the expected project list");
+      if (projectsMap.containsKey(project.getId())) {
+        responseList.add(project);
       }
     }
 
     assertEquals(
-        "Projects order not match with expected projects order",
-        project2,
-        response.getProjectsList().get(0));
+        "Projects count not match with expected projects count",
+        projectsMap.size(),
+        responseList.size());
 
     assertEquals(
-        "Projects order not match with expected projects order",
-        project1,
-        response.getProjectsList().get(1));
+        "Projects order not match with expected projects order", project2, responseList.get(0));
+
+    assertEquals(
+        "Projects order not match with expected projects order", project1, responseList.get(1));
 
     for (String projectId : projectsMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
@@ -2034,7 +2034,7 @@ public class ProjectTest {
         ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -2184,7 +2184,8 @@ public class ProjectTest {
       ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       Project project = createProjectResponse.getProject();
@@ -2236,7 +2237,8 @@ public class ProjectTest {
       ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       Project project = createProjectResponse.getProject();
@@ -2308,7 +2310,8 @@ public class ProjectTest {
       ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_nnn_gprt");
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       Project project = createProjectResponse.getProject();
@@ -2371,7 +2374,8 @@ public class ProjectTest {
       ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_nnnn_seprt");
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       Project project = createProjectResponse.getProject();
@@ -2436,7 +2440,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     // Create public project
     // Public project 1
-    CreateProject createProjectRequest = getCreateProjectRequest("project_appctct");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectRequest =
         createProjectRequest.toBuilder().setProjectVisibility(ProjectVisibility.PUBLIC).build();
     CreateProject.Response createProjectResponse =
@@ -2490,7 +2494,8 @@ public class ProjectTest {
       ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt_1");
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       Project project = createProjectResponse.getProject();
@@ -2672,7 +2677,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt_1");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -2697,7 +2702,6 @@ public class ProjectTest {
     try {
       deleteEntitiesCron.run();
 
-      ExperimentTest experimentTest = new ExperimentTest();
       ExperimentRunTest experimentRunTest = new ExperimentRunTest();
 
       ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
@@ -2709,7 +2713,8 @@ public class ProjectTest {
           CommentServiceGrpc.newBlockingStub(channel);
 
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt");
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       Project project = createProjectResponse.getProject();
@@ -2717,11 +2722,11 @@ public class ProjectTest {
 
       // Create two experiment of above project
       CreateExperiment request =
-          experimentTest.getCreateExperimentRequest(project.getId(), "Experiment1");
+          ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment1");
       CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
       Experiment experiment1 = response.getExperiment();
       LOGGER.info("\n Experiment1 created successfully \n");
-      request = experimentTest.getCreateExperimentRequest(project.getId(), "Experiment2");
+      request = ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment2");
       response = experimentServiceStub.createExperiment(request);
       Experiment experiment2 = response.getExperiment();
       LOGGER.info("\n Experiment2 created successfully \n");
@@ -2876,7 +2881,8 @@ public class ProjectTest {
       List<String> projectIds = new ArrayList<>();
       for (int count = 0; count < 5; count++) {
         // Create project
-        createProjectRequest = getCreateProjectRequest("project_ypcdt" + count);
+        createProjectRequest =
+            getCreateProjectRequest("project-" + new Date().getTime() + "-" + count);
         createProjectResponse = projectServiceStub.createProject(createProjectRequest);
         projectIds.add(createProjectResponse.getProject().getId());
         project = createProjectResponse.getProject();
@@ -2884,12 +2890,14 @@ public class ProjectTest {
 
         // Create two experiment of above project
         request =
-            experimentTest.getCreateExperimentRequest(project.getId(), "Experiment1_" + count);
+            ExperimentTest.getCreateExperimentRequest(
+                project.getId(), "Experiment-" + new Date().getTime() + "-" + count);
         response = experimentServiceStub.createExperiment(request);
         experiment1 = response.getExperiment();
         LOGGER.info("\n Experiment1 created successfully \n");
         request =
-            experimentTest.getCreateExperimentRequest(project.getId(), "Experiment2_" + count);
+            ExperimentTest.getCreateExperimentRequest(
+                project.getId(), "Experiment-" + new Date().getTime() + "-" + count);
         response = experimentServiceStub.createExperiment(request);
         experiment2 = response.getExperiment();
         LOGGER.info("\n Experiment2 created successfully \n");
@@ -2898,28 +2906,36 @@ public class ProjectTest {
         // For ExperiemntRun of Experiment1
         createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment1.getId(), "ExperiemntRun1_" + count);
+                project.getId(),
+                experiment1.getId(),
+                "ExperiemntRun-" + new Date().getTime() + "-" + count);
         createExperimentRunResponse =
             experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         experimentRun1 = createExperimentRunResponse.getExperimentRun();
         LOGGER.info("\n ExperimentRun1 created successfully \n");
         createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment1.getId(), "ExperiemntRun2_" + count);
+                project.getId(),
+                experiment1.getId(),
+                "ExperiemntRun-" + new Date().getTime() + "-" + count);
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         LOGGER.info("\n ExperimentRun2 created successfully \n");
 
         // For ExperiemntRun of Experiment2
         createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment2.getId(), "ExperiemntRun3_" + count);
+                project.getId(),
+                experiment2.getId(),
+                "ExperiemntRun-" + new Date().getTime() + "-" + count);
         createExperimentRunResponse =
             experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         experimentRun3 = createExperimentRunResponse.getExperimentRun();
         LOGGER.info("\n ExperimentRun3 created successfully \n");
         createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment2.getId(), "ExperimentRun4_" + count);
+                project.getId(),
+                experiment2.getId(),
+                "ExperimentRun-" + new Date().getTime() + "-" + count);
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         LOGGER.info("\n ExperimentRun4 created successfully \n");
 
@@ -3064,9 +3080,13 @@ public class ProjectTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
+    GetProjects getProjects = GetProjects.newBuilder().build();
+    GetProjects.Response response = projectServiceStub.getProjects(getProjects);
+    long alreadyExistsProjCount = response.getTotalRecords();
+
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest("project_1");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -3078,7 +3098,7 @@ public class ProjectTest {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest("project_2");
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -3089,7 +3109,7 @@ public class ProjectTest {
         project2.getName());
 
     // Create project3
-    createProjectRequest = getCreateProjectRequest("project_3");
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project3 = createProjectResponse.getProject();
     projectsMap.put(project3.getId(), project3);
@@ -3099,24 +3119,23 @@ public class ProjectTest {
         createProjectRequest.getName(),
         project3.getName());
 
-    GetProjects getProjects = GetProjects.newBuilder().build();
-    GetProjects.Response response = projectServiceStub.getProjects(getProjects);
-    LOGGER.info("GetProjects Count : " + response.getProjectsCount());
-    LOGGER.info("Response List : " + response.getProjectsList());
-    assertEquals(
-        "Projects count not match with expected projects count",
-        projectsMap.size(),
-        response.getProjectsList().size());
-    assertEquals(
-        "Projects count not match with expected projects count",
-        projectsMap.size(),
-        response.getTotalRecords());
-
+    getProjects = GetProjects.newBuilder().build();
+    response = projectServiceStub.getProjects(getProjects);
+    List<Project> responseList = new ArrayList<>();
     for (Project project : response.getProjectsList()) {
-      if (projectsMap.get(project.getId()) == null) {
-        fail("Project not found in the expected project list");
+      if (projectsMap.containsKey(project.getId())) {
+        responseList.add(project);
       }
     }
+    LOGGER.info("GetProjects Count : " + responseList.size());
+    assertEquals(
+        "Projects count not match with expected projects count",
+        projectsMap.size(),
+        responseList.size());
+    assertEquals(
+        "Projects count not match with expected projects count",
+        projectsMap.size(),
+        response.getTotalRecords() - alreadyExistsProjCount);
 
     int pageLimit = 1;
     boolean isExpectedResultFound = false;
@@ -3130,17 +3149,25 @@ public class ProjectTest {
               .build();
 
       GetProjects.Response projectResponse = projectServiceStub.getProjects(getProjects);
+      responseList = new ArrayList<>();
+      for (Project project : projectResponse.getProjectsList()) {
+        if (projectsMap.containsKey(project.getId())) {
+          responseList.add(project);
+        }
+      }
+      if (responseList.size() == 0) {
+        continue;
+      }
 
       assertEquals(
           "Total records count not matched with expected records count",
           3,
-          projectResponse.getTotalRecords());
+          projectResponse.getTotalRecords() - alreadyExistsProjCount);
 
-      if (projectResponse.getProjectsList() != null
-          && projectResponse.getProjectsList().size() > 0) {
+      if (responseList.size() > 0) {
         isExpectedResultFound = true;
-        LOGGER.info("GetProjects Response : " + projectResponse.getProjectsCount());
-        for (Project project : projectResponse.getProjectsList()) {
+        LOGGER.info("GetProjects Response : " + (responseList.size() - alreadyExistsProjCount));
+        for (Project project : responseList) {
           assertEquals(
               "Project not match with expected Project",
               projectsMap.get(project.getId()).getName(),
@@ -3150,12 +3177,12 @@ public class ProjectTest {
         if (pageNumber == 1) {
           assertEquals(
               "Project not match with expected Project",
-              projectsMap.get(projectResponse.getProjects(0).getId()),
+              projectsMap.get(responseList.get(0).getId()),
               project3);
         } else if (pageNumber == 3) {
           assertEquals(
               "Project not match with expected Project",
-              projectsMap.get(projectResponse.getProjects(0).getId()),
+              projectsMap.get(responseList.get(0).getId()),
               project1);
         }
 
@@ -3188,7 +3215,7 @@ public class ProjectTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt_abc");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -3257,7 +3284,7 @@ public class ProjectTest {
 
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt_abc");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -3314,7 +3341,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt1");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -3372,7 +3399,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt1");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -3448,7 +3475,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt1");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -3514,7 +3541,7 @@ public class ProjectTest {
     ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt1");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -3600,7 +3627,7 @@ public class ProjectTest {
         getRoleByNameResponse.getRole().getName());
 
     // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectRequest =
         createProjectRequest
             .toBuilder()
