@@ -91,7 +91,6 @@ public class ProjectTest {
   private static Project project2;
   private static Project project3;
   private static Map<String, Project> projectMap = new HashMap<>();
-  private static long staleProjectCount = 0;
 
   // Experiment Entities
   private static Experiment experiment;
@@ -223,16 +222,10 @@ public class ProjectTest {
     experimentRun = null;
 
     projectMap = new HashMap<>();
-    staleProjectCount = 0;
   }
 
   private static void createProjectEntities() {
     ProjectTest projectTest = new ProjectTest();
-
-    GetProjects getProjects = GetProjects.newBuilder().build();
-    GetProjects.Response response = projectServiceStub.getProjects(getProjects);
-    staleProjectCount = response.getTotalRecords();
-    LOGGER.info("Stale project count before starting ProjectTest : {}", staleProjectCount);
 
     // Create two project of above project
     CreateProject createProjectRequest =
