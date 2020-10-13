@@ -250,10 +250,6 @@ class _DeployableEntity(_ModelDBEntity):
         local_sys_paths = list(filter(os.path.exists, local_sys_paths))
         ## remove .ipython
         local_sys_paths = list(filter(lambda path: not path.endswith(".ipython"), local_sys_paths))
-        ## remove .git
-        local_sys_paths = list(filter(lambda path:
-                                      not path.endswith(".git") and ".git/" not in path,
-                                      local_sys_paths))
         ## remove virtual (and real) environments
         local_sys_paths = list(filter(lambda path: not _utils.is_in_venv(path), local_sys_paths))
 
@@ -271,6 +267,9 @@ class _DeployableEntity(_ModelDBEntity):
             include_hidden=True,
             include_venv=False,  # ignore virtual environments nested within
         )
+        ## remove .git
+        local_filepaths = set(filter(lambda path: not path.endswith(".git") and ".git/" not in path,
+                                      local_filepaths))
 
         # obtain deepest common directory
         #     This directory on the local system will be mirrored in `_CUSTOM_MODULES_DIR` in
