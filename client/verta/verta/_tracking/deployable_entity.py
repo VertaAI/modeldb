@@ -250,6 +250,10 @@ class _DeployableEntity(_ModelDBEntity):
         local_sys_paths = list(filter(os.path.exists, local_sys_paths))
         ## remove .ipython
         local_sys_paths = list(filter(lambda path: not path.endswith(".ipython"), local_sys_paths))
+        ## remove .git
+        local_sys_paths = list(filter(lambda path:
+                                      not path.endswith(".git") and ".git/" not in path,
+                                      local_sys_paths))
         ## remove virtual (and real) environments
         local_sys_paths = list(filter(lambda path: not _utils.is_in_venv(path), local_sys_paths))
 
