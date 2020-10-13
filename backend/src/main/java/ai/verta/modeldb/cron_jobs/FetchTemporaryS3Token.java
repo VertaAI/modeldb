@@ -108,7 +108,9 @@ public class FetchTemporaryS3Token extends TimerTask {
         break;
       }
     }
-
+    if (stsClient != null) {
+      stsClient.shutdown();
+    }
     if (executed) {
       Credentials credentials = roleResponse.getCredentials();
       S3Service.setTemporarySessionCredentials(credentials);
