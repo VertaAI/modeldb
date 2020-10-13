@@ -49,6 +49,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,11 +87,11 @@ public class ProjectTest {
   private static DeleteEntitiesCron deleteEntitiesCron;
 
   // Project Entities
-  private static String PROJECT1 = "project_1";
   private static Project project;
   private static Project project2;
   private static Project project3;
   private static Map<String, Project> projectMap = new HashMap<>();
+  private static long staleProjectCount = 0;
 
   // Experiment Entities
   private static Experiment experiment;
@@ -222,13 +223,20 @@ public class ProjectTest {
     experimentRun = null;
 
     projectMap = new HashMap<>();
+    staleProjectCount = 0;
   }
 
   private static void createProjectEntities() {
     ProjectTest projectTest = new ProjectTest();
 
+    GetProjects getProjects = GetProjects.newBuilder().build();
+    GetProjects.Response response = projectServiceStub.getProjects(getProjects);
+    staleProjectCount = response.getTotalRecords();
+    LOGGER.info("Stale project count before starting ProjectTest : {}", staleProjectCount);
+
     // Create two project of above project
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest(PROJECT1);
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     project = createProjectResponse.getProject();
@@ -240,7 +248,7 @@ public class ProjectTest {
         project.getName());
 
     // Create project2
-    createProjectRequest = projectTest.getCreateProjectRequest("project_2");
+    createProjectRequest = projectTest.getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project2 = createProjectResponse.getProject();
     projectMap.put(project2.getId(), project2);
@@ -251,7 +259,7 @@ public class ProjectTest {
         project2.getName());
 
     // Create project3
-    createProjectRequest = projectTest.getCreateProjectRequest("project_3");
+    createProjectRequest = projectTest.getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project3 = createProjectResponse.getProject();
     projectMap.put(project3.getId(), project3);
@@ -423,7 +431,7 @@ public class ProjectTest {
   public void a_projectCreateTest() {
     LOGGER.info("Create Project test start................................");
 
-    CreateProject createProjectRequest = getCreateProjectRequest(PROJECT1);
+    CreateProject createProjectRequest = getCreateProjectRequest(project.getName());
 
     try {
       projectServiceStub.createProject(createProjectRequest);
@@ -1435,7 +1443,8 @@ public class ProjectTest {
     Project project = null;
     try {
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       CreateProject.Response createProjectResponse =
           client2ProjectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -1486,7 +1495,7 @@ public class ProjectTest {
         Project selfProject = null;
         try {
           // Create project
-          createProjectRequest = getCreateProjectRequest("project_f_apt");
+          createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
           createProjectResponse = projectServiceStub.createProject(createProjectRequest);
           selfProject = createProjectResponse.getProject();
           LOGGER.info("Project created successfully");
@@ -1555,7 +1564,8 @@ public class ProjectTest {
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
 
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       createProjectRequest =
           createProjectRequest
               .toBuilder()
@@ -1581,7 +1591,7 @@ public class ProjectTest {
       assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
 
       // Create project
-      createProjectRequest = getCreateProjectRequest("project_f_apt");
+      createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
       createProjectResponse = projectServiceStub.createProject(createProjectRequest);
       selfProject = createProjectResponse.getProject();
       LOGGER.info("Project created successfully");
@@ -1673,17 +1683,53 @@ public class ProjectTest {
 
     GetProjects getProjects = GetProjects.newBuilder().build();
     GetProjects.Response response = projectServiceStub.getProjects(getProjects);
-    LOGGER.info("GetProjects Count : " + response.getProjectsCount());
-    LOGGER.info("Response List : " + response.getProjectsList());
+    long alreadyExistsProjCount = response.getTotalRecords();
+
+    Map<String, Project> projectsMap = new HashMap<>();
+    // Create project1
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project1 = createProjectResponse.getProject();
+    projectsMap.put(project1.getId(), project1);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project1.getName());
+
+    // Create project2
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    Project project2 = createProjectResponse.getProject();
+    projectsMap.put(project2.getId(), project2);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project2.getName());
+
+    getProjects = GetProjects.newBuilder().build();
+    response = projectServiceStub.getProjects(getProjects);
+    List<Project> responseList = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectsMap.containsKey(project.getId())) {
+        responseList.add(project);
+      }
+    }
+    LOGGER.info("GetProjects Count : " + responseList.size());
     assertEquals(
         "Projects count not match with expected projects count",
-        projectMap.size(),
-        response.getProjectsList().size());
+        projectsMap.size(),
+        responseList.size());
 
-    for (Project project : response.getProjectsList()) {
-      if (projectMap.get(project.getId()) == null) {
-        fail("Project not found in the expected project list");
-      }
+    for (String projectId : projectsMap.keySet()) {
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
     }
 
     LOGGER.info("Get project test stop................................");
@@ -1693,35 +1739,59 @@ public class ProjectTest {
   public void getProjectsOnDescendingOrder() {
     LOGGER.info("Get Project on descending order test start................................");
 
+    Map<String, Project> projectsMap = new HashMap<>();
+    // Create project1
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project1 = createProjectResponse.getProject();
+    projectsMap.put(project1.getId(), project1);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project1.getName());
+
+    // Create project2
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    Project project2 = createProjectResponse.getProject();
+    projectsMap.put(project2.getId(), project2);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project2.getName());
+
     GetProjects getProjects = GetProjects.newBuilder().build();
     GetProjects.Response response = projectServiceStub.getProjects(getProjects);
     LOGGER.info("GetProjects Count : " + response.getProjectsCount());
-    LOGGER.info("Response List : " + response.getProjectsList());
-    assertEquals(
-        "Projects count not match with expected projects count",
-        projectMap.size(),
-        response.getProjectsList().size());
-
+    List<Project> responseList = new ArrayList<>();
     for (Project project : response.getProjectsList()) {
-      if (projectMap.get(project.getId()) == null) {
-        fail("Project not found in the expected project list");
+      if (projectsMap.containsKey(project.getId())) {
+        responseList.add(project);
       }
     }
 
     assertEquals(
-        "Projects order not match with expected projects order",
-        project3,
-        response.getProjectsList().get(0));
+        "Projects count not match with expected projects count",
+        projectsMap.size(),
+        responseList.size());
 
     assertEquals(
-        "Projects order not match with expected projects order",
-        project2,
-        response.getProjectsList().get(1));
+        "Projects order not match with expected projects order", project2, responseList.get(0));
 
     assertEquals(
-        "Projects order not match with expected projects order",
-        project,
-        response.getProjectsList().get(2));
+        "Projects order not match with expected projects order", project1, responseList.get(1));
+
+    for (String projectId : projectsMap.keySet()) {
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
+    }
     LOGGER.info("Get project on descending order test stop................................");
   }
 
@@ -2019,7 +2089,8 @@ public class ProjectTest {
     try {
       // Create public project
       // Public project 1
-      CreateProject createProjectRequest = getCreateProjectRequest("project_appctct");
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       createProjectRequest =
           createProjectRequest.toBuilder().setProjectVisibility(ProjectVisibility.PUBLIC).build();
       CreateProject.Response createProjectResponse =
@@ -2243,7 +2314,8 @@ public class ProjectTest {
       ExperimentRun experimentRun3;
       try {
         // Create project
-        CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt");
+        CreateProject createProjectRequest =
+            getCreateProjectRequest("project-" + new Date().getTime());
         CreateProject.Response createProjectResponse =
             projectServiceStub.createProject(createProjectRequest);
         project = createProjectResponse.getProject();
@@ -2251,11 +2323,14 @@ public class ProjectTest {
 
         // Create two experiment of above project
         CreateExperiment request =
-            ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment1");
+            ExperimentTest.getCreateExperimentRequest(
+                project.getId(), "Experiment-1-" + new Date().getTime());
         CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
         Experiment experiment1 = response.getExperiment();
         LOGGER.info("\n Experiment1 created successfully \n");
-        request = ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment2");
+        request =
+            ExperimentTest.getCreateExperimentRequest(
+                project.getId(), "Experiment-2-" + new Date().getTime());
         response = experimentServiceStub.createExperiment(request);
         Experiment experiment2 = response.getExperiment();
         LOGGER.info("\n Experiment2 created successfully \n");
@@ -2264,28 +2339,28 @@ public class ProjectTest {
         // For ExperiemntRun of Experiment1
         CreateExperimentRun createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment1.getId(), "ExperiemntRun1");
+                project.getId(), experiment1.getId(), "ExperiemntRun-1-" + new Date().getTime());
         CreateExperimentRun.Response createExperimentRunResponse =
             experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         experimentRun1 = createExperimentRunResponse.getExperimentRun();
         LOGGER.info("\n ExperimentRun1 created successfully \n");
         createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment1.getId(), "ExperiemntRun2");
+                project.getId(), experiment1.getId(), "ExperiemntRun-2-" + new Date().getTime());
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         LOGGER.info("\n ExperimentRun2 created successfully \n");
 
         // For ExperiemntRun of Experiment2
         createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment2.getId(), "ExperiemntRun3");
+                project.getId(), experiment2.getId(), "ExperiemntRun-3-" + new Date().getTime());
         createExperimentRunResponse =
             experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         experimentRun3 = createExperimentRunResponse.getExperimentRun();
         LOGGER.info("\n ExperimentRun3 created successfully \n");
         createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment2.getId(), "ExperimentRun4");
+                project.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         LOGGER.info("\n ExperimentRun4 created successfully \n");
 
@@ -2413,7 +2488,8 @@ public class ProjectTest {
       try {
         for (int count = 0; count < 5; count++) {
           // Create project
-          CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt" + count);
+          CreateProject createProjectRequest =
+              getCreateProjectRequest("project-" + new Date().getTime() + "-" + count);
           CreateProject.Response createProjectResponse =
               projectServiceStub.createProject(createProjectRequest);
           projectIds.add(createProjectResponse.getProject().getId());
@@ -2598,22 +2674,60 @@ public class ProjectTest {
 
     GetProjects getProjects = GetProjects.newBuilder().build();
     GetProjects.Response response = projectServiceStub.getProjects(getProjects);
-    LOGGER.info("GetProjects Count : " + response.getProjectsCount());
-    LOGGER.info("Response List : " + response.getProjectsList());
-    assertEquals(
-        "Projects count not match with expected projects count",
-        projectMap.size(),
-        response.getProjectsList().size());
-    assertEquals(
-        "Projects count not match with expected projects count",
-        projectMap.size(),
-        response.getTotalRecords());
+    long alreadyExistsProjCount = response.getTotalRecords();
 
+    Map<String, Project> projectsMap = new HashMap<>();
+    // Create project1
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project project1 = createProjectResponse.getProject();
+    projectsMap.put(project1.getId(), project1);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project1.getName());
+
+    // Create project2
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    Project project2 = createProjectResponse.getProject();
+    projectsMap.put(project2.getId(), project2);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project2.getName());
+
+    // Create project3
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    Project project3 = createProjectResponse.getProject();
+    projectsMap.put(project3.getId(), project3);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project3.getName());
+
+    getProjects = GetProjects.newBuilder().build();
+    response = projectServiceStub.getProjects(getProjects);
+    List<Project> responseList = new ArrayList<>();
     for (Project project : response.getProjectsList()) {
-      if (projectMap.get(project.getId()) == null) {
-        fail("Project not found in the expected project list");
+      if (projectsMap.containsKey(project.getId())) {
+        responseList.add(project);
       }
     }
+    LOGGER.info("GetProjects Count : " + responseList.size());
+    assertEquals(
+        "Projects count not match with expected projects count",
+        projectsMap.size(),
+        responseList.size());
+    assertEquals(
+        "Projects count not match with expected projects count",
+        projectsMap.size(),
+        response.getTotalRecords() - alreadyExistsProjCount);
 
     int pageLimit = 1;
     boolean isExpectedResultFound = false;
@@ -2627,30 +2741,41 @@ public class ProjectTest {
               .build();
 
       GetProjects.Response projectResponse = projectServiceStub.getProjects(getProjects);
+      responseList = new ArrayList<>();
+      for (Project project : projectResponse.getProjectsList()) {
+        if (projectsMap.containsKey(project.getId())) {
+          responseList.add(project);
+        }
+      }
+      if (responseList.size() == 0) {
+        continue;
+      }
 
       assertEquals(
           "Total records count not matched with expected records count",
           3,
-          projectResponse.getTotalRecords());
+          projectResponse.getTotalRecords() - alreadyExistsProjCount);
 
-      if (projectResponse.getProjectsList() != null
-          && projectResponse.getProjectsList().size() > 0) {
+      if (responseList.size() > 0) {
         isExpectedResultFound = true;
-        LOGGER.info("GetProjects Response : " + projectResponse.getProjectsCount());
-        for (Project project : projectResponse.getProjectsList()) {
-          assertNotNull("Project not match with expected Project", projectMap.get(project.getId()));
+        LOGGER.info("GetProjects Response : " + (responseList.size() - alreadyExistsProjCount));
+        for (Project project : responseList) {
+          assertEquals(
+              "Project not match with expected Project",
+              projectsMap.get(project.getId()).getName(),
+              project.getName());
         }
 
         if (pageNumber == 1) {
           assertEquals(
               "Project not match with expected Project",
-              projectMap.get(projectResponse.getProjects(0).getId()),
+              projectsMap.get(responseList.get(0).getId()),
               project3);
         } else if (pageNumber == 3) {
           assertEquals(
               "Project not match with expected Project",
-              projectMap.get(projectResponse.getProjects(0).getId()),
-              project);
+              projectsMap.get(responseList.get(0).getId()),
+              project1);
         }
 
       } else {
@@ -2664,6 +2789,15 @@ public class ProjectTest {
       }
     }
 
+    for (String projectId : projectsMap.keySet()) {
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
+    }
+
     LOGGER.info("Get project by pagination test stop................................");
   }
 
@@ -2674,7 +2808,8 @@ public class ProjectTest {
     Project project = null;
     try {
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt_abc");
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -2997,7 +3132,8 @@ public class ProjectTest {
     Project orgProject = null;
     try {
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       createProjectRequest =
           createProjectRequest
               .toBuilder()
