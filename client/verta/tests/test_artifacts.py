@@ -163,7 +163,7 @@ class TestArtifacts:
     def test_clientside_storage(self, experiment_run, strs, in_tempdir):
         key = strs[0]
         filename = strs[1]
-        FILE_CONTENTS = os.urandom(2**16)
+        FILE_CONTENTS = bytes([3, 4, 5])
 
         # TODO: be able to use existing env var for debugging
         # NOTE: there is an assertion of `== 1` artifact that would need to be changed
