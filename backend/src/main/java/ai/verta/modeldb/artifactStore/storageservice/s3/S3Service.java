@@ -89,6 +89,9 @@ public class S3Service implements ArtifactStoreService {
       fetchCredentialsAndInitializeS3ClientWithTemporaryCredentials(awsRegion);
     } else {
       LOGGER.debug("environment credentials based s3 client");
+      if (s3Client != null) {
+        s3Client.shutdown();
+      }
       // reads credential from OS Environment
       s3Client = AmazonS3ClientBuilder.standard().withRegion(awsRegion).build();
     }
@@ -100,6 +103,9 @@ public class S3Service implements ArtifactStoreService {
     ClientConfiguration clientConfiguration = new ClientConfiguration();
     clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
+    if (s3Client != null) {
+      s3Client.shutdown();
+    }
     this.s3Client =
         AmazonS3ClientBuilder.standard()
             .withEndpointConfiguration(
@@ -113,6 +119,9 @@ public class S3Service implements ArtifactStoreService {
   private void initializeS3ClientWithAccessKey(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion) {
     BasicAWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    if (s3Client != null) {
+      s3Client.shutdown();
+    }
     this.s3Client =
         AmazonS3ClientBuilder.standard()
             .withRegion(awsRegion)
@@ -172,7 +181,9 @@ public class S3Service implements ArtifactStoreService {
             temporarySessionCredentials.getAccessKeyId(),
             temporarySessionCredentials.getSecretAccessKey(),
             temporarySessionCredentials.getSessionToken());
-
+    if (s3Client != null) {
+      s3Client.shutdown();
+    }
     // Provide temporary security credentials so that the Amazon S3 client
     // can send authenticated requests to Amazon S3. You create the client
     // using the sessionCredentials object.
