@@ -855,9 +855,13 @@ class S3DatasetVersionInfo(PathDatasetVersionInfo):
         return dataset_part_infos
 
     def _append_s3_object_info(self, dataset_part_infos, object_info, key=None):
-        if object_info['Key'].endswith('/'):  # folder, not object
+        if self._is_folder(key or object_info['Key']):  # folder, not object
             return
         dataset_part_infos.append(self.get_s3_object_info(object_info, key))
+
+    @staticmethod
+    def _is_folder(key):
+        return key.endswith('/')
 
     @staticmethod
     def get_s3_object_info(object_info, key=None):
