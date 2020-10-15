@@ -167,18 +167,12 @@ public class ExperimentRunTest {
               .build();
       uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
       collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
-      ManagedChannel authServiceChannelClient2 =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient2AuthInterceptor())
-              .build();
     }
 
     serverBuilder.build().start();
     ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 100);
+    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 1000);
 
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
@@ -211,15 +205,6 @@ public class ExperimentRunTest {
 
   @After
   public void removeEntities() {
-
-    for (String experimentRunId : experimentRunMap.keySet()) {
-      DeleteExperimentRun deleteExperimentRun =
-          DeleteExperimentRun.newBuilder().setId(experimentRunId).build();
-      DeleteExperimentRun.Response deleteExperimentRunResponse =
-          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-      assertTrue(deleteExperimentRunResponse.getStatus());
-    }
-
     for (String projectId : projectMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
       DeleteProject.Response deleteProjectResponse =
