@@ -30,6 +30,6 @@ public class ExperimentRunEntryContainer extends LineageEntryContainer {
 
   @Override
   public LineageEntry toProto() {
-    return LineageEntry.newBuilder().setExperimentRun(experimentRunId).build();
+    return LineageEntry.newBuilder().setExternalId(experimentRunId).build();
   }
 }

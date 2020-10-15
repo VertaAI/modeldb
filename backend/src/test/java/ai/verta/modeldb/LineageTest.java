@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import ai.verta.modeldb.AddLineage.Response;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
+import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.LineageEntryBatchResponseSingle.Builder;
@@ -214,7 +215,7 @@ public class LineageTest {
                 experiment,
                 "name1");
         final LineageEntry.Builder inputOutputExp =
-            LineageEntry.newBuilder().setExperimentRun(experimentRun.getId());
+            LineageEntry.newBuilder().setExternalId(experimentRun.getId());
 
         final LineageEntry.Builder inputDataset =
             LineageEntry.newBuilder()
@@ -343,7 +344,7 @@ public class LineageTest {
             experiment,
             "name1");
     final LineageEntry.Builder inputOutputExp =
-        LineageEntry.newBuilder().setExperimentRun(experimentRun.getId());
+        LineageEntry.newBuilder().setExternalId(experimentRun.getId());
 
     experimentRun =
         getExperimentRun(
@@ -354,7 +355,7 @@ public class LineageTest {
             experiment,
             "name2");
     final LineageEntry.Builder inputExp =
-        LineageEntry.newBuilder().setExperimentRun(experimentRun.getId());
+        LineageEntry.newBuilder().setExternalId(experimentRun.getId());
 
     experimentRun =
         getExperimentRun(
@@ -365,7 +366,7 @@ public class LineageTest {
             experiment,
             "name3");
     final LineageEntry.Builder outputExp =
-        LineageEntry.newBuilder().setExperimentRun(experimentRun.getId());
+        LineageEntry.newBuilder().setExternalId(experimentRun.getId());
 
     long repositoryId =
         RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
@@ -613,8 +614,10 @@ public class LineageTest {
     Assert.assertEquals(1, outputs.getItemsCount());
     Assert.assertEquals(outputsCount, outputs.getItems(0).getItemsCount());
   }
-  private void deleteAll(List<DatasetVersion> datasetVersionList, Project project) {
-    for (DatasetVersion datasetVersion1 : datasetVersionList) {
+
+  // TODO: dataset version
+  private void deleteAll(/*List<DatasetVersion> datasetVersionList, */ Project project) {
+    /*for (DatasetVersion datasetVersion1 : datasetVersionList) {
       DeleteDatasetVersion deleteDatasetVersionRequest =
           DeleteDatasetVersion.newBuilder()
               .setDatasetId(datasetVersion1.getDatasetId())
@@ -631,7 +634,7 @@ public class LineageTest {
           datasetServiceStub.deleteDataset(deleteDataset);
       LOGGER.info("Dataset deleted successfully");
       LOGGER.info(deleteDatasetResponse.toString());
-    }
+    }*/
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");
@@ -738,9 +741,9 @@ public class LineageTest {
   private static int compare(LineageEntry o1, LineageEntry o2) {
     final int i = o1.getDescriptionCase().compareTo(o2.getDescriptionCase());
     if (i == 0) {
-      switch (o1.getDescriptionCase()) {
+      switch (o1.getType()) {
         case EXPERIMENT_RUN:
-          return o1.getExperimentRun().compareTo(o2.getExperimentRun());
+          return o1.getExternalId().compareTo(o2.getExternalId());
         case BLOB:
           return Integer.compare(o1.getBlob().hashCode(), o2.getBlob().hashCode());
       }

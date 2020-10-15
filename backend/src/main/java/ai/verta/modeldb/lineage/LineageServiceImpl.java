@@ -11,6 +11,7 @@ import ai.verta.modeldb.FindAllOutputs;
 import ai.verta.modeldb.LineageEntry;
 import ai.verta.modeldb.LineageEntryBatchResponse;
 import ai.verta.modeldb.LineageEntryBatchResponseSingle;
+import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
@@ -312,9 +313,10 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       Map<Long, RepositoryContainer> repositories,
       LineageEntry lineageEntry)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
-    switch (lineageEntry.getDescriptionCase()) {
+    LineageEntryType type = lineageEntry.getType();
+    switch (type) {
       case EXPERIMENT_RUN:
-        String experimentRun = lineageEntry.getExperimentRun();
+        String experimentRun = lineageEntry.getExternalId();
         if (!experimentRuns.contains(experimentRun)) {
           ExperimentRunEntity experimentRunEntity =
               experimentDAO.getExperimentRun(session, experimentRun);
@@ -350,9 +352,12 @@ public class LineageServiceImpl extends LineageServiceImplBase {
         }
         blobDAO.getCommitComponent(session2 -> repo, commitSha, blob.getLocationList());
         break;
-        return experimentDAO.isExperimentRunExists(session, id);
+        // TODO: add method to check
+        // return experimentDAO.isExperimentRunExists(session, id);
       case DATASET_VERSION:
-        return commitDAO.isCommitExists(session, id);
+        break;
+        // TODO: add method to check
+        // return commitDAO.isCommitExists(session, id);
       default:
         throw new ModelDBException(
             "Unexpected LineageEntryType '" + type + "' found", Code.INTERNAL);

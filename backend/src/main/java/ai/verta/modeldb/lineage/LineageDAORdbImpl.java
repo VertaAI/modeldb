@@ -254,7 +254,7 @@ public class LineageDAORdbImpl implements LineageDAO {
     int entityType;
     Long entityId;
     Map<Long, List<LineageEntry>> result = new HashMap<>();
-    switch (lineageEntry.getDescriptionCase()) {
+    switch (lineageEntry.getType()) {
       case EXPERIMENT_RUN:
         LineageExperimentRunEntity lineageExperimentRunEntity =
             getLineageExperimentRunEntity(session, lineageEntry);
@@ -321,7 +321,7 @@ public class LineageDAORdbImpl implements LineageDAO {
         builder.createQuery(LineageExperimentRunEntity.class);
     Root<LineageExperimentRunEntity> root = criteriaQuery.from(LineageExperimentRunEntity.class);
     final Predicate experimentRunIdPredicate =
-        root.get("experimentRunId").in(lineageEntry.getExperimentRun());
+        root.get("experimentRunId").in(lineageEntry.getExternalId());
     criteriaQuery.select(root);
     criteriaQuery.where(experimentRunIdPredicate);
     Query<LineageExperimentRunEntity> query = session.createQuery(criteriaQuery);
@@ -379,7 +379,7 @@ public class LineageDAORdbImpl implements LineageDAO {
 
   private void validate(LineageEntry lineageEntry) throws ModelDBException {
     final String message;
-    switch (lineageEntry.getDescriptionCase()) {
+    switch (lineageEntry.getType()) {
       case BLOB:
         VersioningLineageEntry blob = lineageEntry.getBlob();
         if (blob.getCommitSha().isEmpty()) {
@@ -391,8 +391,15 @@ public class LineageDAORdbImpl implements LineageDAO {
         }
         break;
       case EXPERIMENT_RUN:
-        if (lineageEntry.getExperimentRun().isEmpty()) {
+        if (lineageEntry.getExternalId().isEmpty()) {
           message = "Experiment run id is empty";
+        } else {
+          message = null;
+        }
+        break;
+      case DATASET_VERSION:
+        if (lineageEntry.getExternalId().isEmpty()) {
+          message = "Dataset version id is empty";
         } else {
           message = null;
         }
@@ -521,12 +528,12 @@ public class LineageDAORdbImpl implements LineageDAO {
     final Long entityId;
     final int entityType;
 
-    switch (lineageEntry.getDescriptionCase()) {
+    switch (lineageEntry.getType()) {
       case EXPERIMENT_RUN:
         LineageExperimentRunEntity experimentRun =
             getLineageExperimentRunEntity(session, lineageEntry);
         if (experimentRun == null) {
-          experimentRun = new LineageExperimentRunEntity(lineageEntry.getExperimentRun());
+          experimentRun = new LineageExperimentRunEntity(lineageEntry.getExternalId());
           session.save(experimentRun);
         }
         entityId = experimentRun.getId();
@@ -546,6 +553,7 @@ public class LineageDAORdbImpl implements LineageDAO {
         entityId = lineageVersioningBlobEntity.getId();
         entityType = ENTITY_TYPE_VERSIONING_BLOB;
         break;
+        // TODO: dataset
       default:
         throw new ModelDBException("Unknown lineage type");
     }
