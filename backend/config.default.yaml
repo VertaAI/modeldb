@@ -41,6 +41,9 @@ database:
   timeout: 4
   liquibaseLockThreshold: 60 #time in second
   changeSetToRevertUntilTag: #ex: version_1.0
+  minConnectionPoolSize: 5
+  maxConnectionPoolSize: 20
+  connectionTimeout: 300
   RdbConfiguration:
     RdbDatabaseName:
     RdbDriver: "org.postgresql.Driver"
@@ -56,6 +59,9 @@ test:
     timeout: 4
     liquibaseLockThreshold: 60 #time in second
     changeSetToRevertUntilTag: #ex: version_1.0
+    minConnectionPoolSize: 5
+    maxConnectionPoolSize: 20
+    connectionTimeout: 300
     RdbConfiguration:
       RdbDatabaseName: test
       RdbDriver: "org.postgresql.Driver"
