@@ -10,9 +10,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 public abstract class LineageEntryContainer {
   static LineageEntryContainer fromProto(LineageEntry lineageEntry)
       throws InvalidProtocolBufferException, ModelDBException {
-    switch (lineageEntry.getDescriptionCase()) {
+    switch (lineageEntry.getType()) {
       case EXPERIMENT_RUN:
-        return new ExperimentRunEntryContainer(lineageEntry.getExperimentRun());
+        return new ExperimentRunEntryContainer(lineageEntry.getExternalId());
       case BLOB:
         VersioningLineageEntry blob = lineageEntry.getBlob();
         return new VersioningBlobEntryContainer(
@@ -20,6 +20,7 @@ public abstract class LineageEntryContainer {
             blob.getCommitSha(),
             ModelDBUtils.getStringFromProtoObject(
                 Location.newBuilder().addAllLocation(blob.getLocationList())));
+        // TODO: dataset version
       default:
         throw new ModelDBException("Unknown lineage type");
     }

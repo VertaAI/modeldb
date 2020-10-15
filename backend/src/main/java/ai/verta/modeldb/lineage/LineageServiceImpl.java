@@ -12,6 +12,7 @@ import ai.verta.modeldb.LineageEntry;
 import ai.verta.modeldb.LineageEntry.DescriptionCase;
 import ai.verta.modeldb.LineageEntryBatchResponse;
 import ai.verta.modeldb.LineageEntryBatchResponseSingle;
+import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
@@ -419,9 +420,10 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       LineageEntry lineageEntry,
       Set<String> filteredExperimentRunIds)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException {
-    switch (lineageEntry.getDescriptionCase()) {
+    LineageEntryType type = lineageEntry.getType();
+    switch (type) {
       case EXPERIMENT_RUN:
-        experimentRunIds.add(lineageEntry.getExperimentRun());
+        experimentRunIds.add(lineageEntry.getExternalId());
         if (filteredExperimentRunIds == null) {
           return true;
         }
@@ -450,6 +452,15 @@ public class LineageServiceImpl extends LineageServiceImplBase {
         }
         blobDAO.getCommitComponent(session2 -> repo, commitSha, blob.getLocationList());
         break;
+        // TODO: add method to check
+        // return experimentDAO.isExperimentRunExists(session, id);
+      case DATASET_VERSION:
+        break;
+        // TODO: add method to check
+        // return commitDAO.isCommitExists(session, id);
+      default:
+        throw new ModelDBException(
+            "Unexpected LineageEntryType '" + type + "' found", Code.INTERNAL);
     }
     return true;
   }

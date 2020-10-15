@@ -1308,5 +1308,6 @@
             </column>
         </createTable>
     </changeSet>
+    <!-- WARNING: Do not add new change sets to these files -->
 
 </databaseChangeLog>

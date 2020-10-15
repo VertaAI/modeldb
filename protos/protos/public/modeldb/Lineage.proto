@@ -15,6 +15,16 @@ import "google/api/annotations.proto";
   it's to up to the user to ensure that things are configured correctly.
 */
 
+// We can have multiple types being recorded in the lineage system. These are the types that we allow.
+message LineageEntryEnum {
+    enum LineageEntryType {
+        UNKNOWN = 0; // Type 0 should always cause an error
+        EXPERIMENT_RUN = 1;
+        DATASET_VERSION = 2;
+        BLOB = 3;
+    }
+}
+
 message VersioningLineageEntry {
     uint64 repository_id = 1;
     string commit_sha = 2;
@@ -22,8 +32,9 @@ message VersioningLineageEntry {
  }
 
 message LineageEntry {
+    LineageEntryEnum.LineageEntryType type = 3;
     oneof description {
-        string experiment_run = 1;
+        string external_id = 1;
         VersioningLineageEntry blob = 2;
     };
 }

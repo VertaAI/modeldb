@@ -102,7 +102,7 @@ public class EnvironmentContainer extends BlobContainer {
         }
         break;
       default:
-        throw new ModelDBException("Blob unknown type", Code.INTERNAL);
+        throw new ModelDBException("ENVIRONMENT_BLOB has unknown type", Code.INTERNAL);
     }
     if (!blobHashes.contains(environmentBlobEntity.getBlob_hash())) {
       entities.add(environmentBlobEntity);
@@ -130,6 +130,11 @@ public class EnvironmentContainer extends BlobContainer {
 
     rootTree.push(locationList, environmentBlobEntity.getBlob_hash(), blobType);
   }
+
+  @Override
+  public void processAttribute(
+      Session session, Long repoId, String commitHash, boolean addAttribute)
+      throws ModelDBException {}
 
   private static final String PATTERN = "[a-zA-Z0-9_-]+";
 

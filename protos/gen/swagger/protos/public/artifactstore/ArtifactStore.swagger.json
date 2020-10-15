@@ -13,7 +13,7 @@
   "paths": {
     "/artifact/deleteArtifact": {
       "post": {
-        "operationId": "deleteArtifact",
+        "operationId": "ArtifactStore_deleteArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/artifact/getArtifact": {
       "get": {
-        "operationId": "getArtifact",
+        "operationId": "ArtifactStore_getArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -75,7 +75,7 @@
     },
     "/artifact/storeArtifact": {
       "post": {
-        "operationId": "storeArtifact",
+        "operationId": "ArtifactStore_storeArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -107,7 +107,7 @@
     },
     "/artifact/storeArtifactWithStream": {
       "post": {
-        "operationId": "storeArtifactWithStream",
+        "operationId": "ArtifactStore_storeArtifactWithStream",
         "responses": {
           "200": {
             "description": "A successful response.",

@@ -46,7 +46,7 @@
 }
 
 .expName_value,
-.timestamp_value,
+.timeStamp_value,
 .owner_value {
   color: #000;
   max-width: 220px;
@@ -58,14 +58,9 @@
   white-space: normal;
 }
 
-.timestamp_value,
+.timeStamp_value,
 .owner_value {
   margin-top: 3px;
-}
-
-.timestamp_value {
-  user-select: text;
-  cursor: text;
 }
 
 .param_draggable {

@@ -17,15 +17,20 @@ import org.apache.commons.codec.binary.Hex;
 
 public class AutogenDatasetDiff implements ProtoType {
   private AutogenPathDatasetDiff Path;
+  private AutogenQueryDatasetDiff Query;
   private AutogenS3DatasetDiff S3;
 
   public AutogenDatasetDiff() {
     this.Path = null;
+    this.Query = null;
     this.S3 = null;
   }
 
   public Boolean isEmpty() {
     if (this.Path != null && !this.Path.equals(null)) {
+      return false;
+    }
+    if (this.Query != null && !this.Query.equals(null)) {
       return false;
     }
     if (this.S3 != null && !this.S3.equals(null)) {
@@ -42,6 +47,11 @@ public class AutogenDatasetDiff implements ProtoType {
     if (this.Path != null && !this.Path.equals(null)) {
       if (!first) sb.append(", ");
       sb.append("\"Path\": " + Path);
+      first = false;
+    }
+    if (this.Query != null && !this.Query.equals(null)) {
+      if (!first) sb.append(", ");
+      sb.append("\"Query\": " + Query);
       first = false;
     }
     if (this.S3 != null && !this.S3.equals(null)) {
@@ -82,6 +92,15 @@ public class AutogenDatasetDiff implements ProtoType {
       }
     }
     {
+      Function3<AutogenQueryDatasetDiff, AutogenQueryDatasetDiff, Boolean> f =
+          (x, y) -> x.equals(y);
+      if (this.Query != null || other.Query != null) {
+        if (this.Query == null && other.Query != null) return false;
+        if (this.Query != null && other.Query == null) return false;
+        if (!f.apply(this.Query, other.Query)) return false;
+      }
+    }
+    {
       Function3<AutogenS3DatasetDiff, AutogenS3DatasetDiff, Boolean> f = (x, y) -> x.equals(y);
       if (this.S3 != null || other.S3 != null) {
         if (this.S3 == null && other.S3 != null) return false;
@@ -99,6 +118,15 @@ public class AutogenDatasetDiff implements ProtoType {
 
   public AutogenPathDatasetDiff getPath() {
     return this.Path;
+  }
+
+  public AutogenDatasetDiff setQuery(AutogenQueryDatasetDiff value) {
+    this.Query = Utils.removeEmpty(value);
+    return this;
+  }
+
+  public AutogenQueryDatasetDiff getQuery() {
+    return this.Query;
   }
 
   public AutogenDatasetDiff setS3(AutogenS3DatasetDiff value) {
@@ -122,6 +150,11 @@ public class AutogenDatasetDiff implements ProtoType {
       obj.setPath(f.apply(blob));
     }
     {
+      Function<ai.verta.modeldb.versioning.DatasetDiff, AutogenQueryDatasetDiff> f =
+          x -> AutogenQueryDatasetDiff.fromProto(blob.getQuery());
+      obj.setQuery(f.apply(blob));
+    }
+    {
       Function<ai.verta.modeldb.versioning.DatasetDiff, AutogenS3DatasetDiff> f =
           x -> AutogenS3DatasetDiff.fromProto(blob.getS3());
       obj.setS3(f.apply(blob));
@@ -137,6 +170,16 @@ public class AutogenDatasetDiff implements ProtoType {
         Function<ai.verta.modeldb.versioning.DatasetDiff.Builder, Void> f =
             x -> {
               builder.setPath(this.Path.toProto());
+              return null;
+            };
+        f.apply(builder);
+      }
+    }
+    {
+      if (this.Query != null && !this.Query.equals(null)) {
+        Function<ai.verta.modeldb.versioning.DatasetDiff.Builder, Void> f =
+            x -> {
+              builder.setQuery(this.Query.toProto());
               return null;
             };
         f.apply(builder);
@@ -162,6 +205,7 @@ public class AutogenDatasetDiff implements ProtoType {
   public void preVisitDeep(Visitor visitor) throws ModelDBException {
     this.preVisitShallow(visitor);
     visitor.preVisitDeepAutogenPathDatasetDiff(this.Path);
+    visitor.preVisitDeepAutogenQueryDatasetDiff(this.Query);
     visitor.preVisitDeepAutogenS3DatasetDiff(this.S3);
   }
 
@@ -171,6 +215,7 @@ public class AutogenDatasetDiff implements ProtoType {
 
   public AutogenDatasetDiff postVisitDeep(Visitor visitor) throws ModelDBException {
     this.setPath(visitor.postVisitDeepAutogenPathDatasetDiff(this.Path));
+    this.setQuery(visitor.postVisitDeepAutogenQueryDatasetDiff(this.Query));
     this.setS3(visitor.postVisitDeepAutogenS3DatasetDiff(this.S3));
     return this.postVisitShallow(visitor);
   }

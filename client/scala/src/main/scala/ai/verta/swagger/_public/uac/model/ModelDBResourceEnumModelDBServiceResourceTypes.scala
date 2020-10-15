@@ -16,6 +16,7 @@ object ModelDBResourceEnumModelDBServiceResourceTypes {
   val DATASET_VERSION: ModelDBResourceEnumModelDBServiceResourceTypes = "DATASET_VERSION"
   val DASHBOARD: ModelDBResourceEnumModelDBServiceResourceTypes = "DASHBOARD"
   val REPOSITORY: ModelDBResourceEnumModelDBServiceResourceTypes = "REPOSITORY"
+  val REGISTERED_MODEL: ModelDBResourceEnumModelDBServiceResourceTypes = "REGISTERED_MODEL"
 
   def toJson(obj: ModelDBResourceEnumModelDBServiceResourceTypes): JString = JString(obj)
 

@@ -5,7 +5,6 @@ metadata:
     app: {{ .Release.Name }}
     component: backend
   name: {{ .Release.Name }}-backend
-  namespace: {{ .Release.Namespace | quote }}
   {{- if .Values.service.annotations }}
   annotations:
 {{ toYaml .Values.service.annotations | indent 4 }}

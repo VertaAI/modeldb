@@ -224,15 +224,7 @@ class Commit(object):
                 part_stream = six.BytesIO(file_part)
 
                 # upload part
-                #     Retry connection errors, to make large multipart uploads more robust.
-                for _ in range(3):
-                    try:
-                        response = _utils.make_request("PUT", url, self._conn, data=part_stream)
-                    except requests.ConnectionError:  # e.g. broken pipe
-                        time.sleep(1)
-                        continue  # try again
-                    else:
-                        break
+                response = _utils.make_request("PUT", url, self._conn, data=part_stream)
                 _utils.raise_for_http_error(response)
 
                 # commit part
@@ -399,7 +391,7 @@ class Commit(object):
         ----------
         path : str
             Location to add `blob` to.
-        blob : :class:`~verta._repository.blob.Blob`
+        blob : :ref:`Blob <blobs>`
             ModelDB versioning blob.
 
         """
@@ -424,7 +416,7 @@ class Commit(object):
 
         Returns
         -------
-        blob : :class:`~verta._repository.blob.Blob`
+        blob : :ref:`Blob <blobs>`
             ModelDB versioning blob.
 
         Raises
@@ -559,11 +551,17 @@ class Commit(object):
             Ancestor commit.
 
         """
+        if self.id is None:  # unsaved commit
+            # use parent
+            commit_id = self._parent_ids[0]
+        else:
+            commit_id = self.id
+
         endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/log".format(
             self._conn.scheme,
             self._conn.socket,
             self._repo.id,
-            self.id,
+            commit_id,
         )
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
@@ -573,7 +571,7 @@ class Commit(object):
         commits = response_msg.commits
 
         for c in commits:
-            yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == self.id else None)
+            yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == commit_id else None)
 
     def new_branch(self, branch):
         """

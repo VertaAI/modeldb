@@ -102,13 +102,13 @@ class ArtifactPreview extends React.PureComponent<AllProps> {
         <div className={styles.preview_txt}>{preview}</div>
       ),
       [ArtifactPreviewFileExtensions.gif]: () => (
-        <img className={styles.preview_img} src={preview} />
+        <img className={styles.preview_img} src={preview} alt="preview" />
       ),
       [ArtifactPreviewFileExtensions.jpeg]: () => (
-        <img className={styles.preview_img} src={preview} />
+        <img className={styles.preview_img} src={preview} alt="preview" />
       ),
       [ArtifactPreviewFileExtensions.png]: () => (
-        <img className={styles.preview_img} src={preview} />
+        <img className={styles.preview_img} src={preview} alt="preview" />
       ),
       [ArtifactPreviewFileExtensions.json]: () => {
         const formattedPreview = JSON.stringify(JSON.parse(preview), null, 4);
@@ -139,7 +139,4 @@ const mapDispatchToProps = (dispatch: Dispatch): IActionProps => {
   );
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(ArtifactPreview);
+export default connect(mapStateToProps, mapDispatchToProps)(ArtifactPreview);

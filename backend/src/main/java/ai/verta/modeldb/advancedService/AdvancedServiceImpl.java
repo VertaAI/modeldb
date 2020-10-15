@@ -1,7 +1,9 @@
 package ai.verta.modeldb.advancedService;
 
 import ai.verta.common.Artifact;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AdvancedQueryDatasetVersionsResponse;
 import ai.verta.modeldb.AdvancedQueryDatasetsResponse;
@@ -39,12 +41,10 @@ import ai.verta.modeldb.HydratedExperiment;
 import ai.verta.modeldb.HydratedExperimentRun;
 import ai.verta.modeldb.HydratedProject;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceImplBase;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBConstants.UserIdentifier;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.SortExperimentRuns;
@@ -204,7 +204,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               selfAllowedActions.get(project.getId()).getActionsList());
         }
       } else {
-        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, project.getOwner());
+        LOGGER.info(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, project.getOwner());
       }
       hydratedProjects.add(hydratedProjectBuilder.build());
     }
@@ -518,7 +518,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         // Add user specific actions
         hydratedExperimentRunBuilder.addAllAllowedActions(actionList);
       } else {
-        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experimentRun.getOwner());
+        LOGGER.info(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experimentRun.getOwner());
       }
       // Prepare experiment for hydratedExperimentRun
       Experiment hydratedExperiment =
@@ -797,7 +797,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         }
         hydratedExperimentBuilder.addAllAllowedActions(actionList);
       } else {
-        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experiment.getOwner());
+        LOGGER.info(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experiment.getOwner());
       }
       hydratedExperiments.add(hydratedExperimentBuilder.build());
     }
@@ -947,7 +947,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       if (dataset.getOwner() != null && userInfoMap.get(dataset.getOwner()) != null) {
         hydratedDatasetBuilder.setOwnerUserInfo(userInfoMap.get(dataset.getOwner()));
       } else {
-        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, dataset.getOwner());
+        LOGGER.info(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, dataset.getOwner());
       }
       if (selfAllowedActions != null
           && selfAllowedActions.size() > 0

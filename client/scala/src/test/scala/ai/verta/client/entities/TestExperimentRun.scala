@@ -69,12 +69,17 @@ class TestExperimentRun extends FunSuite {
     try {
       logger(f.expRun)("some", 0.5)
       logger(f.expRun)("int", 4)
+
+      val listMetadata = List[ValueType](4, 0.5, "some-value")
+      logger(f.expRun)("list", listMetadata)
+
       multiLogger(f.expRun)(Map("other" -> 0.3, "string" -> "desc"))
 
       assert(getter(f.expRun)("some").get.get.asDouble.get equals 0.5)
       assert(getter(f.expRun)("other").get.get.asDouble.get equals 0.3)
       assert(getter(f.expRun)("int").get.get.asBigInt.get equals 4)
       assert(getter(f.expRun)("string").get.get.asString.get equals "desc")
+      assert(getter(f.expRun)("list").get.get.asList.get equals listMetadata)
 
       if (someGetter.isDefined)
         assert(someGetter.get(f.expRun)(List("some", "other")).get  equals
@@ -82,7 +87,10 @@ class TestExperimentRun extends FunSuite {
         )
 
       assert(allGetter(f.expRun)().get equals
-        Map[String, ValueType]("some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc")
+        Map[String, ValueType](
+          "some" -> 0.5, "int" -> 4, "other" -> 0.3, "string" -> "desc",
+          "list" -> listMetadata
+        )
       )
     } finally {
       cleanup(f)
@@ -286,14 +294,14 @@ class TestExperimentRun extends FunSuite {
       val retrievedCommit = f.expRun.getCommit().get.commit
       assert(retrievedCommit equals commit)
 
-      // update the logged commit:
+      // Should not allow updating commit:
       val newCommit = commit.update("abc/def", pathBlob)
                             .flatMap(_.save("Add a blob")).get
-      f.expRun.logCommit(newCommit, Some(Map[String, String]("mnp/qrs" -> "abc/def")))
-      val newExpRunCommit = f.expRun.getCommit().get
-      assert(newCommit equals newExpRunCommit.commit)
-      assert(!newExpRunCommit.commit.equals(commit))
-      assert(newExpRunCommit.keyPaths.get equals Map[String, String]("mnp/qrs" -> "abc/def"))
+      val logAttempt2 = f.expRun.logCommit(newCommit, Some(Map[String, String]("mnp/qrs" -> "abc/def")))
+      assert(logAttempt2.isFailure)
+
+      val newRetrievedCommit = f.expRun.getCommit().get.commit
+      assert(newRetrievedCommit equals commit)
     } finally {
       cleanup(f)
     }

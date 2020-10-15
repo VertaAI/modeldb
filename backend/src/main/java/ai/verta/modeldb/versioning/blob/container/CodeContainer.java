@@ -57,10 +57,15 @@ public class CodeContainer extends BlobContainer {
         }
         break;
       default:
-        throw new ModelDBException("Blob unknown type", Code.INTERNAL);
+        throw new ModelDBException("CODE_BLOB has unknown type", Code.INTERNAL);
     }
     rootTree.push(getLocationList(), blobHash, blobType);
   }
+
+  @Override
+  public void processAttribute(
+      Session session, Long repoId, String commitHash, boolean addAttribute)
+      throws ModelDBException {}
 
   private GitCodeBlobEntity saveBlob(
       Session session, GitCodeBlob gitCodeBlob, Set<String> blobHashes)

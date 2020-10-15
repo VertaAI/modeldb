@@ -266,11 +266,11 @@ public class DatasetVersionEntity {
     DatasetVersion.Builder datasetVersionBuilder =
         DatasetVersion.newBuilder()
             .setId(getId())
-            .setParentId(getParent_id())
+            .setParentId(getParent_id() != null ? getParent_id() : "")
             .setDatasetId(getDataset_id())
             .setTimeLogged(getTime_logged())
             .setTimeUpdated(getTime_updated())
-            .setDescription(getDescription())
+            .setDescription(getDescription() != null ? getDescription() : "")
             .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))
             .setDatasetVersionVisibilityValue(getDataset_version_visibility())
             .setDatasetTypeValue(getDataset_type())

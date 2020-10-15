@@ -13,7 +13,7 @@
   "paths": {
     "/collaborator/removeResources": {
       "delete": {
-        "operationId": "removeResources",
+        "operationId": "RoleService_removeResources",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -53,7 +53,8 @@
               "DATASET",
               "DATASET_VERSION",
               "DASHBOARD",
-              "REPOSITORY"
+              "REPOSITORY",
+              "REGISTERED_MODEL"
             ],
             "default": "UNKNOWN"
           }
@@ -65,7 +66,7 @@
     },
     "/role/deleteRole": {
       "post": {
-        "operationId": "deleteRole",
+        "operationId": "RoleService_deleteRole",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -97,7 +98,7 @@
     },
     "/role/deleteRoleBinding": {
       "post": {
-        "operationId": "deleteRoleBinding",
+        "operationId": "RoleService_deleteRoleBinding",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -129,7 +130,7 @@
     },
     "/role/deleteRoleBindings": {
       "post": {
-        "operationId": "deleteRoleBindings",
+        "operationId": "RoleService_deleteRoleBindings",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -161,7 +162,7 @@
     },
     "/role/getRoleBindingById": {
       "get": {
-        "operationId": "getBindingRoleById",
+        "operationId": "RoleService_getBindingRoleById",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -191,7 +192,7 @@
     },
     "/role/getRoleBindingByName": {
       "get": {
-        "operationId": "getRoleBindingByName",
+        "operationId": "RoleService_getRoleBindingByName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -233,7 +234,7 @@
     },
     "/role/getRoleById": {
       "get": {
-        "operationId": "getRoleById",
+        "operationId": "RoleService_getRoleById",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -263,7 +264,7 @@
     },
     "/role/getRoleByName": {
       "get": {
-        "operationId": "getRoleByName",
+        "operationId": "RoleService_getRoleByName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -305,7 +306,7 @@
     },
     "/role/listRoleBindings": {
       "get": {
-        "operationId": "listRoleBindings",
+        "operationId": "RoleService_listRoleBindings",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -347,7 +348,7 @@
     },
     "/role/listRoles": {
       "get": {
-        "operationId": "listRoles",
+        "operationId": "RoleService_listRoles",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -383,7 +384,7 @@
     },
     "/role/setRole": {
       "post": {
-        "operationId": "setRole",
+        "operationId": "RoleService_setRole",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -415,7 +416,7 @@
     },
     "/role/setRoleBinding": {
       "post": {
-        "operationId": "setRoleBinding",
+        "operationId": "RoleService_setRoleBinding",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -472,7 +473,8 @@
         "DATASET",
         "DATASET_VERSION",
         "DASHBOARD",
-        "REPOSITORY"
+        "REPOSITORY",
+        "REGISTERED_MODEL"
       ],
       "default": "UNKNOWN"
     },
@@ -765,6 +767,9 @@
           "title": "We optionally allow a more specialized list of resources that the original one allowed by the roles"
         },
         "role_id": {
+          "type": "string"
+        },
+        "role_name": {
           "type": "string"
         },
         "public": {

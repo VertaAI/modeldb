@@ -26,12 +26,12 @@ message Dataset {
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 12;
 }
 
-message DatasetTypeEnum {
-    enum DatasetType{
-        RAW = 0;// default
-        PATH = 1;
-        QUERY = 2;
-    }
+message DatasetTypeEnum {	
+    enum DatasetType{	
+        RAW = 0;// default	
+        PATH = 1;	
+        QUERY = 2;	
+    }	
 }
 
 message DatasetVisibilityEnum {
@@ -108,7 +108,7 @@ message DeleteDatasets {
 
 message FindDatasets {
     repeated string dataset_ids = 1;
-    repeated KeyValueQuery predicates = 2;
+    repeated common.KeyValueQuery predicates = 2;
     bool ids_only = 3; // whether to return full experiment runs or ids only
     string workspace_name = 8;
 
@@ -176,14 +176,6 @@ message UpdateDatasetAttributes {
 
     message Response {
         Dataset dataset = 1;
-    }
-}
-
-message GetDatasetAttributes {
-    string id = 1;
-
-    message Response {
-        repeated common.KeyValue attributes = 1;
     }
 }
 
@@ -328,15 +320,10 @@ service DatasetService {
         };
     };
 
-    rpc getDatasetAttributes(GetAttributes) returns (GetAttributes.Response) {
-        option (google.api.http) = {
-            get: "/v1/dataset/getDatasetAttributes"
-        };
-    };
-
     rpc deleteDatasetAttributes(DeleteDatasetAttributes) returns (DeleteDatasetAttributes.Response) {
         option (google.api.http) = {
             delete: "/v1/dataset/deleteDatasetAttributes"
+            body: "*"
         };
     };
 

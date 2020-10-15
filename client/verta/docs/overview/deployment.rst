@@ -29,7 +29,7 @@ Model Packaging involves taking a trained model (in varied formats including wei
 files) and turning it into a runnable format, most often as `containers` or `libraries.`
 
 Verta provides extensive support for packaging models as containers.
-By containerizaing models and serving inference requests via API calls (REST or gRPC), models can be made
+By containerizing models and serving inference requests via API calls (REST or gRPC), models can be made
 accessible to a variety of other services and applications.
 
 The Verta client provides APIs to package models using a variety of frameworks. Packaging a model consists

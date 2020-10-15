@@ -1,5 +1,4 @@
 import { bind } from 'decko';
-import _ from 'lodash';
 import React from 'react';
 
 import ChartConfigDropdown, {
@@ -214,42 +213,42 @@ class AggregationChartManager extends React.Component<
 
   @bind
   public averageReduceMetrics(mapObj: any) {
-    return [...mapObj].map(obj => {
+    return [...mapObj].map((obj) => {
       return { key: obj[0], value: listAverage(obj[1]) };
     });
   }
 
   @bind
   public sumReduceMetrics(mapObj: any) {
-    return [...mapObj].map(obj => {
+    return [...mapObj].map((obj) => {
       return { key: obj[0], value: listSum(obj[1]) };
     });
   }
 
   @bind
   public medianReduceMetrics(mapObj: any) {
-    return [...mapObj].map(obj => {
+    return [...mapObj].map((obj) => {
       return { key: obj[0], value: listMedian(obj[1]) };
     });
   }
 
   @bind
   public varianceReduceMetrics(mapObj: any) {
-    return [...mapObj].map(obj => {
+    return [...mapObj].map((obj) => {
       return { key: obj[0], value: listVariance(obj[1]) };
     });
   }
 
   @bind
   public stdevReduceMetrics(mapObj: any) {
-    return [...mapObj].map(obj => {
+    return [...mapObj].map((obj) => {
       return { key: obj[0], value: listStdev(obj[1]) };
     });
   }
 
   @bind
   public countReduceMetrics(mapObj: any) {
-    return [...mapObj].map(obj => {
+    return [...mapObj].map((obj) => {
       return { key: obj[0], value: listCount(obj[1]) };
     });
   }

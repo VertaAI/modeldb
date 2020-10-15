@@ -13,7 +13,7 @@
   "paths": {
     "/comment/addExperimentRunComment": {
       "post": {
-        "operationId": "addExperimentRunComment",
+        "operationId": "CommentService_addExperimentRunComment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/comment/deleteExperimentRunComment": {
       "delete": {
-        "operationId": "deleteExperimentRunComment",
+        "operationId": "CommentService_deleteExperimentRunComment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -81,7 +81,7 @@
     },
     "/comment/getExperimentRunComments": {
       "get": {
-        "operationId": "getExperimentRunComments",
+        "operationId": "CommentService_getExperimentRunComments",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -111,7 +111,7 @@
     },
     "/comment/updateExperimentRunComment": {
       "post": {
-        "operationId": "updateExperimentRunComment",
+        "operationId": "CommentService_updateExperimentRunComment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -351,6 +351,9 @@
         },
         "publicProfile": {
           "$ref": "#/definitions/uacFlagEnum"
+        },
+        "workspace_id": {
+          "type": "string"
         }
       }
     }
