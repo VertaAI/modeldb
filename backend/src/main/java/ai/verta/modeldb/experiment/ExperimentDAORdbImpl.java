@@ -2,12 +2,12 @@ package ai.verta.modeldb.experiment;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
@@ -979,13 +979,11 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       Query query = session.createQuery(GET_EXPERIMENT_BY_ID_QUERY);
       query.setParameter("id", experimentId);
       ExperimentEntity experimentEntity = (ExperimentEntity) query.uniqueResult();
-      String errorMessage = null;
       if (experimentEntity == null) {
-        errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-      }
-
-      if (errorMessage != null) {
-        ModelDBUtils.logAndThrowError(errorMessage, Code.INTERNAL_VALUE, Any.newBuilder().build());
+        ModelDBUtils.logAndThrowError(
+            ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId,
+            Code.NOT_FOUND_VALUE,
+            Any.newBuilder().build());
       }
 
       assert experimentEntity != null;

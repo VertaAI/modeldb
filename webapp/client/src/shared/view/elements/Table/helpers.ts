@@ -1,9 +1,7 @@
 import * as R from 'ramda';
-import { useMemo } from 'react';
 
 import matchType from 'shared/utils/matchType';
 
-import { SortInfo, SortLabelDirection } from './Sorting/types';
 import styles from './styles.module.css';
 import {
   ColumnDefinition,
@@ -17,7 +15,7 @@ export function getRowStylesByColumnDefinitions<T>(
 ): IRowStyle {
   return {
     display: 'grid',
-    gridTemplateColumns: columnDefinitions.map(c => c.width).join(' '),
+    gridTemplateColumns: columnDefinitions.map((c) => c.width).join(' '),
   };
 }
 

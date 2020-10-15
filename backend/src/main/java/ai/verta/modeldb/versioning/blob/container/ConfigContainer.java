@@ -151,6 +151,11 @@ public class ConfigContainer extends BlobContainer {
     rootTree.push(getLocationList(), result, CONFIG_BLOB);
   }
 
+  @Override
+  public void processAttribute(
+      Session session, Long repoId, String commitHash, boolean addAttribute)
+      throws ModelDBException {}
+
   private String computeContinuousSHA(
       String name,
       Map<String, HyperparameterElementConfigBlobEntity> hyperparameterElementConfigBlobEntityMap)

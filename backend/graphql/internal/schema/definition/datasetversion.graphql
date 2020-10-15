@@ -1,0 +1,42 @@
+type DatasetVersion {
+  id: ID!
+  parentID: ID! # TODO: remove?
+  datasetID: ID!
+  dataset: Dataset!
+
+  description: String!
+  dateCreated: Date!
+  dateUpdated: Date!
+  attributes: [KeyValue!]!
+  owner: User!
+  version: Int!
+
+  downloadUrl(blobPath: String!): String
+
+  tags: [String!]!
+  addTags(tags: [String!]!): DatasetVersion!
+  deleteTags(tags: [String!]!): DatasetVersion!
+
+  runs(query: ExperimentRunsQuery): ExperimentRuns!
+
+  blobInfo: String # serialized dataset blob
+  # Don't bother defining types for old info types as they'll be deleted laters
+  rawInfo: String
+  pathInfo: String
+  queryInfo: String
+
+  changeDescription(description: String!): DatasetVersion!
+  delete: Boolean!
+}
+
+type DatasetVersions {
+  datasetVersions: [DatasetVersion!]!
+  total: Int!
+}
+
+input DatasetVersionsQuery {
+  pagination: PaginationQuery
+  stringPredicates: [StringPredicate!]
+  floatPredicates: [FloatPredicate!]
+  ids: [ID!]
+}

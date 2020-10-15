@@ -1,4 +1,4 @@
-.. currentmodule:: verta.client
+.. currentmodule:: verta._tracking
 
 ExperimentRun
 =============
@@ -81,6 +81,7 @@ General
 .. automethod:: ExperimentRun.log_artifact
 .. automethod:: ExperimentRun.log_artifact_path
 .. automethod:: ExperimentRun.get_artifact
+.. automethod:: ExperimentRun.download_artifact
 
 Datasets
 ^^^^^^^^

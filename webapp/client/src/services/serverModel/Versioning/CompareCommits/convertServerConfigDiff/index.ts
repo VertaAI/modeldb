@@ -9,7 +9,6 @@ import {
 import {
   IServerBlobDiff,
   IServerElementDiff,
-  convertServerElementDiffToClient,
   convertServerBlobDiffToClient,
   convertNullableServerArrayDiffToClient,
 } from '../ServerDiff';

@@ -4,24 +4,13 @@ import collections
 import json
 import numbers
 import os
-import pathlib2
-import tempfile
-import warnings
-import zipfile
-
-try:
-    import pandas as pd
-except ImportError:  # pandas not installed
-    pd = None
-
-try:
-    import tensorflow as tf
-except ImportError:  # TensorFlow not installed
-    tf = None
 
 from .external import six
 
-from ._internal_utils import _utils
+from ._internal_utils import (
+    _utils,
+    importer,
+)
 
 
 class ModelAPI(object):
@@ -73,6 +62,7 @@ class ModelAPI(object):
 
     @staticmethod
     def _data_to_api(data, name=""):
+        pd = importer.maybe_dependency("pandas")
         if pd is not None:
             if isinstance(data, pd.DataFrame):
                 if len(set(data.columns)) < len(data.columns):
@@ -88,6 +78,7 @@ class ModelAPI(object):
                 # TODO: probably should use dtype instead of inferring the type?
                 return ModelAPI._single_data_to_api(data, name)
         # TODO: check if it's safe to use _utils.to_builtin()
+        tf = importer.maybe_dependency("tensorflow")
         if tf is not None and isinstance(data, tf.Tensor):
             try:
                 data = data.numpy()  # extract more-handleable NumPy array
@@ -122,7 +113,7 @@ class ModelAPI(object):
         if data is None:
             return {'type': "VertaNull",
                     'name': str(name)}
-        elif isinstance(data, _utils.BOOL_TYPES):  # did you know that `bool` is a subclass of `int`?
+        elif isinstance(data, _utils.get_bool_types()):  # did you know that `bool` is a subclass of `int`?
             return {'type': "VertaBool",
                     'name': str(name)}
         elif isinstance(data, numbers.Integral):
@@ -232,6 +223,7 @@ class TFSavedModel(object):
 
     """
     def __init__(self, saved_model_dir, session=None):
+        tf = importer.maybe_dependency("tensorflow")
         if tf is None:
             raise ImportError("TensorFlow is not installed; try `pip install tensorflow`")
 
@@ -252,9 +244,13 @@ class TFSavedModel(object):
         return {}  # no state needs to be saved
 
     def __setstate__(self, state):
+        tf = importer.maybe_dependency("tensorflow")
+        if tf is None:
+            raise ImportError("TensorFlow is not installed; try `pip install tensorflow`")
+
         self.__dict__.update(state)
 
-        self.saved_model_dir = _utils.SAVED_MODEL_DIR
+        self.saved_model_dir = os.environ.get('VERTA_SAVED_MODEL_DIR', "/app/tf_saved_model/")
         self.session = tf.Session()
 
         input_tensors, output_tensors = self._map_tensors()
@@ -262,6 +258,10 @@ class TFSavedModel(object):
         self.output_tensors = output_tensors
 
     def _map_tensors(self):
+        tf = importer.maybe_dependency("tensorflow")
+        if tf is None:
+            raise ImportError("TensorFlow is not installed; try `pip install tensorflow`")
+
         # obtain info about input/output signature
         meta_graph_def = tf.compat.v1.saved_model.load(self.session, ['serve'], self.saved_model_dir)
 
@@ -308,3 +308,5 @@ class TFSavedModel(object):
         }
 
         return self.session.run(self.output_tensors, input_dict)
+
+

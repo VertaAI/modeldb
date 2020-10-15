@@ -5,8 +5,7 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.uac.model.IdServiceProviderEnumIdServiceProvider._
-import ai.verta.swagger._public.uac.model.UacFlagEnum._
+import ai.verta.swagger._public.uac.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
 case class ProtobufAny (

@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import abc
+import copy
 import os
 import pathlib2
 
@@ -25,7 +26,7 @@ class _Dataset(blob.Blob):
     Base class for dataset versioning. Not for human consumption.
 
     """
-    def __init__(self, enable_mdb_versioning=False):
+    def __init__(self, paths=None, enable_mdb_versioning=False):
         super(_Dataset, self).__init__()
 
         self._components_map = dict()  # paths to Component objects
@@ -45,6 +46,29 @@ class _Dataset(blob.Blob):
             lines.extend(repr(component).splitlines())
 
         return "\n    ".join(lines)
+
+    def __add__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        new = copy.deepcopy(self)
+        return new.__iadd__(other)
+
+    def __iadd__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        self_keys = set(self._components_map.keys())
+        other_keys = set(other._components_map.keys())
+        intersection = list(self_keys & other_keys)
+        if intersection:
+            raise ValueError("dataset already contains paths: {}".format(intersection))
+
+        if self._mdb_versioned != other._mdb_versioned:
+            raise ValueError("datasets must have same value for `enable_mdb_versioning`")
+
+        self._components_map.update(other._components_map)
+        return self
 
     @abc.abstractmethod
     def _prepare_components_to_upload(self):
@@ -169,6 +193,10 @@ class _Dataset(blob.Blob):
 
         return (components_to_download, os.path.abspath(downloaded_to_path))
 
+    @abc.abstractmethod
+    def add(self, paths):
+        pass
+
     def download(self, component_path=None, download_to_path=None):
         """
         Downloads `component_path` from this dataset if ModelDB-managed versioning was enabled.
@@ -265,6 +293,8 @@ class Component(object):
     ----------
     path : str
         File path.
+    base_path : str
+        Prefix of `path`.
     size : int
         File size.
     last_modified : int
@@ -291,7 +321,7 @@ class Component(object):
         self.md5 = md5
 
         # base path
-        self._base_path = base_path
+        self.base_path = base_path
 
         # ModelDB versioning
         self._internal_versioned_path = internal_versioned_path
@@ -300,6 +330,8 @@ class Component(object):
     def __repr__(self):
         lines = [self.path]
 
+        if self.base_path:
+            lines.append("base path: {}".format(self.base_path))
         if self.size:
             lines.append("{} bytes".format(self.size))
         if self.last_modified:
@@ -311,6 +343,12 @@ class Component(object):
 
         return "\n    ".join(lines)
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self.__dict__ == other.__dict__
+
     @classmethod
     def _from_proto(cls, component_msg):
         return cls(
@@ -320,6 +358,7 @@ class Component(object):
             sha256=component_msg.sha256 or None,
             md5=component_msg.md5 or None,
             internal_versioned_path=component_msg.internal_versioned_path or None,
+            base_path=component_msg.base_path,
         )
 
     def _as_proto(self):
@@ -330,6 +369,7 @@ class Component(object):
             sha256=self.sha256 or "",
             md5=self.md5 or "",
             internal_versioned_path=self._internal_versioned_path or "",
+            base_path=self.base_path or "",
         )
 
 

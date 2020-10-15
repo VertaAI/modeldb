@@ -19,7 +19,7 @@ class Attributes(clientSet: ClientSet, ec: ExecutionContext, run: ExperimentRun)
   override def get(key: String): Option[ValueType] = seq.get(key)
 
   override def +=(kv: (String, ValueType)): Attributes.this.type = {
-    clientSet.experimentRunService.logAttribute(ModeldbLogAttribute(
+    clientSet.experimentRunService.ExperimentRunService_logAttribute(ModeldbLogAttribute(
       id = run.run.id,
       attribute = Some(CommonKeyValue(
         key = Some(kv._1),
@@ -38,7 +38,7 @@ class Attributes(clientSet: ClientSet, ec: ExecutionContext, run: ExperimentRun)
 
   override def seq: mutable.Map[String, ValueType] =
     mutable.Map(
-      clientSet.experimentRunService.getExperimentRunAttributes(id = run.run.id, attribute_keys = None, get_all = Some(true))
+      clientSet.experimentRunService.ExperimentRunService_getExperimentRunAttributes(id = run.run.id, attribute_keys = None, get_all = Some(true))
         .flatMap(_.attributes match {
           case Some(x) => Success(x)
           case None => Success(Nil)

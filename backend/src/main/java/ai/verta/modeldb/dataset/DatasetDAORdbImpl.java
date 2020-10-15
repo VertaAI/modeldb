@@ -1,17 +1,17 @@
 package ai.verta.modeldb.dataset;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorOrg;
@@ -335,16 +335,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   @Override
   public Dataset getDatasetById(String datasetId) throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
-      if (datasetObj == null) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("dataset with input id not found")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
+      DatasetEntity datasetObj = getDatasetEntity(session, datasetId);
       return datasetObj.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -353,6 +344,21 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         throw ex;
       }
     }
+  }
+
+  @Override
+  public DatasetEntity getDatasetEntity(Session session, String datasetId) {
+    DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
+    if (datasetObj == null) {
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.NOT_FOUND_VALUE)
+              .setMessage("dataset with input id not found")
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+    LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
+    return datasetObj;
   }
 
   @Override

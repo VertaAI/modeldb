@@ -5,17 +5,13 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { bindActionCreators, Dispatch } from 'redux';
 
-import CompareClickAction from 'features/compareEntities/view/CompareEntities/CompareClickAction/CompareClickAction';
-import ComparedEntitesManager from 'features/compareEntities/view/CompareEntities/ComparedEntitesManager/ComparedEntitesManager';
 import { selectCurrentContextFilters } from 'features/filter';
-import { IFilterData } from 'shared/models/Filters';
 import { getFormattedDateTime } from 'shared/utils/formatters/dateTime';
 import { formatBytes } from 'shared/utils/mapperConverters/DataSizeConverted';
 import withProps from 'shared/utils/react/withProps';
 import Attributes from 'shared/view/domain/ModelRecord/ModelRecordProps/Attributes/Attributes/Attributes';
 import WithCurrentUserActionsAccesses from 'shared/view/domain/WithCurrentUserActionsAccesses/WithCurrentUserActionsAccesses';
 import DeleteFAIWithLabel from 'shared/view/elements/DeleteFaiWithLabel/DeleteFaiWithLabel';
-import Draggable from 'shared/view/elements/Draggable/Draggable';
 import PageCommunicationError from 'shared/view/elements/Errors/PageCommunicationError/PageCommunicationError';
 import Fai from 'shared/view/elements/Fai/Fai';
 import GroupFai from 'shared/view/elements/GroupFai/GroupFai';
@@ -42,6 +38,8 @@ import styles from './DatasetVersions.module.css';
 import DeletingDatasetVersionsManager from './DatasetVersionsTable/BulkDeletion/Manager/Manager';
 import ToggleAllDatasetVersionsForBulkDeletion from './DatasetVersionsTable/BulkDeletion/ToggleAllRows/ToggleAllRows';
 import ToggleDatasetVersionForBulkDeletion from './DatasetVersionsTable/BulkDeletion/ToggleRow/ToggleRow';
+import ComparedEntitesManager from 'features/compareDatasets/view/ComparedEntitesManager/ComparedEntitesManager';
+import CompareClickAction from 'features/compareDatasets/view/CompareClickAction/CompareClickAction';
 
 const mapStateToProps = (state: IApplicationState) => {
   return {
@@ -79,10 +77,6 @@ class DatasetVersions extends React.PureComponent<AllProps, ILocalState> {
   public state: ILocalState = {
     isShowBulkDeletionMenu: false,
   };
-
-  constructor(props: AllProps) {
-    super(props);
-  }
 
   public render() {
     const {
@@ -168,7 +162,7 @@ class DatasetVersions extends React.PureComponent<AllProps, ILocalState> {
                             headerCellComponent: () => (
                               <ToggleAllDatasetVersionsForBulkDeletion />
                             ),
-                            cellComponent: row => {
+                            cellComponent: (row) => {
                               return (
                                 <ToggleDatasetVersionForBulkDeletion
                                   id={row.id}
@@ -185,12 +179,12 @@ class DatasetVersions extends React.PureComponent<AllProps, ILocalState> {
                               type: 'actions',
                               title: 'Actions',
                               width: '10%',
-                              render: datasetVersion => {
+                              render: (datasetVersion) => {
                                 return (
                                   <div data-test="dataset-version">
                                     <GroupFai
                                       groupFai={[
-                                        requiredProps => (
+                                        (requiredProps) => (
                                           <DeleteFAIWithLabel
                                             theme="blue"
                                             confirmText="Are you sure?"
@@ -201,7 +195,7 @@ class DatasetVersions extends React.PureComponent<AllProps, ILocalState> {
                                             {...requiredProps}
                                           />
                                         ),
-                                        requiredProps => (
+                                        (requiredProps) => (
                                           <CompareClickAction
                                             containerId={datasetId}
                                             enitityId={datasetVersion.id}
@@ -218,7 +212,7 @@ class DatasetVersions extends React.PureComponent<AllProps, ILocalState> {
                               type: 'summary',
                               title: 'Summary',
                               width: '30%',
-                              render: datasetVersion => {
+                              render: (datasetVersion) => {
                                 return (
                                   <div className={styles.column_ids}>
                                     <Parameter
@@ -237,9 +231,7 @@ class DatasetVersions extends React.PureComponent<AllProps, ILocalState> {
                                         >
                                           <IdView
                                             value={datasetVersion.id}
-                                            dataTest={`dataset-version-id-${
-                                              datasetVersion.id
-                                            }`}
+                                            dataTest={`dataset-version-id-${datasetVersion.id}`}
                                           />
                                         </Link>
                                       }
@@ -280,7 +272,7 @@ class DatasetVersions extends React.PureComponent<AllProps, ILocalState> {
                               type: 'info',
                               title: 'Info',
                               width: '30%',
-                              render: datasetVersion => {
+                              render: (datasetVersion) => {
                                 return (
                                   <div className={styles.column_info}>
                                     {datasetVersion.type === 'path' && (
@@ -292,11 +284,11 @@ class DatasetVersions extends React.PureComponent<AllProps, ILocalState> {
                                             's3FileSystem'
                                               ? safeMap(
                                                   datasetVersion.info.basePath,
-                                                  v => 's3://' + v
+                                                  (v) => 's3://' + v
                                                 )
                                               : safeMap(
                                                   datasetVersion.info.basePath,
-                                                  v => v
+                                                  (v) => v
                                                 )
                                           }
                                         />
@@ -420,7 +412,7 @@ class DatasetVersions extends React.PureComponent<AllProps, ILocalState> {
                               type: 'attributes',
                               title: 'Attributes',
                               width: '30%',
-                              render: datasetVersion => {
+                              render: (datasetVersion) => {
                                 return (
                                   <Parameter
                                     label={'attributes'}
@@ -490,7 +482,7 @@ class DatasetVersions extends React.PureComponent<AllProps, ILocalState> {
 
   @bind
   private toggleShowingBulkDeletionMenu() {
-    this.setState(prev => ({
+    this.setState((prev) => ({
       isShowBulkDeletionMenu: !prev.isShowBulkDeletionMenu,
     }));
   }
@@ -528,46 +520,14 @@ const BaseParameter = ({
   );
 };
 
-const ParameterWithFilteredValue = ({
-  label,
-  value,
-  filterData,
-  dataTest,
-}: {
-  label: string;
-  value: any;
-  filterData: IFilterData;
-  dataTest?: string;
-}) => {
-  return (
-    <BaseParameter
-      dataTest={dataTest}
-      label={label}
-      value={value}
-      renderValue={value => (
-        <Draggable
-          type="filter"
-          additionalClassName={styles.draggrable_param_value}
-          data={filterData}
-        >
-          {value}
-        </Draggable>
-      )}
-    />
-  );
-};
-
 const ParameterMonospace = withProps(BaseParameter)({
-  renderValue: value => (
+  renderValue: (value) => (
     <span className={cn(styles.monospace_text, styles.monospace_param_value)}>
       {value}
     </span>
   ),
 });
 
-const Parameter = withProps(BaseParameter)({ renderValue: x => x });
+const Parameter = withProps(BaseParameter)({ renderValue: (x) => x });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(DatasetVersions);
+export default connect(mapStateToProps, mapDispatchToProps)(DatasetVersions);

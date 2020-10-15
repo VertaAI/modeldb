@@ -12,8 +12,15 @@ public interface ModelDBConstants {
   String CLOUD_SECRET_KEY = "cloudSecretKey";
   String CLOUD_BUCKET_NAME = "cloudBucketName";
   String MINIO_ENDPOINT = "minioEndpoint";
+  String AWS_REGION = "aws_region";
   String DATABASE = "database";
   String DB_TYPE = "DBType";
+  String MIN_CONNECTION_POOL_SIZE = "minConnectionPoolSize";
+  String MAX_CONNECTION_POOL_SIZE = "maxConnectionPoolSize";
+  String CONNECTION_TIMEOUT = "connectionTimeout";
+  Integer MIN_CONNECTION_SIZE_DEFAULT = 5;
+  Integer MAX_CONNECTION_SIZE_DEFAULT = 20;
+  Integer CONNECTION_TIMEOUT_DEFAULT = 300;
   String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";
   String FEATURE_FLAG = "feature-flag";
   String GET_ARTIFACT_ENDPOINT = "getArtifact";
@@ -21,8 +28,11 @@ public interface ModelDBConstants {
   String HOST = "host";
   String HTTPS_STR = "https";
   String NFS = "NFS";
+  String PICK_ARTIFACT_STORE_HOST_FROM_CONFIG = "pickArtifactStoreHostFromConfig";
   String PICK_NFS_HOST_FROM_CONFIG = "pickNFSHostFromConfig";
   String NFS_ROOT_PATH = "nfsRootPath";
+  String ARTIFACT_STORE_SERVER_HOST = "artifactStoreServerHost";
+  String ARTIFACT_STORE_URL_PROTOCOL = "artifactStoreUrlProtocol";
   String NFS_SERVER_HOST = "nfsServerHost";
   String NFS_URL_PROTOCOL = "nfsUrlProtocol";
   String PATH = "path";
@@ -37,11 +47,22 @@ public interface ModelDBConstants {
   String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
+  String POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES = "populateConnectionsBasedOnPrivileges";
+  String LIQUIBASE_MIGRATION = "LIQUIBASE_MIGRATION";
+  String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
+
+  // AWS Releated Constants
+  String AWS_ROLE_ARN = "AWS_ROLE_ARN";
+  String DEFAULT_AWS_REGION = "us-east-1";
+  String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
+  String AWS_WEB_IDENTITY_TOKEN = "AWS_WEB_IDENTITY_TOKEN";
+  Integer RETRY_INIT_TIME_AWS_TEMP_CREDENTIALS = 10 * 60; // Time in second
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
   String STORE_CLIENT_CREATION_TIMESTAMP = "store-client-creation-timestamp";
   String PUBLIC_SHARING_ENABLED = "public_sharing_enabled";
+  String DISABLED_ARTIFACT_STORE = "disabled-artifact-store";
 
   // Threshold Constant
   Long DEFAULT_SHUTDOWN_TIMEOUT = 30L; // timeout in second
@@ -61,6 +82,7 @@ public interface ModelDBConstants {
   String ATTRIBUTES = "attributes";
   String DATASET_COLLABORATORS = "dataset_collaborators";
   String DATASETS = "datasets";
+  String REPOSITORIES = "repositories";
   String DATE_CREATED = "date_created";
   String DATE_UPDATED = "date_updated";
   String ENTITY_ID = "entity_id";
@@ -135,6 +157,7 @@ public interface ModelDBConstants {
   String OBSERVATION_MAPPING = "observationMapping";
   String PROJECT_ID_STR = "projectId";
   String TOTAL_COUNT = "total_count";
+  String TIME_CREATED = "time_created";
   String TIME_UPDATED = "time_updated";
   String TIME_LOGGED = "time_logged";
   String UNSIGNED_USER = "unsigned_user";
@@ -144,6 +167,7 @@ public interface ModelDBConstants {
   String EMAIL = "email";
   String USERNAME = "username";
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
+  String HEALTH_CHECK_SERVICE_FIELD = "service";
   String DELETED = "deleted";
   String DEV_KEY = "devKey";
   String REQUEST_TIMEOUT = "requestTimeout";
@@ -172,14 +196,18 @@ public interface ModelDBConstants {
 
   // Migration Constants
   String MIGRATION = "migration";
+  String ENABLE = "enable";
   String SUB_ENTITIES_OWNERS_RBAC_MIGRATION = "SUB_ENTITIES_OWNERS_RBAC_MIGRATION";
   String ROLE_REPOSITORY_READ_WRITE = "REPOSITORY_READ_WRITE";
   String ROLE_REPOSITORY_READ_ONLY = "REPOSITORY_READ_ONLY";
   String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
+  String DATASET_VERSIONING_MIGRATION = "DATASET_VERSIONING_MIGRATION";
   String POSTGRES_DB_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
   String DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE =
       "Can't add new versioning entry, because an existing one has different repository or commit";
+  String REPOSITORY_ENTITY = "repositoryEntity";
+  String POPULATE_VERSION_MIGRATION = "POPULATE_VERSION_MIGRATION";
 
   enum UserIdentifier {
     VERTA_ID,
@@ -216,6 +244,7 @@ public interface ModelDBConstants {
       "https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry";
 
   // Versioning constant
+  String BLOB = "blob";
   String BLOBS = "blobs";
   String SUBTREES = "subtrees";
   String REPOSITORY_ID = "repository_id";
@@ -233,6 +262,14 @@ public interface ModelDBConstants {
   String VERSIONING_LOCATION = "versioning_location";
   String REPOSITORY_VISIBILITY = "repository_visibility";
   String REPOSITORY = "repository";
+  String VERSIONING_REPOSITORY = "versioning_repository";
+  String VERSIONING_COMMIT = "versioning_commit";
+  String VERSIONING_REPO_COMMIT_BLOB = "versioning_repo_commit_blob";
+  String VERSIONING_REPO_COMMIT = "versioning_repo_commit";
+  String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
+  String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
+  String PROPERTY_NAME = "property_name";
+  String S3_PRESIGNED_URL_ENABLED = "s3presignedURLEnabled";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second
@@ -240,4 +277,6 @@ public interface ModelDBConstants {
   String CRON_JOB = "cron_job";
   String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
   String DELETE_ENTITIES = "delete_entities";
+  String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
+  String EXPIRED_TOKEN = "ExpiredToken";
 }

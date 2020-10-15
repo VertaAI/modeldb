@@ -12,6 +12,8 @@ type Mutation {
   delProjectTag(id: ID!, tag: String!): Project
   delProject(id: ID!): Boolean!
 
+  dataset(id: ID!): Dataset
+
   repository(id: ID!): Repository
   workspace(name: String): Workspace
 }

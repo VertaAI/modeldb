@@ -13,7 +13,7 @@
   "paths": {
     "/collaborator/addOrUpdateDatasetCollaborator": {
       "post": {
-        "operationId": "addOrUpdateDatasetCollaborator",
+        "operationId": "CollaboratorService_addOrUpdateDatasetCollaborator",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/collaborator/addOrUpdateProjectCollaborator": {
       "post": {
-        "operationId": "addOrUpdateProjectCollaborator",
+        "operationId": "CollaboratorService_addOrUpdateProjectCollaborator",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -77,7 +77,7 @@
     },
     "/collaborator/addOrUpdateRepositoryCollaborator": {
       "post": {
-        "operationId": "addOrUpdateRepositoryCollaborator",
+        "operationId": "CollaboratorService_addOrUpdateRepositoryCollaborator",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -109,7 +109,7 @@
     },
     "/collaborator/getDatasetCollaborators": {
       "get": {
-        "operationId": "getDatasetCollaborators",
+        "operationId": "CollaboratorService_getDatasetCollaborators",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -139,7 +139,7 @@
     },
     "/collaborator/getProjectCollaborators": {
       "get": {
-        "operationId": "getProjectCollaborators",
+        "operationId": "CollaboratorService_getProjectCollaborators",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -169,7 +169,7 @@
     },
     "/collaborator/getRepositoryCollaborators": {
       "get": {
-        "operationId": "getRepositoryCollaborators",
+        "operationId": "CollaboratorService_getRepositoryCollaborators",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -199,7 +199,7 @@
     },
     "/collaborator/removeDatasetCollaborator": {
       "delete": {
-        "operationId": "removeDatasetCollaborator",
+        "operationId": "CollaboratorService_removeDatasetCollaborator",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -255,7 +255,7 @@
     },
     "/collaborator/removeProjectCollaborator": {
       "delete": {
-        "operationId": "removeProjectCollaborator",
+        "operationId": "CollaboratorService_removeProjectCollaborator",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -311,7 +311,7 @@
     },
     "/collaborator/removeRepositoryCollaborator": {
       "delete": {
-        "operationId": "removeRepositoryCollaborator",
+        "operationId": "CollaboratorService_removeRepositoryCollaborator",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -544,11 +544,23 @@
     "uacGetCollaboratorResponse": {
       "type": "object",
       "properties": {
-        "shared_users": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacGetCollaboratorResponse"
-          }
+        "user_id": {
+          "type": "string"
+        },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "share_via_type": {
+          "$ref": "#/definitions/uacShareViaEnum"
+        },
+        "verta_id": {
+          "type": "string"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "authz_entity_type": {
+          "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
         }
       }
     },
@@ -592,6 +604,15 @@
         },
         "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "default_registered_model_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "workspace_id": {
+          "type": "string"
+        },
+        "registered_model_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -711,6 +732,9 @@
         },
         "publicProfile": {
           "$ref": "#/definitions/uacFlagEnum"
+        },
+        "workspace_id": {
+          "type": "string"
         }
       }
     }

@@ -13,7 +13,7 @@
   "paths": {
     "/lineage/addLineage": {
       "post": {
-        "operationId": "addLineage",
+        "operationId": "LineageService_addLineage",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/lineage/deleteLineage": {
       "post": {
-        "operationId": "deleteLineage",
+        "operationId": "LineageService_deleteLineage",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -77,7 +77,7 @@
     },
     "/lineage/findAllInputs": {
       "post": {
-        "operationId": "findAllInputs",
+        "operationId": "LineageService_findAllInputs",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -109,7 +109,7 @@
     },
     "/lineage/findAllInputsOutputs": {
       "post": {
-        "operationId": "findAllInputsOutputs",
+        "operationId": "LineageService_findAllInputsOutputs",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -141,7 +141,7 @@
     },
     "/lineage/findAllOutputs": {
       "post": {
-        "operationId": "findAllOutputs",
+        "operationId": "LineageService_findAllOutputs",
         "responses": {
           "200": {
             "description": "A successful response.",

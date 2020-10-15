@@ -7,6 +7,7 @@ option java_multiple_files = true;
 
 import "common/CommonService.proto";
 import "modeldb/CommonService.proto";
+import "modeldb/versioning/VersioningService.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 
@@ -274,6 +275,16 @@ message GetObservations {
     }
 }
 
+message DeleteObservations {
+    string id = 1;
+    // delete all observations corresponding to the keys
+    repeated string observation_keys = 2;
+    // if true delete all observations corresponding to the run, ignoring observation_keys
+    bool delete_all = 3;
+
+    message Response {
+    }
+}
 // metric
 message LogMetric {
     string id = 1;
@@ -297,6 +308,17 @@ message GetMetrics {
 
     message Response {
         repeated common.KeyValue metrics = 1;
+    }
+}
+
+message DeleteMetrics {
+    string id = 1;
+    // delete metrics corresponding to the keys
+    repeated string metric_keys = 2;
+    // if true delete all metrics corresponding to the run, ignoring metric_keys
+    bool delete_all = 3;
+
+    message Response {
     }
 }
 
@@ -380,6 +402,17 @@ message GetHyperparameters {
     }
 }
 
+message DeleteHyperparameters {
+    string id = 1;
+    // delete HyperParameters corresponding to the keys
+    repeated string hyperparameter_keys = 2;
+    // if true delete all hyper parameters corresponding to the run, ignoring hyperparameter_keys
+    bool delete_all = 3;
+
+    message Response {
+    }
+}
+
 // attribute
 message LogAttribute {
     string id = 1;
@@ -405,7 +438,7 @@ message FindExperimentRuns {
     }
 
     repeated string experiment_run_ids = 3;
-    repeated KeyValueQuery predicates = 4;
+    repeated common.KeyValueQuery predicates = 4;
     bool ids_only = 5; // whether to return full experiment runs or ids only
 
     //For pagination
@@ -486,7 +519,7 @@ message SetParentExperimentRunId {
 }
 
 message GetExperimentRunsByDatasetVersionId {
-    string datset_version_id = 1;
+    string dataset_version_id = 1;
     int32 page_number = 2;
     int32 page_limit = 3;
     bool ascending = 4;
@@ -503,6 +536,41 @@ message DeleteExperimentRuns {
 
     message Response {
         bool status = 1;
+    }
+}
+
+// Getting experimentRuns linked to a commit
+message ListCommitExperimentRunsRequest {
+    versioning.RepositoryIdentification repository_id = 1;
+    common.Pagination pagination = 2;
+    string commit_sha = 3;
+
+    message Response {
+        repeated ExperimentRun runs = 1;
+        int64 total_records = 2;
+    }
+}
+
+// Getting experimentRuns linked to a blob
+message ListBlobExperimentRunsRequest {
+    versioning.RepositoryIdentification repository_id = 1;
+    common.Pagination pagination = 2;
+    string commit_sha = 3;
+    repeated string location = 4;
+
+    message Response {
+        repeated ExperimentRun runs = 1;
+        int64 total_records = 2;
+    }
+}
+
+message CloneExperimentRun {
+    string src_experiment_run_id = 1; // Source experiment_run to clone [Compulsory]
+    string dest_experiment_run_name= 2; // Source experiment_run to clone [Optional]
+    string dest_experiment_id = 3; // Destination experiment_id to clone run into. if not define here then value will be experiment_id of src_experiment_run_id[Optional]
+
+    message Response {
+        ExperimentRun run = 1;
     }
 }
 
@@ -866,6 +934,58 @@ service ExperimentRunService {
     rpc getVersionedInputs(GetVersionedInput) returns (GetVersionedInput.Response) {
         option (google.api.http) = {
             get: "/v1/experiment-run/getVersionedInput"
+        };
+    };
+    
+    // Getting ExperimentRuns linked to a commit
+    rpc ListCommitExperimentRuns(ListCommitExperimentRunsRequest) returns (ListCommitExperimentRunsRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/runs"
+            additional_bindings {
+                get: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/runs"
+            }
+        };
+    }
+
+    // Getting ExperimentRuns linked to a blob
+    rpc ListBlobExperimentRuns(ListBlobExperimentRunsRequest) returns (ListBlobExperimentRunsRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path/runs"
+            additional_bindings {
+                get: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path/runs"
+            }
+        };
+    }
+
+
+    rpc deleteObservations(DeleteObservations) returns (
+        DeleteObservations.Response) {
+        option (google.api.http) = {
+            delete: "/v1/experiment-run/deleteObservations"
+            body: "*"
+        };
+    };
+
+    rpc deleteMetrics(DeleteMetrics) returns (
+        DeleteMetrics.Response) {
+        option (google.api.http) = {
+            delete: "/v1/experiment-run/deleteMetrics"
+            body: "*"
+        };
+    };
+
+    rpc deleteHyperparameters(DeleteHyperparameters) returns (
+        DeleteHyperparameters.Response) {
+        option (google.api.http) = {
+            delete: "/v1/experiment-run/deleteHyperparameters"
+            body: "*"
+        };
+    };
+
+    rpc cloneExperimentRun(CloneExperimentRun) returns (CloneExperimentRun.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment-run/cloneExperimentRun"
+            body: "*"
         };
     };
 }

@@ -350,6 +350,12 @@ public class LineageServiceImpl extends LineageServiceImplBase {
         }
         blobDAO.getCommitComponent(session2 -> repo, commitSha, blob.getLocationList());
         break;
+        return experimentDAO.isExperimentRunExists(session, id);
+      case DATASET_VERSION:
+        return commitDAO.isCommitExists(session, id);
+      default:
+        throw new ModelDBException(
+            "Unexpected LineageEntryType '" + type + "' found", Code.INTERNAL);
     }
   }
 }

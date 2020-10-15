@@ -43,9 +43,9 @@
 <h3 align="center">
   <a href="#up-and-running-in-5-minutes">Quickstart</a>
   <span> · </span>
-  <a href="https://docs.verta.ai/en/master/examples/tutorials/workflow.html">Workflow</a>
+  <a href="https://docs.verta.ai/en/master/tutorials/workflow.html">Workflow</a>
   <span> · </span>
-  <a href="https://docs.verta.ai/en/master/examples/examples.html">Examples</a>
+  <a href="https://docs.verta.ai/en/master/examples.html">Examples</a>
   <span> · </span>
   <a href="#contributions">Contribute</a>
   <span> · </span>
@@ -98,13 +98,14 @@ This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://
 ```bash
 docker-compose -f docker-compose-all.yaml up
 ```
+*Note: modeldb-backend service needs backend/config/config.yaml to run, either clone the repo before running docker-compose or create the file manually.*
 
 2. Install the ModelDB pip package. *Note it comes packaged in the verta package.*
 ```bash
 pip install verta
 ```
 
-3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://docs.verta.ai/en/master/examples/examples.html) in our repository.*
+3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://docs.verta.ai/en/master/examples.html) in our repository.*
 
 ```python
 from verta import Client

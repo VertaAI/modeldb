@@ -17,6 +17,7 @@ case class UacRoleBinding (
   public: Option[Boolean] = None,
   resources: Option[List[UacResources]] = None,
   role_id: Option[String] = None,
+  role_name: Option[String] = None,
   scope: Option[UacRoleScope] = None
 ) extends BaseSwagger {
   def toJson(): JValue = UacRoleBinding.toJson(this)
@@ -32,6 +33,7 @@ object UacRoleBinding {
         obj.public.map(x => JField("public", JBool(x))),
         obj.resources.map(x => JField("resources", ((x: List[UacResources]) => JArray(x.map(((x: UacResources) => UacResources.toJson(x)))))(x))),
         obj.role_id.map(x => JField("role_id", JString(x))),
+        obj.role_name.map(x => JField("role_name", JString(x))),
         obj.scope.map(x => JField("scope", ((x: UacRoleScope) => UacRoleScope.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -52,6 +54,7 @@ object UacRoleBinding {
           public = fieldsMap.get("public").map(JsonConverter.fromJsonBoolean),
           resources = fieldsMap.get("resources").map((x: JValue) => x match {case JArray(elements) => elements.map(UacResources.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           role_id = fieldsMap.get("role_id").map(JsonConverter.fromJsonString),
+          role_name = fieldsMap.get("role_name").map(JsonConverter.fromJsonString),
           scope = fieldsMap.get("scope").map(UacRoleScope.fromJson)
         )
       }

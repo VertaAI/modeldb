@@ -114,8 +114,10 @@ class ExperimentRuns extends React.PureComponent<AllProps, ILocalState> {
                       data={data}
                       sorting={sorting}
                       onSortingChange={this.onSortingChange}
-                      onCurrentPageChange={this.onPaginationCurrentPageChange}
-                      resetShowingBulkDeletionMenu={
+                      onCurrentPageChange={
+                        this.onPaginationCurrentPageChange
+                      }
+                      onResetShowingBulkDeletionMenu={
                         this.resetShowingBulkDeletionMenu
                       }
                     />

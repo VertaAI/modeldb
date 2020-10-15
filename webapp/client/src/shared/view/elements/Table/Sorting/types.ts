@@ -1,6 +1,6 @@
 export type SortInfo = {
   type: string;
-  isReversed: boolean;
+  isAscDirection: boolean;
 } | null;
 
 export type SortLabelDirection = 'asc' | 'desc' | null;

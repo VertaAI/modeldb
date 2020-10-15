@@ -1,5 +1,4 @@
 import { History } from 'history';
-import { IGenericChartData } from './chartDataTypes';
 
 export interface IRangeFilterSelection {
   filterSet: boolean;
@@ -63,7 +62,7 @@ export function getDefaultChartConfigurations(
   const configurationsFromLocalStorage = getDefaultChartConfigurationsFromLocalStorage(
     projectId
   );
-  return Object.values(configurationsFromUrl).every(v => !v)
+  return Object.values(configurationsFromUrl).every((v) => !v)
     ? configurationsFromLocalStorage
     : configurationsFromUrl;
 }

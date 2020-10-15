@@ -1,6 +1,7 @@
 package ai.verta.blobs.dataset
 
 import ai.verta.swagger._public.modeldb.versioning.model._
+import ai.verta.repository.Commit
 
 import java.io.{File, FileInputStream}
 
@@ -8,7 +9,7 @@ import scala.collection.mutable.HashMap
 import scala.util.{Failure, Success, Try}
 import scala.annotation.tailrec
 
-/** Captures metadata about files
+/** Captures metadata about files.
  *  To create a new instance, use the constructor taking a list of paths (each is a string) or a single path:
  *  {{{
  *  val pathList = List("some-path1", "some-path2")
@@ -19,7 +20,8 @@ import scala.annotation.tailrec
  */
 case class PathBlob(
   protected val contents: HashMap[String, FileMetadata],
-  private[verta] val enableMDBVersioning: Boolean = false
+  val enableMDBVersioning: Boolean = false,
+  val downloadable: Boolean = false
 ) extends Dataset {
   /** Prepare the PathBlob for uploading
    *  @return whether the attempt succeeds
@@ -110,7 +112,10 @@ object PathBlob {
     val metadataList = pathVersioningBlob.components.get.map(
       comp => comp.path.get -> Dataset.toMetadata(comp)
     )
-    new PathBlob(HashMap(metadataList: _*))
+
+    // if internal versioned path of a component is defined, then the blob is downloadable
+    val downloadable = pathVersioningBlob.components.get.head.internal_versioned_path.isDefined
+    new PathBlob(HashMap(metadataList: _*), downloadable = downloadable)
   }
 
   /** Convert a PathBlob instance to a VersioningBlob

@@ -20,6 +20,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
@@ -121,6 +122,7 @@ public class LineageTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -611,8 +613,25 @@ public class LineageTest {
     Assert.assertEquals(1, outputs.getItemsCount());
     Assert.assertEquals(outputsCount, outputs.getItems(0).getItemsCount());
   }
+  private void deleteAll(List<DatasetVersion> datasetVersionList, Project project) {
+    for (DatasetVersion datasetVersion1 : datasetVersionList) {
+      DeleteDatasetVersion deleteDatasetVersionRequest =
+          DeleteDatasetVersion.newBuilder()
+              .setDatasetId(datasetVersion1.getDatasetId())
+              .setId(datasetVersion1.getId())
+              .build();
+      DeleteDatasetVersion.Response deleteDatasetVersionResponse =
+          datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersionRequest);
+      LOGGER.info("DeleteDatasetVersion deleted successfully");
+      LOGGER.info(deleteDatasetVersionResponse.toString());
 
-  private void deleteAll(Project project) {
+      DeleteDataset deleteDataset =
+          DeleteDataset.newBuilder().setId(datasetVersion1.getDatasetId()).build();
+      DeleteDataset.Response deleteDatasetResponse =
+          datasetServiceStub.deleteDataset(deleteDataset);
+      LOGGER.info("Dataset deleted successfully");
+      LOGGER.info(deleteDatasetResponse.toString());
+    }
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");
@@ -642,6 +661,33 @@ public class LineageTest {
     Project project = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
     return project;
+  }
+
+  private DatasetVersion getDatasetVersion(
+      List<DatasetVersion> datasetVersionList,
+      DatasetVersionTest datasetVersionTest,
+      DatasetVersionServiceBlockingStub datasetVersionServiceStub,
+      DatasetTest datasetTest,
+      DatasetServiceBlockingStub datasetServiceStub,
+      String name) {
+    CreateDataset createDatasetRequest =
+        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv" + name);
+    CreateDataset.Response createDatasetResponse =
+        datasetServiceStub.createDataset(createDatasetRequest);
+    LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
+    Dataset dataset = createDatasetResponse.getDataset();
+    assertEquals(
+        "Dataset name not match with expected dataset name",
+        createDatasetRequest.getName(),
+        dataset.getName());
+
+    CreateDatasetVersion createDatasetVersionRequest =
+        datasetVersionTest.getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion.Response createDatasetVersionResponse =
+        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
+    DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
+    datasetVersionList.add(datasetVersion);
+    return datasetVersion;
   }
 
   private ExperimentRun getExperimentRun(

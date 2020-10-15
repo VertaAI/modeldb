@@ -1,9 +1,6 @@
-import * as React from 'react';
-
 import * as CommitComponentLocation from 'shared/models/Versioning/CommitComponentLocation';
 import { IRepository } from 'shared/models/Versioning/Repository';
 import { CommitPointer } from 'shared/models/Versioning/RepositoryData';
-import Button from 'shared/view/elements/Button/Button';
 import routes from 'shared/routes';
 
 interface ILocalProps {

@@ -1,7 +1,6 @@
 package ai.verta.modeldb.artifactStore.storageservice.nfs;
 
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
@@ -9,17 +8,16 @@ import com.amazonaws.services.s3.model.PartETag;
 import com.google.api.client.util.IOUtils;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.Metadata;
 import io.grpc.protobuf.StatusProto;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,8 +28,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class NFSService implements ArtifactStoreService {
@@ -158,85 +154,24 @@ public class NFSService implements ArtifactStoreService {
     }
   }
 
-  /**
-   * Return public url for artifact file download
-   *
-   * @param artifactPath : artifact path
-   * @return {@link String} : public URL for file download
-   */
-  private String getDownloadUrl(String artifactPath) {
-    String scheme =
-        ModelDBAuthInterceptor.METADATA_INFO
-            .get()
-            .get(Metadata.Key.of("scheme", Metadata.ASCII_STRING_MARSHALLER));
-    if (scheme == null || scheme.isEmpty()) {
-      scheme = app.getNfsUrlProtocol();
-    }
-    return getUrl(artifactPath, app.getGetArtifactEndpoint(), scheme);
-  }
-
-  private String getUrl(String artifactPath, String endpoint, String scheme) {
-
-    String host =
-        ModelDBAuthInterceptor.METADATA_INFO
-            .get()
-            .get(Metadata.Key.of("x-forwarded-host", Metadata.ASCII_STRING_MARSHALLER));
-    if (host == null || host.isEmpty() || app.getPickNFSHostFromConfig()) {
-      host = app.getNfsServerHost();
-    }
-
-    String[] hostArr = host.split(":");
-    String finalHost = hostArr[0];
-
-    UriComponentsBuilder uriComponentsBuilder =
-        ServletUriComponentsBuilder.newInstance()
-            .scheme(scheme)
-            .host(finalHost)
-            .path(endpoint)
-            .queryParam("artifact_path", artifactPath);
-
-    if (hostArr.length > 1) {
-      String finalPort = hostArr[1];
-      uriComponentsBuilder.port(finalPort);
-    }
-
-    return uriComponentsBuilder.toUriString();
-  }
-
-  /**
-   * Return public url for upload artifact file
-   *
-   * @param artifactPath : artifact path
-   * @return {@link String} : public URL for file upload
-   */
-  private String getUploadUrl(String artifactPath) {
-    String scheme =
-        ModelDBAuthInterceptor.METADATA_INFO
-            .get()
-            .get(Metadata.Key.of("scheme", Metadata.ASCII_STRING_MARSHALLER));
-    if (scheme == null || scheme.isEmpty()) {
-      String url =
-          ModelDBAuthInterceptor.METADATA_INFO
-              .get()
-              .get(Metadata.Key.of("grpcgateway-origin", Metadata.ASCII_STRING_MARSHALLER));
-
-      try {
-        scheme = new URL(url).getProtocol();
-      } catch (MalformedURLException e) {
-        scheme = app.getNfsUrlProtocol();
-      }
-    }
-    return getUrl(artifactPath, app.getStoreArtifactEndpoint(), scheme);
-  }
-
   private String generatePresignedUrl(String artifactPath, String method) {
     LOGGER.trace("NFSService - generatePresignedUrl called");
     if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
       LOGGER.trace("NFSService - generatePresignedUrl - put url returned");
-      return getUploadUrl(artifactPath);
+      return getUploadUrl(
+          Collections.singletonMap("artifact_path", artifactPath),
+          app.getArtifactStoreUrlProtocol(),
+          app.getStoreArtifactEndpoint(),
+          app.getPickArtifactStoreHostFromConfig(),
+          app.getArtifactStoreServerHost());
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("NFSService - generatePresignedUrl - get url returned");
-      return getDownloadUrl(artifactPath);
+      return getDownloadUrl(
+          Collections.singletonMap("artifact_path", artifactPath),
+          app.getArtifactStoreUrlProtocol(),
+          app.getGetArtifactEndpoint(),
+          app.getPickArtifactStoreHostFromConfig(),
+          app.getArtifactStoreServerHost());
     } else {
       String errorMessage = "Unsupported HTTP Method for NFS Presigned URL";
       Status status =
@@ -260,6 +195,6 @@ public class NFSService implements ArtifactStoreService {
   @Override
   public void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
       throws ModelDBException {
-    throw new ModelDBException("Not supported by NFS", io.grpc.Status.Code.FAILED_PRECONDITION);
+    throw new ModelDBException("Not supported by NFS", Code.FAILED_PRECONDITION);
   }
 }

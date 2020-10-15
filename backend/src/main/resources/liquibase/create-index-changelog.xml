@@ -1217,4 +1217,7 @@
             <column name="time_updated"/>
         </createIndex>
     </changeSet>
+
+    <!-- WARNING: Do not add new change sets to these files -->
+
 </databaseChangeLog>

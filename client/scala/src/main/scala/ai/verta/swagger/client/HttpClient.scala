@@ -31,20 +31,21 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
         .reduce((p1, p2) => p1 + "&" + p2)
   }
 
-  def request[T1, T2](method: String, path: String, query: Map[String, List[String]], body: T1, parser: JValue => T2)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
+  def request[T1, T2](method: String, path: String, query: Map[String, List[String]], body: T1, parser: JValue => T2, auth: Option[BasicAuthentication] = None)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
     val safePath = path.split("/").map(urlEncodeUTF8).mkString("/")
 
     if (body == null)
-      requestInternal(method, safePath, query, null, parser)
+      requestInternal(method, safePath, query, null, parser, auth)
     else
       body match {
-        case b: BaseSwagger => requestInternal(method, safePath, query, compactRender(b.toJson()), parser)
-        case b: String => requestInternal(method, safePath, query, jsonFormat(b), parser)
+        case b: BaseSwagger => requestInternal(method, safePath, query, compactRender(b.toJson()), parser, auth)
+        case b: String => requestInternal(method, safePath, query, jsonFormat(b), parser, auth)
       }
   }
 
-  def requestInternal[T2](method: String, path: String, query: Map[String, List[String]], body: String, parser: JValue => T2)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
-    val request = if (body != null) basicRequest.body(body) else basicRequest
+  def requestInternal[T2](method: String, path: String, query: Map[String, List[String]], body: String, parser: JValue => T2, auth: Option[BasicAuthentication] = None)(implicit ec: ExecutionContext, m: Manifest[T2]): Future[Try[T2]] = {
+    val requestWithAuth = if (auth.isDefined) basicRequest.auth.basic(auth.get.userName, auth.get.password) else basicRequest
+    val request = if (body != null) requestWithAuth.body(body) else requestWithAuth
 
     val queryString = urlEncodeUTF8(query)
     val uriPath = if (query.isEmpty) Uri(new URI(host + path)) else Uri(new URI(host + path + "?" + queryString))
@@ -71,6 +72,14 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
     })
   }
 
+  /** Make a (raw) request, returning the body of the response
+   *  @param method method of the request
+   *  @param url url of the request
+   *  @param query query parameters
+   *  @param localHeaders local headers
+   *  @param body body of the request
+   *  @return Response, if the request suceeds, wrap in a Future
+   */
   def requestRaw(method: String, url: String, query: Map[String, List[String]], localHeaders: Map[String, String], body: InputStream)(implicit ec: ExecutionContext) = {
     val request = (if (body != null) basicRequest.body(body) else basicRequest).response(asByteArray)
     val uriPath = Uri(new URI(url))
@@ -82,16 +91,11 @@ class HttpClient(val host: String, val headers: Map[String, String]) {
       case _ => throw new IllegalArgumentException(s"unknown method $method")
     }
 
-    val futureResponse = (if (localHeaders != null && localHeaders.nonEmpty) request2.headers(localHeaders) else request2).send()
-
-    futureResponse.map(response => {
-      response.body match {
+    (if (localHeaders != null && localHeaders.nonEmpty) request2.headers(localHeaders) else request2).send()
+      .map(response => response.body match {
         case Left(failureBody) => Failure(HttpException(response.code, failureBody))
-        case Right(successBody) => {
-          Success(successBody)
-        }
-      }
-    })
+        case Right(successBody) => Success(RawRequestResponse(body = successBody, headers = response.header(_)))
+      })
   }
 
   def toQuery[T](value: T): List[String] = value match {

@@ -8,6 +8,7 @@ import ai.verta.modeldb.AddExperimentRunAttributes;
 import ai.verta.modeldb.AddExperimentRunTag;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.CloneExperimentRun;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
 import ai.verta.modeldb.CommitMultipartArtifact;
@@ -20,6 +21,9 @@ import ai.verta.modeldb.DeleteExperimentRunTag;
 import ai.verta.modeldb.DeleteExperimentRunTags;
 import ai.verta.modeldb.DeleteExperimentRuns;
 import ai.verta.modeldb.DeleteExperiments;
+import ai.verta.modeldb.DeleteHyperparameters;
+import ai.verta.modeldb.DeleteMetrics;
+import ai.verta.modeldb.DeleteObservations;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceImplBase;
@@ -32,6 +36,7 @@ import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunById;
 import ai.verta.modeldb.GetExperimentRunByName;
 import ai.verta.modeldb.GetExperimentRunCodeVersion;
+import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
 import ai.verta.modeldb.GetExperimentRunsInExperiment;
 import ai.verta.modeldb.GetExperimentRunsInProject;
 import ai.verta.modeldb.GetHyperparameters;
@@ -41,6 +46,8 @@ import ai.verta.modeldb.GetObservations;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetVersionedInput;
+import ai.verta.modeldb.ListBlobExperimentRunsRequest;
+import ai.verta.modeldb.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.LogArtifact;
 import ai.verta.modeldb.LogArtifacts;
 import ai.verta.modeldb.LogAttribute;
@@ -77,6 +84,8 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
@@ -107,6 +116,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   private ExperimentDAO experimentDAO;
   private ArtifactStoreDAO artifactStoreDAO;
   private DatasetVersionDAO datasetVersionDAO;
+  private RepositoryDAO repositoryDAO;
+  private CommitDAO commitDAO;
 
   public ExperimentRunServiceImpl(
       AuthService authService,
@@ -115,7 +126,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      DatasetVersionDAO datasetVersionDAO,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.experimentRunDAO = experimentRunDAO;
@@ -123,6 +136,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     this.experimentDAO = experimentDAO;
     this.artifactStoreDAO = artifactStoreDAO;
     this.datasetVersionDAO = datasetVersionDAO;
+    this.commitDAO = commitDAO;
+    this.repositoryDAO = repositoryDAO;
   }
 
   private void validateExperimentEntity(String experimentId) throws InvalidProtocolBufferException {
@@ -1289,7 +1304,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         s3Key -> artifactStoreDAO.initializeMultipart(s3Key));
   }
 
-  private String getUrlForCode(GetUrlForArtifact request) throws InvalidProtocolBufferException {
+  private String getUrlForCode(GetUrlForArtifact request)
+      throws InvalidProtocolBufferException, ModelDBException {
     ExperimentRun exprRun = experimentRunDAO.getExperimentRun(request.getId());
     String s3Key = null;
     /*If code version is not logged at a lower level we check for code at the higher level
@@ -2412,6 +2428,196 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, CommitMultipartArtifact.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void deleteHyperparameters(
+      DeleteHyperparameters request,
+      StreamObserver<DeleteHyperparameters.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in DeleteHyperparameters request";
+      } else if (request.getHyperparameterKeysList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage =
+            "Hyperparameter keys not found and deleteAll flag has false in DeleteHyperparameters request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      experimentRunDAO.deleteExperimentRunKeyValuesEntities(
+          request.getId(),
+          request.getHyperparameterKeysList(),
+          request.getDeleteAll(),
+          ModelDBConstants.HYPERPARAMETERS);
+      responseObserver.onNext(DeleteHyperparameters.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteHyperparameters.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void deleteMetrics(
+      DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in DeleteMetrics request";
+      } else if (request.getMetricKeysList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage =
+            "Metrics keys not found and deleteAll flag has false in DeleteMetrics request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      experimentRunDAO.deleteExperimentRunKeyValuesEntities(
+          request.getId(),
+          request.getMetricKeysList(),
+          request.getDeleteAll(),
+          ModelDBConstants.METRICS);
+      responseObserver.onNext(DeleteMetrics.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(responseObserver, e, DeleteMetrics.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void deleteObservations(
+      DeleteObservations request, StreamObserver<DeleteObservations.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in DeleteObservations request";
+      } else if (request.getObservationKeysList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage =
+            "Observation keys not found and deleteAll flag has false in DeleteObservations request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      experimentRunDAO.deleteExperimentRunObservationsEntities(
+          request.getId(), request.getObservationKeysList(), request.getDeleteAll());
+      responseObserver.onNext(DeleteObservations.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteObservations.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void listCommitExperimentRuns(
+      ListCommitExperimentRunsRequest request,
+      StreamObserver<ListCommitExperimentRunsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getCommitSha().isEmpty()) {
+        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ListCommitExperimentRunsRequest.Response response =
+          experimentRunDAO.listCommitExperimentRuns(
+              projectDAO,
+              request,
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, ListCommitExperimentRunsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void listBlobExperimentRuns(
+      ListBlobExperimentRunsRequest request,
+      StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getCommitSha().isEmpty()) {
+        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ListBlobExperimentRunsRequest.Response response =
+          experimentRunDAO.listBlobExperimentRuns(
+              projectDAO,
+              request,
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getExperimentRunsByDatasetVersionId(
+      GetExperimentRunsByDatasetVersionId request,
+      StreamObserver<GetExperimentRunsByDatasetVersionId.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getDatasetVersionId().isEmpty()) {
+        throw new ModelDBException("DatasetVersion Id should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+          experimentRunDAO.getExperimentRunsByDatasetVersionId(projectDAO, request);
+      GetExperimentRunsByDatasetVersionId.Response response =
+          GetExperimentRunsByDatasetVersionId.Response.newBuilder()
+              .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
+              .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
+              .build();
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetExperimentRunsByDatasetVersionId.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void cloneExperimentRun(
+      CloneExperimentRun request, StreamObserver<CloneExperimentRun.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getSrcExperimentRunId().isEmpty()) {
+        throw new ModelDBException(
+            "Source ExperimentRun Id should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ExperimentRun clonedExperimentRun =
+          experimentRunDAO.cloneExperimentRun(request, authService.getCurrentLoginUserInfo());
+      responseObserver.onNext(
+          CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, CloneExperimentRun.Response.getDefaultInstance());
     }
   }
 }

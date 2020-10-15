@@ -2,16 +2,16 @@ package ai.verta.modeldb.utils;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
+import ai.verta.common.KeyValueQuery;
+import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.GetHydratedProjects;
-import ai.verta.modeldb.KeyValueQuery;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.OperatorEnum;
 import ai.verta.modeldb.UpdateProjectName;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -26,6 +26,7 @@ import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponse;
 import ai.verta.uac.ShareViaEnum;
 import ai.verta.uac.UserInfo;
+import com.amazonaws.AmazonServiceException;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -35,6 +36,7 @@ import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import com.mysql.cj.exceptions.CJCommunicationsException;
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
@@ -48,6 +50,7 @@ import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,6 +63,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.exception.LockAcquisitionException;
 import org.yaml.snakeyaml.Yaml;
 
 public class ModelDBUtils {
@@ -71,16 +75,21 @@ public class ModelDBUtils {
 
   public static Map<String, Object> readYamlProperties(String filePath) throws IOException {
     LOGGER.info("Reading File {} as YAML", filePath);
-    String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
-    if (telepresenceRoot != null) {
-      filePath = telepresenceRoot + filePath;
-    }
+    filePath = appendOptionalTelepresencePath(filePath);
     InputStream inputStream = new FileInputStream(new File(filePath));
     Yaml yaml = new Yaml();
     @SuppressWarnings("unchecked")
     Map<String, Object> prop = (Map<String, Object>) yaml.load(inputStream);
     LOGGER.debug("YAML map {}", prop);
     return prop;
+  }
+
+  public static String appendOptionalTelepresencePath(String filePath) {
+    String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
+    if (telepresenceRoot != null) {
+      filePath = telepresenceRoot + filePath;
+    }
+    return filePath;
   }
 
   public static String getStringFromProtoObject(MessageOrBuilder object)
@@ -292,7 +301,7 @@ public class ModelDBUtils {
           } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
             LOGGER.info("skipping " + collaborator.getVertaId() + " because it is not found");
           } else {
-            LOGGER.error(ex.getMessage(), ex);
+            LOGGER.debug(ex.getMessage(), ex);
             throw ex;
           }
         }
@@ -310,7 +319,12 @@ public class ModelDBUtils {
    * @param defaultResponse : Method reference to identify the error block
    */
   public static void logAndThrowError(String errorMessage, int errorCode, Any defaultResponse) {
-    LOGGER.warn(errorMessage);
+    boolean isClientError = isClientError(errorCode);
+    if (isClientError) {
+      LOGGER.info(errorMessage);
+    } else {
+      LOGGER.warn(errorMessage);
+    }
     Status status =
         Status.newBuilder()
             .setCode(errorCode)
@@ -437,6 +451,7 @@ public class ModelDBUtils {
       Throwable throwable = findRootCause(e);
       // Condition 'throwable != null' covered by below condition 'throwable instanceof
       // SocketException'
+      StackTraceElement[] stack = e.getStackTrace();
       if (throwable instanceof SocketException) {
         String errorMessage = "Database Connection not found: ";
         LOGGER.info(errorMessage + "{}", e.getMessage());
@@ -446,16 +461,27 @@ public class ModelDBUtils {
                 .setMessage(errorMessage + throwable.getMessage())
                 .addDetails(Any.pack(defaultInstance))
                 .build();
-      } else if (e instanceof ModelDBException) {
-        LOGGER.warn("Exception occurred: {}", e.getMessage());
-        ModelDBException ModelDBException = (ModelDBException) e;
+      } else if (e instanceof LockAcquisitionException) {
+        String errorMessage = "Encountered deadlock in database connection.";
+        LOGGER.info(errorMessage + "{}", e.getMessage());
         status =
             Status.newBuilder()
-                .setCode(ModelDBException.getCode().value())
-                .setMessage(ModelDBException.getMessage())
+                .setCode(Code.ABORTED_VALUE)
+                .setMessage(errorMessage + throwable.getMessage())
+                .addDetails(Any.pack(defaultInstance))
+                .build();
+      } else if (e instanceof ModelDBException) {
+        ModelDBException modelDBException = (ModelDBException) e;
+        logBasedOnTheErrorCode(isClientError(modelDBException.getCode().value()), modelDBException);
+        status =
+            Status.newBuilder()
+                .setCode(modelDBException.getCode().value())
+                .setMessage(modelDBException.getMessage())
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       } else {
+        LOGGER.error(
+            "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());
         status =
             Status.newBuilder()
                 .setCode(Code.INTERNAL_VALUE)
@@ -463,8 +489,6 @@ public class ModelDBUtils {
                 .addDetails(Any.pack(defaultInstance))
                 .build();
       }
-      StackTraceElement[] stack = e.getStackTrace();
-      LOGGER.error("Stacktrace with {} elements for {}", stack.length, e.getMessage());
       int n = 0;
       boolean isLongStack = stack.length > STACKTRACE_LENGTH;
       if (isLongStack) {
@@ -483,16 +507,66 @@ public class ModelDBUtils {
     responseObserver.onError(statusRuntimeException);
   }
 
+  public static void logBasedOnTheErrorCode(boolean isClientError, Throwable e) {
+    if (isClientError) {
+      LOGGER.info("Exception occurred:{} {}", e.getClass(), e.getMessage());
+    } else {
+      LOGGER.warn("Exception occurred:{} {}", e.getClass(), e.getMessage());
+    }
+  }
+
+  public static boolean isClientError(int grpcCodeValue) {
+    switch (grpcCodeValue) {
+      case 0: // OK : 200 OK
+      case 1: // CANCELLED : 499 Client Closed Request
+      case 3: // INVALID_ARGUMENT: 400 Bad Request
+      case 5: // NOT_FOUND: 404 Not Found
+      case 7: // PERMISSION_DENIED: 403 Forbidden
+      case 6: // ALREADY_EXISTS: 409 Conflict
+      case 8: // RESOURCE_EXHAUSTED: 429 Too Many Requests
+      case 9: // FAILED_PRECONDITION: 400 Bad Request
+      case 10: // ABORTED: 409 Conflict
+      case 11: // OUT_OF_RANGE: 400 Bad Request
+      case 16: // UNAUTHENTICATED: 401 Unauthorized
+        return true;
+      case 2: // UNKNOWN: 500 Internal Server Error
+      case 4: // DEADLINE_EXCEEDED: 504 Gateway Timeout
+      case 12: // UNIMPLEMENTED: 501 Not Implemented
+      case 13: // INTERNAL: 500 Internal Server Error
+      case 14: // UNAVAILABLE: 503 Service Unavailable
+      case 15: // DATA_LOSS: 500 Internal Server Error
+      default:
+        return false;
+    }
+  }
+
   public static boolean needToRetry(Exception ex) {
     Throwable communicationsException = findCommunicationsFailedCause(ex);
     if ((communicationsException.getCause() instanceof CommunicationsException)
-        || (communicationsException.getCause() instanceof SocketException)) {
+        || (communicationsException.getCause() instanceof SocketException)
+        || (communicationsException.getCause() instanceof CJCommunicationsException)) {
       LOGGER.warn(communicationsException.getMessage());
+      LOGGER.warn(
+          "Detected communication exception of type {}",
+          communicationsException.getCause().getClass());
       if (ModelDBHibernateUtil.checkDBConnection()) {
+        LOGGER.info("Resetting session Factory");
+
         ModelDBHibernateUtil.resetSessionFactory();
+        LOGGER.info("Resetted session Factory");
+      } else {
+        LOGGER.warn("DB could not be reached");
       }
       return true;
+    } else if ((communicationsException.getCause() instanceof LockAcquisitionException)) {
+      LOGGER.warn(communicationsException.getMessage());
+      LOGGER.warn("Retrying since could not get lock");
+      return true;
     }
+    LOGGER.debug(
+        "Detected exception of type {}, which is not categorized as retryable",
+        ex,
+        communicationsException);
     return false;
   }
 
@@ -502,16 +576,18 @@ public class ModelDBUtils {
     }
     Throwable rootCause = throwable;
     while (rootCause.getCause() != null
-        && !(rootCause.getCause() instanceof CommunicationsException
-            || rootCause.getCause() instanceof SocketException)) {
+        && !(rootCause.getCause() instanceof CJCommunicationsException
+            || rootCause.getCause() instanceof CommunicationsException
+            || rootCause.getCause() instanceof SocketException
+            || rootCause.getCause() instanceof LockAcquisitionException)) {
       rootCause = rootCause.getCause();
     }
     return rootCause;
   }
 
   /**
-   * If so throws an error if the workspace type is USER and the workspaceId and userID do not
-   * match. Is a NO-OP if userinfo is null.
+   * Throws an error if the workspace type is USER and the workspaceId and userID do not match. Is a
+   * NO-OP if userinfo is null.
    */
   public static void checkPersonalWorkspace(
       UserInfo userInfo,
@@ -538,6 +614,14 @@ public class ModelDBUtils {
     return String.join("/", locations);
   }
 
+  public static List<String> getLocationWithSplitSlashOperator(String locationsString) {
+    return Arrays.asList(locationsString.split("/"));
+  }
+
+  public static String getJoinedLocation(List<String> location) {
+    return String.join("#", location);
+  }
+
   public interface RetryCallInterface<T> {
     T retryCall(boolean retry);
   }
@@ -545,7 +629,7 @@ public class ModelDBUtils {
   public static Object retryOrThrowException(
       StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
     String errorMessage = ex.getMessage();
-    LOGGER.warn(errorMessage);
+    LOGGER.debug(errorMessage);
     if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
       errorMessage = "UAC Service unavailable : " + errorMessage;
       if (retry && retryCallInterface != null) {
@@ -569,5 +653,96 @@ public class ModelDBUtils {
       throw StatusProto.toStatusRuntimeException(status);
     }
     throw ex;
+  }
+
+  public static void initializeBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    try {
+      if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) == null) {
+        LOGGER.trace("Initialize runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+        System.setProperty(
+            ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+      }
+      LOGGER.trace(
+          "Found runningBackgroundUtilsCount while initialization: {}",
+          getRegisteredBackgroundUtilsCount());
+    } catch (NullPointerException ex) {
+      LOGGER.trace("NullPointerException while initialize runningBackgroundUtilsCount");
+      System.setProperty(
+          ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+    }
+  }
+
+  /**
+   * If service want to call other verta service internally then should to registered those service
+   * here with count
+   */
+  public static void registeredBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) != null) {
+      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
+    }
+    backgroundUtilsCount = backgroundUtilsCount + 1;
+    LOGGER.trace("After registered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+    System.setProperty(
+        ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+  }
+
+  public static void unregisteredBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) != null) {
+      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
+      backgroundUtilsCount = backgroundUtilsCount - 1;
+    }
+    LOGGER.trace("After unregistered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+    System.setProperty(
+        ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+  }
+
+  public static Integer getRegisteredBackgroundUtilsCount() {
+    try {
+      Integer backgroundUtilsCount =
+          Integer.parseInt(System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT));
+      LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+      return backgroundUtilsCount;
+    } catch (NullPointerException ex) {
+      LOGGER.trace("NullPointerException while get runningBackgroundUtilsCount");
+      System.setProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(0));
+      return 0;
+    }
+  }
+
+  public static boolean isEnvSet(String envVar) {
+    String envVarVal = System.getenv(envVar);
+    return envVarVal != null && !envVarVal.isEmpty();
+  }
+
+  public static void validateEntityNameWithColonAndSlash(String name) throws ModelDBException {
+    if (name != null
+        && !name.isEmpty()
+        && (name.contains(":") || name.contains("/") || name.contains("\\"))) {
+      throw new ModelDBException(
+          "Name can not contain ':' or '/' or '\\\\'", Code.INVALID_ARGUMENT);
+    }
+  }
+
+  public static ModelDBException getInvalidFieldException(IllegalArgumentException ex) {
+    if (ex.getCause() != null
+        && ex.getCause().getMessage() != null
+        && ex.getCause().getMessage().contains("could not resolve property: ")) {
+      String invalidFieldName = ex.getCause().getMessage();
+      invalidFieldName = invalidFieldName.substring("could not resolve property: ".length());
+      invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf(" of:"));
+      return new ModelDBException(
+          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+    }
+    throw ex;
+  }
+
+  public static void logAmazonServiceExceptionErrorCodes(Logger LOGGER, AmazonServiceException e) {
+    LOGGER.info("Amazon Service Status Code: " + e.getStatusCode());
+    LOGGER.info("Amazon Service Error Code: " + e.getErrorCode());
+    LOGGER.info("Amazon Service Error Type: " + e.getErrorType());
+    LOGGER.info("Amazon Service Error Message: " + e.getErrorMessage());
   }
 }

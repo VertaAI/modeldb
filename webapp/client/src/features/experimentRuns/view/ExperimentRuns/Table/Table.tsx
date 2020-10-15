@@ -1,4 +1,3 @@
-import { bind } from 'decko';
 import * as R from 'ramda';
 import * as React from 'react';
 
@@ -43,219 +42,223 @@ interface ILocalProps {
   isShowBulkDeleteMenu: boolean;
   onCurrentPageChange(currentPage: number): void;
   onSortingChange(sorting: ISorting | null): void;
-  resetShowingBulkDeletionMenu(): void;
+  onResetShowingBulkDeletionMenu(): void;
 }
 
-interface ILocalState {
-  columnContentHeightById: Record<string, number | undefined>;
-}
+const Table = ({
+  columnConfig,
+  data,
+  pagination,
+  sorting,
+  projectId,
+  withBulkDeletion,
+  isShowBulkDeleteMenu,
+  onResetShowingBulkDeletionMenu: resetShowingBulkDeletionMenu,
+  onCurrentPageChange,
+  onSortingChange,
+}: ILocalProps) => {
+  const [
+    columnContentHeightById,
+    updateColumnContentHeightById,
+  ] = useColumnContentHeightById({ data });
 
-class Table extends React.Component<ILocalProps, ILocalState> {
-  public state: ILocalState = {
-    columnContentHeightById: {},
+  React.useEffect(() => {
+    resetShowingBulkDeletionMenu();
+  }, []);
+
+  const hiddenColumnNames = Object.entries(columnConfig)
+    .filter(([_, meta]: [any, IColumnMetaData]) => !meta.isShown)
+    .map(([columnName]) => columnName);
+  const columnDefinitions = useGetColumnDefinitions({
+    data,
+    sorting,
+    onSortingChange,
+    onUpdateColumnContentHeightById: updateColumnContentHeightById,
+  });
+  const displayedColumnDefinitions = (() => {
+    return columnDefinitions.filter(c => !hiddenColumnNames.includes(c.type));
+  })();
+  const rows: IRow[] = data.map(experimentRun => ({
+    experimentRun,
+    columnContentHeight: columnContentHeightById[experimentRun.id] || 0,
+  }));
+
+  return (
+    <TableWrapper>
+      <AppTable
+        dataRows={rows}
+        columnDefinitions={displayedColumnDefinitions}
+        getRowKey={getRowKey}
+        selection={{
+          headerCellComponent: () => <ToggleAllExperimentRunsForBulkDeletion />,
+          cellComponent: row => {
+            return (
+              <ToggleExperimentRunForBulkDeletion id={row.experimentRun.id} />
+            );
+          },
+          showSelectAll: withBulkDeletion && isShowBulkDeleteMenu,
+          showSelectionColumn: withBulkDeletion && isShowBulkDeleteMenu,
+        }}
+      />
+
+      <div className={styles.footer}>
+        {withBulkDeletion && isShowBulkDeleteMenu && (
+          <div className={styles.footer__bulkDeletionManager}>
+            <DeletingExperimentRunsManager projectId={projectId} />
+          </div>
+        )}
+        <div className={styles.footer__pagination}>
+          <PagingPanel
+            pagination={pagination}
+            onCurrentPageChange={onCurrentPageChange}
+          />
+        </div>
+      </div>
+    </TableWrapper>
+  );
+};
+
+const useGetColumnDefinitions = ({
+  data,
+  sorting,
+  onSortingChange,
+  onUpdateColumnContentHeightById,
+}: {
+  data: ModelRecord[];
+  sorting: ISorting | null;
+  onSortingChange: (sorting: ISorting) => void;
+  onUpdateColumnContentHeightById: (id: string, height: number) => void;
+}): Array<ColumnDefinition<IRow>> => {
+  const MemoSummarySorting = React.useMemo(() => {
+    return withProps(SummarySorting)({
+      onChange: onSortingChange,
+      sorting,
+    });
+  }, [onSortingChange, sorting]);
+  const MetricsSortingLabel = React.useMemo(() => {
+    return withProps(KeyValueSortingLabel)({
+      columnName: 'metrics',
+      data,
+      onChange: onSortingChange,
+      sorting,
+    });
+  }, [data, onSortingChange, sorting]);
+  const HyperparametersSortingLabel = React.useMemo(() => {
+    return withProps(KeyValueSortingLabel)({
+      columnName: 'hyperparameters',
+      data,
+      onChange: onSortingChange,
+      sorting,
+    });
+  }, [data, onSortingChange, sorting]);
+
+  return [
+    {
+      type: 'actions',
+      title: 'Actions',
+      render: row => <ActionsColumn row={row} />,
+      width: '16%',
+    },
+    {
+      type: 'summary',
+      title: 'Run Summary',
+      render: row => (
+        <SummaryColumn
+          row={row}
+          onHeightChanged={onUpdateColumnContentHeightById}
+        />
+      ),
+      width: '21%',
+      withSort: true,
+      customSortLabel: MemoSummarySorting,
+    },
+    {
+      type: 'metrics',
+      title: 'Metrics',
+      render: row => <MetricsColumn row={row} />,
+      width: '21%',
+      withSort: true,
+      customSortLabel: MetricsSortingLabel,
+    },
+    {
+      type: 'hyperparameters',
+      title: 'Hyperparameters',
+      render: row => <HyperparametersColumn row={row} />,
+      width: '21%',
+      withSort: true,
+      customSortLabel: HyperparametersSortingLabel,
+    },
+    {
+      type: 'artifacts',
+      title: 'Artifacts',
+      render: row => <ArtifactsColumn row={row} />,
+      width: '21%',
+    },
+    {
+      type: 'observations',
+      title: 'Observations',
+      render: row => <ObservationsColumn row={row} />,
+      width: '20%',
+    },
+    {
+      type: 'attributes',
+      title: 'Attributes',
+      render: row => <AttributesColumn row={row} />,
+      width: '20%',
+    },
+    {
+      type: 'codeVersion',
+      title: 'Code Version',
+      render: row => <CodeVersionColumn row={row} />,
+      width: '20%',
+    },
+    {
+      type: 'datasets',
+      title: 'Datasets',
+      render: row => <DatasetsColumn row={row} />,
+      width: '20%',
+    },
+  ];
+};
+
+const getRowKey = (row: IRow) => {
+  return row.experimentRun.id;
+};
+
+const useColumnContentHeightById = ({ data }: { data: ModelRecord[] }) => {
+  const [columnContentHeightById, setColumnContentHeightById] = React.useState<
+    Record<string, number | undefined>
+  >({});
+  React.useEffect(() => {
+    const initialColumnContentHeightById = R.fromPairs(
+      R.zip(
+        Array.from(
+          document.querySelectorAll(
+            '[data-column-name=experiment-runs-summary-column]'
+          )
+        ).map(
+          summaryColumnContentElem =>
+            (summaryColumnContentElem as HTMLElement)?.offsetHeight
+        ),
+        data
+      ).map(([height, { id }]) => [id, height])
+    );
+    setColumnContentHeightById(initialColumnContentHeightById);
+  }, []);
+
+  const updateColumnContentHeightById = (id: string, height: number) => {
+    if (columnContentHeightById[id] !== height) {
+      setColumnContentHeightById({
+        ...columnContentHeightById,
+        [id]: height,
+      });
+    }
   };
 
-  public componentDidMount() {
-    this.props.resetShowingBulkDeletionMenu();
+  return [columnContentHeightById, updateColumnContentHeightById] as const;
+};
 
-    this.setState({
-      columnContentHeightById: this.getColumnContentHeightById(),
-    });
-  }
-
-  public render() {
-    const {
-      columnConfig,
-      data,
-      pagination,
-      sorting,
-      projectId,
-      withBulkDeletion,
-      isShowBulkDeleteMenu,
-      onCurrentPageChange,
-      onSortingChange,
-    } = this.props;
-
-    const hiddenColumnNames = Object.entries(columnConfig)
-      .filter(([_, meta]: [any, IColumnMetaData]) => !meta.isShown)
-      .map(([columnName]) => columnName);
-
-    const columnDefinitions = this.getColumnDefinitions({
-      data,
-      sorting,
-      onChange: onSortingChange,
-    });
-
-    const filteredColumnDefinitions = columnDefinitions.filter(
-      c => !hiddenColumnNames.includes(c.type)
-    );
-
-    const rows: IRow[] = data.map(experimentRun => ({
-      experimentRun,
-      columnContentHeight:
-        this.state.columnContentHeightById[experimentRun.id] || 0,
-    }));
-
-    return (
-      <TableWrapper>
-        <AppTable
-          dataRows={rows}
-          columnDefinitions={filteredColumnDefinitions}
-          getRowKey={this.getRowKey}
-          selection={{
-            headerCellComponent: () => (
-              <ToggleAllExperimentRunsForBulkDeletion />
-            ),
-            cellComponent: row => {
-              return (
-                <ToggleExperimentRunForBulkDeletion id={row.experimentRun.id} />
-              );
-            },
-            showSelectAll: withBulkDeletion && isShowBulkDeleteMenu,
-            showSelectionColumn: withBulkDeletion && isShowBulkDeleteMenu,
-          }}
-        />
-
-        <div className={styles.footer}>
-          {withBulkDeletion && isShowBulkDeleteMenu && (
-            <div className={styles.footer__bulkDeletionManager}>
-              <DeletingExperimentRunsManager projectId={projectId} />
-            </div>
-          )}
-          <div className={styles.footer__pagination}>
-            <PagingPanel
-              pagination={pagination}
-              onCurrentPageChange={onCurrentPageChange}
-            />
-          </div>
-        </div>
-      </TableWrapper>
-    );
-  }
-
-  @bind
-  private getRowKey(row: IRow) {
-    return row.experimentRun.id;
-  }
-
-  @bind
-  private getColumnDefinitions({
-    data,
-    onChange,
-    sorting,
-  }: {
-    data: ModelRecord[];
-    sorting: ISorting | null;
-    onChange: (sorting: ISorting) => void;
-  }): Array<ColumnDefinition<IRow>> {
-    return [
-      {
-        type: 'actions',
-        title: 'Actions',
-        render: row => <ActionsColumn row={row} />,
-        width: '16%',
-      },
-      {
-        type: 'summary',
-        title: 'Run Summary',
-        render: row => (
-          <SummaryColumn
-            row={row}
-            onHeightChanged={this.updateColumnContentHeightById}
-          />
-        ),
-        width: '21%',
-      },
-      {
-        type: 'metrics',
-        title: 'Metrics',
-        render: row => <MetricsColumn row={row} />,
-        width: '21%',
-        withSort: true,
-        getValue: () => 1,
-        customSortLabel: withProps(SortingLabel)({
-          columnName: 'metrics',
-          data,
-          onChange,
-          sorting,
-        }),
-      },
-      {
-        type: 'hyperparameters',
-        title: 'Hyperparameters',
-        render: row => <HyperparametersColumn row={row} />,
-        width: '21%',
-        withSort: true,
-        getValue: () => 1,
-        customSortLabel: withProps(SortingLabel)({
-          columnName: 'hyperparameters',
-          data,
-          onChange,
-          sorting,
-        }),
-      },
-      {
-        type: 'artifacts',
-        title: 'Artifacts',
-        render: row => <ArtifactsColumn row={row} />,
-        width: '21%',
-      },
-      {
-        type: 'observations',
-        title: 'Observations',
-        render: row => <ObservationsColumn row={row} />,
-        width: '20%',
-      },
-      {
-        type: 'attributes',
-        title: 'Attributes',
-        render: row => <AttributesColumn row={row} />,
-        width: '20%',
-      },
-      {
-        type: 'codeVersion',
-        title: 'Code Version',
-        render: row => <CodeVersionColumn row={row} />,
-        width: '20%',
-      },
-      {
-        type: 'datasets',
-        title: 'Datasets',
-        render: row => <DatasetsColumn row={row} />,
-        width: '20%',
-      },
-    ];
-  }
-
-  @bind
-  private getColumnContentHeightById(): ILocalState['columnContentHeightById'] {
-    return R.fromPairs(R.zip(
-      Array.from(
-        document.querySelectorAll(
-          '[data-column-name=experiment-runs-summary-column]'
-        )
-      ).map(
-        summaryColumnContentElem =>
-          (summaryColumnContentElem as HTMLElement).offsetHeight
-      ),
-      this.props.data
-    ).map(([height, { id }]) => [id, height]) as any);
-  }
-
-  @bind
-  private updateColumnContentHeightById(id: string, height: number) {
-    if (this.state.columnContentHeightById[id] !== height) {
-      this.setState(prev => ({
-        columnContentHeightById: {
-          ...prev.columnContentHeightById,
-          [id]: height,
-        },
-      }));
-    }
-  }
-}
-
-const SortingLabel = ({
+const KeyValueSortingLabel = ({
   data,
   columnName,
   sorting,
@@ -290,6 +293,28 @@ const SortingLabel = ({
         fields={sortingFields}
         columnName={columnName}
         selected={isSelected ? sorting : null}
+        onChange={onChange}
+      />
+    </>
+  );
+};
+
+const SummarySorting = ({
+  sorting,
+  onChange,
+  children,
+}: {
+  sorting: ISorting | null;
+  children: React.ReactNode;
+  onChange(sorting: ISorting | null): void;
+}) => {
+  return (
+    <>
+      {children}
+      <SelectFieldSorting
+        fields={[{ label: 'Timestamp', name: 'date_created' }]}
+        columnName={''}
+        selected={sorting?.fieldName === 'date_created' ? sorting : null}
         onChange={onChange}
       />
     </>

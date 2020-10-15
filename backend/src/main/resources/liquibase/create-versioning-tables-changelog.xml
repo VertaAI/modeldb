@@ -210,4 +210,42 @@
             <column name="parent_order" type="int4"/>
         </addColumn>
     </changeSet>
+
+    <changeSet id="modify-entity-hash-length-label-mapping" author="anandJ">
+        <modifyDataType
+                columnName="entity_hash"
+                newDataType="varchar(255)"
+                tableName="labels_mapping"/>
+    </changeSet>
+
+    <changeSet id="add-date-updated-in-commit" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="commit" columnName="date_updated"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="commit">
+            <column name="date_updated" type="int8"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create-dataset-repository-mapping-table">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dataset_repository_mapping"/>
+            </not>
+        </preConditions>
+        <createTable tableName="dataset_repository_mapping">
+            <column name="repository_id" type="int8">
+                <constraints referencedColumnNames="id"
+                             referencedTableName="repository"
+                             foreignKeyName="fk_repository_id"
+                             primaryKey="true"
+                             nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- WARNING: Do not add new change sets to these files -->
+
 </databaseChangeLog>

@@ -447,6 +447,7 @@
     </changeSet>
 
     <changeSet id="createTempTableWithNewKeysOfArtifact_part" author="anandJ">
+    	<validCheckSum>8:4480e7dd6d4557d92f09f69b08d9ad29</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="artifact_part_temp"/>
@@ -455,7 +456,7 @@
         <createTable tableName="artifact_part_temp">
             <column name="artifact_id" type="int8">
                 <constraints primaryKey="true" nullable="false"
-                             foreignKeyName="artifact_id" referencedTableName="artifact"
+                             foreignKeyName="artifact_id_tmp" referencedTableName="artifact"
                              referencedColumnNames="id"/>
             </column>
             <column name="part_number" type="int8">
@@ -641,6 +642,56 @@
         </addColumn>
     </changeSet>
 
-    <!-- keep the line below at the end of this file -->
+    <changeSet id="set-commit_parent-parent_order-0" author="raviS" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+                <columnExists tableName="commit_parent" columnName="parent_order"/>
+        </preConditions>
+        <update tableName="commit_parent">
+            <column name="parent_order" value="0" />
+            <where>parent_order is null</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="key-value-property-mapping-table" author="lezhevg">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="key_value_property_mapping"/>
+            </not>
+        </preConditions>
+        <createTable tableName="key_value_property_mapping">
+            <column name="entity_hash" type="varchar(256)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="property_name" type="varchar(256)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="kv_key" type="varchar(50)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="kv_value" type="TEXT"/>
+        </createTable>
+    </changeSet>
+
     <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
+    <changeSet author="anandJ" id="migration_status_table">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="migration_status"/>
+            </not>
+        </preConditions>
+        <createTable tableName="migration_status">
+            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="migration_name" type="varchar(255)"/>
+            <column name="status" type="tinyint(1)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="db_version_1.0" author="anandJ">
+        <tagDatabase tag="db_version_1.0"/>
+    </changeSet>
+
+    <!-- WARNING: Do not add new change sets to these files -->
+
 </databaseChangeLog>

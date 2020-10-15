@@ -19,12 +19,10 @@ from .. import __about__
 PYPI_TO_IMPORT = {
     'scikit-learn': "sklearn",
     'tensorflow-gpu': "tensorflow",
-    'tensorflow-hub': "tensorflow_hub",
     'beautifulsoup4': "bs4",
 }
 IMPORT_TO_PYPI = {  # separate mapping because PyPI to import is surjective
     'sklearn': "scikit-learn",
-    'tensorflow_hub': "tensorflow-hub",
     'bs4': "beautifulsoup4",
 }
 
@@ -237,9 +235,13 @@ def set_version_pins(requirements):
                 ver = mod.__version__
             except (ImportError, AttributeError):
                 # fall back to checking pip
-                try:
-                    ver = pip_pkg_vers[req]
-                except KeyError:
+                req_with_dash = req.replace("_", "-")
+                req_with_underscore = req.replace("-", "_")
+                if req_with_dash in pip_pkg_vers:
+                    ver = pip_pkg_vers[req_with_dash]
+                elif req_with_underscore in pip_pkg_vers:
+                    ver = pip_pkg_vers[req_with_underscore]
+                else:
                     six.raise_from(error, None)
 
             requirements[i] = req + "==" + ver

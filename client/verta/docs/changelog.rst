@@ -37,6 +37,223 @@ Release Notes
      <>`__
 
 
+v0.15.4 (2020-09-09)
+--------------------
+
+Bug Fixes
+^^^^^^^^^
+- `fix bug where a DatasetVersion could not be retrieved for certain protobuf
+  configurations
+  <https://github.com/VertaAI/modeldb/pull/1471>`__
+
+
+v0.15.3 (2020-09-08)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add DatasetVersion.list_components() and DatasetVersion.base_path
+  <https://github.com/VertaAI/modeldb/pull/1448>`__
+- `enable cloning a run into another experiment
+  <https://github.com/VertaAI/modeldb/pull/1420>`__
+- `add delete() to most entities
+  <https://github.com/VertaAI/modeldb/pull/1372>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `support Python 3.8
+  <https://github.com/VertaAI/modeldb/pull/1418>`__
+- `add self_contained param to download_docker_context()
+  <https://github.com/VertaAI/modeldb/pull/1425>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix bug where log_model(overwrite=True) didn't work with custom model
+  artifacts
+  <https://github.com/VertaAI/modeldb/pull/1447>`__
+- `properly raise an error when re-logging an environment to a model version
+  <https://github.com/VertaAI/modeldb/pull/1439>`__
+
+
+v0.15.2 (2020-08-28)
+--------------------
+
+Enhancements
+^^^^^^^^^^^^
+- `add retries for all client connection errors
+  <https://github.com/VertaAI/modeldb/pull/1407>`__
+
+
+v0.15.1 (2020-08-24)
+--------------------
+
+Bug Fixes
+^^^^^^^^^
+- `correctly log model artifacts attribute to enable custom models with dependencies
+  <https://github.com/VertaAI/modeldb/pull/1399>`__
+
+
+v0.15.0 (2020-08-24)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `Verta model registry
+  <https://docs.verta.ai/en/master/api/api/registered_model.html>`__
+- `Verta endpoints
+  <https://docs.verta.ai/en/master/api/api/endpoint.html>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `expand custom modules virtual environment filter
+  <https://github.com/VertaAI/modeldb/pull/1392>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix bug where multipart upload loop may have an undefined variable in the
+  event of connection errors
+  <https://github.com/VertaAI/modeldb/pull/1362>`__
+- `fix bug where getting a dataset version from another workspace may fail
+  <https://github.com/VertaAI/modeldb/pull/1349>`__
+
+
+v0.14.17 (2020-08-13)
+---------------------
+
+New Features
+^^^^^^^^^^^^
+- `add DeployedModel.get_curl()
+  <https://github.com/VertaAI/modeldb/pull/1287>`__
+- `add ExperimentRun.get_artifact_keys()
+  <https://github.com/VertaAI/modeldb/pull/1296>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix inability to get others' shared personal Projects and Datasets
+  <https://github.com/VertaAI/modeldb/pull/1286>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `add util to convert requests to cURL
+  <https://github.com/VertaAI/modeldb/pull/1268>`__
+
+
+v0.14.16 (2020-08-06)
+---------------------
+
+New Features
+^^^^^^^^^^^^
+- `add URL to Project.__repr__()
+  <https://github.com/VertaAI/modeldb/pull/1160>`__
+- `add client.create_*() for core ModelDB entities
+  <https://github.com/VertaAI/modeldb/pull/1152>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `make model container paths configurable through environment variables
+  <https://github.com/VertaAI/modeldb/pull/1219>`__
+
+
+v0.14.15 (2020-07-28)
+---------------------
+
+Bug Fixes
+^^^^^^^^^
+- `nicely display stack traces from prediction errors
+  <https://github.com/VertaAI/modeldb/pull/1166>`__
+
+
+v0.14.14 (2020-07-28)
+---------------------
+
+Bug Fixes
+^^^^^^^^^
+- `fix error when accessing a shared project in an organization
+  <https://github.com/VertaAI/modeldb/pull/1163>`__
+
+
+v0.14.13 (2020-07-24)
+---------------------
+
+Enhancements
+^^^^^^^^^^^^
+- `add more possible keys for LazyList.find()
+  <https://github.com/VertaAI/modeldb/pull/1038>`__
+- `print full response body for HTTP errors
+  <https://github.com/VertaAI/modeldb/pull/1083>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix artifact download when $TMPDIR is in a different filesystem
+  <https://github.com/VertaAI/modeldb/pull/1130>`__
+- `clear cache after every ExperimentRun logs
+  <https://github.com/VertaAI/modeldb/pull/1101>`__
+- `fix TypeError in LazyList.with_workspace(None)
+  <https://github.com/VertaAI/modeldb/pull/1098>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `move verta/deployment.py to verta/deployment/
+  <https://github.com/VertaAI/modeldb/pull/1085>`__
+
+
+v0.14.12 (2020-07-16)
+---------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `run.log_dataset() now only accepts DatasetVersion objects
+  <https://github.com/VertaAI/modeldb/pull/907>`__
+- `verta.environment.Python now requires its requirements parameter
+  <https://github.com/VertaAI/modeldb/pull/952>`__
+
+New Features
+^^^^^^^^^^^^
+- `add client.get_project(), get_experiment(), and get_experiment_run()
+  <https://github.com/VertaAI/modeldb/pull/966>`__
+- `add client.projects and client.experiments
+  <https://github.com/VertaAI/modeldb/pull/979>`__
+- `add expt_runs.as_dataframe()
+  <https://github.com/VertaAI/modeldb/pull/968>`__
+- `add list_components() to data versioning blobs
+  <https://github.com/VertaAI/modeldb/pull/903>`__
+- `implement addition for data versioning blobs
+  <https://github.com/VertaAI/modeldb/pull/938>`__
+- `add add() to data versioning blobs
+  <https://github.com/VertaAI/modeldb/pull/939>`__
+- `add run.download_deployment_crd()
+  <https://github.com/VertaAI/modeldb/pull/918>`__
+- `add run.download_docker_context()
+  <https://github.com/VertaAI/modeldb/pull/919>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `speed up verta import time by deferring external imports
+  <https://github.com/VertaAI/modeldb/pull/999>`__
+- `cache calls to get metrics and hyperparameters
+  <https://github.com/VertaAI/modeldb/pull/967>`__
+- `include UTC timestamps in HTTPError messages
+  <https://github.com/VertaAI/modeldb/pull/909>`__
+- `attempt torch.load() first in run.get_artifact()
+  <https://github.com/VertaAI/modeldb/pull/947>`__
+
+Bug Fixes
+^^^^^^^^^
+- `use parent for commit.log() if the commit is unsaved
+  <https://github.com/VertaAI/modeldb/pull/940>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `partially refactor versioning blobs
+  <https://github.com/VertaAI/modeldb/pull/901>`__
+- `split ModelDB entities into their own files
+  <https://github.com/VertaAI/modeldb/pull/964>`__
+- `refactor ModelDB entity gets/creates
+  <https://github.com/VertaAI/modeldb/pull/965>`__
+- `add pylint config to repo
+  <https://github.com/VertaAI/modeldb/pull/974>`__
+
+
 v0.14.11 (2020-06-26)
 ---------------------
 

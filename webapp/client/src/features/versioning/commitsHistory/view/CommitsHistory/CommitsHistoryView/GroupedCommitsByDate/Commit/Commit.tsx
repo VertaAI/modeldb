@@ -8,7 +8,6 @@ import copy from 'copy-to-clipboard';
 import { IRepository } from 'shared/models/Versioning/Repository';
 import { CommitPointerHelpers } from 'shared/models/Versioning/RepositoryData';
 import ShortenedSHA from 'shared/view/domain/Versioning/ShortenedSHA/ShortenedSHA';
-import Avatar from 'shared/view/elements/Avatar/Avatar';
 import { Icon } from 'shared/view/elements/Icon/Icon';
 import routes from 'shared/routes';
 import { selectCurrentWorkspaceName } from 'features/workspaces/store';

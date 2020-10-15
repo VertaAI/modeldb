@@ -1,0 +1,104 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+        logicalFilePath="src/main/resources/liquibase/db-changelog-2.0.xml">
+
+    <changeSet id="db_version_2.0.pre" author="raviS">
+        <tagDatabase tag="db_version_2.0.pre"/>
+    </changeSet>
+    <changeSet author="anandJ" id="index_labels_mapping_entity_hash_entity_type">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_labels_mapping_entity_hash_entity_type"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_labels_mapping_entity_hash_entity_type"
+                     tableName="labels_mapping">
+            <column name="entity_hash"/>
+            <column name="entity_type"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="labels_mapping" indexName="index_labels_mapping_entity_hash_entity_type"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_labels_mapping_label">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_labels_mapping_label"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_labels_mapping_label"
+                     tableName="labels_mapping">
+            <column name="label"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="labels_mapping" indexName="index_labels_mapping_label"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="db_version_2.1" author="raviS">
+        <tagDatabase tag="db_version_2.1"/>
+    </changeSet>
+
+    <changeSet id="add-base-path-in-path-dataset-component-blob" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="path_dataset_component_blob" columnName="base_path"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="path_dataset_component_blob">
+            <column name="base_path" type="TEXT" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="path_dataset_component_blob" columnName="base_path"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="add-base-path-in-s3-dataset-component-blob" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="s3_dataset_component_blob" columnName="base_path"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="s3_dataset_component_blob">
+            <column name="base_path" type="TEXT" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="s3_dataset_component_blob" columnName="base_path"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.2" author="anandJ">
+        <tagDatabase tag="db_version_2.2"/>
+    </changeSet>
+
+    <changeSet id="create-query_dataset_component_blob-table" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="query_dataset_component_blob"/>
+            </not>
+        </preConditions>
+        <createTable tableName="query_dataset_component_blob">
+            <column name="query_dataset_blob_id" type="varchar(64)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_query_dataset_component"/>
+            </column>
+            <column name="blob_hash" type="varchar(64)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_query_dataset_component"/>
+            </column>
+            <column name="query" type="text"/>
+            <column name="data_source_uri" type="text"/>
+            <column name="execution_timestamp" type="int8"/>
+            <column name="num_records" type="int8"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="query_dataset_component_blob"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.3" author="anandJ">
+        <tagDatabase tag="db_version_2.3"/>
+    </changeSet>
+
+</databaseChangeLog>

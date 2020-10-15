@@ -22,6 +22,8 @@ object GenericObject {
       JDouble(obj.double_value.get)
     else if (obj.int_value.isDefined)
       JInt(obj.int_value.get)
+    else if (obj.list_value.isDefined)
+      JArray(obj.list_value.get.map(toJson))
     else
       throw new Exception(s"unknown type for ${obj.toString} (${obj.getClass.toString})")
   }
@@ -31,6 +33,7 @@ object GenericObject {
       case JString(x) => GenericObject(string_value = Some(x))
       case JDouble(x) => GenericObject(double_value = Some(x))
       case JInt(x) => GenericObject(int_value = Some(x))
+      case JArray(elements) => GenericObject(list_value = Some(elements.map(fromJson)))
       case _ => throw new Exception(s"unknown type for ${v.toString} (${v.getClass.toString})")
     }
 }

@@ -13,7 +13,7 @@
   "paths": {
     "/project/addProjectAttributes": {
       "post": {
-        "operationId": "addProjectAttributes",
+        "operationId": "ProjectService_addProjectAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/project/addProjectTag": {
       "post": {
-        "operationId": "addProjectTag",
+        "operationId": "ProjectService_addProjectTag",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -77,7 +77,7 @@
     },
     "/project/addProjectTags": {
       "post": {
-        "operationId": "addProjectTags",
+        "operationId": "ProjectService_addProjectTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -109,7 +109,7 @@
     },
     "/project/createProject": {
       "post": {
-        "operationId": "createProject",
+        "operationId": "ProjectService_createProject",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -141,7 +141,7 @@
     },
     "/project/deepCopyProject": {
       "post": {
-        "operationId": "deepCopyProject",
+        "operationId": "ProjectService_deepCopyProject",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -173,7 +173,7 @@
     },
     "/project/deleteArtifact": {
       "delete": {
-        "operationId": "deleteArtifact",
+        "operationId": "ProjectService_deleteArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -205,7 +205,7 @@
     },
     "/project/deleteProject": {
       "delete": {
-        "operationId": "deleteProject",
+        "operationId": "ProjectService_deleteProject",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -237,7 +237,7 @@
     },
     "/project/deleteProjectAttributes": {
       "delete": {
-        "operationId": "deleteProjectAttributes",
+        "operationId": "ProjectService_deleteProjectAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -269,7 +269,7 @@
     },
     "/project/deleteProjectTag": {
       "delete": {
-        "operationId": "deleteProjectTag",
+        "operationId": "ProjectService_deleteProjectTag",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -301,7 +301,7 @@
     },
     "/project/deleteProjectTags": {
       "delete": {
-        "operationId": "deleteProjectTags",
+        "operationId": "ProjectService_deleteProjectTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -333,7 +333,7 @@
     },
     "/project/deleteProjects": {
       "delete": {
-        "operationId": "deleteProjects",
+        "operationId": "ProjectService_deleteProjects",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -366,7 +366,7 @@
     "/project/findProjects": {
       "post": {
         "summary": "queries",
-        "operationId": "findProjects",
+        "operationId": "ProjectService_findProjects",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -398,7 +398,7 @@
     },
     "/project/getArtifacts": {
       "get": {
-        "operationId": "getArtifacts",
+        "operationId": "ProjectService_getArtifacts",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -434,7 +434,7 @@
     },
     "/project/getProjectAttributes": {
       "get": {
-        "operationId": "getProjectAttributes",
+        "operationId": "ProjectService_getProjectAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -481,7 +481,7 @@
     },
     "/project/getProjectById": {
       "get": {
-        "operationId": "getProjectById",
+        "operationId": "ProjectService_getProjectById",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -511,7 +511,7 @@
     },
     "/project/getProjectByName": {
       "get": {
-        "operationId": "getProjectByName",
+        "operationId": "ProjectService_getProjectByName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -547,7 +547,7 @@
     },
     "/project/getProjectCodeVersion": {
       "get": {
-        "operationId": "getProjectCodeVersion",
+        "operationId": "ProjectService_getProjectCodeVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -577,7 +577,7 @@
     },
     "/project/getProjectReadme": {
       "get": {
-        "operationId": "getProjectReadme",
+        "operationId": "ProjectService_getProjectReadme",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -607,7 +607,7 @@
     },
     "/project/getProjectShortName": {
       "get": {
-        "operationId": "getProjectShortName",
+        "operationId": "ProjectService_getProjectShortName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -637,7 +637,7 @@
     },
     "/project/getProjectTags": {
       "get": {
-        "operationId": "getProjectTags",
+        "operationId": "ProjectService_getProjectTags",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -667,7 +667,7 @@
     },
     "/project/getProjects": {
       "get": {
-        "operationId": "getProjects",
+        "operationId": "ProjectService_getProjects",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -724,7 +724,7 @@
     },
     "/project/getPublicProjects": {
       "get": {
-        "operationId": "getPublicProjects",
+        "operationId": "ProjectService_getPublicProjects",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -760,7 +760,7 @@
     },
     "/project/getSummary": {
       "get": {
-        "operationId": "getSummary",
+        "operationId": "ProjectService_getSummary",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -791,7 +791,7 @@
     "/project/getUrlForArtifact": {
       "post": {
         "summary": "artifacts",
-        "operationId": "getUrlForArtifact",
+        "operationId": "ProjectService_getUrlForArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -824,7 +824,7 @@
     "/project/logArtifacts": {
       "post": {
         "summary": "artifacts",
-        "operationId": "logArtifacts",
+        "operationId": "ProjectService_logArtifacts",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -857,7 +857,7 @@
     "/project/logProjectCodeVersion": {
       "post": {
         "summary": "code version",
-        "operationId": "logProjectCodeVersion",
+        "operationId": "ProjectService_logProjectCodeVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -889,7 +889,7 @@
     },
     "/project/setProjectReadme": {
       "post": {
-        "operationId": "setProjectReadme",
+        "operationId": "ProjectService_setProjectReadme",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -921,7 +921,7 @@
     },
     "/project/setProjectShortName": {
       "post": {
-        "operationId": "setProjectShortName",
+        "operationId": "ProjectService_setProjectShortName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -953,7 +953,7 @@
     },
     "/project/setProjectVisibility": {
       "post": {
-        "operationId": "setProjectVisibility",
+        "operationId": "ProjectService_setProjectVisibility",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -985,7 +985,7 @@
     },
     "/project/setProjectWorkspace": {
       "post": {
-        "operationId": "setProjectWorkspace",
+        "operationId": "ProjectService_setProjectWorkspace",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1017,7 +1017,7 @@
     },
     "/project/updateProjectAttributes": {
       "post": {
-        "operationId": "updateProjectAttributes",
+        "operationId": "ProjectService_updateProjectAttributes",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1049,7 +1049,7 @@
     },
     "/project/updateProjectDescription": {
       "post": {
-        "operationId": "updateProjectDescription",
+        "operationId": "ProjectService_updateProjectDescription",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1081,7 +1081,7 @@
     },
     "/project/updateProjectName": {
       "post": {
-        "operationId": "updateProjectName",
+        "operationId": "ProjectService_updateProjectName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1113,7 +1113,7 @@
     },
     "/project/verifyConnection": {
       "get": {
-        "operationId": "verifyConnection",
+        "operationId": "ProjectService_verifyConnection",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1228,6 +1228,23 @@
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "commonKeyValueQuery": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },
@@ -1515,7 +1532,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "ids_only": {
@@ -1748,23 +1765,6 @@
         },
         "is_dirty": {
           "$ref": "#/definitions/TernaryEnumTernary"
-        }
-      }
-    },
-    "modeldbKeyValueQuery": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
-        },
-        "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },

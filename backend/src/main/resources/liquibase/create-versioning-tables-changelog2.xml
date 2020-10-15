@@ -121,6 +121,7 @@
 		</createTable>
 	</changeSet>
 	<changeSet author="raviS" id="create-config_blob">
+		<validCheckSum>8:721ea58e911f9f9a84660a8a3754a739</validCheckSum>
 		<preConditions onFail="MARK_RAN">
 			<not>
 				<tableExists tableName="config_blob" />
@@ -139,14 +140,14 @@
 			<column name="hyperparameter_set_config_blob_hash"
 				type="varchar(64)">
 				<constraints
-					foreignKeyName="fk_hyperparameter_set_config_blob"
+					foreignKeyName="fk_cb_hyperparameter_set_config_blob"
 					referencedTableName="hyperparameter_set_config_blob"
 					referencedColumnNames="blob_hash" />
 			</column>
 			<column name="hyperparameter_element_config_blob_hash"
 				type="varchar(64)">
 				<constraints
-					foreignKeyName="fk_hyperparameter_element_config_blob"
+					foreignKeyName="fk_cb_hyperparameter_element_config_blob"
 					referencedTableName="hyperparameter_element_config_blob"
 					referencedColumnNames="blob_hash" />
 			</column>
@@ -208,6 +209,7 @@
 		</createTable>
 	</changeSet>
 	<changeSet author="lezhevg" id="create-python_environment_requirements">
+		<validCheckSum>8:abc5095661f43e44672277b961d25955</validCheckSum>
 		<preConditions onFail="MARK_RAN">
 			<not>
 				<tableExists
@@ -216,7 +218,7 @@
 		</preConditions>
 		<createTable tableName="python_environment_requirements_blob">
 			<column name="python_environment_blob_hash" type="varchar(64)">
-				<constraints foreignKeyName="fk_python_environment_blob"
+				<constraints foreignKeyName="fk_perb_python_environment_blob"
 					primaryKey="true" nullable="false"
 					referencedTableName="python_environment_blob"
 					referencedColumnNames="blob_hash" />
@@ -351,4 +353,84 @@
 			<column name="repository_visibility" type="int4"/>
 		</addColumn>
 	</changeSet>
+	<changeSet id="add-access-modifier-column-to-repository" author="lezhevg">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="repository" columnName="repository_access_modifier"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="repository">
+			<column name="repository_access_modifier" type="int4" defaultValue="1"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="add-repository-description-column" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="repository" columnName="description"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="repository">
+			<column name="description" type="TEXT" value=""/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="add-attributes-to-repository" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="attribute" columnName="repository_id"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="attribute">
+			<column name="repository_id" type="int8"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="add-description-blob-table" author="lezhevg">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="metadata_property_mapping"/>
+			</not>
+		</preConditions>
+		<createTable tableName="metadata_property_mapping">
+			<column name="repository_id" type="int8">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="commit_sha" type="varchar(256)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="location" type="varchar(256)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="metadata_key" type="varchar(50)">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="metadata_value" type="TEXT"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="add-entity-hash-on-attribute" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<columnExists tableName="attribute" columnName="entity_hash"/>
+			</not>
+		</preConditions>
+		<addColumn tableName="attribute">
+			<column name="entity_hash" type="varchar(255)"/>
+		</addColumn>
+	</changeSet>
+
+	<changeSet id="index-entity-hash-on-attribute" author="anandJ">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<indexExists tableName="attribute" indexName="index_entity_hash"/>
+			</not>
+		</preConditions>
+		<createIndex tableName="attribute" indexName="index_entity_hash">
+			<column name="entity_hash"/>
+		</createIndex>
+	</changeSet>
+
+	<!-- WARNING: Do not add new change sets to these files -->
+
 </databaseChangeLog>

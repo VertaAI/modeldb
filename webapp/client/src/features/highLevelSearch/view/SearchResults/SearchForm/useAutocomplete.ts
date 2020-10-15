@@ -21,14 +21,16 @@ type Result<T, GroupKey extends keyof T> = {
 };
 
 const useAutocomplete = <T, GroupKey extends keyof T>(
-  props: Omit<UseAutocompleteProps<T, false, false, true>, 'groupBy'>,
+  // @ts-ignore
+  props: Omit<UseAutocompleteProps<T>, 'groupBy'>,
   groupKey: GroupKey
 ): Result<T, GroupKey> => {
   return materialUseAutocomplete({
     ...props,
     multiple: false,
-    groupBy: option => option[groupKey] as any,
-  }) as any;
+    // Typescript gave up here before I found it
+    groupBy: (option: any) => option[groupKey] as any,
+  } as any) as any;
 };
 
 export default useAutocomplete;

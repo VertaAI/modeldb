@@ -1,0 +1,24 @@
+.entities {
+    display: flex;
+    padding: 1em;
+    font-size: 0.85em;
+    overflow: auto;
+  }
+  
+  .entity {
+    border-right: 1px solid var(--border-color1);
+  }
+  .entity:last-child {
+    border-right: none;
+  }
+  .entity {
+    width: 50%;
+    min-width: 50%;
+  }
+  
+  .eempty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
