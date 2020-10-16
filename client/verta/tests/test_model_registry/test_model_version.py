@@ -21,6 +21,7 @@ import verta.dataset
 from verta.environment import Python
 from verta._tracking.deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
+from ..test_artifacts import TestArtifacts
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
@@ -160,7 +161,7 @@ class TestModelVersion:
 
     def test_add_artifact_file(self, model_version, in_tempdir):
         filename = "tiny1.bin"
-        FILE_CONTENTS = os.urandom(2**16)
+        FILE_CONTENTS = TestArtifacts.generate_random_data()
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
         model_version.log_artifact("file", filename)
