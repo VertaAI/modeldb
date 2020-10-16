@@ -128,12 +128,13 @@ class Endpoint(object):
         return response.json()
 
     @classmethod
-    def _get_or_create_by_name(cls, conn, name, getter, creator):
+    def _get_or_create_by_name(cls, conn, name, getter, creator, checker):
         obj = getter(name)
         if obj is None:
             obj = creator(name)
         else:
             print("got existing {}: {}".format(cls.__name__, name))
+            checker()
         return obj
 
     @classmethod

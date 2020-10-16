@@ -106,7 +106,7 @@ class _ModelDBEntity(object):
 
     # TODO: add prints about status
     @classmethod
-    def _get_or_create_by_name(cls, conn, name, getter, creator):
+    def _get_or_create_by_name(cls, conn, name, getter, creator, checker):
         if name is None:
             name = cls._generate_default_name()
 
@@ -115,6 +115,7 @@ class _ModelDBEntity(object):
             obj = creator(name)
         else:
             print("got existing {}: {}".format(cls.__name__, name))
+            checker()
         return obj
 
     @classmethod
