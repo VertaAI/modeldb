@@ -55,8 +55,10 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -174,17 +176,12 @@ public class DatasetTest {
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
     experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create all entities
-    createDatasetEntities();
   }
 
   @AfterClass
   public static void removeServerAndService() {
     App.initiateShutdown(0);
 
-    // Remove all entities
-    removeEntities();
     // Delete entities by cron job
     deleteEntitiesCron.run();
 
@@ -192,7 +189,14 @@ public class DatasetTest {
     serverBuilder.build().shutdownNow();
   }
 
-  private static void removeEntities() {
+  @Before
+  public void createEntities() {
+    // Create all entities
+    createDatasetEntities();
+  }
+
+  @After
+  public void removeEntities() {
     for (String datasetId : datasetMap.keySet()) {
       DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(datasetId).build();
       DeleteDataset.Response deleteDatasetResponse =
@@ -201,6 +205,11 @@ public class DatasetTest {
       LOGGER.info(deleteDatasetResponse.toString());
       assertTrue(deleteDatasetResponse.getStatus());
     }
+    dataset1 = null;
+    dataset2 = null;
+    dataset3 = null;
+    dataset4 = null;
+    datasetMap = new HashMap<>();
   }
 
   private static void createDatasetEntities() {
@@ -222,7 +231,7 @@ public class DatasetTest {
             .toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
-            .addTags("A0")
+            .addTags("A00")
             .addTags("A01")
             .build();
     CreateDataset.Response createDatasetResponse =
@@ -477,12 +486,12 @@ public class DatasetTest {
         if (index == 0) {
           assertEquals(
               "Dataset name not match with expected dataset name",
-              dataset1.getName(),
+              dataset4.getName(),
               dataset.getName());
         } else if (index == 1) {
           assertEquals(
               "Dataset name not match with expected dataset name",
-              dataset4.getName(),
+              dataset3.getName(),
               dataset.getName());
         }
       }
