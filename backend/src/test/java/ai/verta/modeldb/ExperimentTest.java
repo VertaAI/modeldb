@@ -951,6 +951,16 @@ public class ExperimentTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
+    try {
+      experimentServiceStub.updateExperimentNameOrDescription(
+          UpdateExperimentNameOrDescription.newBuilder().setId(experiment.getId()).build());
+      fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
+
     // Delete Project
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
