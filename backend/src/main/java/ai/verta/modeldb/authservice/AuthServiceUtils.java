@@ -3,6 +3,7 @@ package ai.verta.modeldb.authservice;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.dto.UserInfoPaginationDTO;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Empty;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.GetUsers;
@@ -28,6 +29,10 @@ public class AuthServiceUtils implements AuthService {
 
   @Override
   public UserInfo getCurrentLoginUserInfo() {
+    return getCurrentLoginUserInfo(true);
+  }
+
+  private UserInfo getCurrentLoginUserInfo(boolean retry) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.AUTH_SERVICE_REQ_SENT_MSG);
       UserInfo userInfo =
@@ -35,7 +40,7 @@ public class AuthServiceUtils implements AuthService {
       LOGGER.info(ModelDBMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
-        LOGGER.warn("user not found {}", userInfo);
+        LOGGER.info("user not found {}", userInfo);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -46,21 +51,18 @@ public class AuthServiceUtils implements AuthService {
         return userInfo;
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (UserInfo)
+          ModelDBUtils.retryOrThrowException(
+              ex, retry, (ModelDBUtils.RetryCallInterface<UserInfo>) this::getCurrentLoginUserInfo);
     }
   }
 
   @Override
   public UserInfo getUnsignedUser() {
+    return getUnsignedUser(true);
+  }
+
+  private UserInfo getUnsignedUser(boolean retry) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.AUTH_SERVICE_REQ_SENT_MSG);
       GetUser getUserRequest =
@@ -81,21 +83,19 @@ public class AuthServiceUtils implements AuthService {
         return userInfo;
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (UserInfo)
+          ModelDBUtils.retryOrThrowException(
+              ex, retry, (ModelDBUtils.RetryCallInterface<UserInfo>) this::getUnsignedUser);
     }
   }
 
   @Override
   public UserInfo getUserInfo(String vertaId, ModelDBConstants.UserIdentifier vertaIdentifier) {
+    return getUserInfo(true, vertaId, vertaIdentifier);
+  }
+
+  private UserInfo getUserInfo(
+      boolean retry, String vertaId, ModelDBConstants.UserIdentifier vertaIdentifier) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       GetUser getUserRequest;
       if (vertaIdentifier == ModelDBConstants.UserIdentifier.EMAIL_ID) {
@@ -112,7 +112,7 @@ public class AuthServiceUtils implements AuthService {
       LOGGER.info(ModelDBMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
-        LOGGER.warn("user not found with id {}", vertaId);
+        LOGGER.info("user not found with id {}", vertaId);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -123,16 +123,12 @@ public class AuthServiceUtils implements AuthService {
         return userInfo;
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (UserInfo)
+          ModelDBUtils.retryOrThrowException(
+              ex,
+              retry,
+              (ModelDBUtils.RetryCallInterface<UserInfo>)
+                  (retry1) -> getUserInfo(retry1, vertaId, vertaIdentifier));
     }
   }
 
@@ -145,6 +141,11 @@ public class AuthServiceUtils implements AuthService {
   @Override
   public Map<String, UserInfo> getUserInfoFromAuthServer(
       Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
+    return getUserInfoFromAuthServer(true, vertaIdList, emailIdList, usernameList);
+  }
+
+  private Map<String, UserInfo> getUserInfoFromAuthServer(
+      boolean retry, Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       GetUsers.Builder getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
       if (emailIdList != null && !emailIdList.isEmpty()) {
@@ -168,16 +169,13 @@ public class AuthServiceUtils implements AuthService {
       }
       return useInfoMap;
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (Map<String, UserInfo>)
+          ModelDBUtils.retryOrThrowException(
+              ex,
+              retry,
+              (ModelDBUtils.RetryCallInterface<Map<String, UserInfo>>)
+                  (retry1) ->
+                      getUserInfoFromAuthServer(retry1, vertaIdList, emailIdList, usernameList));
     }
   }
 
@@ -218,6 +216,10 @@ public class AuthServiceUtils implements AuthService {
 
   @Override
   public UserInfoPaginationDTO getFuzzyUserInfoList(String usernameChar) {
+    return getFuzzyUserInfoList(true, usernameChar);
+  }
+
+  private UserInfoPaginationDTO getFuzzyUserInfoList(boolean retry, String usernameChar) {
     if (usernameChar.isEmpty()) {
       UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
       paginationDTO.setUserInfoList(Collections.emptyList());
@@ -241,16 +243,12 @@ public class AuthServiceUtils implements AuthService {
       paginationDTO.setTotalRecords(response.getTotalRecords());
       return paginationDTO;
     } catch (StatusRuntimeException ex) {
-      LOGGER.warn(ex.getMessage(), ex);
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("UAC Service unavailable : " + ex.getMessage())
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-      throw ex;
+      return (UserInfoPaginationDTO)
+          ModelDBUtils.retryOrThrowException(
+              ex,
+              retry,
+              (ModelDBUtils.RetryCallInterface<UserInfoPaginationDTO>)
+                  (retry1) -> getFuzzyUserInfoList(retry1, usernameChar));
     }
   }
 }

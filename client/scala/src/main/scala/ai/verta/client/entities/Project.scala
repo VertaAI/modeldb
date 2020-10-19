@@ -11,11 +11,11 @@ class Project(val clientSet: ClientSet, val proj: ModeldbProject) extends Taggab
   def getOrCreateExperiment(name: String)(implicit ec: ExecutionContext) = {
     GetOrCreateEntity.getOrCreate[Experiment](
       get = () => {
-        clientSet.experimentService.getExperimentByName(Some(name), proj.id)
+        clientSet.experimentService.ExperimentService_getExperimentByName(Some(name), proj.id)
           .map(r => if (r.experiment.isEmpty) null else new Experiment(clientSet, this, r.experiment.get))
       },
       create = () => {
-        clientSet.experimentService.createExperiment(ModeldbCreateExperiment(
+        clientSet.experimentService.ExperimentService_createExperiment(ModeldbCreateExperiment(
           name = Some(name),
           project_id = proj.id
         ))
@@ -27,12 +27,12 @@ class Project(val clientSet: ClientSet, val proj: ModeldbProject) extends Taggab
   def tags()(implicit ec: ExecutionContext) = new Tags(clientSet, ec, this)
 
   override def getTags()(implicit ec: ExecutionContext): Try[List[String]] = {
-    clientSet.projectService.getProjectTags(proj.id)
+    clientSet.projectService.ProjectService_getProjectTags(proj.id)
       .map(r => r.tags.getOrElse(Nil))
   }
 
   override def delTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
-    clientSet.projectService.deleteProjectTags(ModeldbDeleteProjectTags(
+    clientSet.projectService.ProjectService_deleteProjectTags(ModeldbDeleteProjectTags(
       id = proj.id,
       tags = Some(tags)
     ))
@@ -40,7 +40,7 @@ class Project(val clientSet: ClientSet, val proj: ModeldbProject) extends Taggab
   }
 
   override def addTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] = {
-    clientSet.projectService.addProjectTags(ModeldbAddProjectTags(
+    clientSet.projectService.ProjectService_addProjectTags(ModeldbAddProjectTags(
       id = proj.id,
       tags = Some(tags)
     ))

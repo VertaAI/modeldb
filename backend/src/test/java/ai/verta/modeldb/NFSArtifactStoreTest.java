@@ -3,12 +3,17 @@ package ai.verta.modeldb;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.api.client.util.IOUtils;
 import io.grpc.ManagedChannel;
@@ -61,6 +66,7 @@ public class NFSArtifactStoreTest {
   private static ProjectServiceGrpc.ProjectServiceBlockingStub projectServiceStub;
   private static ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub;
   private static ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub experimentRunServiceStub;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -87,6 +93,7 @@ public class NFSArtifactStoreTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -99,6 +106,8 @@ public class NFSArtifactStoreTest {
 
     serverBuilder.build().start();
     ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
 
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
@@ -117,6 +126,8 @@ public class NFSArtifactStoreTest {
 
     // Remove all entities
     removeEntities();
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
 
     // shutdown test server
     serverBuilder.build().shutdownNow();
@@ -174,7 +185,7 @@ public class NFSArtifactStoreTest {
                 Artifact.newBuilder()
                     .setKey(artifactKey)
                     .setPath(artifactKey)
-                    .setArtifactType(ArtifactTypeEnum.ArtifactType.IMAGE)
+                    .setArtifactType(ArtifactType.IMAGE)
                     .build())
             .build();
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -196,7 +207,7 @@ public class NFSArtifactStoreTest {
               .setId(experimentRun.getId())
               .setKey(artifactKey)
               .setMethod("PUT")
-              .setArtifactType(ArtifactTypeEnum.ArtifactType.IMAGE)
+              .setArtifactType(ArtifactType.IMAGE)
               .build();
       GetUrlForArtifact.Response getUrlForArtifactResponse =
           experimentRunServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
@@ -245,7 +256,7 @@ public class NFSArtifactStoreTest {
               .setId(experimentRun.getId())
               .setKey(artifactKey)
               .setMethod("GET")
-              .setArtifactType(ArtifactTypeEnum.ArtifactType.IMAGE)
+              .setArtifactType(ArtifactType.IMAGE)
               .build();
       GetUrlForArtifact.Response getUrlForArtifactResponse =
           experimentRunServiceStub.getUrlForArtifact(getUrlForArtifactRequest);

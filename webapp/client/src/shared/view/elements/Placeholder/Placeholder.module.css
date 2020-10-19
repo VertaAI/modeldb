@@ -1,0 +1,10 @@
+.root {
+  text-align: center;
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--main-text-color2);
+}
+
+.withoutCentering {
+  text-align: start;
+}

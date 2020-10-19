@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb.versioning',
   syntax='proto3',
   serialized_options=b'P\001ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning',
-  serialized_pb=b'\n modeldb/versioning/Dataset.proto\x12\x1b\x61i.verta.modeldb.versioning\x1a\x1emodeldb/versioning/Enums.proto\"\x90\x01\n\x0b\x44\x61tasetBlob\x12\x38\n\x02s3\x18\x01 \x01(\x0b\x32*.ai.verta.modeldb.versioning.S3DatasetBlobH\x00\x12<\n\x04path\x18\x02 \x01(\x0b\x32,.ai.verta.modeldb.versioning.PathDatasetBlobH\x00\x42\t\n\x07\x63ontent\"t\n\x18PathDatasetComponentBlob\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0c\n\x04size\x18\x02 \x01(\x04\x12\x1f\n\x17last_modified_at_source\x18\x03 \x01(\x04\x12\x0e\n\x06sha256\x18\x04 \x01(\t\x12\x0b\n\x03md5\x18\x05 \x01(\t\"\\\n\x0fPathDatasetBlob\x12I\n\ncomponents\x18\x01 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\"t\n\x16S3DatasetComponentBlob\x12\x43\n\x04path\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\x12\x15\n\rs3_version_id\x18\x02 \x01(\t\"X\n\rS3DatasetBlob\x12G\n\ncomponents\x18\x01 \x03(\x0b\x32\x33.ai.verta.modeldb.versioning.S3DatasetComponentBlob\"\x90\x01\n\x0b\x44\x61tasetDiff\x12\x38\n\x02s3\x18\x01 \x01(\x0b\x32*.ai.verta.modeldb.versioning.S3DatasetDiffH\x00\x12<\n\x04path\x18\x02 \x01(\x0b\x32,.ai.verta.modeldb.versioning.PathDatasetDiffH\x00\x42\t\n\x07\x63ontent\"\xa8\x02\n\x18PathDatasetComponentDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12@\n\x01\x41\x18\x02 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\x12@\n\x01\x42\x18\x03 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\x12@\n\x01\x43\x18\x04 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\"\\\n\x0fPathDatasetDiff\x12I\n\ncomponents\x18\x01 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentDiff\"\xa0\x02\n\x16S3DatasetComponentDiff\x12\x46\n\x06status\x18\x03 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12>\n\x01\x41\x18\x04 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.S3DatasetComponentBlob\x12>\n\x01\x42\x18\x05 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.S3DatasetComponentBlob\x12>\n\x01\x43\x18\x06 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.S3DatasetComponentBlob\"X\n\rS3DatasetDiff\x12G\n\ncomponents\x18\x01 \x03(\x0b\x32\x33.ai.verta.modeldb.versioning.S3DatasetComponentDiffBMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
+  serialized_pb=b'\n modeldb/versioning/Dataset.proto\x12\x1b\x61i.verta.modeldb.versioning\x1a\x1emodeldb/versioning/Enums.proto\"\xd0\x01\n\x0b\x44\x61tasetBlob\x12\x38\n\x02s3\x18\x01 \x01(\x0b\x32*.ai.verta.modeldb.versioning.S3DatasetBlobH\x00\x12<\n\x04path\x18\x02 \x01(\x0b\x32,.ai.verta.modeldb.versioning.PathDatasetBlobH\x00\x12>\n\x05query\x18\x03 \x01(\x0b\x32-.ai.verta.modeldb.versioning.QueryDatasetBlobH\x00\x42\t\n\x07\x63ontent\"^\n\x10QueryDatasetBlob\x12J\n\ncomponents\x18\x01 \x03(\x0b\x32\x36.ai.verta.modeldb.versioning.QueryDatasetComponentBlob\"u\n\x19QueryDatasetComponentBlob\x12\r\n\x05query\x18\x01 \x01(\t\x12\x17\n\x0f\x64\x61ta_source_uri\x18\x04 \x01(\t\x12\x1b\n\x13\x65xecution_timestamp\x18\x05 \x01(\x04\x12\x13\n\x0bnum_records\x18\x06 \x01(\x04\"\xa8\x01\n\x18PathDatasetComponentBlob\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0c\n\x04size\x18\x02 \x01(\x04\x12\x1f\n\x17last_modified_at_source\x18\x03 \x01(\x04\x12\x0e\n\x06sha256\x18\x04 \x01(\t\x12\x0b\n\x03md5\x18\x05 \x01(\t\x12\x1f\n\x17internal_versioned_path\x18\x06 \x01(\t\x12\x11\n\tbase_path\x18\x07 \x01(\t\"\\\n\x0fPathDatasetBlob\x12I\n\ncomponents\x18\x01 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\"t\n\x16S3DatasetComponentBlob\x12\x43\n\x04path\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\x12\x15\n\rs3_version_id\x18\x02 \x01(\t\"X\n\rS3DatasetBlob\x12G\n\ncomponents\x18\x01 \x03(\x0b\x32\x33.ai.verta.modeldb.versioning.S3DatasetComponentBlob\"\xd0\x01\n\x0b\x44\x61tasetDiff\x12\x38\n\x02s3\x18\x01 \x01(\x0b\x32*.ai.verta.modeldb.versioning.S3DatasetDiffH\x00\x12<\n\x04path\x18\x02 \x01(\x0b\x32,.ai.verta.modeldb.versioning.PathDatasetDiffH\x00\x12>\n\x05query\x18\x03 \x01(\x0b\x32-.ai.verta.modeldb.versioning.QueryDatasetDiffH\x00\x42\t\n\x07\x63ontent\"\xac\x02\n\x19QueryDatasetComponentDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12\x41\n\x01\x41\x18\x02 \x01(\x0b\x32\x36.ai.verta.modeldb.versioning.QueryDatasetComponentBlob\x12\x41\n\x01\x42\x18\x03 \x01(\x0b\x32\x36.ai.verta.modeldb.versioning.QueryDatasetComponentBlob\x12\x41\n\x01\x43\x18\x04 \x01(\x0b\x32\x36.ai.verta.modeldb.versioning.QueryDatasetComponentBlob\"^\n\x10QueryDatasetDiff\x12J\n\ncomponents\x18\x01 \x03(\x0b\x32\x36.ai.verta.modeldb.versioning.QueryDatasetComponentDiff\"\xa8\x02\n\x18PathDatasetComponentDiff\x12\x46\n\x06status\x18\x01 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12@\n\x01\x41\x18\x02 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\x12@\n\x01\x42\x18\x03 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\x12@\n\x01\x43\x18\x04 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentBlob\"\\\n\x0fPathDatasetDiff\x12I\n\ncomponents\x18\x01 \x03(\x0b\x32\x35.ai.verta.modeldb.versioning.PathDatasetComponentDiff\"\xa0\x02\n\x16S3DatasetComponentDiff\x12\x46\n\x06status\x18\x03 \x01(\x0e\x32\x36.ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus\x12>\n\x01\x41\x18\x04 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.S3DatasetComponentBlob\x12>\n\x01\x42\x18\x05 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.S3DatasetComponentBlob\x12>\n\x01\x43\x18\x06 \x01(\x0b\x32\x33.ai.verta.modeldb.versioning.S3DatasetComponentBlob\"X\n\rS3DatasetDiff\x12G\n\ncomponents\x18\x01 \x03(\x0b\x32\x33.ai.verta.modeldb.versioning.S3DatasetComponentDiffBMP\x01ZIgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioningb\x06proto3'
   ,
   dependencies=[modeldb_dot_versioning_dot_Enums__pb2.DESCRIPTOR,])
 
@@ -47,6 +47,13 @@ _DATASETBLOB = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='query', full_name='ai.verta.modeldb.versioning.DatasetBlob.query', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -63,7 +70,90 @@ _DATASETBLOB = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=98,
-  serialized_end=242,
+  serialized_end=306,
+)
+
+
+_QUERYDATASETBLOB = _descriptor.Descriptor(
+  name='QueryDatasetBlob',
+  full_name='ai.verta.modeldb.versioning.QueryDatasetBlob',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='components', full_name='ai.verta.modeldb.versioning.QueryDatasetBlob.components', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=308,
+  serialized_end=402,
+)
+
+
+_QUERYDATASETCOMPONENTBLOB = _descriptor.Descriptor(
+  name='QueryDatasetComponentBlob',
+  full_name='ai.verta.modeldb.versioning.QueryDatasetComponentBlob',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='query', full_name='ai.verta.modeldb.versioning.QueryDatasetComponentBlob.query', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='data_source_uri', full_name='ai.verta.modeldb.versioning.QueryDatasetComponentBlob.data_source_uri', index=1,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='execution_timestamp', full_name='ai.verta.modeldb.versioning.QueryDatasetComponentBlob.execution_timestamp', index=2,
+      number=5, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='num_records', full_name='ai.verta.modeldb.versioning.QueryDatasetComponentBlob.num_records', index=3,
+      number=6, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=404,
+  serialized_end=521,
 )
 
 
@@ -109,6 +199,20 @@ _PATHDATASETCOMPONENTBLOB = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='internal_versioned_path', full_name='ai.verta.modeldb.versioning.PathDatasetComponentBlob.internal_versioned_path', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='base_path', full_name='ai.verta.modeldb.versioning.PathDatasetComponentBlob.base_path', index=6,
+      number=7, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -121,8 +225,8 @@ _PATHDATASETCOMPONENTBLOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=244,
-  serialized_end=360,
+  serialized_start=524,
+  serialized_end=692,
 )
 
 
@@ -152,8 +256,8 @@ _PATHDATASETBLOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=362,
-  serialized_end=454,
+  serialized_start=694,
+  serialized_end=786,
 )
 
 
@@ -190,8 +294,8 @@ _S3DATASETCOMPONENTBLOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=456,
-  serialized_end=572,
+  serialized_start=788,
+  serialized_end=904,
 )
 
 
@@ -221,8 +325,8 @@ _S3DATASETBLOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=574,
-  serialized_end=662,
+  serialized_start=906,
+  serialized_end=994,
 )
 
 
@@ -247,6 +351,13 @@ _DATASETDIFF = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='query', full_name='ai.verta.modeldb.versioning.DatasetDiff.query', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -262,8 +373,91 @@ _DATASETDIFF = _descriptor.Descriptor(
       name='content', full_name='ai.verta.modeldb.versioning.DatasetDiff.content',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=665,
-  serialized_end=809,
+  serialized_start=997,
+  serialized_end=1205,
+)
+
+
+_QUERYDATASETCOMPONENTDIFF = _descriptor.Descriptor(
+  name='QueryDatasetComponentDiff',
+  full_name='ai.verta.modeldb.versioning.QueryDatasetComponentDiff',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='status', full_name='ai.verta.modeldb.versioning.QueryDatasetComponentDiff.status', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='A', full_name='ai.verta.modeldb.versioning.QueryDatasetComponentDiff.A', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='B', full_name='ai.verta.modeldb.versioning.QueryDatasetComponentDiff.B', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='C', full_name='ai.verta.modeldb.versioning.QueryDatasetComponentDiff.C', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1208,
+  serialized_end=1508,
+)
+
+
+_QUERYDATASETDIFF = _descriptor.Descriptor(
+  name='QueryDatasetDiff',
+  full_name='ai.verta.modeldb.versioning.QueryDatasetDiff',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='components', full_name='ai.verta.modeldb.versioning.QueryDatasetDiff.components', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1510,
+  serialized_end=1604,
 )
 
 
@@ -314,8 +508,8 @@ _PATHDATASETCOMPONENTDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=812,
-  serialized_end=1108,
+  serialized_start=1607,
+  serialized_end=1903,
 )
 
 
@@ -345,8 +539,8 @@ _PATHDATASETDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1110,
-  serialized_end=1202,
+  serialized_start=1905,
+  serialized_end=1997,
 )
 
 
@@ -397,8 +591,8 @@ _S3DATASETCOMPONENTDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1205,
-  serialized_end=1493,
+  serialized_start=2000,
+  serialized_end=2288,
 )
 
 
@@ -428,29 +622,43 @@ _S3DATASETDIFF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1495,
-  serialized_end=1583,
+  serialized_start=2290,
+  serialized_end=2378,
 )
 
 _DATASETBLOB.fields_by_name['s3'].message_type = _S3DATASETBLOB
 _DATASETBLOB.fields_by_name['path'].message_type = _PATHDATASETBLOB
+_DATASETBLOB.fields_by_name['query'].message_type = _QUERYDATASETBLOB
 _DATASETBLOB.oneofs_by_name['content'].fields.append(
   _DATASETBLOB.fields_by_name['s3'])
 _DATASETBLOB.fields_by_name['s3'].containing_oneof = _DATASETBLOB.oneofs_by_name['content']
 _DATASETBLOB.oneofs_by_name['content'].fields.append(
   _DATASETBLOB.fields_by_name['path'])
 _DATASETBLOB.fields_by_name['path'].containing_oneof = _DATASETBLOB.oneofs_by_name['content']
+_DATASETBLOB.oneofs_by_name['content'].fields.append(
+  _DATASETBLOB.fields_by_name['query'])
+_DATASETBLOB.fields_by_name['query'].containing_oneof = _DATASETBLOB.oneofs_by_name['content']
+_QUERYDATASETBLOB.fields_by_name['components'].message_type = _QUERYDATASETCOMPONENTBLOB
 _PATHDATASETBLOB.fields_by_name['components'].message_type = _PATHDATASETCOMPONENTBLOB
 _S3DATASETCOMPONENTBLOB.fields_by_name['path'].message_type = _PATHDATASETCOMPONENTBLOB
 _S3DATASETBLOB.fields_by_name['components'].message_type = _S3DATASETCOMPONENTBLOB
 _DATASETDIFF.fields_by_name['s3'].message_type = _S3DATASETDIFF
 _DATASETDIFF.fields_by_name['path'].message_type = _PATHDATASETDIFF
+_DATASETDIFF.fields_by_name['query'].message_type = _QUERYDATASETDIFF
 _DATASETDIFF.oneofs_by_name['content'].fields.append(
   _DATASETDIFF.fields_by_name['s3'])
 _DATASETDIFF.fields_by_name['s3'].containing_oneof = _DATASETDIFF.oneofs_by_name['content']
 _DATASETDIFF.oneofs_by_name['content'].fields.append(
   _DATASETDIFF.fields_by_name['path'])
 _DATASETDIFF.fields_by_name['path'].containing_oneof = _DATASETDIFF.oneofs_by_name['content']
+_DATASETDIFF.oneofs_by_name['content'].fields.append(
+  _DATASETDIFF.fields_by_name['query'])
+_DATASETDIFF.fields_by_name['query'].containing_oneof = _DATASETDIFF.oneofs_by_name['content']
+_QUERYDATASETCOMPONENTDIFF.fields_by_name['status'].enum_type = modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
+_QUERYDATASETCOMPONENTDIFF.fields_by_name['A'].message_type = _QUERYDATASETCOMPONENTBLOB
+_QUERYDATASETCOMPONENTDIFF.fields_by_name['B'].message_type = _QUERYDATASETCOMPONENTBLOB
+_QUERYDATASETCOMPONENTDIFF.fields_by_name['C'].message_type = _QUERYDATASETCOMPONENTBLOB
+_QUERYDATASETDIFF.fields_by_name['components'].message_type = _QUERYDATASETCOMPONENTDIFF
 _PATHDATASETCOMPONENTDIFF.fields_by_name['status'].enum_type = modeldb_dot_versioning_dot_Enums__pb2._DIFFSTATUSENUM_DIFFSTATUS
 _PATHDATASETCOMPONENTDIFF.fields_by_name['A'].message_type = _PATHDATASETCOMPONENTBLOB
 _PATHDATASETCOMPONENTDIFF.fields_by_name['B'].message_type = _PATHDATASETCOMPONENTBLOB
@@ -462,11 +670,15 @@ _S3DATASETCOMPONENTDIFF.fields_by_name['B'].message_type = _S3DATASETCOMPONENTBL
 _S3DATASETCOMPONENTDIFF.fields_by_name['C'].message_type = _S3DATASETCOMPONENTBLOB
 _S3DATASETDIFF.fields_by_name['components'].message_type = _S3DATASETCOMPONENTDIFF
 DESCRIPTOR.message_types_by_name['DatasetBlob'] = _DATASETBLOB
+DESCRIPTOR.message_types_by_name['QueryDatasetBlob'] = _QUERYDATASETBLOB
+DESCRIPTOR.message_types_by_name['QueryDatasetComponentBlob'] = _QUERYDATASETCOMPONENTBLOB
 DESCRIPTOR.message_types_by_name['PathDatasetComponentBlob'] = _PATHDATASETCOMPONENTBLOB
 DESCRIPTOR.message_types_by_name['PathDatasetBlob'] = _PATHDATASETBLOB
 DESCRIPTOR.message_types_by_name['S3DatasetComponentBlob'] = _S3DATASETCOMPONENTBLOB
 DESCRIPTOR.message_types_by_name['S3DatasetBlob'] = _S3DATASETBLOB
 DESCRIPTOR.message_types_by_name['DatasetDiff'] = _DATASETDIFF
+DESCRIPTOR.message_types_by_name['QueryDatasetComponentDiff'] = _QUERYDATASETCOMPONENTDIFF
+DESCRIPTOR.message_types_by_name['QueryDatasetDiff'] = _QUERYDATASETDIFF
 DESCRIPTOR.message_types_by_name['PathDatasetComponentDiff'] = _PATHDATASETCOMPONENTDIFF
 DESCRIPTOR.message_types_by_name['PathDatasetDiff'] = _PATHDATASETDIFF
 DESCRIPTOR.message_types_by_name['S3DatasetComponentDiff'] = _S3DATASETCOMPONENTDIFF
@@ -479,6 +691,20 @@ DatasetBlob = _reflection.GeneratedProtocolMessageType('DatasetBlob', (_message.
   # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.DatasetBlob)
   })
 _sym_db.RegisterMessage(DatasetBlob)
+
+QueryDatasetBlob = _reflection.GeneratedProtocolMessageType('QueryDatasetBlob', (_message.Message,), {
+  'DESCRIPTOR' : _QUERYDATASETBLOB,
+  '__module__' : 'modeldb.versioning.Dataset_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.QueryDatasetBlob)
+  })
+_sym_db.RegisterMessage(QueryDatasetBlob)
+
+QueryDatasetComponentBlob = _reflection.GeneratedProtocolMessageType('QueryDatasetComponentBlob', (_message.Message,), {
+  'DESCRIPTOR' : _QUERYDATASETCOMPONENTBLOB,
+  '__module__' : 'modeldb.versioning.Dataset_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.QueryDatasetComponentBlob)
+  })
+_sym_db.RegisterMessage(QueryDatasetComponentBlob)
 
 PathDatasetComponentBlob = _reflection.GeneratedProtocolMessageType('PathDatasetComponentBlob', (_message.Message,), {
   'DESCRIPTOR' : _PATHDATASETCOMPONENTBLOB,
@@ -514,6 +740,20 @@ DatasetDiff = _reflection.GeneratedProtocolMessageType('DatasetDiff', (_message.
   # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.DatasetDiff)
   })
 _sym_db.RegisterMessage(DatasetDiff)
+
+QueryDatasetComponentDiff = _reflection.GeneratedProtocolMessageType('QueryDatasetComponentDiff', (_message.Message,), {
+  'DESCRIPTOR' : _QUERYDATASETCOMPONENTDIFF,
+  '__module__' : 'modeldb.versioning.Dataset_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.QueryDatasetComponentDiff)
+  })
+_sym_db.RegisterMessage(QueryDatasetComponentDiff)
+
+QueryDatasetDiff = _reflection.GeneratedProtocolMessageType('QueryDatasetDiff', (_message.Message,), {
+  'DESCRIPTOR' : _QUERYDATASETDIFF,
+  '__module__' : 'modeldb.versioning.Dataset_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.versioning.QueryDatasetDiff)
+  })
+_sym_db.RegisterMessage(QueryDatasetDiff)
 
 PathDatasetComponentDiff = _reflection.GeneratedProtocolMessageType('PathDatasetComponentDiff', (_message.Message,), {
   'DESCRIPTOR' : _PATHDATASETCOMPONENTDIFF,

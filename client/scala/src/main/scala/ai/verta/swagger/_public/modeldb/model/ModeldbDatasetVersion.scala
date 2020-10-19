@@ -12,19 +12,20 @@ import ai.verta.swagger._public.modeldb.model.DatasetVisibilityEnumDatasetVisibi
 import ai.verta.swagger._public.modeldb.model.EntitiesEnumEntitiesTypes._
 import ai.verta.swagger._public.modeldb.model.IdServiceProviderEnumIdServiceProvider._
 import ai.verta.swagger._public.modeldb.model.ModelDBActionEnumModelDBServiceActions._
+import ai.verta.swagger._public.modeldb.model.ModeldbProjectVisibility._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
 import ai.verta.swagger._public.modeldb.model.PathLocationTypeEnumPathLocationType._
+import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger._public.modeldb.model.ServiceEnumService._
 import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
+import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.model.WorkspaceTypeEnumWorkspaceType._
-import ai.verta.swagger._public.modeldb.model.ModeldbProjectVisibility._
-import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
-import ai.verta.swagger._public.modeldb.model.UacFlagEnum._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbDatasetVersion (
   attributes: Option[List[CommonKeyValue]] = None,
+  dataset_blob: Option[VersioningDatasetBlob] = None,
   dataset_id: Option[String] = None,
   dataset_type: Option[DatasetTypeEnumDatasetType] = None,
   dataset_version_visibility: Option[DatasetVisibilityEnumDatasetVisibility] = None,
@@ -48,6 +49,7 @@ object ModeldbDatasetVersion {
     new JObject(
       List[Option[JField]](
         obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
+        obj.dataset_blob.map(x => JField("dataset_blob", ((x: VersioningDatasetBlob) => VersioningDatasetBlob.toJson(x))(x))),
         obj.dataset_id.map(x => JField("dataset_id", JString(x))),
         obj.dataset_type.map(x => JField("dataset_type", ((x: DatasetTypeEnumDatasetType) => DatasetTypeEnumDatasetType.toJson(x))(x))),
         obj.dataset_version_visibility.map(x => JField("dataset_version_visibility", ((x: DatasetVisibilityEnumDatasetVisibility) => DatasetVisibilityEnumDatasetVisibility.toJson(x))(x))),
@@ -76,6 +78,7 @@ object ModeldbDatasetVersion {
         ModeldbDatasetVersion(
           // TODO: handle required
           attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          dataset_blob = fieldsMap.get("dataset_blob").map(VersioningDatasetBlob.fromJson),
           dataset_id = fieldsMap.get("dataset_id").map(JsonConverter.fromJsonString),
           dataset_type = fieldsMap.get("dataset_type").map(DatasetTypeEnumDatasetType.fromJson),
           dataset_version_visibility = fieldsMap.get("dataset_version_visibility").map(DatasetVisibilityEnumDatasetVisibility.fromJson),

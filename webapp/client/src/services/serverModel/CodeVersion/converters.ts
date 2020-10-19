@@ -1,4 +1,8 @@
-import { ICodeVersion } from 'core/shared/models/CodeVersion';
+import * as R from 'ramda';
+
+import { ICodeVersion } from 'shared/models/CodeVersion';
+import { ICodeVersionsFromBlob, BlobLocation } from 'shared/models/ModelRecord';
+import { makeGithubRemoteRepoUrl } from 'shared/utils/github/github';
 
 export const convertServerCodeVersion = (
   serverCodeVersion: any
@@ -27,8 +31,22 @@ export const convertServerCodeVersion = (
           ? serverGitSnapshot.filepaths[0]
           : serverGitSnapshot.filepaths,
         isDirty: serverGitSnapshot.is_dirty,
-        remoteRepoUrl: serverGitSnapshot.repo,
+        remoteRepoUrl: makeGithubRemoteRepoUrl(serverGitSnapshot.repo),
       },
     };
   }
+};
+
+export const convertServerCodeVersionsFromBlob = (
+  serverCodeVersionsFromBlob: Record<string, any>
+): ICodeVersionsFromBlob => {
+  let res = R.toPairs(serverCodeVersionsFromBlob)
+    .map(([location, codeVersion]) => [
+      location,
+      convertServerCodeVersion(codeVersion),
+    ])
+    .filter(([_, convertedCodeVersion]) =>
+      Boolean(convertedCodeVersion)
+    ) as Array<[BlobLocation, ICodeVersion]>;
+  return R.fromPairs(res);
 };

@@ -52,7 +52,7 @@ public class HyperparameterElementMappingEntity {
     if (entity instanceof ExperimentRunEntity) {
       this.experimentRunEntity = (ExperimentRunEntity) entity;
     } else {
-      LOGGER.warn("Expected ExperimentRunEntity found {}", entity.getClass());
+      LOGGER.warn("ExperimentRunEntity expected : found {}", entity.getClass());
       com.google.rpc.Status status =
           com.google.rpc.Status.newBuilder()
               .setCode(Code.INTERNAL_VALUE)

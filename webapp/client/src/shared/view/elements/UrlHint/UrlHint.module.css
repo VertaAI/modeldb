@@ -1,0 +1,14 @@
+.root {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.5);
+  line-height: 16px;
+  margin-top: 8.5px;
+}
+
+.label {
+}
+
+.url {
+  color: var(--text-color8);
+  word-break: break-all;
+}

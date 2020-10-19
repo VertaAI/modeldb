@@ -1,4 +1,3 @@
-import { bind } from 'decko';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
@@ -7,10 +6,10 @@ import {
   BreadcrumbsBuilder,
   IBreadcrumbsBuilder as IBreadcrumbsBuilder_,
   IMainNavigationRoute,
-} from 'core/features/Layout';
-import routes from 'routes';
-import { IApplicationState } from 'store/store';
-import { selectCurrentWorkspaceName } from 'store/workspaces';
+} from 'features/layout';
+import routes from 'shared/routes';
+import { IApplicationState } from 'setup/store/store';
+import { selectCurrentWorkspaceName } from 'features/workspaces/store';
 
 type ILocalProps = Omit<
   React.ComponentProps<typeof Layout>,

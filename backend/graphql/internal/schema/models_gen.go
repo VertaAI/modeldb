@@ -37,6 +37,11 @@ type BranchesNetwork struct {
 	Edges    []*NetworkEdgeColor          `json:"edges"`
 }
 
+type CollaboratorReference struct {
+	UsernameOrEmail *string `json:"usernameOrEmail"`
+	TeamID          *string `json:"teamID"`
+}
+
 type CommitAsDiff struct {
 	Parent string   `json:"parent"`
 	Diff   []string `json:"diff"`
@@ -57,6 +62,30 @@ type CommitReference struct {
 
 type Commits struct {
 	Commits []*models.Commit `json:"commits"`
+}
+
+type DatasetVersions struct {
+	DatasetVersions []*modeldb.DatasetVersion `json:"datasetVersions"`
+	Total           int                       `json:"total"`
+}
+
+type DatasetVersionsQuery struct {
+	Pagination       *PaginationQuery   `json:"pagination"`
+	StringPredicates []*StringPredicate `json:"stringPredicates"`
+	FloatPredicates  []*FloatPredicate  `json:"floatPredicates"`
+	Ids              []string           `json:"ids"`
+}
+
+type Datasets struct {
+	Datasets []*modeldb.Dataset `json:"datasets"`
+	Total    int                `json:"total"`
+}
+
+type DatasetsQuery struct {
+	Pagination       *PaginationQuery   `json:"pagination"`
+	StringPredicates []*StringPredicate `json:"stringPredicates"`
+	FloatPredicates  []*FloatPredicate  `json:"floatPredicates"`
+	Ids              []string           `json:"ids"`
 }
 
 type ExperimentRuns struct {
@@ -84,6 +113,12 @@ type FloatKeyValue struct {
 }
 
 func (FloatKeyValue) IsKeyValue() {}
+
+type FloatPredicate struct {
+	Key      string            `json:"key"`
+	Value    float64           `json:"value"`
+	Operator PredicateOperator `json:"operator"`
+}
 
 type MergeResult struct {
 	Commit     *models.Commit `json:"commit"`
@@ -131,7 +166,10 @@ type Repositories struct {
 }
 
 type RepositoriesQuery struct {
-	Pagination *PaginationQuery `json:"pagination"`
+	Pagination       *PaginationQuery   `json:"pagination"`
+	StringPredicates []*StringPredicate `json:"stringPredicates"`
+	FloatPredicates  []*FloatPredicate  `json:"floatPredicates"`
+	Ids              []int              `json:"ids"`
 }
 
 type StringKeyValue struct {
@@ -140,6 +178,12 @@ type StringKeyValue struct {
 }
 
 func (StringKeyValue) IsKeyValue() {}
+
+type StringPredicate struct {
+	Key      string            `json:"key"`
+	Value    string            `json:"value"`
+	Operator PredicateOperator `json:"operator"`
+}
 
 type AccessType string
 
@@ -233,6 +277,47 @@ func (e ArtifactType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type DatasetVisibility string
+
+const (
+	DatasetVisibilityPrivate DatasetVisibility = "PRIVATE"
+	DatasetVisibilityPublic  DatasetVisibility = "PUBLIC"
+)
+
+var AllDatasetVisibility = []DatasetVisibility{
+	DatasetVisibilityPrivate,
+	DatasetVisibilityPublic,
+}
+
+func (e DatasetVisibility) IsValid() bool {
+	switch e {
+	case DatasetVisibilityPrivate, DatasetVisibilityPublic:
+		return true
+	}
+	return false
+}
+
+func (e DatasetVisibility) String() string {
+	return string(e)
+}
+
+func (e *DatasetVisibility) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = DatasetVisibility(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid DatasetVisibility", str)
+	}
+	return nil
+}
+
+func (e DatasetVisibility) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type NetworkEdgeType string
 
 const (
@@ -273,6 +358,61 @@ func (e *NetworkEdgeType) UnmarshalGQL(v interface{}) error {
 }
 
 func (e NetworkEdgeType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type PredicateOperator string
+
+const (
+	PredicateOperatorEq         PredicateOperator = "EQ"
+	PredicateOperatorNe         PredicateOperator = "NE"
+	PredicateOperatorGt         PredicateOperator = "GT"
+	PredicateOperatorGte        PredicateOperator = "GTE"
+	PredicateOperatorLt         PredicateOperator = "LT"
+	PredicateOperatorLte        PredicateOperator = "LTE"
+	PredicateOperatorContain    PredicateOperator = "CONTAIN"
+	PredicateOperatorNotContain PredicateOperator = "NOT_CONTAIN"
+	PredicateOperatorIn         PredicateOperator = "IN"
+)
+
+var AllPredicateOperator = []PredicateOperator{
+	PredicateOperatorEq,
+	PredicateOperatorNe,
+	PredicateOperatorGt,
+	PredicateOperatorGte,
+	PredicateOperatorLt,
+	PredicateOperatorLte,
+	PredicateOperatorContain,
+	PredicateOperatorNotContain,
+	PredicateOperatorIn,
+}
+
+func (e PredicateOperator) IsValid() bool {
+	switch e {
+	case PredicateOperatorEq, PredicateOperatorNe, PredicateOperatorGt, PredicateOperatorGte, PredicateOperatorLt, PredicateOperatorLte, PredicateOperatorContain, PredicateOperatorNotContain, PredicateOperatorIn:
+		return true
+	}
+	return false
+}
+
+func (e PredicateOperator) String() string {
+	return string(e)
+}
+
+func (e *PredicateOperator) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = PredicateOperator(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid PredicateOperator", str)
+	}
+	return nil
+}
+
+func (e PredicateOperator) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

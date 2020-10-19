@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { useParams } from 'react-router';
 
-import { CompareChanges } from 'core/features/versioning/compareChanges';
-import withLoadingRequiredData from 'core/features/versioning/repositoryData/view/RepositoryData/WithLoadingRequiredData/WithLoadingRequiredData';
-import { IRepository } from 'core/shared/models/Versioning/Repository';
-import routes, { GetRouteParams } from 'routes';
+import { CompareChanges } from 'features/versioning/compareChanges';
+import withABCommitPointers from 'features/versioning/shared/withABCommitPointers';
+import { IRepository } from 'shared/models/Versioning/Repository';
+import routes, { GetRouteParams } from 'shared/routes';
 
 import RepositoryDetailsPagesLayout from '../shared/RepositoryDetailsPagesLayout/RepositoryDetailsPagesLayout';
 
@@ -12,23 +12,20 @@ interface ILocalProps {
   repository: IRepository;
 }
 
-const CompareChangesWithBranchesAndTags = withLoadingRequiredData(
-  CompareChanges
-);
-
 const CompareChangesPage = ({ repository }: ILocalProps) => {
-  const params = useParams<
+  const { commitPointerAValue, commitPointerBValue } = useParams<
     GetRouteParams<typeof routes.repositoryCompareChanges>
   >();
+
+  const CompareChagesWithCommitPointers = withABCommitPointers(CompareChanges)({
+    commitPointerAValue,
+    commitPointerBValue,
+  });
 
   return (
     <RepositoryDetailsPagesLayout repository={repository}>
       <div style={{ width: '100%' }}>
-        <CompareChangesWithBranchesAndTags
-          repository={repository}
-          commitPointerValueA={params.commitPointerAValue}
-          commitPointerValueB={params.commitPointerBValue}
-        />
+        <CompareChagesWithCommitPointers repository={repository} />
       </div>
     </RepositoryDetailsPagesLayout>
   );

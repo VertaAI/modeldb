@@ -3,5 +3,6 @@ type User {
   name: String
   email: String!
   picture: String
+  roles: [String!]!
   username: String!
 }

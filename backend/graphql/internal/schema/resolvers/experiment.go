@@ -26,7 +26,7 @@ func (r *experimentResolver) Owner(ctx context.Context, obj *ai_verta_modeldb.Ex
 	return dataloaders.GetUserById(ctx, obj.GetOwner())
 }
 func (r *experimentResolver) Attributes(ctx context.Context, obj *ai_verta_modeldb.Experiment) ([]schema.KeyValue, error) {
-	return keyValueSliceConverter(obj.GetAttributes())
+	return keyValueSliceConverter(ctx, obj.GetAttributes())
 }
 func (r *experimentResolver) Runs(ctx context.Context, obj *ai_verta_modeldb.Experiment, next *string, query *schema.ExperimentRunsQuery) (*schema.ExperimentRuns, error) {
 	// TODO: add pagination

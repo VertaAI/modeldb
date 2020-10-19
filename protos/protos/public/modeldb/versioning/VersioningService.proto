@@ -6,8 +6,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/mode
 option java_multiple_files = true;
 
 import "google/api/annotations.proto";
-import "modeldb/CommonService.proto";
-import "modeldb/ExperimentRunService.proto";
+import "common/CommonService.proto";
 import "modeldb/versioning/Code.proto";
 import "modeldb/versioning/Config.proto";
 import "modeldb/versioning/Dataset.proto";
@@ -29,6 +28,8 @@ message Commit {
     string author = 4;
 
     string commit_sha = 5;
+    // Updated Date while create tags & attribute for the commit.
+    uint64 date_updated = 6;
 }
 
 // Data structure used to compute the SHA of a folder
@@ -70,6 +71,7 @@ message BlobExpanded {
     // Each element goes one level deeper. So ["foo", "bar"] represents the same as /foo/bar
     repeated string location = 1;
     Blob blob = 2;
+    repeated common.KeyValue attributes = 3;
 }
 
 message BlobDiff {
@@ -102,18 +104,15 @@ message Repository {
     uint64 date_updated = 4;
 
     string workspace_id = 5;
-    WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
+    common.WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
 
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
 
     string owner = 10;
+    string description = 11;
+    repeated common.KeyValue attributes = 12;
 }
 
-// For pagination
-message Pagination {
-    int32 page_number = 2;
-    int32 page_limit = 3;
-}
 
 // CRUD for repositories
 message RepositoryNamedIdentification {
@@ -129,7 +128,7 @@ message RepositoryIdentification {
 
 message ListRepositoriesRequest {
     string workspace_name = 1;
-    Pagination pagination = 2;
+    common.Pagination pagination = 2;
 
     message Response {
         repeated Repository repositories = 1;
@@ -165,7 +164,7 @@ message DeleteRepositoryRequest {
 // CRUD for commits
 message ListCommitsRequest {
     RepositoryIdentification repository_id = 1;
-    Pagination pagination = 2;
+    common.Pagination pagination = 2;
 
     string commit_base = 3; // If empty, consider commits from the beginning
     string commit_head = 4; // If empty, consider commits from the base to the latest
@@ -232,31 +231,6 @@ message ListCommitBlobsRequest {
     }
 }
 
-// Getting experimentRuns linked to a commit
-message ListCommitExperimentRunsRequest {
-    RepositoryIdentification repository_id = 1;
-    Pagination pagination = 2;
-    string commit_sha = 3;
-
-    message Response {
-        repeated ExperimentRun runs = 1;
-        int64 total_records = 2;
-    }
-}
-
-// Getting experimentRuns linked to a blob
-message ListBlobExperimentRunsRequest {
-    RepositoryIdentification repository_id = 1;
-    Pagination pagination = 2;
-    string commit_sha = 3;
-    repeated string location = 4;
-
-    message Response {
-        repeated ExperimentRun runs = 1;
-        int64 total_records = 2;
-    }
-}
-
 message GetCommitComponentRequest {
     RepositoryIdentification repository_id = 1;
     string commit_sha = 2;
@@ -270,6 +244,7 @@ message GetCommitComponentRequest {
             Folder folder = 1;
             Blob blob = 2;
         }
+        repeated common.KeyValue attributes = 10;
     }
 }
 
@@ -424,7 +399,7 @@ message RevertRepositoryCommitsRequest {
 message FindRepositories {
     repeated uint64 repo_ids = 1; //if repo_ids not present in request then the backend returns all the matching repositories, else returns a subsetfrom the list that are in the parameter repo_ids
     string workspace_name = 2; //If auth service is configured will default to Personal workspace, if authservice is not configured then parameter is ignored
-    repeated KeyValueQuery predicates = 3; //predicates like: {key:labels, value:Backend}, {key:name, value:repo_name}, if absent all the accessible repositories are returned.
+    repeated common.KeyValueQuery predicates = 3; //predicates like: {key:labels, value:Backend}, {key:name, value:repo_name}, if absent all the accessible repositories are returned.
 
     //For pagination
     int32 page_number = 6;//If not present no pagination is applied.
@@ -461,10 +436,57 @@ message FindRepositoriesBlobs {
     //In future requirement
     //bool ascending = 8;
     //string sort_key = 9;
+    repeated common.KeyValueQuery predicates = 10;
 
     message Response {
         repeated BlobExpanded blobs = 1;
         int64 total_records = 2;
+    }
+}
+
+message GetUrlForBlobVersioned {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+    string method = 5; //This is either GET or PUT
+    uint64 part_number = 6; // if 0, don’t do multipart
+
+    message Response {
+        string url = 1;
+        bool multipart_upload_ok = 3;  // for backcompat: new Client, old Backend
+    }
+}
+
+message CommitVersionedBlobArtifactPart {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+    common.ArtifactPart artifact_part = 5;
+
+    message Response{
+    }
+}
+
+message GetCommittedVersionedBlobArtifactParts {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+
+    message Response {
+        repeated common.ArtifactPart artifact_parts = 1;
+    }
+}
+
+message CommitMultipartVersionedBlobArtifact {
+    RepositoryIdentification repository_id = 1;
+    string commit_sha = 2;
+    repeated string location = 3;
+    string path_dataset_component_blob_path = 4;
+
+    message Response {
     }
 }
 
@@ -560,26 +582,6 @@ service VersioningService {
             get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/blobs"
             additional_bindings {
                 get: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/blobs"
-            }
-        };
-    }
-
-    // Getting ExperimentRuns linked to a commit
-    rpc ListCommitExperimentRuns(ListCommitExperimentRunsRequest) returns (ListCommitExperimentRunsRequest.Response) {
-        option (google.api.http) = {
-            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/runs"
-            additional_bindings {
-                get: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/runs"
-            }
-        };
-    }
-
-    // Getting ExperimentRuns linked to a blob
-    rpc ListBlobExperimentRuns(ListBlobExperimentRunsRequest) returns (ListBlobExperimentRunsRequest.Response) {
-        option (google.api.http) = {
-            get: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path/runs"
-            additional_bindings {
-                get: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path/runs"
             }
         };
     }
@@ -730,6 +732,37 @@ service VersioningService {
     rpc findRepositoriesBlobs(FindRepositoriesBlobs) returns (FindRepositoriesBlobs.Response){
         option (google.api.http) = {
             post: "/v1/versioning/workspaces/{workspace_name}/findRepositoriesBlobs"
+            body: "*"
+        };
+    };
+
+    rpc getUrlForBlobVersioned (GetUrlForBlobVersioned) returns (GetUrlForBlobVersioned.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/getUrlForBlobVersioned"
+            body: "*"
+            additional_bindings {
+                post: "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForBlobVersioned"
+            	body: "*"
+            }
+        };
+    };
+
+    rpc commitVersionedBlobArtifactPart(CommitVersionedBlobArtifactPart) returns (CommitVersionedBlobArtifactPart.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/commitVersionedBlobArtifactPart"
+            body: "*"
+        };
+    };
+
+    rpc getCommittedVersionedBlobArtifactParts(GetCommittedVersionedBlobArtifactParts) returns (GetCommittedVersionedBlobArtifactParts.Response) {
+        option (google.api.http) = {
+            get: "/v1/versioning/getCommittedVersionedBlobArtifactParts"
+        };
+    };
+
+    rpc commitMultipartVersionedBlobArtifact(CommitMultipartVersionedBlobArtifact) returns (CommitMultipartVersionedBlobArtifact.Response) {
+        option (google.api.http) = {
+            post: "/v1/versioning/commitMultipartVersionedBlobArtifact"
             body: "*"
         };
     };

@@ -1,5 +1,6 @@
 package ai.verta.modeldb.batchProcess;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -13,8 +14,7 @@ import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.uac.ModelResourceEnum;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import java.util.HashSet;
@@ -114,13 +114,13 @@ public class OwnerRoleBindingUtils {
                     ownerRole,
                     new CollaboratorUser(authService, userInfoValue),
                     experimentEntity.getId(),
-                    ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT);
+                    ModelDBServiceResourceTypes.EXPERIMENT);
               } catch (Exception e) {
                 e.printStackTrace();
                 LOGGER.error(e.getMessage());
               }
             } else {
-              LOGGER.error(
+              LOGGER.info(
                   "Experiment owner not found from UAC response list : experimentId - {} & userId - {}",
                   experimentEntity.getId(),
                   experimentEntity.getOwner());
@@ -137,6 +137,12 @@ public class OwnerRoleBindingUtils {
         }
         transaction.commit();
         lowerBound += pagesize;
+      } catch (Exception ex) {
+        if (ModelDBUtils.needToRetry(ex)) {
+          migrateExperiments();
+        } else {
+          throw ex;
+        }
       }
     }
 
@@ -192,13 +198,13 @@ public class OwnerRoleBindingUtils {
                   ownerRole,
                   new CollaboratorUser(authService, userInfoValue),
                   experimentRunEntity.getId(),
-                  ModelResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN);
+                  ModelDBServiceResourceTypes.EXPERIMENT_RUN);
             } catch (Exception e) {
               e.printStackTrace();
               LOGGER.error(e.getMessage());
             }
           } else {
-            LOGGER.error(
+            LOGGER.info(
                 "ExperimentRun owner not found from UAC response list : ExperimentRunId - {} & userId - {}",
                 experimentRunEntity.getId(),
                 experimentRunEntity.getOwner());
@@ -213,6 +219,12 @@ public class OwnerRoleBindingUtils {
         LOGGER.debug("finished processing page lower boundary {}", lowerBound);
         transaction.commit();
         lowerBound += pagesize;
+      } catch (Exception ex) {
+        if (ModelDBUtils.needToRetry(ex)) {
+          migrateExperimentRuns();
+        } else {
+          throw ex;
+        }
       }
     }
     LOGGER.debug("ExperimentRuns migration finished");
@@ -269,13 +281,13 @@ public class OwnerRoleBindingUtils {
                     ownerRole,
                     new CollaboratorUser(authService, userInfoValue),
                     datasetVersionEntity.getId(),
-                    ModelResourceEnum.ModelDBServiceResourceTypes.DATASET_VERSION);
+                    ModelDBServiceResourceTypes.DATASET_VERSION);
               } catch (Exception e) {
                 e.printStackTrace();
                 LOGGER.error(e.getMessage());
               }
             } else {
-              LOGGER.error(
+              LOGGER.info(
                   "DatasetVersion owner not found from UAC response list : DatasetVersionId - {} & userId - {}",
                   datasetVersionEntity.getId(),
                   datasetVersionEntity.getOwner());
@@ -293,6 +305,12 @@ public class OwnerRoleBindingUtils {
 
         transaction.commit();
         lowerBound += pagesize;
+      } catch (Exception ex) {
+        if (ModelDBUtils.needToRetry(ex)) {
+          migrateDatasetVersions();
+        } else {
+          throw ex;
+        }
       }
     }
 
@@ -355,7 +373,7 @@ public class OwnerRoleBindingUtils {
                 LOGGER.error(e.getMessage());
               }
             } else {
-              LOGGER.error(
+              LOGGER.info(
                   "Repository owner not found from UAC response list : RepositoryId - {} & userId - {}",
                   repositoryEntity.getId(),
                   repositoryEntity.getOwner());
@@ -373,6 +391,12 @@ public class OwnerRoleBindingUtils {
 
         transaction.commit();
         lowerBound += pagesize;
+      } catch (Exception ex) {
+        if (ModelDBUtils.needToRetry(ex)) {
+          migrateRepositories();
+        } else {
+          throw ex;
+        }
       }
     }
 
@@ -385,6 +409,12 @@ public class OwnerRoleBindingUtils {
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
       countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
       return session.createQuery(countQuery).getSingleResult();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getEntityCount(klass);
+      } else {
+        throw ex;
+      }
     }
   }
 }

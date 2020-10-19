@@ -2,13 +2,37 @@ import pytest
 
 import six
 
+import hashlib
 import os
-import sys
+import pickle
+import shutil
+import tempfile
 import zipfile
 
+import requests
+
 from verta._internal_utils import _artifact_utils
+from verta._internal_utils import _utils
 
 from . import utils
+
+
+class TestUtils:
+    def test_calc_sha256(self):
+        FILE_SIZE = 6*10**6  # 6 MB
+
+        with tempfile.NamedTemporaryFile(suffix='.txt') as tempf:
+            tempf.truncate(FILE_SIZE)  # zero-filled
+            tempf.flush()  # flush object buffer
+            os.fsync(tempf.fileno())  # flush OS buffer
+
+            tempf.seek(0)
+            piecewise_checksum = _artifact_utils.calc_sha256(tempf, FILE_SIZE//2)
+
+            tempf.seek(0)
+            whole_checksum = hashlib.sha256(tempf.read()).hexdigest()
+
+            assert piecewise_checksum == whole_checksum
 
 
 class TestArtifacts:
@@ -69,6 +93,44 @@ class TestArtifacts:
         with zipfile.ZipFile(experiment_run.get_artifact(key), 'r') as zipf:
             assert filepaths == set(zipf.namelist())
 
+    @pytest.mark.not_oss
+    def test_upload_multipart(self, experiment_run, in_tempdir):
+        key = "large"
+
+        # create artifact
+        with tempfile.NamedTemporaryFile(suffix='.bin', dir=".", delete=False) as tempf:
+            # write 6 MB file in 1 MB chunks
+            for _ in range(6):
+                tempf.write(os.urandom(1*(10**6)))
+
+        # log artifact
+        # TODO: set part size in config file when supported
+        PART_SIZE = int(5.4*(10**6))  # 5.4 MB; S3 parts must be > 5 MB
+        os.environ['VERTA_ARTIFACT_PART_SIZE'] = str(PART_SIZE)
+        try:
+            experiment_run.log_artifact(key, tempf.name)
+        finally:
+            del os.environ['VERTA_ARTIFACT_PART_SIZE']
+
+        # get artifact parts
+        committed_parts = experiment_run.get_artifact_parts(key)
+        assert committed_parts
+
+        # part checksums match actual file contents
+        with open(tempf.name, 'rb') as f:
+            file_parts = iter(lambda: f.read(PART_SIZE), b'')
+            for file_part, committed_part in zip(file_parts, committed_parts):
+                part_hash = hashlib.md5(file_part).hexdigest()
+                assert part_hash == committed_part['etag'].strip('"')
+
+        # retrieved artifact matches original file
+        filepath = experiment_run.download_artifact(key, download_to_path=key)
+        with open(filepath, 'rb') as f:
+            file_parts = iter(lambda: f.read(PART_SIZE), b'')
+            for file_part, committed_part in zip(file_parts, committed_parts):
+                part_hash = hashlib.md5(file_part).hexdigest()
+                assert part_hash == committed_part['etag'].strip('"')
+
     def test_empty(self, experiment_run, strs):
         """uploading empty data, e.g. an empty file, raises an error"""
 
@@ -97,6 +159,90 @@ class TestArtifacts:
                 experiment_run.log_artifact(key, artifact)
             with pytest.raises(ValueError):
                 experiment_run.log_artifact_path(key, artifact)
+
+    @staticmethod
+    def generate_random_data():
+        while True:
+            data = os.urandom(2 ** 16)
+            bytestream = six.BytesIO(data)
+            try:
+                pickle.load(bytestream)
+            except:
+                return data
+
+    def test_clientside_storage(self, experiment_run, strs, in_tempdir):
+        key = strs[0]
+        filename = strs[1]
+        FILE_CONTENTS = self.generate_random_data()
+
+        # TODO: be able to use existing env var for debugging
+        # NOTE: there is an assertion of `== 1` artifact that would need to be changed
+        VERTA_ARTIFACT_DIR_KEY = 'VERTA_ARTIFACT_DIR'
+        PREV_VERTA_ARTIFACT_DIR = os.environ.pop(VERTA_ARTIFACT_DIR_KEY, None)
+        try:
+            VERTA_ARTIFACT_DIR = os.path.join(in_tempdir, "artifact-store")
+            os.environ[VERTA_ARTIFACT_DIR_KEY] = VERTA_ARTIFACT_DIR
+
+            # create file
+            with open(filename, 'wb') as f:
+                f.write(FILE_CONTENTS)
+            # log artifact and delete file
+            experiment_run.log_artifact(key, filename)
+            os.remove(filename)
+            # and then there was one
+            assert len(os.listdir(VERTA_ARTIFACT_DIR)) == 1
+
+            # artifact retrievable
+            artifact = experiment_run.get_artifact(key)
+            assert artifact.read() == FILE_CONTENTS
+
+            # artifact downloadable
+            filepath = experiment_run.download_artifact(key, filename)
+            with open(filepath, 'rb') as f:
+                assert f.read() == FILE_CONTENTS
+
+            # object as well
+            obj = {'some': ["arbitrary", "object"]}
+            experiment_run.log_artifact(key, obj, overwrite=True)
+            assert experiment_run.get_artifact(key) == obj
+        finally:
+            if PREV_VERTA_ARTIFACT_DIR is not None:
+                os.environ[VERTA_ARTIFACT_DIR_KEY] = PREV_VERTA_ARTIFACT_DIR
+            else:
+                del os.environ[VERTA_ARTIFACT_DIR_KEY]
+
+    def test_download(self, experiment_run, strs, in_tempdir):
+        key = strs[0]
+        filename = strs[1]
+        new_filename = strs[2]
+        FILE_CONTENTS = self.generate_random_data()
+
+        # create file and upload as artifact
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+        experiment_run.log_artifact(key, filename)
+        os.remove(filename)
+
+        # download artifact and verify contents
+        new_filepath = experiment_run.download_artifact(key, new_filename)
+        assert new_filepath == os.path.abspath(new_filename)
+        with open(new_filepath, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
+
+        # object as well
+        obj = {'some': ["arbitrary", "object"]}
+        experiment_run.log_artifact(key, obj, overwrite=True)
+        new_filepath = experiment_run.download_artifact(key, new_filename)
+        with open(new_filepath, 'rb') as f:
+            assert pickle.load(f) == obj
+
+    def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
+        key = strs[0]
+        path = strs[1]
+
+        experiment_run.log_artifact_path(key, path)
+        with pytest.raises(ValueError):
+            experiment_run.download_artifact(key, path)
 
 
 class TestModels:
@@ -177,6 +323,48 @@ class TestModels:
         assert net.state_dict().keys() == retrieved_net.state_dict().keys()
         for key, weight in net.state_dict().items():
             assert torch.allclose(weight, retrieved_net.state_dict()[key])
+
+    def test_torch_state_dict(self, experiment_run, in_tempdir):
+        torch = pytest.importorskip("torch")
+        import torch.nn as nn
+        import torch.nn.functional as F
+        import torch.optim as optim
+
+        class Model(nn.Module):
+            def __init__(self):
+                super(Model, self).__init__()
+                self.conv1 = nn.Conv2d(3, 6, 5)
+                self.pool = nn.MaxPool2d(2, 2)
+                self.conv2 = nn.Conv2d(6, 16, 5)
+                self.fc1 = nn.Linear(16 * 5 * 5, 120)
+                self.fc2 = nn.Linear(120, 84)
+                self.fc3 = nn.Linear(84, 10)
+
+            def forward(self, x):
+                x = self.pool(F.relu(self.conv1(x)))
+                x = self.pool(F.relu(self.conv2(x)))
+                x = x.view(-1, 16 * 5 * 5)
+                x = F.relu(self.fc1(x))
+                x = F.relu(self.fc2(x))
+                x = self.fc3(x)
+                return x
+
+        net = Model()
+
+        # save state dict as artifact
+        with open("buffer", 'wb') as buffer:
+            torch.save(net.state_dict(), buffer)
+        experiment_run.log_artifact("net_state", buffer.name)
+
+        # retrieve and load state dict
+        state_dict = experiment_run.get_artifact("net_state")
+        new_net = Model()
+        new_net.load_state_dict(state_dict)
+
+        # weights are the same
+        assert net.state_dict().keys() == state_dict.keys()
+        for key, weight in net.state_dict().items():
+            assert torch.allclose(weight, state_dict[key])
 
     def test_keras(self, seed, experiment_run, strs):
         np = pytest.importorskip("numpy")
@@ -343,16 +531,6 @@ class TestImages:
                 experiment_run.log_image(key, artifact)
             with pytest.raises(ValueError):
                 experiment_run.log_image_path(key, artifact)
-
-
-class TestDatasets:
-    def test_blacklisted_key_error(self, experiment_run, all_values):
-        all_values = (value  # log_artifact treats str value as filepath to open
-                      for value in all_values if not isinstance(value, str))
-
-        for key, artifact in zip(_artifact_utils.BLACKLISTED_KEYS, all_values):
-            with pytest.raises(ValueError):
-                experiment_run.log_dataset(key, artifact)
 
 
 class TestOverwrite:

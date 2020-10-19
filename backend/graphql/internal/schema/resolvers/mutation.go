@@ -8,6 +8,7 @@ import (
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/errors"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
 	ai_verta_common "github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
+	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	ai_verta_modeldb "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
 	ai_verta_uac "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
@@ -64,15 +65,10 @@ func (r *mutationResolver) SetCollaboratorProject(ctx context.Context, projid st
 		}
 
 		if !res.GetStatus() {
-			return nil, errors.ModelDbInternalFailure
+			return nil, errors.ModelDbInternalError(ctx)
 		}
 	}
-
-	pres, err := r.Connections.Project.GetProjectById(ctx, &ai_verta_modeldb.GetProjectById{Id: projid})
-	if err != nil {
-		return nil, err
-	}
-	return pres.GetProject(), nil
+	return r.Query().Project(ctx, projid)
 }
 func (r *mutationResolver) DelCollaboratorProject(ctx context.Context, projid string, collid string) (*ai_verta_modeldb.Project, error) {
 	// TODO: figure out why we need the date deleted (empty doesn't delete)
@@ -86,15 +82,11 @@ func (r *mutationResolver) DelCollaboratorProject(ctx context.Context, projid st
 		}
 
 		if !res.GetStatus() {
-			return nil, errors.ModelDbInternalFailure
+			return nil, errors.ModelDbInternalError(ctx)
 		}
 	}
 
-	pres, err := r.Connections.Project.GetProjectById(ctx, &ai_verta_modeldb.GetProjectById{Id: projid})
-	if err != nil {
-		return nil, err
-	}
-	return pres.GetProject(), nil
+	return r.Query().Project(ctx, projid)
 }
 func (r *mutationResolver) EditProjectDescription(ctx context.Context, id string, description string) (*ai_verta_modeldb.Project, error) {
 	res, err := r.Connections.Project.UpdateProjectDescription(
@@ -145,6 +137,9 @@ func (r *mutationResolver) DelProject(ctx context.Context, id string) (bool, err
 		return false, err
 	}
 	return res.GetStatus(), nil
+}
+func (r *mutationResolver) Dataset(ctx context.Context, id string) (*modeldb.Dataset, error) {
+	return r.Resolver.Query().Dataset(ctx, id)
 }
 func (r *mutationResolver) Repository(ctx context.Context, id string) (*versioning.Repository, error) {
 	return r.Resolver.Query().Repository(ctx, id)

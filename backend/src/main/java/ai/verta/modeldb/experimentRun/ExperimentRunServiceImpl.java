@@ -1,13 +1,17 @@
 package ai.verta.modeldb.experimentRun;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddExperimentRunAttributes;
 import ai.verta.modeldb.AddExperimentRunTag;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.Artifact;
-import ai.verta.modeldb.ArtifactTypeEnum.ArtifactType;
+import ai.verta.modeldb.CloneExperimentRun;
 import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitMultipartArtifact;
 import ai.verta.modeldb.CreateExperimentRun;
 import ai.verta.modeldb.DeleteArtifact;
 import ai.verta.modeldb.DeleteExperiment;
@@ -17,6 +21,9 @@ import ai.verta.modeldb.DeleteExperimentRunTag;
 import ai.verta.modeldb.DeleteExperimentRunTags;
 import ai.verta.modeldb.DeleteExperimentRuns;
 import ai.verta.modeldb.DeleteExperiments;
+import ai.verta.modeldb.DeleteHyperparameters;
+import ai.verta.modeldb.DeleteMetrics;
+import ai.verta.modeldb.DeleteObservations;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceImplBase;
@@ -24,10 +31,12 @@ import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetChildrenExperimentRuns;
+import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunById;
 import ai.verta.modeldb.GetExperimentRunByName;
 import ai.verta.modeldb.GetExperimentRunCodeVersion;
+import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
 import ai.verta.modeldb.GetExperimentRunsInExperiment;
 import ai.verta.modeldb.GetExperimentRunsInProject;
 import ai.verta.modeldb.GetHyperparameters;
@@ -37,12 +46,13 @@ import ai.verta.modeldb.GetObservations;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetVersionedInput;
+import ai.verta.modeldb.ListBlobExperimentRunsRequest;
+import ai.verta.modeldb.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.LogArtifact;
 import ai.verta.modeldb.LogArtifacts;
 import ai.verta.modeldb.LogAttribute;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogDataset;
-import ai.verta.modeldb.LogDataset.Response;
 import ai.verta.modeldb.LogDatasets;
 import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.LogHyperparameter;
@@ -74,8 +84,9 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -84,11 +95,13 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -103,6 +116,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   private ExperimentDAO experimentDAO;
   private ArtifactStoreDAO artifactStoreDAO;
   private DatasetVersionDAO datasetVersionDAO;
+  private RepositoryDAO repositoryDAO;
+  private CommitDAO commitDAO;
 
   public ExperimentRunServiceImpl(
       AuthService authService,
@@ -111,7 +126,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      DatasetVersionDAO datasetVersionDAO,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.experimentRunDAO = experimentRunDAO;
@@ -119,6 +136,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     this.experimentDAO = experimentDAO;
     this.artifactStoreDAO = artifactStoreDAO;
     this.datasetVersionDAO = datasetVersionDAO;
+    this.commitDAO = commitDAO;
+    this.repositoryDAO = repositoryDAO;
   }
 
   private void validateExperimentEntity(String experimentId) throws InvalidProtocolBufferException {
@@ -151,7 +170,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     }
 
     if (errorMessage != null) {
-      LOGGER.warn(errorMessage);
+      LOGGER.info(errorMessage);
       Status status =
           Status.newBuilder()
               .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -252,7 +271,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in DeleteExperimentRun request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -285,7 +304,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       if (request.getProjectId().isEmpty()) {
         String errorMessage = "Project ID not found in GetExperimentRunsInProject request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -331,7 +350,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       if (request.getExperimentId().isEmpty()) {
         String errorMessage = "Experiment ID not found in GetExperimentRunsInExperiment request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -388,7 +407,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetExperimentRunById request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -443,7 +462,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -519,7 +538,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       if (request.getId().isEmpty()) {
         String errorMessage =
             "ExperimentRun ID not found in UpdateExperimentRunDescription request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -560,7 +579,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in UpdateExperimentRunName request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -575,14 +594,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.updateExperimentRunName(
-              request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
+      experimentRunDAO.updateExperimentRunName(
+          request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
 
-      responseObserver.onNext(
-          UpdateExperimentRunName.Response.newBuilder()
-              .setExperimentRun(updatedExperimentRun)
-              .build());
+      responseObserver.onNext(UpdateExperimentRunName.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -609,7 +624,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -656,7 +671,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -693,7 +708,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetExperimentRunTags request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -735,7 +750,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -783,7 +798,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -832,7 +847,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -847,12 +862,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.addExperimentRunAttributes(request.getId(), request.getAttributesList());
-      responseObserver.onNext(
-          AddExperimentRunAttributes.Response.newBuilder()
-              .setExperimentRun(updatedExperimentRun)
-              .build());
+      experimentRunDAO.addExperimentRunAttributes(request.getId(), request.getAttributesList());
+      responseObserver.onNext(AddExperimentRunAttributes.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -882,7 +893,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -897,13 +908,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.deleteExperimentRunAttributes(
-              request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
-      responseObserver.onNext(
-          DeleteExperimentRunAttributes.Response.newBuilder()
-              .setExperimentRun(updatedExperimentRun)
-              .build());
+      experimentRunDAO.deleteExperimentRunAttributes(
+          request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
+      responseObserver.onNext(DeleteExperimentRunAttributes.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -931,7 +938,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -946,11 +953,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logObservations(
-              request.getId(), Collections.singletonList(request.getObservation()));
-      responseObserver.onNext(
-          LogObservation.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logObservations(
+          request.getId(), Collections.singletonList(request.getObservation()));
+      responseObserver.onNext(LogObservation.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -974,7 +979,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -989,10 +994,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logObservations(request.getId(), request.getObservationsList());
-      responseObserver.onNext(
-          LogObservations.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logObservations(request.getId(), request.getObservationsList());
+      responseObserver.onNext(LogObservations.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1016,7 +1019,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1059,7 +1062,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1074,11 +1077,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logMetrics(
-              request.getId(), Collections.singletonList(request.getMetric()));
-      responseObserver.onNext(
-          LogMetric.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logMetrics(request.getId(), Collections.singletonList(request.getMetric()));
+      responseObserver.onNext(LogMetric.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1101,7 +1101,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1116,10 +1116,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logMetrics(request.getId(), request.getMetricsList());
-      responseObserver.onNext(
-          LogMetrics.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logMetrics(request.getId(), request.getMetricsList());
+      responseObserver.onNext(LogMetrics.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1135,7 +1133,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetMetrics request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1168,7 +1166,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetDatasets request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1213,7 +1211,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1222,7 +1220,14 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
-      String s3Key = null;
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
+
+      final String s3Key;
+      final String uploadId;
 
       /*Process code*/
       if (request.getArtifactType() == ArtifactType.CODE) {
@@ -1230,9 +1235,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         errorMessage =
             "Code versioning artifact not found at experimentRun, experiment and project level";
         s3Key = getUrlForCode(request);
+        uploadId = null;
       } else if (request.getArtifactType() == ArtifactType.DATA) {
         errorMessage = "Data versioning artifact not found";
-        s3Key = getUrlForData(request);
+        Entry<String, String> s3KeyUploadId = getUrlForData(request);
+        s3Key = s3KeyUploadId.getKey();
+        uploadId = s3KeyUploadId.getValue();
       } else {
         errorMessage =
             "ExperimentRun ID "
@@ -1240,12 +1248,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                 + " does not have the artifact "
                 + request.getKey();
 
-        s3Key =
-            getS3Path(
-                experimentRunDAO.getExperimentRunArtifacts(request.getId()), request.getKey());
+        Entry<String, String> s3KeyUploadId =
+            experimentRunDAO.getExperimentRunArtifactS3PathAndMultipartUploadID(
+                request.getId(),
+                request.getKey(),
+                request.getPartNumber(),
+                key -> artifactStoreDAO.initializeMultipart(key));
+        s3Key = s3KeyUploadId.getKey();
+        uploadId = s3KeyUploadId.getValue();
       }
       if (s3Key == null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -1255,7 +1268,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
       GetUrlForArtifact.Response response =
-          artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
+          artifactStoreDAO.getUrlForArtifactMultipart(
+              s3Key, request.getMethod(), request.getPartNumber(), uploadId);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1264,7 +1278,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     }
   }
 
-  private String getUrlForData(GetUrlForArtifact request) throws InvalidProtocolBufferException {
+  private Map.Entry<String, String> getUrlForData(GetUrlForArtifact request)
+      throws InvalidProtocolBufferException, ModelDBException {
 
     assert (request.getArtifactType().equals(ArtifactType.DATA));
     assert (!request.getId().isEmpty());
@@ -1273,17 +1288,24 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     List<Artifact> datasets = exprRun.getDatasetsList();
     for (Artifact dataset : datasets) {
       if (dataset.getKey().equals(request.getKey()))
-        return datasetVersionDAO.getUrlForDatasetVersion(
-            dataset.getLinkedArtifactId(), request.getMethod());
+        return new SimpleEntry<>(
+            datasetVersionDAO.getUrlForDatasetVersion(
+                dataset.getLinkedArtifactId(), request.getMethod()),
+            null);
     }
     // if the loop above did not return anything that means there was no Dataset logged with the
     // particular key
     // pre the dataset-as-fcc project datasets were stored as artifacts, so check there before
     // returning
-    return getS3Path(experimentRunDAO.getExperimentRunArtifacts(request.getId()), request.getKey());
+    return experimentRunDAO.getExperimentRunArtifactS3PathAndMultipartUploadID(
+        request.getId(),
+        request.getKey(),
+        request.getPartNumber(),
+        s3Key -> artifactStoreDAO.initializeMultipart(s3Key));
   }
 
-  private String getUrlForCode(GetUrlForArtifact request) throws InvalidProtocolBufferException {
+  private String getUrlForCode(GetUrlForArtifact request)
+      throws InvalidProtocolBufferException, ModelDBException {
     ExperimentRun exprRun = experimentRunDAO.getExperimentRun(request.getId());
     String s3Key = null;
     /*If code version is not logged at a lower level we check for code at the higher level
@@ -1307,13 +1329,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     return s3Key;
   }
 
-  private String getS3Path(List<Artifact> experimentRunArtifacts, String artifactKey) {
-    for (Artifact artifact : experimentRunArtifacts) {
-      if (artifactKey.equalsIgnoreCase(artifact.getKey())) return artifact.getPath();
-    }
-    return null;
-  }
-
   @Override
   public void logArtifact(
       LogArtifact request, StreamObserver<LogArtifact.Response> responseObserver) {
@@ -1335,7 +1350,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1362,11 +1377,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
       Artifact artifact = artifacts.get(0);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logArtifacts(request.getId(), Collections.singletonList(artifact));
-      LogArtifact.Response.Builder responseBuilder =
-          LogArtifact.Response.newBuilder().setExperimentRun(updatedExperimentRun);
-      responseObserver.onNext(responseBuilder.build());
+      experimentRunDAO.logArtifacts(request.getId(), Collections.singletonList(artifact));
+      responseObserver.onNext(LogArtifact.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1390,7 +1402,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1408,11 +1420,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       List<Artifact> artifactList =
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logArtifacts(request.getId(), artifactList);
-      LogArtifacts.Response.Builder responseBuilder =
-          LogArtifacts.Response.newBuilder().setExperimentRun(updatedExperimentRun);
-      responseObserver.onNext(responseBuilder.build());
+      experimentRunDAO.logArtifacts(request.getId(), artifactList);
+      responseObserver.onNext(LogArtifacts.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1429,7 +1438,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetArtifacts request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1473,7 +1482,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1492,16 +1501,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceActions.UPDATE);
 
       /*UpdateCode version*/
-      ExperimentRun updatedExperimentRun;
       if (request.getOverwrite()) {
-        updatedExperimentRun =
-            experimentRunDAO.logExperimentRunCodeVersion(request.getId(), request.getCodeVersion());
+        experimentRunDAO.logExperimentRunCodeVersion(request.getId(), request.getCodeVersion());
       } else {
         if (!existingExperimentRun.getCodeVersionSnapshot().hasCodeArchive()
             && !existingExperimentRun.getCodeVersionSnapshot().hasGitSnapshot()) {
-          updatedExperimentRun =
-              experimentRunDAO.logExperimentRunCodeVersion(
-                  request.getId(), request.getCodeVersion());
+          experimentRunDAO.logExperimentRunCodeVersion(request.getId(), request.getCodeVersion());
         } else {
           errorMessage =
               "Code version already logged for experiment " + existingExperimentRun.getId();
@@ -1509,15 +1514,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               Status.newBuilder()
                   .setCode(Code.ALREADY_EXISTS_VALUE)
                   .setMessage(errorMessage)
-                  .addDetails(Any.pack(LogExperimentRunCodeVersion.Response.getDefaultInstance()))
+                  .addDetails(Any.pack(LogExperimentRunCodeVersion.getDefaultInstance()))
                   .build();
           throw StatusProto.toStatusRuntimeException(status);
         }
       }
-      /*Build response*/
-      LogExperimentRunCodeVersion.Response.Builder responseBuilder =
-          LogExperimentRunCodeVersion.Response.newBuilder().setExperimentRun(updatedExperimentRun);
-      responseObserver.onNext(responseBuilder.build());
+      responseObserver.onNext(LogExperimentRunCodeVersion.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1536,7 +1538,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetCodeVersion request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1584,7 +1586,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1599,11 +1601,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logHyperparameters(
-              request.getId(), Collections.singletonList(request.getHyperparameter()));
-      responseObserver.onNext(
-          LogHyperparameter.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logHyperparameters(
+          request.getId(), Collections.singletonList(request.getHyperparameter()));
+      responseObserver.onNext(LogHyperparameter.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1629,7 +1629,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1644,10 +1644,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logHyperparameters(request.getId(), request.getHyperparametersList());
-      responseObserver.onNext(
-          LogHyperparameters.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logHyperparameters(request.getId(), request.getHyperparametersList());
+      responseObserver.onNext(LogHyperparameters.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1665,7 +1663,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessaeg = "ExperimentRun ID not found in GetHyperparameters request";
-        LOGGER.warn(errorMessaeg);
+        LOGGER.info(errorMessaeg);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1710,7 +1708,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1725,11 +1723,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logAttributes(
-              request.getId(), Collections.singletonList(request.getAttribute()));
-      responseObserver.onNext(
-          LogAttribute.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logAttributes(
+          request.getId(), Collections.singletonList(request.getAttribute()));
+      responseObserver.onNext(LogAttribute.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1753,7 +1749,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1768,10 +1764,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logAttributes(request.getId(), request.getAttributesList());
-      responseObserver.onNext(
-          LogAttributes.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logAttributes(request.getId(), request.getAttributesList());
+      responseObserver.onNext(LogAttributes.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1797,7 +1791,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1880,7 +1874,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1959,7 +1953,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1974,10 +1968,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logJobId(request.getId(), request.getJobId());
-      responseObserver.onNext(
-          LogJobId.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.logJobId(request.getId(), request.getJobId());
+      responseObserver.onNext(LogJobId.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1992,7 +1984,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetJobId request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -2025,7 +2017,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getExperimentRunId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetChildrenExperimentRuns request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -2081,7 +2073,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -2107,13 +2099,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           existingChildrenExperimentRunProjectId,
           ModelDBServiceActions.UPDATE);
 
-      ExperimentRun existingChildrenExperimentRun =
-          experimentRunDAO.setParentExperimentRunId(
-              request.getExperimentRunId(), request.getParentId());
-      responseObserver.onNext(
-          SetParentExperimentRunId.Response.newBuilder()
-              .setExperimentRun(existingChildrenExperimentRun)
-              .build());
+      experimentRunDAO.setParentExperimentRunId(
+          request.getExperimentRunId(), request.getParentId());
+      responseObserver.onNext(SetParentExperimentRunId.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -2123,7 +2111,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logDataset(LogDataset request, StreamObserver<Response> responseObserver) {
+  public void logDataset(LogDataset request, StreamObserver<LogDataset.Response> responseObserver) {
     QPSCountResource.inc();
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
@@ -2155,13 +2143,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       Artifact dataset = request.getDataset();
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logDatasets(
-              request.getId(), Collections.singletonList(dataset), request.getOverwrite());
+      experimentRunDAO.logDatasets(
+          request.getId(), Collections.singletonList(dataset), request.getOverwrite());
 
-      LogDataset.Response.Builder responseBuilder =
-          LogDataset.Response.newBuilder().setExperimentRun(updatedExperimentRun);
-      responseObserver.onNext(responseBuilder.build());
+      responseObserver.onNext(LogDataset.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -2197,12 +2182,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.logDatasets(
-              request.getId(), request.getDatasetsList(), request.getOverwrite());
-      LogDatasets.Response.Builder responseBuilder =
-          LogDatasets.Response.newBuilder().setExperimentRun(updatedExperimentRun);
-      responseObserver.onNext(responseBuilder.build());
+      experimentRunDAO.logDatasets(
+          request.getId(), request.getDatasetsList(), request.getOverwrite());
+      responseObserver.onNext(LogDatasets.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -2237,7 +2219,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -2252,10 +2234,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      ExperimentRun updatedExperimentRun =
-          experimentRunDAO.deleteArtifacts(request.getId(), request.getKey());
-      responseObserver.onNext(
-          DeleteArtifact.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      experimentRunDAO.deleteArtifacts(request.getId(), request.getKey());
+      responseObserver.onNext(DeleteArtifact.Response.newBuilder().build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -2306,7 +2286,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -2316,8 +2296,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      LogVersionedInput.Response response = experimentRunDAO.logVersionedInput(request);
-      responseObserver.onNext(response);
+      experimentRunDAO.logVersionedInput(request);
+      responseObserver.onNext(LogVersionedInput.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -2346,6 +2326,298 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, GetVersionedInput.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void commitArtifactPart(
+      CommitArtifactPart request, StreamObserver<CommitArtifactPart.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in CommitArtifactPart request";
+      } else if (request.getKey().isEmpty()) {
+        errorMessage = "Artifact key not found in CommitArtifactPart request";
+      } else if (request.getArtifactPart().getPartNumber() == 0) {
+        errorMessage = "Artifact part number is not specified in CommitArtifactPart request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
+
+      CommitArtifactPart.Response response = experimentRunDAO.commitArtifactPart(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, CommitArtifactPart.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getCommittedArtifactParts(
+      GetCommittedArtifactParts request,
+      StreamObserver<GetCommittedArtifactParts.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in GetCommittedArtifactParts request";
+      } else if (request.getKey().isEmpty()) {
+        errorMessage = "Artifact key not found in GetCommittedArtifactParts request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
+
+      GetCommittedArtifactParts.Response response =
+          experimentRunDAO.getCommittedArtifactParts(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetCommittedArtifactParts.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void commitMultipartArtifact(
+      CommitMultipartArtifact request,
+      StreamObserver<CommitMultipartArtifact.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in CommitMultipartArtifact request";
+      } else if (request.getKey().isEmpty()) {
+        errorMessage = "Artifact key not found in CommitMultipartArtifact request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
+
+      CommitMultipartArtifact.Response response =
+          experimentRunDAO.commitMultipartArtifact(
+              request,
+              (s3Key, uploadId, partETags) ->
+                  artifactStoreDAO.commitMultipart(s3Key, uploadId, partETags));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, CommitMultipartArtifact.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void deleteHyperparameters(
+      DeleteHyperparameters request,
+      StreamObserver<DeleteHyperparameters.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in DeleteHyperparameters request";
+      } else if (request.getHyperparameterKeysList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage =
+            "Hyperparameter keys not found and deleteAll flag has false in DeleteHyperparameters request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      experimentRunDAO.deleteExperimentRunKeyValuesEntities(
+          request.getId(),
+          request.getHyperparameterKeysList(),
+          request.getDeleteAll(),
+          ModelDBConstants.HYPERPARAMETERS);
+      responseObserver.onNext(DeleteHyperparameters.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteHyperparameters.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void deleteMetrics(
+      DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in DeleteMetrics request";
+      } else if (request.getMetricKeysList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage =
+            "Metrics keys not found and deleteAll flag has false in DeleteMetrics request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      experimentRunDAO.deleteExperimentRunKeyValuesEntities(
+          request.getId(),
+          request.getMetricKeysList(),
+          request.getDeleteAll(),
+          ModelDBConstants.METRICS);
+      responseObserver.onNext(DeleteMetrics.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(responseObserver, e, DeleteMetrics.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void deleteObservations(
+      DeleteObservations request, StreamObserver<DeleteObservations.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      String errorMessage = null;
+      if (request.getId().isEmpty()) {
+        errorMessage = "ExperimentRun ID not found in DeleteObservations request";
+      } else if (request.getObservationKeysList().isEmpty() && !request.getDeleteAll()) {
+        errorMessage =
+            "Observation keys not found and deleteAll flag has false in DeleteObservations request";
+      }
+
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      }
+
+      experimentRunDAO.deleteExperimentRunObservationsEntities(
+          request.getId(), request.getObservationKeysList(), request.getDeleteAll());
+      responseObserver.onNext(DeleteObservations.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, DeleteObservations.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void listCommitExperimentRuns(
+      ListCommitExperimentRunsRequest request,
+      StreamObserver<ListCommitExperimentRunsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getCommitSha().isEmpty()) {
+        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ListCommitExperimentRunsRequest.Response response =
+          experimentRunDAO.listCommitExperimentRuns(
+              projectDAO,
+              request,
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, ListCommitExperimentRunsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void listBlobExperimentRuns(
+      ListBlobExperimentRunsRequest request,
+      StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getCommitSha().isEmpty()) {
+        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ListBlobExperimentRunsRequest.Response response =
+          experimentRunDAO.listBlobExperimentRuns(
+              projectDAO,
+              request,
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void getExperimentRunsByDatasetVersionId(
+      GetExperimentRunsByDatasetVersionId request,
+      StreamObserver<GetExperimentRunsByDatasetVersionId.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getDatasetVersionId().isEmpty()) {
+        throw new ModelDBException("DatasetVersion Id should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+          experimentRunDAO.getExperimentRunsByDatasetVersionId(projectDAO, request);
+      GetExperimentRunsByDatasetVersionId.Response response =
+          GetExperimentRunsByDatasetVersionId.Response.newBuilder()
+              .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
+              .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
+              .build();
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GetExperimentRunsByDatasetVersionId.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void cloneExperimentRun(
+      CloneExperimentRun request, StreamObserver<CloneExperimentRun.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      if (request.getSrcExperimentRunId().isEmpty()) {
+        throw new ModelDBException(
+            "Source ExperimentRun Id should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      ExperimentRun clonedExperimentRun =
+          experimentRunDAO.cloneExperimentRun(request, authService.getCurrentLoginUserInfo());
+      responseObserver.onNext(
+          CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, CloneExperimentRun.Response.getDefaultInstance());
     }
   }
 }

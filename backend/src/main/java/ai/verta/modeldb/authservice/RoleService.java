@@ -1,12 +1,14 @@
 package ai.verta.modeldb.authservice;
 
-import ai.verta.modeldb.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponse;
+import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Organization;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
@@ -34,6 +36,12 @@ public interface RoleService {
       CollaboratorBase collaborator,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  void createPublicRoleBinding(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  String buildPublicRoleBindingName(
+      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
@@ -128,6 +136,9 @@ public interface RoleService {
    */
   WorkspaceDTO getWorkspaceDTOByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
 
+  WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
+
   List<Organization> listMyOrganizations();
 
   void createWorkspaceRoleBinding(
@@ -150,4 +161,9 @@ public interface RoleService {
 
   boolean deleteAllResources(
       List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  boolean checkConnectionsBasedOnPrivileges(
+      ModelDBResourceEnum.ModelDBServiceResourceTypes serviceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions serviceActions,
+      String resourceId);
 }

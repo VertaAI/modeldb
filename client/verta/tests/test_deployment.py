@@ -11,36 +11,19 @@ import tarfile
 import tempfile
 import time
 import zipfile
+import cloudpickle
 
 import requests
 
+import yaml
+
 import verta
+from verta._tracking.deployable_entity import _CACHE_DIR
 from verta._internal_utils import _histogram_utils
 from verta._internal_utils import _utils
+from verta.endpoint.update import DirectUpdateStrategy
 
-
-@pytest.fixture
-def model_for_deployment(strs):
-    np = pytest.importorskip("numpy")
-    pd = pytest.importorskip("pandas")
-    sklearn = pytest.importorskip("sklearn")
-    from sklearn import linear_model
-
-    num_rows, num_cols = 36, 6
-
-    data = pd.DataFrame(np.tile(np.arange(num_rows).reshape(-1, 1),
-                                num_cols),
-                        columns=strs[:num_cols])
-    X_train = data.iloc[:,:-1]  # pylint: disable=bad-whitespace
-    y_train = data.iloc[:, -1]
-
-    return {
-        'model': sklearn.linear_model.LogisticRegression(),
-        'model_api': verta.utils.ModelAPI(X_train, y_train),
-        'requirements': six.StringIO("scikit-learn=={}".format(sklearn.__version__)),
-        'train_features': X_train,
-        'train_targets': y_train,
-    }
+pytestmark = pytest.mark.not_oss
 
 
 @pytest.fixture
@@ -53,7 +36,6 @@ def model_packaging():
     }
 
 
-@pytest.mark.not_oss
 class TestLogModelForDeployment:
     def test_model(self, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
@@ -82,7 +64,6 @@ class TestLogModelForDeployment:
             assert set(f.read().split()) <= set(retrieved_requirements.split())
 
 
-@pytest.mark.not_oss
 class TestLogModel:
     def test_model(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'])
@@ -227,10 +208,36 @@ class TestLogModel:
                 artifacts=strs[1:],
             )
 
+    def test_overwrite_artifacts(self, experiment_run, endpoint, in_tempdir):
+        key = "foo"
+        val = {'a': 1}
 
-@pytest.mark.not_oss
+        class ModelWithDependency(object):
+            def __init__(self, artifacts):
+                with open(artifacts[key], 'rb') as f:  # should not KeyError
+                    if cloudpickle.load(f) != val:
+                        raise ValueError  # should not ValueError
+
+            def predict(self, x):
+                return x
+
+        # first log junk artifact, to test `overwrite`
+        bad_key = "bar"
+        bad_val = {'b': 2}
+        experiment_run.log_artifact(bad_key, bad_val)
+        experiment_run.log_model(ModelWithDependency, custom_modules=[], artifacts=[bad_key])
+
+        # log real artifact using `overwrite`
+        experiment_run.log_artifact(key, val)
+        experiment_run.log_model(ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True)
+        experiment_run.log_requirements(requirements=[])
+
+        endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
+        assert val == endpoint.get_deployed_model().predict(val)
+
 class TestFetchArtifacts:
     def test_fetch_artifacts(self, experiment_run, strs, flat_dicts):
+        strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
         for key, artifact in zip(strs, flat_dicts):
             experiment_run.log_artifact(key, artifact)
 
@@ -238,7 +245,7 @@ class TestFetchArtifacts:
             artifacts = experiment_run.fetch_artifacts(strs)
 
             assert set(six.viewkeys(artifacts)) == set(strs)
-            assert all(filepath.startswith(verta.client._CACHE_DIR)
+            assert all(filepath.startswith(_CACHE_DIR)
                        for filepath in six.viewvalues(artifacts))
 
             for key, filepath in six.viewitems(artifacts):
@@ -248,7 +255,7 @@ class TestFetchArtifacts:
 
                 assert file_contents == artifact_contents
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_cached_fetch_artifacts(self, experiment_run, strs, flat_dicts):
         key = strs[0]
@@ -264,7 +271,7 @@ class TestFetchArtifacts:
 
             assert os.path.getmtime(filepath) == last_modified
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_zip(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -275,7 +282,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -286,7 +293,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_cached_fetch_zip(self, experiment_run, strs, dir_and_files):
         dirpath, _ = dir_and_files
@@ -303,7 +310,7 @@ class TestFetchArtifacts:
 
             assert os.path.getmtime(dirpath) == last_modified
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_tgz(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -322,7 +329,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -333,7 +340,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_tar(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -352,7 +359,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -363,7 +370,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_tar_gz(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -382,7 +389,7 @@ class TestFetchArtifacts:
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(verta.client._CACHE_DIR)
+            assert dirpath.startswith(_CACHE_DIR)
 
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
@@ -393,7 +400,7 @@ class TestFetchArtifacts:
 
             assert filepaths == retrieved_filepaths
         finally:
-            shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_wrong_type_artifacts_error(self, experiment_run, all_values):
         # remove lists of strings and empty lists, because they're valid arguments
@@ -417,7 +424,6 @@ class TestFetchArtifacts:
             experiment_run.fetch_artifacts(strs[1:])
 
 
-@pytest.mark.not_oss
 class TestLogRequirements:
     NONSPECIFIC_REQ = "verta>0.1.0"
     INVALID_REQ = "@==1.2.3"
@@ -524,7 +530,6 @@ class TestLogRequirements:
         assert set(self.VALID_REQS) == reqs
 
 
-@pytest.mark.not_oss
 class TestLogTrainingData:
     def test_numpy_error(self, experiment_run, model_for_deployment):
         with pytest.raises(TypeError):
@@ -552,21 +557,28 @@ class TestLogTrainingData:
     def test_series(self, experiment_run, model_for_deployment):
         X_train = model_for_deployment['train_features']
         y_train = model_for_deployment['train_targets']
+        col_names = set(X_train.columns) | set([y_train.name])
 
-        # no errors
         experiment_run.log_training_data(X_train, y_train)
+        histogram = experiment_run._get_histogram()
+        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
+
+        assert set(retrieved_col_names) == col_names
 
     def test_dataframe(self, experiment_run, model_for_deployment):
         X_train = model_for_deployment['train_features']
         y_train = model_for_deployment['train_targets']
+        col_names = set(X_train.columns) | set([y_train.name])
 
         y_train = y_train.to_frame()
 
-        # no errors
         experiment_run.log_training_data(X_train, y_train)
+        histogram = experiment_run._get_histogram()
+        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
+
+        assert set(retrieved_col_names) == col_names
 
 
-@pytest.mark.not_oss
 class TestHistogram:
     @staticmethod
     def assert_histograms_match_dataframe(histograms, df):
@@ -756,7 +768,6 @@ class TestHistogram:
         assert float_hist['count'] == retrieved_float_hist['count']
 
 
-@pytest.mark.not_oss
 class TestDeploy:
     def test_auto_path_auto_token_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -892,16 +903,17 @@ class TestDeploy:
         experiment_run.log_requirements(['scikit-learn'])
 
         # delete model
-        _utils.make_request(
+        response = _utils.make_request(
             "DELETE",
             "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(experiment_run._conn.scheme,
                                                               experiment_run._conn.socket),
             experiment_run._conn, json={'id': experiment_run.id, 'key': "model.pkl"}
-        ).raise_for_status()
+        )
+        _utils.raise_for_http_error(response)
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact model.pkl"
+        assert "model.pkl" in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(
@@ -914,16 +926,17 @@ class TestDeploy:
         experiment_run.log_requirements(['scikit-learn'])
 
         # delete model API
-        _utils.make_request(
+        response = _utils.make_request(
             "DELETE",
             "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(experiment_run._conn.scheme,
                                                               experiment_run._conn.socket),
             experiment_run._conn, json={'id': experiment_run.id, 'key': "model_api.json"}
-        ).raise_for_status()
+        )
+        _utils.raise_for_http_error(response)
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact model_api.json"
+        assert "model_api.json" in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(
@@ -936,7 +949,7 @@ class TestDeploy:
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert str(excinfo.value).strip() == "unable to deploy due to missing artifact requirements.txt"
+        assert "requirements.txt" in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(
@@ -961,7 +974,6 @@ class TestDeploy:
         )
 
 
-@pytest.mark.not_oss
 class TestUndeploy:
     def test_undeploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -984,7 +996,6 @@ class TestUndeploy:
         experiment_run.undeploy()
 
 
-@pytest.mark.not_oss
 class TestGetDeployedModel:
     def test_get(self, experiment_run, model_for_deployment):
         model = model_for_deployment['model'].fit(
@@ -997,8 +1008,14 @@ class TestGetDeployedModel:
 
         experiment_run.deploy(wait=True)
 
+        deployed_model = experiment_run.get_deployed_model()
         x = model_for_deployment['train_features'].iloc[1].values
-        experiment_run.get_deployed_model().predict([x])
+        deployed_model.predict([x])
+
+        deployed_model_curl = deployed_model.get_curl()
+        deployed_status = experiment_run.get_deployment_status()
+        assert deployed_status["url"] in deployed_model_curl
+        assert deployed_status["token"] in deployed_model_curl
 
         conn = experiment_run._conn
         requests.delete(
@@ -1025,3 +1042,40 @@ class TestGetDeployedModel:
             "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
             headers=conn.auth,
         )
+
+
+class TestGitOps:
+    def test_download_deployment_yaml(self, experiment_run, model_for_deployment, in_tempdir):
+        download_to_path = "deployment.yaml"
+
+        experiment_run.log_model(
+            model_for_deployment['model'],
+            custom_modules=[],
+            model_api=model_for_deployment['model_api'],
+        )
+        experiment_run.log_requirements(['scikit-learn'])
+
+        filepath = experiment_run.download_deployment_yaml(download_to_path)
+        assert filepath == os.path.abspath(download_to_path)
+
+        # can be loaded as YAML
+        with open(filepath, 'rb') as f:
+            model_deployment = yaml.safe_load(f)
+
+        assert model_deployment['kind'] == "ModelDeployment"
+        assert model_deployment['metadata']['name'] == experiment_run.id
+
+    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir):
+        download_to_path = "context.tgz"
+
+        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
+        experiment_run.log_requirements(['scikit-learn'])
+
+        filepath = experiment_run.download_docker_context(download_to_path)
+        assert filepath == os.path.abspath(download_to_path)
+
+        # can be loaded as tgz
+        with tarfile.open(filepath, 'r:gz') as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths

@@ -1,0 +1,25 @@
+.root {
+  width: 100%;
+}
+
+.reloading {
+  position: relative;
+  opacity: 0.4;
+  pointer-events: none;
+}
+.reloadingPreloader {
+  z-index: 100;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.comparingInfo {
+  display: flex;
+  border-bottom: 1px solid var(--main-text-color3);
+  margin-bottom: 14px;
+}
+
+.button {
+  margin-left: auto;
+}

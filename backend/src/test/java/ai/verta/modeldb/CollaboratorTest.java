@@ -12,6 +12,9 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
@@ -70,6 +73,7 @@ public class CollaboratorTest {
   private static Integer authPort;
   private static AuthClientInterceptor authClientInterceptor;
   private static AuthService authService;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -98,6 +102,7 @@ public class CollaboratorTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -107,10 +112,14 @@ public class CollaboratorTest {
       authClientInterceptor = new AuthClientInterceptor(testPropMap);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -686,7 +695,6 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("rental_TEXT_train_data.csv")
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     CreateDataset.Response createDatasetResponse =
@@ -702,7 +710,7 @@ public class CollaboratorTest {
             createDatasetResponse.getDataset(), CollaboratorType.READ_WRITE);
 
     AddCollaboratorRequest.Response response =
-        collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+        collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
     LOGGER.info("Collaborator added in server : " + response.getStatus());
     assertTrue(response.getStatus());
 
@@ -728,7 +736,6 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("rental_TEXT_train_data.csv")
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     CreateDataset.Response createDatasetResponse =
@@ -749,12 +756,15 @@ public class CollaboratorTest {
 
     List<String> sharedUsers = new ArrayList<>();
     AddCollaboratorRequest addCollaboratorRequest =
-        addCollaboratorRequestDataset(
-            dataset, shareWithUserInfo.getEmail(), CollaboratorType.READ_WRITE);
+        addCollaboratorRequestUser(
+            dataset.getId(),
+            shareWithUserInfo.getEmail(),
+            CollaboratorType.READ_WRITE,
+            "Please refer shared project for your invention");
     sharedUsers.add(authService.getVertaIdFromUserInfo(shareWithUserInfo));
 
     AddCollaboratorRequest.Response addCollaboratorResponse =
-        collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+        collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
     LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
     assertTrue(addCollaboratorResponse.getStatus());
 
@@ -769,14 +779,14 @@ public class CollaboratorTest {
     sharedUsers.add("github|87654321");
 
     addCollaboratorResponse =
-        collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+        collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
     LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
     assertTrue(addCollaboratorResponse.getStatus());*/
 
     GetCollaborator getCollaboratorRequest =
         GetCollaborator.newBuilder().setEntityId(dataset.getId()).build();
     GetCollaborator.Response getCollaboratorResponse =
-        collaboratorServiceStub.getDatasetCollaborators(getCollaboratorRequest);
+        collaboratorServiceStub.getRepositoryCollaborators(getCollaboratorRequest);
 
     List<GetCollaboratorResponse> sharedUserList = getCollaboratorResponse.getSharedUsersList();
     LOGGER.info(
@@ -813,7 +823,6 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("rental_TEXT_train_data.csv")
-            .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
             .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     CreateDataset.Response createDatasetResponse =
@@ -837,11 +846,11 @@ public class CollaboratorTest {
             dataset, shareWithUserInfo.getEmail(), CollaboratorType.READ_WRITE);
 
     AddCollaboratorRequest.Response addCollaboratorResponse =
-        collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+        collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
     LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
     assertTrue(addCollaboratorResponse.getStatus());
 
-    RemoveCollaborator removeDatasetCollaborator =
+    RemoveCollaborator removeRepositoryCollaborator =
         RemoveCollaborator.newBuilder()
             .setAuthzEntityType(EntitiesTypes.USER)
             .setEntityId(dataset.getId())
@@ -850,7 +859,7 @@ public class CollaboratorTest {
             .build();
 
     RemoveCollaborator.Response response =
-        collaboratorServiceStub.removeDatasetCollaborator(removeDatasetCollaborator);
+        collaboratorServiceStub.removeRepositoryCollaborator(removeRepositoryCollaborator);
 
     LOGGER.info("Collaborator remove in server : " + response.getStatus());
     assertTrue(response.getStatus());
@@ -878,7 +887,6 @@ public class CollaboratorTest {
       CreateDataset createDatasetRequest =
           CreateDataset.newBuilder()
               .setName("rental_TEXT_train_data" + index + ".csv")
-              .setDatasetType(DatasetTypeEnum.DatasetType.RAW)
               .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
               .build();
       CreateDataset.Response createDatasetResponse =
@@ -896,7 +904,7 @@ public class CollaboratorTest {
             datasetIds, CollaboratorType.READ_WRITE, authClientInterceptor);
 
     AddCollaboratorRequest.Response response =
-        collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+        collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
     LOGGER.info("Collaborator added in server : " + response.getStatus());
     assertTrue(response.getStatus());
 
@@ -904,7 +912,7 @@ public class CollaboratorTest {
         addCollaboratorRequestProjectInterceptor(
             datasetIds.subList(1, 4), CollaboratorType.READ_ONLY, authClientInterceptor);
 
-    response = collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+    response = collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
     LOGGER.info("Collaborator added in server : " + response.getStatus());
     assertTrue(response.getStatus());
 

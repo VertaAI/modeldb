@@ -1,0 +1,22 @@
+.root {
+}
+
+.root :global input {
+  font-size: 14px;
+  color: var(--main-color5);
+  height: 32px;
+  width: 100%;
+  padding-left: 12px;
+  padding-right: 12px;
+  outline: none;
+  border-radius: 2px;
+  border: 1px solid #ebebeb;
+}
+
+.root :global .react-datepicker-popper {
+  z-index: 1000;
+}
+
+.root :global [class*='--selected'] {
+  background-color: var(--main-color2) !important;
+}

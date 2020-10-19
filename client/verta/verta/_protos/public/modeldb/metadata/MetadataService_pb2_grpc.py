@@ -19,8 +19,18 @@ class MetadataServiceStub(object):
         request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelsRequest.SerializeToString,
         response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelsRequest.Response.FromString,
         )
+    self.GetLabelIds = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/GetLabelIds',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelIdsRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelIdsRequest.Response.FromString,
+        )
     self.AddLabels = channel.unary_unary(
         '/ai.verta.modeldb.metadata.MetadataService/AddLabels',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddLabelsRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddLabelsRequest.Response.FromString,
+        )
+    self.UpdateLabels = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/UpdateLabels',
         request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddLabelsRequest.SerializeToString,
         response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddLabelsRequest.Response.FromString,
         )
@@ -28,6 +38,36 @@ class MetadataServiceStub(object):
         '/ai.verta.modeldb.metadata.MetadataService/DeleteLabels',
         request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteLabelsRequest.SerializeToString,
         response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteLabelsRequest.Response.FromString,
+        )
+    self.GetProperty = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/GetProperty',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetPropertyRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetPropertyRequest.Response.FromString,
+        )
+    self.AddProperty = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/AddProperty',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddPropertyRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddPropertyRequest.Response.FromString,
+        )
+    self.DeleteProperty = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/DeleteProperty',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeletePropertyRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeletePropertyRequest.Response.FromString,
+        )
+    self.AddKeyValueProperties = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/AddKeyValueProperties',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddKeyValuePropertiesRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddKeyValuePropertiesRequest.Response.FromString,
+        )
+    self.GetKeyValueProperties = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/GetKeyValueProperties',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetKeyValuePropertiesRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetKeyValuePropertiesRequest.Response.FromString,
+        )
+    self.DeleteKeyValueProperties = channel.unary_unary(
+        '/ai.verta.modeldb.metadata.MetadataService/DeleteKeyValueProperties',
+        request_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteKeyValuePropertiesRequest.SerializeToString,
+        response_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteKeyValuePropertiesRequest.Response.FromString,
         )
 
 
@@ -42,6 +82,13 @@ class MetadataServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def GetLabelIds(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def AddLabels(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -49,7 +96,56 @@ class MetadataServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def UpdateLabels(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def DeleteLabels(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetProperty(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def AddProperty(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def DeleteProperty(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def AddKeyValueProperties(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetKeyValueProperties(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def DeleteKeyValueProperties(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -64,8 +160,18 @@ def add_MetadataServiceServicer_to_server(servicer, server):
           request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelsRequest.FromString,
           response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelsRequest.Response.SerializeToString,
       ),
+      'GetLabelIds': grpc.unary_unary_rpc_method_handler(
+          servicer.GetLabelIds,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelIdsRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetLabelIdsRequest.Response.SerializeToString,
+      ),
       'AddLabels': grpc.unary_unary_rpc_method_handler(
           servicer.AddLabels,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddLabelsRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddLabelsRequest.Response.SerializeToString,
+      ),
+      'UpdateLabels': grpc.unary_unary_rpc_method_handler(
+          servicer.UpdateLabels,
           request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddLabelsRequest.FromString,
           response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddLabelsRequest.Response.SerializeToString,
       ),
@@ -73,6 +179,36 @@ def add_MetadataServiceServicer_to_server(servicer, server):
           servicer.DeleteLabels,
           request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteLabelsRequest.FromString,
           response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteLabelsRequest.Response.SerializeToString,
+      ),
+      'GetProperty': grpc.unary_unary_rpc_method_handler(
+          servicer.GetProperty,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetPropertyRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetPropertyRequest.Response.SerializeToString,
+      ),
+      'AddProperty': grpc.unary_unary_rpc_method_handler(
+          servicer.AddProperty,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddPropertyRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddPropertyRequest.Response.SerializeToString,
+      ),
+      'DeleteProperty': grpc.unary_unary_rpc_method_handler(
+          servicer.DeleteProperty,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeletePropertyRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeletePropertyRequest.Response.SerializeToString,
+      ),
+      'AddKeyValueProperties': grpc.unary_unary_rpc_method_handler(
+          servicer.AddKeyValueProperties,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddKeyValuePropertiesRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.AddKeyValuePropertiesRequest.Response.SerializeToString,
+      ),
+      'GetKeyValueProperties': grpc.unary_unary_rpc_method_handler(
+          servicer.GetKeyValueProperties,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetKeyValuePropertiesRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.GetKeyValuePropertiesRequest.Response.SerializeToString,
+      ),
+      'DeleteKeyValueProperties': grpc.unary_unary_rpc_method_handler(
+          servicer.DeleteKeyValueProperties,
+          request_deserializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteKeyValuePropertiesRequest.FromString,
+          response_serializer=modeldb_dot_metadata_dot_MetadataService__pb2.DeleteKeyValuePropertiesRequest.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

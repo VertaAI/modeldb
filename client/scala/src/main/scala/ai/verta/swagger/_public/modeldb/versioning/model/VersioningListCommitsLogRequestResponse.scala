@@ -5,15 +5,13 @@ import scala.util.Try
 
 import net.liftweb.json._
 
-import ai.verta.swagger._public.modeldb.versioning.model.ArtifactTypeEnumArtifactType._
 import ai.verta.swagger._public.modeldb.versioning.model.DiffStatusEnumDiffStatus._
 import ai.verta.swagger._public.modeldb.versioning.model.OperatorEnumOperator._
-import ai.verta.swagger._public.modeldb.versioning.model.RepositoryVisibilityEnumRepositoryVisibility._
-import ai.verta.swagger._public.modeldb.versioning.model.TernaryEnumTernary._
-import ai.verta.swagger._public.modeldb.versioning.model.ValueTypeEnumValueType._
-import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger._public.modeldb.versioning.model.ProtobufNullValue._
+import ai.verta.swagger._public.modeldb.versioning.model.RepositoryVisibilityEnumRepositoryVisibility._
+import ai.verta.swagger._public.modeldb.versioning.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.versioning.model.VersioningBlobType._
+import ai.verta.swagger._public.modeldb.versioning.model.WorkspaceTypeEnumWorkspaceType._
 import ai.verta.swagger.client.objects._
 
 case class VersioningListCommitsLogRequestResponse (

@@ -1,0 +1,15 @@
+.root {
+}
+
+.result {
+  margin-bottom: 10px;
+}
+.result:last-child {
+  margin-bottom: 0;
+}
+
+.pagination {
+  display: flex;
+  padding: 16px 0;
+  justify-content: center;
+}

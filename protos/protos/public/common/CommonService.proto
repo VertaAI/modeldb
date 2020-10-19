@@ -58,3 +58,89 @@ message EntitiesEnum {
     }
 };
 
+message ModelDBResourceEnum {
+    enum ModelDBServiceResourceTypes {
+        UNKNOWN = 0; // Resource 0 should always cause an error
+        ALL = 1;
+        PROJECT = 2;
+        EXPERIMENT = 3;
+        EXPERIMENT_RUN = 4;
+        DATASET = 5;
+        DATASET_VERSION = 6;
+        DASHBOARD = 7;
+        REPOSITORY = 8;
+        REGISTERED_MODEL = 9;
+    }
+};
+
+// For pagination
+message Pagination {
+    int32 page_number = 2;
+    int32 page_limit = 3;
+}
+
+message WorkspaceTypeEnum {
+    enum WorkspaceType {
+        UNKNOWN = 0;
+        ORGANIZATION = 1;
+        USER = 2;
+    }
+}
+message ArtifactTypeEnum{
+    enum ArtifactType {
+        IMAGE = 0;
+        MODEL = 1;
+        TENSORBOARD = 2;
+        DATA = 3;
+        BLOB = 4;
+        STRING = 5;
+        CODE = 6;
+        CONTAINER = 7;
+    }
+}
+
+message Artifact {
+    string key = 1;
+    string path = 2;
+    bool path_only = 3;
+    ArtifactTypeEnum.ArtifactType artifact_type = 4;
+    string linked_artifact_id = 5;
+    string filename_extension = 6;
+}
+
+message KeyValueQuery {
+    string key = 1; //entity field key
+    google.protobuf.Value value = 2; //entity field value
+    common.ValueTypeEnum.ValueType value_type = 3; // Default = STRING
+    OperatorEnum.Operator operator = 4; // Default = EQ
+}
+
+message ArtifactPart {
+    uint64 part_number = 1;
+    string etag = 2;  // checksum returned by S3
+}
+
+message OperatorEnum {
+    enum Operator {
+        EQ = 0;
+        NE = 1;
+        GT = 2;
+        GTE = 3;
+        LT = 4;
+        LTE = 5;
+        CONTAIN = 6;
+        NOT_CONTAIN = 7;
+        IN = 8; // This is not fully supported by backend.
+    }
+}
+
+message VisibilityEnum {
+    enum Visibility {
+        //Default to private
+        PRIVATE = 0;
+        //Not supported
+        PUBLIC = 1;
+        //Uses access setup by organization
+        ORG_SCOPED_PUBLIC = 2;
+    }
+}

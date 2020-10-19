@@ -108,6 +108,9 @@ public class ExperimentEntity {
   @OrderBy("id")
   private CodeVersionEntity code_version_snapshot;
 
+  @Column(name = "deleted")
+  private Boolean deleted = false;
+
   @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
 
   public String getId() {
@@ -232,6 +235,14 @@ public class ExperimentEntity {
       this.attributeMapping = new ArrayList<>();
     }
     this.attributeMapping.addAll(attributeMapping);
+  }
+
+  public Boolean getDeleted() {
+    return deleted;
+  }
+
+  public void setDeleted(Boolean deleted) {
+    this.deleted = deleted;
   }
 
   public Experiment getProtoObject() throws InvalidProtocolBufferException {

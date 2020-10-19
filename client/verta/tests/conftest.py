@@ -7,6 +7,9 @@ import os
 import random
 import shutil
 import string
+import tempfile
+import subprocess
+import sys
 
 import requests
 
@@ -73,6 +76,18 @@ def email():
 @pytest.fixture(scope='session')
 def dev_key():
     return os.environ.get("VERTA_DEV_KEY", DEFAULT_DEV_KEY)
+
+
+@pytest.fixture(scope='session')
+def email_2():
+    # For collaboration tests
+    return os.environ.get("VERTA_EMAIL_2")
+
+
+@pytest.fixture(scope='session')
+def dev_key_2():
+    # For collaboration tests
+    return os.environ.get("VERTA_DEV_KEY_2")
 
 
 @pytest.fixture
@@ -250,14 +265,41 @@ def dir_and_files(strs, tmp_path):
 
 
 @pytest.fixture
+def in_tempdir():
+    """Moves test to execute inside a temporary directory."""
+    dirpath = tempfile.mkdtemp()
+    try:
+        with utils.chdir(dirpath):
+            yield dirpath
+    finally:
+        shutil.rmtree(dirpath)
+
+
+@pytest.fixture
 def client(host, port, email, dev_key):
     print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
     client = Client(host, port, email, dev_key, debug=True)
 
     yield client
 
-    if client.proj is not None:
-        utils.delete_project(client.proj.id, client._conn)
+    proj = client._ctx.proj
+    if proj is not None:
+        proj.delete()
+
+    print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
+
+
+@pytest.fixture
+def client_2(host, port, email_2, dev_key_2):
+    """For collaboration tests."""
+    if not (email_2 and dev_key_2):
+        pytest.skip("second account credentials not present")
+    print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
+
+    client = Client(host, port, email_2, dev_key_2, debug=True)
+
+    yield client
+
     print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
 
@@ -268,8 +310,32 @@ def experiment_run(client):
     client.set_experiment()
     run = client.set_experiment_run()
     print("[TEST LOG] Run ID is {}".format(run.id))
-    
+
     return run
+
+
+@pytest.fixture
+def model_for_deployment(strs):
+    np = pytest.importorskip("numpy")
+    pd = pytest.importorskip("pandas")
+    sklearn = pytest.importorskip("sklearn")
+    from sklearn import linear_model
+
+    num_rows, num_cols = 36, 6
+
+    data = pd.DataFrame(np.tile(np.arange(num_rows).reshape(-1, 1),
+                                num_cols),
+                        columns=strs[:num_cols])
+    X_train = data.iloc[:,:-1]  # pylint: disable=bad-whitespace
+    y_train = data.iloc[:, -1]
+
+    return {
+        'model': sklearn.linear_model.LogisticRegression(),
+        'model_api': verta.utils.ModelAPI(X_train, y_train),
+        'requirements': six.StringIO("scikit-learn=={}".format(sklearn.__version__)),
+        'train_features': X_train,
+        'train_targets': y_train,
+    }
 
 
 @pytest.fixture
@@ -279,7 +345,7 @@ def repository(client):
 
     yield repo
 
-    utils.delete_repository(repo.id, client._conn)
+    repo.delete()
 
 
 @pytest.fixture
@@ -296,5 +362,85 @@ def created_datasets(client):
 
     yield created_datasets
 
-    if created_datasets:
-        utils.delete_datasets(list(set(dataset.id for dataset in created_datasets)), client._conn)
+    datasets_conn = {}  # prevent duplication
+    for dataset in created_datasets:
+        datasets_conn[dataset.id] = dataset._conn
+
+    for dataset_id in datasets_conn:
+        utils.delete_datasets([dataset_id], datasets_conn[dataset_id])
+
+
+@pytest.fixture
+def registered_model(client):
+    model = client.get_or_create_registered_model()
+    yield model
+    model.delete()
+
+
+@pytest.fixture
+def created_registered_models():
+    """Container to track and clean up `RegisteredModel`s created during tests."""
+    to_delete = []
+
+    yield to_delete
+
+    for registered_model in to_delete:
+        registered_model.delete()
+
+
+@pytest.fixture
+def model_version(registered_model):
+    yield registered_model.get_or_create_version()
+
+
+@pytest.fixture
+def created_endpoints():
+    to_delete = []
+
+    yield to_delete
+
+    for endpoint in to_delete:
+        endpoint.delete()
+
+
+@pytest.fixture
+def endpoint(client, created_endpoints):
+    path = _utils.generate_default_name()
+    endpoint = client.create_endpoint(path)
+    created_endpoints.append(endpoint)
+
+    yield endpoint
+
+
+@pytest.fixture
+def created_endpoints():
+    to_delete = []
+
+    yield to_delete
+
+    for endpoint in to_delete:
+        endpoint.delete()
+
+
+@pytest.fixture
+def organization(client):
+    workspace_name = _utils.generate_default_name()
+    org = client._create_organization(workspace_name)
+
+    yield org
+
+    org.delete()
+
+
+@pytest.fixture
+def requirements_file():
+    with tempfile.NamedTemporaryFile('w+') as tempf:
+        # create requirements file from pip freeze
+        pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+        pip_freeze = six.ensure_str(pip_freeze)
+        tempf.write(pip_freeze)
+        tempf.flush()  # flush object buffer
+        os.fsync(tempf.fileno())  # flush OS buffer
+        tempf.seek(0)
+
+        yield tempf

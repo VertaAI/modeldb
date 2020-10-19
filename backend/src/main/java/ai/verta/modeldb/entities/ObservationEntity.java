@@ -4,6 +4,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Value;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,6 +28,7 @@ public class ObservationEntity {
       throws InvalidProtocolBufferException {
 
     setTimestamp(observation.getTimestamp());
+    setEpochNumber((long) observation.getEpochNumber().getNumberValue());
     if (observation.getAttribute() != null && !observation.getAttribute().getKey().isEmpty()) {
       setKeyValueMapping(
           RdbmsUtils.generateKeyValueEntity(
@@ -58,6 +60,9 @@ public class ObservationEntity {
   @Column(name = "timestamp", nullable = false)
   private Long timestamp;
 
+  @Column(name = "epoch_number", nullable = false)
+  private Long epoch_number;
+
   @OneToOne(cascade = CascadeType.ALL)
   @OrderBy("id")
   private KeyValueEntity keyValueMapping;
@@ -74,7 +79,7 @@ public class ObservationEntity {
   @JoinColumn(name = "experiment_id", nullable = true)
   private ExperimentEntity experimentEntity;
 
-  @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "experiment_run_id", nullable = true)
   private ExperimentRunEntity experimentRunEntity;
 
@@ -147,9 +152,16 @@ public class ObservationEntity {
     return field_type;
   }
 
+  public void setEpochNumber(Long epochNumber) {
+    this.epoch_number = epochNumber;
+  }
+
   public Observation getProtoObject() throws InvalidProtocolBufferException {
     Observation.Builder builder = Observation.newBuilder();
     builder.setTimestamp(timestamp);
+    if (epoch_number != null) {
+      builder.setEpochNumber(Value.newBuilder().setNumberValue(epoch_number));
+    }
     if (keyValueMapping != null) {
       builder.setAttribute(keyValueMapping.getProtoKeyValue());
     }

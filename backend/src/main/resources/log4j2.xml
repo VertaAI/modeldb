@@ -2,8 +2,8 @@
 <Configuration status="INFO">
     <Appenders>
         <Console name="ConsoleJSONAppender" target="SYSTEM_OUT">
-            <JsonLayout complete="false" compact="true" eventEol="true" stacktraceAsString="true">
-                <!-- Doc link: https://logging.apache.org/log4j/2.x/manual/lookups.html -->
+              <!--  Doc link for key value pair: https://logging.apache.org/log4j/2.x/manual/lookups.html -->
+              <JsonLayout complete="false" compact="true" eventEol="true" stacktraceAsString="true" locationInfo="true">
                 <KeyValuePair key="hostName" value="${env:hostName:-}"/>
                 <KeyValuePair key="kubernetes.podIP" value="${k8s:podIp:-}"/>
             </JsonLayout>
@@ -45,6 +45,9 @@
         </Logger>
         <Logger name="org.apache.http.impl" level="INFO" additivity="false">
             <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="io.jaegertracing" level="WARN" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="WARN" />
         </Logger>
         <Root level="DEBUG" additivity="false">
             <AppenderRef ref="ConsoleJSONAppender" />

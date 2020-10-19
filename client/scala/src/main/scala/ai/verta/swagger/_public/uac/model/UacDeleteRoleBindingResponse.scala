@@ -6,7 +6,7 @@ import scala.util.Try
 import net.liftweb.json._
 
 import ai.verta.swagger._public.uac.model.ModelDBActionEnumModelDBServiceActions._
-import ai.verta.swagger._public.uac.model.ModelResourceEnumModelDBServiceResourceTypes._
+import ai.verta.swagger._public.uac.model.ModelDBResourceEnumModelDBServiceResourceTypes._
 import ai.verta.swagger._public.uac.model.ServiceEnumService._
 import ai.verta.swagger.client.objects._
 

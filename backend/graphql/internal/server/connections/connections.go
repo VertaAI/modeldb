@@ -15,9 +15,11 @@ type Connections struct {
 	mdb *grpc.ClientConn
 	uac *grpc.ClientConn
 
-	Experiment    ai_verta_modeldb.ExperimentServiceClient
-	ExperimentRun ai_verta_modeldb.ExperimentRunServiceClient
-	Project       ai_verta_modeldb.ProjectServiceClient
+	Experiment     ai_verta_modeldb.ExperimentServiceClient
+	ExperimentRun  ai_verta_modeldb.ExperimentRunServiceClient
+	Project        ai_verta_modeldb.ProjectServiceClient
+	Dataset        ai_verta_modeldb.DatasetServiceClient
+	DatasetVersion ai_verta_modeldb.DatasetVersionServiceClient
 
 	Versioning versioning.VersioningServiceClient
 
@@ -65,6 +67,8 @@ func NewConnections(logger *zap.Logger) (*Connections, error) {
 	c.Project = ai_verta_modeldb.NewProjectServiceClient(c.mdb)
 	c.Experiment = ai_verta_modeldb.NewExperimentServiceClient(c.mdb)
 	c.ExperimentRun = ai_verta_modeldb.NewExperimentRunServiceClient(c.mdb)
+	c.Dataset = ai_verta_modeldb.NewDatasetServiceClient(c.mdb)
+	c.DatasetVersion = ai_verta_modeldb.NewDatasetVersionServiceClient(c.mdb)
 
 	c.Versioning = versioning.NewVersioningServiceClient(c.mdb)
 

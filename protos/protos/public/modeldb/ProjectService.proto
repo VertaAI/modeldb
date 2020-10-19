@@ -23,13 +23,13 @@ message Project {
     string readme_text = 7;
     ProjectVisibility project_visibility = 8;
     string workspace_id = 9;
-    WorkspaceTypeEnum.WorkspaceType workspace_type = 10;
+    common.WorkspaceTypeEnum.WorkspaceType workspace_type = 10;
 
     repeated common.KeyValue attributes = 20;
     repeated string tags = 21;
     string owner = 22;
     CodeVersion code_version_snapshot = 23;
-    repeated Artifact artifacts = 24;
+    repeated common.Artifact artifacts = 24;
 }
 
 enum ProjectVisibility {
@@ -45,7 +45,7 @@ message CreateProject {
     repeated string tags = 4;
     string readme_text = 5;
     ProjectVisibility project_visibility = 6;
-    repeated Artifact artifacts = 7;
+    repeated common.Artifact artifacts = 7;
     string workspace_name = 8;
     int64 date_created = 9;
 
@@ -297,7 +297,7 @@ message GetProjectShortName {
 
 message FindProjects {
     repeated string project_ids = 1;
-    repeated KeyValueQuery predicates = 2;
+    repeated common.KeyValueQuery predicates = 2;
     bool ids_only = 3; // whether to return full experiment runs or ids only
     string workspace_name = 8;
 
@@ -316,7 +316,7 @@ message FindProjects {
 // artifacts
 message LogProjectArtifacts {
     string id = 1;
-    repeated Artifact artifacts = 2;
+    repeated common.Artifact artifacts = 2;
 
     message Response {
         Project project = 1;

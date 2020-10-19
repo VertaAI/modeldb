@@ -6,16 +6,16 @@ import scala.util.Try
 import net.liftweb.json._
 
 import ai.verta.swagger._public.modeldb.model.ArtifactTypeEnumArtifactType._
+import ai.verta.swagger._public.modeldb.model.ModeldbProjectVisibility._
 import ai.verta.swagger._public.modeldb.model.OperatorEnumOperator._
+import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger._public.modeldb.model.TernaryEnumTernary._
 import ai.verta.swagger._public.modeldb.model.ValueTypeEnumValueType._
 import ai.verta.swagger._public.modeldb.model.WorkspaceTypeEnumWorkspaceType._
-import ai.verta.swagger._public.modeldb.model.ModeldbProjectVisibility._
-import ai.verta.swagger._public.modeldb.model.ProtobufNullValue._
 import ai.verta.swagger.client.objects._
 
 case class ModeldbProject (
-  artifacts: Option[List[ModeldbArtifact]] = None,
+  artifacts: Option[List[CommonArtifact]] = None,
   attributes: Option[List[CommonKeyValue]] = None,
   code_version_snapshot: Option[ModeldbCodeVersion] = None,
   date_created: Option[BigInt] = None,
@@ -38,7 +38,7 @@ object ModeldbProject {
   def toJson(obj: ModeldbProject): JObject = {
     new JObject(
       List[Option[JField]](
-        obj.artifacts.map(x => JField("artifacts", ((x: List[ModeldbArtifact]) => JArray(x.map(((x: ModeldbArtifact) => ModeldbArtifact.toJson(x)))))(x))),
+        obj.artifacts.map(x => JField("artifacts", ((x: List[CommonArtifact]) => JArray(x.map(((x: CommonArtifact) => CommonArtifact.toJson(x)))))(x))),
         obj.attributes.map(x => JField("attributes", ((x: List[CommonKeyValue]) => JArray(x.map(((x: CommonKeyValue) => CommonKeyValue.toJson(x)))))(x))),
         obj.code_version_snapshot.map(x => JField("code_version_snapshot", ((x: ModeldbCodeVersion) => ModeldbCodeVersion.toJson(x))(x))),
         obj.date_created.map(x => JField("date_created", JInt(x))),
@@ -66,7 +66,7 @@ object ModeldbProject {
         val fieldsMap = fields.map(f => (f.name, f.value)).toMap
         ModeldbProject(
           // TODO: handle required
-          artifacts = fieldsMap.get("artifacts").map((x: JValue) => x match {case JArray(elements) => elements.map(ModeldbArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
+          artifacts = fieldsMap.get("artifacts").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonArtifact.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           attributes = fieldsMap.get("attributes").map((x: JValue) => x match {case JArray(elements) => elements.map(CommonKeyValue.fromJson); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           code_version_snapshot = fieldsMap.get("code_version_snapshot").map(ModeldbCodeVersion.fromJson),
           date_created = fieldsMap.get("date_created").map(JsonConverter.fromJsonInteger),

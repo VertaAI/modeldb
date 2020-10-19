@@ -1,0 +1,57 @@
+.root {
+  display: grid;
+  font-size: 15px;
+  overflow: auto;
+}
+
+.prop {
+  position: relative;
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #dedede;
+}
+
+.propHeaderCell {
+  width: 200px;
+  padding: 13px;
+  color: #777777;
+  font-weight: 500;
+  flex-shrink: 0;
+  position: sticky;
+  left: 0;
+  z-index: 1000;
+  background-color: white;
+}
+
+.propCell {
+  padding: 13px;
+  font-size: 13px;
+  min-width: 300px;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #dedede;
+}
+
+.headerPropCell {
+  width: 200px;
+  padding: 13px;
+  color: #777777;
+  font-weight: 500;
+  position: sticky;
+  left: 0;
+  z-index: 1000;
+  background-color: white;
+}
+
+.headerCell {
+  padding: 13px;
+  color: #777777;
+  font-weight: 500;
+}
+
+.onlyOneProp {
+  flex-grow: 2;
+}

@@ -12,6 +12,7 @@ import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.LineageEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.Status.Code;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -33,16 +34,22 @@ public class LineageDAORdbImpl implements LineageDAO {
   public Response addLineage(AddLineage addLineage, IsExistsPredicate isExistsPredicate)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       validate(addLineage.getInputList(), addLineage.getOutputList());
       validateExistence(
           addLineage.getInputList(), addLineage.getOutputList(), isExistsPredicate, session);
+      session.beginTransaction();
       for (LineageEntry input : addLineage.getInputList()) {
         for (LineageEntry output : addLineage.getOutputList()) {
           addLineage(session, input, output);
         }
       }
       session.getTransaction().commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return addLineage(addLineage, isExistsPredicate);
+      } else {
+        throw ex;
+      }
     }
     return AddLineage.Response.newBuilder().setStatus(true).build();
   }
@@ -50,14 +57,20 @@ public class LineageDAORdbImpl implements LineageDAO {
   @Override
   public DeleteLineage.Response deleteLineage(DeleteLineage deleteLineage) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
       validate(deleteLineage.getInputList(), deleteLineage.getOutputList());
+      session.beginTransaction();
       for (LineageEntry input : deleteLineage.getInputList()) {
         for (LineageEntry output : deleteLineage.getOutputList()) {
           deleteLineage(session, input, output);
         }
       }
       session.getTransaction().commit();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return deleteLineage(deleteLineage);
+      } else {
+        throw ex;
+      }
     }
     return DeleteLineage.Response.newBuilder().setStatus(true).build();
   }
@@ -89,7 +102,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       message = null;
     }
     if (message != null) {
-      LOGGER.warn(message);
+      LOGGER.info(message);
       throw new ModelDBException(message, Code.INVALID_ARGUMENT);
     }
   }
@@ -118,7 +131,7 @@ public class LineageDAORdbImpl implements LineageDAO {
     if (!isExistsResourcePredicate.test(
         session, lineageEntry.getExternalId(), lineageEntry.getType())) {
       final String message = "External resource with a specified id does not exists";
-      LOGGER.warn(message);
+      LOGGER.info(message);
       throw new ModelDBException(message, Code.INVALID_ARGUMENT);
     }
   }
@@ -131,6 +144,12 @@ public class LineageDAORdbImpl implements LineageDAO {
         validate(output);
         response.addInputs(
             LineageEntryBatch.newBuilder().addAllItems(getInputsByOutput(session, output)).build());
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return findAllInputs(findAllInputs);
+      } else {
+        throw ex;
       }
     }
     return response.build();
@@ -145,6 +164,12 @@ public class LineageDAORdbImpl implements LineageDAO {
         validate(input);
         response.addOutputs(
             LineageEntryBatch.newBuilder().addAllItems(getOutputsByInput(session, input)).build());
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return findAllOutputs(findAllOutputs);
+      } else {
+        throw ex;
       }
     }
     return response.build();
@@ -161,6 +186,12 @@ public class LineageDAORdbImpl implements LineageDAO {
         final List<LineageEntry> outputs = getOutputsByInput(session, inputoutput);
         response.addInputs(LineageEntryBatch.newBuilder().addAllItems(inputs));
         response.addOutputs(LineageEntryBatch.newBuilder().addAllItems(outputs).build());
+      }
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return findAllInputsOutputs(findAllInputsOutputs);
+      } else {
+        throw ex;
       }
     }
     return response.build();

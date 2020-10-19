@@ -7,6 +7,8 @@ from .._protos.public.modeldb.versioning import VersioningService_pb2 as _Versio
 from .._internal_utils import _utils
 from . import commit
 
+import requests
+
 
 class Repository(object):
     """
@@ -44,7 +46,7 @@ class Repository(object):
         response = _utils.make_request("GET", self._endpoint_prefix, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.GetRepositoryRequest.Response)
         return response_msg.repository.name
 
@@ -53,9 +55,19 @@ class Repository(object):
         raise NotImplementedError
 
     @classmethod
-    def _create(cls, conn, name, workspace):
+    def _create(cls, conn, name, workspace, public_within_org):
         msg = _VersioningService.Repository()
         msg.name = name
+        if public_within_org:
+            if workspace is None:
+                raise ValueError("cannot set `public_within_org` for personal workspace")
+            elif not _utils.is_org(workspace, conn):
+                raise ValueError(
+                    "cannot set `public_within_org`"
+                    " because workspace \"{}\" is not an organization".format(workspace)
+                )
+            else:
+                msg.repository_visibility = _VersioningService.RepositoryVisibilityEnum.ORG_SCOPED_PUBLIC
 
         data = _utils.proto_to_json(msg)
         endpoint = "{}://{}/api/v1/modeldb/versioning/workspaces/{}/repositories".format(
@@ -66,7 +78,7 @@ class Repository(object):
         response = _utils.make_request("POST", endpoint, conn, json=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.SetRepository.Response)
         return cls(conn, response_msg.repository.id)
 
@@ -91,13 +103,13 @@ class Repository(object):
         response = _utils.make_request("GET", endpoint, conn)
 
         if not response.ok:
-            if ((response.status_code == 403 and response.json()['code'] == 7)
-                    or (response.status_code == 404 and response.json()['code'] == 5)):
+            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
                 return None
             else:
                 _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(),
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.GetRepositoryRequest.Response)
         return cls(conn, response_msg.repository.id)
 
@@ -155,5 +167,15 @@ class Repository(object):
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(response.json(), msg.Response)
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
         return commit.Commit._from_id(self._conn, self, response_msg.commit.commit_sha, branch_name=branch)
+
+    def delete(self):
+        """
+        Deletes this repository.
+
+        """
+        request_url = "{}://{}/api/v1/modeldb/versioning/repositories/{}".format(self._conn.scheme, self._conn.socket, self.id)
+        response = requests.delete(request_url, headers=self._conn.auth)
+        _utils.raise_for_http_error(response)
+

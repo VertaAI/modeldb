@@ -1,0 +1,38 @@
+.root {
+}
+
+.goBack {
+  display: block;
+  text-decoration: none;
+  font-size: 16px;
+  color: var(--main-text-color1);
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 24px;
+  color: 500;
+  margin-bottom: 22px;
+}
+
+.searchForm {
+}
+
+.filters {
+  margin-top: 10px;
+}
+
+.resultsContainer {
+  display: flex;
+  margin-top: 4px;
+  flex-direction: column;
+}
+
+.sorting {
+  margin-left: auto;
+  margin-bottom: 8px;
+}
+
+.results {
+}

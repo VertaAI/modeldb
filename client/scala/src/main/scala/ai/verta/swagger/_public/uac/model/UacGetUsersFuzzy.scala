@@ -11,7 +11,7 @@ import ai.verta.swagger.client.objects._
 
 case class UacGetUsersFuzzy (
   email: Option[String] = None,
-  pagination: Option[UacPagination] = None,
+  pagination: Option[VertauacPagination] = None,
   username: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = UacGetUsersFuzzy.toJson(this)
@@ -22,7 +22,7 @@ object UacGetUsersFuzzy {
     new JObject(
       List[Option[JField]](
         obj.email.map(x => JField("email", JString(x))),
-        obj.pagination.map(x => JField("pagination", ((x: UacPagination) => UacPagination.toJson(x))(x))),
+        obj.pagination.map(x => JField("pagination", ((x: VertauacPagination) => VertauacPagination.toJson(x))(x))),
         obj.username.map(x => JField("username", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -38,7 +38,7 @@ object UacGetUsersFuzzy {
         UacGetUsersFuzzy(
           // TODO: handle required
           email = fieldsMap.get("email").map(JsonConverter.fromJsonString),
-          pagination = fieldsMap.get("pagination").map(UacPagination.fromJson),
+          pagination = fieldsMap.get("pagination").map(VertauacPagination.fromJson),
           username = fieldsMap.get("username").map(JsonConverter.fromJsonString)
         )
       }

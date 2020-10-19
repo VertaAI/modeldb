@@ -1,9 +1,10 @@
 package ai.verta.modeldb.project;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
-import ai.verta.modeldb.Artifact;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.FindProjects;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -193,7 +194,7 @@ public interface ProjectDAO {
    * @return Project
    */
   Project deepCopyProjectForUser(String srcProjectID, UserInfo userInfo)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * Fetch the Projects corresponding to the id
@@ -332,4 +333,11 @@ public interface ProjectDAO {
 
   public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException;
+  /**
+   * Checks if project with the id exists with delete flag false
+   *
+   * @param projectId
+   * @return
+   */
+  boolean projectExistsInDB(String projectId);
 }

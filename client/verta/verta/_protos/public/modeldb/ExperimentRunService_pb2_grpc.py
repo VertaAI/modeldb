@@ -200,6 +200,21 @@ class ExperimentRunServiceStub(object):
         request_serializer=modeldb_dot_CommonService__pb2.GetUrlForArtifact.SerializeToString,
         response_deserializer=modeldb_dot_CommonService__pb2.GetUrlForArtifact.Response.FromString,
         )
+    self.commitArtifactPart = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/commitArtifactPart',
+        request_serializer=modeldb_dot_CommonService__pb2.CommitArtifactPart.SerializeToString,
+        response_deserializer=modeldb_dot_CommonService__pb2.CommitArtifactPart.Response.FromString,
+        )
+    self.getCommittedArtifactParts = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/getCommittedArtifactParts',
+        request_serializer=modeldb_dot_CommonService__pb2.GetCommittedArtifactParts.SerializeToString,
+        response_deserializer=modeldb_dot_CommonService__pb2.GetCommittedArtifactParts.Response.FromString,
+        )
+    self.commitMultipartArtifact = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/commitMultipartArtifact',
+        request_serializer=modeldb_dot_CommonService__pb2.CommitMultipartArtifact.SerializeToString,
+        response_deserializer=modeldb_dot_CommonService__pb2.CommitMultipartArtifact.Response.FromString,
+        )
     self.findExperimentRuns = channel.unary_unary(
         '/ai.verta.modeldb.ExperimentRunService/findExperimentRuns',
         request_serializer=modeldb_dot_ExperimentRunService__pb2.FindExperimentRuns.SerializeToString,
@@ -254,6 +269,36 @@ class ExperimentRunServiceStub(object):
         '/ai.verta.modeldb.ExperimentRunService/getVersionedInputs',
         request_serializer=modeldb_dot_ExperimentRunService__pb2.GetVersionedInput.SerializeToString,
         response_deserializer=modeldb_dot_ExperimentRunService__pb2.GetVersionedInput.Response.FromString,
+        )
+    self.ListCommitExperimentRuns = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/ListCommitExperimentRuns',
+        request_serializer=modeldb_dot_ExperimentRunService__pb2.ListCommitExperimentRunsRequest.SerializeToString,
+        response_deserializer=modeldb_dot_ExperimentRunService__pb2.ListCommitExperimentRunsRequest.Response.FromString,
+        )
+    self.ListBlobExperimentRuns = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/ListBlobExperimentRuns',
+        request_serializer=modeldb_dot_ExperimentRunService__pb2.ListBlobExperimentRunsRequest.SerializeToString,
+        response_deserializer=modeldb_dot_ExperimentRunService__pb2.ListBlobExperimentRunsRequest.Response.FromString,
+        )
+    self.deleteObservations = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/deleteObservations',
+        request_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteObservations.SerializeToString,
+        response_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteObservations.Response.FromString,
+        )
+    self.deleteMetrics = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/deleteMetrics',
+        request_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteMetrics.SerializeToString,
+        response_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteMetrics.Response.FromString,
+        )
+    self.deleteHyperparameters = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/deleteHyperparameters',
+        request_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.SerializeToString,
+        response_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.Response.FromString,
+        )
+    self.cloneExperimentRun = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/cloneExperimentRun',
+        request_serializer=modeldb_dot_ExperimentRunService__pb2.CloneExperimentRun.SerializeToString,
+        response_deserializer=modeldb_dot_ExperimentRunService__pb2.CloneExperimentRun.Response.FromString,
         )
 
 
@@ -520,6 +565,27 @@ class ExperimentRunServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def commitArtifactPart(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getCommittedArtifactParts(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def commitMultipartArtifact(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def findExperimentRuns(self, request, context):
     """queries
     """
@@ -591,6 +657,48 @@ class ExperimentRunServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def getVersionedInputs(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def ListCommitExperimentRuns(self, request, context):
+    """Getting ExperimentRuns linked to a commit
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def ListBlobExperimentRuns(self, request, context):
+    """Getting ExperimentRuns linked to a blob
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def deleteObservations(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def deleteMetrics(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def deleteHyperparameters(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def cloneExperimentRun(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -785,6 +893,21 @@ def add_ExperimentRunServiceServicer_to_server(servicer, server):
           request_deserializer=modeldb_dot_CommonService__pb2.GetUrlForArtifact.FromString,
           response_serializer=modeldb_dot_CommonService__pb2.GetUrlForArtifact.Response.SerializeToString,
       ),
+      'commitArtifactPart': grpc.unary_unary_rpc_method_handler(
+          servicer.commitArtifactPart,
+          request_deserializer=modeldb_dot_CommonService__pb2.CommitArtifactPart.FromString,
+          response_serializer=modeldb_dot_CommonService__pb2.CommitArtifactPart.Response.SerializeToString,
+      ),
+      'getCommittedArtifactParts': grpc.unary_unary_rpc_method_handler(
+          servicer.getCommittedArtifactParts,
+          request_deserializer=modeldb_dot_CommonService__pb2.GetCommittedArtifactParts.FromString,
+          response_serializer=modeldb_dot_CommonService__pb2.GetCommittedArtifactParts.Response.SerializeToString,
+      ),
+      'commitMultipartArtifact': grpc.unary_unary_rpc_method_handler(
+          servicer.commitMultipartArtifact,
+          request_deserializer=modeldb_dot_CommonService__pb2.CommitMultipartArtifact.FromString,
+          response_serializer=modeldb_dot_CommonService__pb2.CommitMultipartArtifact.Response.SerializeToString,
+      ),
       'findExperimentRuns': grpc.unary_unary_rpc_method_handler(
           servicer.findExperimentRuns,
           request_deserializer=modeldb_dot_ExperimentRunService__pb2.FindExperimentRuns.FromString,
@@ -839,6 +962,36 @@ def add_ExperimentRunServiceServicer_to_server(servicer, server):
           servicer.getVersionedInputs,
           request_deserializer=modeldb_dot_ExperimentRunService__pb2.GetVersionedInput.FromString,
           response_serializer=modeldb_dot_ExperimentRunService__pb2.GetVersionedInput.Response.SerializeToString,
+      ),
+      'ListCommitExperimentRuns': grpc.unary_unary_rpc_method_handler(
+          servicer.ListCommitExperimentRuns,
+          request_deserializer=modeldb_dot_ExperimentRunService__pb2.ListCommitExperimentRunsRequest.FromString,
+          response_serializer=modeldb_dot_ExperimentRunService__pb2.ListCommitExperimentRunsRequest.Response.SerializeToString,
+      ),
+      'ListBlobExperimentRuns': grpc.unary_unary_rpc_method_handler(
+          servicer.ListBlobExperimentRuns,
+          request_deserializer=modeldb_dot_ExperimentRunService__pb2.ListBlobExperimentRunsRequest.FromString,
+          response_serializer=modeldb_dot_ExperimentRunService__pb2.ListBlobExperimentRunsRequest.Response.SerializeToString,
+      ),
+      'deleteObservations': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteObservations,
+          request_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteObservations.FromString,
+          response_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteObservations.Response.SerializeToString,
+      ),
+      'deleteMetrics': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteMetrics,
+          request_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteMetrics.FromString,
+          response_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteMetrics.Response.SerializeToString,
+      ),
+      'deleteHyperparameters': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteHyperparameters,
+          request_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.FromString,
+          response_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.Response.SerializeToString,
+      ),
+      'cloneExperimentRun': grpc.unary_unary_rpc_method_handler(
+          servicer.cloneExperimentRun,
+          request_deserializer=modeldb_dot_ExperimentRunService__pb2.CloneExperimentRun.FromString,
+          response_serializer=modeldb_dot_ExperimentRunService__pb2.CloneExperimentRun.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

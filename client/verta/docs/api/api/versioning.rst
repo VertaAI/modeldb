@@ -12,6 +12,8 @@ Repository
 .. autoclass:: verta._repository.commit.Commit
     :members:
 
+.. _blobs:
+
 Blobs
 -----
 Code
@@ -30,7 +32,11 @@ Dataset
 ^^^^^^^
 .. autoclass:: verta.dataset.Path
     :members:
+    :inherited-members:
 .. autoclass:: verta.dataset.S3
+    :members:
+    :inherited-members:
+.. autoclass:: verta.dataset._dataset.Component()
     :members:
 
 Environment

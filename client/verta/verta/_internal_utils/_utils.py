@@ -1,18 +1,24 @@
 # -*- coding: utf-8 -*-
 
+import copy
 import datetime
 import glob
 import inspect
+import itertools
 import json
+import logging
 import numbers
 import os
 import re
+import site
 import string
 import subprocess
 import sys
 import threading
 import time
+import warnings
 
+import click
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -23,55 +29,24 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 from ..external import six
 from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
-from .._protos.public.modeldb import CommonService_pb2 as _CommonService
+from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
-try:
-    import pandas as pd
-except ImportError:  # pandas not installed
-    pd = None
-
-try:
-    import tensorflow as tf
-except ImportError:  # TensorFlow not installed
-    tf = None
-
-try:
-    import ipykernel
-except ImportError:  # Jupyter not installed
-    pass
-else:
-    try:
-        from IPython.display import Javascript, display
-        try:  # Python 3
-            from notebook.notebookapp import list_running_servers
-        except ImportError:  # Python 2
-            import warnings
-            from IPython.utils.shimmodule import ShimWarning
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=ShimWarning)
-                from IPython.html.notebookapp import list_running_servers
-            del warnings, ShimWarning  # remove ad hoc imports from scope
-    except ImportError:  # abnormally nonstandard installation of Jupyter
-        pass
+from . import importer
 
 
-try:
-    import numpy as np
-except ImportError:  # NumPy not installed
-    np = None
-    BOOL_TYPES = (bool,)
-else:
-    BOOL_TYPES = (bool, np.bool_)
+logger = logging.getLogger(__name__)
+
 
 _GRPC_PREFIX = "Grpc-Metadata-"
 
-_VALID_HTTP_METHODS = {'GET', 'POST', 'PUT', 'DELETE'}
+_VALID_HTTP_METHODS = {'GET', 'POST', 'PUT', 'DELETE', 'PATCH'}
 _VALID_FLAT_KEY_CHARS = set(string.ascii_letters + string.digits + '_-/')
 
 THREAD_LOCALS = threading.local()
 THREAD_LOCALS.active_experiment_run = None
 
-SAVED_MODEL_DIR = "/app/tf_saved_model/"
+# TODO: remove this in favor of _config_utils when #635 is merged
+HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
 
 
 class Connection:
@@ -106,6 +81,89 @@ class Connection:
                            raise_on_status=False)  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
 
+    def make_proto_request(self, method, path, params=None, body=None, include_default=True):
+        if params is not None:
+            params = proto_to_json(params)
+        if body is not None:
+            body = proto_to_json(body, include_default)
+        response = make_request(method,
+                                "{}://{}{}".format(self.scheme, self.socket, path),
+                                self, params=params, json=body)
+
+        return response
+
+    @staticmethod
+    def maybe_proto_response(response, response_type):
+        if response.ok:
+            response_msg = json_to_proto(body_to_json(response), response_type)
+            return response_msg
+        else:
+            if ((response.status_code == 403 and body_to_json(response)['code'] == 7)
+                    or (response.status_code == 404 and     body_to_json(response)['code'] == 5)):
+                return NoneProtoResponse()
+            else:
+                raise_for_http_error(response)
+
+    @staticmethod
+    def must_proto_response(response, response_type):
+        if response.ok:
+            response_msg = json_to_proto(body_to_json(response), response_type)
+            return response_msg
+        else:
+            raise_for_http_error(response)
+
+    @staticmethod
+    def must_response(response):
+        raise_for_http_error(response)
+
+    @staticmethod
+    def _request_to_curl(request):
+        """
+        Prints a cURL to reproduce `request`.
+
+        Parameters
+        ----------
+        request : :class:`requests.PreparedRequest`
+
+        Examples
+        --------
+        From a :class:`~requests.Response`:
+
+        .. code-block:: python
+
+            response = _utils.make_request("GET", "https://www.google.com/", conn)
+            conn._request_to_curl(response.request)
+
+        From a :class:`~requests.HTTPError`:
+
+        .. code-block:: python
+
+            try:
+                pass  # insert bad call here
+            except Exception as e:
+                client._conn._request_to_curl(e.request)
+                raise
+
+        """
+        curl = "curl -X"
+        curl += ' ' + request.method
+        curl += ' ' + '"{}"'.format(request.url)
+        if request.headers:
+            curl += ' ' + ' '.join('-H "{}: {}"'.format(key, val) for key, val in request.headers.items())
+        if request.body:
+            curl += ' ' + "-d '{}'".format(request.body.decode())
+
+        print(curl)
+
+
+class NoneProtoResponse(object):
+    def __init__(self):
+        pass
+    def __getattr__(self, item):
+        return None
+    def HasField(self, name):
+        return False
+
 
 class Configuration:
     def __init__(self, use_git=True, debug=False):
@@ -126,36 +184,44 @@ class LazyList(object):
     # number of items to fetch per back end call in __iter__()
     _ITER_PAGE_LIMIT = 100
 
-    def __init__(self, conn, conf, msg, endpoint, rest_method):
+    _OP_MAP = {'~=': _CommonCommonService.OperatorEnum.CONTAIN,
+               '==': _CommonCommonService.OperatorEnum.EQ,
+               '!=': _CommonCommonService.OperatorEnum.NE,
+               '>':  _CommonCommonService.OperatorEnum.GT,
+               '>=': _CommonCommonService.OperatorEnum.GTE,
+               '<':  _CommonCommonService.OperatorEnum.LT,
+               '<=': _CommonCommonService.OperatorEnum.LTE}
+    _OP_PATTERN = re.compile(r" ({}) ".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=lambda s: len(s), reverse=True))))
+
+    # keys that yield predictable, sensible results
+    # TODO: make LazyList an abstract base class; make this attr an abstract property
+    _VALID_QUERY_KEYS = None  # NOTE: must be overridden by subclasses
+
+    def __init__(self, conn, conf, msg):
         self._conn = conn
         self._conf = conf
         self._msg = msg  # protobuf msg used to make back end calls
-        self._endpoint = endpoint
-        self._rest_method = rest_method
 
     def __getitem__(self, index):
         if isinstance(index, int):
             # copy msg to avoid mutating `self`'s state
             msg = self._msg.__class__()
             msg.CopyFrom(self._msg)
-            msg.page_limit = 1
+            msg = self.set_page_limit(msg, 1)
             if index >= 0:
                 # convert zero-based indexing into page number
-                msg.page_number = index + 1
+                msg = self.set_page_number(msg, index + 1)
             else:
                 # reverse page order to index from end
                 msg.ascending = not msg.ascending  # pylint: disable=no-member
-                msg.page_number = abs(index)
+                msg = self.set_page_number(msg, abs(index))
 
-            response_msg = self._call_back_end(msg)
-
-            records = self._get_records(response_msg)
+            records, total_records = self._call_back_end(msg)
             if (not records
-                    and msg.page_number > response_msg.total_records):  # pylint: disable=no-member
+                    and self.page_number(msg) > total_records):  # pylint: disable=no-member
                 raise IndexError("index out of range")
-            id_ = records[0].id
 
-            return self._create_element(id_)
+            return self._create_element(records[0])
         else:
             raise TypeError("index must be integer, not {}".format(type(index)))
 
@@ -163,71 +229,162 @@ class LazyList(object):
         # copy msg to avoid mutating `self`'s state
         msg = self._msg.__class__()
         msg.CopyFrom(self._msg)
-        msg.page_limit = self._ITER_PAGE_LIMIT
-        msg.page_number = 0  # this will be incremented as soon as we enter the loop
+        self.set_page_limit(msg, self._ITER_PAGE_LIMIT)
+        self.set_page_number(msg, 0) # this will be incremented as soon as we enter the loop
 
         seen_ids = set()
         total_records = float('inf')
-        while msg.page_limit*msg.page_number < total_records:  # pylint: disable=no-member
-            msg.page_number += 1  # pylint: disable=no-member
+        page_number = self.page_number(msg)
+        while self.page_limit(msg) * page_number < total_records:  # pylint: disable=no-member
+            page_number += 1  # pylint: disable=no-member
 
-            response_msg = self._call_back_end(msg)
-
-            total_records = response_msg.total_records
-
-            ids = self._get_ids(response_msg)
-            for id_ in ids:
+            records, total_records = self._call_back_end(msg)
+            for rec in records:
                 # skip if we've seen the ID before
-                if id_ in seen_ids:
+                if rec.id in seen_ids:
                     continue
                 else:
-                    seen_ids.add(id_)
+                    seen_ids.add(rec.id)
 
-                yield self._create_element(id_)
+                yield self._create_element(rec)
 
     def __len__(self):
         # copy msg to avoid mutating `self`'s state
         msg = self._msg.__class__()
         msg.CopyFrom(self._msg)
-        msg.page_limit = msg.page_number = 1  # minimal request just to get total_records
+        # minimal request just to get total_records
+        self.set_page_limit(msg, 1)
+        self.set_page_number(msg, 1)
 
-        response_msg = self._call_back_end(msg)
+        _, total_records = self._call_back_end(msg)
 
-        return response_msg.total_records
+        return total_records
+
+    def find(self, where):
+        """
+        Gets the results from this collection that match predicates `where`.
+
+        A predicate in `where` is a string containing a simple boolean expression consisting of:
+
+            - a dot-delimited property such as ``metrics.accuracy``
+            - a Python boolean operator such as ``>=``
+            - a literal value such as ``.8``
+
+        Parameters
+        ----------
+        where : str or list of str
+            Predicates specifying results to get.
+
+        Returns
+        -------
+        The same type of object given in the input.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            runs.find(["hyperparameters.hidden_size == 256",
+                       "metrics.accuracy >= .8"])
+            # <ExperimentRuns containing 3 runs>
+
+        """
+        new_list = copy.deepcopy(self)
+
+        if isinstance(where, six.string_types):
+            where = [where]
+        for predicate in where:
+            # split predicate
+            try:
+                key, operator, value = map(lambda token: token.strip(), self._OP_PATTERN.split(predicate, maxsplit=1))
+            except ValueError:
+                six.raise_from(ValueError("predicate `{}` must be a two-operand comparison".format(predicate)),
+                               None)
+
+            if key.split('.')[0] not in self._VALID_QUERY_KEYS:
+                raise ValueError("key `{}` is not a valid key for querying;"
+                                 " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
+
+            # cast operator into protobuf enum variant
+            operator = self._OP_MAP[operator]
+
+            try:
+                value = float(value)
+            except ValueError:  # not a number, so process as string
+                # maintain old behavior where input would be wrapped in quotes
+                if ((value.startswith('\'') and value.endswith('\''))
+                        or (value.startswith('"') and value.endswith('"'))):
+                    value = value[1:-1]
+
+            new_list._msg.predicates.append(  # pylint: disable=no-member
+                _CommonCommonService.KeyValueQuery(
+                    key=key, value=python_to_val_proto(value),
+                    operator=operator,
+                )
+            )
+
+        return new_list
+
+    def sort(self, key, descending=False):
+        """
+        Sorts the results from this collection by `key`.
+
+        A `key` is a string containing a dot-delimited property such as
+        ``metrics.accuracy``.
+
+        Parameters
+        ----------
+        key : str
+            Dot-delimited property.
+        descending : bool, default False
+            Order in which to return sorted results.
+
+        Returns
+        -------
+        The same type of object given in the input.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            runs.sort("metrics.accuracy")
+            # <ExperimentRuns containing 3 runs>
+
+        """
+        if key.split('.')[0] not in self._VALID_QUERY_KEYS:
+            raise ValueError("key `{}` is not a valid key for querying;"
+                             " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
+
+        new_list = copy.deepcopy(self)
+
+        new_list._msg.sort_key = key
+        new_list._msg.ascending = not descending
+
+        return new_list
 
     def _call_back_end(self, msg):
-        data = proto_to_json(msg)
-
-        if self._rest_method == "GET":
-            response = make_request(
-                self._rest_method,
-                self._endpoint.format(self._conn.scheme, self._conn.socket),
-                self._conn, params=data,
-            )
-        elif self._rest_method == "POST":
-            response = make_request(
-                self._rest_method,
-                self._endpoint.format(self._conn.scheme, self._conn.socket),
-                self._conn, json=data,
-            )
-        raise_for_http_error(response)
-
-        response_msg = json_to_proto(response.json(), msg.Response)
-        return response_msg
-
-    def _get_ids(self, response_msg):
-        return (record.id for record in self._get_records(response_msg))
-
-    def _get_records(self, response_msg):
-        """Get the attribute of `response_msg` that is not `total_records`."""
+        """Find the request in the backend and returns (elements, total count)."""
         raise NotImplementedError
 
-    def _create_element(self, id_):
+    def _create_element(self, msg):
         """Instantiate element to return to user."""
         raise NotImplementedError
 
+    def set_page_limit(self, msg, param):
+        msg.page_limit = param
+        return msg
 
-def make_request(method, url, conn, **kwargs):
+    def set_page_number(self, msg, param):
+        msg.page_number = param
+        return msg
+
+    def page_limit(self, msg):
+        return msg.page_limit
+
+    def page_number(self, msg):
+        return msg.page_number
+
+
+def make_request(method, url, conn, stream=False, **kwargs):
     """
     Makes a REST request.
 
@@ -237,39 +394,116 @@ def make_request(method, url, conn, **kwargs):
         HTTP method.
     url : str
         URL.
-    conn : Connection
+    conn : :class:`Connection`
         Connection authentication and configuration.
+    stream : bool, default False
+        Whether to stream the response contents.
     **kwargs
-        Parameters to requests.request().
+        Initialization arguments to :class:`requests.Request`.
 
     Returns
     -------
-    requests.Response
+    :class:`requests.Response`
 
     """
     if method.upper() not in _VALID_HTTP_METHODS:
         raise ValueError("`method` must be one of {}".format(_VALID_HTTP_METHODS))
 
-    if conn.auth is not None:
-        # add auth to `kwargs['headers']`
-        kwargs.setdefault('headers', {}).update(conn.auth)
+    # add auth to headers
+    kwargs.setdefault('headers', {}).update(conn.auth)
 
-    with requests.Session() as s:
-        s.mount(url, HTTPAdapter(max_retries=conn.retry))
+    with requests.Session() as session:
+        session.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
-            response = s.request(method, url, **kwargs)
+            request = requests.Request(method, url, **kwargs).prepare()
+
+            # retry loop for broken connections
+            MAX_RETRIES = conn.retry.total
+            for retry_num in range(MAX_RETRIES+1):
+                logger.debug("Making request ({} retries)".format(retry_num))
+                try:
+                    response = _make_request(session, request, conn.ignore_conn_err, stream=stream)
+                except requests.ConnectionError as e:
+                    if ((retry_num == MAX_RETRIES)
+                            or ("BrokenPipeError" not in str(e))):
+                        if not conn.ignore_conn_err:
+                            raise e
+                        else:
+                            return fabricate_200()
+                    time.sleep(1)
+                else:
+                    break
+
         except (requests.exceptions.BaseHTTPError,
                 requests.exceptions.RequestException) as e:
             if not conn.ignore_conn_err:
                 raise e
+            # else fall through to fabricate 200 response
         else:
             if response.ok or not conn.ignore_conn_err:
                 return response
-        # fabricate response
-        response = requests.Response()
-        response.status_code = 200  # success
-        response._content = six.ensure_binary("{}")  # empty contents
-        return response
+            # else fall through to fabricate 200 response
+        return fabricate_200()
+
+
+def _make_request(session, request, ignore_conn_err=False, **kwargs):
+    """
+    Actually sends the request across the wire, and resolves non-302 redirects.
+
+    Parameters
+    ----------
+    session : :class:`requests.Session`
+        Connection-pooled session for making requests.
+    request : :class:`requests.PreparedRequest`
+        Request to make.
+    ignore_conn_err : bool, default False
+        Whether to ignore connection errors and instead return a success with empty contents.
+    **kwargs
+        Arguments to :meth:`requests.Session.send`
+
+    Returns
+    -------
+    :class:`requests.Response`
+
+    """
+    response = session.send(request, allow_redirects=False, **kwargs)
+
+    # manually inspect initial response and subsequent redirects to stop on 302s
+    history = []  # track history because `requests` doesn't since we're redirecting manually
+    responses = itertools.chain([response], session.resolve_redirects(response, request))
+    for response in responses:
+        if response.status_code == 302:
+            if not ignore_conn_err:
+                raise RuntimeError(
+                    "received status 302 from {},"
+                    " which is not supported by the Client".format(response.url)
+                )
+            else:
+                return fabricate_200()
+
+        history.append(response)
+    # set full history
+    response.history = history[:-1]  # last element is this response, so drop it
+
+    return response
+
+
+def fabricate_200():
+    """
+    Returns an HTTP response with ``status_code`` 200 and empty JSON contents.
+
+    This is used when the Client has ``ignore_conn_err=True``, so that backend responses can be
+    spoofed to minimize execution-halting errors.
+
+    Returns
+    -------
+    :class:`requests.Response`
+
+    """
+    response = requests.Response()
+    response.status_code = 200  # success
+    response._content = six.ensure_binary("{}")  # empty contents
+    return response
 
 
 def raise_for_http_error(response):
@@ -290,10 +524,13 @@ def raise_for_http_error(response):
     try:
         response.raise_for_status()
     except requests.HTTPError as e:
-        try:
-            reason = response.json()['message']
-        except (ValueError,  # not JSON response
-                KeyError):  # no 'message' from back end
+        # get current time in UTC to display alongside exception
+        curr_time = timestamp_to_str(now(), utc=True)
+        time_str = " at {} UTC".format(curr_time)
+
+        reason = six.ensure_str(response.text.strip())
+        if not reason:
+            e.args = (e.args[0] + time_str,) + e.args[1:]  # attach time to error message
             six.raise_from(e, None)  # use default reason
         else:
             # replicate https://github.com/psf/requests/blob/428f7a/requests/models.py#L954
@@ -304,7 +541,67 @@ def raise_for_http_error(response):
             else:  # should be impossible here, but sure okay
                 cause = "Unexpected"
             message = "{} {} Error: {} for url: {}".format(response.status_code, cause, reason, response.url)
+            message += time_str  # attach time to error message
             six.raise_from(requests.HTTPError(message, response=response), None)
+
+
+def body_to_json(response):
+    """
+    Returns the JSON-encoded contents of `response`, raising a detailed error on failure.
+
+    Parameters
+    ----------
+    response : :class:`requests.Response`
+        HTTP response.
+
+    Returns
+    -------
+    contents : dict
+        JSON-encoded contents of `response`.
+
+    Raises
+    ------
+    ValueError
+        If `response`'s contents are not JSON-encoded.
+
+    """
+    try:
+        return response.json()
+    except ValueError:  # not JSON response
+        msg = '\n'.join([
+            "expected JSON response from {}, but instead got:".format(response.url),
+            response.text or "<empty response>",
+            "",
+            "Please notify the Verta development team.",
+        ])
+        msg = six.ensure_str(msg)
+        six.raise_from(ValueError(msg), None)
+
+
+def is_in_venv(path):
+    # Roughly checks for:
+    #     /
+    #     |_ lib/
+    #     |   |_ python*/ <- directory with Python packages, containing `path`
+    #     |
+    #     |_ bin/
+    #         |_ python*  <- Python executable
+    lib_python_str = os.path.join(os.sep, "lib", "python")
+    i = path.find(lib_python_str)
+    if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+        return True
+
+    # Debian's system-level packages from apt
+    #     https://wiki.debian.org/Python#Deviations_from_upstream
+    dist_pkg_pattern = re.compile(r"/usr(/local)?/lib/python[0-9.]+/dist-packages")
+    if dist_pkg_pattern.match(path):
+        return True
+
+    # packages installed via --user
+    if path.startswith(site.USER_SITE):
+        return True
+
+    return False
 
 
 def is_hidden(path):  # to avoid "./".startswith('.')
@@ -353,18 +650,24 @@ def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=Fa
                     dirnames[:] = [dirname for dirname in dirnames if not is_hidden(dirname)]
                     # skip hidden files
                     filenames[:] = [filename for filename in filenames if not is_hidden(filename)]
-                if not include_venv:
-                    exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-                    dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+
+                # If we don't want to include venvs, there are the following scenarios for us:
+                # 1) the path passed is a venv but we explicitly asked for that path, so it should be included
+                # 2) the path passed isn't in a venv, but it has a venv inside of it, in which case we should skip the venv part
+                # 3) there is no venv anywhere in the path, in which case nothing changes
+                if not include_venv and not is_in_venv(path) and is_in_venv(parent_dir):
+                    continue
+
                 for filename in filenames:
                     if extensions is None or os.path.splitext(filename)[1] in extensions:
                         filepaths.add(os.path.join(parent_dir, filename))
         else:
             filepaths.add(path)
+
     return filepaths
 
 
-def proto_to_json(msg):
+def proto_to_json(msg, include_default=True):
     """
     Converts a `protobuf` `Message` object into a JSON-compliant dictionary.
 
@@ -382,7 +685,7 @@ def proto_to_json(msg):
 
     """
     return json.loads(json_format.MessageToJson(msg,
-                                                including_default_value_fields=True,
+                                                including_default_value_fields=include_default,
                                                 preserving_proto_field_name=True,
                                                 use_integers_for_enums=True))
 
@@ -413,6 +716,23 @@ def json_to_proto(response_json, response_cls, ignore_unknown_fields=True):
                              ignore_unknown_fields=ignore_unknown_fields)
 
 
+def get_bool_types():
+    """
+    Determines available bool types (including NumPy's ``bool_`` if importable) for typechecks.
+
+    Returns
+    -------
+    tuple
+        Available bool types.
+
+    """
+    np = importer.maybe_dependency("numpy")
+    if np is None:
+        return (bool,)
+    else:
+        return (bool, np.bool_)
+
+
 def to_builtin(obj):
     """
     Tries to coerce `obj` into a built-in type, for JSON serialization.
@@ -433,7 +753,7 @@ def to_builtin(obj):
     obj_module = getattr(cls_, '__module__', None)
 
     # booleans
-    if isinstance(obj, BOOL_TYPES):
+    if isinstance(obj, get_bool_types()):
         return True if obj else False
 
     # NumPy scalars
@@ -449,6 +769,7 @@ def to_builtin(obj):
         return obj.values.tolist()
     if obj_class == "Tensor" and obj_module == "torch":
         return obj.detach().numpy().tolist()
+    tf = importer.maybe_dependency("tensorflow")
     if tf is not None and isinstance(obj, tf.Tensor):  # if TensorFlow
         try:
             return obj.numpy().tolist()
@@ -619,11 +940,12 @@ def unravel_observation(obs_msg):
         value = obs_msg.attribute.value
     elif obs_msg.WhichOneof("oneOf") == "artifact":
         key = obs_msg.artifact.key
-        value = "{} artifact".format(_CommonService.ArtifactTypeEnum.ArtifactType.Name(obs_msg.artifact.artifact_type))
+        value = "{} artifact".format(_CommonCommonService.ArtifactTypeEnum.ArtifactType.Name(obs_msg.artifact.artifact_type))
     return (
         key,
         val_proto_to_python(value),
         timestamp_to_str(obs_msg.timestamp),
+        int(obs_msg.epoch_number.number_value),
     )
 
 
@@ -644,8 +966,9 @@ def unravel_observations(rpt_obs_msg):
     """
     observations = {}
     for obs_msg in rpt_obs_msg:
-        key, value, timestamp = unravel_observation(obs_msg)
-        observations.setdefault(key, []).append((value, timestamp))
+        obs_tuple = unravel_observation(obs_msg)
+        key = obs_tuple[0]
+        observations.setdefault(key, []).append(obs_tuple[1:])
     return observations
 
 
@@ -745,13 +1068,15 @@ def ensure_timestamp(timestamp):
 
     """
     if isinstance(timestamp, six.string_types):
-        try:  # attempt with pandas, which can parse many time string formats
-            return timestamp_to_ms(pd.Timestamp(timestamp).timestamp())
-        except NameError:  # pandas not installed
+        pd = importer.maybe_dependency("pandas")
+        if pd is not None:
+            try:  # attempt with pandas, which can parse many time string formats
+                return timestamp_to_ms(pd.Timestamp(timestamp).timestamp())
+            except ValueError:  # can't be handled by pandas
+                six.raise_from(ValueError("unable to parse datetime string \"{}\"".format(timestamp)),
+                            None)
+        else:
             six.raise_from(ValueError("pandas must be installed to parse datetime strings"),
-                           None)
-        except ValueError:  # can't be handled by pandas
-            six.raise_from(ValueError("unable to parse datetime string \"{}\"".format(timestamp)),
                            None)
     elif isinstance(timestamp, numbers.Real):
         return timestamp_to_ms(timestamp)
@@ -766,7 +1091,7 @@ def ensure_timestamp(timestamp):
         raise TypeError("unable to parse timestamp of type {}".format(type(timestamp)))
 
 
-def timestamp_to_str(timestamp):
+def timestamp_to_str(timestamp, utc=False):
     """
     Converts a Unix timestamp into a human-readable string representation.
 
@@ -782,7 +1107,12 @@ def timestamp_to_str(timestamp):
 
     """
     num_digits = len(str(timestamp))
-    return str(datetime.datetime.fromtimestamp(timestamp*10**(10 - num_digits)))
+    ts_as_sec = timestamp*10**(10 - num_digits)
+    if utc:
+        datetime_obj = datetime.datetime.utcfromtimestamp(ts_as_sec)
+    else:
+        datetime_obj = datetime.datetime.fromtimestamp(ts_as_sec)
+    return str(datetime_obj)
 
 
 def now():
@@ -835,11 +1165,15 @@ def save_notebook(notebook_path=None, timeout=5):
         If the notebook is not saved within `timeout` seconds.
 
     """
+    IPython_display = importer.maybe_dependency("IPython.display")
+    if IPython_display is None:
+        raise ImportError("unable to import libraries necessary for saving notebook")
+
     if notebook_path is None:
         notebook_path = get_notebook_filepath()
     modtime = os.path.getmtime(notebook_path)
 
-    display(Javascript('''
+    IPython_display.display(IPython_display.Javascript('''
     require(["base/js/namespace"],function(Jupyter) {
         Jupyter.notebook.save_checkpoint();
     });
@@ -887,6 +1221,19 @@ def get_notebook_filepath():
             - the calling notebook cannot be identified
 
     """
+    ipykernel = importer.maybe_dependency("ipykernel")
+    if ipykernel is None:
+        raise ImportError("unable to import libraries necessary for locating notebook")
+
+    notebookapp = importer.maybe_dependency("notebook.notebookapp")
+    if notebookapp is None:
+        # Python 2, util we need is in different module
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            notebookapp = importer.maybe_dependency("IPython.html.notebookapp")
+    if notebookapp is None:  # abnormally nonstandard installation of Jupyter
+        raise ImportError("unable to import libraries necessary for locating notebook")
+
     try:
         connection_file = ipykernel.connect.get_connection_file()
     except (NameError,  # Jupyter not installed
@@ -894,11 +1241,11 @@ def get_notebook_filepath():
         pass
     else:
         kernel_id = re.search('kernel-(.*).json', connection_file).group(1)
-        for server in list_running_servers():
+        for server in notebookapp.list_running_servers():
             response = requests.get(urljoin(server['url'], 'api/sessions'),
                                     params={'token': server.get('token', '')})
             if response.ok:
-                for session in response.json():
+                for session in body_to_json(response):
                     if session['kernel']['id'] == kernel_id:
                         relative_path = session['notebook']['path']
                         return os.path.join(server['notebook_dir'], relative_path)
@@ -941,3 +1288,61 @@ def is_org(workspace_name, conn):
     )
 
     return response.status_code != 404
+
+
+def as_list_of_str(tags):
+    """
+    Ensures that `tags` is a list of str.
+
+    Parameters
+    ----------
+    tags : str or list of str
+        If list of str, return unchanged. If str, return wrapped in a list.
+
+    Returns
+    -------
+    tags : list of str
+        Tags.
+
+    Raises
+    ------
+    TypeError
+        If `tags` is neither str nor list of str.
+
+    """
+    # TODO: make error messages more general so this can be used for any similar var
+    if isinstance(tags, six.string_types):
+        tags = [tags]
+    else:
+        if not isinstance(tags, (list, tuple, set)):
+            raise TypeError("`tags` should be list of str, not {}".format(type(tags)))
+
+        for tag in tags:
+            if not isinstance(tag, six.string_types):
+                raise TypeError("`tags` must be list of str, but found {}".format(type(tag)))
+
+    return tags
+
+
+def _multiple_arguments_for_each(argument, name, action, get_keys, overwrite):
+    name = name
+    argument = list(map(lambda s: s.split('='), argument))
+    if argument and len(argument) > len(
+            set(map(lambda pair: pair[0], argument))):
+        raise click.BadParameter("cannot have duplicate {} keys".format(name))
+    if argument:
+        argument_keys = set(get_keys())
+
+        for pair in argument:
+            if len(pair) != 2:
+                raise click.BadParameter("key and path for {}s must be separated by a '='".format(name))
+            (key, _) = pair
+            if key == "model":
+                raise click.BadParameter("the key \"model\" is reserved for model")
+
+            if not overwrite and key in argument_keys:
+                raise click.BadParameter(
+                    "key \"{}\" already exists; consider using --overwrite flag".format(key))
+
+        for (key, path) in argument:
+            action(key, path)

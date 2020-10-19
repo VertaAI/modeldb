@@ -64,7 +64,12 @@ public class ExperimentRunEntity {
             this, ModelDBConstants.METRICS, experimentRun.getMetricsList()));
     setObservationMapping(
         RdbmsUtils.convertObservationsFromObservationEntityList(
-            this, ModelDBConstants.OBSERVATIONS, experimentRun.getObservationsList()));
+            null,
+            this,
+            ModelDBConstants.OBSERVATIONS,
+            experimentRun.getObservationsList(),
+            null,
+            null));
     setFeatures(
         RdbmsUtils.convertFeatureListFromFeatureMappingList(this, experimentRun.getFeaturesList()));
     setJob_id(experimentRun.getJobId());
@@ -146,7 +151,7 @@ public class ExperimentRunEntity {
       mappedBy = "experimentRunEntity",
       cascade = CascadeType.ALL)
   @LazyCollection(LazyCollectionOption.FALSE)
-  @OrderBy("id")
+  @OrderBy("timestamp")
   private List<ObservationEntity> observationMapping;
 
   @OneToMany(
@@ -184,6 +189,9 @@ public class ExperimentRunEntity {
   @LazyCollection(LazyCollectionOption.FALSE)
   private List<HyperparameterElementMappingEntity> hyperparameter_element_mappings =
       new ArrayList<>();
+
+  @Column(name = "deleted")
+  private Boolean deleted = false;
 
   @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 
@@ -364,6 +372,10 @@ public class ExperimentRunEntity {
     }
   }
 
+  public List<ObservationEntity> getObservationMapping() {
+    return observationMapping;
+  }
+
   public List<FeatureEntity> getFeatures() {
     return features;
   }
@@ -426,6 +438,14 @@ public class ExperimentRunEntity {
   public void setHyperparameter_element_mappings(
       List<HyperparameterElementMappingEntity> hyperparameter_element_mappings) {
     this.hyperparameter_element_mappings = hyperparameter_element_mappings;
+  }
+
+  public Boolean getDeleted() {
+    return deleted;
+  }
+
+  public void setDeleted(Boolean deleted) {
+    this.deleted = deleted;
   }
 
   public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {
@@ -506,5 +526,12 @@ public class ExperimentRunEntity {
     }
     LOGGER.trace("Returning converted ExperimentRun");
     return experimentRunBuilder.build();
+  }
+
+  public Map<String, List<ArtifactEntity>> getArtifactEntityMap() {
+    if (artifactEntityMap.size() == 0) {
+      addArtifactInMap(artifactMapping);
+    }
+    return artifactEntityMap;
   }
 }

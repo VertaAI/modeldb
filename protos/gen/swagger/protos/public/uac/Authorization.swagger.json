@@ -13,7 +13,7 @@
   "paths": {
     "/authz/getAllowedEntities": {
       "post": {
-        "operationId": "getAllowedEntities",
+        "operationId": "AuthzService_getAllowedEntities",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -45,7 +45,7 @@
     },
     "/authz/getAllowedEntitiesWithActions": {
       "post": {
-        "operationId": "getAllowedEntitiesWithActions",
+        "operationId": "AuthzService_getAllowedEntitiesWithActions",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -77,7 +77,7 @@
     },
     "/authz/getAllowedResources": {
       "post": {
-        "operationId": "getAllowedResources",
+        "operationId": "AuthzService_getAllowedResources",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -109,7 +109,7 @@
     },
     "/authz/getDirectlyAllowedResources": {
       "post": {
-        "operationId": "getDireclyAllowedResources",
+        "operationId": "AuthzService_getDireclyAllowedResources",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -141,7 +141,7 @@
     },
     "/authz/getSelfAllowedActionsBatch": {
       "post": {
-        "operationId": "getSelfAllowedActionsBatch",
+        "operationId": "AuthzService_getSelfAllowedActionsBatch",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -173,7 +173,7 @@
     },
     "/authz/getSelfAllowedResources": {
       "post": {
-        "operationId": "getSelfAllowedResources",
+        "operationId": "AuthzService_getSelfAllowedResources",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -205,7 +205,7 @@
     },
     "/authz/getSelfDirectlyAllowedResources": {
       "post": {
-        "operationId": "getSelfDirectlyAllowedResources",
+        "operationId": "AuthzService_getSelfDirectlyAllowedResources",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -237,7 +237,7 @@
     },
     "/authz/isAllowed": {
       "post": {
-        "operationId": "isAllowed",
+        "operationId": "AuthzService_isAllowed",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -269,7 +269,7 @@
     },
     "/authz/isSelfAllowed": {
       "post": {
-        "operationId": "isSelfAllowed",
+        "operationId": "AuthzService_isSelfAllowed",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -315,7 +315,7 @@
       ],
       "default": "UNKNOWN"
     },
-    "ModelResourceEnumModelDBServiceResourceTypes": {
+    "ModelDBResourceEnumModelDBServiceResourceTypes": {
       "type": "string",
       "enum": [
         "UNKNOWN",
@@ -326,7 +326,8 @@
         "DATASET",
         "DATASET_VERSION",
         "DASHBOARD",
-        "REPOSITORY"
+        "REPOSITORY",
+        "REGISTERED_MODEL"
       ],
       "default": "UNKNOWN"
     },
@@ -623,7 +624,7 @@
       "type": "object",
       "properties": {
         "modeldb_service_resource_type": {
-          "$ref": "#/definitions/ModelResourceEnumModelDBServiceResourceTypes"
+          "$ref": "#/definitions/ModelDBResourceEnumModelDBServiceResourceTypes"
         }
       }
     },

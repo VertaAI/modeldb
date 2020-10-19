@@ -1,0 +1,23 @@
+.button_like_text {
+  width: auto;
+  height: auto;
+  padding: 0;
+  border: none;
+  font-size: 14px;
+  color: var(--text-color8);
+  background: none;
+  outline: none;
+  cursor: pointer;
+}
+.button_like_text:disabled {
+  cursor: default;
+}
+
+.full_width {
+  width: 100%;
+}
+
+.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}

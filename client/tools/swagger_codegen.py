@@ -163,6 +163,8 @@ def create_models(result_dir, result_package, content, templates, file_suffix, c
     for k, v in content['definitions'].items():
         if 'enum' in v:
             enums.append(capitalize_first(k))
+
+    enums = sorted(enums)
     for k, v in content['definitions'].items():
         create_model(result_dir, result_package, k, v, enums, templates, file_suffix, case, model)
     if len(content['definitions']) == 0:

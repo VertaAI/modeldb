@@ -1,22 +1,18 @@
-import { BaseDataService } from 'core/services/BaseDataService';
-import { EntityErrorType } from 'core/shared/models/Common';
-import { IFilterData } from 'core/features/filter/Model';
-import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
+import { BaseDataService } from 'services/BaseDataService';
+import { EntityErrorType } from 'shared/models/Common';
+import { IFilterData } from 'shared/models/Filters';
+import { DataWithPagination, IPagination } from 'shared/models/Pagination';
 import {
   IDatasetVersion,
   IPathBasedDatasetVersionInfo,
   IQueryDatasetVersionInfo,
   IRawDatasetVersionInfo,
   DatasetVersionPathLocationTypes,
-} from 'models/DatasetVersion';
+} from 'shared/models/DatasetVersion';
 
 import makeLoadDatasetVersionsRequest from './responseRequest/makeLoadDatasetVersionsRequest';
 
 export default class DatasetVersionsDataService extends BaseDataService {
-  constructor() {
-    super();
-  }
-
   public async loadDatasetVersions(
     datasetId: string,
     filters: IFilterData[],
@@ -43,6 +39,7 @@ export default class DatasetVersionsDataService extends BaseDataService {
   }
 
   public async loadDatasetVersion(
+    workspaceName: any,
     datasetVersionId: string,
     datasetId?: string
   ): Promise<IDatasetVersion> {
@@ -108,6 +105,7 @@ const convertServerHydratedDatasetVersion = ({
         const serverInfo = serverDatasetVersion.path_dataset_version_info;
         const info: IPathBasedDatasetVersionInfo = {
           size:
+            // eslint-disable-next-line eqeqeq
             serverInfo.size != undefined ? Number(serverInfo.size) : undefined,
           basePath: serverInfo.base_path,
           locationType: (() => {
@@ -160,6 +158,7 @@ const convertServerHydratedDatasetVersion = ({
         features: serverInfo.features || [],
         objectPath: serverInfo.object_path,
         numRecords: serverInfo.num_records,
+        // eslint-disable-next-line eqeqeq
         size: serverInfo.size != undefined ? serverInfo.size : undefined,
       };
       return info;

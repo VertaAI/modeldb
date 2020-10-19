@@ -2,11 +2,12 @@ package ai.verta.modeldb;
 
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.artifactStore.storageservice.S3Service;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
+import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -31,9 +32,6 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunServiceImpl;
 import ai.verta.modeldb.health.HealthServiceImpl;
 import ai.verta.modeldb.health.HealthStatusManager;
-import ai.verta.modeldb.job.JobDAO;
-import ai.verta.modeldb.job.JobDAORdbImpl;
-import ai.verta.modeldb.job.JobServiceImpl;
 import ai.verta.modeldb.lineage.LineageDAO;
 import ai.verta.modeldb.lineage.LineageDAORdbImpl;
 import ai.verta.modeldb.lineage.LineageServiceImpl;
@@ -54,9 +52,15 @@ import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
+import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
+import io.jaegertracing.Configuration;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.grpc.TracingServerInterceptor;
+import io.opentracing.contrib.jdbc.TracingDriver;
+import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
@@ -83,7 +87,7 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableAutoConfiguration
 @EnableConfigurationProperties({FileStorageProperties.class})
 // Remove bracket () code if in future define any @component outside of the defined basePackages.
-@ComponentScan(basePackages = "${scan.packages}")
+@ComponentScan(basePackages = "${scan.packages}, ai.verta.modeldb.health")
 @SuppressWarnings("unchecked")
 public class App implements ApplicationContextAware {
 
@@ -113,17 +117,25 @@ public class App implements ApplicationContextAware {
   private String authServerHost = null;
   private Integer authServerPort = null;
 
+  // Service Account details
+  private String serviceUserEmail = null;
+  private String serviceUserDevKey = null;
+
   // S3 Artifact store
   private String cloudAccessKey = null;
   private String cloudSecretKey = null;
+  private String minioEndpoint = null;
+  private String awsRegion = null;
 
-  // NFS Artifact store
-  private Boolean pickNFSHostFromConfig = null;
-  private String nfsServerHost = null;
-  private String nfsUrlProtocol = null;
+  // Artifact store
+  private boolean disabledArtifactStore = false;
+  private Boolean pickArtifactStoreHostFromConfig = null;
+  private String artifactStoreServerHost = null;
+  private String artifactStoreUrlProtocol = null;
   private String storeArtifactEndpoint = null;
   private String getArtifactEndpoint = null;
   private String storeTypePathPrefix = null;
+  private boolean s3presignedURLEnabled = true;
 
   // Database connection details
   private Map<String, Object> databasePropMap;
@@ -133,7 +145,14 @@ public class App implements ApplicationContextAware {
 
   // Feature flags
   private Boolean disabledAuthz = false;
+  private Boolean publicSharingEnabled = false;
   private Boolean storeClientCreationTimestamp = false;
+  private Integer requestTimeout = 30;
+
+  private Boolean traceEnabled = false;
+  private static TracingServerInterceptor tracingInterceptor;
+  private boolean populateConnectionsBasedOnPrivileges = false;
+  private RoleService roleService;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -170,6 +189,15 @@ public class App implements ApplicationContextAware {
     return factory;
   }
 
+  @Bean
+  public S3Service getS3Service() throws ModelDBException {
+    String bucketName = System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME);
+    if (bucketName != null && !bucketName.isEmpty()) {
+      return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
+    }
+    return null;
+  }
+
   public static App getInstance() {
     if (app == null) {
       app = new App();
@@ -177,105 +205,132 @@ public class App implements ApplicationContextAware {
     return app;
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
+    try {
+      LOGGER.info("Backend server starting.");
+      final java.util.logging.Logger logger =
+          java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
+      logger.setLevel(Level.WARNING);
+      // --------------- Start reading properties --------------------------
+      Map<String, Object> propertiesMap =
+          ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
+      // --------------- End reading properties --------------------------
 
-    LOGGER.info("Backend server starting.");
-    final java.util.logging.Logger logger =
-        java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
-    logger.setLevel(Level.WARNING);
-    // --------------- Start reading properties --------------------------
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    // --------------- End reading properties --------------------------
+      Map<String, Object> databasePropMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
 
-    // --------------- Start Initialize modelDB gRPC server --------------------------
-    Map<String, Object> grpcServerMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.GRPC_SERVER);
-    if (grpcServerMap == null) {
-      throw new ModelDBException("grpcServer configuration not found in properties.");
-    }
+      boolean liquibaseMigration =
+          Boolean.parseBoolean(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION));
+      if (liquibaseMigration) {
+        LOGGER.info("Liquibase validation starting");
 
-    Integer grpcServerPort = (Integer) grpcServerMap.get(ModelDBConstants.PORT);
-    LOGGER.trace("grpc server port number found");
-    ServerBuilder<?> serverBuilder = ServerBuilder.forPort(grpcServerPort);
+        if (ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap)) return;
+      }
 
-    Map<String, Object> featureFlagMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
-    App app = App.getInstance();
-    if (featureFlagMap != null) {
-      app.setDisabledAuthz(
-          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
-      app.storeClientCreationTimestamp =
-          (Boolean)
-              featureFlagMap.getOrDefault(ModelDBConstants.STORE_CLIENT_CREATION_TIMESTAMP, false);
-    }
+      // --------------- Start Initialize modelDB gRPC server --------------------------
+      Map<String, Object> grpcServerMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.GRPC_SERVER);
+      if (grpcServerMap == null) {
+        throw new ModelDBException("grpcServer configuration not found in properties.");
+      }
 
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
+      Integer grpcServerPort = (Integer) grpcServerMap.get(ModelDBConstants.PORT);
+      LOGGER.trace("grpc server port number found");
+      ServerBuilder<?> serverBuilder = ServerBuilder.forPort(grpcServerPort);
 
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
+      App app = App.getInstance();
+      app.requestTimeout =
+          (Integer) grpcServerMap.getOrDefault(ModelDBConstants.REQUEST_TIMEOUT, 30);
 
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
+      Map<String, Object> featureFlagMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
+      if (featureFlagMap != null) {
+        app.setDisabledAuthz(
+            (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
+        app.storeClientCreationTimestamp =
+            (Boolean)
+                featureFlagMap.getOrDefault(
+                    ModelDBConstants.STORE_CLIENT_CREATION_TIMESTAMP, false);
+      }
 
-    Map<String, Object> databasePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
+      if (propertiesMap.containsKey("enableTrace") && (Boolean) propertiesMap.get("enableTrace")) {
+        app.traceEnabled = true;
+        Tracer tracer = Configuration.fromEnv().getTracer();
+        app.tracingInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
+        GlobalTracer.register(tracer);
+        io.opentracing.contrib.jdbc.TracingDriver.load();
+        io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
+        TracingDriver.setInterceptorProperty(true);
+      }
+      AuthService authService = new PublicAuthServiceUtils();
+      app.roleService = new PublicRoleServiceUtils(authService);
 
-    HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
-    serverBuilder.addService(healthStatusManager.getHealthService());
-    healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
+      Map<String, Object> authServicePropMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
+      if (authServicePropMap != null) {
+        String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
+        Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
+        app.setAuthServerHost(authServiceHost);
+        app.setAuthServerPort(authServicePort);
 
-    // ----------------- Start Initialize database & modelDB services with DAO ---------
-    initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
-    // ----------------- Finish Initialize database & modelDB services with DAO --------
+        authService = new AuthServiceUtils();
+        app.roleService = new RoleServiceUtils(authService);
+      }
 
-    serverBuilder.intercept(new ModelDBAuthInterceptor());
+      HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
+      serverBuilder.addService(healthStatusManager.getHealthService());
+      healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
-    Server server = serverBuilder.build();
-    // --------------- Finish Initialize modelDB gRPC server --------------------------
+      // ----------------- Start Initialize database & modelDB services with DAO ---------
+      initializeServicesBaseOnDataBase(
+          serverBuilder, databasePropMap, propertiesMap, authService, app.roleService);
+      // ----------------- Finish Initialize database & modelDB services with DAO --------
 
-    // --------------- Start modelDB gRPC server --------------------------
-    server.start();
-    up.inc();
-    LOGGER.info("Backend server started listening on {}", grpcServerPort);
+      serverBuilder.intercept(new ModelDBAuthInterceptor());
 
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  int activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
-                  while (activeRequestCount > 0) {
-                    activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
-                    System.err.println("Active Request Count in while: " + activeRequestCount);
+      Server server = serverBuilder.build();
+      // --------------- Finish Initialize modelDB gRPC server --------------------------
+
+      // --------------- Start modelDB gRPC server --------------------------
+      server.start();
+      up.inc();
+      LOGGER.info("Backend server started listening on {}", grpcServerPort);
+
+      Runtime.getRuntime()
+          .addShutdownHook(
+              new Thread(
+                  () -> {
+                    int activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
+                    while (activeRequestCount > 0) {
+                      activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
+                      System.err.println("Active Request Count in while: " + activeRequestCount);
+                      try {
+                        Thread.sleep(1000); // wait for 1s
+                      } catch (InterruptedException e) {
+                        e.printStackTrace();
+                      }
+                    }
+                    // Use stderr here since the logger may have been reset by its JVM shutdown
+                    // hook.
+                    System.err.println(
+                        "*** Shutting down gRPC server since JVM is shutting down ***");
+                    server.shutdown();
                     try {
-                      Thread.sleep(1000); // wait for 1s
+                      server.awaitTermination();
                     } catch (InterruptedException e) {
                       e.printStackTrace();
                     }
-                  }
-                  // Use stderr here since the logger may have been reset by its JVM shutdown hook.
-                  System.err.println(
-                      "*** Shutting down gRPC server since JVM is shutting down ***");
-                  server.shutdown();
-                  try {
-                    server.awaitTermination();
-                  } catch (InterruptedException e) {
-                    e.printStackTrace();
-                  }
-                  System.err.println("*** Server Shutdown ***");
-                }));
+                    System.err.println("*** Server Shutdown ***");
+                  }));
 
-    // ----------- Don't exit the main thread. Wait until server is terminated -----------
-    server.awaitTermination();
-    up.dec();
+      // ----------- Don't exit the main thread. Wait until server is terminated -----------
+      server.awaitTermination();
+      up.dec();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      initiateShutdown(0);
+      System.exit(0);
+    }
   }
 
   public static void initializeServicesBaseOnDataBase(
@@ -287,11 +342,33 @@ public class App implements ApplicationContextAware {
       throws ModelDBException {
 
     App app = App.getInstance();
+    Map<String, Object> serviceUserDetailMap =
+        (Map<String, Object>) propertiesMap.get(ModelDBConstants.MDB_SERVICE_USER);
+    if (serviceUserDetailMap != null) {
+      if (serviceUserDetailMap.containsKey(ModelDBConstants.EMAIL)) {
+        app.serviceUserEmail = (String) serviceUserDetailMap.get(ModelDBConstants.EMAIL);
+        LOGGER.trace("service user email found");
+      }
+      if (serviceUserDetailMap.containsKey(ModelDBConstants.DEV_KEY)) {
+        app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
+        LOGGER.trace("service user devKey found");
+      }
+    }
+
+    app.populateConnectionsBasedOnPrivileges =
+        (boolean)
+            propertiesMap.getOrDefault(
+                ModelDBConstants.POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES, false);
+
     Map<String, Object> featureFlagMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
     if (featureFlagMap != null) {
       app.setDisabledAuthz(
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
+      app.setPublicSharingEnabled(
+          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
+      app.disabledArtifactStore =
+          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_ARTIFACT_STORE, false);
     }
 
     Map<String, Object> starterProjectDetail =
@@ -300,8 +377,37 @@ public class App implements ApplicationContextAware {
       app.starterProjectID = (String) starterProjectDetail.get(ModelDBConstants.STARTER_PROJECT_ID);
     }
     // --------------- Start Initialize Cloud Config ---------------------------------------------
-    ArtifactStoreService artifactStoreService =
-        initializeServicesBaseOnArtifactStoreType(propertiesMap);
+    Map<String, Object> springServerMap =
+        (Map<String, Object>) propertiesMap.get(ModelDBConstants.SPRING_SERVER);
+    if (springServerMap == null) {
+      throw new ModelDBException("springServer configuration not found in properties.");
+    }
+
+    Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
+    LOGGER.trace("spring server port number found");
+    System.getProperties().put("server.port", String.valueOf(springServerPort));
+
+    Object object = springServerMap.get(ModelDBConstants.SHUTDOWN_TIMEOUT);
+    if (object instanceof Integer) {
+      app.shutdownTimeout = ((Integer) object).longValue();
+    } else {
+      app.shutdownTimeout = ModelDBConstants.DEFAULT_SHUTDOWN_TIMEOUT;
+    }
+
+    ArtifactStoreService artifactStoreService = null;
+    if (!app.disabledArtifactStore) {
+      Map<String, Object> artifactStoreConfigMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.ARTIFACT_STORE_CONFIG);
+
+      artifactStoreService = initializeServicesBaseOnArtifactStoreType(artifactStoreConfigMap);
+    } else {
+      System.getProperties().put("scan.packages", "dummyPackageName");
+      SpringApplication.run(App.class);
+    }
+
+    HealthStatusManager healthStatusManager =
+        new HealthStatusManager(app.applicationContext.getBean(HealthServiceImpl.class));
+    healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
     // --------------- Start Initialize Database base on configuration --------------------------
     if (databasePropMap.isEmpty()) {
@@ -317,7 +423,7 @@ public class App implements ApplicationContextAware {
         // ---------------
         app.databasePropMap = databasePropMap;
         app.propertiesMap = propertiesMap;
-        ModelDBHibernateUtil.getSessionFactory();
+        ModelDBHibernateUtil.createOrGetSessionFactory();
 
         LOGGER.trace("RDBMS configured with server");
         // --------------- Finish Initialize relational Database base on configuration
@@ -338,7 +444,7 @@ public class App implements ApplicationContextAware {
     initializeTelemetryBasedOnConfig(propertiesMap);
 
     // Initialize cron jobs
-    CronJobUtils.initializeBasedOnConfig(propertiesMap);
+    CronJobUtils.initializeBasedOnConfig(propertiesMap, authService, roleService);
   }
 
   private static void initializeRelationalDBServices(
@@ -348,22 +454,28 @@ public class App implements ApplicationContextAware {
       RoleService roleService) {
 
     // --------------- Start Initialize DAO --------------------------
-    CommitDAO commitDAO = new CommitDAORdbImpl();
+    CommitDAO commitDAO = new CommitDAORdbImpl(authService, roleService);
     RepositoryDAO repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
-    BlobDAO blobDAO = new BlobDAORdbImpl(authService);
+    BlobDAO blobDAO = new BlobDAORdbImpl(authService, roleService);
+    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
 
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, roleService);
     ExperimentRunDAO experimentRunDAO =
-        new ExperimentRunDAORdbImpl(authService, roleService, repositoryDAO, commitDAO, blobDAO);
+        new ExperimentRunDAORdbImpl(
+            authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
     ProjectDAO projectDAO =
         new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
-    ArtifactStoreDAO artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
-    JobDAO jobDAO = new JobDAORdbImpl(authService);
+    ArtifactStoreDAO artifactStoreDAO;
+    if (artifactStoreService != null) {
+      artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
+    } else {
+      artifactStoreDAO = new ArtifactStoreDAODisabled();
+    }
+
     CommentDAO commentDAO = new CommentDAORdbImpl(authService);
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
     LineageDAO lineageDAO = new LineageDAORdbImpl();
     DatasetVersionDAO datasetVersionDAO = new DatasetVersionDAORdbImpl(authService, roleService);
-    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
     LOGGER.info("All DAO initialized");
     // --------------- Finish Initialize DAO --------------------------
     initializeBackendServices(
@@ -374,7 +486,6 @@ public class App implements ApplicationContextAware {
         datasetDAO,
         datasetVersionDAO,
         artifactStoreDAO,
-        jobDAO,
         commentDAO,
         lineageDAO,
         metadataDAO,
@@ -393,7 +504,6 @@ public class App implements ApplicationContextAware {
       DatasetDAO datasetDAO,
       DatasetVersionDAO datasetVersionDAO,
       ArtifactStoreDAO artifactStoreDAO,
-      JobDAO jobDAO,
       CommentDAO commentDAO,
       LineageDAO lineageDAO,
       MetadataDAO metadataDAO,
@@ -403,15 +513,18 @@ public class App implements ApplicationContextAware {
       AuthService authService,
       RoleService roleService) {
     App app = App.getInstance();
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new ProjectServiceImpl(
             authService, roleService, projectDAO, experimentRunDAO, artifactStoreDAO));
     LOGGER.trace("Project serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new ExperimentServiceImpl(
             authService, roleService, experimentDAO, projectDAO, artifactStoreDAO));
     LOGGER.trace("Experiment serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new ExperimentRunServiceImpl(
             authService,
             roleService,
@@ -419,13 +532,16 @@ public class App implements ApplicationContextAware {
             projectDAO,
             experimentDAO,
             artifactStoreDAO,
-            datasetVersionDAO));
+            datasetVersionDAO,
+            repositoryDAO,
+            commitDAO));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
-    serverBuilder.addService(new JobServiceImpl(authService, jobDAO));
-    LOGGER.trace("Job serviceImpl initialized");
-    serverBuilder.addService(new CommentServiceImpl(authService, commentDAO));
+    wrapService(
+        serverBuilder,
+        new CommentServiceImpl(authService, commentDAO, experimentRunDAO, roleService));
     LOGGER.trace("Comment serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new DatasetServiceImpl(
             authService,
             roleService,
@@ -433,12 +549,24 @@ public class App implements ApplicationContextAware {
             datasetVersionDAO,
             projectDAO,
             experimentDAO,
-            experimentRunDAO));
+            experimentRunDAO,
+            repositoryDAO,
+            commitDAO,
+            metadataDAO));
     LOGGER.trace("Dataset serviceImpl initialized");
-    serverBuilder.addService(
-        new DatasetVersionServiceImpl(authService, roleService, datasetDAO, datasetVersionDAO));
+    wrapService(
+        serverBuilder,
+        new DatasetVersionServiceImpl(
+            authService,
+            roleService,
+            repositoryDAO,
+            commitDAO,
+            blobDAO,
+            metadataDAO,
+            artifactStoreDAO));
     LOGGER.trace("Dataset Version serviceImpl initialized");
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new AdvancedServiceImpl(
             authService,
             roleService,
@@ -450,11 +578,11 @@ public class App implements ApplicationContextAware {
             datasetDAO,
             datasetVersionDAO));
     LOGGER.trace("Hydrated serviceImpl initialized");
-    serverBuilder.addService(
-        new LineageServiceImpl(lineageDAO, experimentRunDAO, datasetVersionDAO));
+    wrapService(serverBuilder, new LineageServiceImpl(lineageDAO, experimentRunDAO, commitDAO));
     LOGGER.trace("Lineage serviceImpl initialized");
 
-    serverBuilder.addService(
+    wrapService(
+        serverBuilder,
         new VersioningServiceImpl(
             authService,
             roleService,
@@ -465,28 +593,23 @@ public class App implements ApplicationContextAware {
             experimentDAO,
             experimentRunDAO,
             new ModelDBAuthInterceptor(),
-            new FileHasher()));
+            new FileHasher(),
+            artifactStoreDAO));
     LOGGER.trace("Versioning serviceImpl initialized");
-    serverBuilder.addService(new MetadataServiceImpl(metadataDAO));
+    wrapService(serverBuilder, new MetadataServiceImpl(metadataDAO));
     LOGGER.trace("Metadata serviceImpl initialized");
     LOGGER.info("All services initialized and resolved dependency before server start");
   }
 
+  private static void wrapService(ServerBuilder<?> serverBuilder, BindableService bindableService) {
+    App app = App.getInstance();
+    if (app.traceEnabled)
+      serverBuilder.addService(app.tracingInterceptor.intercept(bindableService));
+    else serverBuilder.addService(bindableService);
+  }
+
   private static ArtifactStoreService initializeServicesBaseOnArtifactStoreType(
-      Map<String, Object> propertiesMap) throws ModelDBException {
-
-    Map<String, Object> springServerMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.SPRING_SERVER);
-    if (springServerMap == null) {
-      throw new ModelDBException("springServer configuration not found in properties.");
-    }
-
-    Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
-    LOGGER.trace("spring server port number found");
-    System.getProperties().put("server.port", String.valueOf(springServerPort));
-
-    Map<String, Object> artifactStoreConfigMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.ARTIFACT_STORE_CONFIG);
+      Map<String, Object> artifactStoreConfigMap) throws ModelDBException {
 
     String artifactStoreType =
         (String) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_STORE_TYPE);
@@ -495,24 +618,63 @@ public class App implements ApplicationContextAware {
     ArtifactStoreService artifactStoreService;
     App app = App.getInstance();
 
-    Object object = springServerMap.get(ModelDBConstants.SHUTDOWN_TIMEOUT);
-    if (object instanceof Integer) {
-      app.shutdownTimeout = ((Integer) object).longValue();
-    } else {
-      app.shutdownTimeout = ModelDBConstants.DEFAULT_SHUTDOWN_TIMEOUT;
-    }
+    app.pickArtifactStoreHostFromConfig =
+        (Boolean)
+            artifactStoreConfigMap.getOrDefault(
+                ModelDBConstants.PICK_ARTIFACT_STORE_HOST_FROM_CONFIG, false);
+    LOGGER.trace(
+        "ArtifactStore pick host from config flag : {}", app.pickArtifactStoreHostFromConfig);
+    app.artifactStoreServerHost =
+        (String)
+            artifactStoreConfigMap.getOrDefault(ModelDBConstants.ARTIFACT_STORE_SERVER_HOST, "");
+    LOGGER.trace("ArtifactStore server host URL found : {}", app.artifactStoreServerHost);
+    app.artifactStoreUrlProtocol =
+        (String)
+            artifactStoreConfigMap.getOrDefault(
+                ModelDBConstants.ARTIFACT_STORE_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
+    LOGGER.debug("ArtifactStore URL protocol found : {}", app.artifactStoreUrlProtocol);
 
+    Map<String, Object> artifactStoreEndpointConfigMap =
+        (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
+    if (artifactStoreEndpointConfigMap != null && !artifactStoreEndpointConfigMap.isEmpty()) {
+      app.getArtifactEndpoint =
+          (String) artifactStoreEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
+      LOGGER.trace("ArtifactStore Get artifact endpoint found : {}", app.getArtifactEndpoint);
+      app.storeArtifactEndpoint =
+          (String) artifactStoreEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
+      LOGGER.trace("ArtifactStore Store artifact endpoint found : {}", app.storeArtifactEndpoint);
+
+      System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
+      System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
+    }
     switch (artifactStoreType) {
       case ModelDBConstants.S3:
         Map<String, Object> s3ConfigMap =
             (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.S3);
         app.cloudAccessKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_ACCESS_KEY);
         app.cloudSecretKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_SECRET_KEY);
+        app.minioEndpoint = (String) s3ConfigMap.get(ModelDBConstants.MINIO_ENDPOINT);
+        app.awsRegion =
+            (String)
+                s3ConfigMap.getOrDefault(
+                    ModelDBConstants.AWS_REGION, ModelDBConstants.DEFAULT_AWS_REGION);
         String cloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
-        artifactStoreService = new S3Service(cloudBucketName);
         app.storeTypePathPrefix = "s3://" + cloudBucketName + ModelDBConstants.PATH_DELIMITER;
-        System.getProperties().put("scan.packages", "dummyPackageName");
-        SpringApplication.run(App.class, new String[0]);
+
+        if (s3ConfigMap.containsKey(ModelDBConstants.S3_PRESIGNED_URL_ENABLED)
+            && !((boolean) s3ConfigMap.get(ModelDBConstants.S3_PRESIGNED_URL_ENABLED))) {
+          app.s3presignedURLEnabled = false;
+
+          System.setProperty(ModelDBConstants.CLOUD_BUCKET_NAME, cloudBucketName);
+          System.getProperties()
+              .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
+          SpringApplication.run(App.class);
+          artifactStoreService = app.applicationContext.getBean(S3Service.class);
+        } else {
+          artifactStoreService = new S3Service(cloudBucketName);
+          System.getProperties().put("scan.packages", "dummyPackageName");
+          SpringApplication.run(App.class);
+        }
         break;
       case ModelDBConstants.NFS:
         Map<String, Object> nfsConfigMap =
@@ -521,30 +683,41 @@ public class App implements ApplicationContextAware {
         LOGGER.trace("NFS server root path {}", rootDir);
         app.storeTypePathPrefix = "nfs://" + rootDir + ModelDBConstants.PATH_DELIMITER;
 
-        app.pickNFSHostFromConfig =
-            (Boolean) nfsConfigMap.getOrDefault(ModelDBConstants.PICK_NFS_HOST_FROM_CONFIG, false);
-        LOGGER.trace("NFS pick host from config flag : {}", app.pickNFSHostFromConfig);
-        app.nfsServerHost =
-            (String) nfsConfigMap.getOrDefault(ModelDBConstants.NFS_SERVER_HOST, "");
-        LOGGER.trace("NFS server host URL found : {}", app.nfsServerHost);
-        app.nfsUrlProtocol =
-            (String)
-                nfsConfigMap.getOrDefault(
-                    ModelDBConstants.NFS_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
-        LOGGER.debug("NFS URL protocol found : {}", app.nfsUrlProtocol);
+        if (!artifactStoreConfigMap.containsKey(
+            ModelDBConstants.PICK_ARTIFACT_STORE_HOST_FROM_CONFIG)) {
+          app.pickArtifactStoreHostFromConfig =
+              (Boolean)
+                  nfsConfigMap.getOrDefault(ModelDBConstants.PICK_NFS_HOST_FROM_CONFIG, false);
+          LOGGER.trace("NFS pick host from config flag : {}", app.pickArtifactStoreHostFromConfig);
+        }
+        if (!artifactStoreConfigMap.containsKey(ModelDBConstants.ARTIFACT_STORE_SERVER_HOST)) {
+          app.artifactStoreServerHost =
+              (String) nfsConfigMap.getOrDefault(ModelDBConstants.NFS_SERVER_HOST, "");
+          LOGGER.trace("NFS server host URL found : {}", app.artifactStoreServerHost);
+        }
+        if (!artifactStoreConfigMap.containsKey(ModelDBConstants.ARTIFACT_STORE_URL_PROTOCOL)) {
+          app.artifactStoreUrlProtocol =
+              (String)
+                  nfsConfigMap.getOrDefault(
+                      ModelDBConstants.NFS_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
+          LOGGER.debug("NFS URL protocol found : {}", app.artifactStoreUrlProtocol);
+        }
 
-        Map<String, Object> artifactEndpointConfigMap =
-            (Map<String, Object>) nfsConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
-        app.getArtifactEndpoint =
-            (String) artifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
-        LOGGER.trace("Get artifact endpoint found : {}", app.getArtifactEndpoint);
-        app.storeArtifactEndpoint =
-            (String) artifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
-        LOGGER.trace("Store artifact endpoint found : {}", app.storeArtifactEndpoint);
-
+        if (artifactStoreEndpointConfigMap == null || artifactStoreEndpointConfigMap.isEmpty()) {
+          Map<String, Object> artifactEndpointConfigMap =
+              (Map<String, Object>) nfsConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
+          if (artifactEndpointConfigMap != null && !artifactEndpointConfigMap.isEmpty()) {
+            app.getArtifactEndpoint =
+                (String) artifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
+            LOGGER.trace("Get artifact endpoint found : {}", app.getArtifactEndpoint);
+            app.storeArtifactEndpoint =
+                (String) artifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
+            LOGGER.trace("Store artifact endpoint found : {}", app.storeArtifactEndpoint);
+          }
+          System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
+          System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
+        }
         System.getProperties().put("file.upload-dir", rootDir);
-        System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
-        System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
         System.getProperties()
             .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
         SpringApplication.run(App.class, new String[0]);
@@ -580,7 +753,7 @@ public class App implements ApplicationContextAware {
     if (optIn) {
       // creating an instance of task to be scheduled
       TimerTask task = new TelemetryCron(consumer);
-      ModelDBUtils.scheduleTask(task, frequency, TimeUnit.HOURS);
+      ModelDBUtils.scheduleTask(task, frequency, frequency, TimeUnit.HOURS);
       LOGGER.info("Telemetry scheduled successfully");
     } else {
       LOGGER.info("Telemetry opt out by user");
@@ -607,16 +780,20 @@ public class App implements ApplicationContextAware {
     this.authServerPort = authServerPort;
   }
 
-  public Boolean getPickNFSHostFromConfig() {
-    return pickNFSHostFromConfig;
+  public boolean isS3presignedURLEnabled() {
+    return s3presignedURLEnabled;
   }
 
-  public String getNfsServerHost() {
-    return nfsServerHost;
+  public Boolean getPickArtifactStoreHostFromConfig() {
+    return pickArtifactStoreHostFromConfig;
   }
 
-  public String getNfsUrlProtocol() {
-    return nfsUrlProtocol;
+  public String getArtifactStoreServerHost() {
+    return artifactStoreServerHost;
+  }
+
+  public String getArtifactStoreUrlProtocol() {
+    return artifactStoreUrlProtocol;
   }
 
   public String getStoreArtifactEndpoint() {
@@ -647,6 +824,14 @@ public class App implements ApplicationContextAware {
     this.disabledAuthz = disabledAuthz;
   }
 
+  public Boolean getPublicSharingEnabled() {
+    return publicSharingEnabled;
+  }
+
+  public void setPublicSharingEnabled(Boolean publicSharingEnabled) {
+    this.publicSharingEnabled = publicSharingEnabled;
+  }
+
   public String getCloudAccessKey() {
     return cloudAccessKey;
   }
@@ -655,7 +840,47 @@ public class App implements ApplicationContextAware {
     return cloudSecretKey;
   }
 
+  public String getMinioEndpoint() {
+    return minioEndpoint;
+  }
+
+  public String getAwsRegion() {
+    return awsRegion;
+  }
+
   public Boolean getStoreClientCreationTimestamp() {
     return storeClientCreationTimestamp;
+  }
+
+  public Boolean setStoreClientCreationTimestamp(Boolean storeClientCreationTimestamp) {
+    return this.storeClientCreationTimestamp = storeClientCreationTimestamp;
+  }
+
+  public String getServiceUserEmail() {
+    return serviceUserEmail;
+  }
+
+  public String getServiceUserDevKey() {
+    return serviceUserDevKey;
+  }
+
+  public Boolean getTraceEnabled() {
+    return traceEnabled;
+  }
+
+  public Integer getRequestTimeout() {
+    return requestTimeout;
+  }
+
+  public void setRoleService(RoleService roleService) {
+    this.roleService = roleService;
+  }
+
+  public RoleService getRoleService() {
+    return roleService;
+  }
+
+  public boolean isPopulateConnectionsBasedOnPrivileges() {
+    return populateConnectionsBasedOnPrivileges;
   }
 }

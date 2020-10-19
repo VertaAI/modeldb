@@ -1,5 +1,6 @@
 package ai.verta.modeldb.batchProcess;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -10,7 +11,7 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import java.util.HashSet;
@@ -102,11 +103,10 @@ public class OwnerRoleBindingRepositoryUtils {
                     String.valueOf(repositoryEntity.getId()),
                     ModelDBServiceResourceTypes.REPOSITORY);
               } catch (Exception e) {
-                e.printStackTrace();
                 LOGGER.error(e.getMessage());
               }
             } else {
-              LOGGER.error(
+              LOGGER.info(
                   "Repository owner not found from UAC response list : RepositoryId - {} & userId - {}",
                   repositoryEntity.getId(),
                   repositoryEntity.getOwner());
@@ -124,6 +124,12 @@ public class OwnerRoleBindingRepositoryUtils {
 
         transaction.commit();
         lowerBound += pagesize;
+      } catch (Exception ex) {
+        if (ModelDBUtils.needToRetry(ex)) {
+          migrateRepositories();
+        } else {
+          throw ex;
+        }
       }
     }
 
@@ -136,6 +142,12 @@ public class OwnerRoleBindingRepositoryUtils {
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
       countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
       return session.createQuery(countQuery).getSingleResult();
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getEntityCount(klass);
+      } else {
+        throw ex;
+      }
     }
   }
 }

@@ -2,6 +2,8 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 
+import ai.verta.common.Artifact;
+import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
@@ -13,6 +15,9 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -33,6 +38,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -60,6 +66,7 @@ public class ExperimentTest {
   private static InProcessChannelBuilder channelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static App app;
+  private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -86,6 +93,7 @@ public class ExperimentTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -95,10 +103,14 @@ public class ExperimentTest {
       AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(testPropMap);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
     }
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
     App.initiateShutdown(0);
   }
 
@@ -119,7 +131,10 @@ public class ExperimentTest {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+      assertTrue(
+          Status.PERMISSION_DENIED.getCode() == status.getCode()
+              || Status.NOT_FOUND.getCode()
+                  == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
@@ -166,14 +181,14 @@ public class ExperimentTest {
             .setKey("Google developer Artifact")
             .setPath(
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Flh3.googleusercontent.com%2FFyZA5SbKPJA7Y3XCeb9-uGwow8pugxj77Z1xvs8vFS6EI3FABZDCDtA9ScqzHKjhU8av_Ck95ET-P_rPJCbC2v_OswCN8A%3Ds688&imgrefurl=https%3A%2F%2Fdevelopers.google.com%2F&docid=1MVaWrOPIjYeJM&tbnid=I7xZkRN5m6_z-M%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw..i&w=688&h=387&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw&iact=mrc&uact=8")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.BLOB)
+            .setArtifactType(ArtifactType.BLOB)
             .build());
     artifactList.add(
         Artifact.newBuilder()
             .setKey("Google Pay Artifact")
             .setPath(
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Fpay.google.com%2Fabout%2Fstatic%2Fimages%2Fsocial%2Fknowledge_graph_logo.png&imgrefurl=https%3A%2F%2Fpay.google.com%2Fabout%2F&docid=zmoE9BrSKYr4xM&tbnid=eCL1Y6f9xrPtDM%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg..i&w=1200&h=630&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg&iact=mrc&uact=8")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.IMAGE)
+            .setArtifactType(ArtifactType.IMAGE)
             .build());
 
     return CreateExperiment.newBuilder()
@@ -271,6 +286,20 @@ public class ExperimentTest {
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
+
+    DeleteExperiment deleteExperimentRequest =
+        DeleteExperiment.newBuilder().setId(response.getExperiment().getId()).build();
+    LOGGER.info("Experiment Id : " + response.getExperiment().getId());
+
+    DeleteExperiment.Response deleteExperiment =
+        experimentServiceStub.deleteExperiment(deleteExperimentRequest);
+    LOGGER.info("DeleteExperiment Response : " + deleteExperiment.getStatus());
+    assertTrue(deleteExperiment.getStatus());
+
+    createExperimentRequest =
+        createExperimentRequest.toBuilder().setName(response.getExperiment().getName()).build();
+    response = experimentServiceStub.createExperiment(createExperimentRequest);
+    Assert.assertTrue(response.hasExperiment());
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -2332,7 +2361,7 @@ public class ExperimentTest {
                         Artifact.newBuilder()
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
-                            .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                            .setArtifactType(ArtifactType.CODE)
                             .build())
                     .build())
             .build();
@@ -2355,7 +2384,7 @@ public class ExperimentTest {
                           Artifact.newBuilder()
                               .setKey("code_version_image")
                               .setPath("https://xyz_path_string.com/image.png")
-                              .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                              .setArtifactType(ArtifactType.CODE)
                               .build())
                       .build())
               .build();
@@ -2416,7 +2445,7 @@ public class ExperimentTest {
                         Artifact.newBuilder()
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
-                            .setArtifactType(ArtifactTypeEnum.ArtifactType.CODE)
+                            .setArtifactType(ArtifactType.CODE)
                             .build())
                     .build())
             .build();
@@ -2487,14 +2516,14 @@ public class ExperimentTest {
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.MODEL)
+            .setArtifactType(ArtifactType.MODEL)
             .build();
     artifacts.add(artifact1);
     Artifact artifact2 =
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .build();
     artifacts.add(artifact2);
 
@@ -2577,14 +2606,14 @@ public class ExperimentTest {
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.MODEL)
+            .setArtifactType(ArtifactType.MODEL)
             .build();
     artifacts.add(artifact1);
     Artifact artifact2 =
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("This is new added data artifact type in Google Pay artifact")
-            .setArtifactType(ArtifactTypeEnum.ArtifactType.DATA)
+            .setArtifactType(ArtifactType.DATA)
             .build();
     artifacts.add(artifact2);
 
@@ -2893,6 +2922,10 @@ public class ExperimentTest {
     LOGGER.info("DeleteExperiment Response : " + response.getStatus());
     assertTrue(response.getStatus());
 
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
+    deleteEntitiesCron.run();
+
     for (String experimentId : experimentIds) {
 
       // Start cross-checking for experiment
@@ -2924,20 +2957,22 @@ public class ExperimentTest {
     // For experimentRun1
     GetComments getCommentsRequest =
         GetComments.newBuilder().setEntityId(experimentRunList.get(0).getId()).build();
-    GetComments.Response getCommentsResponse =
-        commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-    LOGGER.info(
-        "experimentRun1 getExperimentRunComment Response : \n"
-            + getCommentsResponse.getCommentsList());
-    assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+    GetComments.Response getCommentsResponse;
+    try {
+      getCommentsResponse = commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+      assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
     // For experimentRun3
     getCommentsRequest =
         GetComments.newBuilder().setEntityId(experimentRunList.get(0).getId()).build();
-    getCommentsResponse = commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-    LOGGER.info(
-        "experimentRun3 getExperimentRunComment Response : \n"
-            + getCommentsResponse.getCommentsList());
-    assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+    try {
+      getCommentsResponse = commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+      assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
 
     // Delete Project
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();

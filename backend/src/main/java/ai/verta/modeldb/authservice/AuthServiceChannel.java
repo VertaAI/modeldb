@@ -4,6 +4,7 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.OrganizationServiceGrpc;
 import ai.verta.uac.RoleServiceGrpc;
@@ -32,7 +33,8 @@ public class AuthServiceChannel implements AutoCloseable {
   private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStub;
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
-  public static boolean isMigrationUtilsCall = false;
+  private String serviceUserEmail;
+  private String serviceUserDevKey;
 
   public AuthServiceChannel() {
     App app = App.getInstance();
@@ -44,6 +46,9 @@ public class AuthServiceChannel implements AutoCloseable {
           ManagedChannelBuilder.forTarget(host + ModelDBConstants.STRING_COLON + port)
               .usePlaintext()
               .build();
+
+      this.serviceUserEmail = app.getServiceUserEmail();
+      this.serviceUserDevKey = app.getServiceUserDevKey();
     } else {
       Status status =
           Status.newBuilder()
@@ -55,10 +60,18 @@ public class AuthServiceChannel implements AutoCloseable {
   }
 
   private Metadata getMetadataHeaders() {
+    int backgroundUtilsCount = ModelDBUtils.getRegisteredBackgroundUtilsCount();
+    LOGGER.trace("Header attaching with stub : backgroundUtilsCount : {}", backgroundUtilsCount);
     Metadata requestHeaders;
-    if (isMigrationUtilsCall && ModelDBAuthInterceptor.METADATA_INFO.get() == null) {
-      Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+    if (backgroundUtilsCount > 0 && ModelDBAuthInterceptor.METADATA_INFO.get() == null) {
       requestHeaders = new Metadata();
+      Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key<String> dev_key =
+          Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+
+      requestHeaders.put(email_key, this.serviceUserEmail);
+      requestHeaders.put(dev_key, this.serviceUserDevKey);
       requestHeaders.put(source_key, "PythonClient");
     } else {
       requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();

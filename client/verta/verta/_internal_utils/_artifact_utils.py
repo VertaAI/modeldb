@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import hashlib
 import os
 import tempfile
 
@@ -10,25 +11,11 @@ from ..external.six.moves import cPickle as pickle  # pylint: disable=import-err
 
 from .. import __about__
 
-try:
-    import joblib
-except ImportError:  # joblib not installed
-    pass
+from .importer import maybe_dependency, get_tensorflow_major_version
 
-try:
-    import tensorflow as tf
-except ImportError:
-    tf = None
-    TF_MAJOR_VERSION_STR = None
-else:
-    # TODO: use in TF integration module
-    TF_MAJOR_VERSION_STR = tf.__version__.split('.')[0]  # don't cast to int at module scope; breaks autodoc
 
-# TODO: use the newly-added tf = None above for this module's install checks
-try:
-    from tensorflow import keras
-except ImportError:  # TensorFlow not installed
-    pass
+# default for chunked utils
+CHUNK_SIZE = 5*10**6
 
 
 # NOTE: changing this might break multipart upload continuation
@@ -182,9 +169,25 @@ def ensure_bytestream(obj):
     """
     if hasattr(obj, 'read'):  # if `obj` is file-like
         reset_stream(obj)  # reset cursor to beginning in case user forgot
+
+        # read first element to check if bytes
+        try:
+            chunk = obj.read(1)
+        except TypeError:  # read() doesn't take an argument
+            pass  # fall through to read & cast full stream
+        else:
+            if chunk and isinstance(chunk, bytes):  # contents are indeed bytes
+                reset_stream(obj)
+                return obj, None
+            else:
+                pass  # fall through to read & cast full stream
+
+        # read full stream and cast to bytes
+        reset_stream(obj)
         contents = obj.read()  # read to cast into binary
         reset_stream(obj)  # reset cursor to beginning as a courtesy
         if not len(contents):
+            # S3 raises unhelpful error on empty upload, so catch here
             raise ValueError("object contains no data")
         bytestring = six.ensure_binary(contents)
         bytestream = six.BytesIO(bytestring)
@@ -201,14 +204,15 @@ def ensure_bytestream(obj):
             bytestream.seek(0)
             return bytestream, "cloudpickle"
 
-        try:
-            joblib.dump(obj, bytestream)
-        except (NameError,  # joblib not installed
-                pickle.PicklingError):  # can't be handled by joblib
-            pass
-        else:
-            bytestream.seek(0)
-            return bytestream, "joblib"
+        if maybe_dependency("joblib"):
+            try:
+                maybe_dependency("joblib").dump(obj, bytestream)
+            except (NameError,  # joblib not installed
+                    pickle.PicklingError):  # can't be handled by joblib
+                pass
+            else:
+                bytestream.seek(0)
+                return bytestream, "joblib"
 
         try:
             pickle.dump(obj, bytestream)
@@ -275,8 +279,7 @@ def serialize_model(model):
         elif module_name.startswith("tensorflow.python.keras"):
             model_type = "tensorflow"
             tempf = tempfile.NamedTemporaryFile()
-            if (TF_MAJOR_VERSION_STR is not None
-                    and TF_MAJOR_VERSION_STR == '2'):  # save_format param may not exist in TF 1.X
+            if get_tensorflow_major_version() == 2:  # save_format param may not exist in TF 1.X
                 model.save(tempf.name, save_format='h5')  # TF 2.X uses SavedModel by default
             else:
                 model.save(tempf.name)
@@ -313,15 +316,16 @@ def deserialize_model(bytestring):
         Model or buffered bytestream representing the model.
 
     """
-    # try deserializing with Keras (HDF5)
-    with tempfile.NamedTemporaryFile() as tempf:
-        tempf.write(bytestring)
-        tempf.seek(0)
-        try:
-            return keras.models.load_model(tempf.name)
-        except (NameError,  # Tensorflow not installed
-                IOError, OSError):  # not a Keras model
-            pass
+    if maybe_dependency("tensorflow.keras"):
+        # try deserializing with Keras (HDF5)
+        with tempfile.NamedTemporaryFile() as tempf:
+            tempf.write(bytestring)
+            tempf.seek(0)
+            try:
+                return maybe_dependency("tensorflow.keras").models.load_model(tempf.name)
+            except (NameError,  # Tensorflow not installed
+                    IOError, OSError):  # not a Keras model
+                pass
 
     # try deserializing with cloudpickle
     bytestream = six.BytesIO(bytestring)
@@ -331,3 +335,74 @@ def deserialize_model(bytestring):
         bytestream.seek(0)
 
     return bytestream
+
+
+def get_stream_length(stream, chunk_size=CHUNK_SIZE):
+    """
+    Get the length of the contents of a stream.
+
+    Parameters
+    ----------
+    stream : file-like
+        Stream.
+    chunk_size : int, default 5 MB
+        Number of bytes (or whatever `stream` contains) to read into memory at a time.
+
+    Returns
+    -------
+    length : int
+        Length of `stream`.
+
+    """
+    # if it's file handle, get file size without reading stream
+    filename = getattr(stream, 'name', None)
+    if filename is not None:
+        try:
+            return os.path.getsize(filename)
+        except OSError:  # can't access file
+            pass
+
+    # read stream in chunks to get length
+    length = 0
+    try:
+        part_lengths = iter(lambda: len(stream.read(chunk_size)), 0)
+        for part_length in part_lengths:  # could be sum() but not sure GC runs during builtin one-liner
+            length += part_length
+    finally:
+        reset_stream(stream)  # reset cursor to beginning as a courtesy
+
+    return length
+
+
+def calc_sha256(bytestream, chunk_size=CHUNK_SIZE):
+    """
+    Calculates the SHA-256 checksum of a bytestream.
+
+    Parameters
+    ----------
+    bytestream : file-like opened in binary mode
+        Bytestream.
+    chunk_size : int, default 5 MB
+        Number of bytes to read into memory at a time.
+
+    Returns
+    -------
+    checksum : str
+        SHA-256 hash of `bytestream`'s contents.
+
+    Raises
+    ------
+    TypeError
+        If `bytestream` is opened in text mode instead of binary mode.
+
+    """
+    checksum = hashlib.sha256()
+
+    try:
+        parts = iter(lambda: bytestream.read(chunk_size), b'')
+        for part in parts:
+            checksum.update(part)
+    finally:
+        reset_stream(bytestream)  # reset cursor to beginning as a courtesy
+
+    return checksum.hexdigest()

@@ -9,6 +9,7 @@ import (
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/dataloaders"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/errors"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/models"
+	pcommon "github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadata"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
 	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
@@ -70,7 +71,7 @@ func (r *repositoryResolver) AllowedActions(ctx context.Context, obj *versioning
 				ResourceIds: []string{id},
 				ResourceType: &uac.ResourceType{
 					Resource: &uac.ResourceType_ModeldbServiceResourceType{
-						ModeldbServiceResourceType: uac.ModelResourceEnum_REPOSITORY,
+						ModeldbServiceResourceType: pcommon.ModelDBResourceEnum_REPOSITORY,
 					},
 				},
 			},
@@ -183,7 +184,7 @@ func (r *repositoryResolver) CommitByReference(ctx context.Context, obj *version
 	if ref.Commit != nil {
 		return r.Commit(ctx, obj, *ref.Commit)
 	}
-	return nil, errors.EmptyReferenceToCommit
+	return nil, errors.EmptyReference(ctx)
 }
 func (r *repositoryResolver) resolveCommitReference(ctx context.Context, obj *versioning.Repository, ref schema.CommitReference) (string, error) {
 	if ref.Branch != nil {
@@ -207,7 +208,7 @@ func (r *repositoryResolver) resolveCommitReference(ctx context.Context, obj *ve
 		}
 		return res.Commit.GetCommitSha(), nil
 	}
-	return "", errors.EmptyReferenceToCommit
+	return "", errors.EmptyReference(ctx)
 }
 func (r *repositoryResolver) Diff(ctx context.Context, obj *versioning.Repository, a schema.CommitReference, b schema.CommitReference) ([]string, error) {
 	idA, err := r.resolveCommitReference(ctx, obj, a)
@@ -227,6 +228,10 @@ func (r *repositoryResolver) Diff(ctx context.Context, obj *versioning.Repositor
 		CommitA: idA,
 		CommitB: idB,
 	})
+	if err != nil {
+		r.Logger.Error("failed to compute repository diff", zap.Error(err))
+		return nil, err
+	}
 	result := make([]string, len(res.GetDiffs()))
 	for i, diff := range res.GetDiffs() {
 		buffer := &bytes.Buffer{}
@@ -270,8 +275,8 @@ func (r *repositoryResolver) Log(ctx context.Context, obj *versioning.Repository
 }
 func (r *repositoryResolver) Delete(ctx context.Context, obj *versioning.Repository) (bool, error) {
 	if !isMutation(ctx) {
-		r.Logger.Error(errors.DeleteOutsideMutation.Error())
-		return false, errors.DeleteOutsideMutation
+		r.Logger.Info(errors.DeleteOutsideMutation(ctx).Message)
+		return false, errors.DeleteOutsideMutation(ctx)
 	}
 	res, err := r.Connections.Versioning.DeleteRepository(ctx, &versioning.DeleteRepositoryRequest{
 		RepositoryId: &versioning.RepositoryIdentification{
@@ -287,8 +292,8 @@ func (r *repositoryResolver) Delete(ctx context.Context, obj *versioning.Reposit
 }
 func (r *repositoryResolver) AddLabels(ctx context.Context, obj *versioning.Repository, labels []string) (*versioning.Repository, error) {
 	if !isMutation(ctx) {
-		r.Logger.Error(errors.AddLabelsOutsideMutation.Error())
-		return nil, errors.AddLabelsOutsideMutation
+		r.Logger.Info(errors.UpdateOutsideMutation(ctx).Message)
+		return nil, errors.UpdateOutsideMutation(ctx)
 	}
 	res, err := r.Connections.Metadata.AddLabels(ctx, &metadata.AddLabelsRequest{
 		Id: &metadata.IdentificationType{
@@ -303,16 +308,16 @@ func (r *repositoryResolver) AddLabels(ctx context.Context, obj *versioning.Repo
 	}
 
 	if !res.GetStatus() {
-		r.Logger.Error(errors.ModelDbInternalFailure.Error())
-		return nil, errors.ModelDbInternalFailure
+		r.Logger.Error(errors.ModelDbInternalError(ctx).Message)
+		return nil, errors.ModelDbInternalError(ctx)
 	}
 
 	return r.Resolver.Query().Repository(ctx, r.id(obj))
 }
 func (r *repositoryResolver) DeleteLabels(ctx context.Context, obj *versioning.Repository, labels []string) (*versioning.Repository, error) {
 	if !isMutation(ctx) {
-		r.Logger.Error(errors.DeleteLabelsOutsideMutation.Error())
-		return nil, errors.DeleteLabelsOutsideMutation
+		r.Logger.Info(errors.DeleteOutsideMutation(ctx).Message)
+		return nil, errors.DeleteOutsideMutation(ctx)
 	}
 	res, err := r.Connections.Metadata.DeleteLabels(ctx, &metadata.DeleteLabelsRequest{
 		Id: &metadata.IdentificationType{
@@ -327,16 +332,20 @@ func (r *repositoryResolver) DeleteLabels(ctx context.Context, obj *versioning.R
 	}
 
 	if !res.GetStatus() {
-		r.Logger.Error(errors.ModelDbInternalFailure.Error())
-		return nil, errors.ModelDbInternalFailure
+		r.Logger.Error(errors.ModelDbInternalError(ctx).Message)
+		return nil, errors.ModelDbInternalError(ctx)
 	}
 
 	return r.Resolver.Query().Repository(ctx, r.id(obj))
 }
-func (r *repositoryResolver) Merge(ctx context.Context, obj *versioning.Repository, a schema.CommitReference, b schema.CommitReference, message *string) (*schema.MergeResult, error) {
+func (r *repositoryResolver) Merge(ctx context.Context, obj *versioning.Repository, a schema.CommitReference, b schema.CommitReference, message *string, isDryRun *bool) (*schema.MergeResult, error) {
 	if !isMutation(ctx) {
-		r.Logger.Error(errors.MergeOutsideMutation.Error())
-		return nil, errors.MergeOutsideMutation
+		r.Logger.Info(errors.MergeOutsideMutation(ctx).Message)
+		return nil, errors.MergeOutsideMutation(ctx)
+	}
+	if isDryRun == nil {
+		val := false
+		isDryRun = &val
 	}
 	idA, err := r.resolveCommitReference(ctx, obj, a)
 	if err != nil {
@@ -361,6 +370,7 @@ func (r *repositoryResolver) Merge(ctx context.Context, obj *versioning.Reposito
 		CommitShaA: idA,
 		CommitShaB: idB,
 		Content:    content,
+		IsDryRun:   *isDryRun,
 	})
 	if err != nil {
 		r.Logger.Error("failed to merge commit", zap.Error(err))

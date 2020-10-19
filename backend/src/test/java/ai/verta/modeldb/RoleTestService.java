@@ -1,8 +1,8 @@
 package ai.verta.modeldb;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Action;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ModelResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.ResourceActionGroup;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;

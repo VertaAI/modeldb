@@ -7,11 +7,16 @@ import shutil
 import requests
 
 import pytest
+
+from verta._registry import RegisteredModels
+from verta._tracking.deployable_entity import _CACHE_DIR
 from . import utils
 
 import verta
 import verta._internal_utils._utils
 import json
+
+from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 
 KWARGS = {
@@ -24,17 +29,30 @@ KWARGS_COMBOS = [dict(zip(KWARGS.keys(), values))
                  in itertools.product(*KWARGS.values())
                  if values.count(None) != len(values)]
 
+# for `tags` typecheck tests
+TAG = "my-tag"
+
 
 class TestClient:
     @pytest.mark.oss
     def test_no_auth(self, host):
-        client = verta.Client(host)
+        EMAIL_KEY, DEV_KEY_KEY = "VERTA_EMAIL", "VERTA_DEV_KEY"
+        EMAIL, DEV_KEY = os.environ.pop(EMAIL_KEY, None), os.environ.pop(DEV_KEY_KEY, None)
+        try:
+            client = verta.Client(host)
 
-        # it's just been revoked
-        client._conn.auth = None
+            # still has source set
+            assert 'Grpc-Metadata-source' in client._conn.auth
 
-        assert client.set_project()
-        utils.delete_project(client.proj.id, client._conn)
+            assert client.set_project()
+
+            client.proj.delete()
+        finally:
+            if EMAIL is not None:
+                os.environ[EMAIL_KEY] = EMAIL
+            if DEV_KEY is not None:
+                os.environ[DEV_KEY_KEY] = DEV_KEY
+
 
     @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
     def test_verta_https(self):
@@ -125,7 +143,10 @@ class TestClient:
                 client = verta.Client(_connect=connect)
                 conn = client._conn
 
-                assert conn.socket == HOST
+                back_end_url = urlparse(HOST)
+                socket = back_end_url.netloc + back_end_url.path.rstrip('/')
+
+                assert conn.socket == socket
                 assert conn.auth['Grpc-Metadata-email'] == EMAIL
                 assert conn.auth['Grpc-Metadata-developer_key'] == DEV_KEY
 
@@ -136,7 +157,7 @@ class TestClient:
                         assert client.expt.name == EXPERIMENT_NAME
                     finally:
                         if client.proj is not None:
-                            utils.delete_project(client.proj.id, conn)
+                            client.proj.delete()
                     dataset = client.set_dataset()
                     try:
                         assert dataset.name == DATASET_NAME
@@ -155,45 +176,56 @@ class TestClient:
 
 class TestEntities:
     def test_cache(self, client, strs):
+        client.set_project()
+        client.set_experiment()
+
         entities = (
-            client.set_project(),
-            client.set_experiment(),
             client.set_experiment_run(),
         )
 
         for entity in entities:
             filename = strs[0]
-            filepath = os.path.join(verta.client._CACHE_DIR, filename)
+            filepath = os.path.join(_CACHE_DIR, filename)
             contents = six.ensure_binary(strs[1])
 
             assert not os.path.isfile(filepath)
-            assert not entity._get_cached(filename)
+            assert not entity._get_cached_file(filename)
 
             try:
-                assert entity._cache(filename, contents) == filepath
+                assert entity._cache_file(filename, contents) == filepath
 
                 assert os.path.isfile(filepath)
-                assert entity._get_cached(filename)
+                assert entity._get_cached_file(filename)
 
                 with open(filepath, 'rb') as f:
                     assert f.read() == contents
             finally:
-                shutil.rmtree(verta.client._CACHE_DIR, ignore_errors=True)
+                shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
 
 class TestProject:
-    def test_set_project_warning(self, client):
-        """setting Project by name with desc, tags, and/or attrs raises warning"""
-        proj = client.set_project()
-
-        for kwargs in KWARGS_COMBOS:
-            with pytest.warns(UserWarning):
-                client.set_project(proj.name, **kwargs)
-
     def test_create(self, client):
         assert client.set_project()
-
         assert client.proj is not None
+        name = verta._internal_utils._utils.generate_default_name()
+        assert client.create_project(name)
+        assert client.proj is not None
+        with pytest.raises(requests.HTTPError) as excinfo:
+            assert client.create_project(name)
+        excinfo_value = str(excinfo.value).strip()
+        assert "409" in excinfo_value
+        assert "already exists" in excinfo_value
+
+    def test_get(self, client):
+        name = verta._internal_utils._utils.generate_default_name()
+
+        with pytest.raises(ValueError):
+            client.get_project(name)
+
+        proj = client.set_project(name)
+
+        assert proj.id == client.get_project(proj.name).id
+        assert proj.id == client.get_project(id=proj.id).id
 
     def test_get_by_name(self, client):
         proj = client.set_project()
@@ -206,7 +238,6 @@ class TestProject:
         proj = client.set_project()
 
         client.set_project()  # in case get erroneously fetches latest
-        client.proj = None
 
         assert proj.id == client.set_project(id=proj.id).id
 
@@ -214,22 +245,51 @@ class TestProject:
         with pytest.raises(ValueError):
             client.set_project(id="nonexistent_id")
 
+    @pytest.mark.parametrize("tags", [TAG, [TAG]])
+    def test_tags_is_list_of_str(self, client, tags):
+        proj = client.set_project(tags=tags)
+
+        endpoint = "{}://{}/api/v1/modeldb/project/getProjectTags".format(
+            client._conn.scheme,
+            client._conn.socket,
+        )
+        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': proj.id})
+        verta._internal_utils._utils.raise_for_http_error(response)
+        assert response.json().get('tags', []) == [TAG]
+
 
 class TestExperiment:
-    def test_set_experiment_warning(self, client):
-        """setting Experiment by name with desc, tags, and/or attrs raises warning"""
-        client.set_project()
-        expt = client.set_experiment()
-
-        for kwargs in KWARGS_COMBOS:
-            with pytest.warns(UserWarning):
-                client.set_experiment(expt.name, **kwargs)
-
     def test_create(self, client):
         client.set_project()
         assert client.set_experiment()
-
         assert client.expt is not None
+
+        name = verta._internal_utils._utils.generate_default_name()
+        assert client.create_experiment(name)
+        assert client.expt is not None
+        with pytest.raises(requests.HTTPError) as excinfo:
+            assert client.create_experiment(name)
+        excinfo_value = str(excinfo.value).strip()
+        assert "409" in excinfo_value
+        assert "already exists" in excinfo_value
+
+    def test_get(self, client):
+        proj = client.set_project()
+        name = verta._internal_utils._utils.generate_default_name()
+
+        with pytest.raises(ValueError):
+            client.get_experiment(name)
+
+        expt = client.set_experiment(name)
+
+        assert expt.id == client.get_experiment(expt.name).id
+        assert expt.id == client.get_experiment(id=expt.id).id
+
+        # test parents are restored
+        client.set_project()
+        client.get_experiment(id=expt.id)
+        assert client.proj.id == proj.id
+        assert client.expt.id == expt.id
 
     def test_get_by_name(self, client):
         client.set_project()
@@ -244,7 +304,6 @@ class TestExperiment:
         expt = client.set_experiment()
 
         client.set_experiment()  # in case get erroneously fetches latest
-        client.proj = client.expt = None
 
         assert expt.id == client.set_experiment(id=expt.id).id
         assert proj.id == client.proj.id
@@ -253,27 +312,54 @@ class TestExperiment:
         with pytest.raises(ValueError):
             client.set_experiment(id="nonexistent_id")
 
-    def test_no_project_error(self, client):
-        with pytest.raises(AttributeError):
-            client.set_experiment()
+    @pytest.mark.parametrize("tags", [TAG, [TAG]])
+    def test_tags_is_list_of_str(self, client, tags):
+        client.set_project()
+        expt = client.set_experiment(tags=tags)
+
+        endpoint = "{}://{}/api/v1/modeldb/experiment/getExperimentTags".format(
+            client._conn.scheme,
+            client._conn.socket,
+        )
+        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': expt.id})
+        verta._internal_utils._utils.raise_for_http_error(response)
+        assert response.json().get('tags', []) == [TAG]
 
 
 class TestExperimentRun:
-    def test_set_experiment_run_warning(self, client):
-        """setting ExperimentRun by name with desc, tags, and/or attrs raises warning"""
-        client.set_project()
-        client.set_experiment()
-        expt_run = client.set_experiment_run()
-
-        for kwargs in KWARGS_COMBOS:
-            with pytest.warns(UserWarning):
-                client.set_experiment_run(expt_run.name, **kwargs)
-
     def test_create(self, client):
         client.set_project()
         client.set_experiment()
 
         assert client.set_experiment_run()
+
+        name = verta._internal_utils._utils.generate_default_name()
+        assert client.create_experiment_run(name)
+        with pytest.raises(requests.HTTPError) as excinfo:
+            assert client.create_experiment_run(name)
+        excinfo_value = str(excinfo.value).strip()
+        assert "409" in excinfo_value
+        assert "already exists" in excinfo_value
+
+    def test_get(self, client):
+        proj = client.set_project()
+        expt = client.set_experiment()
+        name = verta._internal_utils._utils.generate_default_name()
+
+        with pytest.raises(ValueError):
+            client.get_experiment_run(name)
+
+        run = client.set_experiment_run(name)
+
+        assert run.id == client.get_experiment_run(run.name).id
+        assert run.id == client.get_experiment_run(id=run.id).id
+
+        # test parents are restored by first setting new, unrelated ones
+        client.set_project()
+        client.set_experiment()
+        client.get_experiment_run(id=run.id)
+        assert client.proj.id == proj.id
+        assert client.expt.id == expt.id
 
     def test_get_by_name(self, client):
         client.set_project()
@@ -289,7 +375,6 @@ class TestExperimentRun:
         expt_run = client.set_experiment_run()
 
         client.set_experiment_run()  # in case get erroneously fetches latest
-        client.proj = client.expt = None
 
         assert expt_run.id == client.set_experiment_run(id=expt_run.id).id
         assert proj.id == client.proj.id
@@ -303,6 +388,20 @@ class TestExperimentRun:
         with pytest.raises(AttributeError):
             client.set_experimennt_run()
 
+    @pytest.mark.parametrize("tags", [TAG, [TAG]])
+    def test_tags_is_list_of_str(self, client, tags):
+        client.set_project()
+        client.set_experiment()
+        run = client.set_experiment_run(tags=tags)
+
+        endpoint = "{}://{}/api/v1/modeldb/experiment-run/getExperimentRunTags".format(
+            client._conn.scheme,
+            client._conn.socket,
+        )
+        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': run.id})
+        verta._internal_utils._utils.raise_for_http_error(response)
+        assert response.json().get('tags', []) == [TAG]
+
     def test_clone(self, experiment_run):
         expt_run = experiment_run
         expt_run._conf.use_git = False
@@ -315,17 +414,9 @@ class TestExperimentRun:
 
         # set various things in the run
         new_run_no_art = expt_run.clone()
-        new_run_art_only = expt_run.clone(copy_artifacts=True)
-        new_run_art_code = expt_run.clone(copy_artifacts=True, copy_code_version=True)
-        new_run_art_code_data = expt_run.clone(copy_artifacts=True,
-            copy_code_version=True, copy_datasets=True)
 
-        old_run_msg = expt_run._get(expt_run._conn, _expt_run_id=expt_run.id)
-        new_run_no_art_msg = new_run_no_art._get(new_run_no_art._conn, _expt_run_id=new_run_no_art.id)
-        new_run_art_only_msg = new_run_art_only._get(new_run_art_only._conn, _expt_run_id=new_run_art_only.id)
-        new_run_art_code_msg = new_run_art_code._get(new_run_art_code._conn, _expt_run_id=new_run_art_code.id)
-        new_run_art_code_data_msg = new_run_art_code_data._get(new_run_art_code_data._conn,
-            _expt_run_id=new_run_art_code_data.id)
+        old_run_msg = expt_run._get_proto_by_id(expt_run._conn, expt_run.id)
+        new_run_no_art_msg = new_run_no_art._get_proto_by_id(new_run_no_art._conn, new_run_no_art.id)
 
         # ensure basic data is the same
         assert expt_run.id != new_run_no_art_msg.id
@@ -334,14 +425,60 @@ class TestExperimentRun:
         assert old_run_msg.metrics == new_run_no_art_msg.metrics
         assert old_run_msg.hyperparameters == new_run_no_art_msg.hyperparameters
         assert old_run_msg.observations == new_run_no_art_msg.observations
+        assert old_run_msg.artifacts == new_run_no_art_msg.artifacts
 
-        assert old_run_msg.artifacts == new_run_art_only_msg.artifacts
-        assert old_run_msg.code_version_snapshot != new_run_art_only_msg.code_version_snapshot
-        assert old_run_msg.artifacts != new_run_no_art_msg.artifacts
 
-        assert old_run_msg.code_version_snapshot == new_run_art_code_msg.code_version_snapshot
+    def test_clone_into_expt(self, client):
+        expt1 = client.set_experiment()
 
-        assert old_run_msg.datasets == new_run_art_code_data_msg.datasets
+        expt2 = client.set_experiment()
+        assert expt1.id != expt2.id  # of course, but just to be sure
+
+        old_run = client.set_experiment_run()
+        assert old_run._msg.experiment_id == expt2.id  # of course, but just to be sure
+
+        old_run.log_hyperparameters({"hpp1" : 1, "hpp2" : 2, "hpp3" : "hpp3"})
+        old_run.log_metrics({"metric1" : 0.5, "metric2" : 0.6})
+        old_run.log_tags(["tag1", "tag2"])
+        old_run.log_attributes({"attr1" : 10, "attr2" : {"abc": 1}})
+        old_run.log_artifact("my-artifact", "README.md")
+
+        new_run = old_run.clone(experiment_id=expt1.id)
+
+        old_run_msg = old_run._get_proto_by_id(old_run._conn, old_run.id)
+        new_run_msg = new_run._get_proto_by_id(new_run._conn, new_run.id)
+
+        assert old_run_msg.id != new_run_msg.id
+        assert new_run_msg.experiment_id == expt1.id
+
+        assert old_run_msg.description == new_run_msg.description
+        assert old_run_msg.tags == new_run_msg.tags
+        assert old_run_msg.metrics == new_run_msg.metrics
+        assert old_run_msg.hyperparameters == new_run_msg.hyperparameters
+        assert old_run_msg.observations == new_run_msg.observations
+        assert old_run_msg.artifacts == new_run_msg.artifacts
+
+    def test_log_attribute_overwrite(self, client):
+        initial_attrs = {"str-attr": "attr", "int-attr": 4, "float-attr": 0.5}
+        new_attrs = {"str-attr": "new-attr", "int-attr": 5, "float-attr": 0.3, "bool-attr": False}
+        single_new_attr = new_attrs.popitem()
+
+        experiment_run = client.set_experiment_run(attrs=initial_attrs)
+
+        with pytest.raises(ValueError) as excinfo:
+            experiment_run.log_attribute("str-attr", "some-attr")
+
+        assert "already exists" in str(excinfo.value)
+
+        experiment_run.log_attribute(*single_new_attr, overwrite=True)
+        experiment_run.log_attributes(new_attrs, True)
+
+        expected_attrs = initial_attrs.copy()
+        expected_attrs.update([single_new_attr])
+        expected_attrs.update(new_attrs)
+
+        assert experiment_run.get_attributes() == expected_attrs
+
 
 class TestExperimentRuns:
     def test_getitem(self, client):
@@ -393,6 +530,38 @@ class TestExperimentRuns:
         expt_runs = client.set_experiment().expt_runs
 
         assert len([client.set_experiment_run().id for _ in range(3)]) == len(expt_runs)
+
+    def test_as_dataframe(self, client, strs):
+        np = pytest.importorskip("numpy")
+        pytest.importorskip("pandas")
+
+        # initialize entities
+        client.set_project()
+        expt = client.set_experiment()
+        for _ in range(3):
+            client.set_experiment_run()
+
+        # log metadata
+        hpp1, hpp2, metric1, metric2 = strs[:4]
+        for run in expt.expt_runs:
+            run.log_hyperparameters({
+                hpp1: np.random.random(),
+                hpp2: np.random.random(),
+            })
+            run.log_metrics({
+                metric1: np.random.random(),
+                metric2: np.random.random(),
+            })
+
+        # verify that DataFrame matches
+        df = expt.expt_runs.as_dataframe()
+        assert set(df.index) == set(run.id for run in expt.expt_runs)
+        for run in expt.expt_runs:
+            row = df.loc[run.id]
+            assert row['hpp.'+hpp1] == run.get_hyperparameter(hpp1)
+            assert row['hpp.'+hpp2] == run.get_hyperparameter(hpp2)
+            assert row['metric.'+metric1] == run.get_metric(metric1)
+            assert row['metric.'+metric2] == run.get_metric(metric2)
 
     @pytest.mark.skip("functionality removed")
     def test_add(self, client):

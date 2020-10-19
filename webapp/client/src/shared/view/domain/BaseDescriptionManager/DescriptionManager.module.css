@@ -1,0 +1,29 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  font-size: 15px;
+}
+
+.description {
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  cursor: default;
+}
+
+.description_empty {
+  color: var(--text-color5);
+}
+
+.desc_action_block {
+  opacity: 0;
+  display: inline-flex;
+  margin-left: 10px;
+}
+.root:hover .desc_action_block {
+  opacity: 1;
+}
+
+.desc_readonly {
+  display: inline-flex;
+}

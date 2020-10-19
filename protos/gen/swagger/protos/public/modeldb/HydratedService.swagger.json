@@ -14,7 +14,7 @@
     "/hydratedData/findHydratedDatasetVersions": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedDatasetVersions",
+        "operationId": "HydratedService_findHydratedDatasetVersions",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -47,7 +47,7 @@
     "/hydratedData/findHydratedDatasets": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedDatasets",
+        "operationId": "HydratedService_findHydratedDatasets",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -80,7 +80,7 @@
     "/hydratedData/findHydratedDatasetsByOrganization": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedDatasetsByOrganization",
+        "operationId": "HydratedService_findHydratedDatasetsByOrganization",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -113,7 +113,7 @@
     "/hydratedData/findHydratedDatasetsByTeam": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedDatasetsByTeam",
+        "operationId": "HydratedService_findHydratedDatasetsByTeam",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -146,7 +146,7 @@
     "/hydratedData/findHydratedExperimentRuns": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedExperimentRuns",
+        "operationId": "HydratedService_findHydratedExperimentRuns",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -179,7 +179,7 @@
     "/hydratedData/findHydratedExperiments": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedExperiments",
+        "operationId": "HydratedService_findHydratedExperiments",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -212,7 +212,7 @@
     "/hydratedData/findHydratedProjects": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedProjects",
+        "operationId": "HydratedService_findHydratedProjects",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -245,7 +245,7 @@
     "/hydratedData/findHydratedProjectsByOrganization": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedProjectsByOrganization",
+        "operationId": "HydratedService_findHydratedProjectsByOrganization",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -278,7 +278,7 @@
     "/hydratedData/findHydratedProjectsByTeam": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedProjectsByTeam",
+        "operationId": "HydratedService_findHydratedProjectsByTeam",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -311,7 +311,7 @@
     "/hydratedData/findHydratedProjectsByUser": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedProjectsByUser",
+        "operationId": "HydratedService_findHydratedProjectsByUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -344,7 +344,7 @@
     "/hydratedData/findHydratedPublicDatasets": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedPublicDatasets",
+        "operationId": "HydratedService_findHydratedPublicDatasets",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -377,7 +377,7 @@
     "/hydratedData/findHydratedPublicProjects": {
       "post": {
         "summary": "queries",
-        "operationId": "findHydratedPublicProjects",
+        "operationId": "HydratedService_findHydratedPublicProjects",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -409,7 +409,7 @@
     },
     "/hydratedData/getHydratedDatasetByName": {
       "get": {
-        "operationId": "getHydratedDatasetByName",
+        "operationId": "HydratedService_getHydratedDatasetByName",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -445,7 +445,7 @@
     },
     "/hydratedData/getHydratedDatasetsByProjectId": {
       "get": {
-        "operationId": "getHydratedDatasetsByProjectId",
+        "operationId": "HydratedService_getHydratedDatasetsByProjectId",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -502,7 +502,7 @@
     },
     "/hydratedData/getHydratedExperimentRunById": {
       "get": {
-        "operationId": "getHydratedExperimentRunById",
+        "operationId": "HydratedService_getHydratedExperimentRunById",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -532,7 +532,7 @@
     },
     "/hydratedData/getHydratedExperimentRunsInProject": {
       "get": {
-        "operationId": "getHydratedExperimentRunsInProject",
+        "operationId": "HydratedService_getHydratedExperimentRunsInProject",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -589,7 +589,7 @@
     },
     "/hydratedData/getHydratedExperimentsByProjectId": {
       "get": {
-        "operationId": "getHydratedExperimentsByProjectId",
+        "operationId": "HydratedService_getHydratedExperimentsByProjectId",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -646,7 +646,7 @@
     },
     "/hydratedData/getHydratedProjectById": {
       "get": {
-        "operationId": "getHydratedProjectById",
+        "operationId": "HydratedService_getHydratedProjectById",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -676,7 +676,7 @@
     },
     "/hydratedData/getHydratedProjects": {
       "get": {
-        "operationId": "getHydratedProjects",
+        "operationId": "HydratedService_getHydratedProjects",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -733,7 +733,7 @@
     },
     "/hydratedData/getHydratedPublicProjects": {
       "get": {
-        "operationId": "getHydratedPublicProjects",
+        "operationId": "HydratedService_getHydratedPublicProjects",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -790,7 +790,7 @@
     },
     "/hydratedData/getTopHydratedExperimentRuns": {
       "get": {
-        "operationId": "getTopHydratedExperimentRuns",
+        "operationId": "HydratedService_getTopHydratedExperimentRuns",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -863,7 +863,7 @@
     },
     "/hydratedData/sortHydratedExperimentRuns": {
       "get": {
-        "operationId": "sortHydratedExperimentRuns",
+        "operationId": "HydratedService_sortHydratedExperimentRuns",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -926,7 +926,8 @@
         "DATA",
         "BLOB",
         "STRING",
-        "CODE"
+        "CODE",
+        "CONTAINER"
       ],
       "default": "IMAGE"
     },
@@ -1054,6 +1055,30 @@
       ],
       "default": "UNKNOWN"
     },
+    "commonArtifact": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "path_only": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "linked_artifact_id": {
+          "type": "string"
+        },
+        "filename_extension": {
+          "type": "string"
+        }
+      }
+    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -1066,6 +1091,23 @@
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "commonKeyValueQuery": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },
@@ -1144,30 +1186,6 @@
         }
       }
     },
-    "modeldbArtifact": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "path_only": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
-        },
-        "linked_artifact_id": {
-          "type": "string"
-        },
-        "filename_extension": {
-          "type": "string"
-        }
-      }
-    },
     "modeldbCodeVersion": {
       "type": "object",
       "properties": {
@@ -1175,7 +1193,7 @@
           "$ref": "#/definitions/modeldbGitSnapshot"
         },
         "code_archive": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         },
         "date_logged": {
           "type": "string",
@@ -1355,6 +1373,9 @@
         "time_updated": {
           "type": "string",
           "format": "uint64"
+        },
+        "dataset_blob": {
+          "$ref": "#/definitions/versioningDatasetBlob"
         }
       }
     },
@@ -1402,7 +1423,7 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       }
@@ -1471,13 +1492,13 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "datasets": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         },
         "metrics": {
@@ -1539,7 +1560,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "ids_only": {
@@ -1561,6 +1582,9 @@
         },
         "sort_key": {
           "type": "string"
+        },
+        "workspace_name": {
+          "type": "string"
         }
       }
     },
@@ -1576,7 +1600,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "ids_only": {
@@ -1622,7 +1646,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "ids_only": {
@@ -1665,7 +1689,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "ids_only": {
@@ -1784,7 +1808,7 @@
         "predicates": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbKeyValueQuery"
+            "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "ids_only": {
@@ -2028,23 +2052,6 @@
         }
       }
     },
-    "modeldbKeyValueQuery": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
-        },
-        "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
-        }
-      }
-    },
     "modeldbObservation": {
       "type": "object",
       "properties": {
@@ -2052,11 +2059,14 @@
           "$ref": "#/definitions/commonKeyValue"
         },
         "artifact": {
-          "$ref": "#/definitions/modeldbArtifact"
+          "$ref": "#/definitions/commonArtifact"
         },
         "timestamp": {
           "type": "string",
           "format": "int64"
+        },
+        "epoch_number": {
+          "type": "object"
         }
       },
       "title": "observations with the same key are not overwritten, the are appended to a list"
@@ -2138,7 +2148,7 @@
         "artifacts": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modeldbArtifact"
+            "$ref": "#/definitions/commonArtifact"
           }
         }
       }
@@ -2339,6 +2349,15 @@
         },
         "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "default_registered_model_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "workspace_id": {
+          "type": "string"
+        },
+        "registered_model_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -2434,6 +2453,115 @@
         },
         "publicProfile": {
           "$ref": "#/definitions/uacFlagEnum"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "s3": {
+          "$ref": "#/definitions/versioningS3DatasetBlob"
+        },
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetBlob"
+        },
+        "query": {
+          "$ref": "#/definitions/versioningQueryDatasetBlob"
+        }
+      }
+    },
+    "versioningPathDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningPathDatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "last_modified_at_source": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "md5": {
+          "type": "string"
+        },
+        "internal_versioned_path": {
+          "type": "string"
+        },
+        "base_path": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningQueryDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningQueryDatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningQueryDatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "data_source_uri": {
+          "type": "string",
+          "title": "string query_template = 2;\nrepeated QueryParameter query_parameters = 3;"
+        },
+        "execution_timestamp": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "num_records": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "versioningS3DatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningS3DatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningS3DatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+        },
+        "s3_version_id": {
+          "type": "string"
         }
       }
     },

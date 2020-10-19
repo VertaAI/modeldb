@@ -43,9 +43,9 @@
 <h3 align="center">
   <a href="#up-and-running-in-5-minutes">Quickstart</a>
   <span> · </span>
-  <a href="https://docs.verta.ai/en/master/examples/tutorials/workflow.html">Workflow</a>
+  <a href="https://docs.verta.ai/en/master/tutorials/workflow.html">Workflow</a>
   <span> · </span>
-  <a href="https://docs.verta.ai/en/master/examples/examples.html">Examples</a>
+  <a href="https://docs.verta.ai/en/master/examples.html">Examples</a>
   <span> · </span>
   <a href="#contributions">Contribute</a>
   <span> · </span>
@@ -68,7 +68,7 @@ Features:
 * Flexible metadata logging including metrics, artifacts, tags and user information
 * Pluggable storage systems
 * Integration into state-of-the-art frameworks like Tensorflow and PyTorch
-* Battle-tested in productionn environments
+* Battle-tested in production environments
 
 If you are looking for a hosted version of ModelDB, please reach out at modeldb@verta.ai.
 
@@ -98,13 +98,14 @@ This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://
 ```bash
 docker-compose -f docker-compose-all.yaml up
 ```
+*Note: modeldb-backend service needs backend/config/config.yaml to run, either clone the repo before running docker-compose or create the file manually.*
 
 2. Install the ModelDB pip package. *Note it comes packaged in the verta package.*
 ```bash
 pip install verta
 ```
 
-3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://docs.verta.ai/en/master/examples/examples.html) in our repository.*
+3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://docs.verta.ai/en/master/examples.html) in our repository.*
 
 ```python
 from verta import Client
@@ -203,7 +204,7 @@ We are open to contributions to any of the modules in form of Pull Requests.
 
 The main skill sets for each module are as below:
 
-1. backend: If you are interested in `Java` development or are interested in database design using technologies like `Hibernate` and `Liquibase` please take a look at [backed README](backend/README.md) for setup and development instructions.
+1. backend: If you are interested in `Java` development or are interested in database design using technologies like `Hibernate` and `Liquibase` please take a look at [backend README](backend/README.md) for setup and development instructions.
 1. client: If you are interested in `Python` or `Scala` development or are interested in building examples notebooks on various ML frameworks logging data to Modeldb please take a look at [client CONTRIBUTING guide](client/CONTRIBUTING.md) for contribution instructions.
 1. frontend: If you are interested  in `Node`,`React` or `Redux` based development please take a look at [webapp README](webapp/README.md)
 

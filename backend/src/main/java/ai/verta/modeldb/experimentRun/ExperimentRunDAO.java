@@ -1,29 +1,34 @@
 package ai.verta.modeldb.experimentRun;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
-import ai.verta.modeldb.Artifact;
+import ai.verta.modeldb.CloneExperimentRun;
 import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.Experiment;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitArtifactPart.Response;
+import ai.verta.modeldb.CommitMultipartArtifact;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
+import ai.verta.modeldb.GetCommittedArtifactParts;
+import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
 import ai.verta.modeldb.GetVersionedInput;
+import ai.verta.modeldb.ListBlobExperimentRunsRequest;
+import ai.verta.modeldb.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Observation;
-import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
-import ai.verta.modeldb.versioning.ListBlobExperimentRunsRequest;
-import ai.verta.modeldb.versioning.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.hibernate.Session;
 
 public interface ExperimentRunDAO {
@@ -38,14 +43,6 @@ public interface ExperimentRunDAO {
    */
   ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException;
-
-  /**
-   * Delete the ExperimentRun from database using experimentRunId.
-   *
-   * @param String experimentRunId
-   * @return Boolean updated status
-   */
-  Boolean deleteExperimentRun(String experimentRunId);
 
   /**
    * Delete the ExperimentRuns from database using experimentRunId list.
@@ -107,18 +104,16 @@ public interface ExperimentRunDAO {
    * @return ExperimentRun experimentRun
    * @throws InvalidProtocolBufferException
    */
-  ExperimentRun getExperimentRun(String experimentRunId) throws InvalidProtocolBufferException;
+  ExperimentRun getExperimentRun(String experimentRunId)
+      throws InvalidProtocolBufferException, ModelDBException;
 
   boolean isExperimentRunExists(Session session, String experimentRunId);
 
   /**
    * @param experimentRunId : experimentRun.id
    * @param experimentRunName : updated experimentRun name from client request
-   * @return {@link ExperimentRun} : updated experimentRun
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  ExperimentRun updateExperimentRunName(String experimentRunId, String experimentRunName)
-      throws InvalidProtocolBufferException;
+  void updateExperimentRunName(String experimentRunId, String experimentRunName);
 
   /**
    * @param experimentRunId : experimentRun.id
@@ -128,58 +123,54 @@ public interface ExperimentRunDAO {
    */
   ExperimentRun updateExperimentRunDescription(
       String experimentRunId, String experimentRunDescription)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * @param experimentRunId : experimentRun.id
    * @param updatedCodeVersion : updated experimentRun code version snapshot from client request
-   * @return {@link ExperimentRun} : updated experimentRun
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  ExperimentRun logExperimentRunCodeVersion(String experimentRunId, CodeVersion updatedCodeVersion)
+  void logExperimentRunCodeVersion(String experimentRunId, CodeVersion updatedCodeVersion)
       throws InvalidProtocolBufferException;
 
   /**
    * @param experimentRunId : experimentRun.id
    * @param parentExperimentRunId : experimentRun parentId from client request
-   * @return {@link ExperimentRun} : updated experimentRun
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  ExperimentRun setParentExperimentRunId(String experimentRunId, String parentExperimentRunId)
-      throws InvalidProtocolBufferException;
+  void setParentExperimentRunId(String experimentRunId, String parentExperimentRunId);
 
   /**
    * Add List of ExperimentRun Tags in database.
    *
-   * @param String experimentRunId, List<String> tagsList
-   * @return ExperimentRun updatedExperimentRun
-   * @throws InvalidProtocolBufferException
+   * @param experimentRunId : ExperimentRun.id
+   * @param tagsList : tag list
+   * @return ExperimentRun : updatedExperimentRun
+   * @throws InvalidProtocolBufferException : InvalidProtocolBufferException
    */
   ExperimentRun addExperimentRunTags(String experimentRunId, List<String> tagsList)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * Delete ExperimentRun Tags from ExperimentRun entity.
    *
-   * @param deleteAll
-   * @param List<String> experimentRunTagList
-   * @param String experimentRunId
+   * @param deleteAll : flag
+   * @param experimentRunTagList : tags list for deletion
+   * @param experimentRunId : ExperimentRun.id
    * @return ExperimentRun updatedExperimentRun
-   * @throws InvalidProtocolBufferException
+   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   ExperimentRun deleteExperimentRunTags(
       String experimentRunId, List<String> experimentRunTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * ExperimentRun has Observations list field. Add new Observation in that Observations List.
    *
    * @param experimentRunId
    * @param observations
-   * @return ExperimentRun updated experimentRun entity
    * @throws InvalidProtocolBufferException
    */
-  ExperimentRun logObservations(String experimentRunId, List<Observation> observations)
+  void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException;
 
   /**
@@ -198,10 +189,9 @@ public interface ExperimentRunDAO {
    *
    * @param experimentRunId
    * @param metrics has KeyValue entity
-   * @return ExperimentRun updated ExperimentRun
    * @throws InvalidProtocolBufferException
    */
-  ExperimentRun logMetrics(String experimentRunId, List<KeyValue> metrics)
+  void logMetrics(String experimentRunId, List<KeyValue> metrics)
       throws InvalidProtocolBufferException;
 
   /**
@@ -222,17 +212,16 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   List<Artifact> getExperimentRunDatasets(String experimentRunId)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * ExperimentRun has artifacts field. Add new Artifact in that artifacts List.
    *
    * @param experimentRunId
    * @param artifacts
-   * @return ExperimentRun updated experimentRun
    * @throws InvalidProtocolBufferException
    */
-  ExperimentRun logArtifacts(String experimentRunId, List<Artifact> artifacts)
+  void logArtifacts(String experimentRunId, List<Artifact> artifacts)
       throws InvalidProtocolBufferException;
 
   /**
@@ -250,10 +239,9 @@ public interface ExperimentRunDAO {
    *
    * @param experimentRunId
    * @param hyperparameters has KeyValue list.
-   * @return ExperimentRun updated experimentRun
    * @throws InvalidProtocolBufferException
    */
-  ExperimentRun logHyperparameters(String experimentRunId, List<KeyValue> hyperparameters)
+  void logHyperparameters(String experimentRunId, List<KeyValue> hyperparameters)
       throws InvalidProtocolBufferException;
 
   /**
@@ -272,10 +260,9 @@ public interface ExperimentRunDAO {
    *
    * @param experimentRunId
    * @param attributes has KeyValue.
-   * @return ExperimentRun updated experimentRun.
    * @throws InvalidProtocolBufferException
    */
-  ExperimentRun logAttributes(String experimentRunId, List<KeyValue> attributes)
+  void logAttributes(String experimentRunId, List<KeyValue> attributes)
       throws InvalidProtocolBufferException;
 
   /**
@@ -342,37 +329,30 @@ public interface ExperimentRunDAO {
   /**
    * Add attributes in database using experimentRunId.
    *
-   * @param String experimentRunId
-   * @param List<KeyValue> attributesList
-   * @return ExperimentRun --> updated ExperimentRun entity
-   * @throws InvalidProtocolBufferException
+   * @param experimentRunId : ExperimentRun.id
+   * @param attributesList : new attribute list
+   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  ExperimentRun addExperimentRunAttributes(String experimentRunId, List<KeyValue> attributesList)
+  void addExperimentRunAttributes(String experimentRunId, List<KeyValue> attributesList)
       throws InvalidProtocolBufferException;
 
   /**
    * Delete ExperimentRun Attributes in database using experimentRunId.
    *
-   * @param Boolean deleteAll
-   * @param List<String> attributeKeyList
-   * @param String experimentRunId
-   * @return ExperimentRun experimentRun
-   * @throws InvalidProtocolBufferException
+   * @param deleteAll: flag
+   * @param attributeKeyList : attribute list for deletion
+   * @param experimentRunId : ExperimentRun.id
    */
-  ExperimentRun deleteExperimentRunAttributes(
-      String experimentRunId, List<String> attributeKeyList, Boolean deleteAll)
-      throws InvalidProtocolBufferException;
+  void deleteExperimentRunAttributes(
+      String experimentRunId, List<String> attributeKeyList, Boolean deleteAll);
 
   /**
    * Log JobId in ExperimentRun entity.
    *
-   * @param String experimentRunId
-   * @param String jobId
-   * @return Experiment experimentRun
-   * @throws InvalidProtocolBufferException
+   * @param experimentRunId : ExperimentRun.id
+   * @param jobId : job.id
    */
-  ExperimentRun logJobId(String experimentRunId, String jobId)
-      throws InvalidProtocolBufferException;
+  void logJobId(String experimentRunId, String jobId);
 
   /**
    * Get JobId from ExperimentRun entity.
@@ -382,23 +362,6 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   String getJobId(String experimentRunId) throws InvalidProtocolBufferException;
-
-  /**
-   * Deep copy experimentRuns in database. We do not clone the artifacts/ data sets, so The cloned
-   * experimentRun still point to original artifacts/ data sets.
-   *
-   * @param srcExperiment
-   * @param newProject
-   * @param newOwner
-   * @return
-   * @throws InvalidProtocolBufferException
-   */
-  ExperimentRun deepCopyExperimentRunForUser(
-      ExperimentRun srcExperimentRun,
-      Experiment newExperiment,
-      Project newProject,
-      UserInfo newOwner)
-      throws InvalidProtocolBufferException;
 
   /**
    * Get ExperimentRun entities matching on key value list.
@@ -416,22 +379,18 @@ public interface ExperimentRunDAO {
    * @param experimentRunId
    * @param datasets List of artifacts of type Data and object_id pointing to an existing
    *     datasetVersion
-   * @return ExperimentRun
    * @throws InvalidProtocolBufferException
    */
-  ExperimentRun logDatasets(String experimentRunId, List<Artifact> datasets, boolean overwrite)
-      throws InvalidProtocolBufferException;
+  void logDatasets(String experimentRunId, List<Artifact> datasets, boolean overwrite)
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * Deletes the artifact key associated with the experiment run
    *
-   * @param id
-   * @param atrifactKey
-   * @return
-   * @throws InvalidProtocolBufferException
+   * @param experimentRunId : ExperimentRun.id
+   * @param atrifactKey : artifact key
    */
-  ExperimentRun deleteArtifacts(String experimentRunId, String atrifactKey)
-      throws InvalidProtocolBufferException;
+  void deleteArtifacts(String experimentRunId, String atrifactKey);
 
   /**
    * Get Project Id from ExperimentRun entity using given experimentRunID.
@@ -479,10 +438,12 @@ public interface ExperimentRunDAO {
   List<String> getExperimentRunIdsByExperimentIds(List<String> experimentIds)
       throws InvalidProtocolBufferException;
 
-  LogVersionedInput.Response logVersionedInput(LogVersionedInput request)
+  void logVersionedInput(LogVersionedInput request)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException;
 
   void deleteLogVersionedInputs(Session session, Long repoId, String commitHash);
+
+  void deleteLogVersionedInputs(Session session, List<Long> repoIds);
 
   GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)
       throws InvalidProtocolBufferException;
@@ -500,4 +461,36 @@ public interface ExperimentRunDAO {
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException, InvalidProtocolBufferException;
+
+  Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
+      String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  Response commitArtifactPart(CommitArtifactPart request)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  GetCommittedArtifactParts.Response getCommittedArtifactParts(GetCommittedArtifactParts request)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  CommitMultipartArtifact.Response commitMultipartArtifact(
+      CommitMultipartArtifact request, CommitMultipartFunction commitMultipart)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  void deleteExperimentRunKeyValuesEntities(
+      String experimentRunId,
+      List<String> experimentRunKeyValuesKeys,
+      Boolean deleteAll,
+      String fieldType)
+      throws InvalidProtocolBufferException;
+
+  void deleteExperimentRunObservationsEntities(
+      String experimentRunId, List<String> experimentRunObservationsKeys, Boolean deleteAll)
+      throws InvalidProtocolBufferException;
+
+  ExperimentRunPaginationDTO getExperimentRunsByDatasetVersionId(
+      ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request)
+      throws ModelDBException, InvalidProtocolBufferException;
+
+  ExperimentRun cloneExperimentRun(CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
+      throws InvalidProtocolBufferException, ModelDBException;
 }

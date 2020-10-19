@@ -1,6 +1,8 @@
 package pagination
 
 import (
+	"context"
+
 	"github.com/VertaAI/modeldb/backend/graphql/internal/codec"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema"
 	"github.com/VertaAI/modeldb/backend/graphql/internal/schema/errors"
@@ -13,18 +15,18 @@ type Next struct {
 	done       bool
 }
 
-func NewNext(logger *zap.Logger, next *string, query *schema.PaginationQuery) (*Next, error) {
+func NewNext(logger *zap.Logger, ctx context.Context, next *string, query *schema.PaginationQuery) (*Next, error) {
 	p := &Next{
 		PageNumber: 1,
 		PageLimit:  100,
 	}
 
 	if next != nil && query != nil {
-		return nil, errors.NextOrQuery
+		return nil, errors.NextOrQuery(ctx)
 	} else if next != nil {
 		if err := p.Decode(*next); err != nil {
 			logger.Error("failed to decode next token", zap.Error(err))
-			return nil, errors.InvalidNextToken
+			return nil, errors.InvalidNextToken(ctx)
 		}
 	} else if query != nil {
 		if query.Limit != nil && 0 < *query.Limit && *query.Limit < p.PageLimit {

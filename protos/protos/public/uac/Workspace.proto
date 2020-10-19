@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+import "common/CommonService.proto";
+
+message GetWorkspaceById {
+    uint64 id = 1;
+}
+
+message GetWorkspaceByName {
+    string name = 1;
+}
+
+message GetWorkspaceByLegacyId {
+    string id = 1;
+    common.WorkspaceTypeEnum.WorkspaceType workspace_type = 2;
+}
+
+message Workspace {
+    uint64 id = 1;
+    oneof internal_id {
+        string user_id = 2;
+        string org_id = 3;
+    }
+    oneof name {
+      string username = 4;
+      string org_name = 5;
+    }
+}
+
+service WorkspaceService {
+    rpc getWorkspaceById (GetWorkspaceById) returns (Workspace){
+        option (google.api.http) = {
+            get: "/v1/workspace/getWorkspaceById"
+        };
+    };
+
+    rpc getWorkspaceByName (GetWorkspaceByName) returns (Workspace){
+        option (google.api.http) = {
+            get: "/v1/workspace/getWorkspaceByName"
+        };
+    };
+
+    rpc getWorkspaceByLegacyId (GetWorkspaceByLegacyId) returns (Workspace){
+        option (google.api.http) = {
+            get: "/v1/workspace/getWorkspaceByLegacyId"
+        };
+    };
+}

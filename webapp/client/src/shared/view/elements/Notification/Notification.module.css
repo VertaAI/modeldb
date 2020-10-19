@@ -1,0 +1,17 @@
+.root {
+}
+
+:global .Toastify__toast--success {
+  background-color: #7bb54f;
+}
+
+:global .Toastify__toast--error {
+  background-color: #cf5b5b;
+}
+
+:global .Toastify__toast-body {
+  color: white;
+  line-height: 20px;
+  font-size: 15px;
+  font-family: Roboto, sans-serif;
+}

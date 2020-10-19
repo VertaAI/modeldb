@@ -1,0 +1,58 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 16px var(--common-padding);
+}
+.currentUser.root:hover {
+  background-color: #ebebeb;
+}
+
+.deleting {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  margin-right: 9px;
+}
+
+.username {
+  margin-right: 9px;
+  color: var(--main-text-color1);
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+.time {
+  color: var(--main-text-color3);
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+.delete {
+  display: none;
+  font-size: 18px;
+  margin-left: auto;
+  color: var(--main-text-color3);
+  cursor: pointer;
+}
+.currentUser.root:hover .delete {
+  display: inline-block;
+}
+.delete:hover {
+  color: #514eb5;
+}
+
+.message {
+  margin-top: 7px;
+  color: var(--main-text-color1);
+  font-size: 15px;
+  letter-spacing: 0;
+  line-height: 20px;
+}

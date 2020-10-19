@@ -25,7 +25,7 @@ message Experiment {
     repeated string tags = 21;
     string owner = 22;
     CodeVersion code_version_snapshot = 23;
-    repeated Artifact artifacts = 24;
+    repeated common.Artifact artifacts = 24;
 }
 
 message GetExperimentsInProject {
@@ -67,7 +67,7 @@ message CreateExperiment {
 
     repeated common.KeyValue attributes = 20;
     repeated string tags = 21;
-    repeated Artifact artifacts = 22;
+    repeated common.Artifact artifacts = 22;
 
     message Response {
         Experiment experiment = 1;
@@ -186,7 +186,7 @@ message GetExperimentCodeVersion {
 message FindExperiments {
     string project_id = 1;
     repeated string experiment_ids = 2;
-    repeated KeyValueQuery predicates = 4;
+    repeated common.KeyValueQuery predicates = 4;
     bool ids_only = 5; // whether to return full experiment runs or ids only
 
     //For pagination
@@ -205,7 +205,7 @@ message FindExperiments {
 // artifacts
 message LogExperimentArtifacts {
     string id = 1;
-    repeated Artifact artifacts = 2;
+    repeated common.Artifact artifacts = 2;
 
     message Response {
         Experiment experiment = 1;

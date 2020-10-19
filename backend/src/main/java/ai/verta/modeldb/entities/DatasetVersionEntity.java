@@ -127,6 +127,9 @@ public class DatasetVersionEntity {
   @JoinColumn(name = "query_dataset_version_info_id")
   private QueryDatasetVersionInfoEntity query_dataset_version_info;
 
+  @Column(name = "deleted")
+  private Boolean deleted = false;
+
   public String getId() {
     return id;
   }
@@ -251,15 +254,23 @@ public class DatasetVersionEntity {
     this.attributeMapping.addAll(attributeMapping);
   }
 
+  public Boolean getDeleted() {
+    return deleted;
+  }
+
+  public void setDeleted(Boolean deleted) {
+    this.deleted = deleted;
+  }
+
   public DatasetVersion getProtoObject() throws InvalidProtocolBufferException {
     DatasetVersion.Builder datasetVersionBuilder =
         DatasetVersion.newBuilder()
             .setId(getId())
-            .setParentId(getParent_id())
+            .setParentId(getParent_id() != null ? getParent_id() : "")
             .setDatasetId(getDataset_id())
             .setTimeLogged(getTime_logged())
             .setTimeUpdated(getTime_updated())
-            .setDescription(getDescription())
+            .setDescription(getDescription() != null ? getDescription() : "")
             .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))
             .setDatasetVersionVisibilityValue(getDataset_version_visibility())
             .setDatasetTypeValue(getDataset_type())

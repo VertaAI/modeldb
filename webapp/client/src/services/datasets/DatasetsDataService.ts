@@ -1,17 +1,22 @@
 import * as R from 'ramda';
 
-import { BaseDataService } from 'core/services/BaseDataService';
-import { EntityErrorType } from 'core/shared/models/Common';
-import { HttpError } from 'core/shared/models/Error';
-import { IFilterData } from 'core/features/filter/Model';
-import { DataWithPagination, IPagination } from 'core/shared/models/Pagination';
-import * as Dataset from 'models/Dataset';
-import { IWorkspace } from 'models/Workspace';
+import { BaseDataService } from 'services/BaseDataService';
+import { EntityErrorType } from 'shared/models/Common';
+import { HttpError } from 'shared/models/Error';
+import { IFilterData } from 'shared/models/Filters';
+import { DataWithPagination, IPagination } from 'shared/models/Pagination';
+import * as Dataset from 'shared/models/Dataset';
+import { IWorkspace } from 'shared/models/Workspace';
 import { convertServerEntityWithLoggedDates } from 'services/serverModel/Common/converters';
 
 import { convertServerShortWorkspaceToClient } from 'services/serverModel/Workspace/converters';
 import * as EntityAlreadyExistError from '../shared/EntityAlreadyExistError';
 import makeLoadDatasetsRequest from './responseRequest/makeLoadDatasetsRequest';
+import { ISorting } from 'shared/models/Sorting';
+import {
+  convertServerPaginationResponse,
+  IServerPaginatedResponse,
+} from 'services/serverModel/Pagination/Pagination';
 
 const convertDatasetVisibilityToServer = (
   datasetVisibility: Dataset.DatasetVisibility
@@ -25,16 +30,15 @@ const convertDatasetVisibilityToServer = (
 };
 
 export default class DatasetsDataService extends BaseDataService {
-  constructor() {
-    super();
-  }
-
   public async createDataset(
     settings: Dataset.IDatasetCreationSettings
   ): Promise<Dataset.Dataset> {
     const request = (() => {
       const requestFields: {
-        [K in keyof Required<Dataset.IDatasetCreationSettings>]: [string, any]
+        [K in keyof Omit<
+          Required<Dataset.IDatasetCreationSettings>,
+          'workspaceName'
+        >]: [string, any];
       } = {
         name: ['name', settings.name],
         visibility: [
@@ -55,34 +59,33 @@ export default class DatasetsDataService extends BaseDataService {
       url: `/v1/modeldb/dataset/createDataset`,
       data: request,
       errorConverters: {
-        entityAlreadyExists: errorResponse => errorResponse.status === 409,
+        entityAlreadyExists: (errorResponse) => errorResponse.status === 409,
       },
     });
-    return this.loadDataset(response.data.dataset.id, 'personal');
+    return this.loadDataset(response.data.dataset.id, settings.workspaceName);
   }
 
   public async loadDatasets(
     filters: IFilterData[],
     pagination: IPagination,
-    workspaceName: IWorkspace['name']
+    workspaceName: IWorkspace['name'],
+    sorting?: ISorting
   ): Promise<DataWithPagination<Dataset.Dataset>> {
     const request = await makeLoadDatasetsRequest(
       filters,
       pagination,
-      workspaceName
+      workspaceName,
+      sorting
     );
-    const response = await this.post({
+    const response = await this.post<IServerDatasetsResponse>({
       url: '/v1/modeldb/hydratedData/findHydratedDatasets',
       data: request,
     });
-    const res: DataWithPagination<Dataset.Dataset> = {
-      data: (response.data.hydrated_datasets || []).map(
-        (serverHydratedDataset: any) =>
-          convertServerHydratedDataset(serverHydratedDataset)
-      ),
-      totalCount: Number(response.data.total_records),
-    };
-    return res;
+    return convertServerPaginationResponse(
+      convertServerHydratedDataset,
+      (d) => d.hydrated_datasets,
+      response.data
+    );
   }
 
   public async loadProjectDatasets(
@@ -133,15 +136,16 @@ export default class DatasetsDataService extends BaseDataService {
   }
 }
 
-const convertServerHydratedDataset = (server: any): Dataset.Dataset => {
+const convertServerHydratedDataset = (
+  server: Record<string, any>
+): Dataset.Dataset => {
   const { dataset: serverDataset } = server;
 
-  const dataset: Dataset.Dataset = {
+  return {
     ...convertServerEntityWithLoggedDates(serverDataset),
     shortWorkspace: convertServerShortWorkspaceToClient(serverDataset),
     description: serverDataset.description || '',
     id: serverDataset.id,
-    isPubliclyVisible: serverDataset.dataset_visibility == 1,
     name: serverDataset.name || '',
     tags: serverDataset.tags || [],
     attributes: serverDataset.attributes || [],
@@ -161,5 +165,9 @@ const convertServerHydratedDataset = (server: any): Dataset.Dataset => {
       }
     })(),
   };
-  return dataset;
 };
+
+export type IServerDatasetsResponse = IServerPaginatedResponse<
+  'hydrated_datasets',
+  Record<string, any>
+>;

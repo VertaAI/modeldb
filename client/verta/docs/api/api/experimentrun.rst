@@ -1,4 +1,4 @@
-.. currentmodule:: verta.client
+.. currentmodule:: verta._tracking
 
 ExperimentRun
 =============
@@ -81,6 +81,7 @@ General
 .. automethod:: ExperimentRun.log_artifact
 .. automethod:: ExperimentRun.log_artifact_path
 .. automethod:: ExperimentRun.get_artifact
+.. automethod:: ExperimentRun.download_artifact
 
 Datasets
 ^^^^^^^^
@@ -133,6 +134,8 @@ Deploying
 .. automethod:: ExperimentRun.deploy
 .. automethod:: ExperimentRun.undeploy
 .. automethod:: ExperimentRun.get_deployed_model
+.. automethod:: ExperimentRun.download_docker_context
+.. automethod:: ExperimentRun.download_deployment_yaml
 
 Deprecated
 """"""""""

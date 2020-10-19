@@ -83,6 +83,7 @@ class TestHyperparameters:
 
         for key, val in six.viewitems(hyperparameters):
             experiment_run.log_hyperparameter(key, val)
+            experiment_run.log_hyperparameter(key, val, overwrite=True)
             with pytest.raises(ValueError):
                 experiment_run.log_hyperparameter(key, val)
 
@@ -214,6 +215,7 @@ class TestMetrics:
         metrics = dict(zip(strs, scalar_values))
 
         experiment_run.log_metrics(metrics)
+        experiment_run.log_metrics(metrics, overwrite=True)
 
         with pytest.raises(KeyError):
             experiment_run.get_metric(holdout)
@@ -228,6 +230,7 @@ class TestMetrics:
 
         for key, val in six.viewitems(metrics):
             experiment_run.log_metric(key, val)
+            experiment_run.log_metric(key, val, overwrite=True)
             with pytest.raises(ValueError):
                 experiment_run.log_metric(key, val)
 
@@ -284,9 +287,9 @@ class TestObservations:
             experiment_run.get_observation(holdout)
 
         for key, val in six.viewitems(observations):
-            assert [obs_val for obs_val, _ in experiment_run.get_observation(key)] == val
+            assert [obs_tuple[0] for obs_tuple in experiment_run.get_observation(key)] == val
 
-        assert {key: [obs_val for obs_val, _ in obs_seq]
+        assert {key: [obs_tuple[0] for obs_tuple in obs_seq]
                 for key, obs_seq in experiment_run.get_observations().items()} == observations
 
     def test_collection_error(self, experiment_run, strs, collection_values):
@@ -300,3 +303,34 @@ class TestObservations:
             for val in vals:
                 with pytest.raises(TypeError):
                     experiment_run.log_observation(key, val)
+
+    def test_epoch_num(self, experiment_run, strs, ints):
+        key = strs[0]
+        values = iter(set(ints))  # unique integers
+        epoch_num = 3
+
+        # backend auto start at 0
+        value1 = next(values)
+        experiment_run.log_observation(key, value1)
+
+        # manually pass `epoch_num`
+        value2 = next(values)
+        experiment_run.log_observation(key, value2, epoch_num=epoch_num)
+
+        # if not passed, backend auto-increments
+        value3 = next(values)
+        experiment_run.log_observation(key, value3)
+
+        # accept duplicate `epoch_num`
+        value4 = next(values)
+        experiment_run.log_observation(key, value4, epoch_num=epoch_num)
+
+        value_to_epoch = {
+            obs_tuple[0]: obs_tuple[2]
+            for obs_tuple
+            in experiment_run.get_observation(key)
+        }
+        assert value_to_epoch[value1] == 0  # start at 0
+        assert value_to_epoch[value2] == epoch_num  # manual
+        assert value_to_epoch[value3] == epoch_num + 1  # auto-increment
+        assert value_to_epoch[value4] == epoch_num  # duplicate
