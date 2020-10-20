@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,9 +50,11 @@ public class NFSController {
     }
   }
 
-  @GetMapping(value = {"${artifactEndpoint.getArtifact}"})
+  @GetMapping(value = {"${artifactEndpoint.getArtifact}/{FileName}"})
   public ResponseEntity<Resource> getArtifact(
-      @RequestParam("artifact_path") String artifactPath, HttpServletRequest request)
+      @PathVariable(value = ModelDBConstants.FILENAME) String fileName,
+      @RequestParam("artifact_path") String artifactPath,
+      HttpServletRequest request)
       throws ModelDBException {
     LOGGER.debug("getArtifact called");
     QPSCountResource.inc();
@@ -75,6 +78,7 @@ public class NFSController {
           .header(
               HttpHeaders.CONTENT_DISPOSITION,
               "attachment; filename=\"" + resource.getFilename() + "\"")
+          .header(ModelDBConstants.FILENAME, fileName)
           .body(resource);
     } catch (ModelDBException e) {
       LOGGER.info(e.getMessage(), e);

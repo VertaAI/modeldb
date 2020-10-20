@@ -16,9 +16,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,7 +45,6 @@ public class S3Controller {
       String eTag = s3Service.uploadFile(artifactPath, requestEntity, part_number, upload_id);
       LOGGER.trace("S3 storeArtifact - artifact_path : {}", artifactPath);
       LOGGER.trace("S3 storeArtifact - eTag : {}", eTag);
-      HttpHeaders responseHeaders = new HttpHeaders();
       response.addHeader("ETag", String.valueOf(eTag));
       LOGGER.debug("S3 storeArtifact returned");
       return ResponseEntity.ok().body(new UploadFileResponse(artifactPath, null, null, -1, eTag));
@@ -56,8 +55,10 @@ public class S3Controller {
     }
   }
 
-  @GetMapping(value = {"${artifactEndpoint.getArtifact}"})
-  public ResponseEntity<Resource> getArtifact(@RequestParam("artifact_path") String artifactPath)
+  @GetMapping(value = {"${artifactEndpoint.getArtifact}/{FileName}"})
+  public ResponseEntity<Resource> getArtifact(
+      @PathVariable(value = ModelDBConstants.FILENAME) String fileName,
+      @RequestParam("artifact_path") String artifactPath)
       throws ModelDBException {
     LOGGER.debug("getArtifact called");
     QPSCountResource.inc();
@@ -65,7 +66,7 @@ public class S3Controller {
         new RequestLatencyResource(ModelDBConstants.GET_ARTIFACT_ENDPOINT)) {
       LOGGER.debug("getArtifact started");
       // Load file as Resource
-      return s3Service.loadFileAsResource(artifactPath);
+      return s3Service.loadFileAsResource(fileName, artifactPath);
     } catch (ModelDBException e) {
       LOGGER.info(e.getMessage(), e);
       ErrorCountResource.inc(e);
