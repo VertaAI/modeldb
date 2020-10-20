@@ -63,7 +63,7 @@ public class S3Client {
     } else if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
         && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
       LOGGER.debug("temporary token based s3 client");
-      initializetWithTemporaryCredentials(awsRegion);
+      initializeWithTemporaryCredentials(awsRegion);
     } else {
       LOGGER.debug("environment credentials based s3 client");
       // reads credential from OS Environment
@@ -101,7 +101,7 @@ public class S3Client {
             .build();
   }
 
-  private void initializetWithTemporaryCredentials(Regions awsRegion) throws IOException {
+  private void initializeWithTemporaryCredentials(Regions awsRegion) throws IOException {
     String roleSessionName = "modelDB" + UUID.randomUUID().toString();
 
     AWSSecurityTokenService stsClient = null;
@@ -179,7 +179,7 @@ public class S3Client {
                   try {
                     // Sleep for a second to avoid overwhelming the service
                     Thread.sleep(1000);
-                    initializetWithTemporaryCredentials(awsRegion);
+                    initializeWithTemporaryCredentials(awsRegion);
                     return;
                   } catch (Exception ex) {
                     LOGGER.warn("Failed to refresh S3 session: " + ex.getMessage());
