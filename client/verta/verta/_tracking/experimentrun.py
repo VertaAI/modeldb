@@ -1257,6 +1257,8 @@ class ExperimentRun(_DeployableEntity):
         except (TypeError, ValueError):
             extension = None
         _utils.THREAD_LOCALS.active_experiment_run = self
+        if isinstance(model, six.string_types):  # filepath
+            model = open(model, 'rb')
         try:
             serialized_model, method, model_type = _artifact_utils.serialize_model(model)
         finally:
