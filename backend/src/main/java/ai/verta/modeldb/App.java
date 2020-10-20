@@ -64,6 +64,7 @@ import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import java.io.IOException;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -190,7 +191,7 @@ public class App implements ApplicationContextAware {
   }
 
   @Bean
-  public S3Service getS3Service() throws ModelDBException {
+  public S3Service getS3Service() throws ModelDBException, IOException {
     String bucketName = System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME);
     if (bucketName != null && !bucketName.isEmpty()) {
       return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
@@ -339,7 +340,7 @@ public class App implements ApplicationContextAware {
       Map<String, Object> propertiesMap,
       AuthService authService,
       RoleService roleService)
-      throws ModelDBException {
+      throws ModelDBException, IOException {
 
     App app = App.getInstance();
     Map<String, Object> serviceUserDetailMap =
@@ -609,7 +610,7 @@ public class App implements ApplicationContextAware {
   }
 
   private static ArtifactStoreService initializeServicesBaseOnArtifactStoreType(
-      Map<String, Object> artifactStoreConfigMap) throws ModelDBException {
+      Map<String, Object> artifactStoreConfigMap) throws ModelDBException, IOException {
 
     String artifactStoreType =
         (String) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_STORE_TYPE);
