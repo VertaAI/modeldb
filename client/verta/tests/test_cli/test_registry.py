@@ -204,6 +204,65 @@ class TestCreate:
         created_registered_models.append(model)
         assert model.workspace == organization.name
 
+    def test_create_version_with_custom_modules_torch(self, client, registered_model, created_endpoints):
+        torch = pytest.importorskip("torch")
+        np = pytest.importorskip("numpy")
+
+        model_name = registered_model.name
+        version_name = "my version"
+
+        with sys_path_manager() as sys_path:
+            sys_path.append(".")
+
+            from models.nets import FullyConnected
+            train_data = torch.rand((2, 4))
+
+            model_path = "classifier.pt"
+            classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
+
+            torch.save(classifier, model_path)
+
+            requirements_path = "requirements.txt"
+            with open(requirements_path, "w") as f:
+                f.write("torch=={}".format(torch.__version__))
+
+            runner = CliRunner()
+            result = runner.invoke(
+                cli,
+                ['registry', 'create', 'registeredmodelversion', model_name, version_name,
+                 "--model", model_path, "--custom-module", "models/", "--requirements",
+                 requirements_path],
+            )
+            assert not result.exception
+
+            retrieved_model = registered_model.get_version(name=version_name).get_model()
+            assert torch.allclose(classifier(train_data), retrieved_model(train_data))
+
+            os.remove(model_path)
+            os.remove(requirements_path)
+
+            # TODO: consolidate these in the command above
+            model_version = registered_model.get_version(name=version_name)
+
+            # Log model api:
+            model_api = ModelAPI(train_data.tolist(), classifier(train_data).tolist())
+            model_api["model_packaging"] = {
+                "deserialization": "cloudpickle",
+                "type": "torch",
+                "python_version": "2.7.17"
+            }
+            model_version.log_artifact("model_api.json", model_api, True, "json")
+
+            path = _utils.generate_default_name()
+            endpoint = client.set_endpoint(path)
+            created_endpoints.append(endpoint)
+            endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+
+            test_data = torch.rand((4, 4))
+            prediction = torch.tensor(endpoint.get_deployed_model().predict(test_data.tolist()))
+            assert torch.all(classifier(test_data).eq(prediction))
+
+
     def test_create_version_with_custom_modules(self, client, registered_model, created_endpoints):
         torch = pytest.importorskip("torch")
         np = pytest.importorskip("numpy")

@@ -108,8 +108,6 @@ def ext_from_method(method):
         return 'hdf5'
     elif method in ("joblib", "cloudpickle", "pickle"):
         return 'pkl'
-    elif method == "torch":
-        return "pt"
     elif method is None:
         return None
     else:
@@ -201,16 +199,6 @@ def ensure_bytestream(obj):
         else:
             bytestream.seek(0)
             return bytestream, "cloudpickle"
-
-        torch = maybe_dependency("torch")
-        if torch is not None:
-            try:
-                torch.save(obj, bytestream)
-            except:  # not something torch can serialize
-                pass
-            else:
-                bytestream.seek(0)
-                return bytestream, "torch"
 
         if maybe_dependency("joblib"):
             try:
@@ -335,19 +323,19 @@ def deserialize_model(bytestring):
                     IOError, OSError):  # not a Keras model
                 pass
 
-    # try deserializing with cloudpickle
     bytestream = six.BytesIO(bytestring)
-    try:
-        return cloudpickle.load(bytestream)
-    except:  # not a pickled object
-        bytestream.seek(0)
-
     torch = maybe_dependency("torch")
     if torch is not None:
         try:
             return torch.load(bytestream)
         except:  # not something torch can deserialize
             bytestream.seek(0)
+
+    # try deserializing with cloudpickle
+    try:
+        return cloudpickle.load(bytestream)
+    except:  # not a pickled object
+        bytestream.seek(0)
 
     return bytestream
 
