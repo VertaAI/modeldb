@@ -5307,7 +5307,7 @@ public class ExperimentRunTest {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Versioning ExperimentRun test start................................");
 
-    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long repoId = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -5395,7 +5395,7 @@ public class ExperimentRunTest {
   public void versioningAtExperimentRunCreateNegativeTest() throws ModelDBException {
     LOGGER.info("Versioning ExperimentRun negative test start................................");
 
-    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long repoId = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -5474,7 +5474,7 @@ public class ExperimentRunTest {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Log and Get Versioning ExperimentRun test start................................");
 
-    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long repoId = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     try {
       GetBranchRequest getBranchRequest =
           GetBranchRequest.newBuilder()
@@ -5614,7 +5614,8 @@ public class ExperimentRunTest {
     LOGGER.info("Fetch ExperimentRun for commit test start................................");
 
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
 
     String testUser1UserName = null;
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
@@ -5786,7 +5787,7 @@ public class ExperimentRunTest {
           RepositoryIdentification.newBuilder()
               .setNamedId(
                   RepositoryNamedIdentification.newBuilder()
-                      .setName(RepositoryTest.NAME)
+                      .setName("Repo-" + new Date().getTime())
                       .setWorkspaceName(testUser1UserName)
                       .build())
               .build();
@@ -5837,7 +5838,8 @@ public class ExperimentRunTest {
     LOGGER.info("Fetch ExperimentRun blobs for commit test start................................");
 
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -6016,7 +6018,7 @@ public class ExperimentRunTest {
     LOGGER.info(
         "Versioning without Locations ExperimentRun test start................................");
 
-    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long repoId = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -6122,7 +6124,7 @@ public class ExperimentRunTest {
         "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         createExperimentRunRequest.hasVersionedInputs());
 
-    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long repoId = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -6201,7 +6203,8 @@ public class ExperimentRunTest {
     LOGGER.info("FindExperimentRuns test start................................");
 
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -6471,7 +6474,8 @@ public class ExperimentRunTest {
     LOGGER.info("FindExperimentRuns test start................................");
 
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -6870,7 +6874,8 @@ public class ExperimentRunTest {
     LOGGER.info("FindExperimentRuns test start................................");
 
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -6914,7 +6919,7 @@ public class ExperimentRunTest {
                                     .setGit(
                                         GitCodeBlob.newBuilder()
                                             .setBranch("abcd")
-                                            .setRepo(RepositoryTest.NAME)
+                                            .setRepo("Repo-" + new Date().getTime())
                                             .setHash(FileHasher.getSha(""))
                                             .setIsDirty(false)
                                             .setTag(
@@ -7096,7 +7101,8 @@ public class ExperimentRunTest {
     LOGGER.info("FindExperimentRuns test start................................");
 
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     try {
       GetBranchRequest getBranchRequest =
           GetBranchRequest.newBuilder()
@@ -7432,7 +7438,7 @@ public class ExperimentRunTest {
 
     List<Dataset> datasetList = new ArrayList<>();
     CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
+        datasetTest.getDatasetRequest("Dataset-" + new Date().getTime());
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     Dataset dataset1 = createDatasetResponse.getDataset();
@@ -7824,7 +7830,8 @@ public class ExperimentRunTest {
 
     ProjectTest projectTest = new ProjectTest();
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())

@@ -1,6 +1,5 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.RepositoryTest.NAME;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
@@ -93,6 +92,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -136,6 +136,7 @@ public class CommitTest {
   private static AuthClientInterceptor authClientInterceptor;
   private static App app;
   private static DeleteEntitiesCron deleteEntitiesCron;
+  private static String NAME = "Repo-" + new Date().getTime();
 
   private static long time = Calendar.getInstance().getTimeInMillis();
 
@@ -371,7 +372,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -401,7 +402,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -455,7 +456,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -587,7 +588,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -638,7 +639,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -711,7 +712,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
@@ -830,7 +831,7 @@ public class CommitTest {
     GitCodeBlob gitCodeBlob =
         GitCodeBlob.newBuilder()
             .setBranch(branch)
-            .setRepo(RepositoryTest.NAME)
+            .setRepo(NAME)
             .setHash(FileHasher.getSha(""))
             .setIsDirty(false)
             .setTag("Tag-" + Calendar.getInstance().getTimeInMillis())
@@ -858,7 +859,7 @@ public class CommitTest {
                 .addCommandLine("docker pull vertaaiofficial/modeldb-backend:latest")
                 .setDocker(
                     DockerEnvironmentBlob.newBuilder()
-                        .setRepository(RepositoryTest.NAME)
+                        .setRepository(NAME)
                         .setSha(FileHasher.getSha(""))
                         .setTag("Tag-" + Calendar.getInstance().getTimeInMillis())
                         .build())
@@ -893,7 +894,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
@@ -994,7 +995,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
@@ -1059,7 +1060,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
@@ -1179,7 +1180,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -1410,7 +1411,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -1614,7 +1615,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -1825,7 +1826,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -1886,7 +1887,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -2026,7 +2027,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -2155,7 +2156,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -2215,7 +2216,7 @@ public class CommitTest {
     MetadataServiceGrpc.MetadataServiceBlockingStub serviceBlockingStub =
         MetadataServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -2441,7 +2442,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
@@ -2525,7 +2526,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -2590,7 +2591,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -2639,7 +2640,7 @@ public class CommitTest {
     LOGGER.info("Get Url for VersionedBlob test start................................");
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
@@ -2821,8 +2822,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id =
-        createRepository(versioningServiceBlockingStub, RepositoryTest.NAME + "mergeConflict");
+    long id = createRepository(versioningServiceBlockingStub, NAME + "mergeConflict");
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
@@ -2941,8 +2941,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id =
-        createRepository(versioningServiceBlockingStub, RepositoryTest.NAME + "mergeConflictBug");
+    long id = createRepository(versioningServiceBlockingStub, NAME + "mergeConflictBug");
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
@@ -3070,7 +3069,7 @@ public class CommitTest {
     VersioningServiceBlockingStub versioningServiceBlockingStub =
         VersioningServiceGrpc.newBlockingStub(channel);
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long id = createRepository(versioningServiceBlockingStub, NAME);
     try {
       GetBranchRequest getBranchRequest =
           GetBranchRequest.newBuilder()
