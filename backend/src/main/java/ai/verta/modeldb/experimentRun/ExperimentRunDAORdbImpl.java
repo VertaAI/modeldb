@@ -2635,7 +2635,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         } else if (e instanceof StatusRuntimeException) {
           throw (StatusRuntimeException) e;
         } else {
-          throw new ModelDBException(e.getMessage(), Code.INTERNAL);
+          throw new ModelDBException(e);
         }
       }
     }
@@ -2654,7 +2654,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       } else if (e instanceof StatusRuntimeException) {
         throw (StatusRuntimeException) e;
       } else {
-        throw new ModelDBException(e.getMessage(), Code.INTERNAL);
+        throw new ModelDBException(e);
       }
     }
   }
@@ -2731,7 +2731,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         } else if (e instanceof StatusRuntimeException) {
           throw (StatusRuntimeException) e;
         } else {
-          throw new ModelDBException(e.getMessage(), Code.INTERNAL);
+          throw new ModelDBException(e);
         }
       }
     }
@@ -2741,13 +2741,24 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public GetCommittedArtifactParts.Response getCommittedArtifactParts(
       GetCommittedArtifactParts request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Set<ArtifactPartEntity> artifactPartEntities =
-          getArtifactPartEntities(session, request.getId(), request.getKey());
-      GetCommittedArtifactParts.Response.Builder response =
-          GetCommittedArtifactParts.Response.newBuilder();
-      artifactPartEntities.forEach(
-          artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
-      return response.build();
+      try (AutoCloseable ignored =
+          acquireReadLock(buildArtifactLockKey(request.getId(), request.getKey()))) {
+        Set<ArtifactPartEntity> artifactPartEntities =
+            getArtifactPartEntities(session, request.getId(), request.getKey());
+        GetCommittedArtifactParts.Response.Builder response =
+            GetCommittedArtifactParts.Response.newBuilder();
+        artifactPartEntities.forEach(
+            artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
+        return response.build();
+      } catch (Exception e) {
+        if (e instanceof ModelDBException) {
+          throw (ModelDBException) e;
+        } else if (e instanceof StatusRuntimeException) {
+          throw (StatusRuntimeException) e;
+        } else {
+          throw new ModelDBException(e);
+        }
+      }
     }
   }
 
@@ -2787,9 +2798,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         session.beginTransaction();
         artifactEntity.setUploadCompleted(true);
         artifactEntity.setUploadId(null);
-        artifactPartEntities.forEach(session::delete);
-        artifactPartEntities.clear();
-        session.saveOrUpdate(artifactEntity);
         session.getTransaction().commit();
       } catch (Exception e) {
         if (e instanceof ModelDBException) {
@@ -2797,7 +2805,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         } else if (e instanceof StatusRuntimeException) {
           throw (StatusRuntimeException) e;
         } else {
-          throw new ModelDBException(e.getMessage(), Code.INTERNAL);
+          throw new ModelDBException(e);
         }
       }
     }
