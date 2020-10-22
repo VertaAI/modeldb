@@ -323,8 +323,15 @@ def deserialize_model(bytestring):
                     IOError, OSError):  # not a Keras model
                 pass
 
-    # try deserializing with cloudpickle
     bytestream = six.BytesIO(bytestring)
+    torch = maybe_dependency("torch")
+    if torch is not None:
+        try:
+            return torch.load(bytestream)
+        except:  # not something torch can deserialize
+            bytestream.seek(0)
+
+    # try deserializing with cloudpickle
     try:
         return cloudpickle.load(bytestream)
     except:  # not a pickled object
