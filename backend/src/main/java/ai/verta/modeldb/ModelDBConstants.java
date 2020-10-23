@@ -15,6 +15,12 @@ public interface ModelDBConstants {
   String AWS_REGION = "aws_region";
   String DATABASE = "database";
   String DB_TYPE = "DBType";
+  String MIN_CONNECTION_POOL_SIZE = "minConnectionPoolSize";
+  String MAX_CONNECTION_POOL_SIZE = "maxConnectionPoolSize";
+  String CONNECTION_TIMEOUT = "connectionTimeout";
+  Integer MIN_CONNECTION_SIZE_DEFAULT = 5;
+  Integer MAX_CONNECTION_SIZE_DEFAULT = 20;
+  Integer CONNECTION_TIMEOUT_DEFAULT = 300;
   String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";
   String FEATURE_FLAG = "feature-flag";
   String GET_ARTIFACT_ENDPOINT = "getArtifact";
@@ -50,6 +56,7 @@ public interface ModelDBConstants {
   String DEFAULT_AWS_REGION = "us-east-1";
   String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
   String AWS_WEB_IDENTITY_TOKEN = "AWS_WEB_IDENTITY_TOKEN";
+  Integer RETRY_INIT_TIME_AWS_TEMP_CREDENTIALS = 10 * 60; // Time in second
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
@@ -271,4 +278,5 @@ public interface ModelDBConstants {
   String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
   String DELETE_ENTITIES = "delete_entities";
   String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
+  String EXPIRED_TOKEN = "ExpiredToken";
 }

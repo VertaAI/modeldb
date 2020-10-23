@@ -650,13 +650,20 @@ def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=Fa
                     dirnames[:] = [dirname for dirname in dirnames if not is_hidden(dirname)]
                     # skip hidden files
                     filenames[:] = [filename for filename in filenames if not is_hidden(filename)]
+
+                # If we don't want to include venvs, there are the following scenarios for us:
+                # 1) the path passed is a venv but we explicitly asked for that path, so it should be included
+                # 2) the path passed isn't in a venv, but it has a venv inside of it, in which case we should skip the venv part
+                # 3) there is no venv anywhere in the path, in which case nothing changes
+                if not include_venv and not is_in_venv(path) and is_in_venv(parent_dir):
+                    continue
+
                 for filename in filenames:
                     if extensions is None or os.path.splitext(filename)[1] in extensions:
                         filepaths.add(os.path.join(parent_dir, filename))
         else:
             filepaths.add(path)
-    if not include_venv:
-        filepaths = list(filter(lambda path: not is_in_venv(path), filepaths))
+
     return filepaths
 
 
