@@ -4,7 +4,7 @@ from __future__ import print_function
 import requests
 
 from .entity_registry import _ModelDBRegistryEntity
-from .._internal_utils._utils import NoneProtoResponse
+from .._internal_utils._utils import NoneProtoResponse, check_unnecessary_params_warning
 from .._tracking.entity import _OSS_DEFAULT_WORKSPACE
 from .._tracking.context import _Context
 from .._internal_utils import _utils
@@ -71,7 +71,8 @@ class RegisteredModel(_ModelDBRegistryEntity):
 
         If an accessible Model Version with name `name` does not already exist under this
         Registered Model, it will be created and initialized with specified metadata
-        parameters. If such a Model Version does already exist, it will be retrieved.
+        parameters. If such a Model Version does already exist, it will be retrieved;
+        specifying metadata parameters in this case will raise a warning.
 
         Parameters
         ----------
@@ -100,14 +101,23 @@ class RegisteredModel(_ModelDBRegistryEntity):
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
+        resource_name = "Model Version"
+        param_names = "`desc`, `labels`, `attrs`, or `time_created`"
+        params = (desc, labels, attrs, time_created)
         if id is not None:
+            check_unnecessary_params_warning(resource_name, "id {}".format(id),
+                                                  param_names, params)
             return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
         else:
             ctx = _Context(self._conn, self._conf)
             ctx.registered_model = self
             return RegisteredModelVersion._get_or_create_by_name(self._conn, name,
                                                        lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
-                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, attrs=attrs, date_created=time_created))
+                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, attrs=attrs, date_created=time_created),
+                                                       lambda: check_unnecessary_params_warning(
+                                                             resource_name,
+                                                             "name {}".format(name),
+                                                             param_names, params))
 
     def set_version(self, *args, **kwargs):
         """

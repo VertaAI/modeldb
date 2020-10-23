@@ -215,6 +215,8 @@ class TestProject:
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
+        with pytest.warns(UserWarning, match='.*already exists.*'):
+            client.get_or_create_project(name=name, tags=["tag1", "tag2"])
 
     def test_get(self, client):
         name = verta._internal_utils._utils.generate_default_name()
@@ -272,6 +274,8 @@ class TestExperiment:
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
+        with pytest.warns(UserWarning, match='.*already exists.*'):
+            client.set_experiment(name=name, attrs={"a": 123})
 
     def test_get(self, client):
         proj = client.set_project()
@@ -340,6 +344,8 @@ class TestExperimentRun:
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
+        with pytest.warns(UserWarning, match='.*already exists.*'):
+            client.set_experiment_run(name=name, attrs={"a": 123})
 
     def test_get(self, client):
         proj = client.set_project()

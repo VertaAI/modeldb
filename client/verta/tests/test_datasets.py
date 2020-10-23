@@ -143,6 +143,8 @@ class TestClientDatasetFunctions:
         dataset = client.set_dataset(type="s3")
         created_datasets.append(dataset)
         assert dataset.id
+        with pytest.warns(UserWarning, match='.*already exists.*'):
+            client.set_dataset(name=dataset.name, desc="new description")
 
     def test_creation_by_id_client_api(self, client, created_datasets):
         dataset = client.set_dataset(type="s3")

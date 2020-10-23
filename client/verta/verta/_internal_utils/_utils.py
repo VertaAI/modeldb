@@ -1346,3 +1346,10 @@ def _multiple_arguments_for_each(argument, name, action, get_keys, overwrite):
 
         for (key, path) in argument:
             action(key, path)
+
+def check_unnecessary_params_warning(resource_name, name, param_names, params):
+    if any(param is not None for param in params):
+        warnings.warn(
+            "{} with {} already exists;"
+            " cannot set {}".format(resource_name, name, param_names)
+        )
