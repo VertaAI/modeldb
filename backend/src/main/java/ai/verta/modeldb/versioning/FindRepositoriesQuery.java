@@ -197,7 +197,12 @@ public class FindRepositoriesQuery {
             whereClauseList.add(predicateStringBuilder.toString());
           } else {
             StringBuilder predicateStringBuilder = new StringBuilder();
-            predicateStringBuilder.append(alias).append(".").append(keyValueQuery.getKey());
+            predicateStringBuilder
+                .append("lower(")
+                .append(alias)
+                .append(".")
+                .append(keyValueQuery.getKey())
+                .append(") ");
             VersioningUtils.setQueryParameters(
                 index, predicateStringBuilder, keyValueQuery, parametersMap);
             whereClauseList.add(predicateStringBuilder.toString());
