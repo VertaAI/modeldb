@@ -268,6 +268,7 @@ def dir_and_files(strs, tmp_path):
 def in_tempdir():
     """Moves test to execute inside a temporary directory."""
     dirpath = tempfile.mkdtemp()
+    print("Creating temporary directory: {}".format(dirpath))
     try:
         with utils.chdir(dirpath):
             yield dirpath
