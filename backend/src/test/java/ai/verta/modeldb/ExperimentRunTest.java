@@ -5708,7 +5708,7 @@ public class ExperimentRunTest {
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
-            .setName("ExperimentRun-2")
+            .setName("ExperimentRun-2-" + new Date().getTime())
             .setVersionedInputs(
                 VersioningEntry.newBuilder()
                     .setRepositoryId(repoId)
@@ -5721,7 +5721,10 @@ public class ExperimentRunTest {
     LOGGER.info("ExperimentRun2 created successfully");
 
     createExperimentRunRequest =
-        createExperimentRunRequest.toBuilder().setName("ExperimentRun-3").build();
+        createExperimentRunRequest
+            .toBuilder()
+            .setName("ExperimentRun-3-" + new Date().getTime())
+            .build();
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
