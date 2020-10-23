@@ -31,6 +31,8 @@ class TestDataset:
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
+        with pytest.warns(UserWarning, match='.*already exists.*'):
+            client._set_dataset2(name=dataset.name, time_created=123)
 
     def test_get(self, client, created_datasets):
         name = verta._internal_utils._utils.generate_default_name()

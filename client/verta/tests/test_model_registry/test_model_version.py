@@ -98,6 +98,8 @@ class TestModelVersion:
         model_version = registered_model.get_or_create_version()
         retrieved_model_version = registered_model.get_version(id=model_version.id)
         assert model_version.id == retrieved_model_version.id
+        with pytest.warns(UserWarning, match='.*already exists.*'):
+            registered_model.get_or_create_version(id=model_version.id, desc="new description")
 
     def test_repr(self, model_version):
         model_version.add_labels(["tag1", "tag2"])

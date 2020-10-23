@@ -21,6 +21,8 @@ class TestModel:
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
+        with pytest.warns(UserWarning, match='.*already exists.*'):
+            client.set_registered_model(name=registered_model.name, desc="new description")
 
     def test_get(self, client, created_registered_models):
         name = verta._internal_utils._utils.generate_default_name()

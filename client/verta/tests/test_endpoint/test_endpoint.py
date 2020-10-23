@@ -37,6 +37,8 @@ class TestEndpoint:
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already in use" in excinfo_value
+        with pytest.warns(UserWarning, match='.*already exists.*'):
+            client.set_endpoint(path=endpoint.path, description="new description")
 
     def test_get(self, client, created_endpoints):
         name = _utils.generate_default_name()
