@@ -265,9 +265,14 @@ def dir_and_files(strs, tmp_path):
 
 
 @pytest.fixture
-def in_tempdir():
+def tempdir_root():
+    return os.environ.get("TEMPDIR_ROOT")
+
+
+@pytest.fixture
+def in_tempdir(tempdir_root):
     """Moves test to execute inside a temporary directory."""
-    dirpath = tempfile.mkdtemp()
+    dirpath = tempfile.mkdtemp(dir=tempdir_root)
     try:
         with utils.chdir(dirpath):
             yield dirpath
