@@ -1,6 +1,5 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.RepositoryTest.NAME;
 import static org.junit.Assert.*;
 
 import ai.verta.common.Artifact;
@@ -215,7 +214,7 @@ public class DatasetTest {
   private static void createDatasetEntities() {
 
     // Create two dataset of above dataset
-    CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
+    CreateDataset createDatasetRequest = getDatasetRequest("Dataset-1-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -244,7 +243,7 @@ public class DatasetTest {
         dataset1.getName());
 
     // dataset2 of above dataset
-    createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
+    createDatasetRequest = getDatasetRequest("Dataset-2-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -273,7 +272,7 @@ public class DatasetTest {
         dataset2.getName());
 
     // dataset3 of above dataset
-    createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
+    createDatasetRequest = getDatasetRequest("Dataset-3-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -299,7 +298,7 @@ public class DatasetTest {
         dataset3.getName());
 
     // dataset4 of above dataset
-    createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
+    createDatasetRequest = getDatasetRequest("Dataset-4-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -406,7 +405,9 @@ public class DatasetTest {
 
     long id = 0;
     try {
-      id = RepositoryTest.createRepository(versioningServiceBlockingStub, NAME);
+      id =
+          RepositoryTest.createRepository(
+              versioningServiceBlockingStub, "Repo-" + new Date().getTime());
 
     } finally {
       if (id != 0) {
@@ -428,6 +429,7 @@ public class DatasetTest {
 
     int pageLimit = 1;
     boolean isExpectedResultFound = false;
+    int actualPageNumber = 1;
     for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       GetAllDatasets getAllDatasets =
           GetAllDatasets.newBuilder()
@@ -442,29 +444,34 @@ public class DatasetTest {
           && datasetResponse.getDatasetsList().size() > 0) {
         isExpectedResultFound = true;
         LOGGER.info("GetAllDataset Response : " + datasetResponse.getDatasetsCount());
+        Dataset resDataset = null;
         for (Dataset dataset : datasetResponse.getDatasetsList()) {
           if (datasetMap.containsKey(dataset.getId())) {
             assertEquals(
                 "Dataset not match with expected Dataset",
                 datasetMap.get(dataset.getId()),
                 dataset);
+            resDataset = datasetResponse.getDatasets(0);
           }
         }
 
-        Dataset resDataset = datasetResponse.getDatasets(0);
+        if (resDataset == null) {
+          continue;
+        }
         if (datasetMap.containsKey(resDataset.getId())) {
-          if (pageNumber == 1) {
+          if (actualPageNumber == 1) {
             assertEquals(
                 "Dataset not match with expected Dataset",
                 datasetMap.get(resDataset.getId()),
                 dataset4);
-          } else if (pageNumber == 3) {
+          } else if (actualPageNumber == 3) {
             assertEquals(
                 "Dataset not match with expected Dataset",
                 datasetMap.get(resDataset.getId()),
                 dataset2);
           }
         }
+        actualPageNumber = actualPageNumber + 1;
       } else {
         if (isExpectedResultFound) {
           LOGGER.warn("More Dataset not found in database");
@@ -1932,9 +1939,11 @@ public class DatasetTest {
   public void createDatasetAndRepositoryWithSameNameTest() {
     LOGGER.info("Create and delete Dataset test start................................");
 
-    long id = RepositoryTest.createRepository(versioningServiceBlockingStub, NAME);
+    long id =
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
 
-    CreateDataset createDatasetRequest = getDatasetRequest(NAME);
+    CreateDataset createDatasetRequest = getDatasetRequest("Detaset-" + new Date().getTime());
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
 
