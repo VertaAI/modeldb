@@ -273,7 +273,6 @@ def tempdir_root():
 def in_tempdir(tempdir_root):
     """Moves test to execute inside a temporary directory."""
     dirpath = tempfile.mkdtemp(dir=tempdir_root)
-    print(dirpath)
     try:
         with utils.chdir(dirpath):
             yield dirpath
