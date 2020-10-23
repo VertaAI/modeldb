@@ -843,16 +843,25 @@ class S3DatasetVersionInfo(PathDatasetVersionInfo):
         if self.key is not None:
             # look up object by key
             obj = conn.head_object(Bucket=self.bucket_name, Key=self.key)
-            dataset_part_infos.append(self.get_s3_object_info(obj, self.key))
+            self._append_s3_object_info(dataset_part_infos, obj, self.key)
         elif self.key_prefix is not None:
             # look up objects by key prefix
             for obj in conn.list_objects(Bucket=self.bucket_name, Prefix=self.key_prefix)['Contents']:
-                dataset_part_infos.append(self.get_s3_object_info(obj))
+                self._append_s3_object_info(dataset_part_infos, obj)
         else:
             # look up all objects in bucket
             for obj in conn.list_objects(Bucket=self.bucket_name)['Contents']:
-                dataset_part_infos.append(self.get_s3_object_info(obj))
+                self._append_s3_object_info(dataset_part_infos, obj)
         return dataset_part_infos
+
+    def _append_s3_object_info(self, dataset_part_infos, object_info, key=None):
+        if self._is_folder(key or object_info['Key']):  # folder, not object
+            return
+        dataset_part_infos.append(self.get_s3_object_info(object_info, key))
+
+    @staticmethod
+    def _is_folder(key):
+        return key.endswith('/')
 
     @staticmethod
     def get_s3_object_info(object_info, key=None):

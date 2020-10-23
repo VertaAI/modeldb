@@ -18,18 +18,18 @@ pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire 
 
 
 class TestList:
-    def test_list_endpoint(self, created_endpoints):
+    def test_list_endpoint(self, organization, created_endpoints):
         client = Client()
         path = _utils.generate_default_name()
         path2 = _utils.generate_default_name()
-        endpoint1 = client.get_or_create_endpoint(path)
-        endpoint2 = client.get_or_create_endpoint(path2)
+        endpoint1 = client.get_or_create_endpoint(path, workspace=organization.name)
+        endpoint2 = client.get_or_create_endpoint(path2, workspace=organization.name)
         created_endpoints.append(endpoint1)
         created_endpoints.append(endpoint2)
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['deployment', 'list', 'endpoint'],
+            ['deployment', 'list', 'endpoint', '--workspace', organization.name],
         )
 
         assert not result.exception
