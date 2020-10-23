@@ -414,16 +414,9 @@ class TestExperimentRun:
 
         # set various things in the run
         new_run_no_art = expt_run.clone()
-        new_run_art_only = expt_run.clone(copy_artifacts=True)
-        new_run_art_code = expt_run.clone(copy_artifacts=True, copy_code_version=True)
-        new_run_art_code_data = expt_run.clone(copy_artifacts=True,
-            copy_code_version=True, copy_datasets=True)
 
         old_run_msg = expt_run._get_proto_by_id(expt_run._conn, expt_run.id)
         new_run_no_art_msg = new_run_no_art._get_proto_by_id(new_run_no_art._conn, new_run_no_art.id)
-        new_run_art_only_msg = new_run_art_only._get_proto_by_id(new_run_art_only._conn, new_run_art_only.id)
-        new_run_art_code_msg = new_run_art_code._get_proto_by_id(new_run_art_code._conn, new_run_art_code.id)
-        new_run_art_code_data_msg = new_run_art_code_data._get_proto_by_id(new_run_art_code_data._conn, new_run_art_code_data.id)
 
         # ensure basic data is the same
         assert expt_run.id != new_run_no_art_msg.id
@@ -432,14 +425,8 @@ class TestExperimentRun:
         assert old_run_msg.metrics == new_run_no_art_msg.metrics
         assert old_run_msg.hyperparameters == new_run_no_art_msg.hyperparameters
         assert old_run_msg.observations == new_run_no_art_msg.observations
+        assert old_run_msg.artifacts == new_run_no_art_msg.artifacts
 
-        assert old_run_msg.artifacts == new_run_art_only_msg.artifacts
-        assert old_run_msg.code_version_snapshot != new_run_art_only_msg.code_version_snapshot
-        assert old_run_msg.artifacts != new_run_no_art_msg.artifacts
-
-        assert old_run_msg.code_version_snapshot == new_run_art_code_msg.code_version_snapshot
-
-        assert old_run_msg.datasets == new_run_art_code_data_msg.datasets
 
     def test_clone_into_expt(self, client):
         expt1 = client.set_experiment()
@@ -456,7 +443,7 @@ class TestExperimentRun:
         old_run.log_attributes({"attr1" : 10, "attr2" : {"abc": 1}})
         old_run.log_artifact("my-artifact", "README.md")
 
-        new_run = old_run.clone(copy_artifacts=True, experiment_id=expt1.id)
+        new_run = old_run.clone(experiment_id=expt1.id)
 
         old_run_msg = old_run._get_proto_by_id(old_run._conn, old_run.id)
         new_run_msg = new_run._get_proto_by_id(new_run._conn, new_run.id)

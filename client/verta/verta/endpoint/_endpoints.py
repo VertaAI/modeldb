@@ -33,4 +33,6 @@ class Endpoints(object):
     def with_workspace(self, workspace_name):  # unlike MDB endpoints, workspace required
         new_list = copy.deepcopy(self)
         new_list._workspace_name = workspace_name
+        # store state Clientside because we can't make paginated calls anyway
+        new_list._ids = new_list._get_ids()
         return new_list
