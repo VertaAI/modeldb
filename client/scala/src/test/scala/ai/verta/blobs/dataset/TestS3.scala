@@ -154,7 +154,7 @@ class TestS3 extends FunSuite {
   test("Reducing S3 blobs should retain the contents of both") {
     val f = fixture
     val s3Blob = S3(List(f.testfileLoc, f.testfileLoc2)).get
-    val s3BlobCombined = S3.reduce(S3(f.testfileLoc).get, S3(f.testsubdirLoc).get).get
+    val s3BlobCombined = S3.reduce(S3(f.testfileLoc).get, S3(f.testfileLoc2).get).get
 
     assert(s3Blob equals s3BlobCombined)
     assert(s3BlobCombined.listPaths.toSet equals Set(f.testfilePath, f.testfilePath2))
