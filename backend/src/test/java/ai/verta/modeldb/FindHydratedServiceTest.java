@@ -31,6 +31,7 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -178,14 +179,15 @@ public class FindHydratedServiceTest {
     ProjectTest projectTest = new ProjectTest();
 
     // Create project1
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("project_1");
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("project-1-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     project1 = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
 
     // Create project2
-    createProjectRequest = projectTest.getCreateProjectRequest("project_2");
+    createProjectRequest = projectTest.getCreateProjectRequest("project-2-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project2 = createProjectResponse.getProject();
     LOGGER.info("Project2 created successfully");
@@ -195,33 +197,32 @@ public class FindHydratedServiceTest {
   }
 
   private static void createExperimentEntities() {
-    ExperimentTest experimentTest = new ExperimentTest();
-
     // Create two experiment of above project
     CreateExperiment request =
-        experimentTest.getCreateExperimentRequest(project1.getId(), "Experiment1");
+        ExperimentTest.getCreateExperimentRequest(
+            project1.getId(), "Experiment-1-" + new Date().getTime());
     CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
     experiment1 = response.getExperiment();
     LOGGER.info("Experiment1 created successfully");
-    request = experimentTest.getCreateExperimentRequest(project1.getId(), "Experiment2");
+    request =
+        ExperimentTest.getCreateExperimentRequest(
+            project1.getId(), "Experiment-2-" + new Date().getTime());
     response = experimentServiceStub.createExperiment(request);
     experiment2 = response.getExperiment();
     LOGGER.info("Experiment2 created successfully");
   }
 
   private static void createExperimentRun() {
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
-
     CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project1.getId(), experiment1.getId(), "ExperiemntRun1");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment1.getId(), "ExperiemntRun-1-" + new Date().getTime());
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     experimentRun1 = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun1 created successfully");
     createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project1.getId(), experiment1.getId(), "ExperiemntRun2");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment1.getId(), "ExperiemntRun-2-" + new Date().getTime());
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     experimentRun2 = createExperimentRunResponse.getExperimentRun();
@@ -229,15 +230,15 @@ public class FindHydratedServiceTest {
 
     // For ExperiemntRun of Experiment2
     createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project1.getId(), experiment2.getId(), "ExperiemntRun3");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment2.getId(), "ExperiemntRun-3-" + new Date().getTime());
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     experimentRun3 = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun3 created successfully");
     createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project1.getId(), experiment2.getId(), "ExperimentRun4");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     experimentRun4 = createExperimentRunResponse.getExperimentRun();
@@ -253,6 +254,11 @@ public class FindHydratedServiceTest {
   @Test
   public void findHydratedProjectsWithSingleUserCollaboratorTest() {
     LOGGER.info("FindHydratedProjects with single user collaborator test start............");
+
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      assertTrue(true);
+      return;
+    }
 
     // Create comment for above experimentRun1 & experimentRun3
     // comment for experiment1
