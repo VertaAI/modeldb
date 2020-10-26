@@ -167,7 +167,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("download entire blobs should retrieve all the components") {
+  ignore("download entire blobs should retrieve all the components") {
     val f = fixture
 
     try {
@@ -195,7 +195,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("downloading a versioned blob should recover the original content") {
+  ignore("downloading a versioned blob should recover the original content") {
     val f = fixture
 
     try {
@@ -228,7 +228,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("if componentPath is provided but not downloadToPath, then it is used to determine the latter") {
+  ignore("if componentPath is provided but not downloadToPath, then it is used to determine the latter") {
     val f = fixture
 
     try {
@@ -255,7 +255,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("if neither is provided, then default path is used") {
+  ignore("if neither is provided, then default path is used") {
     val f = fixture
 
     try {
@@ -317,7 +317,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("passing in a non-existing componentPath should fail") {
+  ignore("passing in a non-existing componentPath should fail") {
     val f = fixture
 
     try {
@@ -339,7 +339,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("only blobs enabling versioning and obtained by commit.get can download") {
+  ignore("only blobs enabling versioning and obtained by commit.get can download") {
     val f = fixture
 
     try {
@@ -363,7 +363,7 @@ class TestCommitDataVersioning extends FunSuite {
   }
 
   // This test is comment out because it is big. Uncomment it with caution!
-  // test("multipart-upload should work") {
+  // ignore("multipart-upload should work") {
   //   val f = fixture
   //
   //   try {
