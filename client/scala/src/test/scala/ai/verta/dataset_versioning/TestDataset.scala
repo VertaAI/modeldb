@@ -172,7 +172,7 @@ class TestDataset extends FunSuite {
       assert(f.dataset.getVersion(version.id).get.id == version.id)
       assert(f.dataset.getLatestVersion().get.id == version.id)
 
-      val testfilePath = "s3://verta-scala-test/testdir/testfile"
+      val testfilePath = "s3://verta-starter/census-test.csv"
       val testfileLoc = S3Location(testfilePath).get
       val newVersion = f.dataset.createS3Version(List(testfileLoc)).get
       val latestVersion = f.dataset.getLatestVersion().get

@@ -24,7 +24,7 @@ class TestCommitDataVersioning extends FunSuite {
         val repo = client.getOrCreateRepository("My Repo").get
 
         val pathBlob = PathBlob("./src/test/scala/ai/verta/blobs/testdir", true).get
-        val s3Blob = S3(S3Location("s3://verta-scala-test/testdir/").get, true).get
+        val s3Blob = S3(S3Location("s3://verta-starter").get, true).get
         val pathBlob2 = PathBlob("./src/test/scala/ai/verta/blobs/testdir2").get
 
         val commit = repo.getCommitByBranch()
@@ -99,7 +99,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("downloading an uploaded file should not corrupt it") {
+  ignore("downloading an uploaded file should not corrupt it") {
     val f = fixture
 
     try {
@@ -136,7 +136,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("downloading an entire folder should retrieve all the files in the folder") {
+  ignore("downloading an entire folder should retrieve all the files in the folder") {
     val f = fixture
 
     try {
@@ -281,7 +281,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("s3 downloadToPath inference should be correct") {
+  ignore("s3 downloadToPath inference should be correct") {
     val f = fixture
 
     try {
