@@ -189,6 +189,14 @@ class DeployedModel:
 
         return curl
 
+    def batch_predict(self, lst, batch_size=1000, **kwargs):
+        ret_lst = []
+        for i in range(0, len(lst), batch_size):
+            inp = lst[i:i + batch_size]
+            ret_lst += self.predict(inp, **kwargs)
+
+        return ret_lst
+
     def predict(self, x, compress=False, max_retries=5, always_retry_404=True, always_retry_429=True):
         """
         Makes a prediction using input `x`.
