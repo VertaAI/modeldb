@@ -235,7 +235,7 @@ class TestDataset extends FunSuite {
     }
   }
 
-  test("create version from an atlas hive query") {
+  ignore("create version from an atlas hive query") {
     val f = fixture
 
     try {
