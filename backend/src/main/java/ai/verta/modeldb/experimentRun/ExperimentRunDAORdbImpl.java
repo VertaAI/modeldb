@@ -2630,13 +2630,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         return getS3PathAndMultipartUploadId(
             session, artifactEntity, partNumber != 0, initializeMultipart);
       } catch (Exception e) {
-        if (e instanceof ModelDBException) {
-          throw (ModelDBException) e;
-        } else if (e instanceof StatusRuntimeException) {
-          throw (StatusRuntimeException) e;
-        } else {
-          throw new ModelDBException(e);
-        }
+        throwException(e);
+        return null;
       }
     }
   }
@@ -2649,13 +2644,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       return artifactEntityOptional.orElseThrow(
           () -> new ModelDBException("Can't find specified artifact", Code.NOT_FOUND));
     } catch (Exception e) {
-      if (e instanceof ModelDBException) {
-        throw (ModelDBException) e;
-      } else if (e instanceof StatusRuntimeException) {
-        throw (StatusRuntimeException) e;
-      } else {
-        throw new ModelDBException(e);
-      }
+      throwException(e);
+      return null;
     }
   }
 
@@ -2726,13 +2716,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             ArtifactPartEntity.EXP_RUN_ARTIFACT);
         return Response.newBuilder().build();
       } catch (Exception e) {
-        if (e instanceof ModelDBException) {
-          throw (ModelDBException) e;
-        } else if (e instanceof StatusRuntimeException) {
-          throw (StatusRuntimeException) e;
-        } else {
-          throw new ModelDBException(e);
-        }
+        throwException(e);
+        return null;
       }
     }
   }
@@ -2751,14 +2736,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
         return response.build();
       } catch (Exception e) {
-        if (e instanceof ModelDBException) {
-          throw (ModelDBException) e;
-        } else if (e instanceof StatusRuntimeException) {
-          throw (StatusRuntimeException) e;
-        } else {
-          throw new ModelDBException(e);
-        }
+        throwException(e);
+        return null;
       }
+    }
+  }
+
+  public void throwException(Exception e) throws ModelDBException {
+    if (e instanceof ModelDBException) {
+      throw (ModelDBException) e;
+    } else if (e instanceof StatusRuntimeException) {
+      throw (StatusRuntimeException) e;
+    } else {
+      throw new ModelDBException(e);
     }
   }
 
@@ -2800,13 +2790,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         artifactEntity.setUploadId(null);
         session.getTransaction().commit();
       } catch (Exception e) {
-        if (e instanceof ModelDBException) {
-          throw (ModelDBException) e;
-        } else if (e instanceof StatusRuntimeException) {
-          throw (StatusRuntimeException) e;
-        } else {
-          throw new ModelDBException(e);
-        }
+        throwException(e);
+        return null;
       }
     }
     return CommitMultipartArtifact.Response.newBuilder().build();
