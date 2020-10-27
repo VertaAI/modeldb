@@ -79,11 +79,15 @@ import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.amazonaws.services.s3.model.PartETag;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
@@ -101,6 +105,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
@@ -121,6 +130,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       LogManager.getLogger(ExperimentRunDAORdbImpl.class.getName());
   private static final boolean OVERWRITE_VERSION_MAP = false;
   private App app = App.getInstance();
+  private static final long CACHE_SIZE = 1000;
+  private static final int DURATION = 10;
   private final AuthService authService;
   private final RoleService roleService;
   private final RepositoryDAO repositoryDAO;
@@ -232,6 +243,33 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .append(" = :experimentRunId")
           .append(" AND oe.field_type = :field_type")
           .toString();
+
+  private LoadingCache<String, ReadWriteLock> locks =
+      CacheBuilder.newBuilder()
+          .maximumSize(CACHE_SIZE)
+          .expireAfterWrite(DURATION, TimeUnit.MINUTES)
+          .build(
+              new CacheLoader<String, ReadWriteLock>() {
+                public ReadWriteLock load(String lockKey) {
+                  return new ReentrantReadWriteLock() {};
+                }
+              });
+
+  protected AutoCloseable acquireReadLock(String lockKey) throws ExecutionException {
+    LOGGER.debug("acquireReadLock for key: {}", lockKey);
+    ReadWriteLock lock = locks.get(lockKey);
+    Lock readLock = lock.readLock();
+    readLock.lock();
+    return readLock::unlock;
+  }
+
+  protected AutoCloseable acquireWriteLock(String lockKey) throws ExecutionException {
+    LOGGER.debug("acquireWriteLock for key: {}", lockKey);
+    ReadWriteLock lock = locks.get(lockKey);
+    Lock writeLock = lock.writeLock();
+    writeLock.lock();
+    return writeLock::unlock;
+  }
 
   public ExperimentRunDAORdbImpl(
       AuthService authService,
@@ -2580,23 +2618,37 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         .findFirst();
   }
 
+  private String buildArtifactLockKey(String experimentRunId, String artifactKey) {
+    return "expRun::" + experimentRunId + "::key::" + artifactKey;
+  }
+
   @Override
   public Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
       String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
       throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ArtifactEntity artifactEntity = getArtifactEntity(session, experimentRunId, key);
-      return getS3PathAndMultipartUploadId(
-          session, artifactEntity, partNumber != 0, initializeMultipart);
+      try (AutoCloseable ignored = acquireWriteLock(buildArtifactLockKey(experimentRunId, key))) {
+        return getS3PathAndMultipartUploadId(
+            session, artifactEntity, partNumber != 0, initializeMultipart);
+      } catch (Exception e) {
+        throwException(e);
+        return null;
+      }
     }
   }
 
   public ArtifactEntity getArtifactEntity(Session session, String experimentRunId, String key)
       throws ModelDBException {
-    Optional<ArtifactEntity> artifactEntityOptional =
-        getExperimentRunArtifact(session, experimentRunId, key);
-    return artifactEntityOptional.orElseThrow(
-        () -> new ModelDBException("Can't find specified artifact", io.grpc.Status.Code.NOT_FOUND));
+    try (AutoCloseable ignored = acquireReadLock(buildArtifactLockKey(experimentRunId, key))) {
+      Optional<ArtifactEntity> artifactEntityOptional =
+          getExperimentRunArtifact(session, experimentRunId, key);
+      return artifactEntityOptional.orElseThrow(
+          () -> new ModelDBException("Can't find specified artifact", Code.NOT_FOUND));
+    } catch (Exception e) {
+      throwException(e);
+      return null;
+    }
   }
 
   private SimpleEntry<String, String> getS3PathAndMultipartUploadId(
@@ -2647,16 +2699,28 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     return new AbstractMap.SimpleEntry<>(artifactEntity.getPath(), uploadId);
   }
 
+  private String buildArtifactPartLockKey(Long artifactId, Long partNumber) {
+    return "artifactId::" + artifactId + "::partNumber::" + partNumber;
+  }
+
   @Override
   public Response commitArtifactPart(CommitArtifactPart request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ArtifactEntity artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
-      VersioningUtils.saveOrUpdateArtifactPartEntity(
-          request.getArtifactPart(),
-          session,
-          String.valueOf(artifactEntity.getId()),
-          ArtifactPartEntity.EXP_RUN_ARTIFACT);
-      return Response.newBuilder().build();
+      try (AutoCloseable ignored =
+          acquireWriteLock(
+              buildArtifactPartLockKey(
+                  artifactEntity.getId(), request.getArtifactPart().getPartNumber()))) {
+        VersioningUtils.saveOrUpdateArtifactPartEntity(
+            request.getArtifactPart(),
+            session,
+            String.valueOf(artifactEntity.getId()),
+            ArtifactPartEntity.EXP_RUN_ARTIFACT);
+        return Response.newBuilder().build();
+      } catch (Exception e) {
+        throwException(e);
+        return null;
+      }
     }
   }
 
@@ -2664,13 +2728,29 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public GetCommittedArtifactParts.Response getCommittedArtifactParts(
       GetCommittedArtifactParts request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Set<ArtifactPartEntity> artifactPartEntities =
-          getArtifactPartEntities(session, request.getId(), request.getKey());
-      GetCommittedArtifactParts.Response.Builder response =
-          GetCommittedArtifactParts.Response.newBuilder();
-      artifactPartEntities.forEach(
-          artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
-      return response.build();
+      try (AutoCloseable ignored =
+          acquireReadLock(buildArtifactLockKey(request.getId(), request.getKey()))) {
+        Set<ArtifactPartEntity> artifactPartEntities =
+            getArtifactPartEntities(session, request.getId(), request.getKey());
+        GetCommittedArtifactParts.Response.Builder response =
+            GetCommittedArtifactParts.Response.newBuilder();
+        artifactPartEntities.forEach(
+            artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
+        return response.build();
+      } catch (Exception e) {
+        throwException(e);
+        return null;
+      }
+    }
+  }
+
+  public void throwException(Exception e) throws ModelDBException {
+    if (e instanceof ModelDBException) {
+      throw (ModelDBException) e;
+    } else if (e instanceof StatusRuntimeException) {
+      throw (StatusRuntimeException) e;
+    } else {
+      throw new ModelDBException(e);
     }
   }
 
@@ -2687,24 +2767,34 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws ModelDBException {
     List<PartETag> partETags;
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ArtifactEntity artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
-      if (artifactEntity.getUploadId() == null) {
-        String message = "Multipart wasn't initialized";
-        LOGGER.info(message);
-        throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
+      try (AutoCloseable ignored =
+          acquireWriteLock(buildArtifactLockKey(request.getId(), request.getKey()))) {
+        ArtifactEntity artifactEntity =
+            getArtifactEntity(session, request.getId(), request.getKey());
+        if (artifactEntity.getUploadId() == null) {
+          String message = "Multipart wasn't initialized OR Multipart artifact already committed";
+          LOGGER.info(message);
+          throw new ModelDBException(message, Code.FAILED_PRECONDITION);
+        }
+        Set<ArtifactPartEntity> artifactPartEntities =
+            VersioningUtils.getArtifactPartEntities(
+                session,
+                String.valueOf(artifactEntity.getId()),
+                ArtifactPartEntity.EXP_RUN_ARTIFACT);
+        partETags =
+            artifactPartEntities.stream()
+                .map(ArtifactPartEntity::toPartETag)
+                .collect(Collectors.toList());
+        commitMultipartFunction.apply(
+            artifactEntity.getPath(), artifactEntity.getUploadId(), partETags);
+        session.beginTransaction();
+        artifactEntity.setUploadCompleted(true);
+        artifactEntity.setUploadId(null);
+        session.getTransaction().commit();
+      } catch (Exception e) {
+        throwException(e);
+        return null;
       }
-      Set<ArtifactPartEntity> artifactPartEntities =
-          VersioningUtils.getArtifactPartEntities(
-              session, String.valueOf(artifactEntity.getId()), ArtifactPartEntity.EXP_RUN_ARTIFACT);
-      partETags =
-          artifactPartEntities.stream()
-              .map(ArtifactPartEntity::toPartETag)
-              .collect(Collectors.toList());
-      commitMultipartFunction.apply(
-          artifactEntity.getPath(), artifactEntity.getUploadId(), partETags);
-      session.beginTransaction();
-      artifactEntity.setUploadCompleted(true);
-      session.getTransaction().commit();
     }
     return CommitMultipartArtifact.Response.newBuilder().build();
   }
