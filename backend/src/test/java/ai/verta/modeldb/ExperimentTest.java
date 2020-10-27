@@ -54,6 +54,7 @@ public class ExperimentTest {
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder channelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
+  private static AuthClientInterceptor authClientInterceptor;
 
   private static App app;
   private static DeleteEntitiesCron deleteEntitiesCron;
@@ -99,6 +100,12 @@ public class ExperimentTest {
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
+
+    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
+    if (testUerPropMap != null && testUerPropMap.size() > 0) {
+      authClientInterceptor = new AuthClientInterceptor(testPropMap);
+      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
+    }
 
     serverBuilder.build().start();
     ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
