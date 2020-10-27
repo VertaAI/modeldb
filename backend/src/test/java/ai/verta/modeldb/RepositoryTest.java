@@ -243,7 +243,7 @@ public class RepositoryTest {
     return result.getRepository();
   }
 
-  private static SetRepository getSetRepositoryRequest(String repoName) {
+  public static SetRepository getSetRepositoryRequest(String repoName) {
     return SetRepository.newBuilder()
         .setId(
             RepositoryIdentification.newBuilder()
