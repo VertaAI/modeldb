@@ -740,6 +740,16 @@ public class ExperimentTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
+    try {
+      experimentServiceStub.updateExperimentNameOrDescription(
+          UpdateExperimentNameOrDescription.newBuilder().setId(experiment.getId()).build());
+      fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
+
     LOGGER.info("Update Experiment Name & Description test stop................................");
   }
 
