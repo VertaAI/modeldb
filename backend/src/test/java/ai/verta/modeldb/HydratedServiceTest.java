@@ -9,7 +9,6 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.OperatorEnum.Operator;
-import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
@@ -19,7 +18,6 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -30,6 +28,8 @@ import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.OrganizationServiceGrpc;
+import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
@@ -41,23 +41,19 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -68,27 +64,56 @@ import org.junit.runners.MethodSorters;
 public class HydratedServiceTest {
 
   private static final Logger LOGGER = LogManager.getLogger(HydratedServiceTest.class.getName());
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
-
-  private ManagedChannel channel = null;
-  private ManagedChannel client2Channel = null;
-  private ManagedChannel authServiceChannel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
+  private static InProcessChannelBuilder client1ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder client2ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
-  private static AuthService authService;
+
   private static App app;
   private static DeleteEntitiesCron deleteEntitiesCron;
+  private static AuthService authService;
   private static ParentTimestampUpdateCron parentTimestampUpdateCron;
+
+  // all service stubs
+  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
+  private static CollaboratorServiceBlockingStub collaboratorServiceStub;
+  private static ProjectServiceBlockingStub projectServiceStub;
+  private static ProjectServiceBlockingStub client2ProjectServiceStub;
+  private static ExperimentServiceBlockingStub experimentServiceStub;
+  private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
+  private static ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub
+      experimentRunServiceClient2Stub;
+  private static HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingClient2Stub;
+  private static CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub;
+  private static OrganizationServiceGrpc.OrganizationServiceBlockingStub
+      organizationServiceBlockingStub;
+  private static RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub;
+  private static HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub;
+
+  // Project Entities
+  private static Project project1;
+  private static Project project2;
+  private static Project project3;
+  private static Project project4;
+  private static Map<String, Project> projectsMap = new HashMap<>();
+
+  // Experiment Entities
+  private static Experiment experiment1;
+  private static Experiment experiment2;
+  private static Experiment experiment3;
+  private static Experiment experiment4;
+  private static Map<String, Experiment> experimentMap = new HashMap<>();
+
+  // ExperimentRun Entities
+  private static ExperimentRun experimentRun1;
+  private static ExperimentRun experimentRun2;
+  private static ExperimentRun experimentRun3;
+  private static ExperimentRun experimentRun4;
+  private static Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -100,7 +125,7 @@ public class HydratedServiceTest {
     Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
 
     app = App.getInstance();
-    authService = new PublicAuthServiceUtils();
+    AuthService authService = new PublicAuthServiceUtils();
     RoleService roleService = new PublicRoleServiceUtils(authService);
 
     Map<String, Object> authServicePropMap =
@@ -123,134 +148,474 @@ public class HydratedServiceTest {
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
       authClientInterceptor = new AuthClientInterceptor(testPropMap);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
+      client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
-    parentTimestampUpdateCron = new ParentTimestampUpdateCron(100);
-  }
 
-  @AfterClass
-  public static void removeServerAndService() {
-
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-    App.initiateShutdown(0);
-  }
-
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
-    if (!client2Channel.isShutdown()) {
-      client2Channel.shutdownNow();
-    }
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      if (!authServiceChannel.isShutdown()) {
-        authServiceChannel.shutdownNow();
-      }
-    }
-  }
-
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
-    client2Channel =
-        grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      authServiceChannel =
+      ManagedChannel authServiceChannel =
           ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
+      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
+      organizationServiceBlockingStub = OrganizationServiceGrpc.newBlockingStub(authServiceChannel);
+      roleServiceBlockingStub = RoleServiceGrpc.newBlockingStub(authServiceChannel);
+      collaboratorServiceStub = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     }
+
+    serverBuilder.build().start();
+    ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
+    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
+    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 100);
+    parentTimestampUpdateCron = new ParentTimestampUpdateCron(100);
+
+    // Create all service blocking stub
+    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    client2ProjectServiceStub = ProjectServiceGrpc.newBlockingStub(client2Channel);
+    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
+    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
+    commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
+    hydratedServiceBlockingStub = HydratedServiceGrpc.newBlockingStub(channel);
+    experimentRunServiceClient2Stub = ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
+    hydratedServiceBlockingClient2Stub = HydratedServiceGrpc.newBlockingStub(client2Channel);
+
+    // Create all entities
+    createProjectEntities();
+    createExperimentEntities();
+    createExperimentRunEntities();
+  }
+
+  @AfterClass
+  public static void removeServerAndService() {
+    App.initiateShutdown(0);
+
+    // Remove all entities
+    removeEntities();
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
+
+    // shutdown test server
+    serverBuilder.build().shutdownNow();
+  }
+
+  public static void removeEntities() {
+    for (String projectId : projectsMap.keySet()) {
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
+    }
+  }
+
+  private static void createProjectEntities() {
+    ProjectTest projectTest = new ProjectTest();
+    // Create two project of above project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
+    KeyValue attribute1 =
+        KeyValue.newBuilder()
+            .setKey("attribute_1")
+            .setValue(Value.newBuilder().setNumberValue(0.012).build())
+            .build();
+    KeyValue attribute2 =
+        KeyValue.newBuilder()
+            .setKey("attribute_2")
+            .setValue(Value.newBuilder().setNumberValue(0.99).build())
+            .build();
+    createProjectRequest =
+        createProjectRequest
+            .toBuilder()
+            .addAttributes(attribute1)
+            .addAttributes(attribute2)
+            .addTags("Tag_1")
+            .addTags("Tag_2")
+            .build();
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    project1 = createProjectResponse.getProject();
+    projectsMap.put(project1.getId(), project1);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected Project name",
+        createProjectRequest.getName(),
+        project1.getName());
+
+    // project2 of above project
+    createProjectRequest = projectTest.getCreateProjectRequest("Project-2-" + new Date().getTime());
+    attribute1 =
+        KeyValue.newBuilder()
+            .setKey("attribute_1")
+            .setValue(Value.newBuilder().setNumberValue(0.31).build())
+            .build();
+    attribute2 =
+        KeyValue.newBuilder()
+            .setKey("attribute_2")
+            .setValue(Value.newBuilder().setNumberValue(0.31).build())
+            .build();
+    createProjectRequest =
+        createProjectRequest
+            .toBuilder()
+            .addAttributes(attribute1)
+            .addAttributes(attribute2)
+            .addTags("Tag_1")
+            .addTags("Tag_3")
+            .addTags("Tag_4")
+            .build();
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    project2 = createProjectResponse.getProject();
+    projectsMap.put(project2.getId(), project2);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected Project name",
+        createProjectRequest.getName(),
+        project2.getName());
+
+    // project3 of above project
+    createProjectRequest = projectTest.getCreateProjectRequest("Project-3-" + new Date().getTime());
+    attribute1 =
+        KeyValue.newBuilder()
+            .setKey("attribute_1")
+            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+            .build();
+    attribute2 =
+        KeyValue.newBuilder()
+            .setKey("attribute_2")
+            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+            .build();
+    createProjectRequest =
+        createProjectRequest
+            .toBuilder()
+            .addAttributes(attribute1)
+            .addAttributes(attribute2)
+            .addTags("Tag_1")
+            .addTags("Tag_5")
+            .addTags("Tag_6")
+            .build();
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    project3 = createProjectResponse.getProject();
+    projectsMap.put(project3.getId(), project3);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected Project name",
+        createProjectRequest.getName(),
+        project3.getName());
+
+    // project4 of above project
+    createProjectRequest = projectTest.getCreateProjectRequest("Project-4-" + new Date().getTime());
+    attribute1 =
+        KeyValue.newBuilder()
+            .setKey("attribute_1")
+            .setValue(Value.newBuilder().setNumberValue(1.00).build())
+            .build();
+    attribute2 =
+        KeyValue.newBuilder()
+            .setKey("attribute_2")
+            .setValue(Value.newBuilder().setNumberValue(0.001212).build())
+            .build();
+    createProjectRequest =
+        createProjectRequest
+            .toBuilder()
+            .addAttributes(attribute1)
+            .addAttributes(attribute2)
+            .addTags("Tag_5")
+            .addTags("Tag_7")
+            .addTags("Tag_8")
+            .setProjectVisibility(ProjectVisibility.PUBLIC)
+            .build();
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    project4 = createProjectResponse.getProject();
+    projectsMap.put(project4.getId(), project4);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected Project name",
+        createProjectRequest.getName(),
+        project4.getName());
+  }
+
+  private static void createExperimentEntities() {
+    // Create two experiment of above project
+    CreateExperiment createExperimentRequest =
+        ExperimentTest.getCreateExperimentRequest(
+            project1.getId(), "Experiment-1-" + new Date().getTime());
+    KeyValue attribute1 =
+        KeyValue.newBuilder()
+            .setKey("attribute_1")
+            .setValue(Value.newBuilder().setNumberValue(0.012).build())
+            .build();
+    KeyValue attribute2 =
+        KeyValue.newBuilder()
+            .setKey("attribute_2")
+            .setValue(Value.newBuilder().setNumberValue(0.99).build())
+            .build();
+    createExperimentRequest =
+        createExperimentRequest
+            .toBuilder()
+            .addAttributes(attribute1)
+            .addAttributes(attribute2)
+            .addTags("Tag_1")
+            .addTags("Tag_2")
+            .build();
+    CreateExperiment.Response createExperimentResponse =
+        experimentServiceStub.createExperiment(createExperimentRequest);
+    experiment1 = createExperimentResponse.getExperiment();
+    experimentMap.put(experiment1.getId(), experiment1);
+    LOGGER.info("Experiment created successfully");
+    assertEquals(
+        "Experiment name not match with expected Experiment name",
+        createExperimentRequest.getName(),
+        experiment1.getName());
+
+    // experiment2 of above project
+    createExperimentRequest =
+        ExperimentTest.getCreateExperimentRequest(
+            project1.getId(), "Experiment-2-" + new Date().getTime());
+    attribute1 =
+        KeyValue.newBuilder()
+            .setKey("attribute_1")
+            .setValue(Value.newBuilder().setNumberValue(0.31).build())
+            .build();
+    attribute2 =
+        KeyValue.newBuilder()
+            .setKey("attribute_2")
+            .setValue(Value.newBuilder().setNumberValue(0.31).build())
+            .build();
+    createExperimentRequest =
+        createExperimentRequest
+            .toBuilder()
+            .addAttributes(attribute1)
+            .addAttributes(attribute2)
+            .addTags("Tag_1")
+            .addTags("Tag_3")
+            .addTags("Tag_4")
+            .build();
+    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
+    experiment2 = createExperimentResponse.getExperiment();
+    experimentMap.put(experiment2.getId(), experiment2);
+    LOGGER.info("Experiment created successfully");
+    assertEquals(
+        "Experiment name not match with expected Experiment name",
+        createExperimentRequest.getName(),
+        experiment2.getName());
+
+    // experiment3 of above project
+    createExperimentRequest =
+        ExperimentTest.getCreateExperimentRequest(
+            project1.getId(), "Experiment-3-" + new Date().getTime());
+    attribute1 =
+        KeyValue.newBuilder()
+            .setKey("attribute_1")
+            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+            .build();
+    attribute2 =
+        KeyValue.newBuilder()
+            .setKey("attribute_2")
+            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+            .build();
+    createExperimentRequest =
+        createExperimentRequest
+            .toBuilder()
+            .addAttributes(attribute1)
+            .addAttributes(attribute2)
+            .addTags("Tag_1")
+            .addTags("Tag_5")
+            .addTags("Tag_6")
+            .build();
+    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
+    experiment3 = createExperimentResponse.getExperiment();
+    experimentMap.put(experiment3.getId(), experiment3);
+    LOGGER.info("Experiment created successfully");
+    assertEquals(
+        "Experiment name not match with expected Experiment name",
+        createExperimentRequest.getName(),
+        experiment3.getName());
+
+    // experiment4 of above project
+    createExperimentRequest =
+        ExperimentTest.getCreateExperimentRequest(
+            project1.getId(), "Experiment-4-" + new Date().getTime());
+    attribute1 =
+        KeyValue.newBuilder()
+            .setKey("attribute_1")
+            .setValue(Value.newBuilder().setNumberValue(1.00).build())
+            .build();
+    attribute2 =
+        KeyValue.newBuilder()
+            .setKey("attribute_2")
+            .setValue(Value.newBuilder().setNumberValue(0.001212).build())
+            .build();
+    createExperimentRequest =
+        createExperimentRequest
+            .toBuilder()
+            .addAttributes(attribute1)
+            .addAttributes(attribute2)
+            .addTags("Tag_5")
+            .addTags("Tag_7")
+            .addTags("Tag_8")
+            .build();
+    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
+    experiment4 = createExperimentResponse.getExperiment();
+    experimentMap.put(experiment4.getId(), experiment4);
+    LOGGER.info("Experiment created successfully");
+    assertEquals(
+        "Experiment name not match with expected Experiment name",
+        createExperimentRequest.getName(),
+        experiment4.getName());
+  }
+
+  private static void createExperimentRunEntities() {
+    CreateExperimentRun createExperimentRunRequest =
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment1.getId(), "ExperimentRun-1-" + new Date().getTime());
+    KeyValue metric1 =
+        KeyValue.newBuilder()
+            .setKey("loss")
+            .setValue(Value.newBuilder().setNumberValue(0.012).build())
+            .build();
+    KeyValue metric2 =
+        KeyValue.newBuilder()
+            .setKey("accuracy")
+            .setValue(Value.newBuilder().setNumberValue(0.99).build())
+            .build();
+    KeyValue hyperparameter1 =
+        KeyValue.newBuilder()
+            .setKey("tuning")
+            .setValue(Value.newBuilder().setNumberValue(9).build())
+            .build();
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .setCodeVersion("4.0")
+            .addMetrics(metric1)
+            .addMetrics(metric2)
+            .addHyperparameters(hyperparameter1)
+            .build();
+    CreateExperimentRun.Response createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    experimentRun1 = createExperimentRunResponse.getExperimentRun();
+    experimentRunMap.put(experimentRun1.getId(), experimentRun1);
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun1.getName());
+
+    createExperimentRunRequest =
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment1.getId(), "ExperimentRun-2-" + new Date().getTime());
+    metric1 =
+        KeyValue.newBuilder()
+            .setKey("loss")
+            .setValue(Value.newBuilder().setNumberValue(0.31).build())
+            .build();
+    metric2 =
+        KeyValue.newBuilder()
+            .setKey("accuracy")
+            .setValue(Value.newBuilder().setNumberValue(0.31).build())
+            .build();
+    hyperparameter1 =
+        KeyValue.newBuilder()
+            .setKey("tuning")
+            .setValue(Value.newBuilder().setNumberValue(7).build())
+            .build();
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .setCodeVersion("3.0")
+            .addMetrics(metric1)
+            .addMetrics(metric2)
+            .addHyperparameters(hyperparameter1)
+            .build();
+    createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    experimentRun2 = createExperimentRunResponse.getExperimentRun();
+    experimentRunMap.put(experimentRun2.getId(), experimentRun2);
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun2.getName());
+
+    createExperimentRunRequest =
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment2.getId(), "ExperimentRun-3-" + new Date().getTime());
+    metric1 =
+        KeyValue.newBuilder()
+            .setKey("loss")
+            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+            .build();
+    metric2 =
+        KeyValue.newBuilder()
+            .setKey("accuracy")
+            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+            .build();
+    hyperparameter1 =
+        KeyValue.newBuilder()
+            .setKey("tuning")
+            .setValue(Value.newBuilder().setNumberValue(4.55).build())
+            .build();
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .setCodeVersion("2.0")
+            .addMetrics(metric1)
+            .addMetrics(metric2)
+            .addHyperparameters(hyperparameter1)
+            .build();
+    createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    experimentRun3 = createExperimentRunResponse.getExperimentRun();
+    experimentRunMap.put(experimentRun3.getId(), experimentRun3);
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun3.getName());
+
+    createExperimentRunRequest =
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
+    metric1 =
+        KeyValue.newBuilder()
+            .setKey("loss")
+            .setValue(Value.newBuilder().setNumberValue(1.00).build())
+            .build();
+    metric2 =
+        KeyValue.newBuilder()
+            .setKey("accuracy")
+            .setValue(Value.newBuilder().setNumberValue(0.001212).build())
+            .build();
+    hyperparameter1 =
+        KeyValue.newBuilder()
+            .setKey("tuning")
+            .setValue(Value.newBuilder().setNumberValue(2.545).build())
+            .build();
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .setCodeVersion("1.0")
+            .addMetrics(metric1)
+            .addMetrics(metric2)
+            .addHyperparameters(hyperparameter1)
+            .addTags("test_tag_123")
+            .addTags("test_tag_456")
+            .build();
+    createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    experimentRun4 = createExperimentRunResponse.getExperimentRun();
+    experimentRunMap.put(experimentRun4.getId(), experimentRun4);
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun4.getName());
   }
 
   @Test
   public void a_getHydratedProjectsTest() {
     LOGGER.info("Get hydrated projects data test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
-    List<Project> existingProjectList = new ArrayList<>();
-    // Create project1
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("project_ypcdt_1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    existingProjectList.add(project);
-    LOGGER.info("Project created successfully");
-
-    // Create project2
-    createProjectRequest = projectTest.getCreateProjectRequest("project_ypcdt_2");
-    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-    Project project2 = createProjectResponse.getProject();
-    existingProjectList.add(project2);
-    LOGGER.info("Project2 created successfully");
-
-    // Create two experiment of above project
-    CreateExperiment request =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment1");
-    CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
-    Experiment experiment1 = response.getExperiment();
-    LOGGER.info("Experiment1 created successfully");
-    request = experimentTest.getCreateExperimentRequest(project.getId(), "Experiment2");
-    response = experimentServiceStub.createExperiment(request);
-    Experiment experiment2 = response.getExperiment();
-    LOGGER.info("Experiment2 created successfully");
-
-    Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
-    // Create four ExperimentRun of above two experiment, each experiment has two experimentRun
-    // For ExperiemntRun of Experiment1
-    CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperiemntRun1");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun1.getId(), experimentRun1);
-    LOGGER.info("ExperimentRun1 created successfully");
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperiemntRun2");
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun2.getId(), experimentRun2);
-    LOGGER.info("ExperimentRun2 created successfully");
-
-    // For ExperiemntRun of Experiment2
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperiemntRun3");
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun3.getId(), experimentRun3);
-    LOGGER.info("ExperimentRun3 created successfully");
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperimentRun4");
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun4 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun4.getId(), experimentRun4);
-    LOGGER.info("ExperimentRun4 created successfully");
 
     // Create comment for above experimentRun1 & experimentRun3
     // comment for experiment1
@@ -273,12 +638,10 @@ public class HydratedServiceTest {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       // For Collaborator1
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
-              project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
+              project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
       collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator1 added successfully");
     }
@@ -288,7 +651,7 @@ public class HydratedServiceTest {
 
     assertEquals(
         "HydratedProjects count does not match with project count",
-        existingProjectList.size(),
+        projectsMap.size(),
         getHydratedProjectsResponse.getHydratedProjectsCount());
 
     Map<String, HydratedProject> hydratedProjectMap = new HashMap<>();
@@ -296,7 +659,7 @@ public class HydratedServiceTest {
       hydratedProjectMap.put(hydratedProject.getProject().getId(), hydratedProject);
     }
 
-    for (Project existingProject : existingProjectList) {
+    for (Project existingProject : projectsMap.values()) {
       assertEquals(
           "Expected project does not exist in the hydrated projects",
           existingProject.getName(),
@@ -306,15 +669,6 @@ public class HydratedServiceTest {
           existingProject.getOwner(),
           authService.getVertaIdFromUserInfo(
               hydratedProjectMap.get(existingProject.getId()).getOwnerUserInfo()));
-
-      // Delete all data related to project
-      DeleteProject deleteProject =
-          DeleteProject.newBuilder().setId(existingProject.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
     }
 
     LOGGER.info("Get hydrated projects data test stop................................");
@@ -323,76 +677,6 @@ public class HydratedServiceTest {
   @Test
   public void b_getHydratedProjectTest() {
     LOGGER.info("Get hydrated project data test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("project_ypcdt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    // Create two experiment of above project
-    CreateExperiment request =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment1");
-    CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
-    Experiment experiment1 = response.getExperiment();
-    LOGGER.info("Experiment1 created successfully");
-    request = experimentTest.getCreateExperimentRequest(project.getId(), "Experiment2");
-    response = experimentServiceStub.createExperiment(request);
-    Experiment experiment2 = response.getExperiment();
-    LOGGER.info("Experiment2 created successfully");
-
-    Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
-    // Create four ExperimentRun of above two experiment, each experiment has two experimentRun
-    // For ExperiemntRun of Experiment1
-    CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperiemntRun1");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun1.getId(), experimentRun1);
-    LOGGER.info("ExperimentRun1 created successfully");
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperiemntRun2");
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun2.getId(), experimentRun2);
-    LOGGER.info("ExperimentRun2 created successfully");
-
-    // For ExperiemntRun of Experiment2
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperiemntRun3");
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun3.getId(), experimentRun3);
-    LOGGER.info("ExperimentRun3 created successfully");
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperimentRun4");
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun4 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun4.getId(), experimentRun4);
-    LOGGER.info("ExperimentRun4 created successfully");
 
     // Create comment for above experimentRun1 & experimentRun3
     // comment for experiment1
@@ -415,21 +699,17 @@ public class HydratedServiceTest {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-      UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
-          UACServiceGrpc.newBlockingStub(authServiceChannel);
       GetUser getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       // Get the user info by vertaId form the AuthService
-      UserInfo shareWithUserInfo = uaServiceStub.getUser(getUserRequest);
+      UserInfo shareWithUserInfo = uacServiceStub.getUser(getUserRequest);
 
       // Create two collaborator for above project
       List<String> collaboratorUsers = new ArrayList<>();
       // For Collaborator1
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProject(
-              project,
+              project1,
               shareWithUserInfo.getEmail(),
               CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
       collaboratorUsers.add(authService.getVertaIdFromUserInfo(shareWithUserInfo));
@@ -438,16 +718,16 @@ public class HydratedServiceTest {
 
       GetHydratedProjectById.Response getHydratedProjectResponse =
           hydratedServiceBlockingStub.getHydratedProjectById(
-              GetHydratedProjectById.newBuilder().setId(project.getId()).build());
+              GetHydratedProjectById.newBuilder().setId(project1.getId()).build());
 
       assertEquals(
           "HydratedProject does not match with expected project",
-          project.getName(),
+          project1.getName(),
           getHydratedProjectResponse.getHydratedProject().getProject().getName());
 
       assertEquals(
           "Expected project owner does not match with the hydratedProject owner",
-          project.getOwner(),
+          project1.getOwner(),
           authService.getVertaIdFromUserInfo(
               getHydratedProjectResponse.getHydratedProject().getOwnerUserInfo()));
 
@@ -479,13 +759,6 @@ public class HydratedServiceTest {
       }
     }
 
-    // Delete all data related to project
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get hydrated project data test stop................................");
   }
 
@@ -493,290 +766,258 @@ public class HydratedServiceTest {
   public void a_getHydratedExperimentRunsTest() {
     LOGGER.info("Get hydrated ExperimentRuns data test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("project_ypcdt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    // Create two experiment of above project
-    CreateExperiment request =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment1");
-    CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
-    Experiment experiment1 = response.getExperiment();
-    LOGGER.info("Experiment1 created successfully");
-    request = experimentTest.getCreateExperimentRequest(project.getId(), "Experiment2");
-    response = experimentServiceStub.createExperiment(request);
-    Experiment experiment2 = response.getExperiment();
-    LOGGER.info("Experiment2 created successfully");
-
     Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
-    // Create four ExperimentRun of above two experiment, each experiment has two experimentRun
-    // For ExperiemntRun of Experiment1
-    CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperiemntRun1");
-    KeyValue metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(0.012).build())
-            .build();
-    KeyValue metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.99).build())
-            .build();
-    KeyValue hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(9).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setCodeVersion("4.0")
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .build();
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun1.getId(), experimentRun1);
-    LOGGER.info("ExperimentRun1 created successfully");
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperiemntRun2");
-    metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(7).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setCodeVersion("3.0")
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun2.getId(), experimentRun2);
-    LOGGER.info("ExperimentRun2 created successfully");
+    try {
+      // Create four ExperimentRun of above two experiment, each experiment has two experimentRun
+      // For ExperiemntRun of Experiment1
+      CreateExperimentRun createExperimentRunRequest =
+          ExperimentRunTest.getCreateExperimentRunRequest(
+              project1.getId(), experiment1.getId(), "ExperiemntRun-1-" + new Date().getTime());
+      KeyValue metric1 =
+          KeyValue.newBuilder()
+              .setKey("loss")
+              .setValue(Value.newBuilder().setNumberValue(0.012).build())
+              .build();
+      KeyValue metric2 =
+          KeyValue.newBuilder()
+              .setKey("accuracy")
+              .setValue(Value.newBuilder().setNumberValue(0.99).build())
+              .build();
+      KeyValue hyperparameter1 =
+          KeyValue.newBuilder()
+              .setKey("tuning")
+              .setValue(Value.newBuilder().setNumberValue(9).build())
+              .build();
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setCodeVersion("4.0")
+              .addMetrics(metric1)
+              .addMetrics(metric2)
+              .addHyperparameters(hyperparameter1)
+              .build();
+      CreateExperimentRun.Response createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
+      experimentRunMap.put(experimentRun1.getId(), experimentRun1);
+      LOGGER.info("ExperimentRun1 created successfully");
+      createExperimentRunRequest =
+          ExperimentRunTest.getCreateExperimentRunRequest(
+              project1.getId(), experiment1.getId(), "ExperiemntRun-2-" + new Date().getTime());
+      metric1 =
+          KeyValue.newBuilder()
+              .setKey("loss")
+              .setValue(Value.newBuilder().setNumberValue(0.31).build())
+              .build();
+      metric2 =
+          KeyValue.newBuilder()
+              .setKey("accuracy")
+              .setValue(Value.newBuilder().setNumberValue(0.31).build())
+              .build();
+      hyperparameter1 =
+          KeyValue.newBuilder()
+              .setKey("tuning")
+              .setValue(Value.newBuilder().setNumberValue(7).build())
+              .build();
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setCodeVersion("3.0")
+              .addMetrics(metric1)
+              .addMetrics(metric2)
+              .addHyperparameters(hyperparameter1)
+              .build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
+      experimentRunMap.put(experimentRun2.getId(), experimentRun2);
+      LOGGER.info("ExperimentRun2 created successfully");
 
-    // For ExperiemntRun of Experiment2
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperiemntRun3");
-    metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(4.55).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setCodeVersion("2.0")
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun3.getId(), experimentRun3);
-    LOGGER.info("ExperimentRun3 created successfully");
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperimentRun4");
-    metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(1.00).build())
-            .build();
-    metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.001212).build())
-            .build();
-    hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(2.545).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setCodeVersion("1.0")
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .addTags("test_tag_123")
-            .addTags("test_tag_456")
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun4 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun4.getId(), experimentRun4);
-    LOGGER.info("ExperimentRun4 created successfully");
+      // For ExperiemntRun of Experiment2
+      createExperimentRunRequest =
+          ExperimentRunTest.getCreateExperimentRunRequest(
+              project1.getId(), experiment2.getId(), "ExperiemntRun-3-" + new Date().getTime());
+      metric1 =
+          KeyValue.newBuilder()
+              .setKey("loss")
+              .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+              .build();
+      metric2 =
+          KeyValue.newBuilder()
+              .setKey("accuracy")
+              .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+              .build();
+      hyperparameter1 =
+          KeyValue.newBuilder()
+              .setKey("tuning")
+              .setValue(Value.newBuilder().setNumberValue(4.55).build())
+              .build();
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setCodeVersion("2.0")
+              .addMetrics(metric1)
+              .addMetrics(metric2)
+              .addHyperparameters(hyperparameter1)
+              .build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
+      experimentRunMap.put(experimentRun3.getId(), experimentRun3);
+      LOGGER.info("ExperimentRun3 created successfully");
+      createExperimentRunRequest =
+          ExperimentRunTest.getCreateExperimentRunRequest(
+              project1.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
+      metric1 =
+          KeyValue.newBuilder()
+              .setKey("loss")
+              .setValue(Value.newBuilder().setNumberValue(1.00).build())
+              .build();
+      metric2 =
+          KeyValue.newBuilder()
+              .setKey("accuracy")
+              .setValue(Value.newBuilder().setNumberValue(0.001212).build())
+              .build();
+      hyperparameter1 =
+          KeyValue.newBuilder()
+              .setKey("tuning")
+              .setValue(Value.newBuilder().setNumberValue(2.545).build())
+              .build();
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setCodeVersion("1.0")
+              .addMetrics(metric1)
+              .addMetrics(metric2)
+              .addHyperparameters(hyperparameter1)
+              .addTags("test_tag_123")
+              .addTags("test_tag_456")
+              .build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun experimentRun4 = createExperimentRunResponse.getExperimentRun();
+      experimentRunMap.put(experimentRun4.getId(), experimentRun4);
+      LOGGER.info("ExperimentRun4 created successfully");
 
-    // Create comment for above experimentRun1 & experimentRun3
-    // comment for experiment1
-    AddComment addCommentRequest =
-        AddComment.newBuilder()
-            .setEntityId(experimentRun1.getId())
-            .setMessage(
-                "Hello, this project is interesting." + Calendar.getInstance().getTimeInMillis())
-            .build();
-    AddComment.Response commentResponse =
-        commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
-    Comment experimentRun1Comment = commentResponse.getComment();
-    LOGGER.info("Comment added successfully for ExperimentRun1");
-    // comment for experimentRun3
-    addCommentRequest =
-        AddComment.newBuilder()
-            .setEntityId(experimentRun3.getId())
-            .setMessage(
-                "Hello, this project is interesting." + Calendar.getInstance().getTimeInMillis())
-            .build();
-    commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
-    LOGGER.info("Comment added successfully for ExperimentRun3");
+      // Create comment for above experimentRun1 & experimentRun3
+      // comment for experiment1
+      AddComment addCommentRequest =
+          AddComment.newBuilder()
+              .setEntityId(experimentRun1.getId())
+              .setMessage(
+                  "Hello, this project is interesting." + Calendar.getInstance().getTimeInMillis())
+              .build();
+      AddComment.Response commentResponse =
+          commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
+      Comment experimentRun1Comment = commentResponse.getComment();
+      LOGGER.info("Comment added successfully for ExperimentRun1");
+      // comment for experimentRun3
+      addCommentRequest =
+          AddComment.newBuilder()
+              .setEntityId(experimentRun3.getId())
+              .setMessage(
+                  "Hello, this project is interesting." + Calendar.getInstance().getTimeInMillis())
+              .build();
+      commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
+      LOGGER.info("Comment added successfully for ExperimentRun3");
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-      // Create two collaborator for above project
-      // For Collaborator1
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestProjectInterceptor(
-              project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
-      collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator1 added successfully");
-    }
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        // Create two collaborator for above project
+        // For Collaborator1
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestProjectInterceptor(
+                project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
+        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator1 added successfully");
+      }
 
-    int pageLimit = 2;
-    boolean isExpectedResultFound = false;
-    for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
+      int pageLimit = 2;
+      boolean isExpectedResultFound = false;
+      for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
+        GetHydratedExperimentRunsByProjectId.Response getHydratedExperimentRunsResponse =
+            hydratedServiceBlockingStub.getHydratedExperimentRunsInProject(
+                GetHydratedExperimentRunsByProjectId.newBuilder()
+                    .setProjectId(project1.getId())
+                    .setPageNumber(pageNumber)
+                    .setPageLimit(pageLimit)
+                    .setAscending(true)
+                    .setSortKey(ModelDBConstants.NAME)
+                    .build());
+
+        assertEquals(
+            "HydratedExperimentRuns count does not match with existing ExperimentRun count",
+            experimentRunMap.size(),
+            getHydratedExperimentRunsResponse.getTotalRecords());
+
+        if (getHydratedExperimentRunsResponse.getHydratedExperimentRunsList() != null
+            && getHydratedExperimentRunsResponse.getHydratedExperimentRunsList().size() > 0) {
+          isExpectedResultFound = true;
+          for (HydratedExperimentRun hydratedExperimentRun :
+              getHydratedExperimentRunsResponse.getHydratedExperimentRunsList()) {
+            assertEquals(
+                "ExperimentRun not match with expected experimentRun",
+                experimentRunMap.get(hydratedExperimentRun.getExperimentRun().getId()),
+                hydratedExperimentRun.getExperimentRun());
+
+            if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+              assertEquals(
+                  "Expected experimentRun owner does not match with the hydratedExperimentRun owner",
+                  experimentRunMap.get(hydratedExperimentRun.getExperimentRun().getId()).getOwner(),
+                  authService.getVertaIdFromUserInfo(hydratedExperimentRun.getOwnerUserInfo()));
+
+              if (hydratedExperimentRun.getExperimentRun().getName().equals("ExperiemntRun1")) {
+                assertEquals(
+                    "Expected experimentRun owner does not match with the hydratedExperimentRun owner",
+                    Collections.singletonList(experimentRun1Comment),
+                    hydratedExperimentRun.getCommentsList());
+              }
+            }
+          }
+        } else {
+          if (isExpectedResultFound) {
+            LOGGER.warn("More ExperimentRun not found in database");
+            assertTrue(true);
+          } else {
+            fail("Expected experimentRun not found in response");
+          }
+          break;
+        }
+      }
+
       GetHydratedExperimentRunsByProjectId.Response getHydratedExperimentRunsResponse =
           hydratedServiceBlockingStub.getHydratedExperimentRunsInProject(
               GetHydratedExperimentRunsByProjectId.newBuilder()
-                  .setProjectId(project.getId())
-                  .setPageNumber(pageNumber)
-                  .setPageLimit(pageLimit)
-                  .setAscending(true)
-                  .setSortKey(ModelDBConstants.NAME)
+                  .setProjectId(project1.getId())
+                  .setPageNumber(1)
+                  .setPageLimit(1)
+                  .setAscending(false)
+                  .setSortKey("metrics.loss")
                   .build());
 
       assertEquals(
-          "HydratedExperimentRuns count does not match with existing ExperimentRun count",
-          experimentRunMap.size(),
+          "Total records count not matched with expected records count",
+          4,
           getHydratedExperimentRunsResponse.getTotalRecords());
+      assertEquals(
+          "ExperimentRuns count not match with expected experimentRuns count",
+          1,
+          getHydratedExperimentRunsResponse.getHydratedExperimentRunsCount());
+      assertEquals(
+          "ExperimentRun not match with expected experimentRun",
+          experimentRun4,
+          getHydratedExperimentRunsResponse.getHydratedExperimentRuns(0).getExperimentRun());
+      assertEquals(
+          "Experiment name not match with expected Experiment name",
+          experiment2.getName(),
+          getHydratedExperimentRunsResponse.getHydratedExperimentRuns(0).getExperiment().getName());
 
-      if (getHydratedExperimentRunsResponse.getHydratedExperimentRunsList() != null
-          && getHydratedExperimentRunsResponse.getHydratedExperimentRunsList().size() > 0) {
-        isExpectedResultFound = true;
-        for (HydratedExperimentRun hydratedExperimentRun :
-            getHydratedExperimentRunsResponse.getHydratedExperimentRunsList()) {
-          assertEquals(
-              "ExperimentRun not match with expected experimentRun",
-              experimentRunMap.get(hydratedExperimentRun.getExperimentRun().getId()),
-              hydratedExperimentRun.getExperimentRun());
-
-          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-            assertEquals(
-                "Expected experimentRun owner does not match with the hydratedExperimentRun owner",
-                experimentRunMap.get(hydratedExperimentRun.getExperimentRun().getId()).getOwner(),
-                authService.getVertaIdFromUserInfo(hydratedExperimentRun.getOwnerUserInfo()));
-
-            if (hydratedExperimentRun.getExperimentRun().getName().equals("ExperiemntRun1")) {
-              assertEquals(
-                  "Expected experimentRun owner does not match with the hydratedExperimentRun owner",
-                  Collections.singletonList(experimentRun1Comment),
-                  hydratedExperimentRun.getCommentsList());
-            }
-          }
-        }
-      } else {
-        if (isExpectedResultFound) {
-          LOGGER.warn("More ExperimentRun not found in database");
-          assertTrue(true);
-        } else {
-          fail("Expected experimentRun not found in response");
-        }
-        break;
-      }
+    } finally {
+      DeleteExperimentRuns deleteExperimentRuns =
+          DeleteExperimentRuns.newBuilder().addAllIds(experimentRunMap.keySet()).build();
+      DeleteExperimentRuns.Response deleteExperimentRunsResponse =
+          experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
+      assertTrue(deleteExperimentRunsResponse.getStatus());
     }
-
-    GetHydratedExperimentRunsByProjectId.Response getHydratedExperimentRunsResponse =
-        hydratedServiceBlockingStub.getHydratedExperimentRunsInProject(
-            GetHydratedExperimentRunsByProjectId.newBuilder()
-                .setProjectId(project.getId())
-                .setPageNumber(1)
-                .setPageLimit(1)
-                .setAscending(false)
-                .setSortKey("metrics.loss")
-                .build());
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        4,
-        getHydratedExperimentRunsResponse.getTotalRecords());
-    assertEquals(
-        "ExperimentRuns count not match with expected experimentRuns count",
-        1,
-        getHydratedExperimentRunsResponse.getHydratedExperimentRunsCount());
-    assertEquals(
-        "ExperimentRun not match with expected experimentRun",
-        experimentRun4,
-        getHydratedExperimentRunsResponse.getHydratedExperimentRuns(0).getExperimentRun());
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        experiment2.getName(),
-        getHydratedExperimentRunsResponse.getHydratedExperimentRuns(0).getExperiment().getName());
-
-    // Delete all data related to project
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Get hydrated ExperimentRuns data test stop................................");
   }
@@ -784,71 +1025,6 @@ public class HydratedServiceTest {
   @Test
   public void a_getHydratedExperimentRunByIdTest() {
     LOGGER.info("Get hydrated ExperimentRun By ID data test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("project_ypcdt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    // Create two experiment of above project
-    CreateExperiment request =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment1");
-    CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
-    Experiment experiment1 = response.getExperiment();
-    LOGGER.info("Experiment1 created successfully");
-    request = experimentTest.getCreateExperimentRequest(project.getId(), "Experiment2");
-    response = experimentServiceStub.createExperiment(request);
-    Experiment experiment2 = response.getExperiment();
-    LOGGER.info("Experiment2 created successfully");
-    // Create four ExperimentRun of above two experiment, each experiment has two experimentRun
-    // For ExperiemntRun of Experiment1
-    CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperiemntRun1");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun1 created successfully");
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperiemntRun2");
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun2 created successfully");
-
-    // For ExperiemntRun of Experiment2
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperiemntRun3");
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun3 created successfully");
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperimentRun4");
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun4 = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun4 created successfully");
-
     // Create comment for above experimentRun1 & experimentRun3
     // comment for experiment1
     AddComment addCommentRequest =
@@ -874,11 +1050,9 @@ public class HydratedServiceTest {
     // Create two collaborator for above project
     // For Collaborator1
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
-              project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
+              project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
       collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator1 added successfully");
     }
@@ -904,13 +1078,6 @@ public class HydratedServiceTest {
           getHydratedExperimentRunsResponse.getHydratedExperimentRun().getCommentsList());
     }
 
-    // Delete all data related to project
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get hydrated ExperimentRun By ID data test stop................................");
   }
 
@@ -918,39 +1085,9 @@ public class HydratedServiceTest {
   public void getHydratedExperimentsTest() {
     LOGGER.info("Get hydrated Experiments data test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("project_ypcdt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    Map<String, Experiment> experimentMap = new HashMap<>();
-    // Create two experiment of above project
-    CreateExperiment request =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment1");
-    CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
-    Experiment experiment1 = response.getExperiment();
-    experimentMap.put(experiment1.getId(), experiment1);
-    LOGGER.info("Experiment1 created successfully");
-    request = experimentTest.getCreateExperimentRequest(project.getId(), "Experiment2");
-    response = experimentServiceStub.createExperiment(request);
-    Experiment experiment2 = response.getExperiment();
-    experimentMap.put(experiment2.getId(), experiment2);
-    LOGGER.info("Experiment2 created successfully");
-
     GetHydratedExperimentsByProjectId.Response getHydratedExperimentsResponse =
         hydratedServiceBlockingStub.getHydratedExperimentsByProjectId(
-            GetHydratedExperimentsByProjectId.newBuilder().setProjectId(project.getId()).build());
+            GetHydratedExperimentsByProjectId.newBuilder().setProjectId(project1.getId()).build());
 
     assertEquals(
         "HydratedExperiments count does not match with existing Experiment count",
@@ -975,214 +1112,12 @@ public class HydratedServiceTest {
               hydratedExperimentMap.get(experiment.getId()).getOwnerUserInfo()));
     }
 
-    // Delete all data related to project
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get hydrated ExperimentRuns data test stop................................");
   }
 
   @Test
   public void findHydratedExperimentRunsTest() {
     LOGGER.info("FindHydratedExperimentRuns test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment1.getName());
-
-    Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
-
-    CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperimentRun_sprt_1");
-    KeyValue metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(0.012).build())
-            .build();
-    KeyValue metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.99).build())
-            .build();
-    KeyValue hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(9).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setCodeVersion("4.0")
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .build();
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun11 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun11.getId(), experimentRun11);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun11.getName());
-
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperimentRun_sprt_2");
-    metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(7).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setCodeVersion("3.0")
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun12 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun12.getId(), experimentRun12);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun12.getName());
-
-    // experiment2 of above project
-    createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment2.getName());
-
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperimentRun_sprt_2");
-    metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(4.55).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setCodeVersion("2.0")
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun21 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun21.getId(), experimentRun21);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun21.getName());
-
-    createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperimentRun_sprt_1");
-    metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(1.00).build())
-            .build();
-    metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.001212).build())
-            .build();
-    hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(2.545).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setCodeVersion("1.0")
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .addTags("test_tag_123")
-            .addTags("test_tag_456")
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun22 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun22.getId(), experimentRun22);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun22.getName());
 
     // Validate check for predicate value not empty
     List<KeyValueQuery> predicates = new ArrayList<>();
@@ -1198,7 +1133,7 @@ public class HydratedServiceTest {
 
     FindExperimentRuns findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .setExperimentId(experiment1.getId())
             .addAllPredicates(predicates)
             // .setIdsOnly(true)
@@ -1214,7 +1149,7 @@ public class HydratedServiceTest {
     // If key is not set in predicate
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .setExperimentId(experiment1.getId())
             .addPredicates(
                 KeyValueQuery.newBuilder()
@@ -1249,7 +1184,7 @@ public class HydratedServiceTest {
 
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .setExperimentId(experiment1.getId())
             .addAllPredicates(predicates)
             .build();
@@ -1273,7 +1208,7 @@ public class HydratedServiceTest {
 
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQuery)
             .build();
 
@@ -1331,7 +1266,7 @@ public class HydratedServiceTest {
 
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .setExperimentId(experiment1.getId())
             .addAllPredicates(predicates)
             .setIdsOnly(true)
@@ -1349,11 +1284,11 @@ public class HydratedServiceTest {
         experimentRuns.size());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun12.getId(),
+        experimentRun2.getId(),
         experimentRuns.get(0).getId());
     assertNotEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun12,
+        experimentRun2,
         experimentRuns.get(0));
     assertEquals(
         "Total records count not matched with expected records count",
@@ -1381,15 +1316,9 @@ public class HydratedServiceTest {
             .build();
     predicates.add(keyValueQuery2);
 
-    List<String> experimentRunIds = new ArrayList<>();
-    experimentRunIds.add(experimentRun11.getId());
-    experimentRunIds.add(experimentRun12.getId());
-    experimentRunIds.add(experimentRun21.getId());
-    experimentRunIds.add(experimentRun22.getId());
-
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .addAllExperimentRunIds(experimentRunIds)
+            .addAllExperimentRunIds(experimentRunMap.keySet())
             .addAllPredicates(predicates)
             .build();
 
@@ -1405,7 +1334,7 @@ public class HydratedServiceTest {
         experimentRuns.size());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun22.getId(),
+        experimentRun4.getId(),
         experimentRuns.get(0).getId());
     assertEquals(
         "Total records count not matched with expected records count",
@@ -1413,13 +1342,13 @@ public class HydratedServiceTest {
         response.getTotalRecords());
     assertEquals(
         "Expected experimentRun owner not match with the hydratedExperimentRun owner",
-        experimentRun22.getOwner(),
+        experimentRun4.getOwner(),
         authService.getVertaIdFromUserInfo(
             response.getHydratedExperimentRunsList().get(0).getOwnerUserInfo()));
 
     // get experimentRun with value of endTime == 1550837
     Value stringValue =
-        Value.newBuilder().setStringValue(String.valueOf(experimentRun22.getEndTime())).build();
+        Value.newBuilder().setStringValue(String.valueOf(experimentRun4.getEndTime())).build();
     keyValueQuery =
         KeyValueQuery.newBuilder()
             .setKey("end_time")
@@ -1429,7 +1358,7 @@ public class HydratedServiceTest {
 
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQuery)
             .build();
 
@@ -1445,7 +1374,7 @@ public class HydratedServiceTest {
         experimentRuns.size());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun22.getId(),
+        experimentRun4.getId(),
         experimentRuns.get(0).getId());
     assertEquals(
         "Total records count not matched with expected records count",
@@ -1453,7 +1382,7 @@ public class HydratedServiceTest {
         response.getTotalRecords());
     assertEquals(
         "Expected experimentRun owner not match with the hydratedExperimentRun owner",
-        experimentRun22.getOwner(),
+        experimentRun4.getOwner(),
         authService.getVertaIdFromUserInfo(
             response.getHydratedExperimentRunsList().get(0).getOwnerUserInfo()));
 
@@ -1471,7 +1400,7 @@ public class HydratedServiceTest {
     for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       findExperimentRuns =
           FindExperimentRuns.newBuilder()
-              .setProjectId(project.getId())
+              .setProjectId(project1.getId())
               .addPredicates(keyValueQuery2)
               .setPageLimit(pageLimit)
               .setPageNumber(pageNumber)
@@ -1506,29 +1435,29 @@ public class HydratedServiceTest {
           if (count == 0) {
             assertEquals(
                 "ExperimentRun code version not match with expected experimentRun code version",
-                experimentRun21.getCodeVersion(),
+                experimentRun3.getCodeVersion(),
                 experimentRun.getCodeVersion());
             assertEquals(
                 "Expected experimentRun owner not match with the hydratedExperimentRun owner",
-                experimentRun21.getOwner(),
+                experimentRun3.getOwner(),
                 responseUsername);
           } else if (count == 1) {
             assertEquals(
                 "ExperimentRun code version not match with expected experimentRun code version",
-                experimentRun12.getCodeVersion(),
+                experimentRun2.getCodeVersion(),
                 experimentRun.getCodeVersion());
             assertEquals(
                 "Expected experimentRun owner not match with the hydratedExperimentRun owner",
-                experimentRun12.getOwner(),
+                experimentRun2.getOwner(),
                 responseUsername);
           } else if (count == 2) {
             assertEquals(
                 "ExperimentRun code version not match with expected experimentRun code version",
-                experimentRun11.getCodeVersion(),
+                experimentRun1.getCodeVersion(),
                 experimentRun.getCodeVersion());
             assertEquals(
                 "Expected experimentRun owner not match with the hydratedExperimentRun owner",
-                experimentRun11.getOwner(),
+                experimentRun1.getOwner(),
                 responseUsername);
           }
           count++;
@@ -1550,7 +1479,7 @@ public class HydratedServiceTest {
     for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       findExperimentRuns =
           FindExperimentRuns.newBuilder()
-              .setProjectId(project.getId())
+              .setProjectId(project1.getId())
               .addPredicates(keyValueQuery2)
               .setPageLimit(pageLimit)
               .setPageNumber(pageNumber)
@@ -1585,29 +1514,29 @@ public class HydratedServiceTest {
           if (count == 0) {
             assertEquals(
                 "ExperimentRun hyperparameter not match with expected experimentRun hyperparameter",
-                experimentRun11.getHyperparametersList(),
+                experimentRun1.getHyperparametersList(),
                 experimentRun.getHyperparametersList());
             assertEquals(
                 "Expected experimentRun owner not match with the hydratedExperimentRun owner",
-                experimentRun11.getOwner(),
+                experimentRun1.getOwner(),
                 responseUsername);
           } else if (count == 1) {
             assertEquals(
                 "ExperimentRun hyperparameter not match with expected experimentRun hyperparameter",
-                experimentRun12.getHyperparametersList(),
+                experimentRun2.getHyperparametersList(),
                 experimentRun.getHyperparametersList());
             assertEquals(
                 "Expected experimentRun owner not match with the hydratedExperimentRun owner",
-                experimentRun12.getOwner(),
+                experimentRun2.getOwner(),
                 responseUsername);
           } else if (count == 2) {
             assertEquals(
                 "ExperimentRun hyperparameter not match with expected experimentRun hyperparameter",
-                experimentRun21.getHyperparametersList(),
+                experimentRun3.getHyperparametersList(),
                 experimentRun.getHyperparametersList());
             assertEquals(
                 "Expected experimentRun owner not match with the hydratedExperimentRun owner",
-                experimentRun21.getOwner(),
+                experimentRun3.getOwner(),
                 responseUsername);
           }
           count++;
@@ -1625,7 +1554,7 @@ public class HydratedServiceTest {
 
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQuery2)
             .setAscending(false)
             .setSortKey("observations.attribute.attr_1")
@@ -1659,7 +1588,7 @@ public class HydratedServiceTest {
 
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryTag1)
             .addPredicates(keyValueQueryTag2)
             .build();
@@ -1676,7 +1605,7 @@ public class HydratedServiceTest {
         experimentRuns.size());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun22.getId(),
+        experimentRun4.getId(),
         experimentRuns.get(0).getId());
     assertEquals(
         "Total records count not matched with expected records count",
@@ -1684,7 +1613,7 @@ public class HydratedServiceTest {
         response.getTotalRecords());
     assertEquals(
         "Expected experimentRun owner not match with the hydratedExperimentRun owner",
-        experimentRun22.getOwner(),
+        experimentRun4.getOwner(),
         authService.getVertaIdFromUserInfo(
             response.getHydratedExperimentRunsList().get(0).getOwnerUserInfo()));
 
@@ -1698,7 +1627,7 @@ public class HydratedServiceTest {
 
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryLoss)
             .setAscending(false)
             .setSortKey("metrics.loss")
@@ -1728,7 +1657,7 @@ public class HydratedServiceTest {
             .build();
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryLoss)
             .addPredicates(keyValueQueryAccuracy)
             .setAscending(false)
@@ -1760,7 +1689,7 @@ public class HydratedServiceTest {
 
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryLoss)
             .setAscending(false)
             .setIdsOnly(true)
@@ -1787,24 +1716,24 @@ public class HydratedServiceTest {
       ExperimentRun experimentRun = experimentRuns.get(index);
       if (index == 0) {
         assertNotEquals(
-            "ExperimentRun not match with expected experimentRun", experimentRun21, experimentRun);
+            "ExperimentRun not match with expected experimentRun", experimentRun3, experimentRun);
         assertEquals(
             "ExperimentRun Id not match with expected experimentRun Id",
-            experimentRun21.getId(),
+            experimentRun3.getId(),
             experimentRun.getId());
       } else if (index == 1) {
         assertNotEquals(
-            "ExperimentRun not match with expected experimentRun", experimentRun12, experimentRun);
+            "ExperimentRun not match with expected experimentRun", experimentRun2, experimentRun);
         assertEquals(
             "ExperimentRun Id not match with expected experimentRun Id",
-            experimentRun12.getId(),
+            experimentRun2.getId(),
             experimentRun.getId());
       } else if (index == 2) {
         assertNotEquals(
-            "ExperimentRun not match with expected experimentRun", experimentRun11, experimentRun);
+            "ExperimentRun not match with expected experimentRun", experimentRun1, experimentRun);
         assertEquals(
             "ExperimentRun Id not match with expected experimentRun Id",
-            experimentRun11.getId(),
+            experimentRun1.getId(),
             experimentRun.getId());
       }
     }
@@ -1818,7 +1747,7 @@ public class HydratedServiceTest {
 
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryLoss)
             .build();
 
@@ -1840,7 +1769,7 @@ public class HydratedServiceTest {
 
     findExperimentRuns =
         FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryLoss)
             .build();
 
@@ -1853,12 +1782,6 @@ public class HydratedServiceTest {
       assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("FindHydratedExperimentRuns test stop................................");
   }
 
@@ -1866,74 +1789,12 @@ public class HydratedServiceTest {
   public void getHydratedExperimentsWithPaginationInProject() {
     LOGGER.info(
         "Get Experiment with pagination of project test start................................");
-
-    ExperimentTest experimentTest = new ExperimentTest();
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    ProjectTest projectTest = new ProjectTest();
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experiment_project_n_sprt_abc");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    Map<String, Experiment> experimentMap = new HashMap<>();
-
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
-    Value intValue = Value.newBuilder().setNumberValue(12345).build();
-    KeyValue keyValue1 =
-        KeyValue.newBuilder()
-            .setKey("attribute_2_2")
-            .setValue(intValue)
-            .setValueType(ValueTypeEnum.ValueType.NUMBER)
-            .build();
-    createExperimentRequest = createExperimentRequest.toBuilder().addAttributes(keyValue1).build();
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    experimentMap.put(experiment1.getId(), experiment1);
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        createExperimentResponse.getExperiment().getName());
-
-    createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
-    intValue = Value.newBuilder().setNumberValue(9876543).build();
-    KeyValue keyValue2 =
-        KeyValue.newBuilder()
-            .setKey("attribute_2_2")
-            .setValue(intValue)
-            .setValueType(ValueTypeEnum.ValueType.NUMBER)
-            .build();
-    createExperimentRequest = createExperimentRequest.toBuilder().addAttributes(keyValue2).build();
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    experimentMap.put(experiment2.getId(), experiment2);
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        createExperimentResponse.getExperiment().getName());
-
     int pageLimit = 2;
     boolean isExpectedResultFound = false;
     for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       GetHydratedExperimentsByProjectId getExperiment =
           GetHydratedExperimentsByProjectId.newBuilder()
-              .setProjectId(project.getId())
+              .setProjectId(project1.getId())
               .setPageNumber(pageNumber)
               .setPageLimit(pageLimit)
               .setAscending(true)
@@ -1980,7 +1841,7 @@ public class HydratedServiceTest {
     for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       GetHydratedExperimentsByProjectId getExperiment =
           GetHydratedExperimentsByProjectId.newBuilder()
-              .setProjectId(project.getId())
+              .setProjectId(project1.getId())
               .setPageNumber(pageNumber)
               .setPageLimit(pageLimit)
               .setAscending(true)
@@ -2033,7 +1894,7 @@ public class HydratedServiceTest {
 
     GetHydratedExperimentsByProjectId getExperiment =
         GetHydratedExperimentsByProjectId.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .setPageNumber(1)
             .setPageLimit(1)
             .setAscending(true)
@@ -2048,12 +1909,6 @@ public class HydratedServiceTest {
       assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Get Experiment with pagination of project test stop................................");
   }
@@ -2061,153 +1916,6 @@ public class HydratedServiceTest {
   @Test
   public void findHydratedExperimentsTest() {
     LOGGER.info("FindHydratedExperiments test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    Map<String, Experiment> experimentMap = new HashMap<>();
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
-    KeyValue attribute1 =
-        KeyValue.newBuilder()
-            .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(0.012).build())
-            .build();
-    KeyValue attribute2 =
-        KeyValue.newBuilder()
-            .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.99).build())
-            .build();
-    createExperimentRequest =
-        createExperimentRequest
-            .toBuilder()
-            .addAttributes(attribute1)
-            .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_2")
-            .build();
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    experimentMap.put(experiment1.getId(), experiment1);
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment1.getName());
-
-    // experiment2 of above project
-    createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
-    attribute1 =
-        KeyValue.newBuilder()
-            .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    attribute2 =
-        KeyValue.newBuilder()
-            .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    createExperimentRequest =
-        createExperimentRequest
-            .toBuilder()
-            .addAttributes(attribute1)
-            .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_3")
-            .addTags("Tag_4")
-            .build();
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    experimentMap.put(experiment2.getId(), experiment2);
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment2.getName());
-
-    // experiment3 of above project
-    createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_3");
-    attribute1 =
-        KeyValue.newBuilder()
-            .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    attribute2 =
-        KeyValue.newBuilder()
-            .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    createExperimentRequest =
-        createExperimentRequest
-            .toBuilder()
-            .addAttributes(attribute1)
-            .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_5")
-            .addTags("Tag_6")
-            .build();
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment3 = createExperimentResponse.getExperiment();
-    experimentMap.put(experiment3.getId(), experiment3);
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment3.getName());
-
-    // experiment4 of above project
-    createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_4");
-    attribute1 =
-        KeyValue.newBuilder()
-            .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(1.00).build())
-            .build();
-    attribute2 =
-        KeyValue.newBuilder()
-            .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.001212).build())
-            .build();
-    createExperimentRequest =
-        createExperimentRequest
-            .toBuilder()
-            .addAttributes(attribute1)
-            .addAttributes(attribute2)
-            .addTags("Tag_5")
-            .addTags("Tag_7")
-            .addTags("Tag_8")
-            .build();
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment4 = createExperimentResponse.getExperiment();
-    experimentMap.put(experiment4.getId(), experiment4);
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment4.getName());
 
     // Validate check for predicate value not empty
     List<KeyValueQuery> predicates = new ArrayList<>();
@@ -2223,7 +1931,7 @@ public class HydratedServiceTest {
 
     FindExperiments findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addAllPredicates(predicates)
             // .setIdsOnly(true)
             .build();
@@ -2238,7 +1946,7 @@ public class HydratedServiceTest {
     // If key is not set in predicate
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(
                 KeyValueQuery.newBuilder()
                     .setValue(Value.newBuilder().setNumberValue(11).build())
@@ -2272,7 +1980,7 @@ public class HydratedServiceTest {
 
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addAllPredicates(predicates)
             .build();
 
@@ -2295,7 +2003,7 @@ public class HydratedServiceTest {
 
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQuery)
             .build();
 
@@ -2352,7 +2060,7 @@ public class HydratedServiceTest {
 
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addAllPredicates(predicates)
             .setIdsOnly(true)
             .build();
@@ -2396,15 +2104,9 @@ public class HydratedServiceTest {
             .build();
     predicates.add(keyValueQuery2);
 
-    List<String> experimentIds = new ArrayList<>();
-    experimentIds.add(experiment1.getId());
-    experimentIds.add(experiment2.getId());
-    experimentIds.add(experiment3.getId());
-    experimentIds.add(experiment4.getId());
-
     findExperiments =
         FindExperiments.newBuilder()
-            .addAllExperimentIds(experimentIds)
+            .addAllExperimentIds(experimentMap.keySet())
             .addAllPredicates(predicates)
             .build();
 
@@ -2437,7 +2139,7 @@ public class HydratedServiceTest {
 
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQuery)
             .build();
 
@@ -2472,7 +2174,7 @@ public class HydratedServiceTest {
     for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       findExperiments =
           FindExperiments.newBuilder()
-              .setProjectId(project.getId())
+              .setProjectId(project1.getId())
               .addPredicates(keyValueQuery2)
               .setPageLimit(pageLimit)
               .setPageNumber(pageNumber)
@@ -2530,7 +2232,7 @@ public class HydratedServiceTest {
 
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQuery2)
             .setAscending(false)
             .setSortKey("observations.attribute.attr_1")
@@ -2564,7 +2266,7 @@ public class HydratedServiceTest {
 
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryTag1)
             .addPredicates(keyValueQueryTag2)
             .build();
@@ -2596,7 +2298,7 @@ public class HydratedServiceTest {
 
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryAttribute_1)
             .setAscending(false)
             .setSortKey("attributes.attribute_1")
@@ -2623,7 +2325,7 @@ public class HydratedServiceTest {
             .build();
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryAttribute_1)
             .addPredicates(keyValueQueryAccuracy)
             .setAscending(false)
@@ -2652,7 +2354,7 @@ public class HydratedServiceTest {
 
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryAttribute_1)
             .setAscending(false)
             .setIdsOnly(true)
@@ -2704,7 +2406,7 @@ public class HydratedServiceTest {
 
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryAttribute_1)
             .build();
 
@@ -2728,7 +2430,7 @@ public class HydratedServiceTest {
 
     findExperiments =
         FindExperiments.newBuilder()
-            .setProjectId(project.getId())
+            .setProjectId(project1.getId())
             .addPredicates(keyValueQueryAttribute_1)
             .build();
 
@@ -2743,60 +2445,12 @@ public class HydratedServiceTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("FindExperimentRuns test stop................................");
   }
 
   @Test
   public void getHydratedProjectsByPagination() {
     LOGGER.info("Get Hydrated Project by pagination test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
-    Map<String, Project> projectsMap = new HashMap<>();
-    // Create project1
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("project_apt_1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project1 = createProjectResponse.getProject();
-    projectsMap.put(project1.getId(), project1);
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project1.getName());
-
-    // Create project2
-    createProjectRequest = projectTest.getCreateProjectRequest("project_apt_2");
-    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-    Project project2 = createProjectResponse.getProject();
-    projectsMap.put(project2.getId(), project2);
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project2.getName());
-
-    // Create project3
-    createProjectRequest = projectTest.getCreateProjectRequest("project_apt_3");
-    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-    Project project3 = createProjectResponse.getProject();
-    projectsMap.put(project3.getId(), project3);
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project3.getName());
-
     GetHydratedProjects getHydratedProjects = GetHydratedProjects.newBuilder().build();
     GetHydratedProjects.Response response =
         hydratedServiceBlockingStub.getHydratedProjects(getHydratedProjects);
@@ -2875,149 +2529,12 @@ public class HydratedServiceTest {
       }
     }
 
-    for (String projectId : projectsMap.keySet()) {
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-    }
-
     LOGGER.info("Get Hydrated project by pagination test stop................................");
   }
 
   @Test
   public void findHydratedProjectsTest() {
     LOGGER.info("FindHydratedProjects test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
-    Map<String, Project> projectMap = new HashMap<>();
-
-    // Create two project of above project
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("Project_1");
-    KeyValue attribute1 =
-        KeyValue.newBuilder()
-            .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(0.012).build())
-            .build();
-    KeyValue attribute2 =
-        KeyValue.newBuilder()
-            .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.99).build())
-            .build();
-    createProjectRequest =
-        createProjectRequest
-            .toBuilder()
-            .addAttributes(attribute1)
-            .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_2")
-            .build();
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project1 = createProjectResponse.getProject();
-    projectMap.put(project1.getId(), project1);
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected Project name",
-        createProjectRequest.getName(),
-        project1.getName());
-
-    // project2 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project_2");
-    attribute1 =
-        KeyValue.newBuilder()
-            .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    attribute2 =
-        KeyValue.newBuilder()
-            .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    createProjectRequest =
-        createProjectRequest
-            .toBuilder()
-            .addAttributes(attribute1)
-            .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_3")
-            .addTags("Tag_4")
-            .build();
-    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-    Project project2 = createProjectResponse.getProject();
-    projectMap.put(project2.getId(), project2);
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected Project name",
-        createProjectRequest.getName(),
-        project2.getName());
-
-    // project3 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project_3");
-    attribute1 =
-        KeyValue.newBuilder()
-            .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    attribute2 =
-        KeyValue.newBuilder()
-            .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    createProjectRequest =
-        createProjectRequest
-            .toBuilder()
-            .addAttributes(attribute1)
-            .addAttributes(attribute2)
-            .addTags("Tag_1")
-            .addTags("Tag_5")
-            .addTags("Tag_6")
-            .build();
-    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-    Project project3 = createProjectResponse.getProject();
-    projectMap.put(project3.getId(), project3);
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected Project name",
-        createProjectRequest.getName(),
-        project3.getName());
-
-    // project4 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project_4");
-    attribute1 =
-        KeyValue.newBuilder()
-            .setKey("attribute_1")
-            .setValue(Value.newBuilder().setNumberValue(1.00).build())
-            .build();
-    attribute2 =
-        KeyValue.newBuilder()
-            .setKey("attribute_2")
-            .setValue(Value.newBuilder().setNumberValue(0.001212).build())
-            .build();
-    createProjectRequest =
-        createProjectRequest
-            .toBuilder()
-            .addAttributes(attribute1)
-            .addAttributes(attribute2)
-            .addTags("Tag_5")
-            .addTags("Tag_7")
-            .addTags("Tag_8")
-            .setProjectVisibility(ProjectVisibility.PUBLIC)
-            .build();
-    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-    Project project4 = createProjectResponse.getProject();
-    projectMap.put(project4.getId(), project4);
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected Project name",
-        createProjectRequest.getName(),
-        project4.getName());
 
     // Validate check for predicate value not empty
     List<KeyValueQuery> predicates = new ArrayList<>();
@@ -3134,12 +2651,6 @@ public class HydratedServiceTest {
       }
     }
 
-    List<String> projectIds = new ArrayList<>();
-    projectIds.add(project1.getId());
-    projectIds.add(project2.getId());
-    projectIds.add(project3.getId());
-    projectIds.add(project4.getId());
-
     // get project with value of attributes.attribute_1 <= 0.6543210 & attributes.attribute_2 ==
     // 0.31
     predicates = new ArrayList<>();
@@ -3163,7 +2674,7 @@ public class HydratedServiceTest {
 
     findProjects =
         FindProjects.newBuilder()
-            .addAllProjectIds(projectIds)
+            .addAllProjectIds(projectsMap.keySet())
             .addAllPredicates(predicates)
             .setIdsOnly(true)
             .build();
@@ -3204,7 +2715,10 @@ public class HydratedServiceTest {
     predicates.add(keyValueQuery2);
 
     findProjects =
-        FindProjects.newBuilder().addAllProjectIds(projectIds).addAllPredicates(predicates).build();
+        FindProjects.newBuilder()
+            .addAllProjectIds(projectsMap.keySet())
+            .addAllPredicates(predicates)
+            .build();
 
     response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
     projectList = new ArrayList<>();
@@ -3231,7 +2745,10 @@ public class HydratedServiceTest {
             .build();
 
     findProjects =
-        FindProjects.newBuilder().addAllProjectIds(projectIds).addPredicates(keyValueQuery).build();
+        FindProjects.newBuilder()
+            .addAllProjectIds(projectsMap.keySet())
+            .addPredicates(keyValueQuery)
+            .build();
 
     response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
     projectList = new ArrayList<>();
@@ -3263,7 +2780,7 @@ public class HydratedServiceTest {
     for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       findProjects =
           FindProjects.newBuilder()
-              .addAllProjectIds(projectIds)
+              .addAllProjectIds(projectsMap.keySet())
               .addPredicates(keyValueQuery2)
               .setPageLimit(pageLimit)
               .setPageNumber(pageNumber)
@@ -3286,7 +2803,7 @@ public class HydratedServiceTest {
         isExpectedResultFound = true;
         for (Project project : projectList) {
           assertEquals(
-              "Project not match with expected project", projectMap.get(project.getId()), project);
+              "Project not match with expected project", projectsMap.get(project.getId()), project);
 
           if (count == 0) {
             assertEquals(
@@ -3319,7 +2836,7 @@ public class HydratedServiceTest {
 
     findProjects =
         FindProjects.newBuilder()
-            .addAllProjectIds(projectIds)
+            .addAllProjectIds(projectsMap.keySet())
             .addPredicates(keyValueQuery2)
             .setAscending(false)
             .setSortKey("observations.attribute.attr_1")
@@ -3353,7 +2870,7 @@ public class HydratedServiceTest {
 
     findProjects =
         FindProjects.newBuilder()
-            .addAllProjectIds(projectIds)
+            .addAllProjectIds(projectsMap.keySet())
             .addPredicates(keyValueQueryTag1)
             .addPredicates(keyValueQueryTag2)
             .build();
@@ -3382,7 +2899,7 @@ public class HydratedServiceTest {
 
     findProjects =
         FindProjects.newBuilder()
-            .addAllProjectIds(projectIds)
+            .addAllProjectIds(projectsMap.keySet())
             .addPredicates(keyValueQueryAttribute_1)
             .setAscending(false)
             .setSortKey("attributes.attribute_1")
@@ -3407,7 +2924,7 @@ public class HydratedServiceTest {
             .build();
     findProjects =
         FindProjects.newBuilder()
-            .addAllProjectIds(projectIds)
+            .addAllProjectIds(projectsMap.keySet())
             .addPredicates(keyValueQueryAttribute_1)
             .addPredicates(keyValueQueryAccuracy)
             .setAscending(false)
@@ -3434,7 +2951,7 @@ public class HydratedServiceTest {
 
     findProjects =
         FindProjects.newBuilder()
-            .addAllProjectIds(projectIds)
+            .addAllProjectIds(projectsMap.keySet())
             .addPredicates(keyValueQueryAttribute_1)
             .setAscending(false)
             .setIdsOnly(true)
@@ -3632,15 +3149,6 @@ public class HydratedServiceTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    for (String projectId : projectIds) {
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-    }
-
     LOGGER.info("FindProjectRuns test stop................................");
   }
 
@@ -3653,18 +3161,13 @@ public class HydratedServiceTest {
       return;
     }
 
-    ProjectTest projectTest = new ProjectTest();
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ProjectServiceBlockingStub user2ProjectServiceStub =
-        ProjectServiceGrpc.newBlockingStub(client2Channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub =
-        HydratedServiceGrpc.newBlockingStub(channel);
-
     Map<String, Project> secondProjectMap = new HashMap<>();
     Map<String, Project> firstProjectMap = new HashMap<>();
 
+    ProjectTest projectTest = new ProjectTest();
     // Create two project of above project
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("Project_1");
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -3684,7 +3187,7 @@ public class HydratedServiceTest {
             .addTags("Tag_2")
             .build();
     CreateProject.Response createProjectResponse =
-        user2ProjectServiceStub.createProject(createProjectRequest);
+        client2ProjectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
     secondProjectMap.put(project1.getId(), project1);
     LOGGER.info("Project created successfully");
@@ -3694,7 +3197,7 @@ public class HydratedServiceTest {
         project1.getName());
 
     // project2 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project_2");
+    createProjectRequest = projectTest.getCreateProjectRequest("Project-2-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -3714,7 +3217,7 @@ public class HydratedServiceTest {
             .addTags("Tag_3")
             .addTags("Tag_4")
             .build();
-    createProjectResponse = user2ProjectServiceStub.createProject(createProjectRequest);
+    createProjectResponse = client2ProjectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     secondProjectMap.put(project2.getId(), project2);
     LOGGER.info("Project created successfully");
@@ -3724,7 +3227,7 @@ public class HydratedServiceTest {
         project2.getName());
 
     // project3 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project_2");
+    createProjectRequest = projectTest.getCreateProjectRequest("Project-3-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -3754,7 +3257,7 @@ public class HydratedServiceTest {
         project3.getName());
 
     // project4 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project_1");
+    createProjectRequest = projectTest.getCreateProjectRequest("Project-4-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -3784,12 +3287,10 @@ public class HydratedServiceTest {
         createProjectRequest.getName(),
         project4.getName());
 
-    UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
-        UACServiceGrpc.newBlockingStub(authServiceChannel);
     GetUser getUserRequest =
         GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
     // Get the user info by vertaId form the AuthService
-    UserInfo secondUserInfo = uaServiceStub.getUser(getUserRequest);
+    UserInfo secondUserInfo = uacServiceStub.getUser(getUserRequest);
 
     FindProjects findProjects =
         FindProjects.newBuilder()
@@ -3827,7 +3328,7 @@ public class HydratedServiceTest {
     for (String projectId : secondProjectMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
       DeleteProject.Response deleteProjectResponse =
-          user2ProjectServiceStub.deleteProject(deleteProject);
+          client2ProjectServiceStub.deleteProject(deleteProject);
       LOGGER.info("Project deleted successfully");
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
@@ -3844,24 +3345,10 @@ public class HydratedServiceTest {
       return;
     }
 
-    ExperimentTest experimentTest = new ExperimentTest();
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub experimentRunServiceClient2Stub =
-        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
-    HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingClient2Stub =
-        HydratedServiceGrpc.newBlockingStub(client2Channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     // Create project
     ProjectTest projectTest = new ProjectTest();
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experiment_project_n_sprt_abc");
+        projectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -3880,7 +3367,8 @@ public class HydratedServiceTest {
     assertTrue(projectCollaboratorResponse.getStatus());
 
     CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
+        ExperimentTest.getCreateExperimentRequest(
+            project.getId(), "Experiment-1-" + new Date().getTime());
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment1 = createExperimentResponse.getExperiment();
@@ -3891,7 +3379,8 @@ public class HydratedServiceTest {
         createExperimentResponse.getExperiment().getName());
 
     createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
+        ExperimentTest.getCreateExperimentRequest(
+            project.getId(), "Experiment-2-" + new Date().getTime());
     createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment2 = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
@@ -3901,8 +3390,8 @@ public class HydratedServiceTest {
         createExperimentResponse.getExperiment().getName());
 
     CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperimentRun_sprt_1");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project.getId(), experiment1.getId(), "ExperimentRun-1-" + new Date().getTime());
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun experimentRun11 = createExperimentRunResponse.getExperimentRun();
@@ -3913,8 +3402,8 @@ public class HydratedServiceTest {
         experimentRun11.getName());
 
     createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment1.getId(), "ExperimentRun_sprt_2");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project.getId(), experiment1.getId(), "ExperimentRun-2-" + new Date().getTime());
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun experimentRun12 = createExperimentRunResponse.getExperimentRun();
@@ -3925,8 +3414,8 @@ public class HydratedServiceTest {
         experimentRun12.getName());
 
     createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperimentRun_sprt_2");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project.getId(), experiment2.getId(), "ExperimentRun-3-" + new Date().getTime());
     createExperimentRunResponse =
         experimentRunServiceClient2Stub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun experimentRun21 = createExperimentRunResponse.getExperimentRun();
@@ -3937,8 +3426,8 @@ public class HydratedServiceTest {
         experimentRun21.getName());
 
     createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment2.getId(), "ExperimentRun_sprt_1");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
     createExperimentRunResponse =
         experimentRunServiceClient2Stub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun experimentRun22 = createExperimentRunResponse.getExperimentRun();
@@ -4005,12 +3494,6 @@ public class HydratedServiceTest {
             hydratedExperimentRun.getAllowedActionsList().contains(deleteAction));
       }
     }
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Check collaborator has delete action test stop.........");
   }
