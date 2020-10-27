@@ -23,8 +23,8 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
+import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -56,11 +56,10 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +72,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -84,15 +82,7 @@ import org.junit.runners.MethodSorters;
 public class ExperimentRunTest {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentRunTest.class);
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
-  private ManagedChannel channel = null;
-  private ManagedChannel client2Channel = null;
-  private ManagedChannel authServiceChannel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
@@ -101,8 +91,36 @@ public class ExperimentRunTest {
   private static InProcessChannelBuilder client2ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
+
   private static App app;
   private static DeleteEntitiesCron deleteEntitiesCron;
+
+  // Project Entities
+  private static Project project;
+  private static Project project2;
+  private static Project project3;
+  private static Map<String, Project> projectMap = new HashMap<>();
+
+  // Experiment Entities
+  private static Experiment experiment;
+  private static Experiment experiment2;
+
+  // ExperimentRun Entities
+  private static ExperimentRun experimentRun;
+  private static ExperimentRun experimentRun2;
+  private static Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
+
+  // all service stubs
+  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
+  private static CollaboratorServiceBlockingStub collaboratorServiceStubClient1;
+  private static ProjectServiceBlockingStub projectServiceStub;
+  private static ExperimentServiceBlockingStub experimentServiceStub;
+  private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
+  private static ExperimentRunServiceBlockingStub experimentRunServiceStubClient2;
+  private static VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub;
+  private static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
+  private static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
+      datasetVersionServiceStub;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -115,7 +133,7 @@ public class ExperimentRunTest {
 
     app = App.getInstance();
     AuthService authService = new PublicAuthServiceUtils();
-    app.setRoleService(new PublicRoleServiceUtils(authService));
+    RoleService roleService = new PublicRoleServiceUtils(authService);
 
     Map<String, Object> authServicePropMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
@@ -126,12 +144,12 @@ public class ExperimentRunTest {
       app.setAuthServerPort(authServicePort);
 
       authService = new AuthServiceUtils();
-      app.setRoleService(new RoleServiceUtils(authService));
+      roleService = new RoleServiceUtils(authService);
     }
 
     ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, app.getRoleService());
+        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
@@ -140,46 +158,235 @@ public class ExperimentRunTest {
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(
-            authService, app.getRoleService(), CronJobUtils.deleteEntitiesFrequency);
-  }
 
-  @AfterClass
-  public static void removeServerAndService() {
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-    App.initiateShutdown(0);
-  }
-
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
-    if (!client2Channel.isShutdown()) {
-      client2Channel.shutdownNow();
-    }
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      if (!authServiceChannel.isShutdown()) {
-        authServiceChannel.shutdownNow();
-      }
-    }
-  }
-
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(client1ChannelBuilder.maxInboundMessageSize(1024).build());
-    client2Channel =
-        grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      authServiceChannel =
+      ManagedChannel authServiceChannel =
           ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
+      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
+      collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     }
+
+    serverBuilder.build().start();
+    ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
+    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
+    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 1000);
+
+    // Create all service blocking stub
+    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
+    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
+    experimentRunServiceStubClient2 = ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
+    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
+    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
+    datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
+  }
+
+  @AfterClass
+  public static void removeServerAndService() {
+    App.initiateShutdown(0);
+
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
+
+    // shutdown test server
+    serverBuilder.build().shutdownNow();
+  }
+
+  @Before
+  public void createEntities() {
+    // Create all entities
+    createProjectEntities();
+    createExperimentEntities();
+    createExperimentRunEntities();
+  }
+
+  @After
+  public void removeEntities() {
+    for (String projectId : projectMap.keySet()) {
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
+    }
+
+    project = null;
+    project2 = null;
+    project3 = null;
+
+    // Experiment Entities
+    experiment = null;
+    experiment2 = null;
+
+    // ExperimentRun Entities
+    experimentRun = null;
+    experimentRun2 = null;
+
+    projectMap = new HashMap<>();
+    experimentRunMap = new HashMap<>();
+  }
+
+  private static void createProjectEntities() {
+    ProjectTest projectTest = new ProjectTest();
+
+    // Create two project of above project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    project = createProjectResponse.getProject();
+    projectMap.put(project.getId(), project);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected Project name",
+        createProjectRequest.getName(),
+        project.getName());
+
+    // Create project2
+    createProjectRequest = projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    project2 = createProjectResponse.getProject();
+    projectMap.put(project2.getId(), project2);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project2.getName());
+
+    // Create project3
+    createProjectRequest = projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    project3 = createProjectResponse.getProject();
+    projectMap.put(project3.getId(), project3);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project3.getName());
+  }
+
+  private static void createExperimentEntities() {
+
+    // Create two experiment of above project
+    CreateExperiment createExperimentRequest =
+        ExperimentTest.getCreateExperimentRequest(
+            project.getId(), "Experiment-" + new Date().getTime());
+    KeyValue attribute1 =
+        KeyValue.newBuilder()
+            .setKey("attribute_1")
+            .setValue(Value.newBuilder().setNumberValue(0.012).build())
+            .build();
+    KeyValue attribute2 =
+        KeyValue.newBuilder()
+            .setKey("attribute_2")
+            .setValue(Value.newBuilder().setNumberValue(0.99).build())
+            .build();
+    createExperimentRequest =
+        createExperimentRequest
+            .toBuilder()
+            .addAttributes(attribute1)
+            .addAttributes(attribute2)
+            .addTags("Tag_1")
+            .addTags("Tag_2")
+            .build();
+    CreateExperiment.Response createExperimentResponse =
+        experimentServiceStub.createExperiment(createExperimentRequest);
+    experiment = createExperimentResponse.getExperiment();
+    LOGGER.info("Experiment created successfully");
+    assertEquals(
+        "Experiment name not match with expected Experiment name",
+        createExperimentRequest.getName(),
+        experiment.getName());
+
+    // Create two experiment of above project
+    createExperimentRequest =
+        ExperimentTest.getCreateExperimentRequest(
+            project.getId(), "Experiment-" + new Date().getTime());
+    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
+    experiment2 = createExperimentResponse.getExperiment();
+    LOGGER.info("Experiment created successfully");
+    assertEquals(
+        "Experiment name not match with expected Experiment name",
+        createExperimentRequest.getName(),
+        experiment2.getName());
+  }
+
+  private static void createExperimentRunEntities() {
+
+    CreateExperimentRun createExperimentRunRequest =
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
+    KeyValue metric1 =
+        KeyValue.newBuilder()
+            .setKey("loss")
+            .setValue(Value.newBuilder().setNumberValue(0.31).build())
+            .build();
+    KeyValue metric2 =
+        KeyValue.newBuilder()
+            .setKey("accuracy")
+            .setValue(Value.newBuilder().setNumberValue(0.31).build())
+            .build();
+    KeyValue hyperparameter1 =
+        KeyValue.newBuilder()
+            .setKey("tuning")
+            .setValue(Value.newBuilder().setNumberValue(7).build())
+            .build();
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .addMetrics(metric1)
+            .addMetrics(metric2)
+            .addHyperparameters(hyperparameter1)
+            .setDateCreated(123456)
+            .build();
+    CreateExperimentRun.Response createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    experimentRun = createExperimentRunResponse.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun.getName());
+
+    createExperimentRunRequest =
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
+    metric1 =
+        KeyValue.newBuilder()
+            .setKey("loss")
+            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+            .build();
+    metric2 =
+        KeyValue.newBuilder()
+            .setKey("accuracy")
+            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
+            .build();
+    hyperparameter1 =
+        KeyValue.newBuilder()
+            .setKey("tuning")
+            .setValue(Value.newBuilder().setNumberValue(4.55).build())
+            .build();
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .addMetrics(metric1)
+            .addMetrics(metric2)
+            .addHyperparameters(hyperparameter1)
+            .build();
+    createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    experimentRun2 = createExperimentRunResponse.getExperimentRun();
+    experimentRunMap.put(experimentRun2.getId(), experimentRun2);
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun2.getName());
   }
 
   private void checkEqualsAssert(StatusRuntimeException e) {
@@ -204,7 +411,7 @@ public class ExperimentRunTest {
         .build();
   }
 
-  public CreateExperimentRun getCreateExperimentRunRequest(
+  public static CreateExperimentRun getCreateExperimentRunRequest(
       String projectId, String experimentId, String experimentRunName) {
 
     List<String> tags = new ArrayList<>();
@@ -371,49 +578,8 @@ public class ExperimentRunTest {
   public void a_experimentRunCreateTest() {
     LOGGER.info("Create ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
     CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
+        getCreateExperimentRunRequest(project.getId(), experiment.getId(), experimentRun.getName());
 
     try {
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -488,21 +654,12 @@ public class ExperimentRunTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Create ExperimentRun test stop................................");
   }
 
   @Test
   public void a_experimentRunCreateNegativeTest() {
     LOGGER.info("Create ExperimentRun Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     CreateExperimentRun request = getCreateExperimentRunRequest("", "abcd", "ExperiemntRun_xyz");
 
@@ -521,63 +678,6 @@ public class ExperimentRunTest {
   @Test
   public void b_getExperimentRunFromProjectRunTest() {
     LOGGER.info("Get ExperimentRun from Project test start................................");
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_sprt_1");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun.getId(), experimentRun);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
-    createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_sprt_2");
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    experimentRun = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun.getId(), experimentRun);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     GetExperimentRunsInProject getExperimentRunRequest =
         GetExperimentRunsInProject.newBuilder().setProjectId(project.getId()).build();
@@ -601,12 +701,6 @@ public class ExperimentRunTest {
       assertTrue(true);
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get ExperimentRun from Project test stop................................");
   }
 
@@ -614,109 +708,6 @@ public class ExperimentRunTest {
   public void b_getExperimentRunWithPaginationFromProjectRunTest() {
     LOGGER.info(
         "Get ExperimentRun using pagination from Project test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_sprt_1");
-    KeyValue metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    KeyValue metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    KeyValue hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(7).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .setDateCreated(123456)
-            .build();
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun1.getId(), experimentRun1);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun1.getName());
-
-    createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_sprt_2");
-    metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(4.55).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun2.getId(), experimentRun2);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun2.getName());
 
     int pageLimit = 2;
     boolean isExpectedResultFound = false;
@@ -798,7 +789,7 @@ public class ExperimentRunTest {
         experimentRunResponse.getExperimentRunsCount());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun1,
+        experimentRun,
         experimentRunResponse.getExperimentRuns(0));
 
     getExperiment =
@@ -819,12 +810,6 @@ public class ExperimentRunTest {
       assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Get ExperimentRun using pagination from Project test stop................................");
   }
@@ -833,9 +818,6 @@ public class ExperimentRunTest {
   public void b_getExperimentFromProjectRunNegativeTest() {
     LOGGER.info(
         "Get ExperimentRun from Project Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     GetExperimentRunsInProject getExperiment = GetExperimentRunsInProject.newBuilder().build();
     try {
@@ -863,64 +845,6 @@ public class ExperimentRunTest {
   public void bb_getExperimentRunFromExperimentTest() {
     LOGGER.info("Get ExperimentRun from Experiment test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_sprt_1");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun.getId(), experimentRun);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
-    createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_sprt_2");
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    experimentRun = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun.getId(), experimentRun);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     GetExperimentRunsInExperiment getExperimentRunsInExperiment =
         GetExperimentRunsInExperiment.newBuilder().setExperimentId(experiment.getId()).build();
 
@@ -943,12 +867,6 @@ public class ExperimentRunTest {
       assertTrue(true);
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get ExperimentRun from Experiment test stop................................");
   }
 
@@ -956,109 +874,6 @@ public class ExperimentRunTest {
   public void bb_getExperimentRunWithPaginationFromExperimentTest() {
     LOGGER.info(
         "Get ExperimentRun using pagination from Experiment test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_sprt_1");
-    KeyValue metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    KeyValue metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.31).build())
-            .build();
-    KeyValue hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(7).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .setDateCreated(123456)
-            .build();
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun1.getId(), experimentRun1);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun1.getName());
-
-    createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_sprt_2");
-    metric1 =
-        KeyValue.newBuilder()
-            .setKey("loss")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    metric2 =
-        KeyValue.newBuilder()
-            .setKey("accuracy")
-            .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
-            .build();
-    hyperparameter1 =
-        KeyValue.newBuilder()
-            .setKey("tuning")
-            .setValue(Value.newBuilder().setNumberValue(4.55).build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .addMetrics(metric1)
-            .addMetrics(metric2)
-            .addHyperparameters(hyperparameter1)
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
-    experimentRunMap.put(experimentRun2.getId(), experimentRun2);
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun2.getName());
 
     int pageLimit = 1;
     boolean isExpectedResultFound = false;
@@ -1138,7 +953,7 @@ public class ExperimentRunTest {
         experimentRunResponse.getExperimentRunsCount());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun1,
+        experimentRun,
         experimentRunResponse.getExperimentRuns(0));
     assertEquals(
         "Total records count not matched with expected records count",
@@ -1163,12 +978,6 @@ public class ExperimentRunTest {
       assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Get ExperimentRun using pagination from Experiment test stop................................");
   }
@@ -1178,13 +987,10 @@ public class ExperimentRunTest {
     LOGGER.info(
         "Get ExperimentRun from Experiment Negative test start................................");
 
-    ExperimentRunServiceBlockingStub experimentServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
     GetExperimentRunsInExperiment getExperiment =
         GetExperimentRunsInExperiment.newBuilder().build();
     try {
-      experimentServiceStub.getExperimentRunsInExperiment(getExperiment);
+      experimentRunServiceStub.getExperimentRunsInExperiment(getExperiment);
       fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
@@ -1194,7 +1000,7 @@ public class ExperimentRunTest {
 
     getExperiment = GetExperimentRunsInExperiment.newBuilder().setExperimentId("sdfdsfsd").build();
     try {
-      experimentServiceStub.getExperimentRunsInExperiment(getExperiment);
+      experimentRunServiceStub.getExperimentRunsInExperiment(getExperiment);
       fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
@@ -1210,50 +1016,6 @@ public class ExperimentRunTest {
   public void c_getExperimentRunByIdTest() {
     LOGGER.info("Get ExperimentRunById test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     GetExperimentRunById request =
         GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
 
@@ -1265,21 +1027,12 @@ public class ExperimentRunTest {
         experimentRun,
         response.getExperimentRun());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get ExperimentRunById test stop................................");
   }
 
   @Test
   public void c_getExperimentRunByIdNegativeTest() {
     LOGGER.info("Get ExperimentRunById Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     GetExperimentRunById request = GetExperimentRunById.newBuilder().build();
 
@@ -1310,50 +1063,6 @@ public class ExperimentRunTest {
   public void c_getExperimentRunByNameTest() {
     LOGGER.info("Get ExperimentRunByName test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     GetExperimentRunByName request =
         GetExperimentRunByName.newBuilder()
             .setName(experimentRun.getName())
@@ -1369,21 +1078,12 @@ public class ExperimentRunTest {
         experimentRun.getName(),
         response.getExperimentRun().getName());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get ExperimentRunByName test stop................................");
   }
 
   @Test
   public void c_getExperimentRunByNameNegativeTest() {
     LOGGER.info("Get ExperimentRunByName Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     GetExperimentRunByName request = GetExperimentRunByName.newBuilder().build();
 
@@ -1403,50 +1103,6 @@ public class ExperimentRunTest {
   public void d_updateExperimentRunNameOrDescription() {
     LOGGER.info(
         "Update ExperimentRun Name & Description test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     UpdateExperimentRunName request =
         UpdateExperimentRunName.newBuilder()
@@ -1475,6 +1131,8 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response2.getExperimentRun().getDateUpdated());
+    experimentRun = response2.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     try {
       String name =
@@ -1488,64 +1146,13 @@ public class ExperimentRunTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Update ExperimentRun Name & Description test stop................................");
   }
 
   @Test
   public void d_updateExperimentRunNameOrDescriptionNegativeTest() {
-    LOGGER.info(
-        "Update ExperimentRun Name & Description Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
+    LOGGER.info("Update ExperimentRun Name & Description Negative test start.......");
 
     UpdateExperimentRunDescription request =
         UpdateExperimentRunDescription.newBuilder()
@@ -1563,63 +1170,12 @@ public class ExperimentRunTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    LOGGER.info(
-        "Update ExperimentRun Name & Description Negative test stop................................");
+    LOGGER.info("Update ExperimentRun Name & Description Negative test stop.......");
   }
 
   @Test
   public void e_addExperimentRunTags() {
     LOGGER.info("Add ExperimentRun tags test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<String> tags = new ArrayList<>();
     tags.add("Test Added tag");
@@ -1631,13 +1187,15 @@ public class ExperimentRunTest {
     AddExperimentRunTags.Response aertResponse =
         experimentRunServiceStub.addExperimentRunTags(request);
     LOGGER.info("AddExperimentRunTags Response : \n" + aertResponse.getExperimentRun());
-    assertEquals(4, aertResponse.getExperimentRun().getTagsCount());
+    assertEquals(
+        experimentRun.getTagsCount() + tags.size(), aertResponse.getExperimentRun().getTagsCount());
 
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         aertResponse.getExperimentRun().getDateUpdated());
     experimentRun = aertResponse.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     tags = new ArrayList<>();
     tags.add("Test Added tag 3");
@@ -1648,7 +1206,9 @@ public class ExperimentRunTest {
 
     aertResponse = experimentRunServiceStub.addExperimentRunTags(request);
     LOGGER.info("AddExperimentRunTags Response : \n" + aertResponse.getExperimentRun());
-    assertEquals(5, aertResponse.getExperimentRun().getTagsCount());
+    assertEquals(experimentRun.getTagsCount() + 1, aertResponse.getExperimentRun().getTagsCount());
+    experimentRun = aertResponse.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     try {
       String tag52 = "Human Activity Recognition using Smartphone Dataset";
@@ -1661,62 +1221,12 @@ public class ExperimentRunTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Add ExperimentRun tags test stop................................");
   }
 
   @Test
   public void ea_addExperimentRunTagsNegativeTest() {
     LOGGER.info("Add ExperimentRun tags Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<String> tags = new ArrayList<>();
     tags.add("Test Added tag " + Calendar.getInstance().getTimeInMillis());
@@ -1733,62 +1243,12 @@ public class ExperimentRunTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Add ExperimentRun tags Negative test stop................................");
   }
 
   @Test
   public void eb_addExperimentRunTag() {
     LOGGER.info("Add ExperimentRun tag test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     AddExperimentRunTag request =
         AddExperimentRunTag.newBuilder()
@@ -1801,13 +1261,15 @@ public class ExperimentRunTest {
     LOGGER.info("AddExperimentRunTag Response : \n" + aertResponse.getExperimentRun());
     assertEquals(
         "ExperimentRun tags not match with expected experimentRun tags",
-        3,
+        experimentRun.getTagsCount() + 1,
         aertResponse.getExperimentRun().getTagsCount());
 
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         aertResponse.getExperimentRun().getDateUpdated());
+    experimentRun = aertResponse.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     try {
       String tag52 = "Human Activity Recognition using Smartphone Dataset";
@@ -1820,62 +1282,12 @@ public class ExperimentRunTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Add ExperimentRun tags test stop................................");
   }
 
   @Test
   public void ec_addExperimentRunTagNegativeTest() {
     LOGGER.info("Add ExperimentRun tag Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     AddExperimentRunTag request = AddExperimentRunTag.newBuilder().setTag("Tag_xyz").build();
 
@@ -1888,62 +1300,12 @@ public class ExperimentRunTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Add ExperimentRun tag Negative test stop................................");
   }
 
   @Test
   public void ee_getExperimentRunTags() {
     LOGGER.info("Get ExperimentRun tags test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     GetTags request = GetTags.newBuilder().setId(experimentRun.getId()).build();
 
@@ -1954,12 +1316,6 @@ public class ExperimentRunTest {
         experimentRun.getTagsList(),
         response.getTagsList());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get ExperimentRun tags test stop................................");
   }
 
@@ -1968,9 +1324,6 @@ public class ExperimentRunTest {
     LOGGER.info("Get ExperimentRun tags Negative test start................................");
 
     GetTags request = GetTags.newBuilder().build();
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
     try {
       experimentRunServiceStub.getExperimentRunTags(request);
       fail();
@@ -1987,50 +1340,7 @@ public class ExperimentRunTest {
   public void f_deleteExperimentRunTags() {
     LOGGER.info("Delete ExperimentRun tags test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
+    e_addExperimentRunTags();
     List<String> removableTagList = new ArrayList<>();
     if (experimentRun.getTagsList().size() > 1) {
       removableTagList =
@@ -2053,6 +1363,7 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
     experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     if (response.getExperimentRun().getTagsList().size() > 0) {
       request =
@@ -2065,13 +1376,9 @@ public class ExperimentRunTest {
       LOGGER.info(
           "DeleteExperimentRunTags Response : \n" + response.getExperimentRun().getTagsList());
       assertEquals(0, response.getExperimentRun().getTagsList().size());
+      experimentRun = response.getExperimentRun();
+      experimentRunMap.put(experimentRun.getId(), experimentRun);
     }
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Delete ExperimentRun tags test stop................................");
   }
@@ -2079,50 +1386,6 @@ public class ExperimentRunTest {
   @Test
   public void fa_deleteExperimentRunTagsNegativeTest() {
     LOGGER.info("Delete ExperimentRun tags Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     DeleteExperimentRunTags request = DeleteExperimentRunTags.newBuilder().build();
 
@@ -2135,12 +1398,6 @@ public class ExperimentRunTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Delete ExperimentRun tags Negative test stop................................");
   }
 
@@ -2148,69 +1405,25 @@ public class ExperimentRunTest {
   public void fb_deleteExperimentRunTag() {
     LOGGER.info("Delete ExperimentRun tag test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
+    e_addExperimentRunTags();
     DeleteExperimentRunTag request =
-        DeleteExperimentRunTag.newBuilder().setId(experimentRun.getId()).setTag("Tag_1").build();
+        DeleteExperimentRunTag.newBuilder()
+            .setId(experimentRun.getId())
+            .setTag(experimentRun.getTags(0))
+            .build();
 
     DeleteExperimentRunTag.Response response =
         experimentRunServiceStub.deleteExperimentRunTag(request);
     LOGGER.info("DeleteExperimentRunTag Response : \n" + response.getExperimentRun().getTagsList());
-    assertFalse(response.getExperimentRun().getTagsList().contains("tag_abc"));
+    assertFalse(response.getExperimentRun().getTagsList().contains(experimentRun.getTags(0)));
 
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
     LOGGER.info("Delete ExperimentRun tags test stop................................");
   }
 
@@ -2226,36 +1439,11 @@ public class ExperimentRunTest {
   public void findExperimentRunsHyperparameter() {
     LOGGER.info("FindExperimentRuns test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ferh");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_1");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-
     Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
 
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+            project.getId(), experiment.getId(), "ExperimentRun_ferh_1");
     KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
     createExperimentRunRequest =
         createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
@@ -2266,7 +1454,7 @@ public class ExperimentRunTest {
     LOGGER.info("ExperimentRun created successfully");
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
+            project.getId(), experiment.getId(), "ExperimentRun_ferh_2");
     createExperimentRunRequest = createExperimentRunRequest.toBuilder().build();
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -2279,12 +1467,6 @@ public class ExperimentRunTest {
         experimentRun12.getName());
 
     // experiment2 of above project
-    createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
             project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
@@ -2353,11 +1535,6 @@ public class ExperimentRunTest {
         }
       }
     }
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("FindExperimentRuns test stop................................");
   }
@@ -2372,50 +1549,6 @@ public class ExperimentRunTest {
   @Test
   public void g_logObservationTest() {
     LOGGER.info(" Log Observation in ExperimentRun test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     Value intValue =
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
@@ -2450,12 +1583,8 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Log Observation in ExperimentRun tags test stop................................");
   }
@@ -2464,50 +1593,6 @@ public class ExperimentRunTest {
   public void g_logObservationNegativeTest() {
     LOGGER.info(
         " Log Observation in ExperimentRun Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     Value intValue =
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
@@ -2549,12 +1634,6 @@ public class ExperimentRunTest {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Log Observation in ExperimentRun Negative tags test stop................................");
   }
@@ -2562,50 +1641,6 @@ public class ExperimentRunTest {
   @Test
   public void g_logObservationsTest() {
     LOGGER.info(" Log Observations in ExperimentRun test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<Observation> observations = new ArrayList<>();
     Value intValue =
@@ -2662,6 +1697,7 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
     experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     logObservationRequest =
         LogObservations.newBuilder()
@@ -2685,12 +1721,8 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Log Observations in ExperimentRun tags test stop................................");
   }
@@ -2699,49 +1731,6 @@ public class ExperimentRunTest {
   public void g_logObservationsNegativeTest() {
     LOGGER.info(
         " Log Observations in ExperimentRun Negative test start................................");
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<Observation> observations = new ArrayList<>();
     Value intValue =
@@ -2801,12 +1790,6 @@ public class ExperimentRunTest {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Log Observations in ExperimentRun Negative tags test stop................................");
   }
@@ -2815,50 +1798,7 @@ public class ExperimentRunTest {
   public void h_getObservationTest() {
     LOGGER.info("Get Observation from ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
+    g_logObservationsTest();
     GetObservations getObservationRequest =
         GetObservations.newBuilder()
             .setId(experimentRun.getId())
@@ -2883,12 +1823,6 @@ public class ExperimentRunTest {
       }
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Get Observation from ExperimentRun tags test stop................................");
   }
@@ -2897,9 +1831,6 @@ public class ExperimentRunTest {
   public void h_getObservationNegativeTest() {
     LOGGER.info(
         "Get Observation from ExperimentRun Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     GetObservations getObservationRequest =
         GetObservations.newBuilder()
@@ -2938,37 +1869,9 @@ public class ExperimentRunTest {
   public void h_LogObservationEpochTest() {
     LOGGER.info("Get Observation from ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_h_loet");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    // Create an experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_h_loet_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment.getId(), "ExperimentRun_h_loet");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
+    DeleteObservations request =
+        DeleteObservations.newBuilder().setId(experimentRun.getId()).setDeleteAll(true).build();
+    experimentRunServiceStub.deleteObservations(request);
 
     Value intValue =
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
@@ -3172,12 +2075,6 @@ public class ExperimentRunTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Get Observation from ExperimentRun tags test stop................................");
   }
@@ -3185,50 +2082,6 @@ public class ExperimentRunTest {
   @Test
   public void i_logMetricTest() {
     LOGGER.info(" Log Metric in ExperimentRun test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     Value intValue =
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
@@ -3257,12 +2110,8 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Log Metric in ExperimentRun tags test stop................................");
   }
@@ -3270,50 +2119,6 @@ public class ExperimentRunTest {
   @Test
   public void i_logMetricNegativeTest() {
     LOGGER.info(" Log Metric in ExperimentRun Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     Value intValue =
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
@@ -3361,12 +2166,6 @@ public class ExperimentRunTest {
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Log Metric in ExperimentRun Negative tags test stop................................");
   }
@@ -3374,50 +2173,6 @@ public class ExperimentRunTest {
   @Test
   public void i_logMetricsTest() {
     LOGGER.info(" Log Metrics in ExperimentRun test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<KeyValue> keyValues = new ArrayList<>();
     Value intValue =
@@ -3460,11 +2215,8 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Log Metrics in ExperimentRun tags test stop................................");
   }
@@ -3473,50 +2225,6 @@ public class ExperimentRunTest {
   public void i_logMetricsNegativeTest() {
     LOGGER.info(
         " Log Metrics in ExperimentRun Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<KeyValue> keyValues = new ArrayList<>();
     Value intValue =
@@ -3577,12 +2285,6 @@ public class ExperimentRunTest {
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Log Metrics in ExperimentRun Negative tags test stop................................");
   }
@@ -3591,50 +2293,7 @@ public class ExperimentRunTest {
   public void j_getMetricsTest() {
     LOGGER.info("Get Metrics from ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
+    i_logMetricsTest();
     GetMetrics getMetricsRequest = GetMetrics.newBuilder().setId(experimentRun.getId()).build();
 
     GetMetrics.Response response = experimentRunServiceStub.getMetrics(getMetricsRequest);
@@ -3644,12 +2303,6 @@ public class ExperimentRunTest {
         experimentRun.getMetricsList(),
         response.getMetricsList());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get Metrics from ExperimentRun tags test stop................................");
   }
 
@@ -3657,9 +2310,6 @@ public class ExperimentRunTest {
   public void j_getMetricsNegativeTest() {
     LOGGER.info(
         "Get Metrics from ExperimentRun Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     GetMetrics getMetricsRequest = GetMetrics.newBuilder().build();
 
@@ -4147,50 +2797,6 @@ public class ExperimentRunTest {
     LOGGER.info(
         " Log Datasets in ExperimentRun Negative test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     List<Artifact> artifacts = new ArrayList<>();
     Artifact artifact1 =
         Artifact.newBuilder()
@@ -4244,12 +2850,6 @@ public class ExperimentRunTest {
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Log Datasets in ExperimentRun tags Negative test stop................................");
   }
@@ -4257,50 +2857,6 @@ public class ExperimentRunTest {
   @Test
   public void l_getDatasetsTest() {
     LOGGER.info("Get Datasets from ExperimentRun test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     GetDatasets getDatasetsRequest = GetDatasets.newBuilder().setId(experimentRun.getId()).build();
 
@@ -4311,12 +2867,6 @@ public class ExperimentRunTest {
         experimentRun.getDatasetsList(),
         response.getDatasetsList());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get Datasets from ExperimentRun tags test stop................................");
   }
 
@@ -4324,9 +2874,6 @@ public class ExperimentRunTest {
   public void l_getDatasetsNegativeTest() {
     LOGGER.info(
         "Get Datasets from ExperimentRun Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     GetDatasets getDatasetsRequest = GetDatasets.newBuilder().build();
 
@@ -4358,50 +2905,6 @@ public class ExperimentRunTest {
   public void m_logArtifactTest() {
     LOGGER.info(" Log Artifact in ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     Artifact artifact =
         Artifact.newBuilder()
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
@@ -4429,11 +2932,8 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Log Artifact in ExperimentRun tags test stop................................");
   }
@@ -4442,50 +2942,6 @@ public class ExperimentRunTest {
   public void m_logArtifactNegativeTest() {
     LOGGER.info(
         " Log Artifact in ExperimentRun Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     Artifact artifact =
         Artifact.newBuilder()
@@ -4528,12 +2984,6 @@ public class ExperimentRunTest {
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Log Artifact in ExperimentRun tags Negative test stop................................");
   }
@@ -4541,52 +2991,6 @@ public class ExperimentRunTest {
   @Test
   public void m_logArtifactsTest() {
     LOGGER.info(" Log Artifacts in ExperimentRun test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<Artifact> artifacts = new ArrayList<>();
     Artifact artifact1 =
@@ -4624,11 +3028,8 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Log Artifacts in ExperimentRun tags test stop................................");
   }
@@ -4637,50 +3038,6 @@ public class ExperimentRunTest {
   public void m_logArtifactsNegativeTest() {
     LOGGER.info(
         " Log Artifacts in ExperimentRun Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<Artifact> artifacts = new ArrayList<>();
     Artifact artifact1 =
@@ -4732,12 +3089,6 @@ public class ExperimentRunTest {
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Log Artifacts in ExperimentRun tags Negative test stop................................");
   }
@@ -4746,50 +3097,7 @@ public class ExperimentRunTest {
   public void n_getArtifactsTest() {
     LOGGER.info("Get Artifacts from ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
+    m_logArtifactsTest();
     GetArtifacts getArtifactsRequest =
         GetArtifacts.newBuilder().setId(experimentRun.getId()).build();
 
@@ -4801,12 +3109,6 @@ public class ExperimentRunTest {
         experimentRun.getArtifactsList(),
         response.getArtifactsList());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get Artifacts from ExperimentRun tags test stop................................");
   }
 
@@ -4814,9 +3116,6 @@ public class ExperimentRunTest {
   public void n_getArtifactsNegativeTest() {
     LOGGER.info(
         "Get Artifacts from ExperimentRun Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     GetArtifacts getArtifactsRequest = GetArtifacts.newBuilder().build();
 
@@ -4848,50 +3147,6 @@ public class ExperimentRunTest {
   public void o_logHyperparameterTest() {
     LOGGER.info(" Log Hyperparameter in ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     Value blobValue = Value.newBuilder().setStringValue("this is a blob data example").build();
     KeyValue hyperparameter =
         KeyValue.newBuilder()
@@ -4921,12 +3176,8 @@ public class ExperimentRunTest {
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info(
         "Log Hyperparameter in ExperimentRun tags test stop................................");
@@ -4936,50 +3187,6 @@ public class ExperimentRunTest {
   public void o_logHyperparameterNegativeTest() {
     LOGGER.info(
         " Log Hyperparameter in ExperimentRun Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     Value blobValue = Value.newBuilder().setStringValue("this is a blob data example").build();
     KeyValue hyperparameter =
@@ -5028,12 +3235,6 @@ public class ExperimentRunTest {
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Log Hyperparameter in ExperimentRun Negative tags test stop................................");
   }
@@ -5041,50 +3242,6 @@ public class ExperimentRunTest {
   @Test
   public void o_logHyperparametersTest() {
     LOGGER.info(" Log Hyperparameters in ExperimentRun test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<KeyValue> hyperparameters = new ArrayList<>();
     Value blobValue = Value.newBuilder().setStringValue("this is a blob data example").build();
@@ -5127,11 +3284,8 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info(
         "Log Hyperparameters in ExperimentRun tags test stop................................");
@@ -5141,50 +3295,6 @@ public class ExperimentRunTest {
   public void o_logHyperparametersNegativeTest() {
     LOGGER.info(
         " Log Hyperparameters in ExperimentRun Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<KeyValue> hyperparameters = new ArrayList<>();
     Value blobValue = Value.newBuilder().setStringValue("this is a blob data example").build();
@@ -5247,65 +3357,14 @@ public class ExperimentRunTest {
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    LOGGER.info(
-        "Log Hyperparameters in ExperimentRun Negative tags test stop................................");
+    LOGGER.info("Log Hyperparameters in ExperimentRun Negative tags test stop.....");
   }
 
   @Test
   public void p_getHyperparametersTest() {
-    LOGGER.info(
-        "Get Hyperparameters from ExperimentRun test start................................");
+    LOGGER.info("Get Hyperparameters from ExperimentRun test start........");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
+    o_logHyperparametersTest();
     GetHyperparameters getHyperparametersRequest =
         GetHyperparameters.newBuilder().setId(experimentRun.getId()).build();
 
@@ -5318,23 +3377,12 @@ public class ExperimentRunTest {
         experimentRun.getHyperparametersList(),
         response.getHyperparametersList());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    LOGGER.info(
-        "Get Hyperparameters from ExperimentRun tags test stop................................");
+    LOGGER.info("Get Hyperparameters from ExperimentRun tags test stop......");
   }
 
   @Test
   public void p_getHyperparametersNegativeTest() {
-    LOGGER.info(
-        "Get Hyperparameters from ExperimentRun Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
+    LOGGER.info("Get Hyperparameters from ExperimentRun Negative test start..........");
 
     GetHyperparameters getHyperparametersRequest = GetHyperparameters.newBuilder().build();
 
@@ -5366,50 +3414,6 @@ public class ExperimentRunTest {
   public void q_logAttributeTest() {
     LOGGER.info(" Log Attribute in ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     Value blobValue =
         Value.newBuilder().setStringValue("this is a blob data example of attribute").build();
     KeyValue attribute =
@@ -5438,11 +3442,8 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Log Attribute in ExperimentRun tags test stop................................");
   }
@@ -5451,50 +3452,6 @@ public class ExperimentRunTest {
   public void q_logAttributeNegativeTest() {
     LOGGER.info(
         " Log Attribute in ExperimentRun Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     Value blobValue =
         Value.newBuilder().setStringValue("this is a blob data example of attribute").build();
@@ -5542,12 +3499,6 @@ public class ExperimentRunTest {
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Log Attribute in ExperimentRun Negative tags test stop................................");
   }
@@ -5555,50 +3506,6 @@ public class ExperimentRunTest {
   @Test
   public void q_logAttributesTest() {
     LOGGER.info(" Log Attributes in ExperimentRun test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<KeyValue> attributes = new ArrayList<>();
     Value blobValue =
@@ -5642,11 +3549,8 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Log Attributes in ExperimentRun tags test stop................................");
   }
@@ -5655,49 +3559,6 @@ public class ExperimentRunTest {
   public void q_logAttributesNegativeTest() {
     LOGGER.info(
         " Log Attributes in ExperimentRun Negative test start................................");
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<KeyValue> attributes = new ArrayList<>();
     Value blobValue =
@@ -5758,12 +3619,6 @@ public class ExperimentRunTest {
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Log Attributes in ExperimentRun Negative tags test stop................................");
   }
@@ -5771,50 +3626,6 @@ public class ExperimentRunTest {
   @Test
   public void qq_addExperimentRunAttributes() {
     LOGGER.info("Add ExperimentRun Attributes test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     List<KeyValue> attributeList = new ArrayList<>();
     Value intValue = Value.newBuilder().setNumberValue(1.1).build();
@@ -5857,11 +3668,8 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Add ExperimentRun Attributes test stop................................");
   }
@@ -5869,9 +3677,6 @@ public class ExperimentRunTest {
   @Test
   public void qq_addExperimentRunAttributesNegativeTest() {
     LOGGER.info("Add ExperimentRun attributes Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     AddExperimentRunAttributes request =
         AddExperimentRunAttributes.newBuilder().setId("xyz").build();
@@ -5903,50 +3708,7 @@ public class ExperimentRunTest {
   public void r_getExperimentRunAttributesTest() {
     LOGGER.info("Get Attributes from ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
+    q_logAttributesTest();
     List<KeyValue> attributes = experimentRun.getAttributesList();
     LOGGER.info("Attributes size : " + attributes.size());
 
@@ -5988,12 +3750,6 @@ public class ExperimentRunTest {
     LOGGER.info("GetAttributes Response : " + response.getAttributesCount());
     assertEquals(attributes.size(), response.getAttributesList().size());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get Attributes from ExperimentRun tags test stop................................");
   }
 
@@ -6001,9 +3757,6 @@ public class ExperimentRunTest {
   public void r_getExperimentRunAttributesNegativeTest() {
     LOGGER.info(
         "Get Attributes from ExperimentRun Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     GetAttributes getAttributesRequest = GetAttributes.newBuilder().build();
 
@@ -6035,50 +3788,7 @@ public class ExperimentRunTest {
   public void rrr_deleteExperimentRunAttributes() {
     LOGGER.info("Delete ExperimentRun Attributes test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
+    q_logAttributesTest();
     List<KeyValue> attributes = experimentRun.getAttributesList();
     LOGGER.info("Attributes size : " + attributes.size());
     List<String> keys = new ArrayList<>();
@@ -6110,6 +3820,7 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
     experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     if (response.getExperimentRun().getAttributesList().size() != 0) {
       request =
@@ -6130,13 +3841,9 @@ public class ExperimentRunTest {
           "ExperimentRun date_updated field not update on database",
           experimentRun.getDateUpdated(),
           response.getExperimentRun().getDateUpdated());
+      experimentRun = response.getExperimentRun();
+      experimentRunMap.put(experimentRun.getId(), experimentRun);
     }
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Delete ExperimentRun Attributes test stop................................");
   }
@@ -6145,50 +3852,6 @@ public class ExperimentRunTest {
   public void rrr_deleteExperimentRunAttributesNegativeTest() {
     LOGGER.info(
         "Delete ExperimentRun Attributes Negative test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     DeleteExperimentRunAttributes request = DeleteExperimentRunAttributes.newBuilder().build();
 
@@ -6218,12 +3881,6 @@ public class ExperimentRunTest {
             + response.getExperimentRun().getAttributesList());
     assertEquals(0, response.getExperimentRun().getAttributesList().size());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Delete ExperimentRun Attributes Negative test stop................................");
   }
@@ -6232,41 +3889,9 @@ public class ExperimentRunTest {
   public void t_sortExperimentRunsTest() {
     LOGGER.info("SortExperimentRuns test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment1.getName());
-
     CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment1.getId(), "ExperimentRun_sprt_1");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     KeyValue metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -6299,7 +3924,8 @@ public class ExperimentRunTest {
         experimentRun11.getName());
 
     createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment1.getId(), "ExperimentRun_sprt_2");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -6331,19 +3957,9 @@ public class ExperimentRunTest {
         createExperimentRunRequest.getName(),
         experimentRun12.getName());
 
-    // experiment2 of above project
-    createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment2.getName());
-
     createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment2.getId(), "ExperimentRun_sprt_2");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -6376,7 +3992,8 @@ public class ExperimentRunTest {
         experimentRun21.getName());
 
     createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment2.getId(), "ExperimentRun_sprt_1");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -6501,21 +4118,12 @@ public class ExperimentRunTest {
       }
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("SortExperimentRuns test stop................................");
   }
 
   @Test
   public void t_sortExperimentRunsNegativeTest() {
     LOGGER.info("SortExperimentRuns Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     SortExperimentRuns sortExperimentRuns =
         SortExperimentRuns.newBuilder().setSortKey("end_time").setIdsOnly(true).build();
@@ -6554,40 +4162,9 @@ public class ExperimentRunTest {
   public void u_getTopExperimentRunsTest() {
     LOGGER.info("TopExperimentRuns test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_1");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment1.getName());
-
     CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment1.getId(), "ExperimentRun_sprt_1");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     KeyValue metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -6621,7 +4198,8 @@ public class ExperimentRunTest {
         experimentRun11.getName());
 
     createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment1.getId(), "ExperimentRun_sprt_2");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -6654,19 +4232,9 @@ public class ExperimentRunTest {
         createExperimentRunRequest.getName(),
         experimentRun12.getName());
 
-    // experiment2 of above project
-    createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_sprt_abc_2");
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment2.getName());
-
     createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment2.getId(), "ExperimentRun_sprt_2");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -6700,7 +4268,8 @@ public class ExperimentRunTest {
         experimentRun21.getName());
 
     createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment2.getId(), "ExperimentRun_sprt_1");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -6741,7 +4310,7 @@ public class ExperimentRunTest {
 
     TopExperimentRunsSelector topExperimentRunsSelector =
         TopExperimentRunsSelector.newBuilder()
-            .setProjectId(project.getId())
+            .addAllExperimentRunIds(experimentRunIds)
             .setSortKey("metrics.accuracy")
             .setTopK(3)
             .setAscending(true)
@@ -6765,8 +4334,7 @@ public class ExperimentRunTest {
 
     topExperimentRunsSelector =
         TopExperimentRunsSelector.newBuilder()
-            .setProjectId(project.getId())
-            .setExperimentId(experiment1.getId())
+            .setExperimentId(experiment.getId())
             .setSortKey("hyperparameters.tuning")
             .setTopK(20000)
             .setAscending(true)
@@ -6775,22 +4343,32 @@ public class ExperimentRunTest {
 
     response = experimentRunServiceStub.getTopExperimentRuns(topExperimentRunsSelector);
     LOGGER.info("TopExperimentRunsSelector Response : " + response.getExperimentRunsCount());
+
+    List<ExperimentRun> responseExperimentRuns = new ArrayList<>();
+    for (ExperimentRun resExperimentRun : response.getExperimentRunsList()) {
+      if (resExperimentRun.getId().equals(experimentRun.getId())
+          || resExperimentRun.getId().equals(experimentRun2.getId())) {
+        continue;
+      }
+      responseExperimentRuns.add(resExperimentRun);
+    }
+
     assertEquals(
         "ExperimentRun count not match with expected experimentRun count",
         2,
-        response.getExperimentRunsCount());
+        responseExperimentRuns.size());
     assertNotEquals(
         "ExperimentRun not match with expected experimentRun",
         experimentRun12,
-        response.getExperimentRunsList().get(0));
+        responseExperimentRuns.get(0));
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
         experimentRun12.getId(),
-        response.getExperimentRunsList().get(0).getId());
+        responseExperimentRuns.get(0).getId());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
         experimentRun11.getId(),
-        response.getExperimentRunsList().get(1).getId());
+        responseExperimentRuns.get(1).getId());
 
     topExperimentRunsSelector =
         TopExperimentRunsSelector.newBuilder()
@@ -6819,21 +4397,12 @@ public class ExperimentRunTest {
         experimentRun12.getId(),
         response.getExperimentRunsList().get(2).getId());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("TopExperimentRuns test stop................................");
   }
 
   @Test
   public void u_getTopExperimentRunsNegativeTest() {
     LOGGER.info("TopExperimentRuns Negative test start................................");
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     TopExperimentRunsSelector topExperimentRunsSelector =
         TopExperimentRunsSelector.newBuilder().setTopK(4).setAscending(true).build();
@@ -6876,50 +4445,6 @@ public class ExperimentRunTest {
   public void v_logJobIdTest() {
     LOGGER.info(" Log Job Id in ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     String jobId = "xyz";
     LogJobId logJobIdRequest =
         LogJobId.newBuilder().setId(experimentRun.getId()).setJobId(jobId).build();
@@ -6939,12 +4464,6 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Log Job Id in ExperimentRun test stop................................");
   }
 
@@ -6955,8 +4474,6 @@ public class ExperimentRunTest {
     String jobId = "xyz";
     LogJobId logJobIdRequest = LogJobId.newBuilder().setJobId(jobId).build();
 
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
     try {
 
       experimentRunServiceStub.logJobId(logJobIdRequest);
@@ -6984,50 +4501,6 @@ public class ExperimentRunTest {
   public void w_getJobIdTest() {
     LOGGER.info(" Get Job Id in ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     String jobId = "xyz";
     LogJobId logJobIdRequest =
         LogJobId.newBuilder().setId(experimentRun.getId()).setJobId(jobId).build();
@@ -7051,12 +4524,6 @@ public class ExperimentRunTest {
     LOGGER.info("GetJobId Response : \n" + response.getJobId());
     assertEquals("Job Id not match with expected job Id", "xyz", response.getJobId());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get Job Id in ExperimentRun test stop................................");
   }
 
@@ -7065,9 +4532,6 @@ public class ExperimentRunTest {
     LOGGER.info(" Get Job Id in ExperimentRun Negative test start................................");
 
     GetJobId getJobIdRequest = GetJobId.newBuilder().build();
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
 
     try {
       experimentRunServiceStub.getJobId(getJobIdRequest);
@@ -7152,39 +4616,6 @@ public class ExperimentRunTest {
   public void z_deleteExperimentRunTest() {
     LOGGER.info("Delete ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
     CreateExperimentRun.Response createExperimentRunResponse =
@@ -7202,12 +4633,6 @@ public class ExperimentRunTest {
         experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
     assertTrue(deleteExperimentRunResponse.getStatus());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Delete ExperimentRun test stop................................");
   }
 
@@ -7215,8 +4640,6 @@ public class ExperimentRunTest {
   public void z_deleteExperimentRunNegativeTest() {
     LOGGER.info("Delete ExperimentRun Negative test start................................");
 
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
     DeleteExperimentRun request = DeleteExperimentRun.newBuilder().build();
 
     try {
@@ -7246,42 +4669,9 @@ public class ExperimentRunTest {
   public void createParentChildExperimentRunTest() {
     LOGGER.info("Create Parent Children ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "ExperimentRun_sprt_parent_1");
+            project.getId(), experiment.getId(), "ExperimentRun-parent-1-" + new Date().getTime());
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
@@ -7294,7 +4684,9 @@ public class ExperimentRunTest {
     // Children experimentRun 1
     createExperimentRunRequest =
         getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "ExperimentRun_sprt_children_1");
+            project.getId(),
+            experiment.getId(),
+            "ExperimentRun-children-1-" + new Date().getTime());
     // Add Parent Id to children
     createExperimentRunRequest =
         createExperimentRunRequest.toBuilder().setParentId(experimentRun.getId()).build();
@@ -7310,7 +4702,9 @@ public class ExperimentRunTest {
     // Children experimentRun 2
     createExperimentRunRequest =
         getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "ExperimentRun_sprt_children_2");
+            project.getId(),
+            experiment.getId(),
+            "ExperimentRun-children-2-" + new Date().getTime());
     // Add Parent Id to children
     createExperimentRunRequest =
         createExperimentRunRequest.toBuilder().setParentId(experimentRun.getId()).build();
@@ -7323,12 +4717,6 @@ public class ExperimentRunTest {
         createExperimentRunRequest.getName(),
         childrenExperimentRun2.getName());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Create Parent Children ExperimentRun test stop................................");
   }
 
@@ -7337,43 +4725,10 @@ public class ExperimentRunTest {
     LOGGER.info(
         "Get Children ExperimentRun using pagination test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
     // Create parent experimentRun
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "ExperimentRun_sprt_parent_1");
+            project.getId(), experiment.getId(), "ExperimentRun-parent-1-" + new Date().getTime());
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun parentExperimentRun = createExperimentRunResponse.getExperimentRun();
@@ -7388,7 +4743,9 @@ public class ExperimentRunTest {
     // Children experimentRun 1
     createExperimentRunRequest =
         getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "ExperimentRun_sprt_children_1");
+            project.getId(),
+            experiment.getId(),
+            "ExperimentRun-children-1-" + new Date().getTime());
     // Add Parent Id to children
     KeyValue metric1 =
         KeyValue.newBuilder()
@@ -7427,7 +4784,9 @@ public class ExperimentRunTest {
     // Children experimentRun 2
     createExperimentRunRequest =
         getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "ExperimentRun_sprt_children_2");
+            project.getId(),
+            experiment.getId(),
+            "ExperimentRun-children-2-" + new Date().getTime());
     // Add Parent Id to children
     metric1 =
         KeyValue.newBuilder()
@@ -7565,12 +4924,6 @@ public class ExperimentRunTest {
       assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Get Children ExperimentRun using pagination test stop................................");
   }
@@ -7580,42 +4933,9 @@ public class ExperimentRunTest {
     LOGGER.info(
         "Set Parent ID on Children ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "ExperimentRun_sprt_parent_1");
+            project.getId(), experiment.getId(), "ExperimentRun-parent-1-" + new Date().getTime());
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
@@ -7628,7 +4948,9 @@ public class ExperimentRunTest {
     // Children experimentRun 1
     createExperimentRunRequest =
         getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "ExperimentRun_sprt_children_1");
+            project.getId(),
+            experiment.getId(),
+            "ExperimentRun-children-1-" + new Date().getTime());
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun childrenExperimentRun1 = createExperimentRunResponse.getExperimentRun();
@@ -7658,12 +4980,6 @@ public class ExperimentRunTest {
         experimentRun.getId(),
         response.getExperimentRun().getParentId());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Set Parent ID on Children ExperimentRun test stop................................");
   }
@@ -7671,50 +4987,6 @@ public class ExperimentRunTest {
   @Test
   public void logExperimentRunCodeVersionTest() {
     LOGGER.info("Log ExperimentRun code version test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     LogExperimentRunCodeVersion logExperimentRunCodeVersionRequest =
         LogExperimentRunCodeVersion.newBuilder()
@@ -7797,11 +5069,8 @@ public class ExperimentRunTest {
         logExperimentRunCodeVersionRequest.getCodeVersion(),
         codeVersion);
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Log ExperimentRun code version test stop................................");
   }
@@ -7809,50 +5078,6 @@ public class ExperimentRunTest {
   @Test
   public void getExperimentRunCodeVersionTest() {
     LOGGER.info("Get ExperimentRun code version test start................................");
-
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
 
     LogExperimentRunCodeVersion logExperimentRunCodeVersionRequest =
         LogExperimentRunCodeVersion.newBuilder()
@@ -7888,12 +5113,6 @@ public class ExperimentRunTest {
         codeVersion,
         getExperimentRunCodeVersionResponse.getCodeVersion());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get ExperimentRun code version test stop................................");
   }
 
@@ -7901,50 +5120,7 @@ public class ExperimentRunTest {
   public void deleteExperimentRunArtifacts() {
     LOGGER.info("Delete ExperimentRun Artifacts test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
+    m_logArtifactsTest();
     List<Artifact> artifacts = experimentRun.getArtifactsList();
     LOGGER.info("Artifacts size : " + artifacts.size());
     if (artifacts.isEmpty()) {
@@ -7973,11 +5149,8 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Delete ExperimentRun Artifacts test stop................................");
   }
@@ -7986,30 +5159,10 @@ public class ExperimentRunTest {
   public void batchDeleteExperimentRunTest() {
     LOGGER.info("Batch Delete ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
+        ExperimentTest.getCreateExperimentRequest(
+            project.getId(), "Experiment-" + new Date().getTime());
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment = createExperimentResponse.getExperiment();
@@ -8023,7 +5176,9 @@ public class ExperimentRunTest {
     for (int count = 0; count < 5; count++) {
       CreateExperimentRun createExperimentRunRequest =
           getCreateExperimentRunRequest(
-              project.getId(), experiment.getId(), "ExperimentRun_n_sprt_" + count);
+              project.getId(),
+              experiment.getId(),
+              "ExperimentRun-" + count + "-" + new Date().getTime());
       CreateExperimentRun.Response createExperimentRunResponse =
           experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
       ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
@@ -8051,12 +5206,6 @@ public class ExperimentRunTest {
         0,
         experimentRunResponse.getExperimentRunsCount());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Batch Delete ExperimentRun test stop................................");
   }
 
@@ -8065,42 +5214,21 @@ public class ExperimentRunTest {
     LOGGER.info(
         "Delete ExperimentRun by parent entities owner test start.........................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
-        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
               project, CollaboratorType.READ_ONLY, authClientInterceptor);
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
     }
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
+        ExperimentTest.getCreateExperimentRequest(
+            project.getId(), "Experiment-" + new Date().getTime());
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment = createExperimentResponse.getExperiment();
@@ -8110,7 +5238,9 @@ public class ExperimentRunTest {
     for (int count = 0; count < 5; count++) {
       CreateExperimentRun createExperimentRunRequest =
           getCreateExperimentRunRequest(
-              project.getId(), experiment.getId(), "ExperimentRun_n_sprt_" + count);
+              project.getId(),
+              experiment.getId(),
+              "ExperimentRun-" + count + "-" + new Date().getTime());
       CreateExperimentRun.Response createExperimentRunResponse =
           experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
       ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
@@ -8129,15 +5259,13 @@ public class ExperimentRunTest {
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
       }
-      CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
               project, CollaboratorType.READ_WRITE, authClientInterceptor);
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator updated in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
@@ -8170,12 +5298,6 @@ public class ExperimentRunTest {
         0,
         experimentRunResponse.getExperimentRunsCount());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Delete ExperimentRun by parent entities owner test stop................................");
   }
@@ -8185,17 +5307,7 @@ public class ExperimentRunTest {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Versioning ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long repoId = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -8223,22 +5335,9 @@ public class ExperimentRunTest {
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
 
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-
     CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     Map<String, Location> locationMap = new HashMap<>();
     locationMap.put(
         "location-2", Location.newBuilder().addLocation("dataset").addLocation("train").build());
@@ -8289,12 +5388,6 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Versioning ExperimentRun test stop................................");
   }
 
@@ -8302,17 +5395,7 @@ public class ExperimentRunTest {
   public void versioningAtExperimentRunCreateNegativeTest() throws ModelDBException {
     LOGGER.info("Versioning ExperimentRun negative test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long repoId = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -8321,22 +5404,9 @@ public class ExperimentRunTest {
     GetBranchRequest.Response getBranchResponse =
         versioningServiceBlockingStub.getBranch(getBranchRequest);
 
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-
     CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     Map<String, Location> locationMap = new HashMap<>();
     locationMap.put(
         "location-2", Location.newBuilder().addLocation("dataset").addLocation("train").build());
@@ -8396,12 +5466,6 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Versioning ExperimentRun negative test stop................................");
   }
 
@@ -8410,47 +5474,7 @@ public class ExperimentRunTest {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Log and Get Versioning ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
-        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-    assertTrue(
-        "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
-        !createExperimentRunRequest.hasVersionedInputs());
-
-    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long repoId = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     try {
       GetBranchRequest getBranchRequest =
           GetBranchRequest.newBuilder()
@@ -8580,13 +5604,6 @@ public class ExperimentRunTest {
       DeleteRepositoryRequest.Response deleteResult =
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
       Assert.assertTrue(deleteResult.getStatus());
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
     }
 
     LOGGER.info("Log and Get Versioning ExperimentRun test stop................................");
@@ -8596,26 +5613,12 @@ public class ExperimentRunTest {
   public void listCommitExperimentRunsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Fetch ExperimentRun for commit test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStubClient2 =
-        VersioningServiceGrpc.newBlockingStub(client2Channel);
-
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
 
     String testUser1UserName = null;
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      UACServiceGrpc.UACServiceBlockingStub uacServiceStub =
-          UACServiceGrpc.newBlockingStub(authServiceChannel);
-
       GetUser getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
       // Get the user info by vertaId form the AuthService
@@ -8664,20 +5667,11 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     commit = commitResponse.getCommit();
 
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       AddCollaboratorRequest addCollaboratorRequest =
           CollaboratorTest.addCollaboratorRequestProject(
               project, authClientInterceptor.getClient2Email(), CollaboratorType.READ_WRITE);
-      collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+      collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("\n Collaborator1 added in project successfully \n");
 
       addCollaboratorRequest =
@@ -8686,19 +5680,13 @@ public class ExperimentRunTest {
               authClientInterceptor.getClient2Email(),
               CollaboratorType.READ_WRITE,
               "This is a repo collaborator description");
-      collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+      collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info("\n Collaborator1 added in repository successfully \n");
     }
 
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-
     CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun-1");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-1-" + new Date().getTime());
     Map<String, Location> locationMap = new HashMap<>();
     locationMap.put("location-1", location1);
     createExperimentRunRequest =
@@ -8720,7 +5708,7 @@ public class ExperimentRunTest {
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
-            .setName("ExperimentRun-2")
+            .setName("ExperimentRun-2-" + new Date().getTime())
             .setVersionedInputs(
                 VersioningEntry.newBuilder()
                     .setRepositoryId(repoId)
@@ -8730,11 +5718,13 @@ public class ExperimentRunTest {
             .build();
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun2 created successfully");
 
     createExperimentRunRequest =
-        createExperimentRunRequest.toBuilder().setName("ExperimentRun-3").build();
+        createExperimentRunRequest
+            .toBuilder()
+            .setName("ExperimentRun-3-" + new Date().getTime())
+            .build();
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
@@ -8800,7 +5790,7 @@ public class ExperimentRunTest {
           RepositoryIdentification.newBuilder()
               .setNamedId(
                   RepositoryNamedIdentification.newBuilder()
-                      .setName(RepositoryTest.NAME)
+                      .setName("Repo-" + new Date().getTime())
                       .setWorkspaceName(testUser1UserName)
                       .build())
               .build();
@@ -8842,12 +5832,6 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Fetch ExperimentRun for commit test stop................................");
   }
 
@@ -8856,18 +5840,9 @@ public class ExperimentRunTest {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Fetch ExperimentRun blobs for commit test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -8912,22 +5887,9 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     commit = commitResponse.getCommit();
 
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-
     CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun-1");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-1-" + new Date().getTime());
     Map<String, Location> locationMap = new HashMap<>();
     locationMap.put("location-2", location1);
     createExperimentRunRequest =
@@ -9050,12 +6012,6 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Fetch ExperimentRun blob for commit test stop................................");
   }
 
@@ -9065,17 +6021,7 @@ public class ExperimentRunTest {
     LOGGER.info(
         "Versioning without Locations ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long repoId = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -9103,22 +6049,9 @@ public class ExperimentRunTest {
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
 
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-
     CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
@@ -9169,12 +6102,6 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Versioning without Locations ExperimentRun test stop................................");
   }
@@ -9185,32 +6112,9 @@ public class ExperimentRunTest {
     LOGGER.info(
         "Log and Get Versioning without locations ExperimentRun test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-
     CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
+        getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
@@ -9223,7 +6127,7 @@ public class ExperimentRunTest {
         "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
         createExperimentRunRequest.hasVersionedInputs());
 
-    long repoId = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    long repoId = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -9292,12 +6196,6 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     Assert.assertTrue(deleteResult.getStatus());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info(
         "Log and Get Versioning without locations ExperimentRun test stop................................");
   }
@@ -9307,19 +6205,9 @@ public class ExperimentRunTest {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("FindExperimentRuns test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
-        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -9370,29 +6258,13 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     commit = commitResponse.getCommit();
 
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ferh");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
     try {
-      // Create two experiment of above project
-      CreateExperiment createExperimentRequest =
-          ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_1");
-      CreateExperiment.Response createExperimentResponse =
-          experimentServiceStub.createExperiment(createExperimentRequest);
-      Experiment experiment1 = createExperimentResponse.getExperiment();
-      LOGGER.info("Experiment created successfully");
-
       Map<String, Location> locationMap = new HashMap<>();
       locationMap.put("location-1", location1);
 
       CreateExperimentRun createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
-              project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+              project.getId(), experiment.getId(), "ExperimentRun-1-" + new Date().getTime());
       KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       createExperimentRunRequest =
           createExperimentRunRequest
@@ -9413,7 +6285,7 @@ public class ExperimentRunTest {
 
       createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
-              project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
+              project.getId(), experiment.getId(), "ExperimentRun-2-" + new Date().getTime());
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
@@ -9429,16 +6301,9 @@ public class ExperimentRunTest {
       LOGGER.info("ExperimentRun created successfully");
       ExperimentRun experimentRunConfig1 = createExperimentRunResponse.getExperimentRun();
 
-      // experiment2 of above project
-      createExperimentRequest =
-          ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
-      createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-      Experiment experiment2 = createExperimentResponse.getExperiment();
-      LOGGER.info("Experiment created successfully");
-
       createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
-              project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
+              project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
       hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       Map<String, Location> locationMap2 = new HashMap<>();
       locationMap2.put("location-4", location4);
@@ -9460,7 +6325,7 @@ public class ExperimentRunTest {
 
       createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
-              project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
+              project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
       hyperparameter1 = generateNumericKeyValue("C", 1e-6);
       createExperimentRunRequest =
           createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
@@ -9509,8 +6374,6 @@ public class ExperimentRunTest {
       }
 
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-        CollaboratorServiceBlockingStub collaboratorServiceStub =
-            CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
         AddCollaboratorRequest addCollaboratorRequest =
             AddCollaboratorRequest.newBuilder()
                 .setShareWith(authClientInterceptor.getClient2Email())
@@ -9519,7 +6382,7 @@ public class ExperimentRunTest {
                 .addEntityIds(project.getId())
                 .build();
         AddCollaboratorRequest.Response addCollaboratorResponse =
-            collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         LOGGER.info(
             "Project Collaborator added in server : " + addCollaboratorResponse.getStatus());
         assertTrue(addCollaboratorResponse.getStatus());
@@ -9561,7 +6424,8 @@ public class ExperimentRunTest {
                 .addEntityIds(String.valueOf(repoId))
                 .build();
         addCollaboratorResponse =
-            collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+            collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(
+                addCollaboratorRequest);
         LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
         assertTrue(addCollaboratorResponse.getStatus());
 
@@ -9602,13 +6466,6 @@ public class ExperimentRunTest {
       DeleteRepositoryRequest.Response deleteResult =
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
       Assert.assertTrue(deleteResult.getStatus());
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
     }
 
     LOGGER.info("FindExperimentRuns test stop................................");
@@ -9619,17 +6476,9 @@ public class ExperimentRunTest {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("FindExperimentRuns test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -9680,28 +6529,12 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     commit = commitResponse.getCommit();
 
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ferh");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_1");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-
     Map<String, Location> locationMap = new HashMap<>();
     locationMap.put("location-1", location1);
 
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
     createExperimentRunRequest =
         createExperimentRunRequest
@@ -9722,7 +6555,7 @@ public class ExperimentRunTest {
 
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     createExperimentRunRequest =
         createExperimentRunRequest
             .toBuilder()
@@ -9738,16 +6571,9 @@ public class ExperimentRunTest {
     LOGGER.info("ExperimentRun created successfully");
     ExperimentRun experimentRunConfig1 = createExperimentRunResponse.getExperimentRun();
 
-    // experiment2 of above project
-    createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
+            project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
     hyperparameter1 = generateNumericKeyValue("C", 0.0002);
     Map<String, Location> locationMap2 = new HashMap<>();
     locationMap2.put("location-4", location4);
@@ -9769,7 +6595,7 @@ public class ExperimentRunTest {
 
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
+            project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
     hyperparameter1 = generateNumericKeyValue("C", 0.0003);
     createExperimentRunRequest =
         createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
@@ -9995,11 +6821,11 @@ public class ExperimentRunTest {
 
       assertEquals(
           "Total records count not matched with expected records count",
-          3,
+          3 + experimentRunMap.size(),
           response.getTotalRecords());
       assertEquals(
           "ExperimentRun count not match with expected experimentRun count",
-          3,
+          3 + experimentRunMap.size(),
           response.getExperimentRunsCount());
 
       // FIX ME: Fix findExperimentRun with string value predicate
@@ -10040,13 +6866,6 @@ public class ExperimentRunTest {
       DeleteRepositoryRequest.Response deleteResult =
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
       Assert.assertTrue(deleteResult.getStatus());
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
     }
 
     LOGGER.info("FindExperimentRuns test stop................................");
@@ -10057,17 +6876,9 @@ public class ExperimentRunTest {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("FindExperimentRuns test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -10111,7 +6922,7 @@ public class ExperimentRunTest {
                                     .setGit(
                                         GitCodeBlob.newBuilder()
                                             .setBranch("abcd")
-                                            .setRepo(RepositoryTest.NAME)
+                                            .setRepo("Repo-" + new Date().getTime())
                                             .setHash(FileHasher.getSha(""))
                                             .setIsDirty(false)
                                             .setTag(
@@ -10124,29 +6935,13 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     commit = commitResponse.getCommit();
 
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ferh");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_1");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-
     try {
       Map<String, Location> locationMap = new HashMap<>();
       locationMap.put("location-1", datasetLocation);
 
       CreateExperimentRun createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
-              project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+              project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
       KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       createExperimentRunRequest =
           createExperimentRunRequest
@@ -10167,7 +6962,7 @@ public class ExperimentRunTest {
 
       createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
-              project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
+              project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
@@ -10183,16 +6978,9 @@ public class ExperimentRunTest {
       ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
       LOGGER.info("ExperimentRun created successfully");
 
-      // experiment2 of above project
-      createExperimentRequest =
-          ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
-      createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-      Experiment experiment2 = createExperimentResponse.getExperiment();
-      LOGGER.info("Experiment created successfully");
-
       createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
-              project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
+              project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
       hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       Map<String, Location> locationMap2 = new HashMap<>();
       locationMap2.put("location-111", test2Location);
@@ -10214,7 +7002,7 @@ public class ExperimentRunTest {
 
       createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
-              project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
+              project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
       hyperparameter1 = generateNumericKeyValue("C", 1e-6);
       createExperimentRunRequest =
           createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
@@ -10234,11 +7022,11 @@ public class ExperimentRunTest {
 
       assertEquals(
           "Total records count not matched with expected records count",
-          4,
+          4 + experimentRunMap.size(),
           response.getTotalRecords());
       assertEquals(
           "ExperimentRun count not match with expected experimentRun count",
-          4,
+          4 + experimentRunMap.size(),
           response.getExperimentRunsCount());
       for (ExperimentRun exprRun : response.getExperimentRunsList()) {
         if (exprRun.getId().equals(experimentRun2.getId())) {
@@ -10305,13 +7093,6 @@ public class ExperimentRunTest {
       DeleteRepositoryRequest.Response deleteResult =
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
       Assert.assertTrue(deleteResult.getStatus());
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
     }
 
     LOGGER.info("FindExperimentRuns test stop................................");
@@ -10322,308 +7103,273 @@ public class ExperimentRunTest {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("FindExperimentRuns test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-    Commit commit =
-        Commit.newBuilder()
-            .setMessage("this is the test commit message")
-            .setDateCreated(111)
-            .addParentShas(getBranchResponse.getCommit().getCommitSha())
-            .build();
-    Location location1 = Location.newBuilder().addLocation("dataset").addLocation("train").build();
-    Location location2 =
-        Location.newBuilder().addLocation("test-1").addLocation("test1.json").build();
-    Location location3 =
-        Location.newBuilder().addLocation("test-2").addLocation("test2.json").build();
-    Location location4 =
-        Location.newBuilder().addLocation("test-location-4").addLocation("test4.json").build();
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
+    try {
+      GetBranchRequest getBranchRequest =
+          GetBranchRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+              .setBranch(ModelDBConstants.MASTER_BRANCH)
+              .build();
+      GetBranchRequest.Response getBranchResponse =
+          versioningServiceBlockingStub.getBranch(getBranchRequest);
+      Commit commit =
+          Commit.newBuilder()
+              .setMessage("this is the test commit message")
+              .setDateCreated(111)
+              .addParentShas(getBranchResponse.getCommit().getCommitSha())
+              .build();
+      Location location1 =
+          Location.newBuilder().addLocation("dataset").addLocation("train").build();
+      Location location2 =
+          Location.newBuilder().addLocation("test-1").addLocation("test1.json").build();
+      Location location3 =
+          Location.newBuilder().addLocation("test-2").addLocation("test2.json").build();
+      Location location4 =
+          Location.newBuilder().addLocation("test-location-4").addLocation("test4.json").build();
 
-    CreateCommitRequest createCommitRequest =
-        CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
-            .setCommit(commit)
-            .addBlobs(
-                BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
-                    .addAllLocation(location1.getLocationList())
-                    .build())
-            .addBlobs(
-                BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getHyperparameterConfigBlob(3F, 3F))
-                    .addAllLocation(location2.getLocationList())
-                    .build())
-            .addBlobs(
-                BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
-                    .addAllLocation(location3.getLocationList())
-                    .build())
-            .addBlobs(
-                BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getHyperparameterConfigBlob(5.1F, 2.5F))
-                    .addAllLocation(location4.getLocationList())
-                    .build())
-            .build();
-    CreateCommitRequest.Response commitResponse =
-        versioningServiceBlockingStub.createCommit(createCommitRequest);
-    commit = commitResponse.getCommit();
+      CreateCommitRequest createCommitRequest =
+          CreateCommitRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
+              .setCommit(commit)
+              .addBlobs(
+                  BlobExpanded.newBuilder()
+                      .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                      .addAllLocation(location1.getLocationList())
+                      .build())
+              .addBlobs(
+                  BlobExpanded.newBuilder()
+                      .setBlob(CommitTest.getHyperparameterConfigBlob(3F, 3F))
+                      .addAllLocation(location2.getLocationList())
+                      .build())
+              .addBlobs(
+                  BlobExpanded.newBuilder()
+                      .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                      .addAllLocation(location3.getLocationList())
+                      .build())
+              .addBlobs(
+                  BlobExpanded.newBuilder()
+                      .setBlob(CommitTest.getHyperparameterConfigBlob(5.1F, 2.5F))
+                      .addAllLocation(location4.getLocationList())
+                      .build())
+              .build();
+      CreateCommitRequest.Response commitResponse =
+          versioningServiceBlockingStub.createCommit(createCommitRequest);
+      commit = commitResponse.getCommit();
 
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ferh");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
+      Map<String, Location> locationMap = new HashMap<>();
+      locationMap.put("location-1", location1);
 
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_1");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
+      CreateExperimentRun createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
+      KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+      KeyValue hyperparameter2 =
+          KeyValue.newBuilder()
+              .setKey("C")
+              .setValue(Value.newBuilder().setStringValue("2.5").build())
+              .build();
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .addHyperparameters(hyperparameter1)
+              .addHyperparameters(hyperparameter2)
+              .build();
+      CreateExperimentRun.Response createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
 
-    Map<String, Location> locationMap = new HashMap<>();
-    locationMap.put("location-1", location1);
+      locationMap.put("location-2", location2);
 
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
-    KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
-    KeyValue hyperparameter2 =
-        KeyValue.newBuilder()
-            .setKey("C")
-            .setValue(Value.newBuilder().setStringValue("2.5").build())
-            .build();
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap)
-                    .build())
-            .addHyperparameters(hyperparameter1)
-            .addHyperparameters(hyperparameter2)
-            .build();
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap)
+                      .build())
+              .addHyperparameters(
+                  KeyValue.newBuilder()
+                      .setKey("C")
+                      .setValue(Value.newBuilder().setStringValue("3").build())
+                      .build())
+              .build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
 
-    locationMap.put("location-2", location2);
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
+      hyperparameter1 = generateNumericKeyValue("C", 0.0002);
+      Map<String, Location> locationMap2 = new HashMap<>();
+      locationMap2.put("location-4", location4);
+      createExperimentRunRequest =
+          createExperimentRunRequest
+              .toBuilder()
+              .setVersionedInputs(
+                  VersioningEntry.newBuilder()
+                      .setRepositoryId(repoId)
+                      .setCommit(commitResponse.getCommit().getCommitSha())
+                      .putAllKeyLocationMap(locationMap2)
+                      .build())
+              .addHyperparameters(hyperparameter1)
+              .addHyperparameters(
+                  KeyValue.newBuilder()
+                      .setKey("D")
+                      .setValue(Value.newBuilder().setStringValue("test_hyper").build())
+                      .build())
+              .build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
+      ExperimentRun experimentRunConfig2 = createExperimentRunResponse.getExperimentRun();
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap)
-                    .build())
-            .addHyperparameters(
-                KeyValue.newBuilder()
-                    .setKey("C")
-                    .setValue(Value.newBuilder().setStringValue("3").build())
-                    .build())
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
-    ExperimentRun experimentRunConfig1 = createExperimentRunResponse.getExperimentRun();
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
+      hyperparameter1 = generateNumericKeyValue("C", 0.0003);
+      createExperimentRunRequest =
+          createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("ExperimentRun created successfully");
 
-    // experiment2 of above project
-    createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
+      Value hyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
+      KeyValueQuery keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.c")
+              .setValue(hyperparameterFilter)
+              .setOperator(Operator.GTE)
+              .setValueType(ValueType.NUMBER)
+              .build();
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
-    hyperparameter1 = generateNumericKeyValue("C", 0.0002);
-    Map<String, Location> locationMap2 = new HashMap<>();
-    locationMap2.put("location-4", location4);
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
-            .setVersionedInputs(
-                VersioningEntry.newBuilder()
-                    .setRepositoryId(repoId)
-                    .setCommit(commitResponse.getCommit().getCommitSha())
-                    .putAllKeyLocationMap(locationMap2)
-                    .build())
-            .addHyperparameters(hyperparameter1)
-            .addHyperparameters(
-                KeyValue.newBuilder()
-                    .setKey("D")
-                    .setValue(Value.newBuilder().setStringValue("test_hyper").build())
-                    .build())
-            .build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
-    ExperimentRun experimentRunConfig2 = createExperimentRunResponse.getExperimentRun();
+      FindExperimentRuns findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.train")
+              .build();
 
-    createExperimentRunRequest =
-        getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
-    hyperparameter1 = generateNumericKeyValue("C", 0.0003);
-    createExperimentRunRequest =
-        createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
-    createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    LOGGER.info("ExperimentRun created successfully");
+      FindExperimentRuns.Response response =
+          experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    Value hyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
-    KeyValueQuery keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.c")
-            .setValue(hyperparameterFilter)
-            .setOperator(Operator.GTE)
-            .setValueType(ValueType.NUMBER)
-            .build();
+      keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.d")
+              .setValue(Value.newBuilder().setStringValue("test_hyper").build())
+              .setOperator(Operator.EQ)
+              .setValueType(ValueType.STRING)
+              .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(true)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.train")
+              .build();
 
-    FindExperimentRuns findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.train")
-            .build();
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    FindExperimentRuns.Response response =
-        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      keyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.c")
+              .setValue(Value.newBuilder().setNumberValue(2.5).build())
+              .setOperator(Operator.EQ)
+              .setValueType(ValueType.STRING)
+              .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(keyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.train")
+              .build();
 
-    keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.d")
-            .setValue(Value.newBuilder().setStringValue("test_hyper").build())
-            .setOperator(Operator.EQ)
-            .setValueType(ValueType.STRING)
-            .build();
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(true)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.train")
-            .build();
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      KeyValueQuery oldKeyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.C")
+              .setValue(Value.newBuilder().setNumberValue(0.0002).build())
+              .setOperator(Operator.GTE)
+              .setValueType(ValueType.NUMBER)
+              .build();
 
-    keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.c")
-            .setValue(Value.newBuilder().setNumberValue(2.5).build())
-            .setOperator(Operator.EQ)
-            .setValueType(ValueType.STRING)
-            .build();
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.train")
-            .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(oldKeyValueQuery)
+              .setAscending(true)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.C")
+              .build();
 
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    KeyValueQuery oldKeyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.C")
-            .setValue(Value.newBuilder().setNumberValue(0.0002).build())
-            .setOperator(Operator.GTE)
-            .setValueType(ValueType.NUMBER)
-            .build();
+      Value oldHyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
+      oldKeyValueQuery =
+          KeyValueQuery.newBuilder()
+              .setKey("hyperparameters.train")
+              .setValue(oldHyperparameterFilter)
+              .setOperator(Operator.GTE)
+              .setValueType(ValueType.NUMBER)
+              .build();
 
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(oldKeyValueQuery)
-            .setAscending(true)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.C")
-            .build();
+      findExperimentRuns =
+          FindExperimentRuns.newBuilder()
+              .setProjectId(project.getId())
+              .addPredicates(oldKeyValueQuery)
+              .setAscending(false)
+              .setIdsOnly(false)
+              .setSortKey("hyperparameters.C")
+              .build();
 
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+      response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
-    Value oldHyperparameterFilter = Value.newBuilder().setNumberValue(1).build();
-    oldKeyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("hyperparameters.train")
-            .setValue(oldHyperparameterFilter)
-            .setOperator(Operator.GTE)
-            .setValueType(ValueType.NUMBER)
-            .build();
+      assertEquals(
+          "Total records count not matched with expected records count",
+          2,
+          response.getTotalRecords());
 
-    findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project.getId())
-            .addPredicates(oldKeyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("hyperparameters.C")
-            .build();
-
-    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
-
-    for (int index = 0; index < response.getExperimentRunsCount(); index++) {
-      ExperimentRun exprRun = response.getExperimentRuns(index);
-      for (KeyValue kv : exprRun.getHyperparametersList()) {
-        if (kv.getKey().equals("C")) {
-          assertTrue(
-              "Value should be GTE 0.0001 " + kv,
-              (kv.getValue().getKindCase() == KindCase.STRING_VALUE
-                      ? Double.parseDouble(kv.getValue().getStringValue())
-                      : kv.getValue().getNumberValue())
-                  > 0.0001);
+      for (int index = 0; index < response.getExperimentRunsCount(); index++) {
+        ExperimentRun exprRun = response.getExperimentRuns(index);
+        for (KeyValue kv : exprRun.getHyperparametersList()) {
+          if (kv.getKey().equals("C")) {
+            assertTrue(
+                "Value should be GTE 0.0001 " + kv,
+                (kv.getValue().getKindCase() == KindCase.STRING_VALUE
+                        ? Double.parseDouble(kv.getValue().getStringValue())
+                        : kv.getValue().getNumberValue())
+                    > 0.0001);
+          }
         }
       }
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
     }
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("FindExperimentRuns test stop................................");
   }
@@ -10632,45 +7378,13 @@ public class ExperimentRunTest {
   public void findExperimentRunsByDatasetVersionId() {
     LOGGER.info("FindExperimentRuns test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
     DatasetTest datasetTest = new DatasetTest();
     DatasetVersionTest datasetVersionTest = new DatasetVersionTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
-        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-    DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub =
-        DatasetVersionServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ferh");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_1");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment1 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-
     Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
 
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
     createExperimentRunRequest =
         createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
@@ -10681,7 +7395,7 @@ public class ExperimentRunTest {
     LOGGER.info("ExperimentRun created successfully");
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
-            project.getId(), experiment1.getId(), "ExperimentRun_ferh_2");
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     createExperimentRunRequest = createExperimentRunRequest.toBuilder().build();
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -10693,16 +7407,9 @@ public class ExperimentRunTest {
         createExperimentRunRequest.getName(),
         experimentRun12.getName());
 
-    // experiment2 of above project
-    createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_ferh_2");
-    createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment2 = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
+            project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
     hyperparameter1 = generateNumericKeyValue("C", 0.0001);
     createExperimentRunRequest =
         createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
@@ -10718,7 +7425,7 @@ public class ExperimentRunTest {
 
     createExperimentRunRequest =
         getCreateExperimentRunRequestSimple(
-            project.getId(), experiment2.getId(), "ExperimentRun_ferh_1");
+            project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
     hyperparameter1 = generateNumericKeyValue("C", 1e-6);
     createExperimentRunRequest =
         createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
@@ -10734,7 +7441,7 @@ public class ExperimentRunTest {
 
     List<Dataset> datasetList = new ArrayList<>();
     CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
+        datasetTest.getDatasetRequest("Dataset-" + new Date().getTime());
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     Dataset dataset1 = createDatasetResponse.getDataset();
@@ -10879,15 +7586,12 @@ public class ExperimentRunTest {
           response.getExperimentRuns(0));
 
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-        CollaboratorServiceBlockingStub collaboratorServiceStub =
-            CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
         AddCollaboratorRequest addCollaboratorRequest =
             addCollaboratorRequestProjectInterceptor(
                 project, CollaboratorType.READ_ONLY, authClientInterceptor);
 
         AddCollaboratorRequest.Response addCollaboratorResponse =
-            collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         LOGGER.info("Collaborator updated in server : " + addCollaboratorResponse.getStatus());
         assertTrue(addCollaboratorResponse.getStatus());
 
@@ -10933,13 +7637,6 @@ public class ExperimentRunTest {
         LOGGER.info(deleteDatasetResponse.toString());
         assertTrue(deleteDatasetResponse.getStatus());
       }
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
     }
 
     LOGGER.info("FindExperimentRuns test stop................................");
@@ -10949,50 +7646,7 @@ public class ExperimentRunTest {
   public void deleteExperimentRunHyperparameters() {
     LOGGER.info("Delete ExperimentRun Hyperparameters test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
+    o_logHyperparametersTest();
     List<KeyValue> hyperparameters = experimentRun.getHyperparametersList();
     LOGGER.info("Hyperparameters size : " + hyperparameters.size());
     List<String> keys = new ArrayList<>();
@@ -11024,6 +7678,7 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
     experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     if (response.getExperimentRun().getHyperparametersList().size() != 0) {
       request =
@@ -11044,13 +7699,9 @@ public class ExperimentRunTest {
           "ExperimentRun date_updated field not update on database",
           experimentRun.getDateUpdated(),
           response.getExperimentRun().getDateUpdated());
+      experimentRun = response.getExperimentRun();
+      experimentRunMap.put(experimentRun.getId(), experimentRun);
     }
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Delete ExperimentRun Hyperparameters test stop................................");
   }
@@ -11059,50 +7710,7 @@ public class ExperimentRunTest {
   public void deleteExperimentRunMetrics() {
     LOGGER.info("Delete ExperimentRun Metrics test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    CreateExperimentRun createExperimentRunRequest =
-        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
+    i_logMetricsTest();
     List<KeyValue> metrics = experimentRun.getMetricsList();
     LOGGER.info("Metrics size : " + metrics.size());
     List<String> keys = new ArrayList<>();
@@ -11130,6 +7738,7 @@ public class ExperimentRunTest {
         experimentRun.getDateUpdated(),
         response.getExperimentRun().getDateUpdated());
     experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     if (response.getExperimentRun().getMetricsList().size() != 0) {
       request = DeleteMetrics.newBuilder().setId(experimentRun.getId()).setDeleteAll(true).build();
@@ -11146,13 +7755,9 @@ public class ExperimentRunTest {
           "ExperimentRun date_updated field not update on database",
           experimentRun.getDateUpdated(),
           response.getExperimentRun().getDateUpdated());
+      experimentRun = response.getExperimentRun();
+      experimentRunMap.put(experimentRun.getId(), experimentRun);
     }
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Delete ExperimentRun Metrics test stop................................");
   }
@@ -11161,112 +7766,62 @@ public class ExperimentRunTest {
   public void deleteExperimentRunObservations() {
     LOGGER.info("Delete ExperimentRun Observations test start................................");
 
-    ProjectTest projectTest = new ProjectTest();
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    try {
-      // Create two experiment of above project
-      CreateExperiment createExperimentRequest =
-          experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
-      CreateExperiment.Response createExperimentResponse =
-          experimentServiceStub.createExperiment(createExperimentRequest);
-      Experiment experiment = createExperimentResponse.getExperiment();
-      LOGGER.info("Experiment created successfully");
-      assertEquals(
-          "Experiment name not match with expected Experiment name",
-          createExperimentRequest.getName(),
-          experiment.getName());
-
-      CreateExperimentRun createExperimentRunRequest =
-          getCreateExperimentRunRequest(
-              project.getId(), experiment.getId(), "ExperimentRun_n_sprt");
-      CreateExperimentRun.Response createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-      LOGGER.info("ExperimentRun created successfully");
-      assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
-          createExperimentRunRequest.getName(),
-          experimentRun.getName());
-
-      List<Observation> observations = experimentRun.getObservationsList();
-      LOGGER.info("Observations size : " + observations.size());
-      List<String> keys = new ArrayList<>();
-      for (int index = 0; index < observations.size() - 1; index++) {
-        Observation observation = observations.get(index);
-        if (observation.getOneOfCase().equals(Observation.OneOfCase.ATTRIBUTE)) {
-          keys.add(observation.getAttribute().getKey());
-        } else {
-          keys.add(observation.getArtifact().getKey());
-        }
+    g_logObservationsTest();
+    List<Observation> observations = experimentRun.getObservationsList();
+    LOGGER.info("Observations size : " + observations.size());
+    List<String> keys = new ArrayList<>();
+    for (int index = 0; index < observations.size() - 1; index++) {
+      Observation observation = observations.get(index);
+      if (observation.getOneOfCase().equals(Observation.OneOfCase.ATTRIBUTE)) {
+        keys.add(observation.getAttribute().getKey());
+      } else {
+        keys.add(observation.getArtifact().getKey());
       }
-      LOGGER.info("Observations key size : " + keys.size());
+    }
+    LOGGER.info("Observations key size : " + keys.size());
 
-      DeleteObservations request =
-          DeleteObservations.newBuilder()
-              .setId(experimentRun.getId())
-              .addAllObservationKeys(keys)
-              .build();
+    DeleteObservations request =
+        DeleteObservations.newBuilder()
+            .setId(experimentRun.getId())
+            .addAllObservationKeys(keys)
+            .build();
+
+    experimentRunServiceStub.deleteObservations(request);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+    GetExperimentRunById.Response response =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    LOGGER.info(
+        "DeleteExperimentRunObservations Response : \n"
+            + response.getExperimentRun().getObservationsList());
+    assertTrue(response.getExperimentRun().getObservationsList().size() <= 1);
+
+    assertNotEquals(
+        "ExperimentRun date_updated field not update on database",
+        experimentRun.getDateUpdated(),
+        response.getExperimentRun().getDateUpdated());
+    experimentRun = response.getExperimentRun();
+    experimentRunMap.put(experimentRun.getId(), experimentRun);
+
+    if (response.getExperimentRun().getObservationsList().size() != 0) {
+      request =
+          DeleteObservations.newBuilder().setId(experimentRun.getId()).setDeleteAll(true).build();
 
       experimentRunServiceStub.deleteObservations(request);
 
-      GetExperimentRunById getExperimentRunById =
-          GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
-      GetExperimentRunById.Response response =
-          experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+      response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
       LOGGER.info(
           "DeleteExperimentRunObservations Response : \n"
               + response.getExperimentRun().getObservationsList());
-      assertTrue(response.getExperimentRun().getObservationsList().size() <= 1);
+      assertEquals(0, response.getExperimentRun().getObservationsList().size());
 
       assertNotEquals(
           "ExperimentRun date_updated field not update on database",
           experimentRun.getDateUpdated(),
           response.getExperimentRun().getDateUpdated());
       experimentRun = response.getExperimentRun();
-
-      if (response.getExperimentRun().getObservationsList().size() != 0) {
-        request =
-            DeleteObservations.newBuilder().setId(experimentRun.getId()).setDeleteAll(true).build();
-
-        experimentRunServiceStub.deleteObservations(request);
-
-        response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
-        LOGGER.info(
-            "DeleteExperimentRunObservations Response : \n"
-                + response.getExperimentRun().getObservationsList());
-        assertEquals(0, response.getExperimentRun().getObservationsList().size());
-
-        assertNotEquals(
-            "ExperimentRun date_updated field not update on database",
-            experimentRun.getDateUpdated(),
-            response.getExperimentRun().getDateUpdated());
-      }
-    } finally {
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
+      experimentRunMap.put(experimentRun.getId(), experimentRun);
     }
 
     LOGGER.info("Delete ExperimentRun Observations test stop................................");
@@ -11277,18 +7832,9 @@ public class ExperimentRunTest {
     LOGGER.info("Clone experimentRun test start................................");
 
     ProjectTest projectTest = new ProjectTest();
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStubClient2 =
-        ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
-    VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
     long repoId =
-        RepositoryTest.createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -11341,13 +7887,14 @@ public class ExperimentRunTest {
 
     // Create project
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experimentRun_project_ferh_1");
+        projectTest.getCreateProjectRequest("experimentRun-project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
     LOGGER.info("Project1 created successfully");
 
-    createProjectRequest = projectTest.getCreateProjectRequest("experimentRun_project_ferh_2");
+    createProjectRequest =
+        projectTest.getCreateProjectRequest("experimentRun-project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     LOGGER.info("Project2 created successfully");
@@ -11355,14 +7902,16 @@ public class ExperimentRunTest {
     try {
       // Create two experiment of above project
       CreateExperiment createExperimentRequest =
-          ExperimentTest.getCreateExperimentRequest(project1.getId(), "Experiment_ferh_1");
+          ExperimentTest.getCreateExperimentRequest(
+              project1.getId(), "Experiment-1-" + new Date().getTime());
       CreateExperiment.Response createExperimentResponse =
           experimentServiceStub.createExperiment(createExperimentRequest);
       Experiment experiment1 = createExperimentResponse.getExperiment();
       LOGGER.info("Experiment1 created successfully");
 
       createExperimentRequest =
-          ExperimentTest.getCreateExperimentRequest(project2.getId(), "Experiment_ferh_2");
+          ExperimentTest.getCreateExperimentRequest(
+              project2.getId(), "Experiment-2-" + new Date().getTime());
       createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
       Experiment experiment2 = createExperimentResponse.getExperiment();
       LOGGER.info("Experiment2 created successfully");
@@ -11372,7 +7921,7 @@ public class ExperimentRunTest {
 
       CreateExperimentRun createExperimentRunRequest =
           getCreateExperimentRunRequest(
-              project1.getId(), experiment1.getId(), "ExperimentRun_ferh_1");
+              project1.getId(), experiment1.getId(), "ExperimentRun-" + new Date().getTime());
       KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       createExperimentRunRequest =
           createExperimentRunRequest
@@ -11455,7 +8004,6 @@ public class ExperimentRunTest {
             "Error Code : " + status.getCode() + " Description : " + status.getDescription());
         assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
       }
-
     } finally {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()

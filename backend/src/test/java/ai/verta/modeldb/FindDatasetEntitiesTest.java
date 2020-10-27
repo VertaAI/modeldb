@@ -1,6 +1,5 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.RepositoryTest.NAME;
 import static org.junit.Assert.*;
 
 import ai.verta.common.KeyValue;
@@ -34,6 +33,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1531,7 +1531,9 @@ public class FindDatasetEntitiesTest {
   public void findDatasetsWithMarkedAsProtectedRepositoryTest() {
     LOGGER.info("FindDatasets test start................................");
 
-    long id = RepositoryTest.createRepository(versioningServiceBlockingStub, NAME);
+    long id =
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
 
     FindDatasets findDatasets = FindDatasets.newBuilder().build();
 

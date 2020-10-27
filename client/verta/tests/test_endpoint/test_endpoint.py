@@ -37,6 +37,8 @@ class TestEndpoint:
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already in use" in excinfo_value
+        with pytest.warns(UserWarning, match='.*already exists.*'):
+            client.set_endpoint(path=endpoint.path, description="new description")
 
     def test_get(self, client, created_endpoints):
         name = _utils.generate_default_name()
@@ -72,12 +74,12 @@ class TestEndpoint:
 
         assert endpoint.id == client.set_endpoint(id=endpoint.id).id
 
-    def test_list(self, client, created_endpoints):
+    def test_list(self, client, organization, created_endpoints):
         name = _utils.generate_default_name()
-        endpoint = client.set_endpoint(name)
+        endpoint = client.set_endpoint(name, workspace=organization.name)
         created_endpoints.append(endpoint)
 
-        endpoints = client.endpoints
+        endpoints = client.endpoints.with_workspace(organization.name)
         assert len(endpoints) >= 1
         has_new_id = False
         for item in endpoints:
