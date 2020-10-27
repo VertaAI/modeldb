@@ -256,6 +256,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               });
 
   protected AutoCloseable acquireReadLock(String lockKey) throws ExecutionException {
+    LOGGER.debug("acquireReadLock for key: {}", lockKey);
     ReadWriteLock lock = locks.get(lockKey);
     Lock readLock = lock.readLock();
     readLock.lock();
@@ -263,6 +264,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   protected AutoCloseable acquireWriteLock(String lockKey) throws ExecutionException {
+    LOGGER.debug("acquireWriteLock for key: {}", lockKey);
     ReadWriteLock lock = locks.get(lockKey);
     Lock writeLock = lock.writeLock();
     writeLock.lock();
