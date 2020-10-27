@@ -5711,9 +5711,8 @@ public class ExperimentRunTest {
   public void listCommitExperimentRunsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Fetch ExperimentRun for commit test start................................");
 
-    long repoId =
-        RepositoryTest.createRepository(
-            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
+    String repoName = "Repo-" + new Date().getTime();
+    long repoId = RepositoryTest.createRepository(versioningServiceBlockingStub, repoName);
 
     String testUser1UserName = null;
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
@@ -5893,7 +5892,7 @@ public class ExperimentRunTest {
             RepositoryIdentification.newBuilder()
                 .setNamedId(
                     RepositoryNamedIdentification.newBuilder()
-                        .setName("Repo-" + new Date().getTime())
+                        .setName(repoName)
                         .setWorkspaceName(testUser1UserName)
                         .build())
                 .build();
