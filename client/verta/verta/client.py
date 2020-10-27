@@ -1010,7 +1010,7 @@ class Client(object):
             workspace = self._get_personal_workspace()
         resource_name = "Endpoint"
         param_names = "`description`"
-        params = (description)
+        params = [description]
         if id is not None:
             check_unnecessary_params_warning(resource_name, "id {}".format(id),
                                                   param_names, params)
