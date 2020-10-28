@@ -167,7 +167,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  test("download entire blobs should retrieve all the components") {
+  ignore("download entire blobs should retrieve all the components") {
     val f = fixture
 
     try {
