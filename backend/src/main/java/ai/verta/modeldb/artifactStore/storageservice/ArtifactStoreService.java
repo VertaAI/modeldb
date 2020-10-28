@@ -99,6 +99,7 @@ public interface ArtifactStoreService {
     UriComponentsBuilder uriComponentsBuilder =
         ServletUriComponentsBuilder.newInstance().scheme(scheme).host(finalHost).path(endpoint);
     for (Map.Entry<String, Object> queryParam : parameters.entrySet()) {
+      // Adding the filename to the path to enable file saved with that name
       if (queryParam.getKey().equals(ModelDBConstants.FILENAME)) {
         uriComponentsBuilder.path(String.valueOf(queryParam.getValue()));
       } else {
