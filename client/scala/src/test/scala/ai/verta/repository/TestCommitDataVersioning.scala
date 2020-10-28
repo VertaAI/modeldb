@@ -24,7 +24,7 @@ class TestCommitDataVersioning extends FunSuite {
         val repo = client.getOrCreateRepository("My Repo").get
 
         val pathBlob = PathBlob("./src/test/scala/ai/verta/blobs/testdir", true).get
-        val s3Blob = S3(S3Location("s3://verta-starter").get, true).get
+        val s3Blob = S3(S3Location("s3://verta-versioned-bucket").get, true).get
         val pathBlob2 = PathBlob("./src/test/scala/ai/verta/blobs/testdir2").get
 
         val commit = repo.getCommitByBranch()
@@ -99,7 +99,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  ignore("downloading an uploaded file should not corrupt it") {
+  test("downloading an uploaded file should not corrupt it") {
     val f = fixture
 
     try {
@@ -108,14 +108,14 @@ class TestCommitDataVersioning extends FunSuite {
         case s3: S3 => s3
       }
       val downloadS3Attempt = versionedS3Blob.download(
-        Some("s3://verta-scala-test/testdir/testsubdir/testfile2"),
+        Some("s3://verta-versioned-bucket/data/census-test.csv"),
         Some("./somefile2")
       )
       assert(downloadS3Attempt.isSuccess)
       val downloadedS3MD5 = PathBlob("./somefile2").get
       assert(
         downloadedS3MD5.getMetadata("./somefile2").get.md5 equals
-        f.s3Blob.getMetadata("s3://verta-scala-test/testdir/testsubdir/testfile2").get.md5
+        f.s3Blob.getMetadata("s3://verta-versioned-bucket/data/census-test.csv").get.md5
       )
 
       // check for path:
@@ -136,7 +136,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  ignore("downloading an entire folder should retrieve all the files in the folder") {
+  test("downloading an entire folder should retrieve all the files in the folder") {
     val f = fixture
 
     try {
@@ -144,13 +144,13 @@ class TestCommitDataVersioning extends FunSuite {
         case s3: S3 => s3
       }
       val downloadS3Attempt = versionedS3Blob.download(
-        Some("s3://verta-scala-test/testdir/testsubdir"),
+        Some("s3://verta-versioned-bucket/data/"),
         Some("./somefiles2")
       )
       val downloadedS3MD5 = PathBlob("./somefiles2").get
       assert(
-        downloadedS3MD5.getMetadata("./somefiles2/testfile2").get.md5 equals
-        f.s3Blob.getMetadata("s3://verta-scala-test/testdir/testsubdir/testfile2").get.md5
+        downloadedS3MD5.getMetadata("./somefiles2/census-test.csv").get.md5 equals
+        f.s3Blob.getMetadata("s3://verta-versioned-bucket/data/census-test.csv").get.md5
       )
 
       val versionedPathBlob: PathBlob = f.commit.get("path-blob").get match {
@@ -167,7 +167,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  ignore("download entire blobs should retrieve all the components") {
+  test("download entire blobs should retrieve all the components") {
     val f = fixture
 
     try {
@@ -177,8 +177,8 @@ class TestCommitDataVersioning extends FunSuite {
         versionedS3Blob.download(downloadToPath = Some("./somefiles2"))
         val downloadedS3MD5 = PathBlob("./somefiles2").get
         assert(
-          downloadedS3MD5.getMetadata("./somefiles2/verta-scala-test/testdir/testsubdir/testfile2").get.md5 equals
-          f.s3Blob.getMetadata("s3://verta-scala-test/testdir/testsubdir/testfile2").get.md5
+          downloadedS3MD5.getMetadata("./somefiles2/verta-versioned-bucket/data/census-test.csv").get.md5 equals
+          f.s3Blob.getMetadata("s3://verta-versioned-bucket/data/census-test.csv").get.md5
         )
 
         val versionedPathBlob: PathBlob = f.commit.get("path-blob").get match {
@@ -281,7 +281,7 @@ class TestCommitDataVersioning extends FunSuite {
     }
   }
 
-  ignore("s3 downloadToPath inference should be correct") {
+  test("s3 downloadToPath inference should be correct") {
     val f = fixture
 
     try {
@@ -290,8 +290,8 @@ class TestCommitDataVersioning extends FunSuite {
       }
 
       // single file:
-      val downloadToPath = retrievedS3Blob.download(Some("s3://verta-scala-test/testdir/testfile")).get
-      assert(downloadToPath equals (new File("testfile")).getAbsolutePath)
+      val downloadToPath = retrievedS3Blob.download(Some("s3://verta-versioned-bucket/data/census-test.csv")).get
+      assert(downloadToPath equals (new File("census-test.csv")).getAbsolutePath)
 
       // s3 root:
       val downloadToPath2 = retrievedS3Blob.download(Some("s3://")).get
@@ -300,9 +300,9 @@ class TestCommitDataVersioning extends FunSuite {
 
       // folder:
       val downloadToPath3 = retrievedS3Blob.download(
-        Some("s3://verta-scala-test/testdir/testsubdir/")
+        Some("s3://verta-versioned-bucket/data/")
       ).get
-      assert(downloadToPath3 equals (new File("testsubdir")).getAbsolutePath)
+      assert(downloadToPath3 equals (new File("data")).getAbsolutePath)
 
       // entire blob:
       val downloadToPath4 = retrievedS3Blob.download().get
@@ -310,8 +310,8 @@ class TestCommitDataVersioning extends FunSuite {
       assert(downloadToPath4 equals (new File(f"${Dataset.DefaultDownloadDir} 1")).getAbsolutePath)
 
     } finally {
-      deleteDirectory(new File("testsubdir"))
-      (new File("testfile")).delete()
+      deleteDirectory(new File("data"))
+      (new File("census-test.csv")).delete()
       deleteDirectory((new File(f"${Dataset.DefaultDownloadDir} 1")))
       cleanup(f)
     }
