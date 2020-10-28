@@ -1,6 +1,7 @@
 package ai.verta.modeldb.artifactStore.storageservice;
 
 import ai.verta.modeldb.ModelDBAuthInterceptor;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import com.amazonaws.services.s3.model.PartETag;
 import io.grpc.Metadata;
@@ -98,7 +99,12 @@ public interface ArtifactStoreService {
     UriComponentsBuilder uriComponentsBuilder =
         ServletUriComponentsBuilder.newInstance().scheme(scheme).host(finalHost).path(endpoint);
     for (Map.Entry<String, Object> queryParam : parameters.entrySet()) {
-      uriComponentsBuilder.queryParam(queryParam.getKey(), queryParam.getValue());
+      // Adding the filename to the path to enable file saved with that name
+      if (queryParam.getKey().equals(ModelDBConstants.FILENAME)) {
+        uriComponentsBuilder.path(String.valueOf(queryParam.getValue()));
+      } else {
+        uriComponentsBuilder.queryParam(queryParam.getKey(), queryParam.getValue());
+      }
     }
 
     if (hostArr.length > 1) {
