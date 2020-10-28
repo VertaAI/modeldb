@@ -237,7 +237,7 @@ public class RepositoryTest {
     return result.getRepository().getId();
   }
 
-  public static Repository createRepository(String repoName) {
+  private static Repository createRepository(String repoName) {
     SetRepository setRepository = getSetRepositoryRequest(repoName);
     SetRepository.Response result = versioningServiceBlockingStub.createRepository(setRepository);
     return result.getRepository();
