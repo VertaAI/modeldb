@@ -250,7 +250,8 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  public ResponseEntity<Resource> loadFileAsResource(String artifactPath) throws ModelDBException {
+  public ResponseEntity<Resource> loadFileAsResource(String fileName, String artifactPath)
+      throws ModelDBException {
     LOGGER.trace("S3Service - loadFileAsResource called");
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       if (doesObjectExist(bucketName, artifactPath)) {
@@ -263,7 +264,7 @@ public class S3Service implements ArtifactStoreService {
             resource.getObjectMetadata().getRawMetadata().entrySet()) {
           responseHeaders.add(header.getKey(), String.valueOf(header.getValue()));
         }
-
+        responseHeaders.add(ModelDBConstants.FILENAME, fileName);
         LOGGER.debug("getArtifact returned");
         return ResponseEntity.ok()
             .cacheControl(CacheControl.noCache())
@@ -308,6 +309,8 @@ public class S3Service implements ArtifactStoreService {
           app.getArtifactStoreServerHost());
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("S3Service - generatePresignedUrl - get url returned");
+      String filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
+      parameters.put(ModelDBConstants.FILENAME, filename);
       return getDownloadUrl(
           parameters,
           app.getArtifactStoreUrlProtocol(),
