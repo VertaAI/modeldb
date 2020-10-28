@@ -7,10 +7,17 @@ case class ClientConnection(host: String, ignoreConnErr: Boolean = false, maxRet
 object ClientConnection {
   private val DefaultScheme = "https"
 
-  private def hasScheme(url: String) = (new URI(url)).getScheme() != null
+  private def urlWithScheme(url: String) = {
+    val uri = new URI(url)
+    val schemeSpecificPart = uri.getSchemeSpecificPart()
 
-  private def urlWithScheme(url: String) =
-    if (hasScheme(url)) url else (new URI(DefaultScheme, url, null, null, null)).toString()
+    val uriWithScheme = new URI(
+      Option(uri.getScheme()).getOrElse(DefaultScheme),
+      if (schemeSpecificPart.startsWith("//")) schemeSpecificPart else "//" + schemeSpecificPart,
+      uri.getFragment()
+    )
+    uriWithScheme.toString()
+  }
 
   def fromEnvironment(): ClientConnection = new ClientConnection(urlWithScheme(sys.env("VERTA_HOST")), auth = ClientAuth.fromEnvironment())
 }
