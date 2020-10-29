@@ -1,9 +1,7 @@
 package ai.verta.modeldb;
 
 import static ai.verta.modeldb.CommitTest.getDatasetBlobFromPath;
-import static ai.verta.modeldb.RepositoryTest.createRepository;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
@@ -43,20 +41,19 @@ import ai.verta.modeldb.versioning.NotebookCodeDiff;
 import ai.verta.modeldb.versioning.PathDatasetComponentDiff;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
+import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.SetBranchRequest;
+import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -68,13 +65,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -94,25 +88,32 @@ public class DiffTest {
   private static final String OTHER_NAME = "environment.json";
   private static final boolean USE_SAME_NAMES = false; // TODO: set to true after fixing VR-3688
   private static final String SECOND_NAME = USE_SAME_NAMES ? FIRST_NAME : OTHER_NAME;
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
-
-  private ManagedChannel channel = null;
-  private ManagedChannel client2Channel = null;
-  private ManagedChannel authServiceChannel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder channelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client2ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-  private static App app;
   private static DeleteEntitiesCron deleteEntitiesCron;
+
+  private static VersioningServiceBlockingStub versioningServiceBlockingStub;
+
+  private static Repository repository;
+  private static Commit parentCommit;
+
+  private final int blobType;
+  private final int commitType;
+
+  // 1. blob type: 0 -- dataset path, 1 -- config, 2 -- python environment, 3 -- Git Notebook Code
+  // 2. commit type -- 0 -- blob, 1 -- diff
+  @Parameters
+  public static Collection<Object[]> data() {
+    return Arrays.asList(new Object[][] {{0, 0}, {1, 1}, {2, 0}, {3, 1}});
+  }
+
+  public DiffTest(int blobType, int commitType) {
+    this.blobType = blobType;
+    this.commitType = commitType;
+  }
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -123,7 +124,7 @@ public class DiffTest {
     Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
     Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
 
-    app = App.getInstance();
+    App app = App.getInstance();
     AuthService authService = new PublicAuthServiceUtils();
     RoleService roleService = new PublicRoleServiceUtils(authService);
 
@@ -143,86 +144,77 @@ public class DiffTest {
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
+    serverBuilder.build().start();
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
+      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(testPropMap);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
+
+    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
     deleteEntitiesCron =
         new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
-  }
 
-  private final int blobType;
-  private final int commitType;
+    // Create all service blocking stub
+    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
 
-  // 1. blob type: 0 -- dataset path, 1 -- config, 2 -- python environment, 3 -- Git Notebook Code
-  // 2. commit type -- 0 -- blob, 1 -- diff
-  @Parameters
-  public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {{0, 0}, {1, 1}, {2, 0}, {3, 1}});
-  }
-
-  public DiffTest(int blobType, int commitType) {
-    this.blobType = blobType;
-    this.commitType = commitType;
+    createEntities();
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    App.initiateShutdown(0);
 
+    removeEntities();
     // Delete entities by cron job
     deleteEntitiesCron.run();
-    App.initiateShutdown(0);
+
+    // shutdown test server
+    serverBuilder.build().shutdownNow();
   }
 
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
-    if (!client2Channel.isShutdown()) {
-      client2Channel.shutdownNow();
-    }
-
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      if (!authServiceChannel.isShutdown()) {
-        authServiceChannel.shutdownNow();
-      }
-    }
+  public static void createEntities() {
+    // Create all entities
+    createRepositoryEntities();
   }
 
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
-    client2Channel =
-        grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      authServiceChannel =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
+  public static void removeEntities() {
+    for (Repository repo : new Repository[] {repository}) {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repo.getId()))
               .build();
+      DeleteRepositoryRequest.Response response =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      assertTrue("Repository not delete", response.getStatus());
     }
+
+    repository = null;
+  }
+
+  private static void createRepositoryEntities() {
+    String repoName = "Repo-" + new Date().getTime();
+    SetRepository setRepository = RepositoryTest.getSetRepositoryRequest(repoName);
+    repository = versioningServiceBlockingStub.createRepository(setRepository).getRepository();
+    LOGGER.info("Repository created successfully");
+    assertEquals(
+        "Repository name not match with expected Repository name", repoName, repository.getName());
+
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+    parentCommit = getBranchResponse.getCommit();
   }
 
   @Test
   public void computeRepositoryDiffTest() throws InvalidProtocolBufferException {
     LOGGER.info("Compute repository diff test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     BlobExpanded[] blobExpandedArray;
     BlobDiff[] blobDiffsArray;
@@ -236,8 +228,9 @@ public class DiffTest {
 
     CreateCommitRequest.Builder createCommitRequestBuilder =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setCommit(createCommit(getBranchResponse.getCommit().getCommitSha()));
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+            .setCommit(createCommit(parentCommit.getCommitSha()));
     CreateCommitRequest createCommitRequest;
     if (commitType == 0) {
       LinkedList<BlobExpanded> blobsA = new LinkedList<>();
@@ -249,7 +242,7 @@ public class DiffTest {
     } else {
       createCommitRequest =
           createCommitRequestBuilder
-              .setCommitBase(getBranchResponse.getCommit().getCommitSha())
+              .setCommitBase(parentCommit.getCommitSha())
               .addDiffs(blobDiffsArray[0])
               .addDiffs(blobDiffsArray[1])
               .addDiffs(blobDiffsArray[2])
@@ -263,7 +256,8 @@ public class DiffTest {
 
     createCommitRequestBuilder =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(createCommit(commitA.getCommitSha()));
     if (commitType == 0) {
       blobExpandedArray[2] = modifiedBlobExpanded(blobType);
@@ -294,7 +288,8 @@ public class DiffTest {
 
     ComputeRepositoryDiffRequest repositoryDiffRequest =
         ComputeRepositoryDiffRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitA(commitA.getCommitSha())
             .setCommitB(commitB.getCommitSha())
             .build();
@@ -334,19 +329,12 @@ public class DiffTest {
     for (Commit commit : new Commit[] {commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitSha(commit.getCommitSha())
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
     }
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Compute repository diff test end................................");
   }
@@ -354,18 +342,6 @@ public class DiffTest {
   @Test
   public void computeRepositoryDiffWithBranchTest() throws InvalidProtocolBufferException {
     LOGGER.info("Compute repository diff with branch test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     BlobExpanded[] blobExpandedArray;
     BlobDiff[] blobDiffsArray;
@@ -379,8 +355,9 @@ public class DiffTest {
 
     CreateCommitRequest.Builder createCommitRequestBuilder =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setCommit(createCommit(getBranchResponse.getCommit().getCommitSha()));
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+            .setCommit(createCommit(parentCommit.getCommitSha()));
     CreateCommitRequest createCommitRequest;
     if (commitType == 0) {
       LinkedList<BlobExpanded> blobsA = new LinkedList<>();
@@ -392,7 +369,7 @@ public class DiffTest {
     } else {
       createCommitRequest =
           createCommitRequestBuilder
-              .setCommitBase(getBranchResponse.getCommit().getCommitSha())
+              .setCommitBase(parentCommit.getCommitSha())
               .addDiffs(blobDiffsArray[0])
               .addDiffs(blobDiffsArray[1])
               .addDiffs(blobDiffsArray[2])
@@ -405,12 +382,13 @@ public class DiffTest {
     Commit commitA = commitResponse.getCommit();
 
     // Create branch 1
-    String branchA = "branch-1";
-    createBranch(id, branchA, commitA.getCommitSha());
+    String branchA = "branch-1-" + new Date().getTime();
+    createBranch(repository.getId(), branchA, commitA.getCommitSha());
 
     createCommitRequestBuilder =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(createCommit(commitA.getCommitSha()));
     if (commitType == 0) {
       blobExpandedArray[2] = modifiedBlobExpanded(blobType);
@@ -440,12 +418,13 @@ public class DiffTest {
     Commit commitB = commitResponse.getCommit();
 
     // Create branch 2
-    String branchB = "branch-2";
-    createBranch(id, branchB, commitB.getCommitSha());
+    String branchB = "branch-2-" + new Date().getTime();
+    createBranch(repository.getId(), branchB, commitB.getCommitSha());
 
     ComputeRepositoryDiffRequest repositoryDiffRequest =
         ComputeRepositoryDiffRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setBranchA(branchA)
             .setBranchB(branchB)
             .build();
@@ -485,7 +464,8 @@ public class DiffTest {
     for (String branch : new String[] {branchA, branchB}) {
       DeleteBranchRequest deleteBranchRequest =
           DeleteBranchRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setBranch(branch)
               .build();
       versioningServiceBlockingStub.deleteBranch(deleteBranchRequest);
@@ -494,19 +474,12 @@ public class DiffTest {
     for (Commit commit : new Commit[] {commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitSha(commit.getCommitSha())
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
     }
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Compute repository diff with branch test end................................");
   }
@@ -514,20 +487,7 @@ public class DiffTest {
   @Test
   public void computeRepositoryDiffWithOneBranchOneCommitTest()
       throws InvalidProtocolBufferException {
-    LOGGER.info(
-        "Compute repository diff with one branch one commit test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
+    LOGGER.info("Compute repository diff with one branch one commit test start...");
 
     BlobExpanded[] blobExpandedArray;
     BlobDiff[] blobDiffsArray;
@@ -541,8 +501,9 @@ public class DiffTest {
 
     CreateCommitRequest.Builder createCommitRequestBuilder =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setCommit(createCommit(getBranchResponse.getCommit().getCommitSha()));
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+            .setCommit(createCommit(parentCommit.getCommitSha()));
     CreateCommitRequest createCommitRequest;
     if (commitType == 0) {
       LinkedList<BlobExpanded> blobsA = new LinkedList<>();
@@ -554,7 +515,7 @@ public class DiffTest {
     } else {
       createCommitRequest =
           createCommitRequestBuilder
-              .setCommitBase(getBranchResponse.getCommit().getCommitSha())
+              .setCommitBase(parentCommit.getCommitSha())
               .addDiffs(blobDiffsArray[0])
               .addDiffs(blobDiffsArray[1])
               .addDiffs(blobDiffsArray[2])
@@ -567,12 +528,13 @@ public class DiffTest {
     Commit commitA = commitResponse.getCommit();
 
     // Create branch 1
-    String branchA = "branch-1";
-    createBranch(id, branchA, commitA.getCommitSha());
+    String branchA = "branch-1-" + new Date().getTime();
+    createBranch(repository.getId(), branchA, commitA.getCommitSha());
 
     createCommitRequestBuilder =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(createCommit(commitA.getCommitSha()));
     if (commitType == 0) {
       blobExpandedArray[2] = modifiedBlobExpanded(blobType);
@@ -602,14 +564,15 @@ public class DiffTest {
     Commit commitB = commitResponse.getCommit();
 
     // Create branch 2
-    String branchB = "branch-2";
-    createBranch(id, branchB, commitB.getCommitSha());
+    String branchB = "branch-2-" + new Date().getTime();
+    createBranch(repository.getId(), branchB, commitB.getCommitSha());
 
     // CA - 1, BA - 1, CB - 1, BB - 1
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitA(commitA.getCommitSha())
               .setBranchA(branchA)
               .setCommitB(commitB.getCommitSha())
@@ -627,7 +590,8 @@ public class DiffTest {
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitA(commitA.getCommitSha())
               .setBranchA(branchA)
               .setCommitB(commitB.getCommitSha())
@@ -644,7 +608,8 @@ public class DiffTest {
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitA(commitA.getCommitSha())
               .setBranchA(branchA)
               .setBranchB(branchB)
@@ -661,7 +626,8 @@ public class DiffTest {
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitA(commitA.getCommitSha())
               .setBranchA(branchA)
               .build();
@@ -677,7 +643,8 @@ public class DiffTest {
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitA(commitA.getCommitSha())
               .setCommitB(commitB.getCommitSha())
               .setBranchB(branchB)
@@ -694,7 +661,8 @@ public class DiffTest {
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitA(commitA.getCommitSha())
               .build();
       versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
@@ -709,7 +677,8 @@ public class DiffTest {
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setBranchA(branchA)
               .setCommitB(commitB.getCommitSha())
               .setBranchB(branchB)
@@ -726,7 +695,8 @@ public class DiffTest {
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setBranchA(branchA)
               .build();
       versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
@@ -741,7 +711,8 @@ public class DiffTest {
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitB(commitB.getCommitSha())
               .setBranchB(branchB)
               .build();
@@ -757,7 +728,8 @@ public class DiffTest {
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitB(commitB.getCommitSha())
               .build();
       versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
@@ -772,7 +744,8 @@ public class DiffTest {
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setBranchB(branchB)
               .build();
       versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
@@ -787,7 +760,8 @@ public class DiffTest {
     try {
       ComputeRepositoryDiffRequest repositoryDiffRequest =
           ComputeRepositoryDiffRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .build();
       versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
       fail();
@@ -800,7 +774,8 @@ public class DiffTest {
     // CA - 1, BA - 0, CB - 1, BB - 0
     ComputeRepositoryDiffRequest repositoryDiffRequest =
         ComputeRepositoryDiffRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitA(commitA.getCommitSha())
             .setCommitB(commitB.getCommitSha())
             .build();
@@ -840,7 +815,8 @@ public class DiffTest {
     // CA - 1, BA - 0, CB - 0, BB - 1
     repositoryDiffRequest =
         ComputeRepositoryDiffRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitA(commitA.getCommitSha())
             .setBranchB(branchB)
             .build();
@@ -880,7 +856,8 @@ public class DiffTest {
     // CA - 0, BA - 1, CB - 1, BB - 0
     repositoryDiffRequest =
         ComputeRepositoryDiffRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setBranchA(branchA)
             .setCommitB(commitB.getCommitSha())
             .build();
@@ -920,7 +897,8 @@ public class DiffTest {
     // CA - 0, BA - 1, CB - 0, BB - 1
     repositoryDiffRequest =
         ComputeRepositoryDiffRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setBranchA(branchA)
             .setBranchB(branchB)
             .build();
@@ -960,7 +938,8 @@ public class DiffTest {
     for (String branch : new String[] {branchA, branchB}) {
       DeleteBranchRequest deleteBranchRequest =
           DeleteBranchRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setBranch(branch)
               .build();
       versioningServiceBlockingStub.deleteBranch(deleteBranchRequest);
@@ -969,27 +948,17 @@ public class DiffTest {
     for (Commit commit : new Commit[] {commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitSha(commit.getCommitSha())
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
     }
 
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-
-    LOGGER.info(
-        "Compute repository diff with one branch one commit test end................................");
+    LOGGER.info("Compute repository diff with one branch one commit test end....");
   }
 
   private void createBranch(Long repoId, String branch, String commitSHA) {
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
     SetBranchRequest setBranchRequest =
         SetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
