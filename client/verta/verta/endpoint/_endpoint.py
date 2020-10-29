@@ -128,12 +128,13 @@ class Endpoint(object):
         return response.json()
 
     @classmethod
-    def _get_or_create_by_name(cls, conn, name, getter, creator):
+    def _get_or_create_by_name(cls, conn, name, getter, creator, checker):
         obj = getter(name)
         if obj is None:
             obj = creator(name)
         else:
             print("got existing {}: {}".format(cls.__name__, name))
+            checker()
         return obj
 
     @classmethod
@@ -163,7 +164,8 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    def update(self, model_reference, strategy, wait=False, resources=None, autoscaling=None, env_vars=None):
+    def update(self, model_reference, strategy=None, wait=False, resources=None,
+               autoscaling=None, env_vars=None):
         """
         Updates the Endpoint with a model logged in an Experiment Run or a Model Version.
 
@@ -171,7 +173,7 @@ class Endpoint(object):
         ----------
         model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta._registry.modelversion.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
-        strategy : :ref:`update strategy <update-stategies>`
+        strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the Endpoint.
         wait : bool, default False
             Whether to wait for the Endpoint to finish updating before returning.
@@ -189,6 +191,9 @@ class Endpoint(object):
         """
         if not isinstance(model_reference, (RegisteredModelVersion, experimentrun.ExperimentRun)):
             raise TypeError("`model_reference` must be an ExperimentRun or RegisteredModelVersion")
+
+        if not strategy:
+            strategy = DirectUpdateStrategy()
 
         update_body = self._create_update_body(strategy, resources, autoscaling, env_vars)
 
@@ -213,17 +218,31 @@ class Endpoint(object):
             print("waiting for update...", end='')
             sys.stdout.flush()
 
-            status_dict = self.get_status()  # if you think of a better var name, please do use it haha
-            while status_dict['status'] not in ("active", "error") \
-                    or (status_dict['status'] == "active" and len(self.get_status()['components']) > 1):
+            build_status = self._get_build_status(update_body['build_id'])
+            # have to check using build status, otherwise might never terminate
+            while build_status['status'] not in ("finished", "error"):
+                print(".", end='')
+                sys.stdout.flush()
+                time.sleep(5)
+                build_status = self._get_build_status(update_body['build_id'])
+
+            if build_status["status"] == "error":
+                print()
+                failure_msg = build_status.get('message', "no error message available")
+                raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
+
+            # still need to wait because status might be "creating" even though build status is "finished"
+            status_dict = self.get_status()
+            while status_dict["status"] not in ("active", "error") or \
+                    (status_dict['status'] == "active" and len(status_dict['components']) > 1):
                 print(".", end='')
                 sys.stdout.flush()
                 time.sleep(5)
                 status_dict = self.get_status()
 
             print()
-            if self.get_status()['status'] == "error":
-                failure_msg = self.get_status()['components'][0].get('message', "no error message available")
+            if status_dict["status"] == "error":
+                failure_msg = status_dict['components'][0].get('message', "no error message available")
                 raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
 
         return self.get_status()
@@ -502,6 +521,19 @@ class Endpoint(object):
             self._get_or_create_stage()
         )
         response = _utils.make_request("GET", url, self._conn)
+        _utils.raise_for_http_error(response)
+        return response.json()
+
+    def _get_build_status(self, build_id):
+        url = "{}://{}/api/v1/deployment/workspace/{}/builds/{}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            build_id
+        )
+
+        response = _utils.make_request("GET", url, self._conn)
+
         _utils.raise_for_http_error(response)
         return response.json()
 

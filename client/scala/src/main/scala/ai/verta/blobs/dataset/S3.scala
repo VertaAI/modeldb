@@ -249,7 +249,7 @@ object S3 {
       obj.getETag(),
       getPath(bucketName, key),
       BigInt(obj.getContentLength()),
-      Option(obj.getVersionId())
+      if (obj.getVersionId() == "null") None else Option(obj.getVersionId())
     )
   }
 
@@ -261,7 +261,7 @@ object S3 {
       version.getETag(),
       getPath(version.getBucketName(), version.getKey()),
       BigInt(version.getSize()),
-      Option(version.getVersionId())
+      if (version.getVersionId() == "null") None else Option(version.getVersionId())
     )
   }
 

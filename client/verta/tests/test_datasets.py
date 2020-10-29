@@ -5,6 +5,7 @@ import six
 import os
 import time
 import shutil
+import requests
 
 from . import utils
 
@@ -142,6 +143,8 @@ class TestClientDatasetFunctions:
         dataset = client.set_dataset(type="s3")
         created_datasets.append(dataset)
         assert dataset.id
+        with pytest.warns(UserWarning, match='.*already exists.*'):
+            client.set_dataset(name=dataset.name, desc="new description")
 
     def test_creation_by_id_client_api(self, client, created_datasets):
         dataset = client.set_dataset(type="s3")
@@ -265,6 +268,16 @@ class TestClientDatasetVersionFunctions:
 
         version = dataset.get_latest_version(ascending=True)
         assert version.id == version1.id
+
+    def test_get_latest_printing(self, client, created_datasets, capsys):
+        dataset = client.set_dataset(type="local")
+        created_datasets.append(dataset)
+
+        version = dataset.create_version(path=__file__)
+        dataset.get_latest_version(ascending=True)
+
+        captured = capsys.readouterr()
+        assert "got existing dataset version: {}".format(version.id) in captured.out
 
     def test_dataset_version_info(self, client, created_datasets):
         botocore = pytest.importorskip("botocore")
@@ -611,6 +624,31 @@ class TestLogDatasetVersion:
         retrieved_dataset_version = experiment_run.get_dataset_version('train')
         path = retrieved_dataset_version.dataset_version.path_dataset_version_info.base_path
         assert path.endswith(__file__)
+
+    @pytest.mark.not_oss
+    def test_log_dataset_version_diff_workspaces(self, client, organization, created_datasets, experiment_run):
+        dataset = client.set_dataset(type="local", workspace=organization.name)
+        created_datasets.append(dataset)
+
+        dataset_version = dataset.create_version(__file__)
+        experiment_run.log_dataset_version('train', dataset_version)
+
+        retrieved_dataset_version = experiment_run.get_dataset_version('train')
+        assert retrieved_dataset_version.id == dataset_version.id
+
+    def test_log_dataset_version_diff_workspaces_no_access_error(self, client_2, created_datasets, experiment_run):
+        dataset = client_2.set_dataset(type="local")
+        created_datasets.append(dataset)
+
+        dataset_version = dataset.create_version(__file__)
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            experiment_run.log_dataset_version('train', dataset_version)
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "403" in excinfo_value
+        assert "Access Denied" in excinfo_value
+
 
     def test_overwrite(self, client, created_datasets, experiment_run, s3_bucket):
         dataset = client.set_dataset(type="local")

@@ -1,7 +1,5 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.RepositoryTest.createRepository;
-
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -10,6 +8,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -33,33 +32,29 @@ import ai.verta.modeldb.versioning.PathDatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
+import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -79,27 +74,32 @@ public class MergeTest {
   private static final String OTHER_NAME = "environment.json";
   private static final boolean USE_SAME_NAMES = false; // TODO: set to true after fixing VR-3688
   private static final String SECOND_NAME = USE_SAME_NAMES ? FIRST_NAME : OTHER_NAME;
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
-
-  private ManagedChannel channel = null;
-  private ManagedChannel client2Channel = null;
-  private ManagedChannel authServiceChannel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder channelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client2ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-  private static App app;
   private static DeleteEntitiesCron deleteEntitiesCron;
 
+  private static VersioningServiceBlockingStub versioningServiceBlockingStub;
+
+  private static Repository repository;
+  private static Commit parentCommit;
+
   private static long time = Calendar.getInstance().getTimeInMillis();
+
+  private final int blobType;
+
+  // 1. blob type: 0 -- dataset path, 1 -- config, 2 -- python environment, 3 --
+  // Git Notebook Code
+  @Parameters
+  public static Collection<Object[]> data() {
+    return Arrays.asList(new Object[][] {{0}, {1}, {2}, {3}});
+  }
+
+  public MergeTest(int blobType) {
+    this.blobType = blobType;
+  }
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -110,7 +110,7 @@ public class MergeTest {
     Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
     Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
 
-    app = App.getInstance();
+    App app = App.getInstance();
     AuthService authService = new PublicAuthServiceUtils();
     RoleService roleService = new PublicRoleServiceUtils(authService);
 
@@ -126,98 +126,94 @@ public class MergeTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
+    serverBuilder.build().start();
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
+      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(testPropMap);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
+
+    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
     deleteEntitiesCron =
         new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
-  }
 
-  private final int blobType;
+    // Create all service blocking stub
+    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
 
-  // 1. blob type: 0 -- dataset path, 1 -- config, 2 -- python environment, 3 --
-  // Git Notebook Code
-  @Parameters
-  public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {{0}, {1}, {2}, {3}});
-  }
-
-  public MergeTest(int blobType) {
-    this.blobType = blobType;
+    createEntities();
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    App.initiateShutdown(0);
+
+    removeEntities();
     // Delete entities by cron job
     deleteEntitiesCron.run();
-    App.initiateShutdown(0);
+
+    // shutdown test server
+    serverBuilder.build().shutdownNow();
   }
 
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
-    if (!client2Channel.isShutdown()) {
-      client2Channel.shutdownNow();
-    }
-
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      if (!authServiceChannel.isShutdown()) {
-        authServiceChannel.shutdownNow();
-      }
-    }
+  public static void createEntities() {
+    // Create all entities
+    createRepositoryEntities();
   }
 
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
-    client2Channel =
-        grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      authServiceChannel =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
+  public static void removeEntities() {
+    for (Repository repo : new Repository[] {repository}) {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repo.getId()))
               .build();
+      DeleteRepositoryRequest.Response response =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue("Repository not delete", response.getStatus());
     }
+
+    repository = null;
   }
 
-  @Test
-  public void mergeRepositoryCommitTest() throws InvalidProtocolBufferException {
-    LOGGER.info("Merge Repository Commit test start................................");
+  private static void createRepositoryEntities() {
+    String repoName = "Repo-" + new Date().getTime();
+    SetRepository setRepository = RepositoryTest.getSetRepositoryRequest(repoName);
+    repository = versioningServiceBlockingStub.createRepository(setRepository).getRepository();
+    LOGGER.info("Repository created successfully");
+    Assert.assertEquals(
+        "Repository name not match with expected Repository name", repoName, repository.getName());
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setBranch(ModelDBConstants.MASTER_BRANCH)
             .build();
     GetBranchRequest.Response getBranchResponse =
         versioningServiceBlockingStub.getBranch(getBranchRequest);
+    parentCommit = getBranchResponse.getCommit();
+  }
+
+  @Test
+  public void mergeRepositoryCommitTest() {
+    LOGGER.info("Merge Repository Commit test start................................");
 
     BlobExpanded[] blobExpandedArray;
     blobExpandedArray = createBlobs(blobType);
 
     CreateCommitRequest.Builder createCommitRequestBuilder =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(
                 Commit.newBuilder()
                     .setMessage("this is the first non init commit")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
-                    .addParentShas(getBranchResponse.getCommit().getCommitSha())
+                    .addParentShas(parentCommit.getCommitSha())
                     .build());
     CreateCommitRequest createCommitRequest;
     LinkedList<BlobExpanded> blobsA = new LinkedList<>();
@@ -230,12 +226,13 @@ public class MergeTest {
 
     createCommitRequestBuilder =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(
                 Commit.newBuilder()
                     .setMessage("this commit can be merged with previous")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
-                    .addParentShas(getBranchResponse.getCommit().getCommitSha())
+                    .addParentShas(parentCommit.getCommitSha())
                     .build());
 
     LinkedList<BlobExpanded> blobsB = new LinkedList<>();
@@ -247,7 +244,8 @@ public class MergeTest {
 
     MergeRepositoryCommitsRequest repositoryMergeRequest =
         MergeRepositoryCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitShaA(commitA.getCommitSha())
             .setCommitShaB(commitB.getCommitSha())
             .build();
@@ -260,13 +258,14 @@ public class MergeTest {
         versioningServiceBlockingStub.listCommitBlobs(
             ListCommitBlobsRequest.newBuilder()
                 .setCommitSha(mergeReponse1.getCommit().getCommitSha())
-                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                .setRepositoryId(
+                    RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
                 .build());
 
     // FIXME:  blobs randomize order of
     // Assert.assertTrue(commitBlobs.getBlobsList().containsAll(blobsA));
     // Assert.assertTrue(commitBlobs.getBlobsList().containsAll(blobsB));
-    Assert.assertTrue(commitBlobs.getBlobsList().size() == 2);
+    Assert.assertEquals(2, commitBlobs.getBlobsList().size());
 
     //    List<BlobExpanded> blobList = new LinkedList<BlobExpanded>(commitBlobs.getBlobsList());
     //    blobList.removeAll(blobsA);
@@ -275,12 +274,13 @@ public class MergeTest {
 
     createCommitRequestBuilder =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(
                 Commit.newBuilder()
                     .setMessage("this commit should conflict with previous")
                     .setDateCreated(Calendar.getInstance().getTimeInMillis())
-                    .addParentShas(getBranchResponse.getCommit().getCommitSha())
+                    .addParentShas(parentCommit.getCommitSha())
                     .build());
 
     LinkedList<BlobExpanded> blobsC = new LinkedList<>();
@@ -292,21 +292,23 @@ public class MergeTest {
 
     repositoryMergeRequest =
         MergeRepositoryCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitShaA(commitA.getCommitSha())
             .setCommitShaB(commitC.getCommitSha())
             .build();
     MergeRepositoryCommitsRequest.Response mergeReponse2 =
         versioningServiceBlockingStub.mergeRepositoryCommits(repositoryMergeRequest);
-    Assert.assertTrue(mergeReponse2.getCommit().getCommitSha() == "");
-    Assert.assertTrue(!mergeReponse2.getConflictsList().isEmpty());
+    Assert.assertSame("", mergeReponse2.getCommit().getCommitSha());
+    Assert.assertFalse(mergeReponse2.getConflictsList().isEmpty());
 
     // Now we apply commit D and commit E on top of commit A , these two commits both modify blobs
     // in commit A in different ways and should lead to conflict
 
     createCommitRequestBuilder =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(
                 Commit.newBuilder()
                     .setMessage("this commit modifies blob in first non init commit")
@@ -322,7 +324,8 @@ public class MergeTest {
 
     createCommitRequestBuilder =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(
                 Commit.newBuilder()
                     .setMessage("this commit also modifies blob in first non init commit")
@@ -337,32 +340,26 @@ public class MergeTest {
     Commit commitE = commitResponse.getCommit();
     repositoryMergeRequest =
         MergeRepositoryCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitShaA(commitD.getCommitSha())
             .setCommitShaB(commitE.getCommitSha())
             .build();
     MergeRepositoryCommitsRequest.Response mergeReponse3 =
         versioningServiceBlockingStub.mergeRepositoryCommits(repositoryMergeRequest);
-    Assert.assertTrue(mergeReponse3.getCommit().getCommitSha() == "");
-    Assert.assertTrue(!mergeReponse3.getConflictsList().isEmpty());
+    Assert.assertSame("", mergeReponse3.getCommit().getCommitSha());
+    Assert.assertFalse(mergeReponse3.getConflictsList().isEmpty());
 
     for (Commit commit :
         new Commit[] {commitE, commitD, commitC, mergeReponse1.getCommit(), commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitSha(commit.getCommitSha())
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
     }
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Compute repository diff test end................................");
   }

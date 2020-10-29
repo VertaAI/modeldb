@@ -5,20 +5,10 @@ import ai.verta.modeldb.HttpCodeToGRPCCode;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.cron_jobs.FetchTemporaryS3Token;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
@@ -27,13 +17,13 @@ import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PartETag;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
-import com.amazonaws.services.securitytoken.model.Credentials;
 import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -44,152 +34,77 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TimerTask;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 
 public class S3Service implements ArtifactStoreService {
 
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
-  private AmazonS3 s3Client;
+  private S3Client s3Client;
   private String bucketName;
-  private Regions awsRegion;
-  private static Credentials temporarySessionCredentials;
   private App app = App.getInstance();
 
-  public S3Service(String cloudBucketName) throws ModelDBException {
-    App app = App.getInstance();
-    String cloudAccessKey = app.getCloudAccessKey();
-    String cloudSecretKey = app.getCloudSecretKey();
-    String minioEndpoint = app.getMinioEndpoint();
-    awsRegion = Regions.fromName(app.getAwsRegion());
+  public S3Service(String cloudBucketName) throws ModelDBException, IOException {
+    s3Client = new S3Client(cloudBucketName);
+
     this.bucketName = cloudBucketName;
-
-    if (cloudAccessKey != null && cloudSecretKey != null) {
-      if (minioEndpoint == null) {
-        LOGGER.debug("config based credentials based s3 client");
-        initializeS3ClientWithAccessKey(cloudAccessKey, cloudSecretKey, awsRegion);
-      } else {
-        LOGGER.debug("minio client");
-        initializeMinioClient(cloudAccessKey, cloudSecretKey, awsRegion, minioEndpoint);
-      }
-    } else if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
-        && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-      LOGGER.debug("temporary token based s3 client");
-      fetchCredentialsAndInitializeS3ClientWithTemporaryCredentials(awsRegion);
-    } else {
-      LOGGER.debug("environment credentials based s3 client");
-      // reads credential from OS Environment
-      s3Client = AmazonS3ClientBuilder.standard().withRegion(awsRegion).build();
-    }
   }
 
-  private void initializeMinioClient(
-      String cloudAccessKey, String cloudSecretKey, Regions awsRegion, String minioEndpoint) {
-    AWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
-    ClientConfiguration clientConfiguration = new ClientConfiguration();
-    clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-
-    this.s3Client =
-        AmazonS3ClientBuilder.standard()
-            .withEndpointConfiguration(
-                new AwsClientBuilder.EndpointConfiguration(minioEndpoint, awsRegion.getName()))
-            .withPathStyleAccessEnabled(true)
-            .withClientConfiguration(clientConfiguration)
-            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-            .build();
-  }
-
-  private void initializeS3ClientWithAccessKey(
-      String cloudAccessKey, String cloudSecretKey, Regions awsRegion) {
-    BasicAWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
-    this.s3Client =
-        AmazonS3ClientBuilder.standard()
-            .withRegion(awsRegion)
-            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-            .build();
-  }
-
-  private void fetchCredentialsAndInitializeS3ClientWithTemporaryCredentials(Regions clientRegion) {
-
-    try {
-      RefreshCredentialsAndSchedule(clientRegion.toString());
-
-      initializeS3ClientWithTemporaryCredentials(clientRegion);
-
+  private Boolean doesBucketExist(String bucketName) throws ModelDBException {
+    try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
+      return client.getClient().doesBucketExistV2(bucketName);
     } catch (AmazonServiceException e) {
-      // The call was transmitted successfully, but Amazon S3 couldn't process
-      // it, so it returned an error response.
-      e.printStackTrace();
+      ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existence for artifact store : "
+                      + e.getErrorMessage())
+              .build());
     } catch (SdkClientException e) {
-      // Amazon S3 couldn't be contacted for a response, or the client
-      // couldn't parse the response from Amazon S3.
-      e.printStackTrace();
+      LOGGER.warn(e.getMessage());
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existence for artifact store : "
+                      + e.getMessage())
+              .build());
     }
   }
 
-  private void initializeS3ClientWithTemporaryCredentials(Regions clientRegion) {
-    // Create a BasicSessionCredentials object that contains the credentials you just retrieved.
-    BasicSessionCredentials awsCredentials =
-        new BasicSessionCredentials(
-            temporarySessionCredentials.getAccessKeyId(),
-            temporarySessionCredentials.getSecretAccessKey(),
-            temporarySessionCredentials.getSessionToken());
-
-    // Provide temporary security credentials so that the Amazon S3 client
-    // can send authenticated requests to Amazon S3. You create the client
-    // using the sessionCredentials object.
-    s3Client =
-        AmazonS3ClientBuilder.standard()
-            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-            .withRegion(clientRegion)
-            .build();
-    LOGGER.debug("s3client refreshed with temporary credentials");
-  }
-
-  private void RefreshCredentialsAndSchedule(String region) {
-    LOGGER.debug("fetching token for s3 access");
-
-    LOGGER.debug(
-        "credentials before refresh {}",
-        temporarySessionCredentials != null ? temporarySessionCredentials.hashCode() : null);
-
-    TimerTask task = new FetchTemporaryS3Token(region);
-    task.run();
-
-    LOGGER.debug(
-        "credentials after refresh {}",
-        temporarySessionCredentials != null ? temporarySessionCredentials.hashCode() : null);
-    LOGGER.debug("fetched token for s3 access");
-
-    Date expiration = temporarySessionCredentials.getExpiration();
-    Date now = new Date();
-    long diffInSec = Math.abs(expiration.getTime() - now.getTime()) / 1000;
-    long delay = diffInSec / 2;
-    LOGGER.info("sceduled cron for credentail refresh in {} seconds", delay);
-    ModelDBUtils.scheduleTask(task, delay, delay, TimeUnit.SECONDS);
-    LOGGER.debug("scheduled periodic task to fetch token for s3 access");
-  }
-
-  private Boolean doesBucketExist(String bucketName) {
-    try {
-      return s3Client.doesBucketExistV2(bucketName);
+  private Boolean doesObjectExist(String bucketName, String path) throws ModelDBException {
+    try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
+      return client.getClient().doesObjectExist(bucketName, path);
     } catch (AmazonServiceException e) {
-      // If token based access is configured and getting issues checking bucket existence then try
-      // refreshing credentials
-      if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
-          && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-        // this may spiral into an infinite loop due to incorrect configuration
-        LOGGER.info("Fetching temporary credentails ");
-        LOGGER.warn(e.getErrorMessage());
-        initializeS3ClientWithTemporaryCredentials(awsRegion);
-      }
-      return doesBucketExist(bucketName);
+      ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existance for artifact store : "
+                      + e.getErrorMessage())
+              .build());
+    } catch (SdkClientException e) {
+      LOGGER.warn(e.getMessage());
+      throw StatusProto.toStatusRuntimeException(
+          Status.newBuilder()
+              .setCode(Code.UNAVAILABLE_VALUE)
+              .setMessage(
+                  "AWS S3 could not be checked for bucket existance for artifact store : "
+                      + e.getMessage())
+              .build());
+    } catch (Exception ex) {
+      LOGGER.warn(ex.getMessage());
+      throw ex;
     }
   }
 
@@ -202,9 +117,11 @@ public class S3Service implements ArtifactStoreService {
     }
     InitiateMultipartUploadRequest initiateMultipartUploadRequest =
         new InitiateMultipartUploadRequest(bucketName, s3Key);
-    InitiateMultipartUploadResult result =
-        s3Client.initiateMultipartUpload(initiateMultipartUploadRequest);
-    return Optional.ofNullable(result.getUploadId());
+    try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
+      InitiateMultipartUploadResult result =
+          client.getClient().initiateMultipartUpload(initiateMultipartUploadRequest);
+      return Optional.ofNullable(result.getUploadId());
+    }
   }
 
   @Override
@@ -253,7 +170,9 @@ public class S3Service implements ArtifactStoreService {
       request.addRequestParameter("uploadId", uploadId);
     }
 
-    return s3Client.generatePresignedUrl(request).toString();
+    try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
+      return client.getClient().generatePresignedUrl(request).toString();
+    }
   }
 
   @Override
@@ -266,9 +185,9 @@ public class S3Service implements ArtifactStoreService {
     }
     CompleteMultipartUploadRequest completeMultipartUploadRequest =
         new CompleteMultipartUploadRequest(bucketName, s3Key, uploadId, partETags);
-    try {
+    try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       CompleteMultipartUploadResult result =
-          s3Client.completeMultipartUpload(completeMultipartUploadRequest);
+          client.getClient().completeMultipartUpload(completeMultipartUploadRequest);
       LOGGER.info("upload result: {}", result);
     } catch (AmazonS3Exception e) {
       if (e.getStatusCode() == HttpStatusCodes.STATUS_CODE_BAD_REQUEST) {
@@ -279,14 +198,10 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  public static void setTemporarySessionCredentials(Credentials temporarySessionCredentials) {
-    S3Service.temporarySessionCredentials = temporarySessionCredentials;
-  }
-
   public String uploadFile(
       String artifactPath, HttpServletRequest request, Long partNumber, String uploadId)
       throws ModelDBException, IOException {
-    try {
+    try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       Boolean exist = doesBucketExist(bucketName);
       if (!exist) {
         throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
@@ -301,7 +216,7 @@ public class S3Service implements ArtifactStoreService {
                 .withPartNumber(partNumber.intValue())
                 .withInputStream(request.getInputStream())
                 .withPartSize(request.getContentLength());
-        UploadPartResult uploadPartResult = s3Client.uploadPart(uploadRequest);
+        UploadPartResult uploadPartResult = client.getClient().uploadPart(uploadRequest);
         return uploadPartResult.getPartETag().getETag();
       } else {
         ObjectMetadata metadata = new ObjectMetadata();
@@ -311,7 +226,7 @@ public class S3Service implements ArtifactStoreService {
         int maxUploadThreads = 5;
         TransferManager transferManager =
             TransferManagerBuilder.standard()
-                .withS3Client(s3Client)
+                .withS3Client(client.getClient())
                 // TODO: Validate use and if not required then remove below two line
                 .withMultipartUploadThreshold((long) (5 * 1024 * 1024)) // 5 MB
                 .withExecutorFactory(() -> Executors.newFixedThreadPool(maxUploadThreads))
@@ -335,23 +250,44 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  public Resource loadFileAsResource(String artifactPath) throws ModelDBException {
+  public ResponseEntity<Resource> loadFileAsResource(String fileName, String artifactPath)
+      throws ModelDBException {
     LOGGER.trace("S3Service - loadFileAsResource called");
-    try {
-      if (s3Client.doesObjectExist(bucketName, artifactPath)) {
+    try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
+      if (doesObjectExist(bucketName, artifactPath)) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");
-        return new InputStreamResource(
-            s3Client.getObject(bucketName, artifactPath).getObjectContent());
+        S3Object resource = client.getClient().getObject(bucketName, artifactPath);
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        for (Map.Entry<String, Object> header :
+            resource.getObjectMetadata().getRawMetadata().entrySet()) {
+          responseHeaders.add(header.getKey(), String.valueOf(header.getValue()));
+        }
+        responseHeaders.add(ModelDBConstants.FILENAME, fileName);
+        LOGGER.debug("getArtifact returned");
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.noCache())
+            .headers(responseHeaders)
+            .body(new InputStreamResource(resource.getObjectContent()));
       } else {
         String errorMessage = "File not found " + artifactPath;
-        LOGGER.warn(errorMessage);
-        throw new ModelDBException(errorMessage);
+        LOGGER.info(errorMessage);
+        throw new ModelDBException(errorMessage, Code.NOT_FOUND);
       }
-    } catch (ModelDBException ex) {
-      String errorMessage = "File not found " + artifactPath;
-      LOGGER.warn(errorMessage, ex);
-      throw new ModelDBException(errorMessage, ex);
+    } catch (AmazonServiceException e) {
+      // Amazon S3 couldn't be contacted for a response, or the client
+      // couldn't parse the response from Amazon S3.
+      String errorMessage = e.getMessage();
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(
+          errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
+    } catch (SdkClientException e) {
+      // Amazon S3 couldn't be contacted for a response, or the client
+      // couldn't parse the response from Amazon S3.
+      String errorMessage = e.getMessage();
+      LOGGER.warn(errorMessage);
+      throw new ModelDBException(errorMessage);
     }
   }
 
@@ -373,6 +309,8 @@ public class S3Service implements ArtifactStoreService {
           app.getArtifactStoreServerHost());
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("S3Service - generatePresignedUrl - get url returned");
+      String filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
+      parameters.put(ModelDBConstants.FILENAME, filename);
       return getDownloadUrl(
           parameters,
           app.getArtifactStoreUrlProtocol(),

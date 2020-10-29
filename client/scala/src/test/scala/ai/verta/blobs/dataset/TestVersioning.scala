@@ -22,19 +22,11 @@ import scala.collection.mutable.HashSet
 class TestVersioning extends FunSuite {
   def fixture =
     new {
-      val testfilePath = "s3://verta-scala-test/testdir/testfile"
+      val testfilePath = "s3://verta-starter/census-train.csv"
       val testfileLoc = S3Location(testfilePath).get
 
-      val testfilePath2 = "s3://verta-scala-test/testdir/testsubdir/testfile2"
+      val testfilePath2 = "s3://verta-starter/census-test.csv"
       val testfileLoc2 = S3Location(testfilePath2).get
-
-      val testdirPath = "s3://verta-scala-test/testdir/"
-      val testdirLoc = S3Location(testdirPath).get
-
-      val testsubdirPath = "s3://verta-scala-test/testdir/testsubdir/"
-      val testsubdirLoc = S3Location(testsubdirPath).get
-
-      val bucketLoc = S3Location("s3://verta-scala-test").get
 
       val workingDir = System.getProperty("user.dir")
       val testDir = workingDir + "/src/test/scala/ai/verta/blobs/testdir"

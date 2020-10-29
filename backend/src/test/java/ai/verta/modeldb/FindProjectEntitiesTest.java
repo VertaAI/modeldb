@@ -16,6 +16,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.UACServiceGrpc;
@@ -29,6 +30,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +111,7 @@ public class FindProjectEntitiesTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -161,7 +164,8 @@ public class FindProjectEntitiesTest {
     ProjectTest projectTest = new ProjectTest();
 
     // Create two project of above project
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("Project_1");
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -190,7 +194,7 @@ public class FindProjectEntitiesTest {
         project1.getName());
 
     // project2 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project_2");
+    createProjectRequest = projectTest.getCreateProjectRequest("Project-2-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -219,7 +223,7 @@ public class FindProjectEntitiesTest {
         project2.getName());
 
     // project3 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project_3");
+    createProjectRequest = projectTest.getCreateProjectRequest("Project-3-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -248,7 +252,7 @@ public class FindProjectEntitiesTest {
         project3.getName());
 
     // project4 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project_4");
+    createProjectRequest = projectTest.getCreateProjectRequest("Project-4-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -290,11 +294,10 @@ public class FindProjectEntitiesTest {
   }
 
   private static void createExperimentEntities() {
-    ExperimentTest experimentTest = new ExperimentTest();
-
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project1.getId(), "Experiment_1");
+        ExperimentTest.getCreateExperimentRequest(
+            project1.getId(), "Experiment-1-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -324,7 +327,8 @@ public class FindProjectEntitiesTest {
 
     // experiment2 of above project
     createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project1.getId(), "Experiment_2");
+        ExperimentTest.getCreateExperimentRequest(
+            project1.getId(), "Experiment-2-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -354,7 +358,8 @@ public class FindProjectEntitiesTest {
 
     // experiment3 of above project
     createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project1.getId(), "Experiment_3");
+        ExperimentTest.getCreateExperimentRequest(
+            project1.getId(), "Experiment-3-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -384,7 +389,8 @@ public class FindProjectEntitiesTest {
 
     // experiment4 of above project
     createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project1.getId(), "Experiment_4");
+        ExperimentTest.getCreateExperimentRequest(
+            project1.getId(), "Experiment-4-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -419,11 +425,9 @@ public class FindProjectEntitiesTest {
   }
 
   private static void createExperimentRunEntities() {
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
-
     CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project1.getId(), experiment1.getId(), "ExperimentRun_sprt_1");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment1.getId(), "ExperimentRun-1-" + new Date().getTime());
     KeyValue metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -457,8 +461,8 @@ public class FindProjectEntitiesTest {
         experimentRun11.getName());
 
     createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project1.getId(), experiment1.getId(), "ExperimentRun_sprt_2");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment1.getId(), "ExperimentRun-2-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -492,8 +496,8 @@ public class FindProjectEntitiesTest {
         experimentRun12.getName());
 
     createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project1.getId(), experiment2.getId(), "ExperimentRun_sprt_2");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment2.getId(), "ExperimentRun-3-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -527,8 +531,8 @@ public class FindProjectEntitiesTest {
         experimentRun21.getName());
 
     createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project1.getId(), experiment2.getId(), "ExperimentRun_sprt_1");
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project1.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -705,18 +709,24 @@ public class FindProjectEntitiesTest {
     FindProjects findProjects = FindProjects.newBuilder().addPredicates(keyValueQuery).build();
 
     FindProjects.Response response = projectServiceStub.findProjects(findProjects);
-    LOGGER.info("FindProjects Response : " + response.getProjectsList());
-    assertEquals(
-        "Project count not match with expected project count",
-        3,
-        response.getProjectsList().size());
+    List<Project> expectedProjects = new ArrayList<>();
+    List<Project> staleProjects = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectMap.containsKey(project.getId())) {
+        expectedProjects.add(project);
+      } else {
+        staleProjects.add(project);
+      }
+    }
+    LOGGER.info("FindProjects Response : " + expectedProjects);
+    assertEquals("Project count not match with expected project count", 3, expectedProjects.size());
 
     assertEquals(
         "Total records count not matched with expected records count",
         3,
-        response.getTotalRecords());
+        response.getTotalRecords() - staleProjects.size());
 
-    for (Project fetchedProject : response.getProjectsList()) {
+    for (Project fetchedProject : expectedProjects) {
       boolean doesAttributeExist = false;
       for (KeyValue fetchedAttribute : fetchedProject.getAttributesList()) {
         if (fetchedAttribute.getKey().equals("attribute_1")) {
@@ -739,12 +749,20 @@ public class FindProjectEntitiesTest {
             .build();
 
     response = projectServiceStub.findProjects(findProjects);
+    expectedProjects = new ArrayList<>();
+    staleProjects = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectMap.containsKey(project.getId())) {
+        expectedProjects.add(project);
+      } else {
+        staleProjects.add(project);
+      }
+    }
     assertEquals(
         "Total records count not matched with expected records count",
         4,
-        response.getTotalRecords());
-    assertEquals(
-        "Project count not match with expected project count", 4, response.getProjectsCount());
+        response.getTotalRecords() - staleProjects.size());
+    assertEquals("Project count not match with expected project count", 4, expectedProjects.size());
     // TODO: ordering not consistent
     //    assertEquals(
     //        "Project Id not match with expected project Id",
@@ -1195,16 +1213,24 @@ public class FindProjectEntitiesTest {
         FindProjects.newBuilder().addPredicates(keyValueQuery).setSortKey("name").build();
 
     response = projectServiceStub.findProjects(findProjects);
+    List<Project> expectedProjects = new ArrayList<>();
+    List<Project> staleProjects = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectMap.containsKey(project.getId())) {
+        expectedProjects.add(project);
+      } else {
+        staleProjects.add(project);
+      }
+    }
     assertEquals(
         "Total records count not matched with expected records count",
         3,
-        response.getTotalRecords());
-    assertEquals(
-        "Project count not match with expected project count", 3, response.getProjectsCount());
+        response.getTotalRecords() - staleProjects.size());
+    assertEquals("Project count not match with expected project count", 3, expectedProjects.size());
     assertEquals(
         "Project Id not match with expected project Id",
         project3.getId(),
-        response.getProjects(0).getId());
+        expectedProjects.get(0).getId());
 
     LOGGER.info("Find Projects with sorting by name test stop................................");
   }
@@ -2562,15 +2588,24 @@ public class FindProjectEntitiesTest {
     FindExperiments findExperiments = FindExperiments.newBuilder().build();
 
     FindExperiments.Response response = experimentServiceStub.findExperiments(findExperiments);
+    List<Experiment> expectedExperiments = new ArrayList<>();
+    List<Experiment> staleExperiments = new ArrayList<>();
+    for (Experiment exp : response.getExperimentsList()) {
+      if (experimentMap.containsKey(exp.getId())) {
+        expectedExperiments.add(exp);
+      } else {
+        staleExperiments.add(exp);
+      }
+    }
     LOGGER.info("FindExperiments Response : " + response.getExperimentsCount());
     assertEquals(
         "Experiment count not match with expected experiment count",
         experimentMap.size(),
-        response.getExperimentsCount());
+        expectedExperiments.size());
     assertEquals(
         "Total records count not matched with expected records count",
         experimentMap.size(),
-        response.getTotalRecords());
+        response.getTotalRecords() - staleExperiments.size());
 
     findExperiments = FindExperiments.newBuilder().addExperimentIds(experiment1.getId()).build();
 

@@ -5,6 +5,7 @@ from __future__ import print_function
 import abc
 import copy
 import glob
+import importlib
 import os
 import re
 import shutil
@@ -219,9 +220,27 @@ class _DeployableEntity(_ModelDBEntity):
     def _custom_modules_as_artifact(self, paths=None):
         if isinstance(paths, six.string_types):
             paths = [paths]
+
+        # If we include a path that is actually a module, then we _must_ add its parent to the
+        # adjusted sys.path in the end so that we can re-import with the same name.
+        forced_local_sys_paths = []
         if paths is not None:
-            paths = list(map(os.path.expanduser, paths))
-            paths = list(map(os.path.abspath, paths))
+            new_paths = []
+            for p in paths:
+                abspath = os.path.abspath(os.path.expanduser(p))
+                if os.path.exists(abspath):
+                    new_paths.append(abspath)
+                else:
+                    try:
+                        mod = importlib.import_module(p)
+                        new_paths.extend(mod.__path__)
+                        forced_local_sys_paths.extend(map(os.path.dirname, mod.__path__))
+                    except ImportError:
+                        raise ValueError("custom module {} does not correspond to an existing folder or module".format(p))
+
+            paths = new_paths
+
+        forced_local_sys_paths = sorted(list(set(forced_local_sys_paths)))
 
         # collect local sys paths
         local_sys_paths = copy.copy(sys.path)
@@ -252,6 +271,9 @@ class _DeployableEntity(_ModelDBEntity):
             include_hidden=True,
             include_venv=False,  # ignore virtual environments nested within
         )
+        ## remove .git
+        local_filepaths = set(filter(lambda path: not path.endswith(".git") and ".git/" not in path,
+                                      local_filepaths))
 
         # obtain deepest common directory
         #     This directory on the local system will be mirrored in `_CUSTOM_MODULES_DIR` in
@@ -262,7 +284,7 @@ class _DeployableEntity(_ModelDBEntity):
         common_dir = os.path.dirname(common_prefix)
 
         # replace `common_dir` with `_CUSTOM_MODULES_DIR` for deployment sys.path
-        depl_sys_paths = list(map(lambda path: os.path.relpath(path, common_dir), local_sys_paths))
+        depl_sys_paths = list(map(lambda path: os.path.relpath(path, common_dir), local_sys_paths + forced_local_sys_paths))
         depl_sys_paths = list(map(lambda path: os.path.join(_CUSTOM_MODULES_DIR, path), depl_sys_paths))
 
         bytestream = six.BytesIO()
@@ -299,9 +321,6 @@ class _DeployableEntity(_ModelDBEntity):
             if init_filename not in zipf.namelist():
                 zipf.writestr(init_filename, b"")
 
-            if self._conf.debug:
-                print("[DEBUG] archive contains:")
-                zipf.printdir()
         bytestream.seek(0)
 
         return bytestream
@@ -410,6 +429,8 @@ class _DeployableEntity(_ModelDBEntity):
         except (TypeError, ValueError):
             extension = None
         _utils.THREAD_LOCALS.active_experiment_run = self
+        if isinstance(model, six.string_types):  # filepath
+            model = open(model, 'rb')
         try:
             serialized_model, method, model_type = _artifact_utils.serialize_model(model)
         finally:

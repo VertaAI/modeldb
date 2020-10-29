@@ -14,11 +14,26 @@ import ai.verta.swagger.client.ClientSet
  */
 class DatasetVersion(
   private val clientSet: ClientSet,
-  private val dataset: Dataset,
   private val datasetVersion: ModeldbDatasetVersion
 ) extends Taggable {
   /** ID of the dataset version. */
   def id = datasetVersion.id.get
+
+  /** Sets the description of this dataset version.
+   *  @param description Description to set.
+   */
+  def setDescription(description: String)(implicit ec: ExecutionContext): Try[Unit] =
+    clientSet.datasetVersionService.DatasetVersionService_updateDatasetVersionDescription(ModeldbUpdateDatasetVersionDescription(
+      description = Some(description),
+      id = Some(id)
+    ))
+      .map(_ => ())
+
+  /** Gets the description of this dataset version.
+   *  @return Description of this dataset version.
+   */
+  def getDescription()(implicit ec: ExecutionContext): Try[String] =
+    getMessage().map(datasetVersion => datasetVersion.description.getOrElse(""))
 
   // TODO: add overwrite
   /** Add tags to this dataset version.
@@ -45,7 +60,7 @@ class DatasetVersion(
    *  @return tags of this dataset version.
    */
   def getTags()(implicit ec: ExecutionContext): Try[List[String]] =
-    getMessage().map(dataset_version => dataset_version.tags.get)
+    getMessage().map(dataset_version => dataset_version.tags.getOrElse(Nil))
 
   /** Adds potentially multiple attributes to this dataset version.
    *  @param vals Attributes name and value (String, Int, or Double)
@@ -86,9 +101,30 @@ class DatasetVersion(
   def getAttribute(key: String)(implicit ec: ExecutionContext): Try[Option[ValueType]] =
     getAttributes().map(attributes => attributes.get(key))
 
+  /** Delete the attribute with the given key of this dataset version.
+   *  @param key key of the attribute.
+   */
+  def delAttribute(key: String)(implicit ec: ExecutionContext) = delAttributes(List(key))
+
+  /** Delete attributes with the given keys of this dataset version.
+   *  @param keys keys of the attribute.
+   */
+  def delAttributes(keys: List[String])(implicit ec: ExecutionContext): Try[Unit] =
+    clientSet.datasetVersionService.DatasetVersionService_deleteDatasetVersionAttributes(ModeldbDeleteDatasetVersionAttributes(
+      id = Some(id),
+      attribute_keys = Some(keys)
+    )).map(_ => {})
+
   // get the latest version of the proto message
   private def getMessage()(implicit ec: ExecutionContext): Try[ModeldbDatasetVersion] =
     clientSet.datasetVersionService.DatasetVersionService_getDatasetVersionById(Some(id)).map(
       response => response.dataset_version.get
+    )
+}
+
+object DatasetVersion {
+  private[verta] def getDatasetVersionById(clientSet: ClientSet, id: String)(implicit ec: ExecutionContext): Try[DatasetVersion] =
+    clientSet.datasetVersionService.DatasetVersionService_getDatasetVersionById(Some(id)).map(
+      response => new DatasetVersion(clientSet, response.dataset_version.get)
     )
 }

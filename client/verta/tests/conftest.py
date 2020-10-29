@@ -265,9 +265,14 @@ def dir_and_files(strs, tmp_path):
 
 
 @pytest.fixture
-def in_tempdir():
+def tempdir_root():
+    return os.environ.get("TEMPDIR_ROOT")
+
+
+@pytest.fixture
+def in_tempdir(tempdir_root):
     """Moves test to execute inside a temporary directory."""
-    dirpath = tempfile.mkdtemp()
+    dirpath = tempfile.mkdtemp(dir=tempdir_root)
     try:
         with utils.chdir(dirpath):
             yield dirpath
@@ -362,8 +367,12 @@ def created_datasets(client):
 
     yield created_datasets
 
-    if created_datasets:
-        utils.delete_datasets(list(set(dataset.id for dataset in created_datasets)), client._conn)
+    datasets_conn = {}  # prevent duplication
+    for dataset in created_datasets:
+        datasets_conn[dataset.id] = dataset._conn
+
+    for dataset_id in datasets_conn:
+        utils.delete_datasets([dataset_id], datasets_conn[dataset_id])
 
 
 @pytest.fixture
@@ -374,7 +383,7 @@ def registered_model(client):
 
 
 @pytest.fixture
-def created_registered_models(client):
+def created_registered_models():
     """Container to track and clean up `RegisteredModel`s created during tests."""
     to_delete = []
 
@@ -390,6 +399,16 @@ def model_version(registered_model):
 
 
 @pytest.fixture
+def created_endpoints():
+    to_delete = []
+
+    yield to_delete
+
+    for endpoint in to_delete:
+        endpoint.delete()
+
+
+@pytest.fixture
 def endpoint(client, created_endpoints):
     path = _utils.generate_default_name()
     endpoint = client.create_endpoint(path)
@@ -399,7 +418,7 @@ def endpoint(client, created_endpoints):
 
 
 @pytest.fixture
-def created_endpoints(client):
+def created_endpoints():
     to_delete = []
 
     yield to_delete

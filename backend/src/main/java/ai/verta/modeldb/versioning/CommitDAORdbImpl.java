@@ -949,7 +949,7 @@ public class CommitDAORdbImpl implements CommitDAO {
               request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
 
       String workspaceName = request.getWorkspaceName();
-      LOGGER.debug("Workspace {}", workspaceName);
+      LOGGER.debug("Workspace is : '{}'", workspaceName);
       if (workspaceName != null
           && !workspaceName.isEmpty()
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {

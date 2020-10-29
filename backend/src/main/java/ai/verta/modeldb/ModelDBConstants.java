@@ -15,6 +15,12 @@ public interface ModelDBConstants {
   String AWS_REGION = "aws_region";
   String DATABASE = "database";
   String DB_TYPE = "DBType";
+  String MIN_CONNECTION_POOL_SIZE = "minConnectionPoolSize";
+  String MAX_CONNECTION_POOL_SIZE = "maxConnectionPoolSize";
+  String CONNECTION_TIMEOUT = "connectionTimeout";
+  Integer MIN_CONNECTION_SIZE_DEFAULT = 5;
+  Integer MAX_CONNECTION_SIZE_DEFAULT = 20;
+  Integer CONNECTION_TIMEOUT_DEFAULT = 300;
   String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";
   String FEATURE_FLAG = "feature-flag";
   String GET_ARTIFACT_ENDPOINT = "getArtifact";
@@ -42,12 +48,15 @@ public interface ModelDBConstants {
   String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
   String POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES = "populateConnectionsBasedOnPrivileges";
+  String LIQUIBASE_MIGRATION = "LIQUIBASE_MIGRATION";
+  String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
 
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
   String DEFAULT_AWS_REGION = "us-east-1";
   String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
   String AWS_WEB_IDENTITY_TOKEN = "AWS_WEB_IDENTITY_TOKEN";
+  Integer RETRY_INIT_TIME_AWS_TEMP_CREDENTIALS = 10 * 60; // Time in second
 
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
@@ -158,6 +167,7 @@ public interface ModelDBConstants {
   String EMAIL = "email";
   String USERNAME = "username";
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
+  String HEALTH_CHECK_SERVICE_FIELD = "service";
   String DELETED = "deleted";
   String DEV_KEY = "devKey";
   String REQUEST_TIMEOUT = "requestTimeout";
@@ -260,6 +270,7 @@ public interface ModelDBConstants {
   String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
   String PROPERTY_NAME = "property_name";
   String S3_PRESIGNED_URL_ENABLED = "s3presignedURLEnabled";
+  String FILENAME = "FileName";
 
   // Cron job constant
   String FREQUENCY = "frequency"; // frequency to run cron job in second
@@ -268,4 +279,5 @@ public interface ModelDBConstants {
   String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
   String DELETE_ENTITIES = "delete_entities";
   String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
+  String EXPIRED_TOKEN = "ExpiredToken";
 }

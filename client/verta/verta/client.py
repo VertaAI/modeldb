@@ -22,6 +22,7 @@ import requests
 import yaml
 from verta._tracking.organization import Organization
 from ._dataset_versioning.dataset_version import DatasetVersion
+from ._internal_utils._utils import check_unnecessary_params_warning
 
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -70,6 +71,7 @@ from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
 from .endpoint._endpoint import Endpoint
 from .endpoint._endpoints import Endpoints
+from .endpoint.update import DirectUpdateStrategy
 
 
 class Client(object):
@@ -329,7 +331,7 @@ class Client(object):
 
         If an accessible Project with name `name` does not already exist, it will be created
         and initialized with specified metadata parameters. If such a Project does already exist,
-        it will be retrieved; specifying metadata parameters in this case will raise an exception.
+        it will be retrieved; specifying metadata parameters in this case will raise a warning.
 
         If an Experiment is already attached to this Client, it will be detached.
 
@@ -372,13 +374,21 @@ class Client(object):
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
 
+        resource_name = "Project"
+        param_names = "`desc`, `tags`, `attrs`, or `public_within_org`"
+        params = (desc, tags, attrs, public_within_org)
         if id is not None:
             self._ctx.proj = Project._get_by_id(self._conn, self._conf, id)
+            check_unnecessary_params_warning(resource_name, "id {}".format(id),
+                                                  param_names, params)
             self._ctx.populate()
         else:
             self._ctx.proj = Project._get_or_create_by_name(self._conn, name,
                                                         lambda name: Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                        lambda name: Project._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org))
+                                                        lambda name: Project._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org),
+                                                        lambda: check_unnecessary_params_warning(
+                                                            resource_name, "name {}".format(name),
+                                                            param_names, params))
 
         return self._ctx.proj
 
@@ -425,7 +435,7 @@ class Client(object):
         If an accessible Experiment with name `name` does not already exist under the currently
         active Project, it will be created and initialized with specified metadata parameters. If
         such an Experiment does already exist, it will be retrieved; specifying metadata parameters
-        in this case will raise an exception.
+        in this case will raise a warning.
 
         Parameters
         ----------
@@ -458,8 +468,13 @@ class Client(object):
 
         name = self._set_from_config_if_none(name, "experiment")
 
+        resource_name = "Experiment"
+        param_names = "`desc`, `tags`, or `attrs`"
+        params = (desc, tags, attrs)
         if id is not None:
             self._ctx.expt = Experiment._get_by_id(self._conn, self._conf, id)
+            check_unnecessary_params_warning(resource_name, "id {}".format(id),
+                                                  param_names, params)
             self._ctx.populate()
         else:
             if self._ctx.proj is None:
@@ -467,7 +482,11 @@ class Client(object):
 
             self._ctx.expt = Experiment._get_or_create_by_name(self._conn, name,
                                                             lambda name: Experiment._get_by_name(self._conn, self._conf, name, self._ctx.proj.id),
-                                                            lambda name: Experiment._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs))
+                                                            lambda name: Experiment._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs),
+                                                            lambda: check_unnecessary_params_warning(
+                                                                   resource_name,
+                                                                   "name {}".format(name),
+                                                                   param_names, params))
 
         return self._ctx.expt
 
@@ -513,7 +532,7 @@ class Client(object):
         If an accessible Experiment Run with name `name` does not already exist under the
         currently active Experiment, it will be created and initialized with specified metadata
         parameters. If such a Experiment Run does already exist, it will be retrieved; specifying
-        metadata parameters in this case will raise an exception.
+        metadata parameters in this case will raise a warning.
 
         Parameters
         ----------
@@ -544,8 +563,13 @@ class Client(object):
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
+        resource_name = "Experiment Run"
+        param_names = "`desc`, `tags`, `attrs`, or `date_created`"
+        params = (desc, tags, attrs, date_created)
         if id is not None:
             self._ctx.expt_run = ExperimentRun._get_by_id(self._conn, self._conf, id)
+            check_unnecessary_params_warning(resource_name, "id {}".format(id),
+                                                  param_names, params)
             self._ctx.populate()
         else:
             if self._ctx.expt is None:
@@ -553,11 +577,15 @@ class Client(object):
 
             self._ctx.expt_run = ExperimentRun._get_or_create_by_name(self._conn, name,
                                                                     lambda name: ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id),
-                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created))
+                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created),
+                                                                    lambda: check_unnecessary_params_warning(
+                                                                          resource_name,
+                                                                          "name {}".format(name),
+                                                                          param_names, params))
 
         return self._ctx.expt_run
 
-    def get_or_create_repository(self, name=None, workspace=None, id=None):
+    def get_or_create_repository(self, name=None, workspace=None, id=None, public_within_org=None):
         """
         Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
 
@@ -570,6 +598,9 @@ class Client(object):
             current user's personal workspace will be used.
         id : str, optional
             ID of the Repository, to be provided instead of `name`.
+        public_within_org : bool, default False
+            If creating a Repository in an organization's workspace, whether to make this Repository
+            accessible to all members of that organization.
 
         Returns
         -------
@@ -596,7 +627,8 @@ class Client(object):
 
             if not repo:  # not found
                 try:
-                    repo = _repository.Repository._create(self._conn, name=name, workspace=workspace)
+                    repo = _repository.Repository._create(self._conn, name=name, workspace=workspace,
+                                                          public_within_org=public_within_org)
                 except requests.HTTPError as e:
                     if e.response.status_code == 409:  # already exists
                         raise RuntimeError("unable to get Repository from ModelDB;"
@@ -622,7 +654,7 @@ class Client(object):
 
         If an accessible Dataset with name `name` does not already exist, it will be created
         and initialized with specified metadata parameters. If such a Dataset does already exist,
-        it will be retrieved; specifying metadata parameters in this case will raise an exception.
+        it will be retrieved; specifying metadata parameters in this case will raise a warning.
 
         Parameters
         ----------
@@ -809,7 +841,7 @@ class Client(object):
 
         If an accessible registered_model with name `name` does not already exist, it will be created
         and initialized with specified metadata parameters. If such a registered_model does already exist,
-        it will be retrieved; specifying metadata parameters in this case will raise an exception.
+        it will be retrieved; specifying metadata parameters in this case will raise a warning.
 
         Parameters
         ----------
@@ -851,12 +883,21 @@ class Client(object):
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
 
+        resource_name = "Registered Model"
+        param_names = "`desc`, `labels`, or `public_within_org`"
+        params = (desc, labels, public_within_org)
         if id is not None:
             registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
+            check_unnecessary_params_warning(resource_name, "id {}".format(id),
+                                                  param_names, params)
         else:
             registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
-                                                                                lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                                                lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org))
+                                                                  lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
+                                                                  lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org),
+                                                                  lambda: check_unnecessary_params_warning(
+                                                                      resource_name,
+                                                                      "name {}".format(name),
+                                                                      param_names, params))
 
         return registered_model
 
@@ -934,7 +975,7 @@ class Client(object):
 
         If an accessible endpoint with name `path` does not already exist, it will be created
         and initialized with specified metadata parameters. If such an endpoint does already exist,
-        it will be retrieved; specifying metadata parameters in this case will raise an exception.
+        it will be retrieved; specifying metadata parameters in this case will raise a warning.
 
         Parameters
         ----------
@@ -967,12 +1008,21 @@ class Client(object):
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
             workspace = self._get_personal_workspace()
+        resource_name = "Endpoint"
+        param_names = "`description`"
+        params = [description]
         if id is not None:
+            check_unnecessary_params_warning(resource_name, "id {}".format(id),
+                                                  param_names, params)
             return Endpoint._get_by_id(self._conn, self._conf, workspace, id)
         else:
             return Endpoint._get_or_create_by_name(self._conn, path,
                                             lambda name: Endpoint._get_by_path(self._conn, self._conf, workspace, path),
-                                            lambda name: Endpoint._create( self._conn, self._conf, workspace, path, description))
+                                            lambda name: Endpoint._create( self._conn, self._conf, workspace, path, description),
+                                            lambda: check_unnecessary_params_warning(
+                                                 resource_name,
+                                                 "path {}".format(path),
+                                                 param_names, params))
 
 
 
@@ -1224,7 +1274,7 @@ class Client(object):
         return Endpoints(self._conn, self._conf, self._get_personal_workspace())
 
     def download_endpoint_manifest(
-            self, download_to_path, path, name, strategy,
+            self, download_to_path, path, name, strategy=None,
             resources=None, autoscaling=None, env_vars=None,
             workspace=None):
         """
@@ -1238,7 +1288,7 @@ class Client(object):
             Path of the endpoint.
         name : str
             Name of the endpoint.
-        strategy : :ref:`update strategy <update-stategies>`
+        strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the endpoint.
         resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated endpoint.
@@ -1258,6 +1308,9 @@ class Client(object):
         """
         if not path.startswith('/'):
             path = '/' + path
+
+        if not strategy:
+            strategy = DirectUpdateStrategy()
 
         data = {
             'endpoint': {'path': path},
@@ -1283,7 +1336,7 @@ class Client(object):
 
         If an accessible Dataset with name `name` does not already exist, it will be created
         and initialized with specified metadata parameters. If such a Dataset does already exist,
-        it will be retrieved; specifying metadata parameters in this case will raise an exception.
+        it will be retrieved; specifying metadata parameters in this case will raise a warning.
 
         Parameters
         ----------
@@ -1325,12 +1378,21 @@ class Client(object):
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
 
+        resource_name = "Dataset"
+        param_names = "`desc`, `tags`, `attrs`, `time_created`, or `public_within_org`"
+        params = (desc, tags, attrs, time_created, public_within_org)
         if id is not None:
             dataset = Dataset._get_by_id(self._conn, self._conf, id)
+            check_unnecessary_params_warning(resource_name, "id {}".format(id),
+                                                  param_names, params)
         else:
             dataset = Dataset._get_or_create_by_name(self._conn, name,
                                                         lambda name: Dataset._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                        lambda name: Dataset._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org))
+                                                        lambda name: Dataset._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org),
+                                                        lambda: check_unnecessary_params_warning(
+                                                         resource_name,
+                                                         "name {}".format(name),
+                                                         param_names, params))
 
         return dataset
 

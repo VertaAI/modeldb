@@ -1,6 +1,5 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.RepositoryTest.NAME;
 import static org.junit.Assert.*;
 
 import ai.verta.common.KeyValue;
@@ -17,6 +16,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -33,6 +33,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +108,7 @@ public class FindDatasetEntitiesTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -154,10 +156,9 @@ public class FindDatasetEntitiesTest {
   }
 
   private static void createDatasetEntities() {
-    DatasetTest datasetTest = new DatasetTest();
-
     // Create two dataset of above dataset
-    CreateDataset createDatasetRequest = datasetTest.getDatasetRequest("Dataset_1");
+    CreateDataset createDatasetRequest =
+        DatasetTest.getDatasetRequest("Dataset-1-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -186,7 +187,7 @@ public class FindDatasetEntitiesTest {
         dataset1.getName());
 
     // dataset2 of above dataset
-    createDatasetRequest = datasetTest.getDatasetRequest("Dataset_2");
+    createDatasetRequest = DatasetTest.getDatasetRequest("Dataset-2-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -215,7 +216,7 @@ public class FindDatasetEntitiesTest {
         dataset2.getName());
 
     // dataset3 of above dataset
-    createDatasetRequest = datasetTest.getDatasetRequest("Dataset_3");
+    createDatasetRequest = DatasetTest.getDatasetRequest("Dataset-3-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -241,7 +242,7 @@ public class FindDatasetEntitiesTest {
         dataset3.getName());
 
     // dataset4 of above dataset
-    createDatasetRequest = datasetTest.getDatasetRequest("Dataset_4");
+    createDatasetRequest = DatasetTest.getDatasetRequest("Dataset-4-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -277,11 +278,9 @@ public class FindDatasetEntitiesTest {
   }
 
   private static void createDatasetVersionEntities() {
-    DatasetVersionTest datasetVersionTest = new DatasetVersionTest();
-
     // Create two datasetVersion of above dataset
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+        DatasetVersionTest.getDatasetVersionRequest(dataset1.getId());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -306,7 +305,7 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("DatasetVersion created successfully");
 
     // datasetVersion2 of above dataset
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+    createDatasetVersionRequest = DatasetVersionTest.getDatasetVersionRequest(dataset1.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -332,7 +331,7 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("DatasetVersion created successfully");
 
     // datasetVersion3 of above dataset
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+    createDatasetVersionRequest = DatasetVersionTest.getDatasetVersionRequest(dataset1.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -358,7 +357,7 @@ public class FindDatasetEntitiesTest {
     LOGGER.info("DatasetVersion created successfully");
 
     // datasetVersion4 of above dataset
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+    createDatasetVersionRequest = DatasetVersionTest.getDatasetVersionRequest(dataset1.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -398,16 +397,6 @@ public class FindDatasetEntitiesTest {
       LOGGER.info("Dataset deleted successfully");
       LOGGER.info(deleteDatasetResponse.toString());
       assertTrue(deleteDatasetResponse.getStatus());
-    }
-  }
-
-  private void checkEqualsAssert(StatusRuntimeException e) {
-    Status status = Status.fromThrowable(e);
-    LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
-    } else {
-      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
   }
 
@@ -1149,11 +1138,18 @@ public class FindDatasetEntitiesTest {
 
     FindDatasetVersions.Response response =
         datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+
+    List<DatasetVersion> expectedDatasetVersions = new ArrayList<>();
     LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsList());
+    for (DatasetVersion datasetVersion : response.getDatasetVersionsList()) {
+      if (datasetVersionMap.containsKey(datasetVersion.getId())) {
+        expectedDatasetVersions.add(datasetVersion);
+      }
+    }
     assertEquals(
         "DatasetVersion count not match with expected datasetVersion count",
         3,
-        response.getDatasetVersionsList().size());
+        expectedDatasetVersions.size());
 
     assertEquals(
         "Total records count not matched with expected records count",
@@ -1529,7 +1525,9 @@ public class FindDatasetEntitiesTest {
   public void findDatasetsWithMarkedAsProtectedRepositoryTest() {
     LOGGER.info("FindDatasets test start................................");
 
-    long id = RepositoryTest.createRepository(versioningServiceBlockingStub, NAME);
+    long id =
+        RepositoryTest.createRepository(
+            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
 
     FindDatasets findDatasets = FindDatasets.newBuilder().build();
 

@@ -295,6 +295,11 @@ class ExperimentRunServiceStub(object):
         request_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.SerializeToString,
         response_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.Response.FromString,
         )
+    self.cloneExperimentRun = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/cloneExperimentRun',
+        request_serializer=modeldb_dot_ExperimentRunService__pb2.CloneExperimentRun.SerializeToString,
+        response_deserializer=modeldb_dot_ExperimentRunService__pb2.CloneExperimentRun.Response.FromString,
+        )
 
 
 class ExperimentRunServiceServicer(object):
@@ -693,6 +698,13 @@ class ExperimentRunServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def cloneExperimentRun(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_ExperimentRunServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -975,6 +987,11 @@ def add_ExperimentRunServiceServicer_to_server(servicer, server):
           servicer.deleteHyperparameters,
           request_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.FromString,
           response_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteHyperparameters.Response.SerializeToString,
+      ),
+      'cloneExperimentRun': grpc.unary_unary_rpc_method_handler(
+          servicer.cloneExperimentRun,
+          request_deserializer=modeldb_dot_ExperimentRunService__pb2.CloneExperimentRun.FromString,
+          response_serializer=modeldb_dot_ExperimentRunService__pb2.CloneExperimentRun.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

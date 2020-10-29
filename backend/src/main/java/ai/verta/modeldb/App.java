@@ -64,6 +64,7 @@ import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import java.io.IOException;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -87,7 +88,7 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableAutoConfiguration
 @EnableConfigurationProperties({FileStorageProperties.class})
 // Remove bracket () code if in future define any @component outside of the defined basePackages.
-@ComponentScan(basePackages = "${scan.packages}")
+@ComponentScan(basePackages = "${scan.packages}, ai.verta.modeldb.health")
 @SuppressWarnings("unchecked")
 public class App implements ApplicationContextAware {
 
@@ -190,7 +191,7 @@ public class App implements ApplicationContextAware {
   }
 
   @Bean
-  public S3Service getS3Service() throws ModelDBException {
+  public S3Service getS3Service() throws ModelDBException, IOException {
     String bucketName = System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME);
     if (bucketName != null && !bucketName.isEmpty()) {
       return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
@@ -215,6 +216,17 @@ public class App implements ApplicationContextAware {
       Map<String, Object> propertiesMap =
           ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
       // --------------- End reading properties --------------------------
+
+      Map<String, Object> databasePropMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
+
+      boolean liquibaseMigration =
+          Boolean.parseBoolean(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION));
+      if (liquibaseMigration) {
+        LOGGER.info("Liquibase validation starting");
+
+        if (ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap)) return;
+      }
 
       // --------------- Start Initialize modelDB gRPC server --------------------------
       Map<String, Object> grpcServerMap =
@@ -265,9 +277,6 @@ public class App implements ApplicationContextAware {
         authService = new AuthServiceUtils();
         app.roleService = new RoleServiceUtils(authService);
       }
-
-      Map<String, Object> databasePropMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
 
       HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
       serverBuilder.addService(healthStatusManager.getHealthService());
@@ -331,7 +340,7 @@ public class App implements ApplicationContextAware {
       Map<String, Object> propertiesMap,
       AuthService authService,
       RoleService roleService)
-      throws ModelDBException {
+      throws ModelDBException, IOException {
 
     App app = App.getInstance();
     Map<String, Object> serviceUserDetailMap =
@@ -369,10 +378,37 @@ public class App implements ApplicationContextAware {
       app.starterProjectID = (String) starterProjectDetail.get(ModelDBConstants.STARTER_PROJECT_ID);
     }
     // --------------- Start Initialize Cloud Config ---------------------------------------------
+    Map<String, Object> springServerMap =
+        (Map<String, Object>) propertiesMap.get(ModelDBConstants.SPRING_SERVER);
+    if (springServerMap == null) {
+      throw new ModelDBException("springServer configuration not found in properties.");
+    }
+
+    Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
+    LOGGER.trace("spring server port number found");
+    System.getProperties().put("server.port", String.valueOf(springServerPort));
+
+    Object object = springServerMap.get(ModelDBConstants.SHUTDOWN_TIMEOUT);
+    if (object instanceof Integer) {
+      app.shutdownTimeout = ((Integer) object).longValue();
+    } else {
+      app.shutdownTimeout = ModelDBConstants.DEFAULT_SHUTDOWN_TIMEOUT;
+    }
+
     ArtifactStoreService artifactStoreService = null;
     if (!app.disabledArtifactStore) {
-      artifactStoreService = initializeServicesBaseOnArtifactStoreType(propertiesMap);
+      Map<String, Object> artifactStoreConfigMap =
+          (Map<String, Object>) propertiesMap.get(ModelDBConstants.ARTIFACT_STORE_CONFIG);
+
+      artifactStoreService = initializeServicesBaseOnArtifactStoreType(artifactStoreConfigMap);
+    } else {
+      System.getProperties().put("scan.packages", "dummyPackageName");
+      SpringApplication.run(App.class);
     }
+
+    HealthStatusManager healthStatusManager =
+        new HealthStatusManager(app.applicationContext.getBean(HealthServiceImpl.class));
+    healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
     // --------------- Start Initialize Database base on configuration --------------------------
     if (databasePropMap.isEmpty()) {
@@ -574,20 +610,7 @@ public class App implements ApplicationContextAware {
   }
 
   private static ArtifactStoreService initializeServicesBaseOnArtifactStoreType(
-      Map<String, Object> propertiesMap) throws ModelDBException {
-
-    Map<String, Object> springServerMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.SPRING_SERVER);
-    if (springServerMap == null) {
-      throw new ModelDBException("springServer configuration not found in properties.");
-    }
-
-    Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
-    LOGGER.trace("spring server port number found");
-    System.getProperties().put("server.port", String.valueOf(springServerPort));
-
-    Map<String, Object> artifactStoreConfigMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.ARTIFACT_STORE_CONFIG);
+      Map<String, Object> artifactStoreConfigMap) throws ModelDBException, IOException {
 
     String artifactStoreType =
         (String) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_STORE_TYPE);
@@ -595,13 +618,6 @@ public class App implements ApplicationContextAware {
     // ------------- Start Initialize Cloud storage base on configuration ------------------
     ArtifactStoreService artifactStoreService;
     App app = App.getInstance();
-
-    Object object = springServerMap.get(ModelDBConstants.SHUTDOWN_TIMEOUT);
-    if (object instanceof Integer) {
-      app.shutdownTimeout = ((Integer) object).longValue();
-    } else {
-      app.shutdownTimeout = ModelDBConstants.DEFAULT_SHUTDOWN_TIMEOUT;
-    }
 
     app.pickArtifactStoreHostFromConfig =
         (Boolean)

@@ -297,8 +297,8 @@ public class DatasetToRepositoryMigration {
       migrateDatasetCollaborators(datasetId, repository);
     } catch (Exception e) {
       if (e instanceof StatusRuntimeException) {
-        LOGGER.error("Getting error while migrating {} dataset", datasetId);
-        LOGGER.error(e.getMessage());
+        LOGGER.info("Getting error while migrating {} dataset", datasetId);
+        LOGGER.info(e.getMessage());
         Status status = Status.fromThrowable(e);
         if (status.getCode().equals(Status.Code.ALREADY_EXISTS)) {
           repository =
@@ -428,7 +428,7 @@ public class DatasetToRepositoryMigration {
                       commitHash);
                 }
               } else {
-                LOGGER.warn(
+                LOGGER.info(
                     "DatasetVersion found with versionInfo type : {}",
                     newDatasetVersion.getDatasetVersionInfoCase());
               }

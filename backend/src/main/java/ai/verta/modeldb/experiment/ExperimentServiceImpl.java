@@ -33,6 +33,7 @@ import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
@@ -41,7 +42,6 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -53,7 +53,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
@@ -107,7 +106,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     }
 
     if (errorMessage != null) {
-      LOGGER.warn(errorMessage);
+      LOGGER.info(errorMessage);
       Status status =
           Status.newBuilder()
               .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -192,7 +191,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (request.getProjectId().isEmpty()) {
         String errorMessage = "Project ID not found in GetExperimentsInProject request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -204,7 +203,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (!projectDAO.projectExistsInDB(request.getProjectId())) {
         String errorMessage = "Project ID not found.";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -248,7 +247,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in GetExperimentById request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -292,7 +291,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -320,34 +319,12 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       if (experiments == null || experiments.isEmpty()) {
         errorMessage =
             "Experiment with name " + nameValue + " not found in project " + projectIdValue;
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetExperimentByName.Response.getDefaultInstance()))
-                .build();
-        StatusRuntimeException statusRuntimeException =
-            StatusProto.toStatusRuntimeException(status);
-        ErrorCountResource.inc(statusRuntimeException);
-        responseObserver.onError(statusRuntimeException);
-        return;
+        throw new ModelDBException(errorMessage, Code.NOT_FOUND);
       }
       if (experiments.size() != 1) {
         errorMessage =
             "Multiple experiments with name " + nameValue + " found in project " + projectIdValue;
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INTERNAL_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetExperimentByName.Response.getDefaultInstance()))
-                .build();
-        StatusRuntimeException statusRuntimeException =
-            StatusProto.toStatusRuntimeException(status);
-        ErrorCountResource.inc(statusRuntimeException);
-        responseObserver.onError(statusRuntimeException);
-        return;
+        throw new ModelDBException(errorMessage, Code.INTERNAL);
       }
       responseObserver.onNext(
           GetExperimentByName.Response.newBuilder().setExperiment(experiments.get(0)).build());
@@ -375,7 +352,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       if (request.getId().isEmpty()) {
         String errorMessage =
             "Experiment ID not found in UpdateExperimentNameOrDescription request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -384,6 +361,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
                     Any.pack(UpdateExperimentNameOrDescription.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
+      } else if (request.getName().isEmpty() && request.getDescription().isEmpty()) {
+        throw new ModelDBException(
+            "Name OR Description should not be empty", Code.INVALID_ARGUMENT);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -526,7 +506,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -573,7 +553,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -612,7 +592,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in GetTags request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -650,7 +630,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       if (request.getId().isEmpty() && request.getTagsList().isEmpty() && !request.getDeleteAll()) {
         errorMessage =
             "Experiment ID and Experiment tags not found in DeleteExperimentTags request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -665,7 +645,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -712,7 +692,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -751,7 +731,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in AddAttributes request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -805,7 +785,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -853,7 +833,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -909,7 +889,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -950,7 +930,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in DeleteExperiment request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -991,7 +971,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1018,7 +998,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             experimentDAO.logExperimentCodeVersion(request.getId(), request.getCodeVersion());
       } else {
         errorMessage = "Code version already logged for experiment " + existingExperiment.getId();
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -1049,7 +1029,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in GetExperimentCodeVersion request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1130,7 +1110,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1162,7 +1142,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         s3Key = getUrlForCode(request);
       } else {
         errorMessage = "Experiment level artifacts only supported for code";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1173,7 +1153,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (s3Key == null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.NOT_FOUND_VALUE)
@@ -1225,7 +1205,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1274,7 +1254,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in GetArtifacts request";
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -1326,7 +1306,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.warn(errorMessage);
+        LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)

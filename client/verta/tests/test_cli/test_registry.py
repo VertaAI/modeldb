@@ -18,6 +18,7 @@ from verta.endpoint.update._strategies import DirectUpdateStrategy
 
 from ..utils import sys_path_manager
 
+pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
 
 class TestCreate:
@@ -216,11 +217,10 @@ class TestCreate:
             from models.nets import FullyConnected
             train_data = torch.rand((2, 4))
 
-            model_path = "classifier.pkl"
+            model_path = "classifier.pt"
             classifier = FullyConnected(num_features=4, hidden_size=32, dropout=0.2)
 
-            with open(model_path, "wb") as f:
-                pickle.dump(classifier, f)
+            torch.save(classifier, model_path)
 
             requirements_path = "requirements.txt"
             with open(requirements_path, "w") as f:
@@ -234,6 +234,9 @@ class TestCreate:
                  requirements_path],
             )
             assert not result.exception
+
+            retrieved_model = registered_model.get_version(name=version_name).get_model()
+            assert torch.allclose(classifier(train_data), retrieved_model(train_data))
 
             os.remove(model_path)
             os.remove(requirements_path)

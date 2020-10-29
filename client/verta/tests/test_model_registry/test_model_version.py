@@ -8,6 +8,7 @@ import zipfile
 import glob
 import shutil
 import sys
+import json
 
 import cloudpickle
 
@@ -20,6 +21,9 @@ import verta.dataset
 from verta.environment import Python
 from verta._tracking.deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
+from ..test_artifacts import TestArtifacts
+
+pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
 
 class TestMDBIntegration:
@@ -43,6 +47,31 @@ class TestMDBIntegration:
 
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
         assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
+
+    def test_from_run_diff_workspaces(self, client, experiment_run, organization, created_registered_models):
+        registered_model = client.create_registered_model(workspace=organization.name)
+        created_registered_models.append(registered_model)
+
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id,
+            name="From Run {}".format(experiment_run.id)
+        )
+
+        assert model_version.workspace != experiment_run.workspace
+
+    def test_from_run_diff_workspaces_no_access_error(self, experiment_run, client_2, created_registered_models):
+        registered_model = client_2.create_registered_model()
+        created_registered_models.append(registered_model)
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            model_version = registered_model.create_version_from_run(
+                run_id=experiment_run.id,
+                name="From Run {}".format(experiment_run.id)
+            )
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "403" in excinfo_value
+        assert "Access Denied" in excinfo_value
 
 
 class TestModelVersion:
@@ -70,6 +99,8 @@ class TestModelVersion:
         model_version = registered_model.get_or_create_version()
         retrieved_model_version = registered_model.get_version(id=model_version.id)
         assert model_version.id == retrieved_model_version.id
+        with pytest.warns(UserWarning, match='.*already exists.*'):
+            registered_model.get_or_create_version(id=model_version.id, desc="new description")
 
     def test_repr(self, model_version):
         model_version.add_labels(["tag1", "tag2"])
@@ -132,7 +163,7 @@ class TestModelVersion:
 
     def test_add_artifact_file(self, model_version, in_tempdir):
         filename = "tiny1.bin"
-        FILE_CONTENTS = os.urandom(2**16)
+        FILE_CONTENTS = TestArtifacts.generate_random_data()
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
         model_version.log_artifact("file", filename)

@@ -24,9 +24,9 @@ class Autoscaling(object):
         Minimum number of replicas to scale down to.
     max_replicas : int
         Maximum number of replicas to scale up to.
-    min_scale : float in (0, 1]
+    min_scale : float in (0, 1)
         Minimum growth factor for scaling.
-    max_scale : float in (0, 1]
+    max_scale : float > 1
         Maximum growth factor for scaling.
 
     """

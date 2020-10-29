@@ -106,7 +106,7 @@ class _ModelDBEntity(object):
 
     # TODO: add prints about status
     @classmethod
-    def _get_or_create_by_name(cls, conn, name, getter, creator):
+    def _get_or_create_by_name(cls, conn, name, getter, creator, checker):
         if name is None:
             name = cls._generate_default_name()
 
@@ -115,6 +115,7 @@ class _ModelDBEntity(object):
             obj = creator(name)
         else:
             print("got existing {}: {}".format(cls.__name__, name))
+            checker()
         return obj
 
     @classmethod
@@ -194,8 +195,8 @@ class _ModelDBEntity(object):
 
             .. code-block:: python
 
-                proj.log_code()
-                proj.get_code()
+                run.log_code()
+                run.get_code()
                 # {'exec_path': 'comparison/outcomes/classification.ipynb',
                 #  'repo_url': 'git@github.com:VertaAI/experiments.git',
                 #  'commit_hash': 'f99abcfae6c3ce6d22597f95ad6ef260d31527a6',
@@ -206,8 +207,8 @@ class _ModelDBEntity(object):
 
             .. code-block:: python
 
-                proj.log_code("../trainer/training_pipeline.py")
-                proj.get_code()
+                run.log_code("../trainer/training_pipeline.py")
+                run.get_code()
                 # {'exec_path': 'comparison/trainer/training_pipeline.py',
                 #  'repo_url': 'git@github.com:VertaAI/experiments.git',
                 #  'commit_hash': 'f99abcfae6c3ce6d22597f95ad6ef260d31527a6',
@@ -219,8 +220,8 @@ class _ModelDBEntity(object):
 
             .. code-block:: python
 
-                proj.log_code()
-                zip_file = proj.get_code()
+                run.log_code()
+                zip_file = run.get_code()
                 zip_file.printdir()
                 # File Name                          Modified             Size
                 # classification.ipynb        2019-07-10 17:18:24        10287
@@ -229,8 +230,8 @@ class _ModelDBEntity(object):
 
             .. code-block:: python
 
-                proj.log_code("../trainer/training_pipeline.py")
-                zip_file = proj.get_code()
+                run.log_code("../trainer/training_pipeline.py")
+                zip_file = run.get_code()
                 zip_file.printdir()
                 # File Name                          Modified             Size
                 # training_pipeline.py        2019-05-31 10:34:44          964

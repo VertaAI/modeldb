@@ -19,6 +19,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
@@ -26,24 +27,20 @@ import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -58,27 +55,19 @@ public class LineageTest {
       LineageEntry.newBuilder()
           .setType(LineageEntryType.DATASET_VERSION)
           .setExternalId("id_not_existent_dataset");
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
-  private ManagedChannel channel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder channelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
-  private LineageServiceBlockingStub lineageServiceStub;
+  private static LineageServiceBlockingStub lineageServiceStub;
 
-  private DatasetVersionServiceBlockingStub datasetVersionServiceStub;
-  private ExperimentRunTest experimentRunTest;
-  private DatasetVersionTest datasetVersionTest;
-  private ProjectServiceBlockingStub projectServiceStub;
-  private ExperimentServiceBlockingStub experimentServiceStub;
-  private ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private DatasetServiceBlockingStub datasetServiceStub;
+  private static DatasetVersionServiceBlockingStub datasetVersionServiceStub;
+  private static ProjectServiceBlockingStub projectServiceStub;
+  private static ExperimentServiceBlockingStub experimentServiceStub;
+  private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
+  private static DatasetServiceBlockingStub datasetServiceStub;
   private static DeleteEntitiesCron deleteEntitiesCron;
 
   @SuppressWarnings("unchecked")
@@ -106,9 +95,11 @@ public class LineageTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
+    serverBuilder.build().start();
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
@@ -117,6 +108,15 @@ public class LineageTest {
     }
     deleteEntitiesCron =
         new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+
+    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
+    lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
+
+    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
+    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
+    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
+    datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
   }
 
   @AfterClass
@@ -124,28 +124,6 @@ public class LineageTest {
     // Delete entities by cron job
     deleteEntitiesCron.run();
     App.initiateShutdown(0);
-  }
-
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
-  }
-
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
-    lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
-
-    experimentRunTest = new ExperimentRunTest();
-    datasetVersionTest = new DatasetVersionTest();
-    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-    datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
   }
 
   @Test
@@ -160,13 +138,7 @@ public class LineageTest {
     Experiment experiment = getExperiment(experimentIds, experimentServiceStub, project);
 
     ExperimentRun experimentRun =
-        getExperimentRun(
-            experimentRunList,
-            experimentRunTest,
-            experimentRunServiceStub,
-            project,
-            experiment,
-            "name1");
+        getExperimentRun(experimentRunList, experimentRunServiceStub, project, experiment, "name1");
     final LineageEntry.Builder inputOutputExp =
         LineageEntry.newBuilder()
             .setType(LineageEntryType.EXPERIMENT_RUN)
@@ -175,12 +147,7 @@ public class LineageTest {
 
     DatasetVersion datasetVersion =
         getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name");
+            datasetVersionList, datasetVersionServiceStub, datasetServiceStub, "name");
     final LineageEntry.Builder inputDataset =
         LineageEntry.newBuilder()
             .setType(LineageEntryType.DATASET_VERSION)
@@ -188,12 +155,7 @@ public class LineageTest {
 
     datasetVersion =
         getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name1");
+            datasetVersionList, datasetVersionServiceStub, datasetServiceStub, "name1");
     final LineageEntry.Builder inputDataset2 =
         LineageEntry.newBuilder()
             .setType(LineageEntryType.DATASET_VERSION)
@@ -293,89 +255,61 @@ public class LineageTest {
     // Create project
     Project project = getProject(projectServiceStub);
 
-    // Create experiment of above project
-    Experiment experiment = getExperiment(experimentIds, experimentServiceStub, project);
-
-    ExperimentRun experimentRun =
-        getExperimentRun(
-            experimentRunList,
-            experimentRunTest,
-            experimentRunServiceStub,
-            project,
-            experiment,
-            "name1");
-    final LineageEntry.Builder inputOutputExp =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.EXPERIMENT_RUN)
-            .setExternalId(experimentRun.getId());
-
-    experimentRun =
-        getExperimentRun(
-            experimentRunList,
-            experimentRunTest,
-            experimentRunServiceStub,
-            project,
-            experiment,
-            "name2");
-    final LineageEntry.Builder inputExp =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.EXPERIMENT_RUN)
-            .setExternalId(experimentRun.getId());
-
-    experimentRun =
-        getExperimentRun(
-            experimentRunList,
-            experimentRunTest,
-            experimentRunServiceStub,
-            project,
-            experiment,
-            "name3");
-    final LineageEntry.Builder outputExp =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.EXPERIMENT_RUN)
-            .setExternalId(experimentRun.getId());
-
-    DatasetTest datasetTest = new DatasetTest();
-
-    DatasetVersion datasetVersion =
-        getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name");
-    final LineageEntry.Builder inputDataset =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.DATASET_VERSION)
-            .setExternalId(datasetVersion.getId());
-
-    datasetVersion =
-        getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name1");
-    final LineageEntry.Builder inputDataset2 =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.DATASET_VERSION)
-            .setExternalId(datasetVersion.getId());
-
-    datasetVersion =
-        getDatasetVersion(
-            datasetVersionList,
-            datasetVersionTest,
-            datasetVersionServiceStub,
-            datasetTest,
-            datasetServiceStub,
-            "name2");
-    final LineageEntry.Builder outputDataset =
-        LineageEntry.newBuilder()
-            .setType(LineageEntryType.DATASET_VERSION)
-            .setExternalId(datasetVersion.getId());
     try {
+
+      // Create experiment of above project
+      Experiment experiment = getExperiment(experimentIds, experimentServiceStub, project);
+
+      ExperimentRun experimentRun =
+          getExperimentRun(
+              experimentRunList, experimentRunServiceStub, project, experiment, "name1");
+      final LineageEntry.Builder inputOutputExp =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.EXPERIMENT_RUN)
+              .setExternalId(experimentRun.getId());
+
+      experimentRun =
+          getExperimentRun(
+              experimentRunList, experimentRunServiceStub, project, experiment, "name2");
+      final LineageEntry.Builder inputExp =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.EXPERIMENT_RUN)
+              .setExternalId(experimentRun.getId());
+
+      experimentRun =
+          getExperimentRun(
+              experimentRunList, experimentRunServiceStub, project, experiment, "name3");
+      final LineageEntry.Builder outputExp =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.EXPERIMENT_RUN)
+              .setExternalId(experimentRun.getId());
+
+      DatasetTest datasetTest = new DatasetTest();
+
+      DatasetVersion datasetVersion =
+          getDatasetVersion(
+              datasetVersionList, datasetVersionServiceStub, datasetServiceStub, "name");
+      final LineageEntry.Builder inputDataset =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.DATASET_VERSION)
+              .setExternalId(datasetVersion.getId());
+
+      datasetVersion =
+          getDatasetVersion(
+              datasetVersionList, datasetVersionServiceStub, datasetServiceStub, "name1");
+      final LineageEntry.Builder inputDataset2 =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.DATASET_VERSION)
+              .setExternalId(datasetVersion.getId());
+
+      datasetVersion =
+          getDatasetVersion(
+              datasetVersionList, datasetVersionServiceStub, datasetServiceStub, "name2");
+      final LineageEntry.Builder outputDataset =
+          LineageEntry.newBuilder()
+              .setType(LineageEntryType.DATASET_VERSION)
+              .setExternalId(datasetVersion.getId());
+
       check(
           Arrays.asList(inputExp, NOT_EXISTENT_DATASET),
           Arrays.asList(null, null),
@@ -509,7 +443,7 @@ public class LineageTest {
       ExperimentServiceBlockingStub experimentServiceStub,
       Project project) {
     CreateExperiment createExperimentRequest =
-        getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc_");
+        getCreateExperimentRequest(project.getId(), "Experiment-" + new Date().getTime());
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment = createExperimentResponse.getExperiment();
@@ -521,7 +455,7 @@ public class LineageTest {
   private Project getProject(ProjectServiceBlockingStub projectServiceStub) {
     ProjectTest projectTest = new ProjectTest();
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("experiment_project_n_sprt_abc");
+        projectTest.getCreateProjectRequest("Project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -531,13 +465,11 @@ public class LineageTest {
 
   private DatasetVersion getDatasetVersion(
       List<DatasetVersion> datasetVersionList,
-      DatasetVersionTest datasetVersionTest,
       DatasetVersionServiceBlockingStub datasetVersionServiceStub,
-      DatasetTest datasetTest,
       DatasetServiceBlockingStub datasetServiceStub,
       String name) {
     CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("rental_TEXT_train_data.csv" + name);
+        DatasetTest.getDatasetRequest("Dataset-" + new Date().getTime() + "-" + name);
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
@@ -548,7 +480,7 @@ public class LineageTest {
         dataset.getName());
 
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset.getId());
+        DatasetVersionTest.getDatasetVersionRequest(dataset.getId());
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
     DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
@@ -558,14 +490,15 @@ public class LineageTest {
 
   private ExperimentRun getExperimentRun(
       List<ExperimentRun> experimentRunList,
-      ExperimentRunTest experimentRunTest,
       ExperimentRunServiceBlockingStub experimentRunServiceStub,
       Project project,
       Experiment experiment,
       String name) {
     CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "exp_run_test" + name);
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project.getId(),
+            experiment.getId(),
+            "ExperimentRun-" + new Date().getTime() + "-" + name);
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();

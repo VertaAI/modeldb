@@ -1,6 +1,5 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.RepositoryTest.NAME;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
@@ -20,6 +19,7 @@ import ai.verta.modeldb.metadata.DeleteLabelsRequest;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDiff;
@@ -65,16 +65,20 @@ import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff;
 import ai.verta.modeldb.versioning.QueryDatasetBlob;
 import ai.verta.modeldb.versioning.QueryDatasetComponentBlob;
+import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RevertRepositoryCommitsRequest;
 import ai.verta.modeldb.versioning.S3DatasetBlob;
 import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
 import ai.verta.modeldb.versioning.SetBranchRequest;
+import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import ai.verta.modeldb.versioning.VersioningUtils;
+import ai.verta.uac.CollaboratorServiceGrpc;
+import ai.verta.uac.UACServiceGrpc;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -83,7 +87,6 @@ import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -92,6 +95,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -105,7 +109,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -116,15 +119,6 @@ import org.junit.runners.MethodSorters;
 public class CommitTest {
 
   private static final Logger LOGGER = LogManager.getLogger(CommitTest.class);
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
-
-  private ManagedChannel channel = null;
-  private ManagedChannel client2Channel = null;
-  private ManagedChannel authServiceChannel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
@@ -137,6 +131,18 @@ public class CommitTest {
   private static DeleteEntitiesCron deleteEntitiesCron;
 
   private static long time = Calendar.getInstance().getTimeInMillis();
+
+  private static VersioningServiceBlockingStub versioningServiceBlockingStub;
+  private static VersioningServiceBlockingStub versioningServiceBlockingStubClient2;
+  private static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
+  private static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
+  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
+  private static CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
+      collaboratorServiceBlockingStub;
+
+  private static Repository repository;
+
+  private static Commit initialCommit;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -163,9 +169,11 @@ public class CommitTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
+    serverBuilder.build().start();
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
@@ -173,49 +181,85 @@ public class CommitTest {
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
-    deleteEntitiesCron.run();
-    deleteEntitiesCron.run();
-    deleteEntitiesCron.run();
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-    App.initiateShutdown(0);
-  }
-
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
-    if (!client2Channel.isShutdown()) {
-      client2Channel.shutdownNow();
-    }
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      if (!authServiceChannel.isShutdown()) {
-        authServiceChannel.shutdownNow();
-      }
-    }
-  }
-
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
-    client2Channel =
-        grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      authServiceChannel =
+      ManagedChannel authServiceChannelClient1 =
           ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
+
+      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannelClient1);
+      collaboratorServiceBlockingStub =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
     }
+
+    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
+    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+
+    // Create all service blocking stub
+    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
+    versioningServiceBlockingStubClient2 = VersioningServiceGrpc.newBlockingStub(client2Channel);
+    metadataServiceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
+    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
+  }
+
+  @AfterClass
+  public static void removeServerAndService() {
+    App.initiateShutdown(0);
+
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
+
+    // shutdown test server
+    serverBuilder.build().shutdownNow();
+  }
+
+  @Before
+  public void createEntities() {
+    // Create all entities
+    createRepositoryEntities();
+  }
+
+  private static void createRepositoryEntities() {
+    String repoName = "Repo-" + new Date().getTime();
+    SetRepository setRepository = RepositoryTest.getSetRepositoryRequest(repoName);
+    SetRepository.Response result = versioningServiceBlockingStub.createRepository(setRepository);
+    repository = result.getRepository();
+    LOGGER.info("Repository created successfully");
+    assertEquals(
+        "Repository name not match with expected Repository name", repoName, repository.getName());
+
+    GetBranchRequest getBranchRequest =
+        GetBranchRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+            .setBranch(ModelDBConstants.MASTER_BRANCH)
+            .build();
+    GetBranchRequest.Response getBranchResponse =
+        versioningServiceBlockingStub.getBranch(getBranchRequest);
+    assertEquals(
+        "Initial commit parameters not match with expected parameters",
+        ModelDBConstants.INITIAL_COMMIT_MESSAGE,
+        getBranchResponse.getCommit().getMessage());
+    initialCommit = getBranchResponse.getCommit();
+  }
+
+  @After
+  public void removeEntities() {
+    for (Repository repo : new Repository[] {repository}) {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repo.getId()))
+              .build();
+      DeleteRepositoryRequest.Response response =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      assertTrue("Repository not delete", response.getStatus());
+    }
+    repository = null;
+    initialCommit = null;
   }
 
   private static PathDatasetComponentBlob getPathDatasetComponentBlob(String blobLocation) {
@@ -365,30 +409,28 @@ public class CommitTest {
   @Test
   public void initialCommitTest() {
     LOGGER.info("initial commit test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-    assertEquals(
-        "Initial commit parameters not match with expected parameters",
-        ModelDBConstants.INITIAL_COMMIT_MESSAGE,
-        getBranchResponse.getCommit().getMessage());
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
+    long id = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
+    try {
+      GetBranchRequest getBranchRequest =
+          GetBranchRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setBranch(ModelDBConstants.MASTER_BRANCH)
+              .build();
+      GetBranchRequest.Response getBranchResponse =
+          versioningServiceBlockingStub.getBranch(getBranchRequest);
+      assertEquals(
+          "Initial commit parameters not match with expected parameters",
+          ModelDBConstants.INITIAL_COMMIT_MESSAGE,
+          initialCommit.getMessage());
+    } finally {
+      DeleteRepositoryRequest deleteRepository =
+          DeleteRepositoryRequest.newBuilder()
+              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
+              .build();
+      DeleteRepositoryRequest.Response deleteResult =
+          versioningServiceBlockingStub.deleteRepository(deleteRepository);
+      Assert.assertTrue(deleteResult.getStatus());
+    }
     LOGGER.info("Initial commit test end................................");
   }
 
@@ -396,20 +438,8 @@ public class CommitTest {
   public void createDeleteCommitTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Create & Delete of commit test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     CreateCommitRequest createCommitRequest =
-        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.DATASET);
 
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
@@ -417,14 +447,16 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
 
     GetCommitRequest getCommitRequest =
         GetCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     try {
@@ -435,14 +467,6 @@ public class CommitTest {
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Create & Delete of commit test end................................");
   }
 
@@ -450,34 +474,24 @@ public class CommitTest {
   public void listCommitsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("List of commits test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-    Commit parentCommit = getBranchResponse.getCommit();
-
     CreateCommitRequest createCommitRequest =
-        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.DATASET);
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit1 = commitResponse.getCommit();
     createCommitRequest =
-        getCreateCommitRequest(id, 123, commitResponse.getCommit(), Blob.ContentCase.CONFIG);
+        getCreateCommitRequest(
+            repository.getId(), 123, commitResponse.getCommit(), Blob.ContentCase.CONFIG);
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit2 = commitResponse.getCommit();
     createCommitRequest =
-        getCreateCommitRequest(id, 450, commitResponse.getCommit(), Blob.ContentCase.DATASET);
+        getCreateCommitRequest(
+            repository.getId(), 450, commitResponse.getCommit(), Blob.ContentCase.DATASET);
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit3 = commitResponse.getCommit();
     createCommitRequest =
-        getCreateCommitRequest(id, 500, commitResponse.getCommit(), Blob.ContentCase.DATASET);
+        getCreateCommitRequest(
+            repository.getId(), 500, commitResponse.getCommit(), Blob.ContentCase.DATASET);
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit4 = commitResponse.getCommit();
     List<Commit> commitList = new LinkedList<>();
@@ -485,12 +499,13 @@ public class CommitTest {
     commitList.add(commit3);
     commitList.add(commit2);
     commitList.add(commit1);
-    commitList.add(parentCommit);
+    commitList.add(initialCommit);
 
     // Fetch all commits of repository
     ListCommitsRequest listCommitsRequest =
         ListCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .build();
     ListCommitsRequest.Response listCommitsResponse =
         versioningServiceBlockingStub.listCommits(listCommitsRequest);
@@ -508,7 +523,8 @@ public class CommitTest {
     // fetch all commits from base commit
     listCommitsRequest =
         ListCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitBase(commitList.get(2).getCommitSha())
             .build();
     listCommitsResponse = versioningServiceBlockingStub.listCommits(listCommitsRequest);
@@ -526,7 +542,8 @@ public class CommitTest {
     // fetch all commits from provided base commit to head commit
     listCommitsRequest =
         ListCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitBase(commitList.get(2).getCommitSha())
             .setCommitHead(commitList.get(1).getCommitSha())
             .build();
@@ -545,7 +562,8 @@ public class CommitTest {
     // Fetch commits by pagination
     listCommitsRequest =
         ListCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setPagination(Pagination.newBuilder().setPageNumber(1).setPageLimit(2).build())
             .build();
     listCommitsResponse = versioningServiceBlockingStub.listCommits(listCommitsRequest);
@@ -560,20 +578,15 @@ public class CommitTest {
         commitList.get(0),
         listCommitsResponse.getCommits(0));
 
-    DeleteCommitRequest deleteCommitRequest =
-        DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .build();
-    versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
+    for (Commit cm : new Commit[] {commit4, commit3, commit2, commit1}) {
+      DeleteCommitRequest deleteCommitRequest =
+          DeleteCommitRequest.newBuilder()
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+              .setCommitSha(cm.getCommitSha())
+              .build();
+      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+    }
 
     LOGGER.info("List of commits test end................................");
   }
@@ -582,28 +595,16 @@ public class CommitTest {
   public void getCommitsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Get commits test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-    Commit parentCommit = getBranchResponse.getCommit();
-
     CreateCommitRequest createCommitRequest =
-        getCreateCommitRequest(id, 111, parentCommit, Blob.ContentCase.DATASET);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.DATASET);
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit1 = commitResponse.getCommit();
 
     GetCommitRequest getCommitRequest =
         GetCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commit1.getCommitSha())
             .build();
     GetCommitRequest.Response getCommitResponse =
@@ -613,18 +614,11 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(getCommitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Get commits test end................................");
   }
@@ -632,28 +626,16 @@ public class CommitTest {
   @Test
   public void configHyperparameterTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Hyperparameter config test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     CreateCommitRequest createCommitRequest =
-        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.CONFIG);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.CONFIG);
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
 
     ListCommitBlobsRequest listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .build();
 
     ListCommitBlobsRequest.Response listCommitBlobsResponse =
@@ -674,8 +656,9 @@ public class CommitTest {
     try {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-              .setCommitSha(getBranchResponse.getCommit().getCommitSha())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+              .setCommitSha(initialCommit.getCommitSha())
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
       fail();
@@ -686,18 +669,11 @@ public class CommitTest {
     }
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Hyperparameter config test end................................");
   }
@@ -705,19 +681,6 @@ public class CommitTest {
   @Test
   public void getCommitComponentTest() {
     LOGGER.info("Get commit component test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     String path = "/protos/proto/public/versioning/versioning.proto";
     List<String> location = new ArrayList<>();
@@ -730,14 +693,15 @@ public class CommitTest {
         Commit.newBuilder()
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+            .addParentShas(initialCommit.getCommitSha());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.build())
             .addBlobs(BlobExpanded.newBuilder().setBlob(blob).addAllLocation(location).build())
             .build();
@@ -747,7 +711,8 @@ public class CommitTest {
 
     GetCommitComponentRequest getCommitBlobRequest =
         GetCommitComponentRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .addAllLocation(location)
             .build();
@@ -761,7 +726,8 @@ public class CommitTest {
     location.add("xyz");
     getCommitBlobRequest =
         GetCommitComponentRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .addAllLocation(location)
             .build();
@@ -775,18 +741,11 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Get commit blob test end................................");
   }
@@ -828,7 +787,7 @@ public class CommitTest {
     GitCodeBlob gitCodeBlob =
         GitCodeBlob.newBuilder()
             .setBranch(branch)
-            .setRepo(RepositoryTest.NAME)
+            .setRepo("Repo-" + new Date().getTime())
             .setHash(FileHasher.getSha(""))
             .setIsDirty(false)
             .setTag("Tag-" + Calendar.getInstance().getTimeInMillis())
@@ -856,7 +815,7 @@ public class CommitTest {
                 .addCommandLine("docker pull vertaaiofficial/modeldb-backend:latest")
                 .setDocker(
                     DockerEnvironmentBlob.newBuilder()
-                        .setRepository(RepositoryTest.NAME)
+                        .setRepository("Repo-" + new Date().getTime())
                         .setSha(FileHasher.getSha(""))
                         .setTag("Tag-" + Calendar.getInstance().getTimeInMillis())
                         .build())
@@ -887,20 +846,6 @@ public class CommitTest {
   @Test
   public void createCommitWith2SameBlobTest() {
     LOGGER.info("List commit blob test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     String path1 = "/protos/proto/public/versioning/versioning.proto";
     List<String> location1 = new ArrayList<>();
     location1.add("modeldb");
@@ -934,13 +879,14 @@ public class CommitTest {
         Commit.newBuilder()
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+            .addParentShas(initialCommit.getCommitSha());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.build())
             .addBlobs(blobExpanded1)
             .addBlobs(blobExpanded2)
@@ -953,7 +899,8 @@ public class CommitTest {
     ListCommitBlobsRequest listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .build();
 
     ListCommitBlobsRequest.Response listCommitBlobsResponse =
@@ -969,18 +916,11 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("List commit blob test end................................");
   }
@@ -989,30 +929,18 @@ public class CommitTest {
   public void createCommitWithNoBlobTest() {
     LOGGER.info("createCommitWithNoBlobTest test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     Commit.Builder commitBuilder =
         Commit.newBuilder()
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+            .addParentShas(initialCommit.getCommitSha());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.build())
             .build();
 
@@ -1022,7 +950,8 @@ public class CommitTest {
     ListCommitBlobsRequest listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .build();
 
     ListCommitBlobsRequest.Response listCommitBlobsResponse =
@@ -1034,18 +963,11 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("List commit blob test end................................");
   }
@@ -1053,19 +975,6 @@ public class CommitTest {
   @Test
   public void getCommitBlobListTest() {
     LOGGER.info("List commit blob test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     String path1 = "/protos/proto/public/versioning/versioning.proto";
     List<String> location1 = new ArrayList<>();
@@ -1101,13 +1010,14 @@ public class CommitTest {
         Commit.newBuilder()
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+            .addParentShas(initialCommit.getCommitSha());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.build())
             .addBlobs(blobExpanded1)
             .addBlobs(blobExpanded2)
@@ -1120,7 +1030,8 @@ public class CommitTest {
     ListCommitBlobsRequest listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .build();
 
@@ -1138,7 +1049,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb.json")
             .build();
 
@@ -1154,18 +1066,11 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("List commit blob test end................................");
   }
@@ -1173,18 +1078,6 @@ public class CommitTest {
   @Test
   public void getCommitBlobListUsecase2Test() {
     LOGGER.info("List commit blob test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     String path1 = "/protos/proto/public/versioning/versioning.proto";
     List<String> location1 = new ArrayList<>();
@@ -1244,14 +1137,15 @@ public class CommitTest {
         Commit.newBuilder()
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+            .addParentShas(initialCommit.getCommitSha());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.build())
             .addBlobs(blobExpanded1)
             .addBlobs(blobExpanded2)
@@ -1266,7 +1160,8 @@ public class CommitTest {
     ListCommitBlobsRequest listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("environment")
             .build();
@@ -1287,7 +1182,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("dataset")
             .build();
@@ -1305,7 +1201,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("march")
             .addLocationPrefix("dataset")
@@ -1320,7 +1217,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("dataset")
             .addLocationPrefix("march")
@@ -1339,7 +1237,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .build();
 
@@ -1358,7 +1257,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("dataset.json")
             .build();
 
@@ -1373,7 +1273,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addAllLocationPrefix(location5)
             .build();
 
@@ -1385,18 +1286,11 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("List commit blob test end................................");
   }
@@ -1405,18 +1299,6 @@ public class CommitTest {
   public void getCommitCodeBlobListTest() throws NoSuchAlgorithmException {
     LOGGER.info("List commit code blob test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     String branch1 = "branch-1";
     List<String> location1 = new ArrayList<>();
     location1.add("modeldb");
@@ -1462,14 +1344,15 @@ public class CommitTest {
         Commit.newBuilder()
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+            .addParentShas(initialCommit.getCommitSha());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.build())
             .addBlobs(blobExpanded1)
             .addBlobs(blobExpanded2)
@@ -1483,7 +1366,8 @@ public class CommitTest {
     ListCommitBlobsRequest listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("environment")
             .build();
@@ -1504,7 +1388,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("dataset")
             .build();
@@ -1522,7 +1407,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("march")
             .addLocationPrefix("dataset")
@@ -1537,7 +1423,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("dataset")
             .addLocationPrefix("march")
@@ -1556,7 +1443,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .build();
 
@@ -1575,7 +1463,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("dataset.json")
             .build();
 
@@ -1589,18 +1478,11 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("List commit code blob test end................................");
   }
@@ -1609,18 +1491,6 @@ public class CommitTest {
   public void getCommitEnvironmentBlobListTest() throws NoSuchAlgorithmException {
     LOGGER.info("List commit environment blob test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     String branch1 = "branch-1";
     List<String> location1 = new ArrayList<>();
     location1.add("modeldb");
@@ -1666,14 +1536,15 @@ public class CommitTest {
         Commit.newBuilder()
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+            .addParentShas(initialCommit.getCommitSha());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.build())
             .addBlobs(blobExpanded1)
             .addBlobs(blobExpanded2)
@@ -1687,7 +1558,8 @@ public class CommitTest {
     ListCommitBlobsRequest listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("environment")
             .build();
@@ -1708,7 +1580,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("dataset")
             .build();
@@ -1726,7 +1599,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("march")
             .addLocationPrefix("dataset")
@@ -1741,7 +1615,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .addLocationPrefix("dataset")
             .addLocationPrefix("march")
@@ -1760,7 +1635,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb")
             .build();
 
@@ -1779,7 +1655,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("dataset.json")
             .build();
 
@@ -1793,18 +1670,11 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("List commit environment blob test end................................");
   }
@@ -1820,20 +1690,8 @@ public class CommitTest {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Check parent commits exists of commit test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     CreateCommitRequest createCommitRequest =
-        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.DATASET);
 
     CreateCommitRequest createCommitRequest1 = createCommitRequest.toBuilder().build();
     Commit commit =
@@ -1854,18 +1712,12 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
 
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Check parent commits exists of commit test end................................");
   }
 
@@ -1878,23 +1730,10 @@ public class CommitTest {
   @Test
   public void checkRepoUpdatedTimeWithCreateDeleteCommitTest()
       throws ModelDBException, NoSuchAlgorithmException {
-    LOGGER.info(
-        "Check repo updated time with Create & Delete of commit test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
+    LOGGER.info("Check repo updated time with Create & Delete of commit test start.....");
 
     CreateCommitRequest createCommitRequest =
-        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.DATASET);
 
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
@@ -1902,14 +1741,16 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
 
     GetCommitRequest getCommitRequest =
         GetCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     try {
@@ -1921,15 +1762,7 @@ public class CommitTest {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
-    LOGGER.info(
-        "Check repo updated time with Create & Delete of commit test end................................");
+    LOGGER.info("Check repo updated time with Create & Delete of commit test end....");
   }
 
   @Test
@@ -1937,27 +1770,15 @@ public class CommitTest {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("branch test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     CreateCommitRequest createCommitRequest =
-        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.DATASET);
 
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit1 = commitResponse.getCommit();
 
     createCommitRequest =
-        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.DATASET);
 
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit2 = commitResponse.getCommit();
@@ -1969,7 +1790,8 @@ public class CommitTest {
     String branchName1 = "branch-commits-label-1";
     SetBranchRequest setBranchRequest =
         SetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setBranch(branchName1)
             .setCommitSha(commit1.getCommitSha())
             .build();
@@ -1978,7 +1800,8 @@ public class CommitTest {
     String branchName2 = "branch-commits-label-2";
     setBranchRequest =
         SetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setBranch(branchName2)
             .setCommitSha(commit1.getCommitSha())
             .build();
@@ -1986,7 +1809,8 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commit1.getCommitSha())
             .build();
     try {
@@ -1996,14 +1820,6 @@ public class CommitTest {
       Assert.assertEquals(Code.FAILED_PRECONDITION, e.getStatus().getCode());
       e.printStackTrace();
     }
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Branch test end................................");
   }
@@ -2021,20 +1837,8 @@ public class CommitTest {
   public void revertCommitTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Revert commit test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     CreateCommitRequest createCommitRequestCommitA =
-        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.CONFIG);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.CONFIG);
 
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequestCommitA);
@@ -2042,26 +1846,27 @@ public class CommitTest {
     Commit commitA = commitResponse.getCommit();
 
     CreateCommitRequest createCommitRequestCommitB =
-        getCreateCommitRequest(id, 112, commitA, Blob.ContentCase.DATASET);
+        getCreateCommitRequest(repository.getId(), 112, commitA, Blob.ContentCase.DATASET);
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequestCommitB);
     assertTrue("Commit not found in response", commitResponse.hasCommit());
     Commit commitB = commitResponse.getCommit();
 
     CreateCommitRequest createCommitRequestCommitC =
-        getCreateCommitRequest(id, 113, commitB, Blob.ContentCase.DATASET);
+        getCreateCommitRequest(repository.getId(), 113, commitB, Blob.ContentCase.DATASET);
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequestCommitC);
     assertTrue("Commit not found in response", commitResponse.hasCommit());
     Commit commitC = commitResponse.getCommit();
 
     CreateCommitRequest createCommitRequestCommitD =
-        getCreateCommitRequest(id, 114, commitC, Blob.ContentCase.CONFIG);
+        getCreateCommitRequest(repository.getId(), 114, commitC, Blob.ContentCase.CONFIG);
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequestCommitD);
     assertTrue("Commit not found in response", commitResponse.hasCommit());
     Commit commitD = commitResponse.getCommit();
 
     RevertRepositoryCommitsRequest revertRepositoryCommitsRequest =
         RevertRepositoryCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitToRevertSha(commitB.getCommitSha())
             .setBaseCommitSha(commitB.getCommitSha())
             .build();
@@ -2077,7 +1882,8 @@ public class CommitTest {
     ListCommitBlobsRequest listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(revertedCommit1.getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .build();
 
     ListCommitBlobsRequest.Response listCommitBlobsResponse =
@@ -2093,7 +1899,8 @@ public class CommitTest {
 
     revertRepositoryCommitsRequest =
         RevertRepositoryCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitToRevertSha(commitC.getCommitSha())
             .setBaseCommitSha(commitA.getCommitSha())
             .build();
@@ -2109,7 +1916,8 @@ public class CommitTest {
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(revertedCommit2.getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .build();
 
     listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
@@ -2130,19 +1938,13 @@ public class CommitTest {
         new Commit[] {revertedCommit2, revertedCommit1, commitD, commitC, commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitSha(deleteCommit.getCommitSha())
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
     }
 
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Revert commit test end................................");
   }
 
@@ -2150,20 +1952,8 @@ public class CommitTest {
   public void revertToMasterCommitNoBlobTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Revert commit test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     CreateCommitRequest createCommitRequestCommitA =
-        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.CONFIG);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.CONFIG);
 
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequestCommitA);
@@ -2172,9 +1962,10 @@ public class CommitTest {
 
     RevertRepositoryCommitsRequest revertRepositoryCommitsRequest =
         RevertRepositoryCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitToRevertSha(commitA.getCommitSha())
-            .setBaseCommitSha(getBranchResponse.getCommit().getCommitSha())
+            .setBaseCommitSha(initialCommit.getCommitSha())
             .build();
     RevertRepositoryCommitsRequest.Response revertCommitResponse =
         versioningServiceBlockingStub.revertRepositoryCommits(revertRepositoryCommitsRequest);
@@ -2188,19 +1979,13 @@ public class CommitTest {
     for (Commit deleteCommit : new Commit[] {revertedCommit1, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitSha(deleteCommit.getCommitSha())
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
     }
 
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Revert commit test end................................");
   }
 
@@ -2208,22 +1993,9 @@ public class CommitTest {
   public void FindRepositoryBlobsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Find repository blobs test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-    MetadataServiceGrpc.MetadataServiceBlockingStub serviceBlockingStub =
-        MetadataServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
     List<IdentificationType> labelIds = new ArrayList<>();
     CreateCommitRequest createCommitRequest =
-        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.CONFIG);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.CONFIG);
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit configCommit = commitResponse.getCommit();
@@ -2259,7 +2031,8 @@ public class CommitTest {
       Blob datasetBlob = getBlob(Blob.ContentCase.DATASET);
       createCommitRequest =
           CreateCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommit(commit)
               .addBlobs(
                   BlobExpanded.newBuilder()
@@ -2301,7 +2074,7 @@ public class CommitTest {
               .addLabels("Backend")
               .addLabels("Frontend")
               .build();
-      serviceBlockingStub.addLabels(addLabelsRequest);
+      metadataServiceBlockingStub.addLabels(addLabelsRequest);
 
       findRepositoriesBlobs =
           FindRepositoriesBlobs.newBuilder()
@@ -2324,7 +2097,8 @@ public class CommitTest {
       locations.add("modeldb");
       locations.add("test.txt");
       String compositeId =
-          VersioningUtils.getVersioningCompositeId(id, datasetCommit.getCommitSha(), locations);
+          VersioningUtils.getVersioningCompositeId(
+              repository.getId(), datasetCommit.getCommitSha(), locations);
       IdentificationType repoCommitBlobLabelId =
           IdentificationType.newBuilder()
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
@@ -2337,7 +2111,7 @@ public class CommitTest {
               .addLabels("Backend")
               .addLabels("Frontend")
               .build();
-      serviceBlockingStub.addLabels(addLabelsRequest);
+      metadataServiceBlockingStub.addLabels(addLabelsRequest);
 
       findRepositoriesBlobs =
           FindRepositoriesBlobs.newBuilder()
@@ -2377,10 +2151,13 @@ public class CommitTest {
             "blob count not match with expected blob count",
             2,
             listCommitBlobsResponse.getBlobsCount());
-        Assert.assertEquals(
-            "blob count not match with expected blob count",
-            datasetBlob,
-            listCommitBlobsResponse.getBlobsList().get(1).getBlob());
+        boolean match = false;
+        for (BlobExpanded blobExpanded : listCommitBlobsResponse.getBlobsList()) {
+          if (datasetBlob.equals(blobExpanded.getBlob())) {
+            match = true;
+          }
+        }
+        Assert.assertTrue("blob count not match with expected blob count", match);
       }
 
     } finally {
@@ -2392,14 +2169,15 @@ public class CommitTest {
                 .addLabels("Frontend")
                 .build();
         DeleteLabelsRequest.Response deleteLabelsResponse =
-            serviceBlockingStub.deleteLabels(deleteLabelsRequest);
+            metadataServiceBlockingStub.deleteLabels(deleteLabelsRequest);
         assertTrue(deleteLabelsResponse.getStatus());
       }
       try {
         DeleteCommitRequest deleteCommitRequest =
             DeleteCommitRequest.newBuilder()
-                .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-                .setCommitSha(getBranchResponse.getCommit().getCommitSha())
+                .setRepositoryId(
+                    RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+                .setCommitSha(initialCommit.getCommitSha())
                 .build();
         versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
         fail();
@@ -2411,18 +2189,11 @@ public class CommitTest {
       }
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitSha(commitResponse.getCommit().getCommitSha())
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-      DeleteRepositoryRequest deleteRepository =
-          DeleteRepositoryRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-              .build();
-      DeleteRepositoryRequest.Response deleteResult =
-          versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
     }
 
     LOGGER.info("Find repository blobs test end................................");
@@ -2432,19 +2203,6 @@ public class CommitTest {
   public void checkDuplicateLocationPathWhenSingleBlobTest() {
     LOGGER.info(
         "Check duplication when log single blob test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     String path1 = "xyz.txt";
     List<String> location1 = new ArrayList<>();
@@ -2459,13 +2217,14 @@ public class CommitTest {
         Commit.newBuilder()
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+            .addParentShas(initialCommit.getCommitSha());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.build())
             .addBlobs(blobExpanded1)
             .build();
@@ -2476,7 +2235,8 @@ public class CommitTest {
     ListCommitBlobsRequest listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .addLocationPrefix("modeldb.json")
             .build();
 
@@ -2497,18 +2257,11 @@ public class CommitTest {
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("Check duplication when log single blob test end................................");
   }
@@ -2517,21 +2270,9 @@ public class CommitTest {
   public void deleteCommitWithTagsTest() throws NoSuchAlgorithmException, ModelDBException {
     LOGGER.info("Delete commit with tags test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     CreateCommitRequest createCommitRequest =
         CommitTest.getCreateCommitRequest(
-            id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+            repository.getId(), 111, initialCommit, Blob.ContentCase.DATASET);
 
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
@@ -2542,13 +2283,15 @@ public class CommitTest {
         SetTagRequest.newBuilder()
             .setTag(tag)
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .build();
     versioningServiceBlockingStub.setTag(setTagRequest);
 
     DeleteCommitRequest deleteCommitRequest =
         DeleteCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitSha(commitResponse.getCommit().getCommitSha())
             .build();
     try {
@@ -2562,19 +2305,12 @@ public class CommitTest {
     DeleteTagRequest deleteTagRequest =
         DeleteTagRequest.newBuilder()
             .setTag(tag)
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .build();
     versioningServiceBlockingStub.deleteTag(deleteTagRequest);
 
     versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Delete commit with tags test end................................");
   }
 
@@ -2582,20 +2318,8 @@ public class CommitTest {
   public void createBlobWithAttributeTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Create blob with attributes test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     CreateCommitRequest createCommitRequest =
-        getCreateCommitRequest(id, 111, getBranchResponse.getCommit(), Blob.ContentCase.DATASET);
+        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.DATASET);
 
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
@@ -2604,7 +2328,8 @@ public class CommitTest {
     ListCommitBlobsRequest listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
             .setCommitSha(commitResponse.getCommit().getCommitSha())
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .build();
 
     ListCommitBlobsRequest.Response listCommitBlobsResponse =
@@ -2617,14 +2342,6 @@ public class CommitTest {
         "blob attributes count not match with expected blob attributes count",
         createCommitRequest.getBlobs(0).getAttributesList(),
         listCommitBlobsResponse.getBlobs(0).getAttributesList());
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
     LOGGER.info("Create blob with attributes test end................................");
   }
 
@@ -2632,16 +2349,7 @@ public class CommitTest {
   @Ignore
   public void getURLForVersionedBlob() throws IOException {
     LOGGER.info("Get Url for VersionedBlob test start................................");
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
+
     String path1 = "verta/test/test1.txt";
     String path2 = "verta/test/test2.txt";
     String internalPath1 = "test/internalBlobPaths/blobs/test1.txt";
@@ -2687,13 +2395,14 @@ public class CommitTest {
         Commit.newBuilder()
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+            .addParentShas(initialCommit.getCommitSha());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.build())
             .addBlobs(blobExpanded)
             .build();
@@ -2702,7 +2411,8 @@ public class CommitTest {
     try {
       GetUrlForBlobVersioned getUrlForVersionedBlob =
           GetUrlForBlobVersioned.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitSha(commitResponse.getCommit().getCommitSha())
               .addAllLocation(location)
               .setPathDatasetComponentBlobPath(path1)
@@ -2746,7 +2456,8 @@ public class CommitTest {
       CommitVersionedBlobArtifactPart.Response p1 =
           versioningServiceBlockingStub.commitVersionedBlobArtifactPart(
               CommitVersionedBlobArtifactPart.newBuilder()
-                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                  .setRepositoryId(
+                      RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
                   .setCommitSha(commitResponse.getCommit().getCommitSha())
                   .addAllLocation(location)
                   .setPathDatasetComponentBlobPath(path1)
@@ -2758,7 +2469,8 @@ public class CommitTest {
       CommitVersionedBlobArtifactPart.Response p2 =
           versioningServiceBlockingStub.commitVersionedBlobArtifactPart(
               CommitVersionedBlobArtifactPart.newBuilder()
-                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                  .setRepositoryId(
+                      RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
                   .setCommitSha(commitResponse.getCommit().getCommitSha())
                   .addAllLocation(location)
                   .setPathDatasetComponentBlobPath(path1)
@@ -2770,7 +2482,8 @@ public class CommitTest {
       GetCommittedVersionedBlobArtifactParts.Response committedArtifactParts =
           versioningServiceBlockingStub.getCommittedVersionedBlobArtifactParts(
               GetCommittedVersionedBlobArtifactParts.newBuilder()
-                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                  .setRepositoryId(
+                      RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
                   .setCommitSha(commitResponse.getCommit().getCommitSha())
                   .addAllLocation(location)
                   .setPathDatasetComponentBlobPath(path1)
@@ -2778,7 +2491,8 @@ public class CommitTest {
       CommitMultipartVersionedBlobArtifact.Response commitMultipartArtifact =
           versioningServiceBlockingStub.commitMultipartVersionedBlobArtifact(
               CommitMultipartVersionedBlobArtifact.newBuilder()
-                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                  .setRepositoryId(
+                      RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
                   .setCommitSha(commitResponse.getCommit().getCommitSha())
                   .addAllLocation(location)
                   .setPathDatasetComponentBlobPath(path1)
@@ -2786,7 +2500,8 @@ public class CommitTest {
       GetCommittedVersionedBlobArtifactParts.Response committedVersionedBlobArtifactParts =
           versioningServiceBlockingStub.getCommittedVersionedBlobArtifactParts(
               GetCommittedVersionedBlobArtifactParts.newBuilder()
-                  .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+                  .setRepositoryId(
+                      RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
                   .setCommitSha(commitResponse.getCommit().getCommitSha())
                   .addAllLocation(location)
                   .setPathDatasetComponentBlobPath(path1)
@@ -2794,17 +2509,11 @@ public class CommitTest {
     } finally {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitSha(commitResponse.getCommit().getCommitSha())
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-      DeleteRepositoryRequest deleteRepository =
-          DeleteRepositoryRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-              .build();
-      DeleteRepositoryRequest.Response deleteResult =
-          versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
     }
     LOGGER.info("Get Url for VersionedBlob test stop................................");
   }
@@ -2812,20 +2521,6 @@ public class CommitTest {
   @Test
   public void mergeConflictTest() {
     LOGGER.info("merge Conflict test start................................");
-
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id =
-        createRepository(versioningServiceBlockingStub, RepositoryTest.NAME + "mergeConflict");
-
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
 
     String path1 = "s3://verta-scala-demo-super-big";
     List<String> location1 = new ArrayList<>();
@@ -2849,14 +2544,15 @@ public class CommitTest {
         Commit.newBuilder()
             .setMessage("s3blob")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+            .addParentShas(initialCommit.getCommitSha());
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.build())
             .addBlobs(blobExpanded1)
             .build();
@@ -2866,7 +2562,8 @@ public class CommitTest {
 
     createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.setMessage("pathblob").build())
             .addBlobs(blobExpanded2)
             .build();
@@ -2875,7 +2572,8 @@ public class CommitTest {
 
     MergeRepositoryCommitsRequest repositoryMergeRequest =
         MergeRepositoryCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitShaA(commitResponse1.getCommit().getCommitSha())
             .setCommitShaB(commitResponse2.getCommit().getCommitSha())
             .build();
@@ -2912,19 +2610,12 @@ public class CommitTest {
     for (Commit commit : new Commit[] {commitResponse1.getCommit(), commitResponse2.getCommit()}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitSha(commit.getCommitSha())
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
     }
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("merge Conflict test end................................");
   }
@@ -2933,25 +2624,11 @@ public class CommitTest {
   public void mergeConflictBugTest() {
     LOGGER.info("merge Conflict test start................................");
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
-
-    long id =
-        createRepository(versioningServiceBlockingStub, RepositoryTest.NAME + "mergeConflictBug");
-
-    GetBranchRequest getBranchRequest =
-        GetBranchRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-            .setBranch(ModelDBConstants.MASTER_BRANCH)
-            .build();
-    GetBranchRequest.Response getBranchResponse =
-        versioningServiceBlockingStub.getBranch(getBranchRequest);
-
     Commit.Builder commitBuilder =
         Commit.newBuilder()
             .setMessage("pytest1")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
-            .addParentShas(getBranchResponse.getCommit().getCommitSha());
+            .addParentShas(initialCommit.getCommitSha());
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
@@ -2973,7 +2650,8 @@ public class CommitTest {
 
     CreateCommitRequest createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.build())
             .addBlobs(blobExpanded1)
             .build();
@@ -2995,7 +2673,8 @@ public class CommitTest {
 
     createCommitRequest =
         CreateCommitRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommit(commitBuilder.setMessage("pytest2").build())
             .addBlobs(blobExpanded2)
             .build();
@@ -3004,7 +2683,8 @@ public class CommitTest {
 
     MergeRepositoryCommitsRequest repositoryMergeRequest =
         MergeRepositoryCommitsRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
             .setCommitShaA(commitResponse1.getCommit().getCommitSha())
             .setCommitShaB(commitResponse2.getCommit().getCommitSha())
             .build();
@@ -3040,120 +2720,92 @@ public class CommitTest {
     for (Commit commit : new Commit[] {commitResponse1.getCommit(), commitResponse2.getCommit()}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
+              .setRepositoryId(
+                  RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
               .setCommitSha(commit.getCommitSha())
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
     }
-
-    DeleteRepositoryRequest deleteRepository =
-        DeleteRepositoryRequest.newBuilder()
-            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-            .build();
-    DeleteRepositoryRequest.Response deleteResult =
-        versioningServiceBlockingStub.deleteRepository(deleteRepository);
-    Assert.assertTrue(deleteResult.getStatus());
 
     LOGGER.info("merge Conflict Bug test end................................");
   }
 
   @Test
   public void createDeleteQueryDatasetBlobCommitTest() {
-    LOGGER.info(
-        "Create & Delete query dataset blob commit test start................................");
+    LOGGER.info("Create & Delete query dataset blob commit test start...");
+    Commit commit =
+        Commit.newBuilder()
+            .setMessage("this is the test commit message")
+            .setDateCreated(111)
+            .addParentShas(initialCommit.getCommitSha())
+            .build();
+    CreateCommitRequest createCommitRequest =
+        CreateCommitRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+            .setCommit(commit)
+            .addBlobs(
+                BlobExpanded.newBuilder()
+                    .setBlob(
+                        Blob.newBuilder()
+                            .setDataset(
+                                DatasetBlob.newBuilder()
+                                    .setQuery(
+                                        QueryDatasetBlob.newBuilder()
+                                            .addComponents(
+                                                QueryDatasetComponentBlob.newBuilder()
+                                                    .setQuery("Select * from project")
+                                                    .setExecutionTimestamp(123456)
+                                                    .setNumRecords(5)
+                                                    .setDataSourceUri("local://data/queryData")
+                                                    .build())
+                                            .build())
+                                    .build())
+                            .build())
+                    .addLocation("/")
+                    .build())
+            .build();
 
-    VersioningServiceBlockingStub versioningServiceBlockingStub =
-        VersioningServiceGrpc.newBlockingStub(channel);
+    CreateCommitRequest.Response commitResponse =
+        versioningServiceBlockingStub.createCommit(createCommitRequest);
+    assertTrue("Commit not found in response", commitResponse.hasCommit());
 
-    long id = createRepository(versioningServiceBlockingStub, RepositoryTest.NAME);
+    GetCommitComponentRequest getCommitComponentRequest =
+        GetCommitComponentRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .addLocation("/")
+            .build();
+    GetCommitComponentRequest.Response response =
+        versioningServiceBlockingStub.getCommitComponent(getCommitComponentRequest);
+    assertTrue("Commit blobs not found", response.hasBlob());
+    assertEquals(
+        "Commit not match with expected commit",
+        createCommitRequest.getBlobs(0).getBlob(),
+        response.getBlob());
+
+    DeleteCommitRequest deleteCommitRequest =
+        DeleteCommitRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .build();
+    versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
+
+    GetCommitRequest getCommitRequest =
+        GetCommitRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .build();
     try {
-      GetBranchRequest getBranchRequest =
-          GetBranchRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-              .setBranch(ModelDBConstants.MASTER_BRANCH)
-              .build();
-      GetBranchRequest.Response getBranchResponse =
-          versioningServiceBlockingStub.getBranch(getBranchRequest);
-
-      Commit commit =
-          Commit.newBuilder()
-              .setMessage("this is the test commit message")
-              .setDateCreated(111)
-              .addParentShas(getBranchResponse.getCommit().getCommitSha())
-              .build();
-      CreateCommitRequest createCommitRequest =
-          CreateCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-              .setCommit(commit)
-              .addBlobs(
-                  BlobExpanded.newBuilder()
-                      .setBlob(
-                          Blob.newBuilder()
-                              .setDataset(
-                                  DatasetBlob.newBuilder()
-                                      .setQuery(
-                                          QueryDatasetBlob.newBuilder()
-                                              .addComponents(
-                                                  QueryDatasetComponentBlob.newBuilder()
-                                                      .setQuery("Select * from project")
-                                                      .setExecutionTimestamp(123456)
-                                                      .setNumRecords(5)
-                                                      .setDataSourceUri("local://data/queryData")
-                                                      .build())
-                                              .build())
-                                      .build())
-                              .build())
-                      .addLocation("/")
-                      .build())
-              .build();
-
-      CreateCommitRequest.Response commitResponse =
-          versioningServiceBlockingStub.createCommit(createCommitRequest);
-      assertTrue("Commit not found in response", commitResponse.hasCommit());
-
-      GetCommitComponentRequest getCommitComponentRequest =
-          GetCommitComponentRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-              .setCommitSha(commitResponse.getCommit().getCommitSha())
-              .addLocation("/")
-              .build();
-      GetCommitComponentRequest.Response response =
-          versioningServiceBlockingStub.getCommitComponent(getCommitComponentRequest);
-      assertTrue("Commit blobs not found", response.hasBlob());
-      assertEquals(
-          "Commit not match with expected commit",
-          createCommitRequest.getBlobs(0).getBlob(),
-          response.getBlob());
-
-      DeleteCommitRequest deleteCommitRequest =
-          DeleteCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-              .setCommitSha(commitResponse.getCommit().getCommitSha())
-              .build();
-      versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
-
-      GetCommitRequest getCommitRequest =
-          GetCommitRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id).build())
-              .setCommitSha(commitResponse.getCommit().getCommitSha())
-              .build();
-      try {
-        versioningServiceBlockingStub.getCommit(getCommitRequest);
-        fail();
-      } catch (StatusRuntimeException ex) {
-        Status status = Status.fromThrowable(ex);
-        LOGGER.warn(
-            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
-      }
-    } finally {
-      DeleteRepositoryRequest deleteRepository =
-          DeleteRepositoryRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
-              .build();
-      DeleteRepositoryRequest.Response deleteResult =
-          versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      Assert.assertTrue(deleteResult.getStatus());
+      versioningServiceBlockingStub.getCommit(getCommitRequest);
+      fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     LOGGER.info(

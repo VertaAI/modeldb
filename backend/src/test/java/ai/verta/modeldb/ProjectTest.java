@@ -11,15 +11,14 @@ import ai.verta.modeldb.CommentServiceGrpc.CommentServiceBlockingStub;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
-import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceStub;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
@@ -43,8 +42,6 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.stub.StreamObserver;
-import io.grpc.testing.GrpcCleanupRule;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -52,6 +49,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -65,7 +63,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -76,16 +73,7 @@ import org.junit.runners.MethodSorters;
 public class ProjectTest {
 
   private static final Logger LOGGER = LogManager.getLogger(ProjectTest.class);
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
-  private ManagedChannel channel = null;
-  private ManagedChannel client2Channel = null;
-  private ManagedChannel authServiceChannelClient1 = null;
-  private ManagedChannel authServiceChannelClient2 = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
@@ -94,8 +82,34 @@ public class ProjectTest {
   private static InProcessChannelBuilder client2ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
+
   private static App app;
   private static DeleteEntitiesCron deleteEntitiesCron;
+
+  // Project Entities
+  private static Project project;
+  private static Project project2;
+  private static Project project3;
+  private static Map<String, Project> projectMap = new HashMap<>();
+
+  // Experiment Entities
+  private static Experiment experiment;
+
+  // ExperimentRun Entities
+  private static ExperimentRun experimentRun;
+
+  // all service stubs
+  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
+  private static CollaboratorServiceBlockingStub collaboratorServiceStubClient1;
+  private static CollaboratorServiceBlockingStub collaboratorServiceStub;
+  private static ProjectServiceBlockingStub projectServiceStub;
+  private static ProjectServiceBlockingStub client2ProjectServiceStub;
+  private static ExperimentServiceBlockingStub experimentServiceStub;
+  private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
+  private static CommentServiceBlockingStub commentServiceBlockingStub;
+  private static OrganizationServiceGrpc.OrganizationServiceBlockingStub
+      organizationServiceBlockingStub;
+  private static RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -122,6 +136,7 @@ public class ProjectTest {
       roleService = new RoleServiceUtils(authService);
     }
 
+    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
     serverBuilder.intercept(new ModelDBAuthInterceptor());
@@ -132,55 +147,192 @@ public class ProjectTest {
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-    App.initiateShutdown(0);
-  }
-
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
-
-    if (!client2Channel.isShutdown()) {
-      client2Channel.shutdownNow();
-    }
 
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      if (!authServiceChannelClient1.isShutdown()) {
-        authServiceChannelClient1.shutdownNow();
-      }
-      if (!authServiceChannelClient2.isShutdown()) {
-        authServiceChannelClient2.shutdownNow();
-      }
-    }
-  }
-
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(client1ChannelBuilder.maxInboundMessageSize(1024).build());
-    client2Channel =
-        grpcCleanup.register(client2ChannelBuilder.maxInboundMessageSize(1024).build());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      authServiceChannelClient1 =
+      ManagedChannel authServiceChannel =
           ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
-      authServiceChannelClient2 =
+      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
+      organizationServiceBlockingStub = OrganizationServiceGrpc.newBlockingStub(authServiceChannel);
+      roleServiceBlockingStub = RoleServiceGrpc.newBlockingStub(authServiceChannel);
+      collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
+
+      ManagedChannel authServiceChannelClient2 =
           ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient2AuthInterceptor())
               .build();
+      collaboratorServiceStub = CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
     }
+
+    serverBuilder.build().start();
+    ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
+    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
+    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 100);
+
+    // Create all service blocking stub
+    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    client2ProjectServiceStub = ProjectServiceGrpc.newBlockingStub(client2Channel);
+    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
+    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
+    commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
+  }
+
+  @AfterClass
+  public static void removeServerAndService() {
+    App.initiateShutdown(0);
+
+    // Remove all entities
+    // removeEntities();
+    // Delete entities by cron job
+    deleteEntitiesCron.run();
+
+    // shutdown test server
+    serverBuilder.build().shutdownNow();
+  }
+
+  @Before
+  public void createEntities() {
+    // Create all entities
+    createProjectEntities();
+    createExperimentEntities();
+    createExperimentRunEntities();
+  }
+
+  @After
+  public void removeEntities() {
+    for (String projectId : projectMap.keySet()) {
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
+      DeleteProject.Response deleteProjectResponse =
+          projectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
+    }
+    project = null;
+    project2 = null;
+    project3 = null;
+
+    // Experiment Entities
+    experiment = null;
+
+    // ExperimentRun Entities
+    experimentRun = null;
+
+    projectMap = new HashMap<>();
+  }
+
+  private static void createProjectEntities() {
+    ProjectTest projectTest = new ProjectTest();
+
+    // Create two project of above project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    project = createProjectResponse.getProject();
+    projectMap.put(project.getId(), project);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected Project name",
+        createProjectRequest.getName(),
+        project.getName());
+
+    // Create project2
+    createProjectRequest = projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    project2 = createProjectResponse.getProject();
+    projectMap.put(project2.getId(), project2);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project2.getName());
+
+    // Create project3
+    createProjectRequest = projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    project3 = createProjectResponse.getProject();
+    projectMap.put(project3.getId(), project3);
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected project name",
+        createProjectRequest.getName(),
+        project3.getName());
+  }
+
+  private static void createExperimentEntities() {
+
+    // Create two experiment of above project
+    CreateExperiment createExperimentRequest =
+        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_1");
+    KeyValue attribute1 =
+        KeyValue.newBuilder()
+            .setKey("attribute_1")
+            .setValue(Value.newBuilder().setNumberValue(0.012).build())
+            .build();
+    KeyValue attribute2 =
+        KeyValue.newBuilder()
+            .setKey("attribute_2")
+            .setValue(Value.newBuilder().setNumberValue(0.99).build())
+            .build();
+    createExperimentRequest =
+        createExperimentRequest
+            .toBuilder()
+            .addAttributes(attribute1)
+            .addAttributes(attribute2)
+            .addTags("Tag_1")
+            .addTags("Tag_2")
+            .build();
+    CreateExperiment.Response createExperimentResponse =
+        experimentServiceStub.createExperiment(createExperimentRequest);
+    experiment = createExperimentResponse.getExperiment();
+    LOGGER.info("Experiment created successfully");
+    assertEquals(
+        "Experiment name not match with expected Experiment name",
+        createExperimentRequest.getName(),
+        experiment.getName());
+  }
+
+  private static void createExperimentRunEntities() {
+    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
+
+    CreateExperimentRun createExperimentRunRequest =
+        experimentRunTest.getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun_sprt_1");
+    KeyValue metric1 =
+        KeyValue.newBuilder()
+            .setKey("loss")
+            .setValue(Value.newBuilder().setNumberValue(0.012).build())
+            .build();
+    KeyValue metric2 =
+        KeyValue.newBuilder()
+            .setKey("accuracy")
+            .setValue(Value.newBuilder().setNumberValue(0.99).build())
+            .build();
+    KeyValue hyperparameter1 =
+        KeyValue.newBuilder()
+            .setKey("tuning")
+            .setValue(Value.newBuilder().setNumberValue(9).build())
+            .build();
+    createExperimentRunRequest =
+        createExperimentRunRequest
+            .toBuilder()
+            .setCodeVersion("4.0")
+            .addMetrics(metric1)
+            .addMetrics(metric2)
+            .addHyperparameters(hyperparameter1)
+            .build();
+    CreateExperimentRun.Response createExperimentRunResponse =
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+    experimentRun = createExperimentRunResponse.getExperimentRun();
+    LOGGER.info("ExperimentRun created successfully");
+    assertEquals(
+        "ExperimentRun name not match with expected ExperimentRun name",
+        createExperimentRunRequest.getName(),
+        experimentRun.getName());
   }
 
   private void checkEqualsAssert(StatusRuntimeException e) {
@@ -199,8 +351,6 @@ public class ProjectTest {
   @Test
   public void a_aVerifyConnection() {
     LOGGER.info("Verify connection test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     VerifyConnectionResponse response =
         projectServiceStub.verifyConnection(Empty.newBuilder().build());
@@ -274,17 +424,7 @@ public class ProjectTest {
   public void a_projectCreateTest() {
     LOGGER.info("Create Project test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt_abc");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
+    CreateProject createProjectRequest = getCreateProjectRequest(project.getName());
 
     try {
       projectServiceStub.createProject(createProjectRequest);
@@ -328,12 +468,6 @@ public class ProjectTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Create Project test stop................................");
   }
 
@@ -341,79 +475,80 @@ public class ProjectTest {
   public void a_projectCreateWithMd5LogicTest() {
     LOGGER.info("Create Project with MD5 logic test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     List<Project> projects = new ArrayList<>();
-
-    String projectName = "project_1234567890";
-    CreateProject createProjectRequest = getCreateProjectRequest(projectName);
-    createProjectRequest = createProjectRequest.toBuilder().build();
-
-    CreateProject.Response response = projectServiceStub.createProject(createProjectRequest);
-    assertEquals(projectName, response.getProject().getName());
-    assertEquals(projectName, response.getProject().getShortName());
-    LOGGER.info("Project Created Successfully");
-    projects.add(response.getProject());
-
-    projectName = "project_01234567891234567891234567891234567";
-    createProjectRequest = getCreateProjectRequest(projectName);
-    createProjectRequest = createProjectRequest.toBuilder().build();
-    response = projectServiceStub.createProject(createProjectRequest);
-    String projectShortName = projectName;
-    projectShortName = ModelDBUtils.convertToProjectShortName(projectShortName);
-    assertEquals(projectName, response.getProject().getName());
-    assertEquals(projectShortName, response.getProject().getShortName());
-    LOGGER.info("Project Created Successfully");
-    projects.add(response.getProject());
-
-    projectName = "project URLEncoder 01234567891234567891234567891234567";
-    createProjectRequest = getCreateProjectRequest(projectName);
-    createProjectRequest = createProjectRequest.toBuilder().build();
-    response = projectServiceStub.createProject(createProjectRequest);
-    projectShortName = projectName;
-    projectShortName = ModelDBUtils.convertToProjectShortName(projectShortName);
-    assertEquals(projectName, response.getProject().getName());
-    assertEquals(projectShortName, response.getProject().getShortName());
-    LOGGER.info("Project Created Successfully");
-    projects.add(response.getProject());
-
-    projectName = "Code Ver##_ver-1.1 (((none; git--child)";
-    createProjectRequest = getCreateProjectRequest(projectName);
-    createProjectRequest = createProjectRequest.toBuilder().build();
-    response = projectServiceStub.createProject(createProjectRequest);
-    assertEquals(projectName, response.getProject().getName());
-    assertEquals("Code-Ver-_ver-1.1-none-git--child-", response.getProject().getShortName());
-    LOGGER.info("Project Created Successfully");
-    projects.add(response.getProject());
-
-    projectName = "Code Versioning_ver-1.1 (none; git children)";
-    createProjectRequest = getCreateProjectRequest(projectName);
-    createProjectRequest = createProjectRequest.toBuilder().build();
-    response = projectServiceStub.createProject(createProjectRequest);
-    projectShortName = projectName;
-    projectShortName = ModelDBUtils.convertToProjectShortName(projectShortName);
-    assertEquals(projectName, response.getProject().getName());
-    assertEquals(projectShortName, response.getProject().getShortName());
-    LOGGER.info("Project Created Successfully");
-    projects.add(response.getProject());
-
-    createProjectRequest = getCreateProjectRequest("");
-    createProjectRequest = createProjectRequest.toBuilder().build();
     try {
-      projectServiceStub.createProject(createProjectRequest);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
+      String projectName = "project_1234567890";
+      CreateProject createProjectRequest = getCreateProjectRequest(projectName);
+      createProjectRequest = createProjectRequest.toBuilder().build();
 
-    for (Project project : projects) {
-      // Delete all data related to project
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project delete successfully. Status : {}", deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
+      CreateProject.Response response = projectServiceStub.createProject(createProjectRequest);
+      assertEquals(projectName, response.getProject().getName());
+      assertEquals(projectName, response.getProject().getShortName());
+      LOGGER.info("Project Created Successfully");
+      projects.add(response.getProject());
+
+      projectName = "project_01234567891234567891234567891234567";
+      createProjectRequest = getCreateProjectRequest(projectName);
+      createProjectRequest = createProjectRequest.toBuilder().build();
+      response = projectServiceStub.createProject(createProjectRequest);
+      String projectShortName = projectName;
+      projectShortName = ModelDBUtils.convertToProjectShortName(projectShortName);
+      assertEquals(projectName, response.getProject().getName());
+      assertEquals(projectShortName, response.getProject().getShortName());
+      LOGGER.info("Project Created Successfully");
+      projects.add(response.getProject());
+
+      projectName = "project URLEncoder 01234567891234567891234567891234567";
+      createProjectRequest = getCreateProjectRequest(projectName);
+      createProjectRequest = createProjectRequest.toBuilder().build();
+      response = projectServiceStub.createProject(createProjectRequest);
+      projectShortName = projectName;
+      projectShortName = ModelDBUtils.convertToProjectShortName(projectShortName);
+      assertEquals(projectName, response.getProject().getName());
+      assertEquals(projectShortName, response.getProject().getShortName());
+      LOGGER.info("Project Created Successfully");
+      projects.add(response.getProject());
+
+      projectName = "Code Ver##_ver-1.1 (((none; git--child)";
+      createProjectRequest = getCreateProjectRequest(projectName);
+      createProjectRequest = createProjectRequest.toBuilder().build();
+      response = projectServiceStub.createProject(createProjectRequest);
+      assertEquals(projectName, response.getProject().getName());
+      assertEquals("Code-Ver-_ver-1.1-none-git--child-", response.getProject().getShortName());
+      LOGGER.info("Project Created Successfully");
+      projects.add(response.getProject());
+
+      projectName = "Code Versioning_ver-1.1 (none; git children)";
+      createProjectRequest = getCreateProjectRequest(projectName);
+      createProjectRequest = createProjectRequest.toBuilder().build();
+      response = projectServiceStub.createProject(createProjectRequest);
+      projectShortName = projectName;
+      projectShortName = ModelDBUtils.convertToProjectShortName(projectShortName);
+      assertEquals(projectName, response.getProject().getName());
+      assertEquals(projectShortName, response.getProject().getShortName());
+      LOGGER.info("Project Created Successfully");
+      projects.add(response.getProject());
+
+      createProjectRequest = getCreateProjectRequest("");
+      createProjectRequest = createProjectRequest.toBuilder().build();
+      try {
+        projectServiceStub.createProject(createProjectRequest);
+        fail();
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn(
+            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      }
+    } finally {
+      for (Project project : projects) {
+        // Delete all data related to project
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            projectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project delete successfully. Status : {}", deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
+      }
     }
 
     LOGGER.info("Create Project with MD5 logic test stop................................");
@@ -422,8 +557,6 @@ public class ProjectTest {
   @Test
   public void b_projectCreateNegativeTest() {
     LOGGER.info("Create Project Negative test start................................");
-
-    ProjectServiceStub projectServiceStub = ProjectServiceGrpc.newStub(channel);
 
     List<KeyValue> metadataList = new ArrayList<>();
     for (int count = 0; count < 5; count++) {
@@ -448,42 +581,19 @@ public class ProjectTest {
             .addAllAttributes(metadataList)
             .build();
 
-    projectServiceStub.createProject(
-        request,
-        new StreamObserver<CreateProject.Response>() {
-
-          @Override
-          public void onNext(CreateProject.Response value) {}
-
-          @Override
-          public void onError(Throwable t) {
-            Status status = Status.fromThrowable(t);
-            LOGGER.warn(
-                "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-            assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-          }
-
-          @Override
-          public void onCompleted() {}
-        });
+    try {
+      projectServiceStub.createProject(request);
+      fail();
+    } catch (StatusRuntimeException e) {
+      Status status = Status.fromThrowable(e);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
   }
 
   @Test
   public void c_updateProjectName() {
     LOGGER.info("Update Project Name test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     UpdateProjectName updateProjectNameRequest =
         UpdateProjectName.newBuilder()
@@ -502,6 +612,8 @@ public class ProjectTest {
         "Project date_updated field not update on database",
         project.getDateUpdated(),
         response.getProject().getDateUpdated());
+    project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     updateProjectNameRequest =
         UpdateProjectName.newBuilder()
@@ -515,12 +627,8 @@ public class ProjectTest {
         "Project name not match with expected project name",
         updateProjectNameRequest.getName(),
         response.getProject().getName());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     LOGGER.info("Update Project Name test stop................................");
   }
@@ -528,8 +636,6 @@ public class ProjectTest {
   @Test
   public void cc_updateProjectNameNegativeTest() {
     LOGGER.info("Update Project Name Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     UpdateProjectName updateProjectNameRequest =
         UpdateProjectName.newBuilder().setName("Update Project Name 1 ").build();
@@ -543,17 +649,6 @@ public class ProjectTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
     LOGGER.info("Project Id : " + project.getId());
     updateProjectNameRequest =
         UpdateProjectName.newBuilder().setId(project.getId()).setName(project.getName()).build();
@@ -566,31 +661,12 @@ public class ProjectTest {
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Update Project Name test stop................................");
   }
 
   @Test
   public void d_updateProjectDescription() {
     LOGGER.info("Update Project Description test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     UpdateProjectDescription updateDescriptionRequest =
         UpdateProjectDescription.newBuilder()
@@ -610,6 +686,7 @@ public class ProjectTest {
         project.getDateUpdated(),
         response.getProject().getDateUpdated());
     project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     updateDescriptionRequest =
         UpdateProjectDescription.newBuilder()
@@ -627,12 +704,8 @@ public class ProjectTest {
         "Project date_updated field not update on database",
         project.getDateUpdated(),
         response.getProject().getDateUpdated());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     LOGGER.info("Update Project Description test stop................................");
   }
@@ -640,8 +713,6 @@ public class ProjectTest {
   @Test
   public void dd_updateProjectDescriptionNegativeTest() {
     LOGGER.info("Update Project Description Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     UpdateProjectDescription updateDescriptionRequest =
         UpdateProjectDescription.newBuilder()
@@ -659,42 +730,12 @@ public class ProjectTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Update Project Description test stop................................");
   }
 
   @Test
   public void e_addProjectAttributes() {
     LOGGER.info("Add Project Attributes test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     List<KeyValue> attributeList = new ArrayList<>();
     Value intValue = Value.newBuilder().setNumberValue(1.1).build();
@@ -729,12 +770,8 @@ public class ProjectTest {
         "Project date_updated field not update on database",
         project.getDateUpdated(),
         response.getProject().getDateUpdated());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     LOGGER.info("Add Project Attributes test stop................................");
   }
@@ -742,8 +779,6 @@ public class ProjectTest {
   @Test
   public void e_addProjectAttributesNegativeTest() {
     LOGGER.info("Add Project Attributes Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     List<KeyValue> attributeList = new ArrayList<>();
     Value intValue = Value.newBuilder().setNumberValue(1.1).build();
@@ -776,42 +811,12 @@ public class ProjectTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Add Project Attributes Negative test stop................................");
   }
 
   @Test
   public void e_updateProjectAttributes() {
     LOGGER.info("Update Project Attributes test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     List<KeyValue> attributes = project.getAttributesList();
     Value stringValue =
@@ -838,6 +843,7 @@ public class ProjectTest {
         project.getDateUpdated(),
         response.getProject().getDateUpdated());
     project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     Value intValue =
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
@@ -858,6 +864,7 @@ public class ProjectTest {
         project.getDateUpdated(),
         response.getProject().getDateUpdated());
     project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     Value listValue =
         Value.newBuilder()
@@ -879,12 +886,8 @@ public class ProjectTest {
         "Project date_updated field not update on database",
         project.getDateUpdated(),
         response.getProject().getDateUpdated());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     LOGGER.info("Update Project Attributes test stop................................");
   }
@@ -892,19 +895,6 @@ public class ProjectTest {
   @Test
   public void e_updateProjectAttributesNegativeTest() {
     LOGGER.info("Update Project Attributes Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     List<KeyValue> attributes = project.getAttributesList();
     Value stringValue = Value.newBuilder().setStringValue("attribute_updated_test_value").build();
@@ -950,31 +940,12 @@ public class ProjectTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Update Project Attributes Negative test stop................................");
   }
 
   @Test
   public void f_addProjectTags() {
     LOGGER.info("Add Project Tags test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     List<String> tagsList = new ArrayList<>();
     tagsList.add("Add Test Tag1");
@@ -1008,6 +979,8 @@ public class ProjectTest {
     checkProject = response.getProject();
     assertEquals(5, checkProject.getTagsCount());
     assertEquals(5, checkProject.getTagsList().size());
+    project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     try {
       String tag52 = "Human Activity Recognition using Smartphone Dataset";
@@ -1021,20 +994,12 @@ public class ProjectTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Add Project tags test stop................................");
   }
 
   @Test
   public void ff_addProjectNegativeTags() {
     LOGGER.info("Add Project Tags Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     List<String> tagsList = new ArrayList<>();
     tagsList.add("Add Test Tag " + Calendar.getInstance().getTimeInMillis());
@@ -1049,16 +1014,6 @@ public class ProjectTest {
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     addProjectTagsRequest =
         AddProjectTags.newBuilder().setId("sdasd").addAllTags(project.getTagsList()).build();
@@ -1070,12 +1025,6 @@ public class ProjectTest {
       checkEqualsAssert(e);
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Add Project tags Negative test stop................................");
   }
 
@@ -1083,30 +1032,19 @@ public class ProjectTest {
   public void fff_addProjectTag() {
     LOGGER.info("Add Project Tag test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
     AddProjectTag addProjectTagRequest =
         AddProjectTag.newBuilder().setId(project.getId()).setTag("New added tag").build();
 
     AddProjectTag.Response response = projectServiceStub.addProjectTag(addProjectTagRequest);
 
     Project checkProject = response.getProject();
-    assertEquals(3, checkProject.getTagsCount());
+    assertEquals(project.getTagsCount() + 1, checkProject.getTagsCount());
     assertNotEquals(
         "Project date_updated field not update on database",
         project.getDateUpdated(),
         checkProject.getDateUpdated());
+    project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     try {
       String tag52 = "Human Activity Recognition using Smartphone Dataset";
@@ -1120,20 +1058,12 @@ public class ProjectTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Add Project tags test stop................................");
   }
 
   @Test
   public void ffff_addProjectTagNegativeTest() {
     LOGGER.info("Add Project Tag negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     try {
       AddProjectTag addProjectTagRequest =
@@ -1163,29 +1093,10 @@ public class ProjectTest {
   public void g_getProjectTags() {
     LOGGER.info("Get Project Tags test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
     GetTags deleteProjectTagsRequest = GetTags.newBuilder().setId(project.getId()).build();
     GetTags.Response response = projectServiceStub.getProjectTags(deleteProjectTagsRequest);
     LOGGER.info("Tags deleted in server : " + response.getTagsList());
     assertTrue(project.getTagsList().containsAll(response.getTagsList()));
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Get Project tags test stop................................");
   }
@@ -1193,8 +1104,6 @@ public class ProjectTest {
   @Test
   public void gg_getProjectTagsNegativeTest() {
     LOGGER.info("Get Project Tags Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     GetTags deleteProjectTagsRequest = GetTags.newBuilder().build();
 
@@ -1213,19 +1122,6 @@ public class ProjectTest {
   @Test
   public void h_deleteProjectTags() {
     LOGGER.info("Delete Project Tags test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     try {
       List<String> removableTags = project.getTagsList();
@@ -1249,6 +1145,7 @@ public class ProjectTest {
           project.getDateUpdated(),
           response.getProject().getDateUpdated());
       project = response.getProject();
+      projectMap.put(project.getId(), project);
 
       if (response.getProject().getTagsList().size() > 0) {
         deleteProjectTagsRequest =
@@ -1261,15 +1158,9 @@ public class ProjectTest {
             "Project date_updated field not update on database",
             project.getDateUpdated(),
             response.getProject().getDateUpdated());
+        project = response.getProject();
+        projectMap.put(project.getId(), project);
       }
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1283,8 +1174,6 @@ public class ProjectTest {
   public void h_deleteProjectTagsNegativeTest() {
     LOGGER.info("Delete Project Tags Negative test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
     DeleteProjectTags deleteProjectTagsRequest = DeleteProjectTags.newBuilder().build();
 
     try {
@@ -1296,17 +1185,6 @@ public class ProjectTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
     deleteProjectTagsRequest =
         DeleteProjectTags.newBuilder().setId(project.getId()).setDeleteAll(true).build();
 
@@ -1315,31 +1193,12 @@ public class ProjectTest {
     LOGGER.info("Tags deleted in server : " + response.getProject().getTagsList());
     assertEquals(0, response.getProject().getTagsList().size());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Delete Project tags Negative test stop................................");
   }
 
   @Test
   public void hhh_deleteProjectTag() {
     LOGGER.info("Delete Project Tag test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     DeleteProjectTag deleteProjectTagRequest =
         DeleteProjectTag.newBuilder()
@@ -1350,17 +1209,13 @@ public class ProjectTest {
     DeleteProjectTag.Response response =
         projectServiceStub.deleteProjectTag(deleteProjectTagRequest);
     LOGGER.info("Tag deleted in server : " + response.getProject().getTagsList());
-    assertEquals(1, response.getProject().getTagsList().size());
+    assertEquals(project.getTagsCount() - 1, response.getProject().getTagsList().size());
     assertNotEquals(
         "Project date_updated field not update on database",
         project.getDateUpdated(),
         response.getProject().getDateUpdated());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     LOGGER.info("Delete Project tag test stop................................");
   }
@@ -1368,8 +1223,6 @@ public class ProjectTest {
   @Test
   public void hhhh_deleteProjectTagNegativeTest() {
     LOGGER.info("Delete Project Tag negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     try {
       DeleteProjectTag deleteProjectTagRequest =
@@ -1398,19 +1251,6 @@ public class ProjectTest {
   @Test
   public void i_getProjectAttributes() {
     LOGGER.info("Get Project Attributes test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     List<KeyValue> attributes = project.getAttributesList();
     LOGGER.info("Attributes size : " + attributes.size());
@@ -1447,20 +1287,12 @@ public class ProjectTest {
     LOGGER.info(response.getAttributesList().toString());
     assertEquals(project.getAttributesList().size(), response.getAttributesList().size());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get Project Attributes test stop................................");
   }
 
   @Test
   public void i_getProjectAttributesNegativeTest() {
     LOGGER.info("Get Project Attributes Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     GetAttributes getProjectAttributesRequest = GetAttributes.newBuilder().build();
 
@@ -1488,19 +1320,6 @@ public class ProjectTest {
   @Test
   public void iii_deleteProjectAttributesTest() {
     LOGGER.info("Delete Project Attributes test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_iiidpat");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-    LOGGER.info("Project created successfully");
 
     List<KeyValue> attributes = project.getAttributesList();
     LOGGER.info("Attributes size : " + attributes.size());
@@ -1532,6 +1351,7 @@ public class ProjectTest {
         project.getDateUpdated(),
         response.getProject().getDateUpdated());
     project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     if (response.getProject().getAttributesList().size() != 0) {
       deleteProjectAttributesRequest =
@@ -1545,14 +1365,9 @@ public class ProjectTest {
           "Project date_updated field not update on database",
           project.getDateUpdated(),
           response.getProject().getDateUpdated());
+      project = response.getProject();
+      projectMap.put(project.getId(), project);
     }
-
-    // Delete all data related to project
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Delete Project Attributes test stop................................");
   }
@@ -1560,8 +1375,6 @@ public class ProjectTest {
   @Test
   public void iii_deleteProjectAttributesNegativeTest() {
     LOGGER.info("Delete Project Attributes Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     DeleteProjectAttributes deleteProjectAttributesRequest =
         DeleteProjectAttributes.newBuilder().build();
@@ -1575,32 +1388,6 @@ public class ProjectTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    deleteProjectAttributesRequest =
-        DeleteProjectAttributes.newBuilder().setId(project.getId()).setDeleteAll(true).build();
-    DeleteProjectAttributes.Response response =
-        projectServiceStub.deleteProjectAttributes(deleteProjectAttributesRequest);
-    LOGGER.info(
-        "All the Attributes deleted from server. Attributes count : "
-            + response.getProject().getAttributesCount());
-    assertEquals(0, response.getProject().getAttributesList().size());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Delete Project Attributes Negative test stop................................");
   }
 
@@ -1608,30 +1395,11 @@ public class ProjectTest {
   public void j_getProjectById() {
     LOGGER.info("Get Project by ID test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
     GetProjectById getProject = GetProjectById.newBuilder().setId(project.getId()).build();
     GetProjectById.Response response = projectServiceStub.getProjectById(getProject);
     LOGGER.info("Response List : " + response.getProject());
     assertEquals(
         "Project not match with expected project", project.getId(), response.getProject().getId());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info("Get project by ID test stop................................");
   }
@@ -1639,8 +1407,6 @@ public class ProjectTest {
   @Test
   public void j_getProjectByIdNegativeTest() {
     LOGGER.info("Get Project by ID negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     try {
       GetProjectById getProject = GetProjectById.newBuilder().build();
@@ -1667,35 +1433,147 @@ public class ProjectTest {
   public void k_getProjectByName() {
     LOGGER.info("Get Project by name test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ProjectServiceBlockingStub client2ProjectServiceStub =
-        ProjectServiceGrpc.newBlockingStub(client2Channel);
+    Project project = null;
+    try {
+      // Create project
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
+      CreateProject.Response createProjectResponse =
+          client2ProjectServiceStub.createProject(createProjectRequest);
+      project = createProjectResponse.getProject();
+      LOGGER.info("Project created successfully");
+      assertEquals(
+          "Project name not match with expected project name",
+          createProjectRequest.getName(),
+          project.getName());
 
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
-    CreateProject.Response createProjectResponse =
-        client2ProjectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
+      GetProjectByName getProject =
+          GetProjectByName.newBuilder().setName(project.getName()).build();
 
-    GetProjectByName getProject = GetProjectByName.newBuilder().setName(project.getName()).build();
+      GetProjectByName.Response response = client2ProjectServiceStub.getProjectByName(getProject);
+      LOGGER.info("Response ProjectByUser of Project : " + response.getProjectByUser());
+      LOGGER.info("Response SharedProjectsList of Projects : " + response.getSharedProjectsList());
+      assertEquals(
+          "Project name not match", project.getName(), response.getProjectByUser().getName());
+      for (Project sharedProject : response.getSharedProjectsList()) {
+        assertEquals("Shared project name not match", project.getName(), sharedProject.getName());
+      }
 
-    GetProjectByName.Response response = client2ProjectServiceStub.getProjectByName(getProject);
-    LOGGER.info("Response ProjectByUser of Project : " + response.getProjectByUser());
-    LOGGER.info("Response SharedProjectsList of Projects : " + response.getSharedProjectsList());
-    assertEquals(
-        "Project name not match", project.getName(), response.getProjectByUser().getName());
-    for (Project sharedProject : response.getSharedProjectsList()) {
-      assertEquals("Shared project name not match", project.getName(), sharedProject.getName());
+      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        AddCollaboratorRequest addCollaboratorRequest =
+            CollaboratorTest.addCollaboratorRequestProject(
+                project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
+
+        AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
+            collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info(
+            "Collaborator added in server : " + addOrUpdateProjectCollaboratorResponse.getStatus());
+        assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
+
+        GetProjectByName.Response getProjectByNameResponse =
+            projectServiceStub.getProjectByName(getProject);
+        LOGGER.info(
+            "Response ProjectByUser of Project : " + getProjectByNameResponse.getProjectByUser());
+        LOGGER.info(
+            "Response SharedProjectsList of Projects : "
+                + getProjectByNameResponse.getSharedProjectsList());
+        assertTrue(
+            "Project name not match",
+            getProjectByNameResponse.getProjectByUser() == null
+                || getProjectByNameResponse.getProjectByUser().getId().isEmpty());
+        for (Project sharedProject : getProjectByNameResponse.getSharedProjectsList()) {
+          assertEquals("Shared project name not match", project.getName(), sharedProject.getName());
+        }
+
+        Project selfProject = null;
+        try {
+          // Create project
+          createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+          createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+          selfProject = createProjectResponse.getProject();
+          LOGGER.info("Project created successfully");
+          assertEquals(
+              "Project name not match with expected project name",
+              createProjectRequest.getName(),
+              selfProject.getName());
+
+          getProject = GetProjectByName.newBuilder().setName(selfProject.getName()).build();
+          getProjectByNameResponse = projectServiceStub.getProjectByName(getProject);
+          LOGGER.info(
+              "Response ProjectByUser of Project : " + getProjectByNameResponse.getProjectByUser());
+          LOGGER.info(
+              "Response SharedProjectsList of Projects : "
+                  + getProjectByNameResponse.getSharedProjectsList());
+          assertEquals(
+              "Project name not match",
+              selfProject.getName(),
+              getProjectByNameResponse.getProjectByUser().getName());
+          for (Project sharedProject : getProjectByNameResponse.getSharedProjectsList()) {
+            assertEquals(
+                "Shared project name not match", selfProject.getName(), sharedProject.getName());
+          }
+
+        } finally {
+          if (selfProject != null) {
+            DeleteProject deleteProject =
+                DeleteProject.newBuilder().setId(selfProject.getId()).build();
+            DeleteProject.Response deleteProjectResponse =
+                projectServiceStub.deleteProject(deleteProject);
+            LOGGER.info("Project deleted successfully");
+            LOGGER.info(deleteProjectResponse.toString());
+            assertTrue(deleteProjectResponse.getStatus());
+          }
+        }
+      }
+
+    } finally {
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      DeleteProject.Response deleteProjectResponse =
+          client2ProjectServiceStub.deleteProject(deleteProject);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectResponse.toString());
+      assertTrue(deleteProjectResponse.getStatus());
     }
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      CollaboratorServiceBlockingStub collaboratorServiceStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
+    LOGGER.info("Get project by name test stop................................");
+  }
+
+  @Test
+  public void k_getProjectByNameWithWorkspace() {
+    LOGGER.info("Get Project by name with workspace test start................................");
+    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+      assertTrue(true);
+      return;
+    }
+
+    Project selfProject = null;
+    Project project = null;
+    try {
+      GetUser getUserRequest =
+          GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
+      // Get the user info by vertaId form the AuthService
+      UserInfo secondUserInfo = uacServiceStub.getUser(getUserRequest);
+
+      getUserRequest =
+          GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+
+      // Create project
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
+      createProjectRequest =
+          createProjectRequest
+              .toBuilder()
+              .setWorkspaceName(secondUserInfo.getVertaInfo().getUsername())
+              .build();
+      CreateProject.Response createProjectResponse =
+          client2ProjectServiceStub.createProject(createProjectRequest);
+      project = createProjectResponse.getProject();
+      LOGGER.info("Project created successfully");
+      assertEquals(
+          "Project name not match with expected project name",
+          createProjectRequest.getName(),
+          project.getName());
+
       AddCollaboratorRequest addCollaboratorRequest =
           CollaboratorTest.addCollaboratorRequestProject(
               project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -1706,6 +1584,21 @@ public class ProjectTest {
           "Collaborator added in server : " + addOrUpdateProjectCollaboratorResponse.getStatus());
       assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
 
+      // Create project
+      createProjectRequest = getCreateProjectRequest(project.getName());
+      createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+      selfProject = createProjectResponse.getProject();
+      LOGGER.info("Project created successfully");
+      assertEquals(
+          "Project name not match with expected project name",
+          createProjectRequest.getName(),
+          selfProject.getName());
+
+      GetProjectByName getProject =
+          GetProjectByName.newBuilder()
+              .setName(selfProject.getName())
+              .setWorkspaceName(secondUserInfo.getVertaInfo().getUsername())
+              .build();
       GetProjectByName.Response getProjectByNameResponse =
           projectServiceStub.getProjectByName(getProject);
       LOGGER.info(
@@ -1720,140 +1613,25 @@ public class ProjectTest {
       for (Project sharedProject : getProjectByNameResponse.getSharedProjectsList()) {
         assertEquals("Shared project name not match", project.getName(), sharedProject.getName());
       }
-
-      // Create project
-      createProjectRequest = getCreateProjectRequest("project_f_apt");
-      createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-      Project selfProject = createProjectResponse.getProject();
-      LOGGER.info("Project created successfully");
-      assertEquals(
-          "Project name not match with expected project name",
-          createProjectRequest.getName(),
-          selfProject.getName());
-
-      getProjectByNameResponse = projectServiceStub.getProjectByName(getProject);
-      LOGGER.info(
-          "Response ProjectByUser of Project : " + getProjectByNameResponse.getProjectByUser());
-      LOGGER.info(
-          "Response SharedProjectsList of Projects : "
-              + getProjectByNameResponse.getSharedProjectsList());
-      assertEquals(
-          "Project name not match",
-          selfProject.getName(),
-          getProjectByNameResponse.getProjectByUser().getName());
-      for (Project sharedProject : getProjectByNameResponse.getSharedProjectsList()) {
-        assertEquals(
-            "Shared project name not match", selfProject.getName(), sharedProject.getName());
+    } finally {
+      if (selfProject != null) {
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(selfProject.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            projectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
       }
 
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(selfProject.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
+      if (project != null) {
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            client2ProjectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
+      }
     }
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse =
-        client2ProjectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    LOGGER.info("Get project by name test stop................................");
-  }
-
-  @Test
-  public void k_getProjectByNameWithWorkspace() {
-    LOGGER.info("Get Project by name with workspace test start................................");
-    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
-      assertTrue(true);
-      return;
-    }
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ProjectServiceBlockingStub client2ProjectServiceStub =
-        ProjectServiceGrpc.newBlockingStub(client2Channel);
-
-    UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
-        UACServiceGrpc.newBlockingStub(authServiceChannelClient1);
-    GetUser getUserRequest =
-        GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
-    // Get the user info by vertaId form the AuthService
-    UserInfo secondUserInfo = uaServiceStub.getUser(getUserRequest);
-
-    getUserRequest = GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
-    createProjectRequest =
-        createProjectRequest
-            .toBuilder()
-            .setWorkspaceName(secondUserInfo.getVertaInfo().getUsername())
-            .build();
-    CreateProject.Response createProjectResponse =
-        client2ProjectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
-    AddCollaboratorRequest addCollaboratorRequest =
-        CollaboratorTest.addCollaboratorRequestProject(
-            project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
-
-    AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
-        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-    LOGGER.info(
-        "Collaborator added in server : " + addOrUpdateProjectCollaboratorResponse.getStatus());
-    assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
-
-    // Create project
-    createProjectRequest = getCreateProjectRequest("project_f_apt");
-    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-    Project selfProject = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        selfProject.getName());
-
-    GetProjectByName getProject =
-        GetProjectByName.newBuilder()
-            .setName(selfProject.getName())
-            .setWorkspaceName(secondUserInfo.getVertaInfo().getUsername())
-            .build();
-    GetProjectByName.Response getProjectByNameResponse =
-        projectServiceStub.getProjectByName(getProject);
-    LOGGER.info(
-        "Response ProjectByUser of Project : " + getProjectByNameResponse.getProjectByUser());
-    LOGGER.info(
-        "Response SharedProjectsList of Projects : "
-            + getProjectByNameResponse.getSharedProjectsList());
-    assertTrue(
-        "Project name not match",
-        getProjectByNameResponse.getProjectByUser() == null
-            || getProjectByNameResponse.getProjectByUser().getId().isEmpty());
-    for (Project sharedProject : getProjectByNameResponse.getSharedProjectsList()) {
-      assertEquals("Shared project name not match", project.getName(), sharedProject.getName());
-    }
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(selfProject.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    deleteProjectResponse = client2ProjectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
 
     LOGGER.info(
         "Get project by name with Email or Username test stop................................");
@@ -1862,8 +1640,6 @@ public class ProjectTest {
   @Test
   public void k_getProjectByNameNegativeTest() {
     LOGGER.info("Get Project by name negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     try {
       GetProjectByName getProject = GetProjectByName.newBuilder().build();
@@ -1882,8 +1658,6 @@ public class ProjectTest {
   public void k_getProjectByNameNotFoundTest() {
     LOGGER.info("Get Project by name NOT_FOUND test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
     try {
       GetProjectByName getProject = GetProjectByName.newBuilder().setName("test").build();
       projectServiceStub.getProjectByName(getProject);
@@ -1901,11 +1675,13 @@ public class ProjectTest {
   public void l_getProjects() {
     LOGGER.info("Get Project test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    GetProjects getProjects = GetProjects.newBuilder().build();
+    GetProjects.Response response = projectServiceStub.getProjects(getProjects);
+    long alreadyExistsProjCount = response.getTotalRecords();
 
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest("project_1");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -1917,7 +1693,7 @@ public class ProjectTest {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest("project_2");
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -1927,20 +1703,19 @@ public class ProjectTest {
         createProjectRequest.getName(),
         project2.getName());
 
-    GetProjects getProjects = GetProjects.newBuilder().build();
-    GetProjects.Response response = projectServiceStub.getProjects(getProjects);
-    LOGGER.info("GetProjects Count : " + response.getProjectsCount());
-    LOGGER.info("Response List : " + response.getProjectsList());
+    getProjects = GetProjects.newBuilder().build();
+    response = projectServiceStub.getProjects(getProjects);
+    List<Project> responseList = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectsMap.containsKey(project.getId())) {
+        responseList.add(project);
+      }
+    }
+    LOGGER.info("GetProjects Count : " + responseList.size());
     assertEquals(
         "Projects count not match with expected projects count",
         projectsMap.size(),
-        response.getProjectsList().size());
-
-    for (Project project : response.getProjectsList()) {
-      if (projectsMap.get(project.getId()) == null) {
-        fail("Project not found in the expected project list");
-      }
-    }
+        responseList.size());
 
     for (String projectId : projectsMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
@@ -1958,11 +1733,9 @@ public class ProjectTest {
   public void getProjectsOnDescendingOrder() {
     LOGGER.info("Get Project on descending order test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest("project_1");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -1974,7 +1747,7 @@ public class ProjectTest {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest("project_2");
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -1987,27 +1760,23 @@ public class ProjectTest {
     GetProjects getProjects = GetProjects.newBuilder().build();
     GetProjects.Response response = projectServiceStub.getProjects(getProjects);
     LOGGER.info("GetProjects Count : " + response.getProjectsCount());
-    LOGGER.info("Response List : " + response.getProjectsList());
-    assertEquals(
-        "Projects count not match with expected projects count",
-        projectsMap.size(),
-        response.getProjectsList().size());
-
+    List<Project> responseList = new ArrayList<>();
     for (Project project : response.getProjectsList()) {
-      if (projectsMap.get(project.getId()) == null) {
-        fail("Project not found in the expected project list");
+      if (projectsMap.containsKey(project.getId())) {
+        responseList.add(project);
       }
     }
 
     assertEquals(
-        "Projects order not match with expected projects order",
-        project2,
-        response.getProjectsList().get(0));
+        "Projects count not match with expected projects count",
+        projectsMap.size(),
+        responseList.size());
 
     assertEquals(
-        "Projects order not match with expected projects order",
-        project1,
-        response.getProjectsList().get(1));
+        "Projects order not match with expected projects order", project2, responseList.get(0));
+
+    assertEquals(
+        "Projects order not match with expected projects order", project1, responseList.get(1));
 
     for (String projectId : projectsMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
@@ -2017,49 +1786,12 @@ public class ProjectTest {
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
     }
-
     LOGGER.info("Get project on descending order test stop................................");
   }
 
   @Test
   public void m_getProjectSummary() throws IOException {
     LOGGER.info("Get Project summary test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    ExperimentTest experimentTest = new ExperimentTest();
-    // Create two experiment of above project
-    CreateExperiment request =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment1");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(request);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("\n Experiment created successfully \n");
-
-    // For ExperiemntRun of Experiment1
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
-    CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "ExperiemntRun1");
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("\n ExperimentRun created successfully \n");
 
     GetSummary getSummaryRequest = GetSummary.newBuilder().setEntityId(project.getId()).build();
     GetSummary.Response response = projectServiceStub.getSummary(getSummaryRequest);
@@ -2131,13 +1863,6 @@ public class ProjectTest {
           minMaxValueArray[1],
           (Double) metricsSummary.getMaxValue());
     }
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get project summary test stop................................");
   }
 
@@ -2162,7 +1887,6 @@ public class ProjectTest {
   public void m_getProjectSummaryNegativeTest() {
     LOGGER.info("Get Project summary Negative test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     try {
       GetSummary getSummaryRequest = GetSummary.newBuilder().build();
       projectServiceStub.getSummary(getSummaryRequest);
@@ -2179,19 +1903,6 @@ public class ProjectTest {
   public void n_setProjectReadMeTest() throws IOException {
     LOGGER.info("Set Project ReadMe test start................................");
     try {
-      ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-      // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-      CreateProject.Response createProjectResponse =
-          projectServiceStub.createProject(createProjectRequest);
-      Project project = createProjectResponse.getProject();
-      LOGGER.info("Project created successfully");
-      assertEquals(
-          "Project name not match with expected project name",
-          createProjectRequest.getName(),
-          project.getName());
-
       String rootPath = System.getProperty("user.dir");
       rootPath = rootPath + "/src/test/java/ai/verta/modeldb/setProjectReadMe.md";
       String readMeText = ModelDBTestUtils.readFile(rootPath);
@@ -2210,14 +1921,8 @@ public class ProjectTest {
           "Project date_updated field not update on database",
           project.getDateUpdated(),
           response.getProject().getDateUpdated());
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-
+      project = response.getProject();
+      projectMap.put(project.getId(), project);
     } catch (StatusRuntimeException e) {
       Status status2 = Status.fromThrowable(e);
       fail();
@@ -2231,19 +1936,6 @@ public class ProjectTest {
   public void nn_updateProjectReadMeTest() throws IOException {
     LOGGER.info("Update Project ReadMe test start................................");
     try {
-      ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-      // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_f_apt");
-      CreateProject.Response createProjectResponse =
-          projectServiceStub.createProject(createProjectRequest);
-      Project project = createProjectResponse.getProject();
-      LOGGER.info("Project created successfully");
-      assertEquals(
-          "Project name not match with expected project name",
-          createProjectRequest.getName(),
-          project.getName());
-
       String rootPath = System.getProperty("user.dir");
       rootPath = rootPath + "/src/test/java/ai/verta/modeldb/setProjectReadMe.md";
       String readMeText = ModelDBTestUtils.readFile(rootPath);
@@ -2263,6 +1955,7 @@ public class ProjectTest {
           project.getDateUpdated(),
           response.getProject().getDateUpdated());
       project = response.getProject();
+      projectMap.put(project.getId(), project);
 
       rootPath = System.getProperty("user.dir");
       rootPath = rootPath + "/src/test/java/ai/verta/modeldb/updateProjectReadMe.md";
@@ -2282,14 +1975,8 @@ public class ProjectTest {
           "Project date_updated field not update on database",
           project.getDateUpdated(),
           response.getProject().getDateUpdated());
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-
+      project = response.getProject();
+      projectMap.put(project.getId(), project);
     } catch (StatusRuntimeException e) {
       Status status2 = Status.fromThrowable(e);
       fail();
@@ -2303,19 +1990,6 @@ public class ProjectTest {
   public void nnn_getProjectReadMeTest() throws IOException {
     LOGGER.info("Get Project ReadMe test start................................");
     try {
-      ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-      // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_nnn_gprt");
-      CreateProject.Response createProjectResponse =
-          projectServiceStub.createProject(createProjectRequest);
-      Project project = createProjectResponse.getProject();
-      LOGGER.info("\n Project created successfully \n");
-      assertEquals(
-          "Project name not match with expected project name",
-          createProjectRequest.getName(),
-          project.getName());
-
       String rootPath = System.getProperty("user.dir");
       rootPath = rootPath + "/src/test/java/ai/verta/modeldb/setProjectReadMe.md";
       String readMeText = ModelDBTestUtils.readFile(rootPath);
@@ -2345,14 +2019,6 @@ public class ProjectTest {
       try (BufferedWriter writer = Files.newBufferedWriter(path)) {
         writer.write(getProjectReadMeResponse.getReadmeText());
       }
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-
     } catch (StatusRuntimeException e) {
       Status status2 = Status.fromThrowable(e);
       fail();
@@ -2366,19 +2032,6 @@ public class ProjectTest {
   public void nnnn_setEmptyProjectReadMeTest() throws IOException {
     LOGGER.info("Get Project ReadMe test start................................");
     try {
-      ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-      // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_nnnn_seprt");
-      CreateProject.Response createProjectResponse =
-          projectServiceStub.createProject(createProjectRequest);
-      Project project = createProjectResponse.getProject();
-      LOGGER.info("\n Project created successfully \n");
-      assertEquals(
-          "Project name not match with expected project name",
-          createProjectRequest.getName(),
-          project.getName());
-
       String readMeText = "";
       SetProjectReadme setProjectReadMe =
           SetProjectReadme.newBuilder().setId(project.getId()).setReadmeText(readMeText).build();
@@ -2404,19 +2057,14 @@ public class ProjectTest {
           "Project ReadMe text not match with expected setProjectReadMe.md file text",
           readMeText,
           getProjectReadMeResponse.getReadmeText());
+      project = response.getProject();
+      projectMap.put(project.getId(), project);
 
       // Get the file reference
       Path path = Paths.get("target/outputProjectReadMe.md");
       try (BufferedWriter writer = Files.newBufferedWriter(path)) {
         writer.write(getProjectReadMeResponse.getReadmeText());
       }
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
 
     } catch (StatusRuntimeException e) {
       Status status2 = Status.fromThrowable(e);
@@ -2431,52 +2079,59 @@ public class ProjectTest {
   public void p_SetProjectVisibility() {
     LOGGER.info("Set Project visibility test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    // Create public project
-    // Public project 1
-    CreateProject createProjectRequest = getCreateProjectRequest("project_appctct");
-    createProjectRequest =
-        createProjectRequest.toBuilder().setProjectVisibility(ProjectVisibility.PUBLIC).build();
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-    assertEquals(
-        "Project visibility not match with expected project visibility",
-        ProjectVisibility.PUBLIC,
-        project.getProjectVisibility());
-    LOGGER.info("Project created successfully");
+    Project project = null;
+    try {
+      // Create public project
+      // Public project 1
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
+      createProjectRequest =
+          createProjectRequest.toBuilder().setProjectVisibility(ProjectVisibility.PUBLIC).build();
+      CreateProject.Response createProjectResponse =
+          projectServiceStub.createProject(createProjectRequest);
+      project = createProjectResponse.getProject();
+      assertEquals(
+          "Project name not match with expected project name",
+          createProjectRequest.getName(),
+          project.getName());
+      assertEquals(
+          "Project visibility not match with expected project visibility",
+          ProjectVisibility.PUBLIC,
+          project.getProjectVisibility());
+      LOGGER.info("Project created successfully");
 
-    SetProjectVisibilty setProjectVisibilty =
-        SetProjectVisibilty.newBuilder()
-            .setId(project.getId())
-            .setProjectVisibility(ProjectVisibility.PRIVATE)
-            .build();
-    SetProjectVisibilty.Response response =
-        projectServiceStub.setProjectVisibility(setProjectVisibilty);
-    Project visibilityProject = response.getProject();
-    assertEquals(
-        "Project name not match with expected project name",
-        project.getName(),
-        visibilityProject.getName());
-    assertEquals(
-        "Project visibility not match with updated project visibility",
-        ProjectVisibility.PRIVATE,
-        visibilityProject.getProjectVisibility());
-    LOGGER.info("Set project visibility successfully");
-    assertNotEquals(
-        "Project date_updated field not update on database",
-        project.getDateUpdated(),
-        response.getProject().getDateUpdated());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+      SetProjectVisibilty setProjectVisibilty =
+          SetProjectVisibilty.newBuilder()
+              .setId(project.getId())
+              .setProjectVisibility(ProjectVisibility.PRIVATE)
+              .build();
+      SetProjectVisibilty.Response response =
+          projectServiceStub.setProjectVisibility(setProjectVisibilty);
+      Project visibilityProject = response.getProject();
+      assertEquals(
+          "Project name not match with expected project name",
+          project.getName(),
+          visibilityProject.getName());
+      assertEquals(
+          "Project visibility not match with updated project visibility",
+          ProjectVisibility.PRIVATE,
+          visibilityProject.getProjectVisibility());
+      LOGGER.info("Set project visibility successfully");
+      assertNotEquals(
+          "Project date_updated field not update on database",
+          project.getDateUpdated(),
+          response.getProject().getDateUpdated());
+      project = response.getProject();
+    } finally {
+      if (project != null) {
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            projectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
+      }
+    }
 
     LOGGER.info("Set Project visibility test stop................................");
   }
@@ -2485,19 +2140,6 @@ public class ProjectTest {
   public void q_setProjectShortNameTest() {
     LOGGER.info("Set Project short name test start................................");
     try {
-      ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-      // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt_1");
-      CreateProject.Response createProjectResponse =
-          projectServiceStub.createProject(createProjectRequest);
-      Project project = createProjectResponse.getProject();
-      LOGGER.info("Project created successfully");
-      assertEquals(
-          "Project name not match with expected project name",
-          createProjectRequest.getName(),
-          project.getName());
-
       try {
         SetProjectShortName setProjectShortName =
             SetProjectShortName.newBuilder()
@@ -2529,6 +2171,8 @@ public class ProjectTest {
           "Project date_updated field not update on database",
           project.getDateUpdated(),
           response.getProject().getDateUpdated());
+      project = response.getProject();
+      projectMap.put(project.getId(), project);
 
       try {
         setProjectShortName =
@@ -2540,14 +2184,6 @@ public class ProjectTest {
         LOGGER.info("Error Code : " + status.getCode() + " Error : " + status.getDescription());
         assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
       }
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-
     } catch (StatusRuntimeException e) {
       Status status2 = Status.fromThrowable(e);
       fail();
@@ -2560,7 +2196,6 @@ public class ProjectTest {
   @Test
   public void qq_setProjectShortNameNegativeTest() {
     LOGGER.info("Set Project short name negative test start................................");
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     try {
       SetProjectShortName setProjectShortName =
           SetProjectShortName.newBuilder().setShortName("project xyz").build();
@@ -2588,15 +2223,14 @@ public class ProjectTest {
   @Test
   public void qqq_getProjectShortNameTest() {
     LOGGER.info("Get Project short name test start................................");
+    Project project = null;
     try {
-      ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
       // Create project
       String shortName = "project-sprt_app";
       CreateProject createProjectRequest = getCreateProjectRequest(shortName);
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
-      Project project = createProjectResponse.getProject();
+      project = createProjectResponse.getProject();
       LOGGER.info("Project created successfully");
       assertEquals(
           "Project name not match with expected project name",
@@ -2611,18 +2245,19 @@ public class ProjectTest {
           "Project short name not match with expected short name",
           shortName,
           response.getShortName());
-
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       fail();
       LOGGER.error("Error Code : " + status.getCode() + " Error : " + status.getDescription());
+    } finally {
+      if (project != null) {
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            projectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
+      }
     }
 
     LOGGER.info("Get Project short name test stop................................");
@@ -2631,7 +2266,6 @@ public class ProjectTest {
   @Test
   public void qqqq_getProjectShortNameNegativeTest() {
     LOGGER.info("Get Project short name Negative test start................................");
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     try {
       GetProjectShortName setProjectShortName = GetProjectShortName.newBuilder().build();
       projectServiceStub.getProjectShortName(setProjectShortName);
@@ -2648,8 +2282,6 @@ public class ProjectTest {
   public void x_projectDeleteNegativeTest() {
     LOGGER.info("Project delete Negative test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
     DeleteProject deleteProject = DeleteProject.newBuilder().build();
     try {
       projectServiceStub.deleteProject(deleteProject);
@@ -2664,132 +2296,110 @@ public class ProjectTest {
   }
 
   @Test
-  public void y_projectDeleteTest() {
-    LOGGER.info("Project delete test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt_1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
-    LOGGER.info("Project delete test stop................................");
-  }
-
-  @Test
   public void y_projectCascadeDeleteTest() {
     LOGGER.info("Project delete with cascading test start................................");
     try {
-      ExperimentTest experimentTest = new ExperimentTest();
+      deleteEntitiesCron.run();
+
       ExperimentRunTest experimentRunTest = new ExperimentRunTest();
 
-      ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-      ExperimentServiceBlockingStub experimentServiceStub =
-          ExperimentServiceGrpc.newBlockingStub(channel);
-      ExperimentRunServiceBlockingStub experimentRunServiceStub =
-          ExperimentRunServiceGrpc.newBlockingStub(channel);
-      CommentServiceBlockingStub commentServiceBlockingStub =
-          CommentServiceGrpc.newBlockingStub(channel);
+      Project project = null;
+      ExperimentRun experimentRun1;
+      ExperimentRun experimentRun3;
+      try {
+        // Create project
+        CreateProject createProjectRequest =
+            getCreateProjectRequest("project-" + new Date().getTime());
+        CreateProject.Response createProjectResponse =
+            projectServiceStub.createProject(createProjectRequest);
+        project = createProjectResponse.getProject();
+        LOGGER.info("\n Project created successfully \n");
 
-      // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt");
-      CreateProject.Response createProjectResponse =
-          projectServiceStub.createProject(createProjectRequest);
-      Project project = createProjectResponse.getProject();
-      LOGGER.info("\n Project created successfully \n");
+        // Create two experiment of above project
+        CreateExperiment request =
+            ExperimentTest.getCreateExperimentRequest(
+                project.getId(), "Experiment-1-" + new Date().getTime());
+        CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
+        Experiment experiment1 = response.getExperiment();
+        LOGGER.info("\n Experiment1 created successfully \n");
+        request =
+            ExperimentTest.getCreateExperimentRequest(
+                project.getId(), "Experiment-2-" + new Date().getTime());
+        response = experimentServiceStub.createExperiment(request);
+        Experiment experiment2 = response.getExperiment();
+        LOGGER.info("\n Experiment2 created successfully \n");
 
-      // Create two experiment of above project
-      CreateExperiment request =
-          experimentTest.getCreateExperimentRequest(project.getId(), "Experiment1");
-      CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
-      Experiment experiment1 = response.getExperiment();
-      LOGGER.info("\n Experiment1 created successfully \n");
-      request = experimentTest.getCreateExperimentRequest(project.getId(), "Experiment2");
-      response = experimentServiceStub.createExperiment(request);
-      Experiment experiment2 = response.getExperiment();
-      LOGGER.info("\n Experiment2 created successfully \n");
+        // Create four ExperimentRun of above two experiment, each experiment has two experimentRun
+        // For ExperiemntRun of Experiment1
+        CreateExperimentRun createExperimentRunRequest =
+            experimentRunTest.getCreateExperimentRunRequest(
+                project.getId(), experiment1.getId(), "ExperiemntRun-1-" + new Date().getTime());
+        CreateExperimentRun.Response createExperimentRunResponse =
+            experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+        experimentRun1 = createExperimentRunResponse.getExperimentRun();
+        LOGGER.info("\n ExperimentRun1 created successfully \n");
+        createExperimentRunRequest =
+            experimentRunTest.getCreateExperimentRunRequest(
+                project.getId(), experiment1.getId(), "ExperiemntRun-2-" + new Date().getTime());
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+        LOGGER.info("\n ExperimentRun2 created successfully \n");
 
-      // Create four ExperimentRun of above two experiment, each experiment has two experimentRun
-      // For ExperiemntRun of Experiment1
-      CreateExperimentRun createExperimentRunRequest =
-          experimentRunTest.getCreateExperimentRunRequest(
-              project.getId(), experiment1.getId(), "ExperiemntRun1");
-      CreateExperimentRun.Response createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun1 = createExperimentRunResponse.getExperimentRun();
-      LOGGER.info("\n ExperimentRun1 created successfully \n");
-      createExperimentRunRequest =
-          experimentRunTest.getCreateExperimentRunRequest(
-              project.getId(), experiment1.getId(), "ExperiemntRun2");
-      experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      LOGGER.info("\n ExperimentRun2 created successfully \n");
+        // For ExperiemntRun of Experiment2
+        createExperimentRunRequest =
+            experimentRunTest.getCreateExperimentRunRequest(
+                project.getId(), experiment2.getId(), "ExperiemntRun-3-" + new Date().getTime());
+        createExperimentRunResponse =
+            experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+        experimentRun3 = createExperimentRunResponse.getExperimentRun();
+        LOGGER.info("\n ExperimentRun3 created successfully \n");
+        createExperimentRunRequest =
+            experimentRunTest.getCreateExperimentRunRequest(
+                project.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
+        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+        LOGGER.info("\n ExperimentRun4 created successfully \n");
 
-      // For ExperiemntRun of Experiment2
-      createExperimentRunRequest =
-          experimentRunTest.getCreateExperimentRunRequest(
-              project.getId(), experiment2.getId(), "ExperiemntRun3");
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun experimentRun3 = createExperimentRunResponse.getExperimentRun();
-      LOGGER.info("\n ExperimentRun3 created successfully \n");
-      createExperimentRunRequest =
-          experimentRunTest.getCreateExperimentRunRequest(
-              project.getId(), experiment2.getId(), "ExperimentRun4");
-      experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      LOGGER.info("\n ExperimentRun4 created successfully \n");
+        // Create comment for above experimentRun1 & experimentRun3
+        // comment for experiment1
+        AddComment addCommentRequest =
+            AddComment.newBuilder()
+                .setEntityId(experimentRun1.getId())
+                .setMessage(
+                    "Hello, this project is intreasting."
+                        + Calendar.getInstance().getTimeInMillis())
+                .build();
+        commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
+        LOGGER.info("\n Comment added successfully for ExperimentRun1 \n");
+        // comment for experimentRun3
+        addCommentRequest =
+            AddComment.newBuilder()
+                .setEntityId(experimentRun3.getId())
+                .setMessage(
+                    "Hello, this project is intreasting."
+                        + Calendar.getInstance().getTimeInMillis())
+                .build();
+        commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
+        LOGGER.info("\n Comment added successfully for ExperimentRun3 \n");
 
-      // Create comment for above experimentRun1 & experimentRun3
-      // comment for experiment1
-      AddComment addCommentRequest =
-          AddComment.newBuilder()
-              .setEntityId(experimentRun1.getId())
-              .setMessage(
-                  "Hello, this project is intreasting." + Calendar.getInstance().getTimeInMillis())
-              .build();
-      commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
-      LOGGER.info("\n Comment added successfully for ExperimentRun1 \n");
-      // comment for experimentRun3
-      addCommentRequest =
-          AddComment.newBuilder()
-              .setEntityId(experimentRun3.getId())
-              .setMessage(
-                  "Hello, this project is intreasting." + Calendar.getInstance().getTimeInMillis())
-              .build();
-      commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
-      LOGGER.info("\n Comment added successfully for ExperimentRun3 \n");
-
-      // Create two collaborator for above project
-      // For Collaborator1
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-        CollaboratorServiceBlockingStub collaboratorServiceStub =
-            CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
-        AddCollaboratorRequest addCollaboratorRequest =
-            CollaboratorTest.addCollaboratorRequestProjectInterceptor(
-                project, CollaboratorType.READ_WRITE, authClientInterceptor);
-        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-        LOGGER.info("\n Collaborator1 added successfully \n");
+        // Create two collaborator for above project
+        // For Collaborator1
+        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          AddCollaboratorRequest addCollaboratorRequest =
+              CollaboratorTest.addCollaboratorRequestProjectInterceptor(
+                  project, CollaboratorType.READ_WRITE, authClientInterceptor);
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          LOGGER.info("\n Collaborator1 added successfully \n");
+        }
+      } finally {
+        if (project != null) {
+          // Delete all data related to project
+          DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+          DeleteProject.Response deleteProjectResponse =
+              projectServiceStub.deleteProject(deleteProject);
+          LOGGER.info("Project deleted successfully");
+          LOGGER.info(deleteProjectResponse.toString());
+          assertTrue(deleteProjectResponse.getStatus());
+        }
       }
-
-      // Delete all data related to project
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
 
       // Delete entities by cron job
       // 3 calls to ensure all P, E and ER are deleted.
@@ -2823,9 +2433,11 @@ public class ProjectTest {
       try {
         GetExperimentRunsInProject getExperimentRuns =
             GetExperimentRunsInProject.newBuilder().setProjectId(project.getId()).build();
-        experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
+        GetExperimentRunsInProject.Response runResponse =
+            experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
         if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-          fail();
+          assertEquals(0, runResponse.getExperimentRunsCount());
+          assertEquals(0, runResponse.getTotalRecords());
         }
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
@@ -2837,8 +2449,7 @@ public class ProjectTest {
           GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
       GetComments.Response getCommentsResponse;
       try {
-        getCommentsResponse =
-            commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+        commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
         if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
           fail();
         }
@@ -2857,12 +2468,10 @@ public class ProjectTest {
 
       // Start cross-checking for project collaborator
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-        CollaboratorServiceBlockingStub collaboratorServiceStub =
-            CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
         GetCollaborator getCollaboratorRequest =
             GetCollaborator.newBuilder().setEntityId(project.getId()).build();
         try {
-          collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
+          collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
           fail();
         } catch (StatusRuntimeException e) {
           checkEqualsAssert(e);
@@ -2870,97 +2479,100 @@ public class ProjectTest {
       }
 
       List<String> projectIds = new ArrayList<>();
-      for (int count = 0; count < 5; count++) {
-        // Create project
-        createProjectRequest = getCreateProjectRequest("project_ypcdt" + count);
-        createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-        projectIds.add(createProjectResponse.getProject().getId());
-        project = createProjectResponse.getProject();
-        LOGGER.info("\n Project created successfully \n");
+      try {
+        for (int count = 0; count < 5; count++) {
+          // Create project
+          CreateProject createProjectRequest =
+              getCreateProjectRequest("project-" + new Date().getTime() + "-" + count);
+          CreateProject.Response createProjectResponse =
+              projectServiceStub.createProject(createProjectRequest);
+          projectIds.add(createProjectResponse.getProject().getId());
+          project = createProjectResponse.getProject();
+          LOGGER.info("\n Project created successfully \n");
 
-        // Create two experiment of above project
-        request =
-            experimentTest.getCreateExperimentRequest(project.getId(), "Experiment1_" + count);
-        response = experimentServiceStub.createExperiment(request);
-        experiment1 = response.getExperiment();
-        LOGGER.info("\n Experiment1 created successfully \n");
-        request =
-            experimentTest.getCreateExperimentRequest(project.getId(), "Experiment2_" + count);
-        response = experimentServiceStub.createExperiment(request);
-        experiment2 = response.getExperiment();
-        LOGGER.info("\n Experiment2 created successfully \n");
+          // Create two experiment of above project
+          CreateExperiment request =
+              ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment1_" + count);
+          CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
+          Experiment experiment1 = response.getExperiment();
+          LOGGER.info("\n Experiment1 created successfully \n");
+          request =
+              ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment2_" + count);
+          response = experimentServiceStub.createExperiment(request);
+          Experiment experiment2 = response.getExperiment();
+          LOGGER.info("\n Experiment2 created successfully \n");
 
-        // Create four ExperimentRun of above two experiment, each experiment has two experimentRun
-        // For ExperiemntRun of Experiment1
-        createExperimentRunRequest =
-            experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment1.getId(), "ExperiemntRun1_" + count);
-        createExperimentRunResponse =
-            experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-        experimentRun1 = createExperimentRunResponse.getExperimentRun();
-        LOGGER.info("\n ExperimentRun1 created successfully \n");
-        createExperimentRunRequest =
-            experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment1.getId(), "ExperiemntRun2_" + count);
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-        LOGGER.info("\n ExperimentRun2 created successfully \n");
+          // Create four ExperimentRun of above two experiment, each experiment has two
+          // experimentRun
+          // For ExperiemntRun of Experiment1
+          CreateExperimentRun createExperimentRunRequest =
+              experimentRunTest.getCreateExperimentRunRequest(
+                  project.getId(), experiment1.getId(), "ExperiemntRun1_" + count);
+          CreateExperimentRun.Response createExperimentRunResponse =
+              experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+          experimentRun1 = createExperimentRunResponse.getExperimentRun();
+          LOGGER.info("\n ExperimentRun1 created successfully \n");
+          createExperimentRunRequest =
+              experimentRunTest.getCreateExperimentRunRequest(
+                  project.getId(), experiment1.getId(), "ExperiemntRun2_" + count);
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+          LOGGER.info("\n ExperimentRun2 created successfully \n");
 
-        // For ExperiemntRun of Experiment2
-        createExperimentRunRequest =
-            experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment2.getId(), "ExperiemntRun3_" + count);
-        createExperimentRunResponse =
-            experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-        experimentRun3 = createExperimentRunResponse.getExperimentRun();
-        LOGGER.info("\n ExperimentRun3 created successfully \n");
-        createExperimentRunRequest =
-            experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment2.getId(), "ExperimentRun4_" + count);
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-        LOGGER.info("\n ExperimentRun4 created successfully \n");
+          // For ExperiemntRun of Experiment2
+          createExperimentRunRequest =
+              experimentRunTest.getCreateExperimentRunRequest(
+                  project.getId(), experiment2.getId(), "ExperiemntRun3_" + count);
+          createExperimentRunResponse =
+              experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+          experimentRun3 = createExperimentRunResponse.getExperimentRun();
+          LOGGER.info("\n ExperimentRun3 created successfully \n");
+          createExperimentRunRequest =
+              experimentRunTest.getCreateExperimentRunRequest(
+                  project.getId(), experiment2.getId(), "ExperimentRun4_" + count);
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+          LOGGER.info("\n ExperimentRun4 created successfully \n");
 
-        // Create comment for above experimentRun1 & experimentRun3
-        // comment for experiment1
-        addCommentRequest =
-            AddComment.newBuilder()
-                .setEntityId(experimentRun1.getId())
-                .setMessage(
-                    "Hello, this project is intreasting."
-                        + Calendar.getInstance().getTimeInMillis())
-                .build();
-        commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
-        LOGGER.info("\n Comment added successfully for ExperimentRun1 \n");
-        // comment for experimentRun3
-        addCommentRequest =
-            AddComment.newBuilder()
-                .setEntityId(experimentRun3.getId())
-                .setMessage(
-                    "Hello, this project is intreasting."
-                        + Calendar.getInstance().getTimeInMillis())
-                .build();
-        commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
-        LOGGER.info("\n Comment added successfully for ExperimentRun3 \n");
+          // Create comment for above experimentRun1 & experimentRun3
+          // comment for experiment1
+          AddComment addCommentRequest =
+              AddComment.newBuilder()
+                  .setEntityId(experimentRun1.getId())
+                  .setMessage(
+                      "Hello, this project is intreasting."
+                          + Calendar.getInstance().getTimeInMillis())
+                  .build();
+          commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
+          LOGGER.info("\n Comment added successfully for ExperimentRun1 \n");
+          // comment for experimentRun3
+          addCommentRequest =
+              AddComment.newBuilder()
+                  .setEntityId(experimentRun3.getId())
+                  .setMessage(
+                      "Hello, this project is intreasting."
+                          + Calendar.getInstance().getTimeInMillis())
+                  .build();
+          commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
+          LOGGER.info("\n Comment added successfully for ExperimentRun3 \n");
 
-        // Create two collaborator for above project
-        // For Collaborator1
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-          CollaboratorServiceBlockingStub collaboratorServiceStub =
-              CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
-          AddCollaboratorRequest addCollaboratorRequest =
-              CollaboratorTest.addCollaboratorRequestProjectInterceptor(
-                  project, CollaboratorType.READ_WRITE, authClientInterceptor);
-          collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-          LOGGER.info("\n Collaborator1 added successfully \n");
+          // Create two collaborator for above project
+          // For Collaborator1
+          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+            AddCollaboratorRequest addCollaboratorRequest =
+                CollaboratorTest.addCollaboratorRequestProjectInterceptor(
+                    project, CollaboratorType.READ_WRITE, authClientInterceptor);
+            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+            LOGGER.info("\n Collaborator1 added successfully \n");
+          }
         }
+      } finally {
+        // Delete all data related to project
+        DeleteProjects deleteProjects = DeleteProjects.newBuilder().addAllIds(projectIds).build();
+        DeleteProjects.Response deleteProjectsResponse =
+            projectServiceStub.deleteProjects(deleteProjects);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectsResponse.toString());
+        assertTrue(deleteProjectsResponse.getStatus());
       }
-
-      // Delete all data related to project
-      DeleteProjects deleteProjects = DeleteProjects.newBuilder().addAllIds(projectIds).build();
-      DeleteProjects.Response deleteProjectsResponse =
-          projectServiceStub.deleteProjects(deleteProjects);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectsResponse.toString());
-      assertTrue(deleteProjectsResponse.getStatus());
 
       // Delete entities by cron job
       deleteEntitiesCron.run();
@@ -3007,8 +2619,7 @@ public class ProjectTest {
         // For experimentRun1
         getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
         try {
-          getCommentsResponse =
-              commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+          commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
           if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
             fail();
           }
@@ -3019,8 +2630,7 @@ public class ProjectTest {
         // For experimentRun3
         getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
         try {
-          getCommentsResponse =
-              commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+          commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
           if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
             fail();
           }
@@ -3033,10 +2643,8 @@ public class ProjectTest {
           GetCollaborator getCollaboratorRequest =
               GetCollaborator.newBuilder().setEntityId(project.getId()).build();
           try {
-            CollaboratorServiceBlockingStub collaboratorServiceStub =
-                CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
             GetCollaborator.Response getCollaboratorResponse =
-                collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
+                collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
             assertTrue(getCollaboratorResponse.getSharedUsersList().isEmpty());
             fail();
           } catch (StatusRuntimeException e) {
@@ -3058,11 +2666,13 @@ public class ProjectTest {
   public void getProjectsByPagination() {
     LOGGER.info("Get Project by pagination test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    GetProjects getProjects = GetProjects.newBuilder().build();
+    GetProjects.Response response = projectServiceStub.getProjects(getProjects);
+    long alreadyExistsProjCount = response.getTotalRecords();
 
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest("project_1");
+    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -3074,7 +2684,7 @@ public class ProjectTest {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest("project_2");
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -3085,7 +2695,7 @@ public class ProjectTest {
         project2.getName());
 
     // Create project3
-    createProjectRequest = getCreateProjectRequest("project_3");
+    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project3 = createProjectResponse.getProject();
     projectsMap.put(project3.getId(), project3);
@@ -3095,24 +2705,23 @@ public class ProjectTest {
         createProjectRequest.getName(),
         project3.getName());
 
-    GetProjects getProjects = GetProjects.newBuilder().build();
-    GetProjects.Response response = projectServiceStub.getProjects(getProjects);
-    LOGGER.info("GetProjects Count : " + response.getProjectsCount());
-    LOGGER.info("Response List : " + response.getProjectsList());
-    assertEquals(
-        "Projects count not match with expected projects count",
-        projectsMap.size(),
-        response.getProjectsList().size());
-    assertEquals(
-        "Projects count not match with expected projects count",
-        projectsMap.size(),
-        response.getTotalRecords());
-
+    getProjects = GetProjects.newBuilder().build();
+    response = projectServiceStub.getProjects(getProjects);
+    List<Project> responseList = new ArrayList<>();
     for (Project project : response.getProjectsList()) {
-      if (projectsMap.get(project.getId()) == null) {
-        fail("Project not found in the expected project list");
+      if (projectsMap.containsKey(project.getId())) {
+        responseList.add(project);
       }
     }
+    LOGGER.info("GetProjects Count : " + responseList.size());
+    assertEquals(
+        "Projects count not match with expected projects count",
+        projectsMap.size(),
+        responseList.size());
+    assertEquals(
+        "Projects count not match with expected projects count",
+        projectsMap.size(),
+        response.getTotalRecords() - alreadyExistsProjCount);
 
     int pageLimit = 1;
     boolean isExpectedResultFound = false;
@@ -3126,17 +2735,25 @@ public class ProjectTest {
               .build();
 
       GetProjects.Response projectResponse = projectServiceStub.getProjects(getProjects);
+      responseList = new ArrayList<>();
+      for (Project project : projectResponse.getProjectsList()) {
+        if (projectsMap.containsKey(project.getId())) {
+          responseList.add(project);
+        }
+      }
+      if (responseList.size() == 0) {
+        continue;
+      }
 
       assertEquals(
           "Total records count not matched with expected records count",
           3,
-          projectResponse.getTotalRecords());
+          projectResponse.getTotalRecords() - alreadyExistsProjCount);
 
-      if (projectResponse.getProjectsList() != null
-          && projectResponse.getProjectsList().size() > 0) {
+      if (responseList.size() > 0) {
         isExpectedResultFound = true;
-        LOGGER.info("GetProjects Response : " + projectResponse.getProjectsCount());
-        for (Project project : projectResponse.getProjectsList()) {
+        LOGGER.info("GetProjects Response : " + (responseList.size() - alreadyExistsProjCount));
+        for (Project project : responseList) {
           assertEquals(
               "Project not match with expected Project",
               projectsMap.get(project.getId()).getName(),
@@ -3146,12 +2763,12 @@ public class ProjectTest {
         if (pageNumber == 1) {
           assertEquals(
               "Project not match with expected Project",
-              projectsMap.get(projectResponse.getProjects(0).getId()),
+              projectsMap.get(responseList.get(0).getId()),
               project3);
         } else if (pageNumber == 3) {
           assertEquals(
               "Project not match with expected Project",
-              projectsMap.get(projectResponse.getProjects(0).getId()),
+              projectsMap.get(responseList.get(0).getId()),
               project1);
         }
 
@@ -3182,41 +2799,21 @@ public class ProjectTest {
   public void logProjectCodeVersionTest() {
     LOGGER.info("Log Project code version test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt_abc");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    LogProjectCodeVersion logProjectCodeVersionRequest =
-        LogProjectCodeVersion.newBuilder()
-            .setId(project.getId())
-            .setCodeVersion(
-                CodeVersion.newBuilder()
-                    .setCodeArchive(
-                        Artifact.newBuilder()
-                            .setKey("code_version_image")
-                            .setPath("https://xyz_path_string.com/image.png")
-                            .setArtifactType(ArtifactType.CODE)
-                            .build())
-                    .build())
-            .build();
-    LogProjectCodeVersion.Response logProjectCodeVersionResponse =
-        projectServiceStub.logProjectCodeVersion(logProjectCodeVersionRequest);
-    CodeVersion codeVersion = logProjectCodeVersionResponse.getProject().getCodeVersionSnapshot();
-    assertEquals(
-        "Project codeVersion not match with expected project codeVersion",
-        logProjectCodeVersionRequest.getCodeVersion(),
-        codeVersion);
-
+    Project project = null;
     try {
-      logProjectCodeVersionRequest =
+      // Create project
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
+      CreateProject.Response createProjectResponse =
+          projectServiceStub.createProject(createProjectRequest);
+      project = createProjectResponse.getProject();
+      LOGGER.info("Project created successfully");
+      assertEquals(
+          "Project name not match with expected project name",
+          createProjectRequest.getName(),
+          project.getName());
+
+      LogProjectCodeVersion logProjectCodeVersionRequest =
           LogProjectCodeVersion.newBuilder()
               .setId(project.getId())
               .setCodeVersion(
@@ -3229,20 +2826,48 @@ public class ProjectTest {
                               .build())
                       .build())
               .build();
-      logProjectCodeVersionResponse =
+      LogProjectCodeVersion.Response logProjectCodeVersionResponse =
           projectServiceStub.logProjectCodeVersion(logProjectCodeVersionRequest);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
-    }
+      CodeVersion codeVersion = logProjectCodeVersionResponse.getProject().getCodeVersionSnapshot();
+      assertEquals(
+          "Project codeVersion not match with expected project codeVersion",
+          logProjectCodeVersionRequest.getCodeVersion(),
+          codeVersion);
+      project = logProjectCodeVersionResponse.getProject();
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+      try {
+        logProjectCodeVersionRequest =
+            LogProjectCodeVersion.newBuilder()
+                .setId(project.getId())
+                .setCodeVersion(
+                    CodeVersion.newBuilder()
+                        .setCodeArchive(
+                            Artifact.newBuilder()
+                                .setKey("code_version_image")
+                                .setPath("https://xyz_path_string.com/image.png")
+                                .setArtifactType(ArtifactType.CODE)
+                                .build())
+                        .build())
+                .build();
+        logProjectCodeVersionResponse =
+            projectServiceStub.logProjectCodeVersion(logProjectCodeVersionRequest);
+        fail();
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.warn(
+            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
+        assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+      }
+    } finally {
+      if (project != null) {
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            projectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
+      }
+    }
 
     LOGGER.info("Log Project code version test stop................................");
   }
@@ -3250,19 +2875,6 @@ public class ProjectTest {
   @Test
   public void getProjectCodeVersionTest() {
     LOGGER.info("Get Project code version test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt_abc");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
     LogProjectCodeVersion logProjectCodeVersionRequest =
         LogProjectCodeVersion.newBuilder()
             .setId(project.getId())
@@ -3283,6 +2895,8 @@ public class ProjectTest {
         "Project codeVersion not match with expected project codeVersion",
         logProjectCodeVersionRequest.getCodeVersion(),
         project.getCodeVersionSnapshot());
+    project = logProjectCodeVersionResponse.getProject();
+    projectMap.put(project.getId(), project);
 
     GetProjectCodeVersion getProjectCodeVersionRequest =
         GetProjectCodeVersion.newBuilder().setId(project.getId()).build();
@@ -3294,31 +2908,12 @@ public class ProjectTest {
         project.getCodeVersionSnapshot(),
         codeVersion);
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get Project code version test stop................................");
   }
 
   @Test
   public void logArtifactsTest() {
     LOGGER.info(" Log Artifacts in Project test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     List<Artifact> artifacts = new ArrayList<>();
     Artifact artifact1 =
@@ -3352,12 +2947,7 @@ public class ProjectTest {
         project.getDateUpdated(),
         response.getProject().getDateUpdated());
     project = response.getProject();
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    projectMap.put(project.getId(), project);
 
     LOGGER.info("Log Artifacts in Project tags test stop................................");
   }
@@ -3365,18 +2955,6 @@ public class ProjectTest {
   @Test
   public void logArtifactsNegativeTest() {
     LOGGER.info(" Log Artifacts in Project Negative test start................................");
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     List<Artifact> artifacts = new ArrayList<>();
     Artifact artifact1 =
@@ -3428,31 +3006,12 @@ public class ProjectTest {
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     }
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Log Artifacts in Project tags Negative test stop................................");
   }
 
   @Test
   public void getArtifactsTest() {
     LOGGER.info("Get Artifacts from Project test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
 
     GetArtifacts getArtifactsRequest = GetArtifacts.newBuilder().setId(project.getId()).build();
 
@@ -3464,20 +3023,12 @@ public class ProjectTest {
         project.getArtifactsList(),
         response.getArtifactsList());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Get Artifacts from Project tags test stop................................");
   }
 
   @Test
   public void n_getArtifactsNegativeTest() {
     LOGGER.info("Get Artifacts from Project Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
 
     GetArtifacts getArtifactsRequest = GetArtifacts.newBuilder().build();
 
@@ -3507,19 +3058,6 @@ public class ProjectTest {
   public void deleteProjectArtifacts() {
     LOGGER.info("Delete Project Artifacts test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_ypcdt1");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
     List<Artifact> artifacts = project.getArtifactsList();
     LOGGER.info("Artifacts size : " + artifacts.size());
     if (artifacts.isEmpty()) {
@@ -3540,12 +3078,8 @@ public class ProjectTest {
         "Project date_updated field not update on database",
         project.getDateUpdated(),
         response.getProject().getDateUpdated());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    project = response.getProject();
+    projectMap.put(project.getId(), project);
 
     LOGGER.info("Delete Project Artifacts test stop................................");
   }
@@ -3558,12 +3092,6 @@ public class ProjectTest {
       Assert.assertTrue(true);
       return;
     }
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub =
-        OrganizationServiceGrpc.newBlockingStub(authServiceChannelClient1);
-    RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub =
-        RoleServiceGrpc.newBlockingStub(authServiceChannelClient1);
 
     String orgName = "Org-test-verta";
     SetOrganization setOrganization =
@@ -3595,24 +3123,31 @@ public class ProjectTest {
         orgRoleName,
         getRoleByNameResponse.getRole().getName());
 
-    // Create project
-    CreateProject createProjectRequest = getCreateProjectRequest("project_n_sprt");
-    createProjectRequest =
-        createProjectRequest
-            .toBuilder()
-            .setWorkspaceName(organization.getName())
-            .setProjectVisibility(ProjectVisibility.ORG_SCOPED_PUBLIC)
-            .build();
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    Project orgProject = null;
+    try {
+      // Create project
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
+      createProjectRequest =
+          createProjectRequest
+              .toBuilder()
+              .setWorkspaceName(organization.getName())
+              .setProjectVisibility(ProjectVisibility.ORG_SCOPED_PUBLIC)
+              .build();
+      CreateProject.Response createProjectResponse =
+          projectServiceStub.createProject(createProjectRequest);
+      orgProject = createProjectResponse.getProject();
+      LOGGER.info("Project created successfully");
+    } finally {
+      if (orgProject != null) {
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(orgProject.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            projectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
+      }
+    }
 
     DeleteOrganization.Response deleteOrganization =
         organizationServiceBlockingStub.deleteOrganization(

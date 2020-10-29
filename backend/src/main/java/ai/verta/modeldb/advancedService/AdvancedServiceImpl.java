@@ -204,7 +204,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               selfAllowedActions.get(project.getId()).getActionsList());
         }
       } else {
-        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, project.getOwner());
+        LOGGER.info(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, project.getOwner());
       }
       hydratedProjects.add(hydratedProjectBuilder.build());
     }
@@ -518,7 +518,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         // Add user specific actions
         hydratedExperimentRunBuilder.addAllAllowedActions(actionList);
       } else {
-        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experimentRun.getOwner());
+        LOGGER.info(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experimentRun.getOwner());
       }
       // Prepare experiment for hydratedExperimentRun
       Experiment hydratedExperiment =
@@ -797,7 +797,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         }
         hydratedExperimentBuilder.addAllAllowedActions(actionList);
       } else {
-        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experiment.getOwner());
+        LOGGER.info(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experiment.getOwner());
       }
       hydratedExperiments.add(hydratedExperimentBuilder.build());
     }
@@ -947,7 +947,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       if (dataset.getOwner() != null && userInfoMap.get(dataset.getOwner()) != null) {
         hydratedDatasetBuilder.setOwnerUserInfo(userInfoMap.get(dataset.getOwner()));
       } else {
-        LOGGER.warn(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, dataset.getOwner());
+        LOGGER.info(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, dataset.getOwner());
       }
       if (selfAllowedActions != null
           && selfAllowedActions.size() > 0
