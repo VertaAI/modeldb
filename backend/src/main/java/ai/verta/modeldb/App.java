@@ -65,6 +65,7 @@ import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -154,6 +155,12 @@ public class App implements ApplicationContextAware {
   private static TracingServerInterceptor tracingInterceptor;
   private boolean populateConnectionsBasedOnPrivileges = false;
   private RoleService roleService;
+
+  // Trial flags
+  private Boolean trialEnable = false;
+  private Integer maxArtifactSizeMB;
+  private Integer maxArtifactPerRun;
+  private Integer maxExperimentRunPerWorkspace;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -354,6 +361,20 @@ public class App implements ApplicationContextAware {
         app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
         LOGGER.trace("service user devKey found");
       }
+    }
+
+    Map<String, Object> trialMap =
+        (Map<String, Object>)
+            propertiesMap.getOrDefault(ModelDBConstants.TRIAL, Collections.emptyMap());
+    Boolean trialEnabled = (Boolean) trialMap.getOrDefault(ModelDBConstants.ENABLE, false);
+    if (trialEnabled) {
+      Map<String, Object> restrictionsMap =
+          (Map<String, Object>)
+              trialMap.getOrDefault(ModelDBConstants.RESTRICTIONS, Collections.emptyMap());
+      app.maxArtifactSizeMB = (Integer) restrictionsMap.get(ModelDBConstants.MAX_ARTIFACT_SIZE_MB);
+      app.maxArtifactPerRun = (Integer) restrictionsMap.get(ModelDBConstants.MAX_ARTIFACT_PER_RUN);
+      app.maxExperimentRunPerWorkspace =
+          (Integer) restrictionsMap.get(ModelDBConstants.MAX_EXPERIMENT_RUN_PER_WORKSPACE);
     }
 
     app.populateConnectionsBasedOnPrivileges =
@@ -883,5 +904,21 @@ public class App implements ApplicationContextAware {
 
   public boolean isPopulateConnectionsBasedOnPrivileges() {
     return populateConnectionsBasedOnPrivileges;
+  }
+
+  public Boolean getTrialEnable() {
+    return trialEnable;
+  }
+
+  public Integer getMaxArtifactSizeMB() {
+    return maxArtifactSizeMB;
+  }
+
+  public Integer getMaxArtifactPerRun() {
+    return maxArtifactPerRun;
+  }
+
+  public Integer getMaxExperimentRunPerWorkspace() {
+    return maxExperimentRunPerWorkspace;
   }
 }
