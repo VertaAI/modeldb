@@ -96,18 +96,24 @@ class Commit(
         // do not update the branch's head right away (in case uploading data fails)
 
         // upload the artifacts given by blobsToVersion map then clean up
-        val uploadAttempt: Try[Unit] = newCommit.map(newCommit => {
-          blobsToVersion
+        val uploadAttempt: Try[Unit] = newCommit.flatMap(newCommit => {
+          val attempts: Iterable[Try[Unit]] = blobsToVersion
             .mapValues(_.getAllMetadata) // Map[String, Iterable[FileMetadata]]
-            .map(pair => pair._2.map(metadata => newCommit.uploadArtifact(pair._1, metadata.path, new File(metadata.localPath.get))))
-        }).flatMap(_ => Try(blobsToVersion.values.map(_.cleanUpUploadedComponents()).map(_.get)))
+            .map(pair => pair._2.map(metadata => newCommit.uploadArtifact(pair._1, metadata.path, new File(metadata.localPath.get)))) // Iterable[Iterable[Try[Unit]]]
+            .flatten
 
-        uploadAttempt.flatMap(_ =>
-          if (commitBranch.isDefined)
-            newCommit.flatMap(_.newBranch(commitBranch.get))
-          else
-            newCommit
-        ) // if uploading fails, return the failure instead
+            Try(attempts.foreach(_.get)) // propagate the failure out. Try[Unit]
+        })
+
+        // needs to cleanup, regardless of success or failure of upload
+        val cleanupAttempt = Try(blobsToVersion.values.map(_.cleanUpUploadedComponents()).foreach(_.get)) // Try[Unit]
+
+        for (
+          // if either upload or cleanup fails, return that failure instead:
+          _ <- uploadAttempt;
+          _ <- cleanupAttempt;
+          returnedCommit <- if (commitBranch.isDefined) newCommit.flatMap(_.newBranch(commitBranch.get)) else newCommit
+        ) yield returnedCommit
       })
   }
 
