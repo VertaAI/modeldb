@@ -5,6 +5,9 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import io.grpc.protobuf.StatusProto;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -39,14 +42,22 @@ public class NFSController {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBConstants.STORE_ARTIFACT_ENDPOINT)) {
       InputStream inputStream = requestEntity.getInputStream();
-      String fileName = nfsService.storeFile(artifactPath, inputStream);
+      String fileName = nfsService.storeFile(artifactPath, inputStream, requestEntity);
       LOGGER.trace("storeArtifact - file name : {}", fileName);
       LOGGER.debug("storeArtifact returned");
       return new UploadFileResponse(fileName, null, null, -1L, null);
-    } catch (IOException | ModelDBException e) {
+    } catch (ModelDBException e) {
+      LOGGER.info(e.getMessage(), e);
+      ErrorCountResource.inc(e);
+      Status status =
+          Status.newBuilder().setCode(e.getCode().value()).setMessage(e.getMessage()).build();
+      throw StatusProto.toStatusRuntimeException(status);
+    } catch (Exception e) {
       LOGGER.warn(e.getMessage(), e);
       ErrorCountResource.inc(e);
-      throw e;
+      Status status =
+          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
+      throw StatusProto.toStatusRuntimeException(status);
     }
   }
 

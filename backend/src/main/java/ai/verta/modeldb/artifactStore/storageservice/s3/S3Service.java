@@ -207,6 +207,9 @@ public class S3Service implements ArtifactStoreService {
         throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
       }
 
+      // Validate Artifact size for trial case
+      validateArtifactSizeForTrial(app, request.getContentLength());
+
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
         UploadPartRequest uploadRequest =
             new UploadPartRequest()
