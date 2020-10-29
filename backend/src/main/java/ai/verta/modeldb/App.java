@@ -157,7 +157,7 @@ public class App implements ApplicationContextAware {
   private RoleService roleService;
 
   // Trial flags
-  private Boolean trialEnable = false;
+  private Boolean trialEnabled = false;
   private Integer maxArtifactSizeMB;
   private Integer maxArtifactPerRun;
   private Integer maxExperimentRunPerWorkspace;
@@ -366,8 +366,8 @@ public class App implements ApplicationContextAware {
     Map<String, Object> trialMap =
         (Map<String, Object>)
             propertiesMap.getOrDefault(ModelDBConstants.TRIAL, Collections.emptyMap());
-    Boolean trialEnabled = (Boolean) trialMap.getOrDefault(ModelDBConstants.ENABLE, false);
-    if (trialEnabled) {
+    app.trialEnabled = (Boolean) trialMap.getOrDefault(ModelDBConstants.ENABLE, false);
+    if (app.trialEnabled) {
       Map<String, Object> restrictionsMap =
           (Map<String, Object>)
               trialMap.getOrDefault(ModelDBConstants.RESTRICTIONS, Collections.emptyMap());
@@ -906,8 +906,8 @@ public class App implements ApplicationContextAware {
     return populateConnectionsBasedOnPrivileges;
   }
 
-  public Boolean getTrialEnable() {
-    return trialEnable;
+  public Boolean getTrialEnabled() {
+    return trialEnabled;
   }
 
   public Integer getMaxArtifactSizeMB() {
