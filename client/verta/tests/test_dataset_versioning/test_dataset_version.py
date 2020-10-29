@@ -15,6 +15,17 @@ class TestDatasetVersion:
         assert dataset_version2.id == client._get_dataset_version2(id=dataset_version2.id).id
         assert dataset_version2.id == dataset.get_latest_version().id
 
+    def test_get_latest_printing(self, client, created_datasets, capsys):
+        name = verta._internal_utils._utils.generate_default_name()
+        dataset = client._set_dataset2(name)
+        created_datasets.append(dataset)
+
+        dataset_version = dataset.create_path_version(paths=["modelapi_hypothesis/"])
+        dataset.get_latest_version()
+
+        captured = capsys.readouterr()
+        assert "got existing dataset version: {}".format(dataset_version.id) in captured.out
+
     def test_create_get_s3(self, client, created_datasets):
         pytest.importorskip("boto3")
 

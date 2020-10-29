@@ -269,6 +269,16 @@ class TestClientDatasetVersionFunctions:
         version = dataset.get_latest_version(ascending=True)
         assert version.id == version1.id
 
+    def test_get_latest_printing(self, client, created_datasets, capsys):
+        dataset = client.set_dataset(type="local")
+        created_datasets.append(dataset)
+
+        version = dataset.create_version(path=__file__)
+        dataset.get_latest_version(ascending=True)
+
+        captured = capsys.readouterr()
+        assert "got existing dataset version: {}".format(version.id) in captured.out
+
     def test_dataset_version_info(self, client, created_datasets):
         botocore = pytest.importorskip("botocore")
         try:
