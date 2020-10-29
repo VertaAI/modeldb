@@ -388,6 +388,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      validateMaxArtifactsForTrial(experimentRun.getArtifactsCount(), 0);
+
       if (experimentRun.getDatasetsCount() > 0 && app.isPopulateConnectionsBasedOnPrivileges()) {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
       }
@@ -1139,7 +1141,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logArtifacts(String experimentRunId, List<Artifact> newArtifacts)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
@@ -1169,6 +1171,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
+      validateMaxArtifactsForTrial(newArtifacts.size(), existingArtifacts.size());
+
       List<ArtifactEntity> newArtifactList =
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
               experimentRunEntityObj, ModelDBConstants.ARTIFACTS, newArtifacts);
@@ -1183,6 +1187,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         logArtifacts(experimentRunId, newArtifacts);
       } else {
         throw ex;
+      }
+    }
+  }
+
+  public void validateMaxArtifactsForTrial(int newArtifactsSize, int existingArtifactsSize)
+      throws ModelDBException {
+    if (app.getTrialEnabled()) {
+      if (existingArtifactsSize + newArtifactsSize > app.getMaxArtifactPerRun()) {
+        throw new ModelDBException(
+            "Maximum " + app.getMaxArtifactPerRun() + " artifacts are allow in the experimentRun",
+            Code.FAILED_PRECONDITION);
       }
     }
   }

@@ -222,7 +222,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   void logArtifacts(String experimentRunId, List<Artifact> artifacts)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * Return List<Artifact> artifacts from ExperimentRun entity.
