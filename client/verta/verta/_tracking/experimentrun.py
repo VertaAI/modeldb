@@ -281,7 +281,7 @@ class ExperimentRun(_DeployableEntity):
         key : str
         artifact_stream : file-like
         start_part_num : int, default 1
-            If using multipart upload, number of bytes to upload per part.
+            If using multipart upload, what part number to start uploading with.
 
         """
         # TODO: add to Client config
