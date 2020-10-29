@@ -12,7 +12,6 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -21,18 +20,16 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -43,21 +40,28 @@ import org.junit.runners.MethodSorters;
 public class CommentTest {
 
   private static final Logger LOGGER = LogManager.getLogger(CommentTest.class);
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
-
-  private ManagedChannel channel = null;
   private static String serverName = InProcessServerBuilder.generateName();
   private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder channelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-  private static App app;
   private static DeleteEntitiesCron deleteEntitiesCron;
+
+  // Project Entities
+  private static Project project;
+
+  // Experiment Entities
+  private static Experiment experiment;
+
+  // ExperimentRun Entities
+  private static ExperimentRun experimentRun;
+  private static List<Comment> commentList;
+
+  // all service stubs
+  private static ProjectServiceBlockingStub projectServiceStub;
+  private static ExperimentServiceBlockingStub experimentServiceStub;
+  private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
+  private static CommentServiceBlockingStub commentServiceBlockingStub;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -68,7 +72,7 @@ public class CommentTest {
     Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
     Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
 
-    app = App.getInstance();
+    App app = App.getInstance();
     AuthService authService = new PublicAuthServiceUtils();
     RoleService roleService = new PublicRoleServiceUtils(authService);
 
@@ -91,86 +95,119 @@ public class CommentTest {
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
+      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(testPropMap);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
     }
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+
+    serverBuilder.build().start();
+    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
+    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 1000);
+
+    // Create all service blocking stub
+    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
+    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
+    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
+    commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
+
+    // Create all entities
+    commentList = new ArrayList<>();
+    createEntities();
   }
 
   @AfterClass
   public static void removeServerAndService() {
+    App.initiateShutdown(0);
+
+    removeEntities();
+
     // Delete entities by cron job
     deleteEntitiesCron.run();
-    App.initiateShutdown(0);
+
+    // shutdown test server
+    serverBuilder.build().shutdownNow();
   }
 
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
+  private static void createEntities() {
+    createProjectEntities();
+    createExperimentEntities();
+    createExperimentRunEntities();
   }
 
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
+  private static void removeEntities() {
+    DeleteExperimentRun deleteExperimentRun =
+        DeleteExperimentRun.newBuilder().setId(experimentRun.getId()).build();
+    DeleteExperimentRun.Response deleteExperimentRunResponse =
+        experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
+    assertTrue(deleteExperimentRunResponse.getStatus());
+
+    // ExperimentRun Entities
+    experimentRun = null;
+
+    DeleteExperiment deleteExperiment =
+        DeleteExperiment.newBuilder().setId(experiment.getId()).build();
+    DeleteExperiment.Response deleteExperimentResponse =
+        experimentServiceStub.deleteExperiment(deleteExperiment);
+    assertTrue(deleteExperimentResponse.getStatus());
+    experiment = null;
+
+    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project deleted successfully");
+    LOGGER.info(deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+    project = null;
+    commentList = new ArrayList<>();
   }
 
-  @Test
-  public void a_addExperimentRunCommentTest() {
-    LOGGER.info("Add ExperimentRun comment test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
-
-    // Create Project
+  private static void createProjectEntities() {
     ProjectTest projectTest = new ProjectTest();
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("project_e_aert");
+
+    // Create two project of above project
+    CreateProject createProjectRequest =
+        projectTest.getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
+    project = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
     assertEquals(
-        "Project name not match with expected project name",
+        "Project name not match with expected Project name",
         createProjectRequest.getName(),
         project.getName());
+  }
 
-    // Create Experiment
-    ExperimentTest experimentTest = new ExperimentTest();
+  private static void createExperimentEntities() {
+
+    // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "experiment_e_aertt");
+        ExperimentTest.getCreateExperimentRequest(
+            project.getId(), "Experiment-" + new Date().getTime());
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
+    experiment = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
     assertEquals(
         "Experiment name not match with expected Experiment name",
         createExperimentRequest.getName(),
         experiment.getName());
+  }
 
-    // Create Experiment Run
+  private static void createExperimentRunEntities() {
     CreateExperimentRun createExperimentRunRequest =
-        CreateExperimentRun.newBuilder()
-            .setProjectId(project.getId())
-            .setExperimentId(experiment.getId())
-            .setName("experimentRun_e_aertt")
-            .build();
+        ExperimentRunTest.getCreateExperimentRunRequest(
+            project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
+    experimentRun = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun created successfully");
     assertEquals(
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
+  }
 
+  @Test
+  public void a_addExperimentRunCommentTest() {
+    LOGGER.info("Add ExperimentRun comment test start................................");
     AddComment addComment =
         AddComment.newBuilder()
             .setEntityId(experimentRun.getId())
@@ -184,12 +221,7 @@ public class CommentTest {
         "Comment message not match with expected comment message",
         addComment.getMessage(),
         response.getComment().getMessage());
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
+    commentList.add(response.getComment());
 
     LOGGER.info("Add ExperimentRun comment test stop................................");
   }
@@ -197,8 +229,6 @@ public class CommentTest {
   @Test
   public void aa_addExperimentRunCommentNegativeTest() {
     LOGGER.info("Add ExperimentRun comment Negative test start................................");
-    CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
     AddComment addComment =
         AddComment.newBuilder()
             .setMessage(
@@ -220,55 +250,6 @@ public class CommentTest {
   public void b_updateExperimentRunCommentTest() {
     LOGGER.info("Update ExperimentRun comment test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
-
-    // Create Project
-    ProjectTest projectTest = new ProjectTest();
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("project_e_aert");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create Experiment
-    ExperimentTest experimentTest = new ExperimentTest();
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "experiment_e_aertt");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    // Create Experiment Run
-    CreateExperimentRun createExperimentRunRequest =
-        CreateExperimentRun.newBuilder()
-            .setProjectId(project.getId())
-            .setExperimentId(experiment.getId())
-            .setName("experimentRun_e_aertt")
-            .build();
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     AddComment addComment =
         AddComment.newBuilder()
             .setEntityId(experimentRun.getId())
@@ -283,6 +264,7 @@ public class CommentTest {
         "Comment message not match with expected comment message",
         addCommentResponse.getComment().getMessage(),
         addCommentResponse.getComment().getMessage());
+    commentList.add(addCommentResponse.getComment());
 
     GetComments getCommentsRequest =
         GetComments.newBuilder().setEntityId(experimentRun.getId()).build();
@@ -310,12 +292,6 @@ public class CommentTest {
     LOGGER.info("UpdateExperimentRunComment Response : \n" + response.getComment());
     assertEquals(newMessage, response.getComment().getMessage());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Update ExperimentRun comment test stop................................");
   }
 
@@ -323,8 +299,6 @@ public class CommentTest {
   public void bb_updateExperimentRunCommentNegativeTest() {
     LOGGER.info("Update ExperimentRun comment Negative test start................................");
 
-    CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
     String newMessage =
         "Hello, this ExperimentRun is awesome. I am interested to explore it. "
             + Calendar.getInstance().getTimeInMillis();
@@ -344,55 +318,6 @@ public class CommentTest {
   public void c_getExperimentRunCommentTest() {
     LOGGER.info("Get ExperimentRun comment test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
-
-    // Create Project
-    ProjectTest projectTest = new ProjectTest();
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("project_e_aert");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create Experiment
-    ExperimentTest experimentTest = new ExperimentTest();
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "experiment_e_aertt");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    // Create Experiment Run
-    CreateExperimentRun createExperimentRunRequest =
-        CreateExperimentRun.newBuilder()
-            .setProjectId(project.getId())
-            .setExperimentId(experiment.getId())
-            .setName("experimentRun_e_aertt")
-            .build();
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     AddComment addComment =
         AddComment.newBuilder()
             .setEntityId(experimentRun.getId())
@@ -408,23 +333,16 @@ public class CommentTest {
         addComment.getMessage(),
         addCommentResponse.getComment().getMessage());
     Comment expectedComment = addCommentResponse.getComment();
+    commentList.add(expectedComment);
 
     GetComments getCommentsRequest =
         GetComments.newBuilder().setEntityId(experimentRun.getId()).build();
     GetComments.Response response =
         commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
     LOGGER.info("getExperimentRunComment Response : \n" + response.getCommentsList());
-    assertEquals(
+    assertTrue(
         "Comment not match with expected comment",
-        expectedComment,
-        response.getCommentsList().get(0));
-
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
+        response.getCommentsList().contains(expectedComment));
     LOGGER.info("Get ExperimentRun comment test stop................................");
   }
 
@@ -433,8 +351,6 @@ public class CommentTest {
     LOGGER.info("Get ExperimentRun comment Negative test start................................");
 
     GetComments getCommentsRequest = GetComments.newBuilder().build();
-    CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
     try {
       commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
       fail();
@@ -449,56 +365,6 @@ public class CommentTest {
   @Test
   public void d_deleteExperimentRunCommentTest() {
     LOGGER.info("Delete ExperimentRun comment test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    ExperimentServiceBlockingStub experimentServiceStub =
-        ExperimentServiceGrpc.newBlockingStub(channel);
-    ExperimentRunServiceBlockingStub experimentRunServiceStub =
-        ExperimentRunServiceGrpc.newBlockingStub(channel);
-    CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
-
-    // Create Project
-    ProjectTest projectTest = new ProjectTest();
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("project_e_aert");
-    CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
-    Project project = createProjectResponse.getProject();
-    LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected project name",
-        createProjectRequest.getName(),
-        project.getName());
-
-    // Create Experiment
-    ExperimentTest experimentTest = new ExperimentTest();
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "experiment_e_aertt");
-    CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
-    Experiment experiment = createExperimentResponse.getExperiment();
-    LOGGER.info("Experiment created successfully");
-    assertEquals(
-        "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
-        experiment.getName());
-
-    // Create Experiment Run
-    CreateExperimentRun createExperimentRunRequest =
-        CreateExperimentRun.newBuilder()
-            .setProjectId(project.getId())
-            .setExperimentId(experiment.getId())
-            .setName("experimentRun_e_aertt")
-            .build();
-    CreateExperimentRun.Response createExperimentRunResponse =
-        experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-    ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
-    LOGGER.info("ExperimentRun created successfully");
-    assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
-        createExperimentRunRequest.getName(),
-        experimentRun.getName());
-
     AddComment addComment =
         AddComment.newBuilder()
             .setEntityId(experimentRun.getId())
@@ -513,6 +379,7 @@ public class CommentTest {
         "Comment message not match with expected comment message",
         addComment.getMessage(),
         addCommentResponse.getComment().getMessage());
+    commentList.add(addCommentResponse.getComment());
 
     GetComments getCommentsRequest =
         GetComments.newBuilder().setEntityId(experimentRun.getId()).build();
@@ -521,7 +388,7 @@ public class CommentTest {
     LOGGER.info("getExperimentRunComment Response : \n" + getCommentsResponse.getCommentsList());
     assertEquals(
         "ExperimentRun comments count not match with expected comments count",
-        1,
+        commentList.size(),
         getCommentsResponse.getCommentsCount());
 
     Comment comment = getCommentsResponse.getCommentsList().get(0);
@@ -537,20 +404,12 @@ public class CommentTest {
     LOGGER.info("deleteExperimentRunComment Response : \n" + response.getStatus());
     assertTrue(response.getStatus());
 
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
     LOGGER.info("Delete ExperimentRun comment test stop................................");
   }
 
   @Test
   public void dd_deleteExperimentRunCommentNegativeTest() {
     LOGGER.info("Delete ExperimentRun comment Negative test start................................");
-    CommentServiceBlockingStub commentServiceBlockingStub =
-        CommentServiceGrpc.newBlockingStub(channel);
     DeleteComment deleteComment = DeleteComment.newBuilder().build();
     try {
       commentServiceBlockingStub.deleteExperimentRunComment(deleteComment);
