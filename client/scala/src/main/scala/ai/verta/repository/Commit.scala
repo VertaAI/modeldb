@@ -625,7 +625,7 @@ class Commit(
               filepart.close()
             }
           }),
-          3, // number of upload attempts
+          7, // number of upload attempts
           f"Uploading part ${partNum} of component ${datasetComponentPath} of blob at ${blobPath} fails."
         )
     })
