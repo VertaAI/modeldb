@@ -127,6 +127,12 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public String generatePresignedUrl(String s3Key, String method, long partNumber, String uploadId)
       throws ModelDBException {
+
+    if (app.getTrialEnabled() && partNumber != 0) {
+      throw new ModelDBException(
+          "Multipart artifact upload not supported on the trial version", Code.FAILED_PRECONDITION);
+    }
+
     if (app.isS3presignedURLEnabled()) {
       return getS3PresignedUrl(s3Key, method, partNumber, uploadId);
     } else {
@@ -208,7 +214,7 @@ public class S3Service implements ArtifactStoreService {
       }
 
       // Validate Artifact size for trial case
-      validateArtifactSizeForTrial(app, request.getContentLength());
+      validateArtifactSizeForTrial(app, request.getContentLength(), partNumber);
 
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
         UploadPartRequest uploadRequest =
