@@ -1197,7 +1197,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (existingArtifactsSize + newArtifactsSize > app.getMaxArtifactPerRun()) {
         throw new ModelDBException(
             "Maximum " + app.getMaxArtifactPerRun() + " artifacts are allow in the experimentRun",
-            Code.FAILED_PRECONDITION);
+            Code.RESOURCE_EXHAUSTED);
       }
     }
   }
