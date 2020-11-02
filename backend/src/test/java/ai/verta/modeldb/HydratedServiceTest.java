@@ -1744,7 +1744,7 @@ public class HydratedServiceTest {
           } else if (count == 1) {
             assertEquals(
                 "ExperimentRun code version not match with expected experimentRun code version",
-                experiment2.getAttributesList(),
+                experiment4.getAttributesList(),
                 experiment.getAttributesList());
           }
           count++;
@@ -2371,7 +2371,7 @@ public class HydratedServiceTest {
         for (Project project : projectList) {
           Project expectedProject = projectsMap.get(project.getId());
           expectedProject =
-              expectedProject.toBuilder().setDateCreated(project.getDateUpdated()).build();
+              expectedProject.toBuilder().setDateUpdated(project.getDateUpdated()).build();
           projectsMap.put(expectedProject.getId(), expectedProject);
           assertEquals("Project not match with expected Project", expectedProject, project);
         }
