@@ -1736,17 +1736,10 @@ public class HydratedServiceTest {
               experimentMap.get(experiment.getId()),
               experiment);
 
-          if (count == 0) {
-            assertEquals(
-                "ExperimentRun code version not match with expected experimentRun code version",
-                experimentMap.get(experiment.getId()).getAttributesList(),
-                experiment.getAttributesList());
-          } else if (count == 1) {
-            assertEquals(
-                "ExperimentRun code version not match with expected experimentRun code version",
-                experiment4.getAttributesList(),
-                experiment.getAttributesList());
-          }
+          assertEquals(
+              "ExperimentRun code version not match with expected experimentRun code version",
+              experimentMap.get(experiment.getId()).getAttributesList(),
+              experiment.getAttributesList());
           count++;
         }
 
