@@ -15,6 +15,7 @@ from verta.environment import Python
 from verta.utils import ModelAPI
 from verta.endpoint.update._strategies import DirectUpdateStrategy
 
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 from ..utils import sys_path_manager
 
@@ -251,7 +252,8 @@ class TestCreate:
                 "type": "torch",
                 "python_version": "2.7.17"
             }
-            model_version.log_artifact("model_api.json", model_api, True, "json")
+            self._log_artifact("model_api.json", model_api, _CommonCommonService.ArtifactTypeEnum.BLOB, 'json',
+                               overwrite=True)
 
             path = _utils.generate_default_name()
             endpoint = client.set_endpoint(path)
