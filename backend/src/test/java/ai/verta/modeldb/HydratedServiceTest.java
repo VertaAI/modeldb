@@ -2674,7 +2674,7 @@ public class HydratedServiceTest {
         for (Project project : projectList) {
           Project expectedProject = projectsMap.get(project.getId());
           expectedProject =
-              expectedProject.toBuilder().setDateCreated(project.getDateUpdated()).build();
+              expectedProject.toBuilder().setDateUpdated(project.getDateUpdated()).build();
           projectsMap.put(expectedProject.getId(), expectedProject);
           assertEquals("Project not match with expected Project", expectedProject, project);
 
