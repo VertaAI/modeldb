@@ -960,10 +960,14 @@ public class HydratedServiceTest {
     }
 
     for (Experiment experiment : experimentMap.values()) {
+      Experiment responseExperiment = hydratedExperimentMap.get(experiment.getId()).getExperiment();
+      experiment =
+          experiment.toBuilder().setDateUpdated(responseExperiment.getDateUpdated()).build();
+      experimentMap.put(experiment.getId(), experiment);
       assertEquals(
           "Expected experimentRun not exist in the hydrated experimentRun",
           experiment,
-          hydratedExperimentMap.get(experiment.getId()).getExperiment());
+          responseExperiment);
       assertEquals(
           "Expected experimentRun owner not match with the hydratedExperimentRun owner",
           experiment.getOwner(),
@@ -1678,10 +1682,12 @@ public class HydratedServiceTest {
         isExpectedResultFound = true;
         LOGGER.info("GetExperimentsInProject Response : " + experimentList.size());
         for (Experiment experiment : experimentList) {
+          Experiment expectedExperiment = experimentMap.get(experiment.getId());
+          expectedExperiment =
+              expectedExperiment.toBuilder().setDateUpdated(experiment.getDateUpdated()).build();
+          experimentMap.put(expectedExperiment.getId(), expectedExperiment);
           assertEquals(
-              "Experiment not match with expected Experiment",
-              experimentMap.get(experiment.getId()),
-              experiment);
+              "Experiment not match with expected Experiment", expectedExperiment, experiment);
         }
 
       } else {
@@ -2055,10 +2061,12 @@ public class HydratedServiceTest {
       if (!experimentList.isEmpty()) {
         isExpectedResultFound = true;
         for (Experiment experiment : experimentList) {
+          Experiment expectedExperiment = experimentMap.get(experiment.getId());
+          expectedExperiment =
+              expectedExperiment.toBuilder().setDateUpdated(experiment.getDateUpdated()).build();
+          experimentMap.put(expectedExperiment.getId(), expectedExperiment);
           assertEquals(
-              "Experiment not match with expected experiment",
-              experimentMap.get(experiment.getId()),
-              experiment);
+              "Experiment not match with expected experiment", expectedExperiment, experiment);
 
           if (count == 0) {
             assertEquals(
@@ -2361,8 +2369,11 @@ public class HydratedServiceTest {
         isExpectedResultFound = true;
         LOGGER.info("GetProjects Response : " + projectList.size());
         for (Project project : projectList) {
-          assertEquals(
-              "Project not match with expected Project", projectsMap.get(project.getId()), project);
+          Project expectedProject = projectsMap.get(project.getId());
+          expectedProject =
+              expectedProject.toBuilder().setDateCreated(project.getDateUpdated()).build();
+          projectsMap.put(expectedProject.getId(), expectedProject);
+          assertEquals("Project not match with expected Project", expectedProject, project);
         }
 
         if (pageNumber == 1) {
@@ -2661,8 +2672,11 @@ public class HydratedServiceTest {
       if (projectList.size() > 0) {
         isExpectedResultFound = true;
         for (Project project : projectList) {
-          assertEquals(
-              "Project not match with expected project", projectsMap.get(project.getId()), project);
+          Project expectedProject = projectsMap.get(project.getId());
+          expectedProject =
+              expectedProject.toBuilder().setDateCreated(project.getDateUpdated()).build();
+          projectsMap.put(expectedProject.getId(), expectedProject);
+          assertEquals("Project not match with expected Project", expectedProject, project);
 
           if (count == 0) {
             assertEquals(
