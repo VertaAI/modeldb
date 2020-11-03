@@ -287,7 +287,8 @@ class ExperimentRun(_DeployableEntity):
         # TODO: add to Client config
         env_part_size = os.environ.get('VERTA_ARTIFACT_PART_SIZE', "")
         try:
-            part_size = int(float(env_part_size))  # use part size from an environment
+            # use part size from an environment, that is used in test
+            part_size = int(float(env_part_size))
         except ValueError:  # not an int
             part_size = _artifact_utils.MULTIPART_UPLOAD_PART_SIZE  # use default part size
         else:
