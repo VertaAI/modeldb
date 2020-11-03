@@ -287,9 +287,9 @@ class ExperimentRun(_DeployableEntity):
         # TODO: add to Client config
         env_part_size = os.environ.get('VERTA_ARTIFACT_PART_SIZE', "")
         try:
-            part_size = int(float(env_part_size))
+            part_size = int(float(env_part_size)) # use part size from an environment
         except ValueError:  # not an int
-            pass
+            part_size = _artifact_utils.MULTIPART_UPLOAD_PART_SIZE # use default part size
         else:
             print("set artifact part size {} from environment".format(part_size))
 
@@ -302,8 +302,7 @@ class ExperimentRun(_DeployableEntity):
         url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
 
         if url_for_artifact.multipart_upload_ok:
-            file_parts = iter(
-                lambda: artifact_stream.read(_artifact_utils.MULTIPART_UPLOAD_PART_SIZE), b'')
+            file_parts = iter(lambda: artifact_stream.read(part_size), b'')
             enumerated_file_parts = enumerate(file_parts, start=1)
 
             # advance iterator until `start_part_num`
