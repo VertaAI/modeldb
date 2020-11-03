@@ -1,5 +1,6 @@
 package ai.verta.modeldb.artifactStore;
 
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetUrlForArtifact.Response;
 import ai.verta.modeldb.HttpCodeToGRPCCode;
@@ -36,12 +37,17 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      String presignedUrl =
-          artifactStoreService.generatePresignedUrl(s3Key, method, partNumber, uploadId);
-      return GetUrlForArtifact.Response.newBuilder()
-          .setMultipartUploadOk(uploadId != null)
-          .setUrl(presignedUrl)
-          .build();
+      if (App.getInstance().getTrialEnabled()) {
+        return artifactStoreService.generatePresignedUrlForTrial(
+            s3Key, method, partNumber, uploadId);
+      } else {
+        String presignedUrl =
+            artifactStoreService.generatePresignedUrl(s3Key, method, partNumber, uploadId);
+        return GetUrlForArtifact.Response.newBuilder()
+            .setMultipartUploadOk(uploadId != null)
+            .setUrl(presignedUrl)
+            .build();
+      }
     } catch (AmazonServiceException e) {
       // Amazon S3 couldn't be contacted for a response, or the client
       // couldn't parse the response from Amazon S3.

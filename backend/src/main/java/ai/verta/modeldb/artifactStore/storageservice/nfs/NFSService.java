@@ -1,6 +1,7 @@
 package ai.verta.modeldb.artifactStore.storageservice.nfs;
 
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
@@ -195,6 +196,16 @@ public class NFSService implements ArtifactStoreService {
   @Override
   public Optional<String> initiateMultipart(String s3Key) {
     return Optional.empty();
+  }
+
+  @Override
+  public GetUrlForArtifact.Response generatePresignedUrlForTrial(
+      String artifactPath, String method, long partNumber, String uploadId)
+      throws ModelDBException {
+    return GetUrlForArtifact.Response.newBuilder()
+        .setMultipartUploadOk(false)
+        .setUrl(generatePresignedUrl(artifactPath, method))
+        .build();
   }
 
   @Override

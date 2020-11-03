@@ -55,6 +55,7 @@ public interface ModelDBConstants {
   String MAX_ARTIFACT_SIZE_MB = "max_artifact_size_MB";
   String MAX_ARTIFACT_PER_RUN = "max_artifact_per_run";
   String MAX_EXPERIMENT_RUN_PER_WORKSPACE = "max_experiment_run_per_workspace";
+  String LIMIT_RUN_ARTIFACT_SIZE = "LIMIT_RUN_ARTIFACT_SIZE: ";
 
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
@@ -137,6 +138,7 @@ public interface ModelDBConstants {
   String GET = "get";
   String DELETE = "delete";
   String PUT = "put";
+  String POST = "post";
 
   // Common constants
   String ARTIFACT_MAPPING = "artifactMapping";
@@ -275,6 +277,8 @@ public interface ModelDBConstants {
   String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
   String PROPERTY_NAME = "property_name";
   String S3_PRESIGNED_URL_ENABLED = "s3presignedURLEnabled";
+  String S3_PRESIGNED_URL = "s3PresignedURL";
+  String S3_PRESIGNED_PARAMETER_TRIAL = "s3PresignedURLParameterForTrial";
   String FILENAME = "FileName";
 
   // Cron job constant

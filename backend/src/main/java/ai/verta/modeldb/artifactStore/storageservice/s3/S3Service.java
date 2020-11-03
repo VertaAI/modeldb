@@ -1,6 +1,7 @@
 package ai.verta.modeldb.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.HttpCodeToGRPCCode;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -53,7 +54,6 @@ public class S3Service implements ArtifactStoreService {
 
   public S3Service(String cloudBucketName) throws ModelDBException, IOException {
     s3Client = new S3Client(cloudBucketName);
-
     this.bucketName = cloudBucketName;
   }
 
@@ -125,14 +125,49 @@ public class S3Service implements ArtifactStoreService {
   }
 
   @Override
-  public String generatePresignedUrl(String s3Key, String method, long partNumber, String uploadId)
-      throws ModelDBException {
+  public GetUrlForArtifact.Response generatePresignedUrlForTrial(
+      String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
 
-    if (app.getTrialEnabled() && partNumber != 0) {
+    if (partNumber != 0) {
       throw new ModelDBException(
-          "Multipart artifact upload not supported on the trial version", Code.FAILED_PRECONDITION);
+          ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
+              + "Multipart artifact upload not supported on the trial version",
+          Code.RESOURCE_EXHAUSTED);
     }
 
+    if (app.isS3presignedURLEnabled()) {
+      if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
+        return GetUrlForArtifact.Response.newBuilder()
+            .setMultipartUploadOk(false)
+            .setUrl(getS3PresignedUrl(s3Key, method, partNumber, uploadId))
+            .build();
+      } else if (method.equalsIgnoreCase(ModelDBConstants.POST)) {
+        return GetUrlForArtifact.Response.newBuilder()
+            .setMultipartUploadOk(false)
+            .setUrl(String.format("http://%s.s3.amazonaws.com", bucketName))
+            .putAllFields(
+                s3Client.getBodyParameterMapForTrialPresignedURL(
+                    s3Key, app.getMaxArtifactSizeMB() * 1024 * 1024))
+            .build();
+      } else {
+        throw new ModelDBException(
+            ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
+                + "Method type ("
+                + method
+                + ") not supported on the trial",
+            Code.RESOURCE_EXHAUSTED);
+      }
+    } else {
+      return GetUrlForArtifact.Response.newBuilder()
+          .setMultipartUploadOk(false)
+          .setUrl(getPresignedUrlViaMDB(s3Key, method, partNumber, uploadId))
+          .build();
+    }
+  }
+
+  @Override
+  public String generatePresignedUrl(String s3Key, String method, long partNumber, String uploadId)
+      throws ModelDBException {
     if (app.isS3presignedURLEnabled()) {
       return getS3PresignedUrl(s3Key, method, partNumber, uploadId);
     } else {
