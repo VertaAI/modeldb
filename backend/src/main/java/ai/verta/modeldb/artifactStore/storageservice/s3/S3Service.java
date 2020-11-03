@@ -142,12 +142,16 @@ public class S3Service implements ArtifactStoreService {
             .setUrl(getS3PresignedUrl(s3Key, method, partNumber, uploadId))
             .build();
       } else if (method.equalsIgnoreCase(ModelDBConstants.POST)) {
+        int maxArtifactSize =
+            app.getMaxArtifactSizeMB() != null
+                ? app.getMaxArtifactSizeMB()
+                : ModelDBConstants.MAX_ARTIFACT_SIZE_DEFAULT;
         return GetUrlForArtifact.Response.newBuilder()
             .setMultipartUploadOk(false)
             .setUrl(String.format("http://%s.s3.amazonaws.com", bucketName))
             .putAllFields(
                 s3Client.getBodyParameterMapForTrialPresignedURL(
-                    s3Key, app.getMaxArtifactSizeMB() * 1024 * 1024))
+                    s3Key, maxArtifactSize * 1024 * 1024))
             .build();
       } else {
         throw new ModelDBException(

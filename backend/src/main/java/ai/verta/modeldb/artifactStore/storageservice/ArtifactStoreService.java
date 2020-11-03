@@ -132,7 +132,8 @@ public interface ArtifactStoreService {
       }
 
       double uploadedArtifactSize = ((double) artifactSize / 1024); // In KB
-      if (uploadedArtifactSize > ((double) app.getMaxArtifactSizeMB() * 1024)) {
+      if (app.getMaxArtifactSizeMB() != null
+          && uploadedArtifactSize > ((double) app.getMaxArtifactSizeMB() * 1024)) {
         throw new ModelDBException(
             ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
                 + "Artifact size more then "
