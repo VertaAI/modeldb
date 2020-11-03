@@ -371,10 +371,13 @@ public class App implements ApplicationContextAware {
       Map<String, Object> restrictionsMap =
           (Map<String, Object>)
               trialMap.getOrDefault(ModelDBConstants.RESTRICTIONS, Collections.emptyMap());
-      app.maxArtifactSizeMB = (Integer) restrictionsMap.get(ModelDBConstants.MAX_ARTIFACT_SIZE_MB);
-      app.maxArtifactPerRun = (Integer) restrictionsMap.get(ModelDBConstants.MAX_ARTIFACT_PER_RUN);
+      app.maxArtifactSizeMB =
+          (Integer) restrictionsMap.getOrDefault(ModelDBConstants.MAX_ARTIFACT_SIZE_MB, -1);
+      app.maxArtifactPerRun =
+          (Integer) restrictionsMap.getOrDefault(ModelDBConstants.MAX_ARTIFACT_PER_RUN, -1);
       app.maxExperimentRunPerWorkspace =
-          (Integer) restrictionsMap.get(ModelDBConstants.MAX_EXPERIMENT_RUN_PER_WORKSPACE);
+          (Integer)
+              restrictionsMap.getOrDefault(ModelDBConstants.MAX_EXPERIMENT_RUN_PER_WORKSPACE, -1);
     }
 
     app.populateConnectionsBasedOnPrivileges =
