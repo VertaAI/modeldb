@@ -1,6 +1,7 @@
 package ai.verta.modeldb.artifactStore.storageservice;
 
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -18,6 +19,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 public interface ArtifactStoreService {
 
   Optional<String> initiateMultipart(String s3Key) throws ModelDBException;
+
+  GetUrlForArtifact.Response generatePresignedUrlForTrial(
+      String s3Key, String method, long partNumber, String s) throws ModelDBException;
 
   String generatePresignedUrl(String s3Key, String method, long partNumber, String s)
       throws ModelDBException;
@@ -122,15 +126,20 @@ public interface ArtifactStoreService {
     if (app.getTrialEnabled()) {
       if (partNumber != null && partNumber != 0) {
         throw new ModelDBException(
-            "Multipart artifact upload not supported on the trial version",
-            Code.FAILED_PRECONDITION);
+            ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
+                + "Multipart artifact upload not supported on the trial version",
+            Code.RESOURCE_EXHAUSTED);
       }
 
       double uploadedArtifactSize = ((double) artifactSize / 1024); // In KB
-      if (uploadedArtifactSize > ((double) app.getMaxArtifactSizeMB() * 1024)) {
+      if (app.getMaxArtifactSizeMB() != null
+          && uploadedArtifactSize > ((double) app.getMaxArtifactSizeMB() * 1024)) {
         throw new ModelDBException(
-            "Artifact size more then " + app.getMaxArtifactSizeMB() + " MB not supported",
-            Code.FAILED_PRECONDITION);
+            ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
+                + "Artifact size more then "
+                + app.getMaxArtifactSizeMB()
+                + " MB not supported",
+            Code.RESOURCE_EXHAUSTED);
       }
     }
   }

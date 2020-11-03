@@ -1,7 +1,10 @@
 package ai.verta.modeldb.artifactStore.storageservice.s3;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
+
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
@@ -20,6 +23,9 @@ import com.amazonaws.services.securitytoken.model.Credentials;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
@@ -40,8 +46,10 @@ public class S3Client {
 
   private AmazonS3 s3Client;
   private AtomicInteger referenceCounter;
+  private String accessKey;
+  private S3SignatureUtil s3SignatureUtil;
 
-  public S3Client(String cloudBucketName) throws IOException {
+  public S3Client(String cloudBucketName) throws IOException, ModelDBException {
     App app = App.getInstance();
     String cloudAccessKey = app.getCloudAccessKey();
     String cloudSecretKey = app.getCloudSecretKey();
@@ -51,6 +59,19 @@ public class S3Client {
 
     // Start the counter with one because this class has a reference to it
     referenceCounter = new AtomicInteger(1);
+
+    if (app.getTrialEnabled()) {
+      if (cloudAccessKey == null || cloudSecretKey == null) {
+        throw new ModelDBException(
+            "AWS accessKey & secretKey should be required for the verta trial");
+      }
+      accessKey = cloudAccessKey;
+      s3SignatureUtil =
+          new S3SignatureUtil(
+              new BasicAWSCredentials(cloudAccessKey, cloudSecretKey),
+              awsRegion.getName(),
+              ModelDBConstants.S3.toLowerCase());
+    }
 
     if (cloudAccessKey != null && cloudSecretKey != null) {
       if (minioEndpoint == null) {
@@ -215,5 +236,26 @@ public class S3Client {
 
   public RefCountedS3Client getRefCountedClient() {
     return new RefCountedS3Client(s3Client, referenceCounter);
+  }
+
+  public Map<String, String> getBodyParameterMapForTrialPresignedURL(
+      String s3Key, int maxArtifactSize) {
+    LocalDateTime localDateTime = LocalDateTime.now();
+    String dateTimeStr = localDateTime.format(ofPattern("yyyyMMdd'T'HHmmss'Z'"));
+    String date = localDateTime.format(ofPattern("yyyyMMdd"));
+
+    String policy = s3SignatureUtil.readPolicy(bucketName, maxArtifactSize);
+    String signature = s3SignatureUtil.getSignature(policy, localDateTime);
+
+    Map<String, String> bodyParametersMap = new HashMap<>();
+    bodyParametersMap.put("key", s3Key);
+    bodyParametersMap.put("Policy", policy);
+    bodyParametersMap.put("X-Amz-Signature", signature);
+    bodyParametersMap.put("X-Amz-Algorithm", "AWS4-HMAC-SHA256");
+    bodyParametersMap.put("X-Amz-Date", dateTimeStr);
+    bodyParametersMap.put(
+        "X-Amz-Credential",
+        String.format("%s/%s/%s/s3/aws4_request", accessKey, date, awsRegion.getName()));
+    return bodyParametersMap;
   }
 }
