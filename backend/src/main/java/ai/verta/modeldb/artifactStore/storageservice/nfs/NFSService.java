@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,9 +75,13 @@ public class NFSService implements ArtifactStoreService {
    * @return {@link String} : upload filename
    * @throws ModelDBException ModelDBException
    */
-  String storeFile(String artifactPath, InputStream uploadedFileInputStream)
+  String storeFile(
+      String artifactPath, InputStream uploadedFileInputStream, HttpServletRequest request)
       throws ModelDBException {
     LOGGER.trace("NFSService - storeFile called");
+
+    // Validate Artifact size for trial case
+    validateArtifactSizeForTrial(app, request.getContentLength(), null);
 
     try {
       String cleanArtifactPath = StringUtils.cleanPath(Objects.requireNonNull(artifactPath));

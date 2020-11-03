@@ -1,9 +1,11 @@
 package ai.verta.modeldb.artifactStore.storageservice;
 
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import com.amazonaws.services.s3.model.PartETag;
+import com.google.rpc.Code;
 import io.grpc.Metadata;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -113,5 +115,23 @@ public interface ArtifactStoreService {
     }
 
     return uriComponentsBuilder.toUriString();
+  }
+
+  default void validateArtifactSizeForTrial(App app, int artifactSize, Long partNumber)
+      throws ModelDBException {
+    if (app.getTrialEnabled()) {
+      if (partNumber != null && partNumber != 0) {
+        throw new ModelDBException(
+            "Multipart artifact upload not supported on the trial version",
+            Code.FAILED_PRECONDITION);
+      }
+
+      double uploadedArtifactSize = ((double) artifactSize / 1024); // In KB
+      if (uploadedArtifactSize > ((double) app.getMaxArtifactSizeMB() * 1024)) {
+        throw new ModelDBException(
+            "Artifact size more then " + app.getMaxArtifactSizeMB() + " MB not supported",
+            Code.FAILED_PRECONDITION);
+      }
+    }
   }
 }
