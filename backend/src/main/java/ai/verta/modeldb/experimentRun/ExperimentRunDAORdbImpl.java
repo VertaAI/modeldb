@@ -3034,6 +3034,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         WorkspaceDTO workspaceDTO =
             roleService.getWorkspaceDTOByWorkspaceId(
                 userInfo, project.getWorkspaceId(), project.getWorkspaceTypeValue());
+
+        // TODO: We can be replaced by a count(*) query instead .setIdsOnly(true)
         FindExperimentRuns findExperimentRuns =
             FindExperimentRuns.newBuilder()
                 .setIdsOnly(true)
@@ -3041,9 +3043,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         ExperimentRunPaginationDTO paginationDTO =
             findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
-        if (paginationDTO.getTotalRecords() >= app.getMaxExperimentRunPerWorkspace()) {
+        if (app.getMaxExperimentRunPerWorkspace() != null
+            && paginationDTO.getTotalRecords() >= app.getMaxExperimentRunPerWorkspace()) {
           throw new ModelDBException(
-              "Maximum "
+              ModelDBConstants.LIMIT_RUN_NUMBER
+                  + "Maximum "
                   + app.getMaxExperimentRunPerWorkspace()
                   + " experimentRuns are allow in the same workspace",
               Code.RESOURCE_EXHAUSTED);
