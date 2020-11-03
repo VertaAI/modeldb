@@ -117,8 +117,15 @@ public interface ArtifactStoreService {
     return uriComponentsBuilder.toUriString();
   }
 
-  default void validateArtifactSizeForTrial(App app, int artifactSize) throws ModelDBException {
+  default void validateArtifactSizeForTrial(App app, int artifactSize, Long partNumber)
+      throws ModelDBException {
     if (app.getTrialEnabled()) {
+      if (partNumber != null && partNumber != 0) {
+        throw new ModelDBException(
+            "Multipart artifact upload not supported on the trial version",
+            Code.FAILED_PRECONDITION);
+      }
+
       double uploadedArtifactSize = ((double) artifactSize / 1024); // In KB
       if (uploadedArtifactSize > ((double) app.getMaxArtifactSizeMB() * 1024)) {
         throw new ModelDBException(
