@@ -237,17 +237,9 @@ class ExperimentRun(_DeployableEntity):
                     self._conn.socket,
                 )
                 msg = _CommonService.GetCommittedArtifactParts(id=self.id, key=key)
-                data = _utils.proto_to_json(msg)
-                response = _utils.make_request("GET", url, self._conn, params=data)
-                if response.status_code == 404:  # old backend without multipart support
-                    # TODO: check if this also happens when artifact was not multipart
-                    raise conflict_error
-                elif not response.ok:
-                    _utils.raise_for_http_error(response)
-
-                # get last part number
-                response_msg = _utils.json_to_proto(response.json(), _CommonService.GetCommittedArtifactParts.Response)
-                if not response_msg.artifact_parts:
+                response = self._conn.make_proto_request("GET", url, params=msg)
+                response = self._conn.must_proto_response(response, msg.Response)
+                if not response.artifact_parts:
                     url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
 
                     if url_for_artifact.multipart_upload_ok:  # there should be parts when completed
@@ -255,7 +247,7 @@ class ExperimentRun(_DeployableEntity):
                     else:
                         raise conflict_error
                 else:
-                    last_part_num = max(part.part_number for part in response_msg.artifact_parts)
+                    last_part_num = max(part.part_number for part in response.artifact_parts)
 
                 # resume upload
                 self._upload_artifact(key, artifact_stream, start_part_num=last_part_num + 1)
