@@ -250,7 +250,7 @@ class ExperimentRun(_DeployableEntity):
                 if not response_msg.artifact_parts:
                     url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
 
-                    if url_for_artifact.multipart_upload_ok:  # there should be parts when completed
+                    if url_for_artifact.multipart_upload_ok:  # multipart artifact logged to MDB, but no parts uploaded
                         last_part_num = 0
                     else:
                         raise conflict_error
