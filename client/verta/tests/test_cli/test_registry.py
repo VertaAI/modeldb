@@ -252,7 +252,7 @@ class TestCreate:
                 "type": "torch",
                 "python_version": "2.7.17"
             }
-            self._log_artifact("model_api.json", model_api, _CommonCommonService.ArtifactTypeEnum.BLOB, 'json',
+            model_version._log_artifact("model_api.json", model_api, _CommonCommonService.ArtifactTypeEnum.BLOB, 'json',
                                overwrite=True)
 
             path = _utils.generate_default_name()
