@@ -13,7 +13,7 @@ class Autoscaling(object):
 
         {
             "autoscaling": {
-                "quantities": {"min_replicas": 2, "max_replicas": 7, "min_scale": 0.2, "max_scale": 0.7},
+                "quantities": {"min_replicas": 2, "max_replicas": 7, "min_scale": 0.2, "max_scale": 1.3},
                 "metrics": []
             }
         }
