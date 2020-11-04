@@ -366,18 +366,18 @@ public class App implements ApplicationContextAware {
     Map<String, Object> trialMap =
         (Map<String, Object>)
             propertiesMap.getOrDefault(ModelDBConstants.TRIAL, Collections.emptyMap());
-    app.trialEnabled = (Boolean) trialMap.getOrDefault(ModelDBConstants.ENABLE, false);
+    app.trialEnabled = true;//(Boolean) trialMap.getOrDefault(ModelDBConstants.ENABLE, false);
     if (app.trialEnabled) {
       Map<String, Object> restrictionsMap =
           (Map<String, Object>)
               trialMap.getOrDefault(ModelDBConstants.RESTRICTIONS, Collections.emptyMap());
       app.maxArtifactSizeMB = 2;
           //(Integer) restrictionsMap.getOrDefault(ModelDBConstants.MAX_ARTIFACT_SIZE_MB, null);
-      app.maxArtifactPerRun =
-          (Integer) restrictionsMap.getOrDefault(ModelDBConstants.MAX_ARTIFACT_PER_RUN, null);
-      app.maxExperimentRunPerWorkspace =
-          (Integer)
-              restrictionsMap.getOrDefault(ModelDBConstants.MAX_EXPERIMENT_RUN_PER_WORKSPACE, null);
+      app.maxArtifactPerRun = 10;
+          //(Integer) restrictionsMap.getOrDefault(ModelDBConstants.MAX_ARTIFACT_PER_RUN, null);
+      app.maxExperimentRunPerWorkspace = 10;
+          //(Integer)
+          //    restrictionsMap.getOrDefault(ModelDBConstants.MAX_EXPERIMENT_RUN_PER_WORKSPACE, null);
     }
 
     app.populateConnectionsBasedOnPrivileges =
