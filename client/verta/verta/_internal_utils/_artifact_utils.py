@@ -30,6 +30,12 @@ BLACKLISTED_KEYS = {
 }
 
 
+KERAS_H5PY_ERROR = RuntimeError(  # https://github.com/h5py/h5py/issues/1732
+    "Keras encountered an error saving/loading the model due to a bug in h5py v3.0.0;"
+    " consider downgrading with `pip install \"h5py!=3.0.0\"`"
+)
+
+
 def validate_key(key):
     """
     Validates user-specified artifact key.
@@ -275,10 +281,18 @@ def serialize_model(model):
         elif module_name.startswith("tensorflow.python.keras"):
             model_type = "tensorflow"
             tempf = tempfile.NamedTemporaryFile()
-            if get_tensorflow_major_version() == 2:  # save_format param may not exist in TF 1.X
-                model.save(tempf.name, save_format='h5')  # TF 2.X uses SavedModel by default
-            else:
-                model.save(tempf.name)
+            try:
+                if get_tensorflow_major_version() == 2:  # save_format param may not exist in TF 1.X
+                    model.save(tempf.name, save_format='h5')  # TF 2.X uses SavedModel by default
+                else:
+                    model.save(tempf.name)
+            except TypeError as e:
+                h5py = maybe_dependency("h5py")
+                if (str(e) == "a bytes-like object is required, not 'str'"
+                        and h5py is not None and h5py.__version__ == "3.0.0"):
+                    six.raise_from(KERAS_H5PY_ERROR, e)
+                else:
+                    six.raise_from(e, None)
             tempf.seek(0)
             bytestream = tempf
             method = "keras"
@@ -312,13 +326,21 @@ def deserialize_model(bytestring):
         Model or buffered bytestream representing the model.
 
     """
-    if maybe_dependency("tensorflow.keras"):
+    keras = maybe_dependency("tensorflow.keras")
+    if keras is not None:
         # try deserializing with Keras (HDF5)
         with tempfile.NamedTemporaryFile() as tempf:
             tempf.write(bytestring)
             tempf.seek(0)
             try:
-                return maybe_dependency("tensorflow.keras").models.load_model(tempf.name)
+                return keras.models.load_model(tempf.name)
+            except AttributeError as e:
+                h5py = maybe_dependency("h5py")
+                if (str(e) == "'str' object has no attribute 'decode'"
+                        and h5py is not None and h5py.__version__ == "3.0.0"):
+                    six.raise_from(KERAS_H5PY_ERROR, e)
+                else:
+                    six.raise_from(e, None)
             except (NameError,  # Tensorflow not installed
                     IOError, OSError):  # not a Keras model
                 pass
