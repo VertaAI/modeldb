@@ -56,7 +56,7 @@ public interface ModelDBConstants {
   String MAX_ARTIFACT_PER_RUN = "max_artifact_per_run";
   String MAX_EXPERIMENT_RUN_PER_WORKSPACE = "max_experiment_run_per_workspace";
   String LIMIT_RUN_ARTIFACT_SIZE = "LIMIT_RUN_ARTIFACT_SIZE: ";
-  Integer MAX_ARTIFACT_SIZE_DEFAULT = 10; // in MB
+  Integer MAX_ARTIFACT_SIZE_DEFAULT = 1024; // in MB
 
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
