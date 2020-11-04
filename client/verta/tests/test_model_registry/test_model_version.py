@@ -21,6 +21,7 @@ import verta.dataset
 from verta.environment import Python
 from verta._tracking.deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
+from verta._internal_utils import _utils
 from ..test_artifacts import TestArtifacts
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
@@ -465,14 +466,11 @@ class TestDeployability:
                 continue
 
             for parent_dir, dirnames, filenames in os.walk(path):
-                # skip venvs
-                #     This logic is from _utils.find_filepaths().
-                exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-                dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
-
                 # only Python files
                 filenames[:] = [filename for filename in filenames if filename.endswith(('.py', '.pyc', '.pyo'))]
 
+                if not _utils.is_in_venv(path) and _utils.is_in_venv(parent_dir):
+                    continue
                 custom_module_filenames.update(map(os.path.basename, filenames))
 
         with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
