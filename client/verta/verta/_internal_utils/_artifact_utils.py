@@ -290,6 +290,9 @@ def serialize_model(model):
                 h5py = maybe_dependency("h5py")
                 if (str(e) == "a bytes-like object is required, not 'str'"
                         and h5py is not None and h5py.__version__ == "3.0.0"):
+                    # h5py v3.0.0 improperly checks if a `bytes` contains a `str`.
+                    # Encountering this generic error message here plus the fact
+                    # that h5py==3.0.0 suggests that this is the problem.
                     six.raise_from(KERAS_H5PY_ERROR, e)
                 else:
                     six.raise_from(e, None)
@@ -338,6 +341,9 @@ def deserialize_model(bytestring):
                 h5py = maybe_dependency("h5py")
                 if (str(e) == "'str' object has no attribute 'decode'"
                         and h5py is not None and h5py.__version__ == "3.0.0"):
+                    # h5py v3.0.0 returns a `str` instead of a `bytes` to Keras.
+                    # Encountering this generic error message here plus the fact
+                    # that h5py==3.0.0 suggests that this is the problem.
                     six.raise_from(KERAS_H5PY_ERROR, e)
                 else:
                     six.raise_from(e, None)
