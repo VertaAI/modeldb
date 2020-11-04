@@ -40,11 +40,6 @@ def pytest_addoption(parser):
     parser.addoption("--oss", action="store_true", help="run OSS-compatible tests")
 
 
-def pytest_configure(config):
-    config.addinivalue_line("markers", "oss: mark the given test function as only applicable to OSS.")
-    config.addinivalue_line("markers", "not_oss: mark the given test function not available in OSS.")
-
-
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--oss"):
         skip_not_oss = pytest.mark.skip(reason="not available in OSS")
