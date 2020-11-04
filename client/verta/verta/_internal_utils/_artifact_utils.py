@@ -32,7 +32,7 @@ BLACKLISTED_KEYS = {
 
 KERAS_H5PY_ERROR = RuntimeError(  # https://github.com/h5py/h5py/issues/1732
     "Keras encountered an error saving/loading the model due to a bug in h5py v3.0.0;"
-    " consider downgrading with `pip install \"h5py!=3.0.0\"`"
+    " consider downgrading with `pip install \"h5py<3.0.0\"`"
 )
 
 
