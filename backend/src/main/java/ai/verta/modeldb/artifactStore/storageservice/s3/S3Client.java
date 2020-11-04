@@ -47,12 +47,14 @@ public class S3Client {
   private AmazonS3 s3Client;
   private AtomicInteger referenceCounter;
   private String accessKey;
+  private String secretKey;
   private S3SignatureUtil s3SignatureUtil;
+  private App app;
 
   public S3Client(String cloudBucketName) throws IOException, ModelDBException {
-    App app = App.getInstance();
-    String cloudAccessKey = app.getCloudAccessKey();
-    String cloudSecretKey = app.getCloudSecretKey();
+    app = App.getInstance();
+    accessKey = app.getCloudAccessKey();
+    secretKey = app.getCloudSecretKey();
     String minioEndpoint = app.getMinioEndpoint();
     awsRegion = Regions.fromName(app.getAwsRegion());
     this.bucketName = cloudBucketName;
@@ -60,26 +62,13 @@ public class S3Client {
     // Start the counter with one because this class has a reference to it
     referenceCounter = new AtomicInteger(1);
 
-    if (app.getTrialEnabled()) {
-      if (cloudAccessKey == null || cloudSecretKey == null) {
-        throw new ModelDBException(
-            "AWS accessKey & secretKey should be required for the verta trial");
-      }
-      accessKey = cloudAccessKey;
-      s3SignatureUtil =
-          new S3SignatureUtil(
-              new BasicAWSCredentials(cloudAccessKey, cloudSecretKey),
-              awsRegion.getName(),
-              ModelDBConstants.S3.toLowerCase());
-    }
-
-    if (cloudAccessKey != null && cloudSecretKey != null) {
+    if (accessKey != null && secretKey != null) {
       if (minioEndpoint == null) {
         LOGGER.debug("config based credentials based s3 client");
-        initializeS3ClientWithAccessKey(cloudAccessKey, cloudSecretKey, awsRegion);
+        initializeS3ClientWithAccessKey(accessKey, secretKey, awsRegion);
       } else {
         LOGGER.debug("minio client");
-        initializeMinioClient(cloudAccessKey, cloudSecretKey, awsRegion, minioEndpoint);
+        initializeMinioClient(accessKey, secretKey, awsRegion, minioEndpoint);
       }
     } else if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
         && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
@@ -89,6 +78,21 @@ public class S3Client {
       LOGGER.debug("environment credentials based s3 client");
       // reads credential from OS Environment
       initializetWithEnvironment(awsRegion);
+    }
+
+    initializeS3SignatureUtil();
+  }
+
+  private void initializeS3SignatureUtil() throws ModelDBException {
+    if (app.getTrialEnabled()) {
+      if (accessKey == null || secretKey == null) {
+        throw new ModelDBException("AWS accessKey should be required for the verta trial");
+      }
+      s3SignatureUtil =
+          new S3SignatureUtil(
+              new BasicAWSCredentials(accessKey, secretKey),
+              awsRegion.getName(),
+              ModelDBConstants.S3.toLowerCase());
     }
   }
 
@@ -122,7 +126,8 @@ public class S3Client {
             .build();
   }
 
-  private void initializeWithTemporaryCredentials(Regions awsRegion) throws IOException {
+  private void initializeWithTemporaryCredentials(Regions awsRegion)
+      throws IOException, ModelDBException {
     String roleSessionName = "modelDB" + UUID.randomUUID().toString();
 
     AWSSecurityTokenService stsClient = null;
@@ -163,6 +168,9 @@ public class S3Client {
               credentials.getAccessKeyId(),
               credentials.getSecretAccessKey(),
               credentials.getSessionToken());
+      accessKey = credentials.getAccessKeyId();
+      secretKey = credentials.getSecretAccessKey();
+      initializeS3SignatureUtil();
 
       LOGGER.debug("creating new client");
 
