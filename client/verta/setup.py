@@ -29,6 +29,7 @@ setup(
         "click",
         "cloudpickle",
         "googleapis-common-protos>=1.5",
+        "h5py<3.0.0",  # for (de)serializing Keras models https://github.com/tensorflow/tensorflow/issues/44467
         "pathlib2>=2.2",
         "protobuf>=3.8",
         "pyyaml>=5.1",
