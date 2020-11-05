@@ -1200,9 +1200,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           && existingArtifactsSize + newArtifactsSize > app.getMaxArtifactPerRun()) {
         throw new ModelDBException(
             ModelDBConstants.LIMIT_RUN_ARTIFACT_NUMBER
-                + "Maximum "
+                + "“Number of artifacts exceeded”: You are allowed to log upto "
                 + app.getMaxArtifactPerRun()
-                + " artifacts are allow in the experimentRun",
+                + " artifacts per experiment run.",
             Code.RESOURCE_EXHAUSTED);
       }
     }
@@ -3051,9 +3051,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             && paginationDTO.getTotalRecords() >= app.getMaxExperimentRunPerWorkspace()) {
           throw new ModelDBException(
               ModelDBConstants.LIMIT_RUN_NUMBER
-                  + "Maximum "
+                  + "“Number of experiment runs exceeded”: Your trial account allows you to log upto "
                   + app.getMaxExperimentRunPerWorkspace()
-                  + " experimentRuns are allow in the same workspace",
+                  + " experiment runs. Try deleting prior experiment runs in order to proceed.",
               Code.RESOURCE_EXHAUSTED);
         }
       }
