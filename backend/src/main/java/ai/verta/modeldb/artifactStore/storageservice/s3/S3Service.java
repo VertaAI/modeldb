@@ -146,6 +146,7 @@ public class S3Service implements ArtifactStoreService {
             app.getMaxArtifactSizeMB() != null
                 ? app.getMaxArtifactSizeMB()
                 : ModelDBConstants.MAX_ARTIFACT_SIZE_DEFAULT;
+        LOGGER.debug("bucketName " + bucketName);
         return GetUrlForArtifact.Response.newBuilder()
             .setMultipartUploadOk(false)
             .setUrl(String.format("http://%s.s3.amazonaws.com", bucketName))
