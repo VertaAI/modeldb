@@ -46,15 +46,14 @@ public class S3Client {
 
   private AmazonS3 s3Client;
   private AtomicInteger referenceCounter;
-  private String accessKey;
-  private String secretKey;
+  private AWSCredentials awsCredentials;
   private S3SignatureUtil s3SignatureUtil;
   private App app;
 
   public S3Client(String cloudBucketName) throws IOException, ModelDBException {
     app = App.getInstance();
-    accessKey = app.getCloudAccessKey();
-    secretKey = app.getCloudSecretKey();
+    String cloudAccessKey = app.getCloudAccessKey();
+    String cloudSecretKey = app.getCloudSecretKey();
     String minioEndpoint = app.getMinioEndpoint();
     awsRegion = Regions.fromName(app.getAwsRegion());
     this.bucketName = cloudBucketName;
@@ -62,13 +61,13 @@ public class S3Client {
     // Start the counter with one because this class has a reference to it
     referenceCounter = new AtomicInteger(1);
 
-    if (accessKey != null && secretKey != null) {
+    if (cloudAccessKey != null && cloudSecretKey != null) {
       if (minioEndpoint == null) {
         LOGGER.debug("config based credentials based s3 client");
-        initializeS3ClientWithAccessKey(accessKey, secretKey, awsRegion);
+        initializeS3ClientWithAccessKey(cloudAccessKey, cloudSecretKey, awsRegion);
       } else {
         LOGGER.debug("minio client");
-        initializeMinioClient(accessKey, secretKey, awsRegion, minioEndpoint);
+        initializeMinioClient(cloudAccessKey, cloudSecretKey, awsRegion, minioEndpoint);
       }
     } else if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
         && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
@@ -85,14 +84,12 @@ public class S3Client {
 
   private void initializeS3SignatureUtil() throws ModelDBException {
     if (app.getTrialEnabled()) {
-      if (accessKey == null || secretKey == null) {
-        throw new ModelDBException("AWS accessKey should be required for the verta trial");
+      if (awsCredentials == null) {
+        throw new ModelDBException("awsCredentials should be required for the verta trial");
       }
       s3SignatureUtil =
           new S3SignatureUtil(
-              new BasicAWSCredentials(accessKey, secretKey),
-              awsRegion.getName(),
-              ModelDBConstants.S3.toLowerCase());
+              awsCredentials, awsRegion.getName(), ModelDBConstants.S3.toLowerCase());
     }
   }
 
@@ -102,7 +99,7 @@ public class S3Client {
 
   private void initializeMinioClient(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion, String minioEndpoint) {
-    AWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
     ClientConfiguration clientConfiguration = new ClientConfiguration();
     clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
@@ -112,17 +109,17 @@ public class S3Client {
                 new AwsClientBuilder.EndpointConfiguration(minioEndpoint, awsRegion.getName()))
             .withPathStyleAccessEnabled(true)
             .withClientConfiguration(clientConfiguration)
-            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
             .build();
   }
 
   private void initializeS3ClientWithAccessKey(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion) {
-    BasicAWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
     this.s3Client =
         AmazonS3ClientBuilder.standard()
             .withRegion(awsRegion)
-            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
             .build();
   }
 
@@ -163,13 +160,11 @@ public class S3Client {
       Credentials credentials = roleResponse.getCredentials();
 
       // Extract the session credentials
-      BasicSessionCredentials awsCredentials =
+      awsCredentials =
           new BasicSessionCredentials(
               credentials.getAccessKeyId(),
               credentials.getSecretAccessKey(),
               credentials.getSessionToken());
-      accessKey = credentials.getAccessKeyId();
-      secretKey = credentials.getSecretAccessKey();
       initializeS3SignatureUtil();
 
       LOGGER.debug("creating new client");
@@ -263,7 +258,9 @@ public class S3Client {
     bodyParametersMap.put("X-Amz-Date", dateTimeStr);
     bodyParametersMap.put(
         "X-Amz-Credential",
-        String.format("%s/%s/%s/s3/aws4_request", accessKey, date, awsRegion.getName()));
+        String.format(
+            "%s/%s/%s/s3/aws4_request",
+            awsCredentials.getAWSAccessKeyId(), date, awsRegion.getName()));
     return bodyParametersMap;
   }
 }
