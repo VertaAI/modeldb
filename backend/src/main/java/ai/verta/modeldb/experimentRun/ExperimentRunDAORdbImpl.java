@@ -3053,7 +3053,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               ModelDBConstants.LIMIT_RUN_NUMBER
                   + "Maximum "
                   + app.getMaxExperimentRunPerWorkspace()
-                  + " experimentRuns are allow in the same workspace",
+                  + " experiment runs are allowed in the same workspace",
               Code.RESOURCE_EXHAUSTED);
         }
       }
