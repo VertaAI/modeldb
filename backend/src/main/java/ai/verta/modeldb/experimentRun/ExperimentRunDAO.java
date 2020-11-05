@@ -41,8 +41,7 @@ public interface ExperimentRunDAO {
    * @return ExperimentRun insertedExperimentRun
    * @throws InvalidProtocolBufferException
    */
-  ExperimentRun insertExperimentRun(
-      ProjectDAO projectDAO, ExperimentRun experimentRun, UserInfo userInfo)
+  ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException;
 
   /**
@@ -223,7 +222,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   void logArtifacts(String experimentRunId, List<Artifact> artifacts)
-      throws InvalidProtocolBufferException, ModelDBException;
+      throws InvalidProtocolBufferException;
 
   /**
    * Return List<Artifact> artifacts from ExperimentRun entity.
@@ -492,7 +491,6 @@ public interface ExperimentRunDAO {
       ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request)
       throws ModelDBException, InvalidProtocolBufferException;
 
-  ExperimentRun cloneExperimentRun(
-      ProjectDAO projectDAO, CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
+  ExperimentRun cloneExperimentRun(CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException;
 }
