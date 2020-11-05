@@ -1202,7 +1202,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             ModelDBConstants.LIMIT_RUN_ARTIFACT_NUMBER
                 + "Maximum "
                 + app.getMaxArtifactPerRun()
-                + " artifacts are allow in the experimentRun",
+                + " artifacts are allowed in an experiment run",
             Code.RESOURCE_EXHAUSTED);
       }
     }
