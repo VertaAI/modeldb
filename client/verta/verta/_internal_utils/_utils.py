@@ -603,7 +603,7 @@ def is_in_venv(path):
         return True
 
     # packages installed via --user
-    if path.startswith(site.USER_SITE):
+    if path.startswith(site.getusersitepackages()):
         return True
 
     return False
