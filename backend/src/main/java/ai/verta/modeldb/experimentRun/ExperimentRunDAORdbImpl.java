@@ -383,11 +383,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
+  public ExperimentRun insertExperimentRun(
+      ProjectDAO projectDAO, ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
     checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      validateExperimentRunPerWorkspaceForTrial(projectDAO, experimentRun.getProjectId(), userInfo);
+      validateMaxArtifactsForTrial(experimentRun.getArtifactsCount(), 0);
+
       if (experimentRun.getDatasetsCount() > 0 && app.isPopulateConnectionsBasedOnPrivileges()) {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
       }
@@ -417,7 +421,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       return experimentRun;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return insertExperimentRun(experimentRun, userInfo);
+        return insertExperimentRun(projectDAO, experimentRun, userInfo);
       } else {
         throw ex;
       }
@@ -1139,7 +1143,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logArtifacts(String experimentRunId, List<Artifact> newArtifacts)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
@@ -1169,6 +1173,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
+      validateMaxArtifactsForTrial(newArtifacts.size(), existingArtifacts.size());
+
       List<ArtifactEntity> newArtifactList =
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
               experimentRunEntityObj, ModelDBConstants.ARTIFACTS, newArtifacts);
@@ -1183,6 +1189,21 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         logArtifacts(experimentRunId, newArtifacts);
       } else {
         throw ex;
+      }
+    }
+  }
+
+  public void validateMaxArtifactsForTrial(int newArtifactsSize, int existingArtifactsSize)
+      throws ModelDBException {
+    if (app.getTrialEnabled()) {
+      if (app.getMaxArtifactPerRun() != null
+          && existingArtifactsSize + newArtifactsSize > app.getMaxArtifactPerRun()) {
+        throw new ModelDBException(
+            ModelDBConstants.LIMIT_RUN_ARTIFACT_NUMBER
+                + "Maximum "
+                + app.getMaxArtifactPerRun()
+                + " artifacts are allow in the experimentRun",
+            Code.RESOURCE_EXHAUSTED);
       }
     }
   }
@@ -2959,7 +2980,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun cloneExperimentRun(CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
+  public ExperimentRun cloneExperimentRun(
+      ProjectDAO projectDAO, CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
     ExperimentRun srcExperimentRun = getExperimentRun(cloneExperimentRun.getSrcExperimentRunId());
 
@@ -3004,6 +3026,37 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
 
     desExperimentRunBuilder.clearOwner().setOwner(authService.getVertaIdFromUserInfo(userInfo));
-    return insertExperimentRun(desExperimentRunBuilder.build(), userInfo);
+    return insertExperimentRun(projectDAO, desExperimentRunBuilder.build(), userInfo);
+  }
+
+  private void validateExperimentRunPerWorkspaceForTrial(
+      ProjectDAO projectDAO, String projectId, UserInfo userInfo)
+      throws InvalidProtocolBufferException, ModelDBException {
+    if (app.getTrialEnabled()) {
+      Project project = projectDAO.getProjectByID(projectId);
+      if (project.getWorkspaceId() != null && !project.getWorkspaceId().isEmpty()) {
+        WorkspaceDTO workspaceDTO =
+            roleService.getWorkspaceDTOByWorkspaceId(
+                userInfo, project.getWorkspaceId(), project.getWorkspaceTypeValue());
+
+        // TODO: We can be replaced by a count(*) query instead .setIdsOnly(true)
+        FindExperimentRuns findExperimentRuns =
+            FindExperimentRuns.newBuilder()
+                .setIdsOnly(true)
+                .setWorkspaceName(workspaceDTO.getWorkspaceName())
+                .build();
+        ExperimentRunPaginationDTO paginationDTO =
+            findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
+        if (app.getMaxExperimentRunPerWorkspace() != null
+            && paginationDTO.getTotalRecords() >= app.getMaxExperimentRunPerWorkspace()) {
+          throw new ModelDBException(
+              ModelDBConstants.LIMIT_RUN_NUMBER
+                  + "Maximum "
+                  + app.getMaxExperimentRunPerWorkspace()
+                  + " experimentRuns are allow in the same workspace",
+              Code.RESOURCE_EXHAUSTED);
+        }
+      }
+    }
   }
 }

@@ -118,6 +118,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   private DatasetVersionDAO datasetVersionDAO;
   private RepositoryDAO repositoryDAO;
   private CommitDAO commitDAO;
+  private App app;
 
   public ExperimentRunServiceImpl(
       AuthService authService,
@@ -129,6 +130,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       DatasetVersionDAO datasetVersionDAO,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO) {
+    this.app = App.getInstance();
     this.authService = authService;
     this.roleService = roleService;
     this.experimentRunDAO = experimentRunDAO;
@@ -204,7 +206,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             .addAllObservations(request.getObservationsList())
             .addAllFeatures(request.getFeaturesList());
 
-    if (App.getInstance().getStoreClientCreationTimestamp() && request.getDateCreated() != 0L) {
+    if (app.getStoreClientCreationTimestamp() && request.getDateCreated() != 0L) {
       experimentRunBuilder
           .setDateCreated(request.getDateCreated())
           .setDateUpdated(request.getDateCreated());
@@ -252,7 +254,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceActions.UPDATE);
       validateExperimentEntity(request.getExperimentId());
 
-      experimentRun = experimentRunDAO.insertExperimentRun(experimentRun, userInfo);
+      experimentRun = experimentRunDAO.insertExperimentRun(projectDAO, experimentRun, userInfo);
       responseObserver.onNext(
           CreateExperimentRun.Response.newBuilder().setExperimentRun(experimentRun).build());
       responseObserver.onCompleted();
@@ -1225,6 +1227,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
+
+      if (App.getInstance().getTrialEnabled() && request.getPartNumber() != 0) {
+        throw new ModelDBException(
+            "Multipart artifact upload not supported on the trial version",
+            Code.FAILED_PRECONDITION);
+      }
 
       final String s3Key;
       final String uploadId;
@@ -2345,7 +2353,13 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      }
+
+      if (App.getInstance().getTrialEnabled()) {
+        throw new ModelDBException(
+            "Multipart artifact upload not supported on the trial version",
+            Code.FAILED_PRECONDITION);
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
@@ -2377,7 +2391,13 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      }
+
+      if (App.getInstance().getTrialEnabled()) {
+        throw new ModelDBException(
+            "Multipart artifact upload not supported on the trial version",
+            Code.FAILED_PRECONDITION);
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
@@ -2410,7 +2430,13 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       if (errorMessage != null) {
-        throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      }
+
+      if (App.getInstance().getTrialEnabled()) {
+        throw new ModelDBException(
+            "Multipart artifact upload not supported on the trial version",
+            Code.FAILED_PRECONDITION);
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
@@ -2611,7 +2637,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       ExperimentRun clonedExperimentRun =
-          experimentRunDAO.cloneExperimentRun(request, authService.getCurrentLoginUserInfo());
+          experimentRunDAO.cloneExperimentRun(
+              projectDAO, request, authService.getCurrentLoginUserInfo());
       responseObserver.onNext(
           CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build());
       responseObserver.onCompleted();
