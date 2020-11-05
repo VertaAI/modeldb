@@ -85,7 +85,7 @@ public class S3Client {
   private void initializeS3SignatureUtil() throws ModelDBException {
     if (app.getTrialEnabled()) {
       if (awsCredentials == null) {
-        throw new ModelDBException("awsCredentials should be required for the verta trial");
+        throw new ModelDBException("awsCredentials are required for the verta trial");
       }
       s3SignatureUtil =
           new S3SignatureUtil(

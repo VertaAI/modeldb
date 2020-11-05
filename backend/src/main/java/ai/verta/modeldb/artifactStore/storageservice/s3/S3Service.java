@@ -128,10 +128,10 @@ public class S3Service implements ArtifactStoreService {
   public GetUrlForArtifact.Response generatePresignedUrlForTrial(
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
 
-    if (partNumber != 0) {
+    if (partNumber != 1) {
       throw new ModelDBException(
           ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
-              + "Multipart artifact upload not supported on the trial version",
+              + "Multipart artifact upload not supported during the trial",
           Code.RESOURCE_EXHAUSTED);
     }
 
@@ -157,9 +157,9 @@ public class S3Service implements ArtifactStoreService {
       } else {
         throw new ModelDBException(
             ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
-                + "Method type ("
+                + "Method type "
                 + method
-                + ") not supported on the trial",
+                + " is not supported during the trial",
             Code.RESOURCE_EXHAUSTED);
       }
     } else {

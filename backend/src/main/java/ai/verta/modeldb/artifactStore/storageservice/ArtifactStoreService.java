@@ -127,7 +127,7 @@ public interface ArtifactStoreService {
       if (partNumber != null && partNumber != 0) {
         throw new ModelDBException(
             ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
-                + "Multipart artifact upload not supported on the trial version",
+                + "Multipart artifact upload not supported during the trial",
             Code.RESOURCE_EXHAUSTED);
       }
 
@@ -136,9 +136,9 @@ public interface ArtifactStoreService {
           && uploadedArtifactSize > ((double) app.getMaxArtifactSizeMB() * 1024)) {
         throw new ModelDBException(
             ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
-                + "Artifact size more then "
+                + "Artifact size more than "
                 + app.getMaxArtifactSizeMB()
-                + " MB not supported",
+                + " MB not supported during the trial",
             Code.RESOURCE_EXHAUSTED);
       }
     }
