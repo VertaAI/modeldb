@@ -37,6 +37,43 @@ Release Notes
      <>`__
 
 
+v0.15.6 (2020-10-02)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add ModelVersions.with_workspace()
+  <https://github.com/VertaAI/modeldb/pull/1367>`__
+- `add public_within_org param to Client.get_or_create_repository()
+  <https://github.com/VertaAI/modeldb/pull/1540>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `allow custom modules to handle non-PyPI pip-installed packages
+  <https://github.com/VertaAI/modeldb/pull/1554>`__
+- `propagate build errors during endpoint updates
+  <https://github.com/VertaAI/modeldb/pull/1358>`__
+- `use DirectUpdateStrategy as a default strategy for endpoint updates
+  <https://github.com/VertaAI/modeldb/pull/1541>`__
+- `add broader log-requirements support for modules whose PyPI names use dashes
+  instead of underscores
+  <https://github.com/VertaAI/modeldb/pull/1553>`__
+- `raise more informative error parsing attributes in CLI
+  <https://github.com/VertaAI/modeldb/pull/1430>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix bug where CPU could not be empty for endpoint resources
+  <https://github.com/VertaAI/modeldb/pull/1504>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `refactor client.set_repository() to attempt get before create
+  <https://github.com/VertaAI/modeldb/pull/1428>`__
+- `use backend implementation of experiment run clone
+  <https://github.com/VertaAI/modeldb/pull/1561>`__
+
+
 v0.15.4 (2020-09-09)
 --------------------
 
