@@ -128,7 +128,7 @@ public class S3Service implements ArtifactStoreService {
   public GetUrlForArtifact.Response generatePresignedUrlForTrial(
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
 
-    if (partNumber != 1) {
+    if (partNumber != 0) {
       throw new ModelDBException(
           ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
               + "Multipart artifact upload not supported during the trial",
