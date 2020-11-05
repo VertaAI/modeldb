@@ -2415,12 +2415,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
 
-      if (App.getInstance().getTrialEnabled()) {
-        throw new ModelDBException(
-            "Multipart artifact upload not supported on the trial version",
-            Code.FAILED_PRECONDITION);
-      }
-
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(

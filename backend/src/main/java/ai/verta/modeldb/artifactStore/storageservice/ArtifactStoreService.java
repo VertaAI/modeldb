@@ -1,9 +1,12 @@
 package ai.verta.modeldb.artifactStore.storageservice;
 
+import ai.verta.modeldb.App;
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import com.amazonaws.services.s3.model.PartETag;
+import com.google.rpc.Code;
 import io.grpc.Metadata;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -16,6 +19,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 public interface ArtifactStoreService {
 
   Optional<String> initiateMultipart(String s3Key) throws ModelDBException;
+
+  GetUrlForArtifact.Response generatePresignedUrlForTrial(
+      String s3Key, String method, long partNumber, String s) throws ModelDBException;
 
   String generatePresignedUrl(String s3Key, String method, long partNumber, String s)
       throws ModelDBException;
@@ -113,5 +119,23 @@ public interface ArtifactStoreService {
     }
 
     return uriComponentsBuilder.toUriString();
+  }
+
+  default void validateArtifactSizeForTrial(App app, String artifactPath, int artifactSize)
+      throws ModelDBException {
+    if (app.getTrialEnabled()) {
+      double uploadedArtifactSize = ((double) artifactSize / 1024); // In KB
+      if (app.getMaxArtifactSizeMB() != null
+          && uploadedArtifactSize > ((double) app.getMaxArtifactSizeMB() * 1024)) {
+        throw new ModelDBException(
+            ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
+                + "“"
+                + artifactPath
+                + " exceeds maximum allowed artifact size of "
+                + app.getMaxArtifactSizeMB()
+                + "MB”: The artifact you are trying to log exceeds the allowable limit for your trial account",
+            Code.RESOURCE_EXHAUSTED);
+      }
+    }
   }
 }

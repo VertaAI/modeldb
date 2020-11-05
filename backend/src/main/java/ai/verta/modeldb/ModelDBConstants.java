@@ -57,6 +57,8 @@ public interface ModelDBConstants {
   String MAX_EXPERIMENT_RUN_PER_WORKSPACE = "max_experiment_run_per_workspace";
   String LIMIT_RUN_ARTIFACT_NUMBER = "LIMIT_RUN_ARTIFACT_NUMBER: ";
   String LIMIT_RUN_NUMBER = "LIMIT_RUN_NUMBER: ";
+  String LIMIT_RUN_ARTIFACT_SIZE = "LIMIT_RUN_ARTIFACT_SIZE: ";
+  Integer MAX_ARTIFACT_SIZE_DEFAULT = 1024; // in MB
 
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
@@ -139,6 +141,7 @@ public interface ModelDBConstants {
   String GET = "get";
   String DELETE = "delete";
   String PUT = "put";
+  String POST = "post";
 
   // Common constants
   String ARTIFACT_MAPPING = "artifactMapping";
