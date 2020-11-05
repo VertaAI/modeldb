@@ -37,6 +37,32 @@ Release Notes
      <>`__
 
 
+v0.15.7 (2020-11-05)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `support logging models serialized with torch.save()
+  <https://github.com/VertaAI/modeldb/pull/1589>`__
+- `enable continuing previously-interrupted multipart uploads
+  <https://github.com/VertaAI/modeldb/pull/1585>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `ignore folders themselves in old-style S3 dataset versioning
+  <https://github.com/VertaAI/modeldb/pull/1573>`__
+- `ignore .git/ for custom modules
+  <https://github.com/VertaAI/modeldb/pull/1578>`__
+- `raise warning when metadata are provided to get_or_create_*()
+  <https://github.com/VertaAI/modeldb/pull/1582>`__
+- `add print to Dataset.get_latest_version()
+  <https://github.com/VertaAI/modeldb/pull/1527>`__
+- `have custom modules ignore libraries in __pycache__/
+  <https://github.com/VertaAI/modeldb/pull/1536>`__
+- `catch Keras serialization error with h5py v3.0.0
+  <https://github.com/VertaAI/modeldb/pull/1625>`__
+
+
 v0.15.6 (2020-10-02)
 --------------------
 
