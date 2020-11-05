@@ -82,7 +82,7 @@ public class NFSService implements ArtifactStoreService {
     LOGGER.trace("NFSService - storeFile called");
 
     // Validate Artifact size for trial case
-    validateArtifactSizeForTrial(app, request.getContentLength(), null);
+    validateArtifactSizeForTrial(app, artifactPath, request.getContentLength());
 
     try {
       String cleanArtifactPath = StringUtils.cleanPath(Objects.requireNonNull(artifactPath));

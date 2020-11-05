@@ -121,24 +121,19 @@ public interface ArtifactStoreService {
     return uriComponentsBuilder.toUriString();
   }
 
-  default void validateArtifactSizeForTrial(App app, int artifactSize, Long partNumber)
+  default void validateArtifactSizeForTrial(App app, String artifactPath, int artifactSize)
       throws ModelDBException {
     if (app.getTrialEnabled()) {
-      if (partNumber != null && partNumber != 0) {
-        throw new ModelDBException(
-            ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
-                + "Multipart artifact upload not supported during the trial",
-            Code.RESOURCE_EXHAUSTED);
-      }
-
       double uploadedArtifactSize = ((double) artifactSize / 1024); // In KB
       if (app.getMaxArtifactSizeMB() != null
           && uploadedArtifactSize > ((double) app.getMaxArtifactSizeMB() * 1024)) {
         throw new ModelDBException(
             ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
-                + "Artifact size more than "
+                + "“"
+                + artifactPath
+                + " exceeds maximum allowed artifact size of "
                 + app.getMaxArtifactSizeMB()
-                + " MB not supported during the trial",
+                + "MB”: The artifact you are trying to log exceeds the allowable limit for your trial account",
             Code.RESOURCE_EXHAUSTED);
       }
     }

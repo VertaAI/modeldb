@@ -127,14 +127,6 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public GetUrlForArtifact.Response generatePresignedUrlForTrial(
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
-
-    if (partNumber != 0) {
-      throw new ModelDBException(
-          ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
-              + "Multipart artifact upload not supported during the trial",
-          Code.RESOURCE_EXHAUSTED);
-    }
-
     if (app.isS3presignedURLEnabled()) {
       if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
         return GetUrlForArtifact.Response.newBuilder()
@@ -154,6 +146,9 @@ public class S3Service implements ArtifactStoreService {
                 s3Client.getBodyParameterMapForTrialPresignedURL(
                     s3Key, maxArtifactSize * 1024 * 1024))
             .build();
+      } else if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
+        throw new ModelDBException(
+            "Method type " + method + " is not supported during the trial", Code.INVALID_ARGUMENT);
       } else {
         throw new ModelDBException(
             ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
@@ -254,7 +249,7 @@ public class S3Service implements ArtifactStoreService {
       }
 
       // Validate Artifact size for trial case
-      validateArtifactSizeForTrial(app, request.getContentLength(), partNumber);
+      validateArtifactSizeForTrial(app, artifactPath, request.getContentLength());
 
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
         UploadPartRequest uploadRequest =

@@ -1228,12 +1228,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
-      if (app.getTrialEnabled() && request.getPartNumber() > 1) {
-        throw new ModelDBException(
-            "Multipart artifact upload not supported on the trial version",
-            Code.FAILED_PRECONDITION);
-      }
-
       final String s3Key;
       final String uploadId;
 
