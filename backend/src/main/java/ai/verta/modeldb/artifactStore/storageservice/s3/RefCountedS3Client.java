@@ -1,6 +1,7 @@
 package ai.verta.modeldb.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
@@ -8,10 +9,12 @@ import org.apache.logging.log4j.Logger;
 
 public class RefCountedS3Client implements AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(CronJobUtils.class);
+  private AWSCredentials credentials;
   private AmazonS3 s3Client;
   private AtomicInteger referenceCounter;
 
-  RefCountedS3Client(AmazonS3 client, AtomicInteger counter) {
+  RefCountedS3Client(AWSCredentials credentials, AmazonS3 client, AtomicInteger counter) {
+    this.credentials = credentials;
     s3Client = client;
     referenceCounter = counter;
     referenceCounter.incrementAndGet();
@@ -19,6 +22,10 @@ public class RefCountedS3Client implements AutoCloseable {
 
   public AmazonS3 getClient() {
     return s3Client;
+  }
+
+  public AWSCredentials getCredentials() {
+    return credentials;
   }
 
   @Override

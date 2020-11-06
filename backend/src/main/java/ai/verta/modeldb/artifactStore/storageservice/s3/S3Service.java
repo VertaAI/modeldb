@@ -1,5 +1,7 @@
 package ai.verta.modeldb.artifactStore.storageservice.s3;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
+
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.HttpCodeToGRPCCode;
@@ -10,6 +12,8 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSSessionCredentials;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
@@ -30,6 +34,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -139,13 +144,15 @@ public class S3Service implements ArtifactStoreService {
                 ? app.getMaxArtifactSizeMB()
                 : ModelDBConstants.MAX_ARTIFACT_SIZE_DEFAULT;
         LOGGER.debug("bucketName " + bucketName);
-        return GetUrlForArtifact.Response.newBuilder()
-            .setMultipartUploadOk(false)
-            .setUrl(String.format("http://%s.s3.amazonaws.com", bucketName))
-            .putAllFields(
-                s3Client.getBodyParameterMapForTrialPresignedURL(
-                    s3Key, maxArtifactSize * 1024 * 1024))
-            .build();
+        try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
+          return GetUrlForArtifact.Response.newBuilder()
+              .setMultipartUploadOk(false)
+              .setUrl(String.format("http://%s.s3.amazonaws.com", bucketName))
+              .putAllFields(
+                  getBodyParameterMapForTrialPresignedURL(
+                      client.getCredentials(), s3Key, maxArtifactSize * 1024 * 1024))
+              .build();
+        }
       } else if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
         throw new ModelDBException(
             "Method type " + method + " is not supported during the trial", Code.INVALID_ARGUMENT);
@@ -368,5 +375,36 @@ public class S3Service implements ArtifactStoreService {
       LOGGER.info(errorMessage);
       throw StatusProto.toStatusRuntimeException(status);
     }
+  }
+
+  public Map<String, String> getBodyParameterMapForTrialPresignedURL(
+      AWSCredentials awsCredentials, String s3Key, int maxArtifactSize) {
+    LocalDateTime localDateTime = LocalDateTime.now();
+    String dateTimeStr = localDateTime.format(ofPattern("yyyyMMdd'T'HHmmss'Z'"));
+    String date = localDateTime.format(ofPattern("yyyyMMdd"));
+
+    S3SignatureUtil s3SignatureUtil =
+        new S3SignatureUtil(awsCredentials, app.getAwsRegion(), ModelDBConstants.S3.toLowerCase());
+
+    String policy = s3SignatureUtil.readPolicy(bucketName, maxArtifactSize);
+    String signature = s3SignatureUtil.getSignature(policy, localDateTime);
+
+    Map<String, String> bodyParametersMap = new HashMap<>();
+    // TODO: add expiration
+    bodyParametersMap.put("key", s3Key);
+    bodyParametersMap.put("Policy", policy);
+    bodyParametersMap.put("X-Amz-Signature", signature);
+    bodyParametersMap.put("X-Amz-Algorithm", "AWS4-HMAC-SHA256");
+    bodyParametersMap.put("X-Amz-Date", dateTimeStr);
+    bodyParametersMap.put(
+        "X-Amz-Credential",
+        String.format(
+            "%s/%s/%s/s3/aws4_request",
+            awsCredentials.getAWSAccessKeyId(), date, app.getAwsRegion()));
+    if (awsCredentials instanceof AWSSessionCredentials) {
+      AWSSessionCredentials sessionCreds = (AWSSessionCredentials) awsCredentials;
+      bodyParametersMap.put("X-Amz-Security-Token", sessionCreds.getSessionToken());
+    }
+    return bodyParametersMap;
   }
 }
