@@ -5,6 +5,7 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 
 import com.amazonaws.auth.AWS4Signer;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSSessionCredentials;
 import com.amazonaws.auth.SigningAlgorithm;
 import java.time.LocalDateTime;
 import java.util.Base64;
@@ -39,7 +40,7 @@ public class S3SignatureUtil extends AWS4Signer {
     return mac.doFinal(data.getBytes(UTF_8));
   }
 
-  public String readPolicy(String bucketName, int maxArtifactSize) {
+  public String readPolicy(String bucketName, int maxArtifactSize, AWSCredentials awsCredentials) {
     StringBuilder policyBuilder =
         new StringBuilder()
             .append("{'expiration': '2099-12-30T12:00:00.000Z','conditions': [{'bucket': '")
@@ -47,7 +48,11 @@ public class S3SignatureUtil extends AWS4Signer {
             .append("'},['starts-with', '$key', ''],['starts-with', '$x-amz-date', '']")
             .append(",['starts-with', '$x-amz-credential', ''],['content-length-range', 0, ")
             .append(maxArtifactSize)
-            .append("],{'x-amz-algorithm': 'AWS4-HMAC-SHA256'}]}");
+            .append("]");
+    if (awsCredentials instanceof AWSSessionCredentials) {
+      policyBuilder.append(",['starts-with', '$x-amz-security-token','']");
+    }
+    policyBuilder.append(",{'x-amz-algorithm': 'AWS4-HMAC-SHA256'}]}");
     return Base64.getEncoder().encodeToString(policyBuilder.toString().getBytes(UTF_8));
   }
 }
