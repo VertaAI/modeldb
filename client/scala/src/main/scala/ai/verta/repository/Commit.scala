@@ -584,7 +584,7 @@ class Commit(
     })
   }
 
-  private val DefaultRetryAttempts: Int = 5
+  private val DefaultRetryAttempts: Int = 7
 
   /** Upload a part of the input stream
    *  @param blobPath path to the blob in the commit
