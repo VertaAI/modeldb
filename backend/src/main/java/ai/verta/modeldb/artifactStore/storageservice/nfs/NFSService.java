@@ -5,6 +5,7 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.api.client.util.IOUtils;
 import com.google.rpc.Code;
@@ -82,7 +83,7 @@ public class NFSService implements ArtifactStoreService {
     LOGGER.trace("NFSService - storeFile called");
 
     // Validate Artifact size for trial case
-    validateArtifactSizeForTrial(app, artifactPath, request.getContentLength());
+    TrialUtils.validateArtifactSizeForTrial(app, artifactPath, request.getContentLength());
 
     try {
       String cleanArtifactPath = StringUtils.cleanPath(Objects.requireNonNull(artifactPath));

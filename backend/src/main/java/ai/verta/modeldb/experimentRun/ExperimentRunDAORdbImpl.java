@@ -62,6 +62,7 @@ import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -389,8 +390,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      validateExperimentRunPerWorkspaceForTrial(projectDAO, experimentRun.getProjectId(), userInfo);
-      validateMaxArtifactsForTrial(experimentRun.getArtifactsCount(), 0);
+      TrialUtils.validateExperimentRunPerWorkspaceForTrial(
+          app, projectDAO, roleService, this, experimentRun.getProjectId(), userInfo);
+      TrialUtils.validateMaxArtifactsForTrial(app, experimentRun.getArtifactsCount(), 0);
 
       if (experimentRun.getDatasetsCount() > 0 && app.isPopulateConnectionsBasedOnPrivileges()) {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
@@ -1173,7 +1175,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
-      validateMaxArtifactsForTrial(newArtifacts.size(), existingArtifacts.size());
+      TrialUtils.validateMaxArtifactsForTrial(app, newArtifacts.size(), existingArtifacts.size());
 
       List<ArtifactEntity> newArtifactList =
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
@@ -1189,21 +1191,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         logArtifacts(experimentRunId, newArtifacts);
       } else {
         throw ex;
-      }
-    }
-  }
-
-  public void validateMaxArtifactsForTrial(int newArtifactsSize, int existingArtifactsSize)
-      throws ModelDBException {
-    if (app.getTrialEnabled()) {
-      if (app.getMaxArtifactPerRun() != null
-          && existingArtifactsSize + newArtifactsSize > app.getMaxArtifactPerRun()) {
-        throw new ModelDBException(
-            ModelDBConstants.LIMIT_RUN_ARTIFACT_NUMBER
-                + "“Number of artifacts exceeded”: You are allowed to log upto "
-                + app.getMaxArtifactPerRun()
-                + " artifacts per experiment run.",
-            Code.RESOURCE_EXHAUSTED);
       }
     }
   }
@@ -3027,36 +3014,5 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
     desExperimentRunBuilder.clearOwner().setOwner(authService.getVertaIdFromUserInfo(userInfo));
     return insertExperimentRun(projectDAO, desExperimentRunBuilder.build(), userInfo);
-  }
-
-  private void validateExperimentRunPerWorkspaceForTrial(
-      ProjectDAO projectDAO, String projectId, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ModelDBException {
-    if (app.getTrialEnabled()) {
-      Project project = projectDAO.getProjectByID(projectId);
-      if (project.getWorkspaceId() != null && !project.getWorkspaceId().isEmpty()) {
-        WorkspaceDTO workspaceDTO =
-            roleService.getWorkspaceDTOByWorkspaceId(
-                userInfo, project.getWorkspaceId(), project.getWorkspaceTypeValue());
-
-        // TODO: We can be replaced by a count(*) query instead .setIdsOnly(true)
-        FindExperimentRuns findExperimentRuns =
-            FindExperimentRuns.newBuilder()
-                .setIdsOnly(true)
-                .setWorkspaceName(workspaceDTO.getWorkspaceName())
-                .build();
-        ExperimentRunPaginationDTO paginationDTO =
-            findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
-        if (app.getMaxExperimentRunPerWorkspace() != null
-            && paginationDTO.getTotalRecords() >= app.getMaxExperimentRunPerWorkspace()) {
-          throw new ModelDBException(
-              ModelDBConstants.LIMIT_RUN_NUMBER
-                  + "“Number of experiment runs exceeded”: Your trial account allows you to log upto "
-                  + app.getMaxExperimentRunPerWorkspace()
-                  + " experiment runs. Try deleting prior experiment runs in order to proceed.",
-              Code.RESOURCE_EXHAUSTED);
-        }
-      }
-    }
   }
 }
