@@ -386,7 +386,7 @@ public class S3Service implements ArtifactStoreService {
     S3SignatureUtil s3SignatureUtil =
         new S3SignatureUtil(awsCredentials, app.getAwsRegion(), ModelDBConstants.S3.toLowerCase());
 
-    String policy = s3SignatureUtil.readPolicy(bucketName, maxArtifactSize);
+    String policy = s3SignatureUtil.readPolicy(bucketName, maxArtifactSize, awsCredentials);
     String signature = s3SignatureUtil.getSignature(policy, localDateTime);
 
     Map<String, String> bodyParametersMap = new HashMap<>();
