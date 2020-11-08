@@ -88,6 +88,14 @@ class Dataset(object):
         self.attrs = dataset.attributes
         self.tags = dataset.tags
 
+    def delete(self):
+        Message = _DatasetService.DeleteDataset
+        msg = Message(id=self.id)
+        response = self._conn.make_proto_request("DELETE",
+                                           "/api/v1/modeldb/dataset/deleteDataset",
+                                           body=msg)
+        self._conn.must_response(response)
+
     def __repr__(self):
         return "<{} \"{}\">".format(self.__class__.__name__, self.name)
 

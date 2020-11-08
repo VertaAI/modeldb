@@ -313,6 +313,14 @@ class Dataset(entity._ModelDBEntity):
         endpoint = "/api/v1/modeldb/dataset/deleteDatasetAttributes"
         self._update(msg, Message.Response, endpoint, "DELETE")
 
+    def create_version(self, dataset_version, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
+        return DatasetVersion._create(
+            self._conn, self._conf,
+            dataset=self, dataset_blob=dataset_version,
+            desc=desc, tags=tags, attrs=attrs,
+            time_logged=date_created, time_updated=date_created,
+        )
+
     def create_s3_version(self, paths, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
         """
         Creates s3 dataset version
@@ -400,3 +408,11 @@ class Dataset(entity._ModelDBEntity):
         response = self._conn.make_proto_request(method, endpoint, body=msg)
         self._conn.must_proto_response(response, response_proto)
         self._clear_cache()
+
+    def delete(self):
+        Message = _DatasetService.DeleteDataset
+        msg = Message(id=self.id)
+        response = self._conn.make_proto_request("DELETE",
+                                           "/api/v1/modeldb/dataset/deleteDataset",
+                                           body=msg)
+        self._conn.must_response(response)
