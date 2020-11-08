@@ -17,8 +17,9 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
@@ -156,18 +157,23 @@ public class NFSService implements ArtifactStoreService {
 
   private String generatePresignedUrl(String artifactPath, String method) {
     LOGGER.trace("NFSService - generatePresignedUrl called");
+    Map<String, Object> parameters = new HashMap<>();
+    parameters.put("artifact_path", artifactPath);
+
     if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
       LOGGER.trace("NFSService - generatePresignedUrl - put url returned");
       return getUploadUrl(
-          Collections.singletonMap("artifact_path", artifactPath),
+          parameters,
           app.getArtifactStoreUrlProtocol(),
           app.getStoreArtifactEndpoint(),
           app.getPickArtifactStoreHostFromConfig(),
           app.getArtifactStoreServerHost());
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("NFSService - generatePresignedUrl - get url returned");
+      String filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
+      parameters.put(ModelDBConstants.FILENAME, filename);
       return getDownloadUrl(
-          Collections.singletonMap("artifact_path", artifactPath),
+          parameters,
           app.getArtifactStoreUrlProtocol(),
           app.getGetArtifactEndpoint(),
           app.getPickArtifactStoreHostFromConfig(),

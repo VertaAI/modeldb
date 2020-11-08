@@ -387,7 +387,7 @@ class TestUpdate:
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
 
-        autoscaling_option = '{"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0}'
+        autoscaling_option = '{"min_replicas": 1, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0}'
         cpu_metric = '{"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.5"}]}'
         memory_metric = '{"metric": "memory_utilization", "parameters": [{"name": "target", "value": "0.7"}]}'
 

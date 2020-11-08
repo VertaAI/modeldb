@@ -237,13 +237,13 @@ public class RepositoryTest {
     return result.getRepository().getId();
   }
 
-  public static Repository createRepository(String repoName) {
+  private static Repository createRepository(String repoName) {
     SetRepository setRepository = getSetRepositoryRequest(repoName);
     SetRepository.Response result = versioningServiceBlockingStub.createRepository(setRepository);
     return result.getRepository();
   }
 
-  private static SetRepository getSetRepositoryRequest(String repoName) {
+  public static SetRepository getSetRepositoryRequest(String repoName) {
     return SetRepository.newBuilder()
         .setId(
             RepositoryIdentification.newBuilder()

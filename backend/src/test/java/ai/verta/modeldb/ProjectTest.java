@@ -1497,6 +1497,7 @@ public class ProjectTest {
               createProjectRequest.getName(),
               selfProject.getName());
 
+          getProject = GetProjectByName.newBuilder().setName(selfProject.getName()).build();
           getProjectByNameResponse = projectServiceStub.getProjectByName(getProject);
           LOGGER.info(
               "Response ProjectByUser of Project : " + getProjectByNameResponse.getProjectByUser());
@@ -1584,7 +1585,7 @@ public class ProjectTest {
       assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
 
       // Create project
-      createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+      createProjectRequest = getCreateProjectRequest(project.getName());
       createProjectResponse = projectServiceStub.createProject(createProjectRequest);
       selfProject = createProjectResponse.getProject();
       LOGGER.info("Project created successfully");

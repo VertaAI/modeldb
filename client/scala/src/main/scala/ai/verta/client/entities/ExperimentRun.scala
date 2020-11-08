@@ -10,6 +10,7 @@ import ai.verta.client.entities.utils.{KVHandler, ValueType}
 import ai.verta.swagger._public.modeldb.model._
 import ai.verta.swagger.client.ClientSet
 import ai.verta.repository._
+import ai.verta.dataset_versioning.DatasetVersion
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
@@ -23,6 +24,9 @@ import scala.util.{Failure, Success, Try}
  *  There should not be a need to instantiate this class directly; please use experiment run's getOrCreateExperimentRun.
  */
 class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: ModeldbExperimentRun) extends Taggable {
+  /** ID of the experiment run. */
+  def id = run.id.get
+
   /** Return a set-like object of type Tags, representing the tags associated with ExperimentRun
    *  Provide an alternative interface to get/del/add Tags methods
    *  @return the tags set
@@ -428,4 +432,53 @@ class ExperimentRun(val clientSet: ClientSet, val expt: Experiment, val run: Mod
       }
     )
   }
+
+  /** Logs a Verta dataset version to this experiment run with the given key.
+   *  @param key key
+   *  @param datasetVersion dataset version to log.
+   *  @param overwrite whether to ovewrite existing logged dataset version.
+   */
+  def logDatasetVersion(key: String, datasetVersion: DatasetVersion, overwrite: Boolean = false)(implicit ec: ExecutionContext): Try[Unit] = {
+    val datasetPath = "See attached dataset version" // placeholder path
+
+    val artifact = CommonArtifact(
+      key = Some(key),
+      path = Some(datasetPath),
+      path_only = Some(true),
+      artifact_type = Some(ArtifactTypeEnumArtifactType.DATA),
+      linked_artifact_id = Some(datasetVersion.id)
+    )
+
+    clientSet.experimentRunService.ExperimentRunService_logDataset(ModeldbLogDataset(
+      dataset = Some(artifact),
+      id = Some(id),
+      overwrite = Some(overwrite)
+    ))
+      .map(_ => ())
+  }
+
+  /** Gets a Verta dataset version with the given key associated with this experiment run.
+   *  @param key the key that the dataset version was associated with.
+   *  @return the dataset version with the given key.
+   */
+  def getDatasetVersion(key: String)(implicit ec: ExecutionContext): Try[DatasetVersion] =
+    getDatasetVersionsId()
+      .flatMap(versions => versions.get(key) match {
+        case Some(version) => Success(version)
+        case None => Failure(new IllegalArgumentException(f"no dataset version with the key \'${key}\' associated with the experiment run."))
+      })
+      .flatMap(datasetVersionId => DatasetVersion.getDatasetVersionById(clientSet, datasetVersionId))
+
+  /** Gets all Verta dataset versions associated with this experiment run.
+   *  @return dataset versions associated with this experiment run, along with the keys they were logged with.
+   */
+  def getDatasetVersions()(implicit ec: ExecutionContext): Try[Map[String, DatasetVersion]] =
+    getDatasetVersionsId()
+      .map(_.mapValues(datasetVersionId => DatasetVersion.getDatasetVersionById(clientSet, datasetVersionId))) // Try[Map[String, Try[DatasetVersion]]]
+      .flatMap(m => Try(m.mapValues(_.get))) // Try[Map[String, DatasetVersion]]
+
+  private def getDatasetVersionsId()(implicit ec: ExecutionContext): Try[Map[String, String]] =
+    clientSet.experimentRunService.ExperimentRunService_getDatasets(Some(id))
+      .map(r => r.datasets.getOrElse(Nil)) // Try[List[CommonArtifact]]
+      .map(_.map(artifact => artifact.key.get -> artifact.linked_artifact_id.get).toMap) // Try[Map[String, String]]
 }

@@ -28,6 +28,7 @@ case class UacVertaUserInfo (
   last_login_timestamp: Option[BigInt] = None,
   publicProfile: Option[UacFlagEnum] = None,
   refresh_timestamp: Option[BigInt] = None,
+  trial_info: Option[UacTrialUserInfo] = None,
   user_id: Option[String] = None,
   username: Option[String] = None,
   workspace_id: Option[String] = None
@@ -43,6 +44,7 @@ object UacVertaUserInfo {
         obj.last_login_timestamp.map(x => JField("last_login_timestamp", JInt(x))),
         obj.publicProfile.map(x => JField("publicProfile", ((x: UacFlagEnum) => UacFlagEnum.toJson(x))(x))),
         obj.refresh_timestamp.map(x => JField("refresh_timestamp", JInt(x))),
+        obj.trial_info.map(x => JField("trial_info", ((x: UacTrialUserInfo) => UacTrialUserInfo.toJson(x))(x))),
         obj.user_id.map(x => JField("user_id", JString(x))),
         obj.username.map(x => JField("username", JString(x))),
         obj.workspace_id.map(x => JField("workspace_id", JString(x)))
@@ -63,6 +65,7 @@ object UacVertaUserInfo {
           last_login_timestamp = fieldsMap.get("last_login_timestamp").map(JsonConverter.fromJsonInteger),
           publicProfile = fieldsMap.get("publicProfile").map(UacFlagEnum.fromJson),
           refresh_timestamp = fieldsMap.get("refresh_timestamp").map(JsonConverter.fromJsonInteger),
+          trial_info = fieldsMap.get("trial_info").map(UacTrialUserInfo.fromJson),
           user_id = fieldsMap.get("user_id").map(JsonConverter.fromJsonString),
           username = fieldsMap.get("username").map(JsonConverter.fromJsonString),
           workspace_id = fieldsMap.get("workspace_id").map(JsonConverter.fromJsonString)

@@ -361,6 +361,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
                     Any.pack(UpdateExperimentNameOrDescription.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
+      } else if (request.getName().isEmpty() && request.getDescription().isEmpty()) {
+        throw new ModelDBException(
+            "Name OR Description should not be empty", Code.INVALID_ARGUMENT);
       }
 
       Map<String, String> projectIdFromExperimentMap =

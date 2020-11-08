@@ -46,7 +46,10 @@ class DatasetVersion(entity._ModelDBEntity):
         msg = Message(dataset_id=dataset_id)
         endpoint = "/api/v1/modeldb/dataset-version/getLatestDatasetVersionByDatasetId"
         response = conn.make_proto_request("GET", endpoint, params=msg)
-        return conn.must_proto_response(response, Message.Response).dataset_version
+
+        dataset_version = conn.must_proto_response(response, Message.Response).dataset_version
+        print("got existing dataset version: {}".format(dataset_version.id))
+        return dataset_version
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):

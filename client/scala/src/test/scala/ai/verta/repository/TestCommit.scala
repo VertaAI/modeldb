@@ -26,7 +26,7 @@ class TestCommit extends FunSuite {
         val repo = client.getOrCreateRepository("My Repo").get
         val commit = repo.getCommitByBranch().get
         val pathBlob = PathBlob(f"${System.getProperty("user.dir")}/src/test/scala/ai/verta/blobs/testdir").get
-        val s3Blob = S3(S3Location("s3://verta-scala-test/testdir/testsubdir/testfile2").get).get
+        val s3Blob = S3(S3Location("s3://verta-starter/census-train.csv").get).get
         val dbBlob = DBDatasetBlob(query, dbConnectionStr, Some(numRecords))
     }
 

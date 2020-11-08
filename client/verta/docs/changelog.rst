@@ -37,6 +37,69 @@ Release Notes
      <>`__
 
 
+v0.15.7 (2020-11-05)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `support logging models serialized with torch.save()
+  <https://github.com/VertaAI/modeldb/pull/1589>`__
+- `enable continuing previously-interrupted multipart uploads
+  <https://github.com/VertaAI/modeldb/pull/1585>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `ignore folders themselves in old-style S3 dataset versioning
+  <https://github.com/VertaAI/modeldb/pull/1573>`__
+- `ignore .git/ for custom modules
+  <https://github.com/VertaAI/modeldb/pull/1578>`__
+- `raise warning when metadata are provided to get_or_create_*()
+  <https://github.com/VertaAI/modeldb/pull/1582>`__
+- `add print to Dataset.get_latest_version()
+  <https://github.com/VertaAI/modeldb/pull/1527>`__
+- `have custom modules ignore libraries in __pycache__/
+  <https://github.com/VertaAI/modeldb/pull/1536>`__
+- `catch Keras serialization error with h5py v3.0.0
+  <https://github.com/VertaAI/modeldb/pull/1625>`__
+
+
+v0.15.6 (2020-10-02)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add ModelVersions.with_workspace()
+  <https://github.com/VertaAI/modeldb/pull/1367>`__
+- `add public_within_org param to Client.get_or_create_repository()
+  <https://github.com/VertaAI/modeldb/pull/1540>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `allow custom modules to handle non-PyPI pip-installed packages
+  <https://github.com/VertaAI/modeldb/pull/1554>`__
+- `propagate build errors during endpoint updates
+  <https://github.com/VertaAI/modeldb/pull/1358>`__
+- `use DirectUpdateStrategy as a default strategy for endpoint updates
+  <https://github.com/VertaAI/modeldb/pull/1541>`__
+- `add broader log-requirements support for modules whose PyPI names use dashes
+  instead of underscores
+  <https://github.com/VertaAI/modeldb/pull/1553>`__
+- `raise more informative error parsing attributes in CLI
+  <https://github.com/VertaAI/modeldb/pull/1430>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix bug where CPU could not be empty for endpoint resources
+  <https://github.com/VertaAI/modeldb/pull/1504>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `refactor client.set_repository() to attempt get before create
+  <https://github.com/VertaAI/modeldb/pull/1428>`__
+- `use backend implementation of experiment run clone
+  <https://github.com/VertaAI/modeldb/pull/1561>`__
+
+
 v0.15.4 (2020-09-09)
 --------------------
 

@@ -14,7 +14,7 @@ import java.io.FileNotFoundException
 class TestAtlasDatasetBlob extends FunSuite {
   implicit val ec = ExecutionContext.global
 
-  test("Atlas hive blob should save the correct query and connection") {
+  ignore("Atlas hive blob should save the correct query and connection") {
     val guid = sys.env.get("GUID").get
     val expectedNumRecords: BigInt = 8279779
     val expectedDatabaseName = "default"

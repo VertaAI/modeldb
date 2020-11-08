@@ -40,11 +40,6 @@ def pytest_addoption(parser):
     parser.addoption("--oss", action="store_true", help="run OSS-compatible tests")
 
 
-def pytest_configure(config):
-    config.addinivalue_line("markers", "oss: mark the given test function as only applicable to OSS.")
-    config.addinivalue_line("markers", "not_oss: mark the given test function not available in OSS.")
-
-
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--oss"):
         skip_not_oss = pytest.mark.skip(reason="not available in OSS")
@@ -265,9 +260,14 @@ def dir_and_files(strs, tmp_path):
 
 
 @pytest.fixture
-def in_tempdir():
+def tempdir_root():
+    return os.environ.get("TEMPDIR_ROOT")
+
+
+@pytest.fixture
+def in_tempdir(tempdir_root):
     """Moves test to execute inside a temporary directory."""
-    dirpath = tempfile.mkdtemp()
+    dirpath = tempfile.mkdtemp(dir=tempdir_root)
     try:
         with utils.chdir(dirpath):
             yield dirpath

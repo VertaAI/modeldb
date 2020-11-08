@@ -395,6 +395,15 @@
         }
       }
     },
+    "uacTrialUserInfo": {
+      "type": "object",
+      "properties": {
+        "days_remaining": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "uacUpdateUser": {
       "type": "object",
       "properties": {
@@ -478,6 +487,9 @@
         },
         "workspace_id": {
           "type": "string"
+        },
+        "trial_info": {
+          "$ref": "#/definitions/uacTrialUserInfo"
         }
       }
     },

@@ -218,6 +218,7 @@ class Dataset(object):
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        print("got existing dataset version: {}".format(response_msg.dataset_version.id))
         return DatasetVersion(self._conn, self._conf, _dataset_version_id=response_msg.dataset_version.id)
 
 
