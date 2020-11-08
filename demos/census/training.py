@@ -38,7 +38,7 @@ experiment = client.set_experiment(name="Linear regression")
 hyperparam_candidates = {
     'C': [1e-6, 1e-4, 1e-2, 1e0],
     'solver': ['lbfgs'],
-    'max_iter': [10, 20, 30],
+    'max_iter': [10, 20, 30, 40, 50],
     'balanced': [1, 0],
 }
 hyperparam_sets = [dict(zip(hyperparam_candidates.keys(), values))
