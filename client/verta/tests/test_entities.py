@@ -174,6 +174,7 @@ class TestClient:
         finally:
             os.environ[HOST_KEY], os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = HOST, EMAIL, DEV_KEY
 
+    @pytest.mark.not_oss
     def test_wrong_credentials(self):
         EMAIL_KEY, DEV_KEY_KEY = "VERTA_EMAIL", "VERTA_DEV_KEY"
         old_email, old_dev_key = os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
