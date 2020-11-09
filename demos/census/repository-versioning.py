@@ -90,7 +90,7 @@ trunk.merge(trunk
         'max_iter': [10, 20, 30],
         'balanced': [1, 0],
     }))
-    .save("Create initial set of hyperparameters")
+    .save("Update hyperparameters")
 )
 
 trunk = save_dataset(trunk, 5)
