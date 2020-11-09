@@ -180,15 +180,16 @@ class Client(object):
                 response = _utils.make_request("GET",
                                                "{}://{}/api/v1/modeldb/project/verifyConnection".format(conn.scheme, conn.socket),
                                                conn)
-            except requests.ConnectionError:
-                six.raise_from(requests.ConnectionError("connection failed; please check `host` and `port`"),
-                               None)
+            except requests.ConnectionError as err:
+                conn_error_msg = "connection failed; please check `host` and `port`; original error: \n{}".format(str(err))
+                six.raise_from(requests.ConnectionError(conn_error_msg), None)
 
             def is_unauthorized(response): return response.status_code == 401
 
             if is_unauthorized(response):
-                auth_error_msg = "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`"
-                six.raise_from(requests.HTTPError(auth_error_msg), None)
+                # response.reason was "Unauthorized"
+                new_reason = "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`; {}".format(response.reason)
+                response.reason = new_reason
 
             _utils.raise_for_http_error(response)
             print("connection successfully established")
