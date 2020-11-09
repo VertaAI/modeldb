@@ -181,8 +181,8 @@ class Client(object):
                                                "{}://{}/api/v1/modeldb/project/verifyConnection".format(conn.scheme, conn.socket),
                                                conn)
             except requests.ConnectionError as err:
-                conn_error_msg = "connection failed; please check `host` and `port`; error message: \n{}".format(str(err))
-                six.raise_from(requests.ConnectionError(conn_error_msg), None)
+                err.args = ("connection failed; please check `host` and `port`; error message: \n\n{}".format(err.args[0]),) + err.args[1:]
+                six.raise_from(err, None)
 
             def is_unauthorized(response): return response.status_code == 401
 
