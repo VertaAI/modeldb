@@ -188,7 +188,7 @@ class Client(object):
 
             if is_unauthorized(response):
                 # response.reason was "Unauthorized"
-                new_reason = "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`; {}".format(response.reason)
+                new_reason = "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`\n\n{}".format(response.reason)
                 response.reason = new_reason
 
             _utils.raise_for_http_error(response)
