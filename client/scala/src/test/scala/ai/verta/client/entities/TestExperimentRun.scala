@@ -223,7 +223,7 @@ class TestExperimentRun extends FunSuite {
     try {
       assert(f.expRun.getTags.get equals Nil)
       assert(f.expRun.addTags(List("some-tag", "other-tag")).isSuccess)
-      assert(f.expRun.getTags.get equals List("some-tag", "other-tag"))
+      assert(f.expRun.getTags.get equals List("some-tag", "other-tag").sorted)
     } finally {
       cleanup(f)
     }
@@ -235,7 +235,7 @@ class TestExperimentRun extends FunSuite {
     try {
       f.expRun.addTags(List("some-tag", "other-tag", "to-remove-tag-1", "to-remove-tag-2"))
       f.expRun.delTags(List("to-remove-tag-1", "to-remove-tag-2", "non-existing-tag"))
-      assert(f.expRun.getTags.get equals List("some-tag", "other-tag"))
+      assert(f.expRun.getTags.get equals List("some-tag", "other-tag").sorted)
     } finally {
       cleanup(f)
     }
@@ -249,7 +249,7 @@ class TestExperimentRun extends FunSuite {
       tags += "some-tag"
       tags += "other-tag"
       assert(tags.contains("some-tag") && tags.contains("other-tag"))
-      assert(f.expRun.getTags.get equals List("some-tag", "other-tag"))
+      assert(f.expRun.getTags.get equals List("some-tag", "other-tag").sorted)
 
       tags -= "other-tag"
       assert(!tags.contains("other-tag"))
