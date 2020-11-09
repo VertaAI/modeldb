@@ -64,6 +64,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -268,7 +269,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectName(String projectId, String projectName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
+      ProjectEntity projectEntity =
+          session.load(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
 
       Project project =
           Project.newBuilder()
@@ -298,7 +300,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectDescription(String projectId, String projectDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
+      ProjectEntity projectEntity =
+          session.load(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
       projectEntity.setDescription(projectDescription);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();
@@ -319,7 +322,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectReadme(String projectId, String projectReadme)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
+      ProjectEntity projectEntity =
+          session.load(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
       projectEntity.setReadme_text(projectReadme);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();
@@ -340,7 +344,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project logProjectCodeVersion(String projectId, CodeVersion updatedCodeVersion)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ProjectEntity projectEntity = session.get(ProjectEntity.class, projectId);
+      ProjectEntity projectEntity =
+          session.get(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
 
       CodeVersionEntity existingCodeVersionEntity = projectEntity.getCode_version_snapshot();
       if (existingCodeVersionEntity == null) {
@@ -382,7 +387,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectAttributes(String projectId, KeyValue attribute)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
+      ProjectEntity projectObj =
+          session.get(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
       if (projectObj == null) {
         String errorMessage = "Project not found for given ID";
         LOGGER.info(errorMessage);
@@ -464,7 +470,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project addProjectTags(String projectId, List<String> tagsList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
+      ProjectEntity projectObj =
+          session.get(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
       if (projectObj == null) {
         String errorMessage = "Project not found for given ID";
         LOGGER.info(errorMessage);
@@ -574,7 +581,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project addProjectAttributes(String projectId, List<KeyValue> attributesList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
+      ProjectEntity projectObj =
+          session.get(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
       projectObj.setAttributeMapping(
           RdbmsUtils.convertAttributesFromAttributeEntityList(
               projectObj, ModelDBConstants.ATTRIBUTES, attributesList));
