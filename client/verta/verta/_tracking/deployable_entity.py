@@ -377,4 +377,7 @@ class _DeployableEntity(_ModelDBEntity):
             if e.response.status_code == 404:
                 raise RuntimeError("log_training_data() may not yet have been called")
 
+            # if not 404 error (e.g 429), throw them as-is:
+            raise e
+
         return response.json()
