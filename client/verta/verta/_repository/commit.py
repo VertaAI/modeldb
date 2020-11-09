@@ -405,6 +405,8 @@ class Commit(object):
 
         self._blobs[path] = blob
 
+        return self
+
     def get(self, path):
         """
         Retrieves the blob at `path` from this Commit.
@@ -496,6 +498,8 @@ class Commit(object):
                         self._upload_artifact(blob_path, component.path, f)
 
             blob._clean_up_uploaded_components()
+
+        return self
 
     def _save(self, proto_message):
         data = _utils.proto_to_json(proto_message)
@@ -851,6 +855,8 @@ class Commit(object):
             ]))
 
         self._become_saved_child(response_msg.commit.commit_sha)
+
+        return self
 
 
 def blob_msg_to_object(blob_msg):
