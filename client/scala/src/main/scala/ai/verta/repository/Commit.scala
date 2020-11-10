@@ -584,6 +584,8 @@ class Commit(
     })
   }
 
+  private val DefaultRetryAttempts: Int = 7
+
   /** Upload a part of the input stream
    *  @param blobPath path to the blob in the commit
    *  @param datasetComponentPath path to the component in the blob
@@ -625,7 +627,7 @@ class Commit(
               filepart.close()
             }
           }),
-          7, // number of upload attempts
+          sys.env.get("VERTA_MAX_UPLOADING_RETRIES").fold(DefaultRetryAttempts)(_.toInt), // number of upload attempts
           f"Uploading part ${partNum} of component ${datasetComponentPath} of blob at ${blobPath} fails."
         )
     })
