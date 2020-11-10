@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
@@ -226,6 +227,7 @@ public class VersioningUtils {
         new ArtifactPartEntity(
             artifactId, artifactType, artifactPart.getPartNumber(), artifactPart.getEtag());
     session.beginTransaction();
+    session.lock(artifactPartEntity, LockMode.PESSIMISTIC_WRITE);
     session.saveOrUpdate(artifactPartEntity);
     session.getTransaction().commit();
   }

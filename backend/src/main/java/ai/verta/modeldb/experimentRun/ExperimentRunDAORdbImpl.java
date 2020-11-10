@@ -120,6 +120,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -481,7 +483,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw StatusProto.toStatusRuntimeException(statusMessage);
       }
       Transaction transaction = session.beginTransaction();
-      Query query = session.createQuery(DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING);
+      Query query =
+          session
+              .createQuery(DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING)
+              .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
       query.setParameter("deleted", true);
       query.setParameter("experimentRunIds", accessibleExperimentRunIds);
       int updatedCount = query.executeUpdate();
@@ -721,7 +726,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void updateExperimentRunName(String experimentRunId, String experimentRunName) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
-          session.load(ExperimentRunEntity.class, experimentRunId);
+          session.load(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntity.setName(experimentRunName);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
@@ -744,7 +749,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
-          session.load(ExperimentRunEntity.class, experimentRunId);
+          session.load(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntity.setDescription(experimentRunDescription);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
@@ -768,7 +773,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+          session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
 
       CodeVersionEntity existingCodeVersionEntity = experimentRunEntity.getCode_version_snapshot();
       if (existingCodeVersionEntity == null) {
@@ -800,7 +805,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void setParentExperimentRunId(String experimentRunId, String parentExperimentRunId) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
-          session.load(ExperimentRunEntity.class, experimentRunId);
+          session.load(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntity.setParent_id(parentExperimentRunId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
@@ -822,7 +827,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+          session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunObj == null) {
         LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
         Status status =
@@ -868,11 +873,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       if (deleteAll) {
-        Query query = session.createQuery(DELETE_ALL_TAGS_HQL);
+        Query query =
+            session
+                .createQuery(DELETE_ALL_TAGS_HQL)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
         query.executeUpdate();
       } else {
-        Query query = session.createQuery(DELETE_SELECTED_TAGS_HQL);
+        Query query =
+            session
+                .createQuery(DELETE_SELECTED_TAGS_HQL)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter("tags", experimentRunTagList);
         query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
         query.executeUpdate();
@@ -899,8 +910,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+          session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
         Status status =
@@ -911,7 +923,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      Transaction transaction = session.beginTransaction();
       List<ObservationEntity> newObservationList =
           RdbmsUtils.convertObservationsFromObservationEntityList(
               session,
@@ -974,7 +985,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+          session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
         Status status =
@@ -1078,7 +1089,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+          session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
         Status status =
@@ -1142,7 +1153,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+          session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
         Status status =
@@ -1224,7 +1235,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private void deleteArtifactEntities(
       Session session, String experimentRunId, List<String> keys, String fieldType) {
-    Query query = session.createQuery(DELETE_SELECTED_ARTIFACTS_HQL);
+    Query query =
+        session
+            .createQuery(DELETE_SELECTED_ARTIFACTS_HQL)
+            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     query.setParameterList("keys", keys);
     query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
     query.setParameter("field_type", fieldType);
@@ -1238,7 +1252,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       transaction = session.beginTransaction();
 
       if (false) { // Change it with parameter for support to delete all artifacts
-        Query query = session.createQuery(DELETE_ALL_ARTIFACTS_HQL);
+        Query query =
+            session
+                .createQuery(DELETE_ALL_ARTIFACTS_HQL)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
         query.executeUpdate();
       } else {
@@ -1268,7 +1285,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+          session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
         Status status =
@@ -1345,7 +1362,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+          session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
         Status status =
@@ -2007,7 +2024,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+          session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       List<AttributeEntity> newAttributeList =
           RdbmsUtils.convertAttributesFromAttributeEntityList(
               experimentRunEntityObj, ModelDBConstants.ATTRIBUTES, attributesList);
@@ -2032,12 +2049,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       if (deleteAll) {
-        Query query = session.createQuery(DELETE_ALL_EXP_RUN_ATTRIBUTES_HQL);
+        Query query =
+            session
+                .createQuery(DELETE_ALL_EXP_RUN_ATTRIBUTES_HQL)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
         query.setParameter(ModelDBConstants.FIELD_TYPE_STR, ModelDBConstants.ATTRIBUTES);
         query.executeUpdate();
       } else {
-        Query query = session.createQuery(DELETE_SELECTED_EXP_RUN_ATTRIBUTES_HQL);
+        Query query =
+            session
+                .createQuery(DELETE_SELECTED_EXP_RUN_ATTRIBUTES_HQL)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter("keys", attributeKeyList);
         query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
         query.setParameter(ModelDBConstants.FIELD_TYPE_STR, ModelDBConstants.ATTRIBUTES);
@@ -2063,7 +2086,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logJobId(String experimentRunId, String jobId) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+          session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntityObj.setJob_id(jobId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
@@ -2300,7 +2323,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       VersioningEntry versioningEntry = request.getVersionedInputs();
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
           validateVersioningEntity(session, versioningEntry);
-      ExperimentRunEntity runEntity = session.get(ExperimentRunEntity.class, request.getId());
+      ExperimentRunEntity runEntity =
+          session.get(ExperimentRunEntity.class, request.getId(), LockMode.PESSIMISTIC_WRITE);
       List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings =
           RdbmsUtils.getVersioningMappingFromVersioningInput(
               session, versioningEntry, locationBlobWithHashMap, runEntity);
@@ -2331,7 +2355,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 delete.from(VersioningModeldbEntityMapping.class);
             delete.where(cb.in(e.get("experimentRunEntity")).value(runEntity));
             Transaction transaction = session.beginTransaction();
-            session.createQuery(delete).executeUpdate();
+            session
+                .createQuery(delete)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE))
+                .executeUpdate();
             transaction.commit();
             existingMappings.addAll(versioningModeldbEntityMappings);
           } else {
@@ -2394,7 +2421,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     if (commitHash != null && !commitHash.isEmpty()) {
       fetchAllExpRunLogVersionedInputsHqlBuilder.append(" AND vm.commit = :commitHash");
     }
-    Query query = session.createQuery(fetchAllExpRunLogVersionedInputsHqlBuilder.toString());
+    Query query =
+        session
+            .createQuery(fetchAllExpRunLogVersionedInputsHqlBuilder.toString())
+            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     query.setParameter("repoId", repoId);
     if (commitHash != null && !commitHash.isEmpty()) {
       query.setParameter("commitHash", commitHash);
@@ -2412,7 +2442,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         .append(" AND vm.entity_type = '")
         .append(ExperimentRunEntity.class.getSimpleName())
         .append("'");
-    Query query = session.createQuery(fetchAllExpRunLogVersionedInputsHqlBuilder.toString());
+    Query query =
+        session
+            .createQuery(fetchAllExpRunLogVersionedInputsHqlBuilder.toString())
+            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     query.setParameter("repoIds", repoIds);
     query.executeUpdate();
     LOGGER.debug("ExperimentRun versioning deleted successfully");
@@ -2596,7 +2629,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private Optional<ArtifactEntity> getExperimentRunArtifact(
       Session session, String experimentRunId, String key) {
-    ExperimentRunEntity experimentRunObj = session.get(ExperimentRunEntity.class, experimentRunId);
+    ExperimentRunEntity experimentRunObj =
+        session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
     if (experimentRunObj == null) {
       LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       Status status =
@@ -2801,7 +2835,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private void deleteAllKeyValueEntities(
       Session session, String experimentRunId, String fieldType) {
-    Query query = session.createQuery(DELETE_ALL_KEY_VALUES_HQL);
+    Query query =
+        session
+            .createQuery(DELETE_ALL_KEY_VALUES_HQL)
+            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
     query.setParameter("field_type", fieldType);
     query.executeUpdate();
@@ -2809,7 +2846,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private void deleteKeyValueEntities(
       Session session, String experimentRunId, List<String> keys, String fieldType) {
-    Query query = session.createQuery(DELETE_SELECTED_KEY_VALUES_HQL);
+    Query query =
+        session
+            .createQuery(DELETE_SELECTED_KEY_VALUES_HQL)
+            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     query.setParameterList("keys", keys);
     query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
     query.setParameter("field_type", fieldType);
@@ -2867,7 +2907,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query query = session.createQuery(GET_ALL_OBSERVATIONS_HQL);
+      Query query =
+          session
+              .createQuery(GET_ALL_OBSERVATIONS_HQL)
+              .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
       query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
       query.setParameter("field_type", ModelDBConstants.OBSERVATIONS);
       List<ObservationEntity> observationEntities = query.list();

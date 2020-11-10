@@ -54,6 +54,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -315,7 +317,10 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query deletedDatasetsQuery = session.createQuery(DELETED_STATUS_DATASET_QUERY_STRING);
+      Query deletedDatasetsQuery =
+          session
+              .createQuery(DELETED_STATUS_DATASET_QUERY_STRING)
+              .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
       deletedDatasetsQuery.setParameter("deleted", true);
       deletedDatasetsQuery.setParameter("datasetIds", allowedDatasetIds);
       int updatedCount = deletedDatasetsQuery.executeUpdate();
@@ -569,7 +574,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset updateDatasetName(String datasetId, String datasetName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetObj = session.load(DatasetEntity.class, datasetId);
+      DatasetEntity datasetObj =
+          session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
 
       Dataset dataset =
           Dataset.newBuilder()
@@ -600,7 +606,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset updateDatasetDescription(String datasetId, String datasetDescription)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetObj = session.load(DatasetEntity.class, datasetId);
+      DatasetEntity datasetObj =
+          session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       datasetObj.setDescription(datasetDescription);
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();
@@ -621,7 +628,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset addDatasetTags(String datasetId, List<String> tagsList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
+      DatasetEntity datasetObj =
+          session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
         LOGGER.info(errorMessage);
@@ -679,13 +687,19 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       StringBuilder stringQueryBuilder = new StringBuilder("delete from TagsMapping tm WHERE ");
       if (deleteAll) {
         stringQueryBuilder.append(" tm.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
-        Query query = session.createQuery(stringQueryBuilder.toString());
+        Query query =
+            session
+                .createQuery(stringQueryBuilder.toString())
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter(ModelDBConstants.DATASET_ID_STR, datasetId);
         query.executeUpdate();
       } else {
         stringQueryBuilder.append(" tm." + ModelDBConstants.TAGS + " in (:tags)");
         stringQueryBuilder.append(" AND tm.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
-        Query query = session.createQuery(stringQueryBuilder.toString());
+        Query query =
+            session
+                .createQuery(stringQueryBuilder.toString())
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter("tags", datasetTagList);
         query.setParameter(ModelDBConstants.DATASET_ID_STR, datasetId);
         query.executeUpdate();
@@ -710,7 +724,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset addDatasetAttributes(String datasetId, List<KeyValue> attributesList)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
+      DatasetEntity datasetObj =
+          session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       datasetObj.setAttributeMapping(
           RdbmsUtils.convertAttributesFromAttributeEntityList(
               datasetObj, ModelDBConstants.ATTRIBUTES, attributesList));
@@ -733,7 +748,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset updateDatasetAttributes(String datasetId, KeyValue attribute)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
+      DatasetEntity datasetObj =
+          session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
         LOGGER.info(errorMessage);
@@ -815,14 +831,20 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           new StringBuilder("delete from AttributeEntity attr WHERE ");
       if (deleteAll) {
         stringQueryBuilder.append(" attr.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
-        Query query = session.createQuery(stringQueryBuilder.toString());
+        Query query =
+            session
+                .createQuery(stringQueryBuilder.toString())
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter(ModelDBConstants.DATASET_ID_STR, datasetId);
         query.executeUpdate();
       } else {
         stringQueryBuilder.append(" attr." + ModelDBConstants.KEY + " in (:keys)");
         stringQueryBuilder.append(
             " AND attr.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
-        Query query = session.createQuery(stringQueryBuilder.toString());
+        Query query =
+            session
+                .createQuery(stringQueryBuilder.toString())
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter("keys", attributeKeyList);
         query.setParameter(ModelDBConstants.DATASET_ID_STR, datasetId);
         query.executeUpdate();
@@ -845,7 +867,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset setDatasetVisibility(String datasetId, DatasetVisibility datasetVisibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetEntity = session.load(DatasetEntity.class, datasetId);
+      DatasetEntity datasetEntity =
+          session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
 
       Integer oldVisibilityInt = datasetEntity.getDataset_visibility();
       DatasetVisibility oldVisibility = DatasetVisibility.PRIVATE;
@@ -967,7 +990,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       throws InvalidProtocolBufferException {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetEntity = session.load(DatasetEntity.class, datasetId);
+      DatasetEntity datasetEntity =
+          session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       getWorkspaceRoleBindings(
           datasetEntity.getWorkspace(),
           WorkspaceType.forNumber(datasetEntity.getWorkspace_type()),

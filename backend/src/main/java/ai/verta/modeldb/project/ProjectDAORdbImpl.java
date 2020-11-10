@@ -65,6 +65,7 @@ import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -513,11 +514,17 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Transaction transaction = session.beginTransaction();
 
       if (deleteAll) {
-        Query query = session.createQuery(DELETE_ALL_PROJECT_TAGS_HQL);
+        Query query =
+            session
+                .createQuery(DELETE_ALL_PROJECT_TAGS_HQL)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter(ModelDBConstants.PROJECT_ID_STR, projectId);
         query.executeUpdate();
       } else {
-        Query query = session.createQuery(DELETE_SELECTED_PROJECT_TAGS_HQL);
+        Query query =
+            session
+                .createQuery(DELETE_SELECTED_PROJECT_TAGS_HQL)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter("tags", projectTagList);
         query.setParameter(ModelDBConstants.PROJECT_ID_STR, projectId);
         query.executeUpdate();
@@ -609,11 +616,17 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Transaction transaction = session.beginTransaction();
 
       if (deleteAll) {
-        Query query = session.createQuery(DELETE_ALL_PROJECT_ATTRIBUTES_HQL);
+        Query query =
+            session
+                .createQuery(DELETE_ALL_PROJECT_ATTRIBUTES_HQL)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter(ModelDBConstants.PROJECT_ID_STR, projectId);
         query.executeUpdate();
       } else {
-        Query query = session.createQuery(DELETE_SELECTED_PROJECT_ATTRIBUTES_HQL);
+        Query query =
+            session
+                .createQuery(DELETE_SELECTED_PROJECT_ATTRIBUTES_HQL)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter("keys", attributeKeyList);
         query.setParameter(ModelDBConstants.PROJECT_ID_STR, projectId);
         query.executeUpdate();
@@ -762,7 +775,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query deletedProjectQuery = session.createQuery(DELETED_STATUS_PROJECT_QUERY_STRING);
+      Query deletedProjectQuery =
+          session
+              .createQuery(DELETED_STATUS_PROJECT_QUERY_STRING)
+              .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
       deletedProjectQuery.setParameter("deleted", true);
       deletedProjectQuery.setParameter("projectIds", allowedProjectIds);
       int updatedCount = deletedProjectQuery.executeUpdate();

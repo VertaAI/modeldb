@@ -45,6 +45,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -135,7 +137,10 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query query = session.createQuery(DELETED_STATUS_DATASET_VERSION_BY_DATASET_QUERY_STRING);
+      Query query =
+          session
+              .createQuery(DELETED_STATUS_DATASET_VERSION_BY_DATASET_QUERY_STRING)
+              .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
       query.setParameter("deleted", true);
       query.setParameterList("datasetIds", datasetIds);
       int updatedCount = query.executeUpdate();
@@ -489,7 +494,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
-          session.get(DatasetVersionEntity.class, datasetVersionId);
+          session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       datasetVersionObj.setDescription(datasetVersionDescription);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
@@ -512,7 +517,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
-          session.get(DatasetVersionEntity.class, datasetVersionId);
+          session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       if (datasetVersionObj == null) {
         LOGGER.info(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
         Status status =
@@ -558,14 +563,20 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       Transaction transaction = session.beginTransaction();
 
       if (deleteAll) {
-        Query query = session.createQuery(DELETE_DATASET_VERSION_QUERY_PREFIX);
+        Query query =
+            session
+                .createQuery(DELETE_DATASET_VERSION_QUERY_PREFIX)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter(ModelDBConstants.DATASET_VERSION_ID_STR, datasetVersionId);
         query.executeUpdate();
       } else {
         StringBuilder stringQueryBuilder =
             new StringBuilder(DELETE_DATASET_VERSION_QUERY_PREFIX)
                 .append(" AND tm." + ModelDBConstants.TAGS + " in (:tags)");
-        Query query = session.createQuery(stringQueryBuilder.toString());
+        Query query =
+            session
+                .createQuery(stringQueryBuilder.toString())
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter("tags", datasetVersionTagList);
         query.setParameter(ModelDBConstants.DATASET_VERSION_ID_STR, datasetVersionId);
         query.executeUpdate();
@@ -593,7 +604,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
-          session.get(DatasetVersionEntity.class, datasetVersionId);
+          session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       datasetVersionObj.setAttributeMapping(
           RdbmsUtils.convertAttributesFromAttributeEntityList(
               datasetVersionObj, ModelDBConstants.ATTRIBUTES, attributesList));
@@ -618,7 +629,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
-          session.get(DatasetVersionEntity.class, datasetVersionId);
+          session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       if (datasetVersionObj == null) {
         LOGGER.info(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
         Status status =
@@ -702,7 +713,10 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       Transaction transaction = session.beginTransaction();
 
       if (deleteAll) {
-        Query query = session.createQuery(DELETE_KEY_VALUE_DATASET_VERSION_QUERY_PREFIX);
+        Query query =
+            session
+                .createQuery(DELETE_KEY_VALUE_DATASET_VERSION_QUERY_PREFIX)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter(ModelDBConstants.DATASET_VERSION_ID_STR, datasetVersionId);
         query.executeUpdate();
       } else {
@@ -711,7 +725,10 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
                 .append(" AND attr.")
                 .append(ModelDBConstants.KEY)
                 .append(" in (:keys)");
-        Query query = session.createQuery(deleteKeyValueDatasetVersionQuery.toString());
+        Query query =
+            session
+                .createQuery(deleteKeyValueDatasetVersionQuery.toString())
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter("keys", attributeKeyList);
         query.setParameter(ModelDBConstants.DATASET_VERSION_ID_STR, datasetVersionId);
         query.executeUpdate();
@@ -738,7 +755,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
-          session.get(DatasetVersionEntity.class, datasetVersionId);
+          session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       datasetVersionObj.setDataset_version_visibility(datasetVersionVisibility.ordinal());
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
