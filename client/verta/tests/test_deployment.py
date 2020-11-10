@@ -103,14 +103,11 @@ class TestLogModel:
                 continue
 
             for parent_dir, dirnames, filenames in os.walk(path):
-                # skip venvs
-                #     This logic is from _utils.find_filepaths().
-                exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-                dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
-
                 # only Python files
                 filenames[:] = [filename for filename in filenames if filename.endswith(('.py', '.pyc', '.pyo'))]
 
+                if not _utils.is_in_venv(path) and _utils.is_in_venv(parent_dir):
+                    continue
                 custom_module_filenames.update(map(os.path.basename, filenames))
 
         with zipfile.ZipFile(experiment_run.get_artifact("custom_modules"), 'r') as zipf:

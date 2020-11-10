@@ -1113,12 +1113,11 @@ public class CommitDAORdbImpl implements CommitDAO {
               List<String> attrEntityHashes = attrQuery.list();
               LOGGER.debug("Attributes in datasetVersion count: {}", attrEntityHashes.size());
               Set<String> attrCommitHashes = new HashSet<>();
-              attrEntityHashes.forEach(
-                  blobHash -> {
-                    String[] compositeIdArr =
-                        VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
-                    attrCommitHashes.add(compositeIdArr[1]);
-                  });
+              for (String blobHash : attrEntityHashes) {
+                String[] compositeIdArr =
+                    VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
+                attrCommitHashes.add(compositeIdArr[1]);
+              }
               if (!attrCommitHashes.isEmpty()) {
                 whereClauseList.add(alias + ".commit_hash IN (:attr_" + index + "_CommitHashes)");
                 parametersMap.put("attr_" + index + "_CommitHashes", attrCommitHashes);

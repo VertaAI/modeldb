@@ -637,14 +637,27 @@ class Commit(
    *  @param f function to (re)try
    *  @param attemptsLeft number of attempts left (including current attempt)
    *  @param errorMessage error message if out of attempts
-   *  @return the result of f, if succeeds
+   *  @return the result of f, if succeeds.
    */
   private def retry[T](f: => Try[T], attemptsLeft: Int, errorMessage: String): Try[T] = {
-    if (attemptsLeft <= 0)
-      Failure(new IllegalArgumentException(errorMessage))
-    else
-      f.orElse(retry(f, attemptsLeft - 1, errorMessage))
+    val firstAttempt: Try[T] = f
+
+    firstAttempt match {
+      case Success(t) => Success(t)
+      case Failure(e) => retryFailedOnce(f, attemptsLeft - 1, Failure(e), errorMessage)
+    }
   }
+
+  /** Helper function for retrying, given that the attempt has failed at least once.
+   * Return the original failure, if keep failing.
+   */
+  private def retryFailedOnce[T](f: => Try[T], attemptsLeft: Int, originalFailure: Failure[T], errorMessage: String): Try[T] =
+    if (attemptsLeft <= 0) {
+      println(errorMessage)
+      originalFailure
+    } else {
+      f.orElse(retryFailedOnce(f, attemptsLeft - 1, originalFailure, errorMessage))
+    }
 
   /** Helper method to download a component of a blob.
    *  @param blobPath path to the blob in the commit
