@@ -478,7 +478,7 @@ class TestEndpoint:
         endpoint = client.set_endpoint(path)
         created_endpoints.append(endpoint)
 
-        autoscaling = Autoscaling(min_replicas=0, max_replicas=2, min_scale=0.5, max_scale=2.0)
+        autoscaling = Autoscaling(min_replicas=1, max_replicas=2, min_scale=0.5, max_scale=2.0)
         autoscaling.add_metric(CpuUtilizationTarget(0.5))
         autoscaling.add_metric(MemoryUtilizationTarget(0.7))
         autoscaling.add_metric(RequestsPerWorkerTarget(100))
@@ -545,7 +545,7 @@ class TestEndpoint:
             "run_id": experiment_run.id,
             "strategy": "direct",
             "autoscaling": {
-                "quantities": {"min_replicas": 0, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0},
+                "quantities": {"min_replicas": 1, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0},
                 "metrics": [
                     {"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.5"}]},
                     {"metric": "memory_utilization", "parameters": [{"name": "target", "value": "0.7"}]}

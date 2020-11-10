@@ -130,6 +130,7 @@ public class App implements ApplicationContextAware {
   private String awsRegion = null;
 
   // Artifact store
+  private String artifactStoreType = "";
   private boolean disabledArtifactStore = false;
   private Boolean pickArtifactStoreHostFromConfig = null;
   private String artifactStoreServerHost = null;
@@ -636,12 +637,12 @@ public class App implements ApplicationContextAware {
   private static ArtifactStoreService initializeServicesBaseOnArtifactStoreType(
       Map<String, Object> artifactStoreConfigMap) throws ModelDBException, IOException {
 
-    String artifactStoreType =
-        (String) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_STORE_TYPE);
+    App app = App.getInstance();
+    app.artifactStoreType =
+        (String) artifactStoreConfigMap.getOrDefault(ModelDBConstants.ARTIFACT_STORE_TYPE, "");
 
     // ------------- Start Initialize Cloud storage base on configuration ------------------
     ArtifactStoreService artifactStoreService;
-    App app = App.getInstance();
 
     app.pickArtifactStoreHostFromConfig =
         (Boolean)
@@ -672,7 +673,7 @@ public class App implements ApplicationContextAware {
       System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
       System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
     }
-    switch (artifactStoreType) {
+    switch (app.artifactStoreType) {
       case ModelDBConstants.S3:
         Map<String, Object> s3ConfigMap =
             (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.S3);
@@ -907,6 +908,10 @@ public class App implements ApplicationContextAware {
 
   public boolean isPopulateConnectionsBasedOnPrivileges() {
     return populateConnectionsBasedOnPrivileges;
+  }
+
+  public String getArtifactStoreType() {
+    return artifactStoreType;
   }
 
   public Boolean getTrialEnabled() {

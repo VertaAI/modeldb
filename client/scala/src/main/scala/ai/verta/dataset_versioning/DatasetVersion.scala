@@ -14,7 +14,6 @@ import ai.verta.swagger.client.ClientSet
  */
 class DatasetVersion(
   private val clientSet: ClientSet,
-  private val dataset: Dataset,
   private val datasetVersion: ModeldbDatasetVersion
 ) extends Taggable {
   /** ID of the dataset version. */
@@ -120,5 +119,12 @@ class DatasetVersion(
   private def getMessage()(implicit ec: ExecutionContext): Try[ModeldbDatasetVersion] =
     clientSet.datasetVersionService.DatasetVersionService_getDatasetVersionById(Some(id)).map(
       response => response.dataset_version.get
+    )
+}
+
+object DatasetVersion {
+  private[verta] def getDatasetVersionById(clientSet: ClientSet, id: String)(implicit ec: ExecutionContext): Try[DatasetVersion] =
+    clientSet.datasetVersionService.DatasetVersionService_getDatasetVersionById(Some(id)).map(
+      response => new DatasetVersion(clientSet, response.dataset_version.get)
     )
 }

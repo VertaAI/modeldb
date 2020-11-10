@@ -1891,6 +1891,12 @@
         "multipart_upload_ok": {
           "type": "boolean",
           "format": "boolean"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },

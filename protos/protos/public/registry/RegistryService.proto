@@ -235,6 +235,7 @@ message GetUrlForArtifact {
         // URL based on action
         string url = 1;
         bool multipart_upload_ok = 2;
+        map<string, string> fields = 3;
     }
 }
 

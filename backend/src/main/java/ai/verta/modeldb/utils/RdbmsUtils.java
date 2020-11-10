@@ -355,7 +355,7 @@ public class RdbmsUtils {
 
   public static List<String> convertTagsMappingListFromTagList(List<TagsMapping> tagsMappings) {
     if (tagsMappings != null) {
-      return tagsMappings.stream().map(TagsMapping::getTag).collect(Collectors.toList());
+      return tagsMappings.stream().map(TagsMapping::getTag).sorted().collect(Collectors.toList());
     }
     return Collections.emptyList();
   }
