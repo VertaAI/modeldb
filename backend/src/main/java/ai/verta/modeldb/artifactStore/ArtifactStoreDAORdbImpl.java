@@ -47,7 +47,8 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
         String presignedUrl =
             artifactStoreService.generatePresignedUrl(s3Key, method, partNumber, uploadId);
         return GetUrlForArtifact.Response.newBuilder()
-            .setMultipartUploadOk(app.getArtifactStoreType().equals(ModelDBConstants.S3) && uploadId != null)
+            .setMultipartUploadOk(
+                app.getArtifactStoreType().equals(ModelDBConstants.S3) && uploadId != null)
             .setUrl(presignedUrl)
             .build();
       }
