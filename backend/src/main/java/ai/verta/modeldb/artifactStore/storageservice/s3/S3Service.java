@@ -134,7 +134,8 @@ public class S3Service implements ArtifactStoreService {
             .setMultipartUploadOk(false)
             .setUrl(getS3PresignedUrl(s3Key, method, partNumber, uploadId))
             .build();
-      } else if (method.equalsIgnoreCase(ModelDBConstants.POST)) {
+      } else if (method.equalsIgnoreCase(ModelDBConstants.POST)
+          || method.equalsIgnoreCase(ModelDBConstants.PUT)) {
         int maxArtifactSize =
             app.getMaxArtifactSizeMB() != null
                 ? app.getMaxArtifactSizeMB()
@@ -153,9 +154,6 @@ public class S3Service implements ArtifactStoreService {
                       maxArtifactSize * 1024 * 1024))
               .build();
         }
-      } else if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
-        throw new ModelDBException(
-            "Method type " + method + " is not supported during the trial", Code.INVALID_ARGUMENT);
       } else {
         throw new ModelDBException(
             ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
