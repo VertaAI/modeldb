@@ -292,7 +292,7 @@ class ExperimentRun(_DeployableEntity):
             artifact_stream.seek(0)
 
         # check if multipart upload ok
-        url_for_artifact = self._get_url_for_artifact(key, "POST", part_num=1)
+        url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
 
         if url_for_artifact.multipart_upload_ok:
             file_parts = iter(lambda: artifact_stream.read(part_size), b'')
@@ -2273,7 +2273,7 @@ class ExperimentRun(_DeployableEntity):
             Backend response.
 
         """
-        if method.upper() not in ("GET", "PUT", "POST"):
+        if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
         Message = _CommonService.GetUrlForArtifact
