@@ -1,5 +1,6 @@
 package ai.verta.modeldb.artifactStore.storageservice;
 
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
@@ -16,6 +17,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 public interface ArtifactStoreService {
 
   Optional<String> initiateMultipart(String s3Key) throws ModelDBException;
+
+  GetUrlForArtifact.Response generatePresignedUrlForTrial(
+      String s3Key, String method, long partNumber, String s) throws ModelDBException;
 
   String generatePresignedUrl(String s3Key, String method, long partNumber, String s)
       throws ModelDBException;

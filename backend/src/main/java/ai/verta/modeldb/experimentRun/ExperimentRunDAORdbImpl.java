@@ -62,6 +62,7 @@ import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -383,11 +384,16 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
+  public ExperimentRun insertExperimentRun(
+      ProjectDAO projectDAO, ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
     checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      TrialUtils.validateExperimentRunPerWorkspaceForTrial(
+          app, projectDAO, roleService, this, experimentRun.getProjectId(), userInfo);
+      TrialUtils.validateMaxArtifactsForTrial(app, experimentRun.getArtifactsCount(), 0);
+
       if (experimentRun.getDatasetsCount() > 0 && app.isPopulateConnectionsBasedOnPrivileges()) {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
       }
@@ -417,7 +423,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       return experimentRun;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return insertExperimentRun(experimentRun, userInfo);
+        return insertExperimentRun(projectDAO, experimentRun, userInfo);
       } else {
         throw ex;
       }
@@ -1139,7 +1145,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logArtifacts(String experimentRunId, List<Artifact> newArtifacts)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
@@ -1168,6 +1174,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           }
         }
       }
+
+      TrialUtils.validateMaxArtifactsForTrial(app, newArtifacts.size(), existingArtifacts.size());
 
       List<ArtifactEntity> newArtifactList =
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
@@ -2959,7 +2967,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun cloneExperimentRun(CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
+  public ExperimentRun cloneExperimentRun(
+      ProjectDAO projectDAO, CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
     ExperimentRun srcExperimentRun = getExperimentRun(cloneExperimentRun.getSrcExperimentRunId());
 
@@ -3004,6 +3013,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
 
     desExperimentRunBuilder.clearOwner().setOwner(authService.getVertaIdFromUserInfo(userInfo));
-    return insertExperimentRun(desExperimentRunBuilder.build(), userInfo);
+    return insertExperimentRun(projectDAO, desExperimentRunBuilder.build(), userInfo);
   }
 }
