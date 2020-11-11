@@ -261,7 +261,18 @@ class Commit(object):
             _utils.raise_for_http_error(response)
         else:
             # upload full artifact
-            response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=file_handle)
+            if url_for_artifact.fields:
+                # if fields were returned by backend, make a POST request and supply them as form fields
+                response = _utils.make_request(
+                    "POST", url_for_artifact.url, self._conn,
+                    # requests uses the `files` parameter for sending multipart/form-data POSTs.
+                    #     https://stackoverflow.com/a/12385661/8651995
+                    # the file contents must be the final form field
+                    #     https://docs.aws.amazon.com/AmazonS3/latest/dev/HTTPPOSTForms.html#HTTPPOSTFormFields
+                    files=list(url_for_artifact.fields.items()) + [('file', artifact_stream)],
+                )
+            else:
+                response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
             _utils.raise_for_http_error(response)
 
         print("upload complete")
