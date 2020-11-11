@@ -737,7 +737,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   }
 
   @Override
-  public Boolean deleteProjects(List<String> projectIds) {
+  public List<String> deleteProjects(List<String> projectIds) {
 
     // Get self allowed resources id where user has delete permission
     List<String> allowedProjectIds =
@@ -761,7 +761,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Mark Projects as deleted : {}, count : {}", allowedProjectIds, updatedCount);
       transaction.commit();
       LOGGER.debug("Project deleted successfully");
-      return true;
+      return allowedProjectIds;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteProjects(projectIds);

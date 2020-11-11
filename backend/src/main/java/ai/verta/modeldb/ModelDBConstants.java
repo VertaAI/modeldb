@@ -290,4 +290,11 @@ public interface ModelDBConstants {
   String DELETE_ENTITIES = "delete_entities";
   String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
   String EXPIRED_TOKEN = "ExpiredToken";
+
+  // Audit log constants
+  String SERVICE_NAME = "MDB";
+  String METADATA_JSON_TEMPLATE = "{\"action\" : {\"%s_%s\" : \"%s\"}}";
+  String PROJECT = "project";
+  String EXPERIMENT = "experiment";
+  String EXPERIMENT_RUN = "experiment_run";
 }

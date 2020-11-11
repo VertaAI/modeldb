@@ -39,15 +39,18 @@ import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
+import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
+import com.google.gson.Gson;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -72,18 +75,23 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
   private ExperimentDAO experimentDAO;
   private ProjectDAO projectDAO;
   private ArtifactStoreDAO artifactStoreDAO;
+  private final AuditLogLocalDAO auditLogLocalDAO;
+  private static final String SERVICE_NAME =
+      String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.EXPERIMENT);
 
   public ExperimentServiceImpl(
       AuthService authService,
       RoleService roleService,
       ExperimentDAO experimentDAO,
       ProjectDAO projectDAO,
-      ArtifactStoreDAO artifactStoreDAO) {
+      ArtifactStoreDAO artifactStoreDAO,
+      AuditLogLocalDAO auditLogLocalDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.experimentDAO = experimentDAO;
     this.projectDAO = projectDAO;
     this.artifactStoreDAO = artifactStoreDAO;
+    this.auditLogLocalDAO = auditLogLocalDAO;
   }
 
   /**
@@ -171,6 +179,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE);
 
       experiment = experimentDAO.insertExperiment(experiment, userInfo);
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(userInfo),
+                  ModelDBConstants.ADD,
+                  experiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  "")));
       responseObserver.onNext(
           CreateExperiment.Response.newBuilder().setExperiment(experiment).build());
       responseObserver.onCompleted();
@@ -384,6 +402,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
       }
 
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  request.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "update",
+                      "name|description",
+                      request.getName() + "|" + request.getDescription()))));
       responseObserver.onNext(
           UpdateExperimentNameOrDescription.Response.newBuilder()
               .setExperiment(updatedExperiment)
@@ -435,6 +467,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.updateExperimentName(
               request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
 
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  updatedExperiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "update",
+                      "name",
+                      request.getName()))));
       responseObserver.onNext(
           UpdateExperimentName.Response.newBuilder().setExperiment(updatedExperiment).build());
       responseObserver.onCompleted();
@@ -476,7 +522,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       Experiment updatedExperiment =
           experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
-
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  updatedExperiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "update",
+                      "description",
+                      updatedExperiment.getDescription()))));
       responseObserver.onNext(
           UpdateExperimentDescription.Response.newBuilder()
               .setExperiment(updatedExperiment)
@@ -526,6 +585,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Experiment updatedExperiment =
           experimentDAO.addExperimentTags(
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  updatedExperiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "add",
+                      "tags",
+                      new Gson().toJsonTree(request.getTagsList())))));
       responseObserver.onNext(
           AddExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build());
       responseObserver.onCompleted();
@@ -574,6 +647,17 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.addExperimentTags(
               request.getId(),
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  updatedExperiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "tag", request.getTag()))));
       responseObserver.onNext(
           AddExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build());
       responseObserver.onCompleted();
@@ -665,6 +749,22 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Experiment updatedExperiment =
           experimentDAO.deleteExperimentTags(
               request.getId(), request.getTagsList(), request.getDeleteAll());
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  updatedExperiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "delete",
+                      "tags",
+                      request.getDeleteAll()
+                          ? "deleteAll"
+                          : new Gson().toJsonTree(request.getTagsList())))));
       responseObserver.onNext(
           DeleteExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build());
       responseObserver.onCompleted();
@@ -712,6 +812,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Experiment updatedExperiment =
           experimentDAO.deleteExperimentTags(
               request.getId(), Collections.singletonList(request.getTag()), false);
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  updatedExperiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "delete",
+                      "tag",
+                      request.getTag()))));
       responseObserver.onNext(
           DeleteExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build());
       responseObserver.onCompleted();
@@ -758,6 +872,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       experimentDAO.addExperimentAttributes(
           request.getId(), Collections.singletonList(request.getAttribute()));
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  request.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "add",
+                      "attributes",
+                      new Gson().toJsonTree(request.getAttribute())))));
       responseObserver.onNext(AddAttributes.Response.newBuilder().setStatus(true).build());
       responseObserver.onCompleted();
 
@@ -804,6 +932,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       Experiment experiment =
           experimentDAO.addExperimentAttributes(request.getId(), request.getAttributesList());
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  experiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "add",
+                      "attributes",
+                      new Gson().toJsonTree(request.getAttributesList())))));
       responseObserver.onNext(
           AddExperimentAttributes.Response.newBuilder().setExperiment(experiment).build());
       responseObserver.onCompleted();
@@ -909,6 +1051,22 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Experiment updatedExperiment =
           experimentDAO.deleteExperimentAttributes(
               request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  updatedExperiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "delete",
+                      "attributes",
+                      request.getDeleteAll()
+                          ? "deleteAll"
+                          : new Gson().toJsonTree(request.getAttributeKeysList())))));
       responseObserver.onNext(
           DeleteExperimentAttributes.Response.newBuilder()
               .setExperiment(updatedExperiment)
@@ -940,10 +1098,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      boolean deleteStatus =
+      List<String> deletedIds =
           experimentDAO.deleteExperiments(Collections.singletonList(request.getId()));
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.DELETE,
+                  request.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  "")));
       responseObserver.onNext(
-          DeleteExperiment.Response.newBuilder().setStatus(deleteStatus).build());
+          DeleteExperiment.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1007,6 +1175,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  updatedExperiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "log",
+                      "code_version",
+                      new Gson().toJsonTree(request.getCodeVersion())))));
       /*Build response*/
       LogExperimentCodeVersion.Response.Builder responseBuilder =
           LogExperimentCodeVersion.Response.newBuilder().setExperiment(updatedExperiment);
@@ -1234,6 +1416,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
 
       Experiment updatedExperiment = experimentDAO.logArtifacts(request.getId(), artifactList);
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  updatedExperiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "add",
+                      "artifacts",
+                      new Gson().toJsonTree(request.getArtifactsList())))));
       LogExperimentArtifacts.Response.Builder responseBuilder =
           LogExperimentArtifacts.Response.newBuilder().setExperiment(updatedExperiment);
       responseObserver.onNext(responseBuilder.build());
@@ -1325,6 +1521,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       Experiment updatedExperiment =
           experimentDAO.deleteArtifacts(request.getId(), request.getKey());
+      auditLogLocalDAO.saveAuditLogs(
+          Collections.singletonList(
+              new AuditLogLocalEntity(
+                  SERVICE_NAME,
+                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                  ModelDBConstants.UPDATE,
+                  updatedExperiment.getId(),
+                  ModelDBConstants.EXPERIMENT,
+                  ModelDBConstants.SERVICE_NAME,
+                  String.format(
+                      ModelDBConstants.METADATA_JSON_TEMPLATE,
+                      "delete",
+                      "artifacts",
+                      request.getKey()))));
       responseObserver.onNext(
           DeleteExperimentArtifact.Response.newBuilder().setExperiment(updatedExperiment).build());
       responseObserver.onCompleted();
@@ -1350,9 +1560,24 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             Any.pack(DeleteExperiment.Response.getDefaultInstance()));
       }
 
-      boolean deleteStatus = experimentDAO.deleteExperiments(request.getIdsList());
+      List<String> deletedIds = experimentDAO.deleteExperiments(request.getIdsList());
+      List<AuditLogLocalEntity> auditLogLocalEntities = new ArrayList<>();
+      deletedIds.forEach(
+          experimentId ->
+              auditLogLocalEntities.add(
+                  new AuditLogLocalEntity(
+                      SERVICE_NAME,
+                      authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                      ModelDBConstants.UPDATE,
+                      experimentId,
+                      ModelDBConstants.EXPERIMENT,
+                      ModelDBConstants.SERVICE_NAME,
+                      "")));
+      if (!auditLogLocalEntities.isEmpty()) {
+        auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
+      }
       responseObserver.onNext(
-          DeleteExperiments.Response.newBuilder().setStatus(deleteStatus).build());
+          DeleteExperiments.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
