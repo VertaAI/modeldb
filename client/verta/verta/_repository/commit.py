@@ -269,10 +269,10 @@ class Commit(object):
                     #     https://stackoverflow.com/a/12385661/8651995
                     # the file contents must be the final form field
                     #     https://docs.aws.amazon.com/AmazonS3/latest/dev/HTTPPOSTForms.html#HTTPPOSTFormFields
-                    files=list(url_for_artifact.fields.items()) + [('file', artifact_stream)],
+                    files=list(url_for_artifact.fields.items()) + [('file', file_handle)],
                 )
             else:
-                response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
+                response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=file_handle)
             _utils.raise_for_http_error(response)
 
         print("upload complete")
