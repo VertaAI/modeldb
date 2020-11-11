@@ -292,7 +292,7 @@ class ExperimentRun(_DeployableEntity):
             artifact_stream.seek(0)
 
         # check if multipart upload ok
-        url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
+        url_for_artifact = self._get_url_for_artifact(key, "POST", part_num=1)
 
         if url_for_artifact.multipart_upload_ok:
             file_parts = iter(lambda: artifact_stream.read(part_size), b'')
@@ -347,7 +347,14 @@ class ExperimentRun(_DeployableEntity):
             _utils.raise_for_http_error(response)
         else:
             # upload full artifact
-            response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
+            if url_for_artifact.fields:
+                #
+                response = _utils.make_request(
+                    "POST", url_for_artifact.url, self._conn,
+                    files=list(url_for_artifact.fields.items()) + [('file', artifact_stream)],
+                )
+            else:
+                response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=artifact_stream)
             _utils.raise_for_http_error(response)
 
         print("upload complete ({})".format(key))
@@ -2266,7 +2273,7 @@ class ExperimentRun(_DeployableEntity):
             Backend response.
 
         """
-        if method.upper() not in ("GET", "PUT"):
+        if method.upper() not in ("GET", "PUT", "POST"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
         Message = _CommonService.GetUrlForArtifact
