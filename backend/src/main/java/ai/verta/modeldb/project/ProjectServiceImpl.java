@@ -65,6 +65,7 @@ import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
 import com.google.protobuf.Any;
@@ -212,10 +213,10 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               new AuditLogLocalEntity(
                   SERVICE_NAME,
                   authService.getVertaIdFromUserInfo(userInfo),
-                  ModelDBConstants.ADD,
+                  ModelDBConstants.CREATE,
                   project.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   "")));
 
       responseObserver.onNext(CreateProject.Response.newBuilder().setProject(project).build());
@@ -268,7 +269,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "update",
@@ -326,7 +327,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "update",
@@ -384,7 +385,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -449,7 +450,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "update",
@@ -563,7 +564,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "delete",
@@ -622,7 +623,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -717,7 +718,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "delete",
@@ -778,7 +779,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "tag", request.getTag()))));
       responseObserver.onNext(
@@ -831,7 +832,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "delete",
@@ -883,7 +884,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.DELETE,
                   request.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   "")));
       responseObserver.onNext(
           DeleteProject.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build());
@@ -1117,10 +1118,10 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               new AuditLogLocalEntity(
                   SERVICE_NAME,
                   authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-                  ModelDBConstants.ADD,
+                  ModelDBConstants.CREATE,
                   project.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   "")));
       responseObserver.onNext(DeepCopyProject.Response.newBuilder().setProject(project).build());
       responseObserver.onCompleted();
@@ -1308,7 +1309,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "update",
@@ -1413,7 +1414,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   project.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "update",
@@ -1494,7 +1495,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   project.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "update",
@@ -1569,7 +1570,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "log",
@@ -1769,7 +1770,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -1849,7 +1850,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedProject.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "delete",
@@ -1893,7 +1894,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       ModelDBConstants.DELETE,
                       projectId,
                       ModelDBConstants.PROJECT,
-                      ModelDBConstants.SERVICE_NAME,
+                      Service.MODELDB_SERVICE.name(),
                       "")));
 
       if (!auditLogLocalEntities.isEmpty()) {
@@ -1949,7 +1950,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                   ModelDBConstants.UPDATE,
                   project.getId(),
                   ModelDBConstants.PROJECT,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "update",

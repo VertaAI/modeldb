@@ -89,6 +89,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
 import com.google.protobuf.Any;
@@ -268,10 +269,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               new AuditLogLocalEntity(
                   SERVICE_NAME,
                   authService.getVertaIdFromUserInfo(userInfo),
-                  ModelDBConstants.ADD,
+                  ModelDBConstants.CREATE,
                   experimentRun.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   "")));
       responseObserver.onNext(
           CreateExperimentRun.Response.newBuilder().setExperimentRun(experimentRun).build());
@@ -314,7 +315,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                       ModelDBConstants.DELETE,
                       deletedExperimentRunId,
                       ModelDBConstants.EXPERIMENT_RUN,
-                      ModelDBConstants.SERVICE_NAME,
+                      Service.MODELDB_SERVICE.name(),
                       "")));
 
       if (!auditLogLocalEntities.isEmpty()) {
@@ -602,7 +603,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedExperimentRun.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "update",
@@ -657,7 +658,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "update",
@@ -716,7 +717,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedExperimentRun.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -778,7 +779,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedExperimentRun.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "tag", request.getTag()))));
       responseObserver.onNext(
@@ -867,7 +868,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedExperimentRun.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "delete",
@@ -931,7 +932,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   updatedExperimentRun.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "delete",
@@ -992,7 +993,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -1053,7 +1054,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "delete",
@@ -1112,7 +1113,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -1166,7 +1167,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -1263,7 +1264,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -1316,7 +1317,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -1591,7 +1592,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -1648,7 +1649,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -1760,7 +1761,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "log",
@@ -1858,7 +1859,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -1914,7 +1915,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -2008,7 +2009,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -2062,7 +2063,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -2280,7 +2281,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "job", request.getJobId()))));
       responseObserver.onNext(LogJobId.Response.newBuilder().build());
@@ -2423,7 +2424,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getExperimentRunId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -2482,7 +2483,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -2534,7 +2535,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "add",
@@ -2599,7 +2600,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "delete",
@@ -2640,7 +2641,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                       ModelDBConstants.DELETE,
                       deletedExperimentRunId,
                       ModelDBConstants.EXPERIMENT_RUN,
-                      ModelDBConstants.SERVICE_NAME,
+                      Service.MODELDB_SERVICE.name(),
                       "")));
       if (!auditLogLocalEntities.isEmpty()) {
         auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
@@ -2693,7 +2694,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "version_input", ""))));
       responseObserver.onNext(LogVersionedInput.Response.newBuilder().build());
@@ -2761,7 +2762,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "upload_artifact_part",
@@ -2844,7 +2845,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "commit_artifact_parts",
@@ -2890,7 +2891,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "delete",
@@ -2937,7 +2938,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "delete",
@@ -2980,7 +2981,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                   ModelDBConstants.UPDATE,
                   request.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   String.format(
                       ModelDBConstants.METADATA_JSON_TEMPLATE,
                       "delete",
@@ -3093,10 +3094,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               new AuditLogLocalEntity(
                   SERVICE_NAME,
                   authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-                  ModelDBConstants.ADD,
+                  ModelDBConstants.CREATE,
                   clonedExperimentRun.getId(),
                   ModelDBConstants.EXPERIMENT_RUN,
-                  ModelDBConstants.SERVICE_NAME,
+                  Service.MODELDB_SERVICE.name(),
                   "")));
       responseObserver.onNext(
           CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build());
