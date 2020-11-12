@@ -531,7 +531,8 @@ def raise_for_http_error(response):
         try:
             reason = body_to_json(response)['message']
         except (ValueError,  # not JSON response
-                 KeyError):  # no 'message' from back end
+                TypeError,  # body_to_json return a single string
+                KeyError):  # no 'message' from back end
             reason = response.text.strip()
 
         reason = six.ensure_str(reason)
