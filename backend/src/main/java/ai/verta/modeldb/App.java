@@ -604,7 +604,8 @@ public class App implements ApplicationContextAware {
             commitDAO,
             blobDAO,
             metadataDAO,
-            artifactStoreDAO));
+            artifactStoreDAO,
+            auditLogLocalDAO));
     LOGGER.trace("Dataset Version serviceImpl initialized");
     wrapService(
         serverBuilder,
