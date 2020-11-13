@@ -531,10 +531,14 @@ def raise_for_http_error(response):
         try:
             reason = body_to_json(response)
         except ValueError:
-            reason = response.text.strip()
+            reason = response.text.strip()  # response is not json
 
-        if isinstance(reason, dict) and 'message' in reason:
-            reason = reason['message']
+        if isinstance(reason, dict):
+            if 'message' in reason:
+                reason = reason['message']
+            else:
+                # fall back to entire text
+                reason = response.text.strip()
 
         reason = six.ensure_str(reason)
 
