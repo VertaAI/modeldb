@@ -49,9 +49,9 @@ public interface ExperimentRunDAO {
    * Delete the ExperimentRuns from database using experimentRunId list.
    *
    * @param experimentRunIds : list of experimentRun Id
-   * @return {@link Boolean} : Boolean updated status
+   * @return {@link List} : deleted experiment run ids
    */
-  Boolean deleteExperimentRuns(List<String> experimentRunIds);
+  List<String> deleteExperimentRuns(List<String> experimentRunIds);
 
   /**
    * Get List of ExperimentRun entity using given projectId from database.

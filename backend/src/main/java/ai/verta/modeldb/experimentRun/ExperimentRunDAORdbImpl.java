@@ -472,7 +472,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public Boolean deleteExperimentRuns(List<String> experimentRunIds) {
+  public List<String> deleteExperimentRuns(List<String> experimentRunIds) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
       List<String> accessibleExperimentRunIds =
@@ -502,7 +502,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           updatedCount);
       transaction.commit();
       LOGGER.debug("ExperimentRun deleted successfully");
-      return true;
+      return accessibleExperimentRunIds;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteExperimentRuns(experimentRunIds);
