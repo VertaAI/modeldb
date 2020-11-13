@@ -287,6 +287,7 @@ public interface ModelDBConstants {
   String DELETE_ENTITIES = "delete_entities";
   String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
   String EXPIRED_TOKEN = "ExpiredToken";
+  String DELETE_AUDIT_LOGS = "delete_audit_logs";
 
   // Audit log constants
   String CREATE = "CREATE";
