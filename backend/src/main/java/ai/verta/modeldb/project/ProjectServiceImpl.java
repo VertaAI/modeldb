@@ -85,6 +85,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -117,19 +118,20 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
   private void saveAuditLogs(
       UserInfo userInfo, String action, List<String> resourceIds, String metadataBlob) {
-    List<AuditLogLocalEntity> auditLogLocalEntities = new ArrayList<>();
-    resourceIds.forEach(
-        resourceId ->
-            auditLogLocalEntities.add(
-                new AuditLogLocalEntity(
-                    SERVICE_NAME,
-                    authService.getVertaIdFromUserInfo(
-                        userInfo == null ? authService.getCurrentLoginUserInfo() : userInfo),
-                    action,
-                    resourceId,
-                    ModelDBConstants.PROJECT,
-                    Service.MODELDB_SERVICE.name(),
-                    metadataBlob)));
+    List<AuditLogLocalEntity> auditLogLocalEntities =
+        resourceIds.stream()
+            .map(
+                resourceId ->
+                    new AuditLogLocalEntity(
+                        SERVICE_NAME,
+                        authService.getVertaIdFromUserInfo(
+                            userInfo == null ? authService.getCurrentLoginUserInfo() : userInfo),
+                        action,
+                        resourceId,
+                        ModelDBConstants.PROJECT,
+                        Service.MODELDB_SERVICE.name(),
+                        metadataBlob))
+            .collect(Collectors.toList());
     if (!auditLogLocalEntities.isEmpty()) {
       auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
     }
