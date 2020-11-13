@@ -62,6 +62,23 @@ public class CronJobUtils {
             ModelDBUtils.scheduleTask(
                 task, initialDelay, deleteEntitiesFrequency, TimeUnit.SECONDS);
             LOGGER.info("{} cron job scheduled successfully", ModelDBConstants.DELETE_ENTITIES);
+          } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_AUDIT_LOGS)
+              && (app.getServiceUserEmail() != null && app.getServiceUserDevKey() != null)) {
+            Map<String, Object> deleteAuditLogsCronMap = (Map<String, Object>) cronJob.getValue();
+            deleteEntitiesFrequency =
+                (int) deleteAuditLogsCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);
+            int recordUpdateLimit =
+                (int)
+                    deleteAuditLogsCronMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+            int initialDelay =
+                (int)
+                    deleteAuditLogsCronMap.getOrDefault(
+                        ModelDBConstants.INITIAL_DELAY, ModelDBConstants.INITIAL_CRON_DELAY);
+            // creating an instance of task to be scheduled
+            TimerTask task = new AuditLogsCron(recordUpdateLimit);
+            ModelDBUtils.scheduleTask(
+                task, initialDelay, deleteEntitiesFrequency, TimeUnit.SECONDS);
+            LOGGER.info("{} cron job scheduled successfully", ModelDBConstants.DELETE_AUDIT_LOGS);
           } else {
             LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());
           }

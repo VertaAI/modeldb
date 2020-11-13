@@ -93,10 +93,10 @@ public interface ProjectDAO {
    * <p>TODO : Add logic of Deleting Experiment & ExperimentRun associated with project.
    *
    * @param projectIds : list of Project.id
-   * @return {@link Boolean} : Boolean updated status
+   * @return {@link List} : deleted projectIds
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Boolean deleteProjects(List<String> projectIds) throws InvalidProtocolBufferException;
+  List<String> deleteProjects(List<String> projectIds) throws InvalidProtocolBufferException;
 
   /**
    * Fetch All the Project from database bases on user details.

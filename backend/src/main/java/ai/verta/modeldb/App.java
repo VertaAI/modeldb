@@ -546,12 +546,22 @@ public class App implements ApplicationContextAware {
     wrapService(
         serverBuilder,
         new ProjectServiceImpl(
-            authService, roleService, projectDAO, experimentRunDAO, artifactStoreDAO));
+            authService,
+            roleService,
+            projectDAO,
+            experimentRunDAO,
+            artifactStoreDAO,
+            auditLogLocalDAO));
     LOGGER.trace("Project serviceImpl initialized");
     wrapService(
         serverBuilder,
         new ExperimentServiceImpl(
-            authService, roleService, experimentDAO, projectDAO, artifactStoreDAO));
+            authService,
+            roleService,
+            experimentDAO,
+            projectDAO,
+            artifactStoreDAO,
+            auditLogLocalDAO));
     LOGGER.trace("Experiment serviceImpl initialized");
     wrapService(
         serverBuilder,
