@@ -529,11 +529,12 @@ def raise_for_http_error(response):
         time_str = " at {} UTC".format(curr_time)
 
         try:
-            reason = body_to_json(response)['message']
-        except (ValueError,  # not JSON response
-                TypeError,  # body_to_json return a single string
-                KeyError):  # no 'message' from back end
+            reason = body_to_json(response)
+        except ValueError:
             reason = response.text.strip()
+
+        if isinstance(reason, dict) and 'message' in reason:
+            reason = reason['message']
 
         reason = six.ensure_str(reason)
 
