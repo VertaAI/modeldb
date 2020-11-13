@@ -576,7 +576,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   }
 
   @Override
-  public Boolean deleteExperiments(List<String> experimentIds) {
+  public List<String> deleteExperiments(List<String> experimentIds) {
     List<String> accessibleExperimentIds =
         getAccessibleExperimentIDs(experimentIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
@@ -603,7 +603,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           "Mark Experiments as deleted : {}, count : {}", accessibleExperimentIds, updatedCount);
       transaction.commit();
       LOGGER.debug("Experiment deleted successfully");
-      return true;
+      return accessibleExperimentIds;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteExperiments(experimentIds);

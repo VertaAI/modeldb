@@ -296,4 +296,5 @@ public interface ModelDBConstants {
   String SERVICE_NAME = "MDB";
   String METADATA_JSON_TEMPLATE = "{\"action\" : {\"%s_%s\" : \"%s\"}}";
   String PROJECT = "PROJECT";
+  String EXPERIMENT = "EXPERIMENT";
 }

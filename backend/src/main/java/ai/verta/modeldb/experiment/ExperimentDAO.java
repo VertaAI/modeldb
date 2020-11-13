@@ -155,9 +155,9 @@ public interface ExperimentDAO {
    * Delete the Experiments from database using experimentIds list.
    *
    * @param experimentIds : list of experimentRunId
-   * @return {@link Boolean} : Boolean updated status
+   * @return {@link List} : return deleted ids
    */
-  Boolean deleteExperiments(List<String> experimentIds) throws InvalidProtocolBufferException;
+  List<String> deleteExperiments(List<String> experimentIds) throws InvalidProtocolBufferException;
 
   /**
    * Return experiment using given key value list. keyValue has key as ModelDBConstants.PROJECT_ID
