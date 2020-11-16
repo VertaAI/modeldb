@@ -20,12 +20,13 @@ ModelDB (versioning and metadata)
 Deployment and release
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. * `Deploying custom models <class.html>`_
-
-.. * `Deploying custom models <deployment/custom_model.html>`_
-
-.. commented out because page doesn't exist yet
-    * `Deploying off-the-shelf Models <off-the-shelf.html>`_ in Scikit-learn, PyTorch, Tensorflow
+* `Creating and retrieving an endpoint <deployment/endpoint_creation.html>`__
+* `Updating an endpoint <deployment/endpoint_update.html>`__
+* `Updating an endpoint with canary strategy <deployment/endpoint_canary_update.html>`__
+* `Configuring endpoint autoscaling <deployment/endpoint_autoscaling.html>`__
+* `Configuring endpoint compute resources <deployment/endpoint_resources.html>`__
+* `Configuring endpoint environment variables <deployment/endpoint_env_vars.html>`__
+* `Querying an endpoint <deployment/endpoint_query.html>`__
 
 Real-time model monitoring
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

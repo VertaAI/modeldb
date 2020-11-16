@@ -28,7 +28,7 @@ Endpoint configuration
 Endpoint querying
 -----------------
 
-* `Querying an endpoint <endpoint_query.html>`__.
+* `Querying an endpoint <endpoint_query.html>`__
 
 .. toctree::
     :hidden:
