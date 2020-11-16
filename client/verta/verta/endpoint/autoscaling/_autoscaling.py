@@ -29,6 +29,13 @@ class Autoscaling(object):
     max_scale : float > 1
         Maximum growth factor for scaling.
 
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.endpoint.autoscaling import Autoscaling
+        autoscaling = Autoscaling(min_replicas=1, max_replicas=10, min_scale=0.5, max_scale=2.0)
+
     """
     def __init__(self, min_replicas=None, max_replicas=None, min_scale=None, max_scale=None):
         self._min_replicas = min_replicas

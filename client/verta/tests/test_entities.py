@@ -174,6 +174,24 @@ class TestClient:
         finally:
             os.environ[HOST_KEY], os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = HOST, EMAIL, DEV_KEY
 
+    @pytest.mark.not_oss
+    def test_wrong_credentials(self):
+        EMAIL_KEY, DEV_KEY_KEY = "VERTA_EMAIL", "VERTA_DEV_KEY"
+        old_email, old_dev_key = os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
+
+        try:
+            os.environ[EMAIL_KEY] = "abc@email.com"
+            os.environ[DEV_KEY_KEY] = "def"
+
+            with pytest.raises(requests.exceptions.HTTPError) as excinfo:
+                verta.Client()
+
+            excinfo_value = str(excinfo.value).strip()
+            assert "401 Client Error" in excinfo_value
+            assert "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`" in excinfo_value
+        finally:
+            os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = old_email, old_dev_key
+
 class TestEntities:
     def test_cache(self, client, strs):
         client.set_project()

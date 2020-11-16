@@ -1,9 +1,11 @@
 package ai.verta.modeldb.artifactStore.storageservice.nfs;
 
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.api.client.util.IOUtils;
 import com.google.rpc.Code;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,9 +77,13 @@ public class NFSService implements ArtifactStoreService {
    * @return {@link String} : upload filename
    * @throws ModelDBException ModelDBException
    */
-  String storeFile(String artifactPath, InputStream uploadedFileInputStream)
+  String storeFile(
+      String artifactPath, InputStream uploadedFileInputStream, HttpServletRequest request)
       throws ModelDBException {
     LOGGER.trace("NFSService - storeFile called");
+
+    // Validate Artifact size for trial case
+    TrialUtils.validateArtifactSizeForTrial(app, artifactPath, request.getContentLength());
 
     try {
       String cleanArtifactPath = StringUtils.cleanPath(Objects.requireNonNull(artifactPath));
@@ -190,6 +197,16 @@ public class NFSService implements ArtifactStoreService {
   @Override
   public Optional<String> initiateMultipart(String s3Key) {
     return Optional.empty();
+  }
+
+  @Override
+  public GetUrlForArtifact.Response generatePresignedUrlForTrial(
+      String artifactPath, String method, long partNumber, String uploadId)
+      throws ModelDBException {
+    return GetUrlForArtifact.Response.newBuilder()
+        .setMultipartUploadOk(false)
+        .setUrl(generatePresignedUrl(artifactPath, method))
+        .build();
   }
 
   @Override

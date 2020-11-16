@@ -2,6 +2,7 @@ package ai.verta.modeldb.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
@@ -40,9 +41,11 @@ public class S3Client {
 
   private AmazonS3 s3Client;
   private AtomicInteger referenceCounter;
+  private AWSCredentials awsCredentials;
+  private App app;
 
-  public S3Client(String cloudBucketName) throws IOException {
-    App app = App.getInstance();
+  public S3Client(String cloudBucketName) throws IOException, ModelDBException {
+    app = App.getInstance();
     String cloudAccessKey = app.getCloudAccessKey();
     String cloudSecretKey = app.getCloudSecretKey();
     String minioEndpoint = app.getMinioEndpoint();
@@ -77,7 +80,7 @@ public class S3Client {
 
   private void initializeMinioClient(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion, String minioEndpoint) {
-    AWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
     ClientConfiguration clientConfiguration = new ClientConfiguration();
     clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
@@ -87,21 +90,22 @@ public class S3Client {
                 new AwsClientBuilder.EndpointConfiguration(minioEndpoint, awsRegion.getName()))
             .withPathStyleAccessEnabled(true)
             .withClientConfiguration(clientConfiguration)
-            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
             .build();
   }
 
   private void initializeS3ClientWithAccessKey(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion) {
-    BasicAWSCredentials awsCreds = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
+    awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
     this.s3Client =
         AmazonS3ClientBuilder.standard()
             .withRegion(awsRegion)
-            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
             .build();
   }
 
-  private void initializeWithTemporaryCredentials(Regions awsRegion) throws IOException {
+  private void initializeWithTemporaryCredentials(Regions awsRegion)
+      throws IOException, ModelDBException {
     String roleSessionName = "modelDB" + UUID.randomUUID().toString();
 
     AWSSecurityTokenService stsClient = null;
@@ -137,7 +141,7 @@ public class S3Client {
       Credentials credentials = roleResponse.getCredentials();
 
       // Extract the session credentials
-      BasicSessionCredentials awsCredentials =
+      awsCredentials =
           new BasicSessionCredentials(
               credentials.getAccessKeyId(),
               credentials.getSecretAccessKey(),
@@ -214,6 +218,6 @@ public class S3Client {
   }
 
   public RefCountedS3Client getRefCountedClient() {
-    return new RefCountedS3Client(s3Client, referenceCounter);
+    return new RefCountedS3Client(awsCredentials, s3Client, referenceCounter);
   }
 }

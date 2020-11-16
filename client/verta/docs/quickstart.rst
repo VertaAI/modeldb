@@ -15,7 +15,7 @@ You have a few options here:
 2. Setup the Verta Client
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Verta client supports Python 2.7 & 3.5–3.7!
+The Verta client supports Python 2.7 & 3.5–3.8!
 
   .. code-block:: shell
 

@@ -65,6 +65,7 @@ import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -129,6 +130,7 @@ public class App implements ApplicationContextAware {
   private String awsRegion = null;
 
   // Artifact store
+  private String artifactStoreType = "";
   private boolean disabledArtifactStore = false;
   private Boolean pickArtifactStoreHostFromConfig = null;
   private String artifactStoreServerHost = null;
@@ -154,6 +156,12 @@ public class App implements ApplicationContextAware {
   private static TracingServerInterceptor tracingInterceptor;
   private boolean populateConnectionsBasedOnPrivileges = false;
   private RoleService roleService;
+
+  // Trial flags
+  private Boolean trialEnabled = false;
+  private Integer maxArtifactSizeMB;
+  private Integer maxArtifactPerRun;
+  private Integer maxExperimentRunPerWorkspace;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -354,6 +362,23 @@ public class App implements ApplicationContextAware {
         app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
         LOGGER.trace("service user devKey found");
       }
+    }
+
+    Map<String, Object> trialMap =
+        (Map<String, Object>)
+            propertiesMap.getOrDefault(ModelDBConstants.TRIAL, Collections.emptyMap());
+    app.trialEnabled = (Boolean) trialMap.getOrDefault(ModelDBConstants.ENABLE, false);
+    if (app.trialEnabled) {
+      Map<String, Object> restrictionsMap =
+          (Map<String, Object>)
+              trialMap.getOrDefault(ModelDBConstants.RESTRICTIONS, Collections.emptyMap());
+      app.maxArtifactSizeMB =
+          (Integer) restrictionsMap.getOrDefault(ModelDBConstants.MAX_ARTIFACT_SIZE_MB, null);
+      app.maxArtifactPerRun =
+          (Integer) restrictionsMap.getOrDefault(ModelDBConstants.MAX_ARTIFACT_PER_RUN, null);
+      app.maxExperimentRunPerWorkspace =
+          (Integer)
+              restrictionsMap.getOrDefault(ModelDBConstants.MAX_EXPERIMENT_RUN_PER_WORKSPACE, null);
     }
 
     app.populateConnectionsBasedOnPrivileges =
@@ -612,12 +637,12 @@ public class App implements ApplicationContextAware {
   private static ArtifactStoreService initializeServicesBaseOnArtifactStoreType(
       Map<String, Object> artifactStoreConfigMap) throws ModelDBException, IOException {
 
-    String artifactStoreType =
-        (String) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_STORE_TYPE);
+    App app = App.getInstance();
+    app.artifactStoreType =
+        (String) artifactStoreConfigMap.getOrDefault(ModelDBConstants.ARTIFACT_STORE_TYPE, "");
 
     // ------------- Start Initialize Cloud storage base on configuration ------------------
     ArtifactStoreService artifactStoreService;
-    App app = App.getInstance();
 
     app.pickArtifactStoreHostFromConfig =
         (Boolean)
@@ -648,7 +673,7 @@ public class App implements ApplicationContextAware {
       System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
       System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
     }
-    switch (artifactStoreType) {
+    switch (app.artifactStoreType) {
       case ModelDBConstants.S3:
         Map<String, Object> s3ConfigMap =
             (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.S3);
@@ -883,5 +908,25 @@ public class App implements ApplicationContextAware {
 
   public boolean isPopulateConnectionsBasedOnPrivileges() {
     return populateConnectionsBasedOnPrivileges;
+  }
+
+  public String getArtifactStoreType() {
+    return artifactStoreType;
+  }
+
+  public Boolean getTrialEnabled() {
+    return trialEnabled;
+  }
+
+  public Integer getMaxArtifactSizeMB() {
+    return maxArtifactSizeMB;
+  }
+
+  public Integer getMaxArtifactPerRun() {
+    return maxArtifactPerRun;
+  }
+
+  public Integer getMaxExperimentRunPerWorkspace() {
+    return maxExperimentRunPerWorkspace;
   }
 }

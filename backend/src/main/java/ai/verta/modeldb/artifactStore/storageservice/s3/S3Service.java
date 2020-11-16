@@ -1,11 +1,13 @@
 package ai.verta.modeldb.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.HttpCodeToGRPCCode;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
@@ -53,7 +55,6 @@ public class S3Service implements ArtifactStoreService {
 
   public S3Service(String cloudBucketName) throws ModelDBException, IOException {
     s3Client = new S3Client(cloudBucketName);
-
     this.bucketName = cloudBucketName;
   }
 
@@ -121,6 +122,51 @@ public class S3Service implements ArtifactStoreService {
       InitiateMultipartUploadResult result =
           client.getClient().initiateMultipartUpload(initiateMultipartUploadRequest);
       return Optional.ofNullable(result.getUploadId());
+    }
+  }
+
+  @Override
+  public GetUrlForArtifact.Response generatePresignedUrlForTrial(
+      String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
+    if (app.isS3presignedURLEnabled()) {
+      if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
+        return GetUrlForArtifact.Response.newBuilder()
+            .setMultipartUploadOk(false)
+            .setUrl(getS3PresignedUrl(s3Key, method, partNumber, uploadId))
+            .build();
+      } else if (method.equalsIgnoreCase(ModelDBConstants.POST)
+          || method.equalsIgnoreCase(ModelDBConstants.PUT)) {
+        int maxArtifactSize =
+            app.getMaxArtifactSizeMB() != null
+                ? app.getMaxArtifactSizeMB()
+                : ModelDBConstants.MAX_ARTIFACT_SIZE_DEFAULT;
+        LOGGER.debug("bucketName " + bucketName);
+        try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
+          return GetUrlForArtifact.Response.newBuilder()
+              .setMultipartUploadOk(false)
+              .setUrl(String.format("http://%s.s3.amazonaws.com", bucketName))
+              .putAllFields(
+                  TrialUtils.getBodyParameterMapForTrialPresignedURL(
+                      app,
+                      client.getCredentials(),
+                      bucketName,
+                      s3Key,
+                      maxArtifactSize * 1024 * 1024))
+              .build();
+        }
+      } else {
+        throw new ModelDBException(
+            ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
+                + "Method type "
+                + method
+                + " is not supported during the trial",
+            Code.RESOURCE_EXHAUSTED);
+      }
+    } else {
+      return GetUrlForArtifact.Response.newBuilder()
+          .setMultipartUploadOk(false)
+          .setUrl(getPresignedUrlViaMDB(s3Key, method, partNumber, uploadId))
+          .build();
     }
   }
 
@@ -206,6 +252,9 @@ public class S3Service implements ArtifactStoreService {
       if (!exist) {
         throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
       }
+
+      // Validate Artifact size for trial case
+      TrialUtils.validateArtifactSizeForTrial(app, artifactPath, request.getContentLength());
 
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
         UploadPartRequest uploadRequest =

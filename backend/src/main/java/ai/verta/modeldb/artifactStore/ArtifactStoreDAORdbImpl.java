@@ -1,9 +1,11 @@
 package ai.verta.modeldb.artifactStore;
 
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetUrlForArtifact.Response;
 import ai.verta.modeldb.HttpCodeToGRPCCode;
 import ai.verta.modeldb.ModelDBAuthInterceptor;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
@@ -20,9 +22,11 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(ArtifactStoreDAORdbImpl.class);
   private ArtifactStoreService artifactStoreService;
+  private App app;
 
   public ArtifactStoreDAORdbImpl(ArtifactStoreService artifactStoreService) {
     this.artifactStoreService = artifactStoreService;
+    this.app = App.getInstance();
   }
 
   @Override
@@ -36,12 +40,18 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      String presignedUrl =
-          artifactStoreService.generatePresignedUrl(s3Key, method, partNumber, uploadId);
-      return GetUrlForArtifact.Response.newBuilder()
-          .setMultipartUploadOk(uploadId != null)
-          .setUrl(presignedUrl)
-          .build();
+      if (App.getInstance().getTrialEnabled()) {
+        return artifactStoreService.generatePresignedUrlForTrial(
+            s3Key, method, partNumber, uploadId);
+      } else {
+        String presignedUrl =
+            artifactStoreService.generatePresignedUrl(s3Key, method, partNumber, uploadId);
+        return GetUrlForArtifact.Response.newBuilder()
+            .setMultipartUploadOk(
+                app.getArtifactStoreType().equals(ModelDBConstants.S3) && uploadId != null)
+            .setUrl(presignedUrl)
+            .build();
+      }
     } catch (AmazonServiceException e) {
       // Amazon S3 couldn't be contacted for a response, or the client
       // couldn't parse the response from Amazon S3.
