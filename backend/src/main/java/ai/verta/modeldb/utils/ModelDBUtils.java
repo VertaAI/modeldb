@@ -80,7 +80,6 @@ public class ModelDBUtils {
     Yaml yaml = new Yaml();
     @SuppressWarnings("unchecked")
     Map<String, Object> prop = (Map<String, Object>) yaml.load(inputStream);
-    LOGGER.debug("YAML map {}", prop);
     return prop;
   }
 
