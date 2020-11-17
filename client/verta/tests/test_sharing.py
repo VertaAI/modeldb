@@ -92,3 +92,24 @@ class TestSharing:
         assert "no Repository found" in excinfo_value
 
         repository.delete()
+
+    @pytest.mark.not_oss
+    def test_org_endpoint(self, client, organization, client_2, email_2):
+        """
+        Non-owner access to org-public endpoint and private endpoint within an org.
+        """
+        organization.add_member(email_2)
+        path = _utils.generate_default_name()
+
+        # ORG_SCOPED_PUBLIC
+        public_path = "public-{}".format(path)
+        endpoint = client.create_endpoint(public_path, workspace=organization.name, public_within_org=True)
+        client_2.get_endpoint(public_path, workspace=organization.name)
+        endpoint.delete()
+
+        # PRIVATE
+        private_path = "private-{}".format(path)
+        endpoint = client.create_endpoint(private_path, workspace=organization.name)
+        with pytest.raises(ValueError, match="Endpoint not found"):
+            client_2.get_endpoint(private_path, workspace=organization.name)
+        endpoint.delete()
