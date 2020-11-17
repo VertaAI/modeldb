@@ -103,6 +103,7 @@ class Endpoint(object):
         if not path.startswith('/'):
             path = '/' + path
         data["path"] = path
+        data["visibility"] = "ORG_PUBLIC" if public_within_org else "PRIVATE"
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
         response = _utils.make_request("POST", url, conn, json=data)
         _utils.raise_for_http_error(response)
