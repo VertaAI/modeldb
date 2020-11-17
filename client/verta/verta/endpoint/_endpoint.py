@@ -88,15 +88,15 @@ class Endpoint(object):
         return data['date_updated']
 
     @classmethod
-    def _create(cls, conn, conf, workspace, path, description=None):
-        endpoint_json = cls._create_json(conn, workspace, path, description)
+    def _create(cls, conn, conf, workspace, public_within_org, path, description=None):
+        endpoint_json = cls._create_json(conn, workspace, public_within_org, path, description)
         if endpoint_json:
             return cls(conn, conf, workspace, endpoint_json['id'])
         else:
             return None
 
     @classmethod
-    def _create_json(cls, conn, workspace, path, description=None):
+    def _create_json(cls, conn, workspace, public_within_org, path, description=None):
         data = {}
         if description:
             data["description"] = description

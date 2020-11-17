@@ -1021,7 +1021,7 @@ class Client(object):
         else:
             return Endpoint._get_or_create_by_name(self._conn, path,
                                             lambda name: Endpoint._get_by_path(self._conn, self._conf, workspace, path),
-                                            lambda name: Endpoint._create( self._conn, self._conf, workspace, path, description),
+                                            lambda name: Endpoint._create(self._conn, self._conf, workspace, public_within_org, path, description),
                                             lambda: check_unnecessary_params_warning(
                                                  resource_name,
                                                  "path {}".format(path),
@@ -1273,7 +1273,7 @@ class Client(object):
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
             workspace = self._get_personal_workspace()
-        return Endpoint._create(self._conn, self._conf, workspace, path, description)
+        return Endpoint._create(self._conn, self._conf, workspace, public_within_org, path, description)
 
     @property
     def endpoints(self):
