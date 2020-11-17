@@ -593,7 +593,8 @@ public class App implements ApplicationContextAware {
             experimentRunDAO,
             repositoryDAO,
             commitDAO,
-            metadataDAO));
+            metadataDAO,
+            auditLogLocalDAO));
     LOGGER.trace("Dataset serviceImpl initialized");
     wrapService(
         serverBuilder,

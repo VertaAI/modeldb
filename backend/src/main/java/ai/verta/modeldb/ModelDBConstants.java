@@ -298,4 +298,5 @@ public interface ModelDBConstants {
   String PROJECT = "PROJECT";
   String EXPERIMENT = "EXPERIMENT";
   String EXPERIMENT_RUN = "EXPERIMENT_RUN";
+  String DATASET = "DATASET";
 }
