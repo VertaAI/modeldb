@@ -5,6 +5,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
+import ai.verta.modeldb.name_generator.NamesGenerator;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Any;
 import com.google.rpc.Code;
@@ -278,6 +279,24 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteKeyValuePropertiesRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void generateRandomName(
+      GenerateRandomNameRequest request,
+      StreamObserver<GenerateRandomNameRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      responseObserver.onNext(
+          GenerateRandomNameRequest.Response.newBuilder()
+              .setName(NamesGenerator.getRandomName(0))
+              .build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GenerateRandomNameRequest.Response.getDefaultInstance());
     }
   }
 }
