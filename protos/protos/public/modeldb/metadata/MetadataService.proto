@@ -127,6 +127,13 @@ message DeleteKeyValuePropertiesRequest {
     }
 }
 
+message GenerateRandomNameRequest {
+
+    message Response {
+        string name = 1;
+    }
+}
+
 service MetadataService {
     rpc GetLabels(GetLabelsRequest) returns (GetLabelsRequest.Response) {
         option (google.api.http) = {
@@ -198,6 +205,12 @@ service MetadataService {
         option (google.api.http) = {
             delete: "/v1/metadata/keyValueProperties"
             body: "*"
+        };
+    };
+
+    rpc GenerateRandomName(GenerateRandomNameRequest) returns (GenerateRandomNameRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/generateRandomName"
         };
     };
 }
