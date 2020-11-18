@@ -884,7 +884,7 @@ public class ModelDBHibernateUtil {
         throw new InterruptedException("Postgres doesn't allow '-' in the database name");
       } else {
         ModelDBHibernateUtil.createDBIfNotExists(
-            rDBDriver, rDBUrl, "`" + databaseName + "`", configUsername, configPassword);
+            rDBUrl, "`" + databaseName + "`", configUsername, configPassword);
       }
     }
 
@@ -915,11 +915,7 @@ public class ModelDBHibernateUtil {
   }
 
   public static void createDBIfNotExists(
-      String rDBDriver,
-      String rDBUrl,
-      String databaseName,
-      String configUsername,
-      String configPassword)
+      String rDBUrl, String databaseName, String configUsername, String configPassword)
       throws SQLException {
 
     Connection connection = DriverManager.getConnection(rDBUrl, configUsername, configPassword);
