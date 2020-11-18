@@ -283,7 +283,7 @@ def prediction_input_df(func):
             return func(self, input)
         else:
             # input is list of records
-            return func(self, pd.DataFrame.from_records(input))
+            return func(self, pd.DataFrame.from_dict(input))
 
     return prediction
 
