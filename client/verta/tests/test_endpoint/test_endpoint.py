@@ -686,7 +686,6 @@ class TestEndpoint:
 
     def test_predict_dataframe_input(self, client, created_endpoints, model_version):
         np = pytest.importorskip("numpy")
-        sklearn = pytest.importorskip("sklearn")
         pd = pytest.importorskip("pandas")
 
         endpoint = client.create_endpoint(_utils.generate_default_name())
