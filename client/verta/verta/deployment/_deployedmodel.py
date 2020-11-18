@@ -256,10 +256,15 @@ class DeployedModel:
 
 
 def prediction_input_df(func):
-    import pandas as pd
+    def prediction(self, input):
+        import pandas as pd
 
-    def prediction(self, records):
-        return func(self, pd.DataFrame.from_records(records))
+        if isinstance(input, pd.DataFrame):
+            # input is dataframe.
+            return func(self, input)
+        else:
+            # input is list of records
+            return func(self, pd.DataFrame.from_records(input))
 
     return prediction
 

@@ -700,8 +700,6 @@ class TestEndpoint:
             from dataframe_custom_model.dataframe_model import DataFrameModel  # pylint: disable=import-error
 
             df_model = DataFrameModel()
-            # print(df_model.predict(input.to_dict("records")))
-            # model_api = ModelAPI(input, df_model.predict(input).tolist())
             model_version.log_model(df_model, custom_modules=["dataframe_custom_model/"])
 
             env = Python(requirements=["pandas=={}".format(pd.__version__)])
@@ -712,4 +710,4 @@ class TestEndpoint:
             created_endpoints.append(endpoint)
             endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
 
-            assert endpoint.get_deployed_model().predict(input) == df_model.predict(input.to_dict("records"))
+            assert endpoint.get_deployed_model().predict(input) == df_model.predict(input)
