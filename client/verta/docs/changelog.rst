@@ -37,6 +37,22 @@ Release Notes
      <>`__
 
 
+v0.15.8 (2020-11-17)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add public_within_org param to Client.get_or_create_endpoint()
+  <https://github.com/VertaAI/modeldb/pull/1661>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `propagate HTTP error messages for Client init errors
+  <https://github.com/VertaAI/modeldb/pull/1640>`__
+- `display a simpler error message for backend errors
+  <https://github.com/VertaAI/modeldb/pull/1650>`__
+
+
 v0.15.7 (2020-11-05)
 --------------------
 
