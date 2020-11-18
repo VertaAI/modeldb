@@ -39,6 +39,9 @@ class ExperimentRuns(_utils.LazyList):
         runs[0].get_metric("accuracy")
         # 0.8921755939794525
 
+        # find runs by a tag:
+        runs_with_tag = runs.find("tags ~= some-tag")
+
     """
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
