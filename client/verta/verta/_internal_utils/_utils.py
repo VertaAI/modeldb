@@ -784,7 +784,8 @@ def to_builtin(obj):
     if obj_class == "Series":
         return obj.values.tolist()
     if obj_class == "DataFrame":
-        return obj.values.tolist()
+        return list(map(to_builtin, obj.to_dict("records")))
+
     if obj_class == "Tensor" and obj_module == "torch":
         return obj.detach().numpy().tolist()
     tf = importer.maybe_dependency("tensorflow")

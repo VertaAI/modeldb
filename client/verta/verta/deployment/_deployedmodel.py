@@ -255,6 +255,14 @@ class DeployedModel:
         _utils.raise_for_http_error(response)
 
 
+def prediction_input_df(func):
+    import pandas as pd
+
+    def prediction(self, records):
+        return func(self, pd.DataFrame.from_records(records))
+
+    return prediction
+
 def prediction_input_unpack(func):
     """
     Decorator for unpacking a dictionary passed in as the argument for ``predict()``.
