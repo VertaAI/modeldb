@@ -91,7 +91,9 @@ class Endpoint(object):
     def _create(cls, conn, conf, workspace, path, description=None):
         endpoint_json = cls._create_json(conn, workspace, path, description)
         if endpoint_json:
-            return cls(conn, conf, workspace, endpoint_json['id'])
+            endpoint = cls(conn, conf, workspace, endpoint_json['id'])
+            endpoint._create_stage()  # an endpoint needs a stage to function, so might as well create it here
+            return endpoint
         else:
             return None
 
