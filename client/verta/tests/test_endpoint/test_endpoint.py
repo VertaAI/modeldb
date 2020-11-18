@@ -700,7 +700,10 @@ class TestEndpoint:
             from dataframe_custom_model.dataframe_model import DataFrameModel  # pylint: disable=import-error
 
             df_model = DataFrameModel()
-            model_version.log_model(df_model, custom_modules=["dataframe_custom_model/"])
+            model_version.log_model(df_model, custom_modules=[
+                "dataframe_custom_model/",
+                "../verta/"
+            ])
 
             env = Python(requirements=["pandas=={}".format(pd.__version__)])
             model_version.log_environment(env)
