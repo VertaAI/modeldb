@@ -281,9 +281,11 @@ def prediction_input_df(func):
         if isinstance(input, pd.DataFrame):
             # input is dataframe.
             return func(self, input)
-        else:
-            # input is list of records
+        elif isinstance(input, dict):
+            # input is a dictionary
             return func(self, pd.DataFrame.from_dict(input))
+        else:
+            raise TypeError("expect input to be a pandas DataFrame or a dictionary")
 
     return prediction
 
