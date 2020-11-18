@@ -692,7 +692,7 @@ class TestEndpoint:
         endpoint = client.create_endpoint(_utils.generate_default_name())
         created_endpoints.append(endpoint)
 
-        input = pd.DataFrame({"feature-1": [45], "feature-2": [43]})
+        input = pd.DataFrame({"feature-1": [45.3, 42.5], "feature-2": [43, 45]})
 
         with sys_path_manager() as sys_path:
             sys_path.append(".")
@@ -713,4 +713,4 @@ class TestEndpoint:
             created_endpoints.append(endpoint)
             endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
 
-            assert endpoint.get_deployed_model().predict(input) == df_model.predict(input)
+            assert np.array_equal(endpoint.get_deployed_model().predict(input), df_model.predict(input))
