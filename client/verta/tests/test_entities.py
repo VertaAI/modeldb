@@ -587,6 +587,24 @@ class TestExperimentRuns:
             assert row['metric.'+metric1] == run.get_metric(metric1)
             assert row['metric.'+metric2] == run.get_metric(metric2)
 
+    def test_find_by_tag(self, client):
+        client.set_project()
+        expt = client.set_experiment()
+        tag = "some-tag"
+        diff_tag = "diff-tag"
+
+        run_with_diff_tag = client.set_experiment_run("run-with-diff-tag")
+        run_with_diff_tag.log_tag(diff_tag)
+        
+        runs_with_tag = []
+        for _ in range(5):
+            runs_with_tag.append(client.set_experiment_run())
+            runs_with_tag[-1].log_tag(tag)
+
+        found_runs = expt.expt_runs.find("tags ~= {}".format(tag))
+        assert len(found_runs) == len(runs_with_tag)
+
+
     @pytest.mark.skip("functionality removed")
     def test_add(self, client):
         client.set_project()
