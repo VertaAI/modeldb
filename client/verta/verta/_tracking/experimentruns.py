@@ -46,6 +46,7 @@ class ExperimentRuns(_utils.LazyList):
         'name',
         'date_created', 'date_updated',
         'attributes', 'hyperparameters', 'metrics',
+        'tags'
     }
 
     def __init__(self, conn, conf):
