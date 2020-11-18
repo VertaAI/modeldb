@@ -92,6 +92,7 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -1416,6 +1417,20 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       GetUrlForArtifact.Response response =
           artifactStoreDAO.getUrlForArtifactMultipart(
               s3Key, request.getMethod(), request.getPartNumber(), uploadId);
+      JsonObject jsonObject = new JsonObject();
+      jsonObject.addProperty("key", s3Key);
+      jsonObject.addProperty("method", request.getMethod());
+      jsonObject.addProperty("part_number", request.getPartNumber());
+      jsonObject.addProperty("upload_id", uploadId);
+      saveAuditLogs(
+          null,
+          ModelDBConstants.GET,
+          Collections.singletonList(request.getId()),
+          String.format(
+              ModelDBConstants.METADATA_JSON_TEMPLATE,
+              "get",
+              "getURLForArtifact",
+              new Gson().toJson(jsonObject)));
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2606,6 +2621,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       CommitArtifactPart.Response response = experimentRunDAO.commitArtifactPart(request);
+      JsonObject partInfoJson = new JsonObject();
+      partInfoJson.addProperty(
+          "artifact_part", ModelDBUtils.getStringFromProtoObject(request.getArtifactPart()));
+      partInfoJson.addProperty("artifact_key", request.getKey());
       saveAuditLogs(
           null,
           ModelDBConstants.UPDATE,
@@ -2613,8 +2632,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           String.format(
               ModelDBConstants.METADATA_JSON_TEMPLATE,
               "upload_artifact_part",
-              "artifact_key : part_number",
-              request.getKey() + " : " + request.getArtifactPart().getPartNumber()));
+              "artifact_part_info",
+              new Gson().toJson(partInfoJson)));
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2679,11 +2698,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
+      Gson gson = new Gson();
+      JsonObject multipartInfo = new JsonObject();
       CommitMultipartArtifact.Response response =
           experimentRunDAO.commitMultipartArtifact(
               request,
-              (s3Key, uploadId, partETags) ->
-                  artifactStoreDAO.commitMultipart(s3Key, uploadId, partETags));
+              (s3Key, uploadId, partETags) -> {
+                multipartInfo.addProperty("artifact_key", s3Key);
+                multipartInfo.addProperty("upload_id", uploadId);
+                multipartInfo.add("part_etags", gson.toJsonTree(partETags));
+                artifactStoreDAO.commitMultipart(s3Key, uploadId, partETags);
+              });
       saveAuditLogs(
           null,
           ModelDBConstants.UPDATE,
@@ -2691,8 +2716,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           String.format(
               ModelDBConstants.METADATA_JSON_TEMPLATE,
               "commit_artifact_parts",
-              "artifact_key",
-              request.getKey()));
+              "artifact_multipart_info",
+              new Gson().toJson(multipartInfo)));
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
