@@ -285,7 +285,7 @@ def prediction_input_df(func):
             # input is a dictionary
             return func(self, pd.DataFrame.from_dict(input))
         else:
-            raise TypeError("expect input to be a pandas DataFrame or a dictionary")
+            raise TypeError("input must be a pandas DataFrame or a dictionary")
 
     return prediction
 
