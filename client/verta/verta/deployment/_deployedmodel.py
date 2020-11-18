@@ -256,6 +256,25 @@ class DeployedModel:
 
 
 def prediction_input_df(func):
+    """
+    Decorator to handle dataframe inputs for ``predict()``.
+
+    Examples
+    --------
+
+    .. code-block:: python
+
+        class Model(object):
+        @prediction_input_df
+            def predict(self, input):
+                return input_df["feature-1"].values + input_df["feature-2"].values
+
+        input = pd.DataFrame({"feature-1": [45], "feature-2": [43]})
+        local_model = Model()
+
+        deployed_model.predict(input) == local_model.predict(input)
+
+    """
     def prediction(self, input):
         import pandas as pd
 
@@ -267,6 +286,7 @@ def prediction_input_df(func):
             return func(self, pd.DataFrame.from_records(input))
 
     return prediction
+
 
 def prediction_input_unpack(func):
     """
