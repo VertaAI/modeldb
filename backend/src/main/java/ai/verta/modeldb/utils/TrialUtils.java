@@ -64,7 +64,7 @@ public class TrialUtils {
         FindExperimentRuns findExperimentRuns =
             FindExperimentRuns.newBuilder()
                 .setIdsOnly(true)
-                .setWorkspaceName(workspaceDTO.getWorkspaceName())
+                .setProjectId(projectId)
                 .build();
         ExperimentRunPaginationDTO paginationDTO =
             experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
