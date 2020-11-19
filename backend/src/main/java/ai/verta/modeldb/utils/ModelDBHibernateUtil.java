@@ -879,6 +879,15 @@ public class ModelDBHibernateUtil {
       throws InterruptedException, LiquibaseException, SQLException, ClassNotFoundException {
     setDatabaseProperties(App.getInstance(), databasePropMap);
 
+    if (databaseName.contains("-")) {
+      if (ModelDBHibernateUtil.rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
+        throw new InterruptedException("Postgres doesn't allow '-' in the database name");
+      } else {
+        ModelDBHibernateUtil.createDBIfNotExists(
+            rDBUrl, "`" + databaseName + "`", configUsername, configPassword);
+      }
+    }
+
     // Check DB is up or not
     boolean dbConnectionStatus =
         ModelDBHibernateUtil.checkDBConnection(
@@ -903,5 +912,30 @@ public class ModelDBHibernateUtil {
       return true;
     }
     return false;
+  }
+
+  public static void createDBIfNotExists(
+      String rDBUrl, String databaseName, String configUsername, String configPassword)
+      throws SQLException {
+
+    Connection connection = DriverManager.getConnection(rDBUrl, configUsername, configPassword);
+    ResultSet resultSet = connection.getMetaData().getCatalogs();
+
+    boolean dbExists = false;
+    while (resultSet.next()) {
+      String databaseNameRes = resultSet.getString(1);
+      if (databaseName.equals(databaseNameRes)) {
+        dbExists = true;
+      }
+    }
+
+    if (dbExists) {
+      System.out.println("the database " + databaseName + " exists");
+    } else {
+      System.out.println("the database " + databaseName + " does not exists");
+      Statement statement = connection.createStatement();
+      statement.executeUpdate("CREATE DATABASE " + databaseName);
+      System.out.println("the database " + databaseName + " created successfully");
+    }
   }
 }
