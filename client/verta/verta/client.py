@@ -970,7 +970,7 @@ class Client(object):
     def registered_model_versions(self):
         return RegisteredModelVersions(self._conn, self._conf)
 
-    def get_or_create_endpoint(self, path=None, description=None, workspace=None, id=None):
+    def get_or_create_endpoint(self, path=None, description=None, workspace=None, public_within_org=False, id=None):
         """
         Attaches an endpoint to this Client.
 
@@ -987,6 +987,9 @@ class Client(object):
         workspace : str, optional
             Workspace under which the endpoint with name `name` exists. If not provided, the current
             user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating an endpoint in an organization's workspace, whether to make this endpoint
+            accessible to all members of that organization.
         id : str, optional
             ID of the endpoint. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
@@ -1019,7 +1022,7 @@ class Client(object):
         else:
             return Endpoint._get_or_create_by_name(self._conn, path,
                                             lambda name: Endpoint._get_by_path(self._conn, self._conf, workspace, path),
-                                            lambda name: Endpoint._create( self._conn, self._conf, workspace, path, description),
+                                            lambda name: Endpoint._create(self._conn, self._conf, workspace, public_within_org, path, description),
                                             lambda: check_unnecessary_params_warning(
                                                  resource_name,
                                                  "path {}".format(path),
@@ -1236,7 +1239,7 @@ class Client(object):
         return self._ctx.registered_model
 
 
-    def create_endpoint(self, path, description=None, workspace=None):
+    def create_endpoint(self, path, description=None, workspace=None, public_within_org=False):
         """
         Attaches an endpoint to this Client.
 
@@ -1251,6 +1254,9 @@ class Client(object):
         workspace : str, optional
             Workspace under which the endpoint with name `name` exists. If not provided, the current
             user's personal workspace will be used.
+        public_within_org : bool, default False
+            If creating an endpoint in an organization's workspace, whether to make this endpoint
+            accessible to all members of that organization.
 
         Returns
         -------
@@ -1268,7 +1274,7 @@ class Client(object):
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
             workspace = self._get_personal_workspace()
-        return Endpoint._create(self._conn, self._conf, workspace, path, description)
+        return Endpoint._create(self._conn, self._conf, workspace, public_within_org, path, description)
 
     @property
     def endpoints(self):
