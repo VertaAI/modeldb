@@ -260,7 +260,7 @@ class LazyList(object):
 
         return total_records
 
-    def find(self, where):
+    def find(self, *args):
         """
         Gets the results from this collection that match predicates `where`.
 
@@ -288,11 +288,12 @@ class LazyList(object):
             # <ExperimentRuns containing 3 runs>
 
         """
-        new_list = copy.deepcopy(self)
+        if len(args) == 1 and isinstance(args[0], list):
+            # to keep backward compatibility, in case user pass in a list
+            return self.find(*args[0])
 
-        if isinstance(where, six.string_types):
-            where = [where]
-        for predicate in where:
+        new_list = copy.deepcopy(self)
+        for predicate in args:
             # split predicate
             try:
                 key, operator, value = map(lambda token: token.strip(), self._OP_PATTERN.split(predicate, maxsplit=1))

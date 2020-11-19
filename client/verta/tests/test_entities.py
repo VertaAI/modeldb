@@ -587,7 +587,7 @@ class TestExperimentRuns:
             assert row['metric.'+metric1] == run.get_metric(metric1)
             assert row['metric.'+metric2] == run.get_metric(metric2)
 
-    def test_find_by_tag(self, client):
+    def test_find(self, client):
         client.set_project()
         expt = client.set_experiment()
         tag = "some-tag"
@@ -603,6 +603,11 @@ class TestExperimentRuns:
 
         found_runs = expt.expt_runs.find("tags ~= {}".format(tag))
         assert len(found_runs) == len(runs_with_tag)
+
+        runs_with_tag[-1].log_hyperparameter("some-hyper", 1)
+        # compound conditions:
+        assert len(expt.expt_runs.find(["tags ~= {}".format(tag), "hyperparameters.some-hyper == 1"])) == 1  # old syntax
+        assert len(expt.expt_runs.find("tags ~= {}".format(tag), "hyperparameters.some-hyper == 1")) == 1  # new syntax
 
 
     @pytest.mark.skip("functionality removed")
