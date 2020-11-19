@@ -5,11 +5,11 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
-import ai.verta.modeldb.name_generator.NamesGenerator;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Any;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import com.oblac.nomen.Nomen;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
@@ -291,7 +291,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       responseObserver.onNext(
           GenerateRandomNameRequest.Response.newBuilder()
-              .setName(NamesGenerator.getRandomName(0))
+              .setName(Nomen.est().adjective().color().animal().get())
               .build());
       responseObserver.onCompleted();
     } catch (Exception e) {
