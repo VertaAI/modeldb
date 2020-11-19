@@ -262,9 +262,9 @@ class LazyList(object):
 
     def find(self, *args):
         """
-        Gets the results from this collection that match predicates `where`.
+        Gets the results from this collection that match input predicates.
 
-        A predicate in `where` is a string containing a simple boolean expression consisting of:
+        A predicate is a string containing a simple boolean expression consisting of:
 
             - a dot-delimited property such as ``metrics.accuracy``
             - a Python boolean operator such as ``>=``
@@ -272,7 +272,7 @@ class LazyList(object):
 
         Parameters
         ----------
-        where : str or list of str
+        args : strs or a list of str
             Predicates specifying results to get.
 
         Returns
@@ -283,6 +283,10 @@ class LazyList(object):
         --------
         .. code-block:: python
 
+            runs.find("hyperparameters.hidden_size == 256",
+                       "metrics.accuracy >= .8")
+            # <ExperimentRuns containing 3 runs>
+            # alternatively:
             runs.find(["hyperparameters.hidden_size == 256",
                        "metrics.accuracy >= .8"])
             # <ExperimentRuns containing 3 runs>
