@@ -132,6 +132,11 @@ public interface ModelDBConstants {
   String TAG_MAPPINGS = "tagmappings";
   String VERSIONED_INPUTS = "versioned_inputs";
   String HYPERPARAMETER_ELEMENT_MAPPINGS = "hyperparameter_element_mappings";
+  String MODEL_PKL = "model.pkl";
+  String MODEL_API_JSON = "model_api.json";
+  String REQUIREMENTS_TXT = "requirements.txt";
+  String VER_SPEC_PATTERN = "~=|==|!=|<=|>=|<|>|===";
+  String VER_NUM_PATTERN = "a|b|rc|post|pre";
 
   // Common verb constants
   String ORDER_ASC = "asc";

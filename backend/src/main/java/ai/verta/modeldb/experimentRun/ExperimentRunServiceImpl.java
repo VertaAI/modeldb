@@ -254,7 +254,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceActions.UPDATE);
       validateExperimentEntity(request.getExperimentId());
 
-      experimentRun = experimentRunDAO.insertExperimentRun(projectDAO, experimentRun, userInfo);
+      experimentRun =
+          experimentRunDAO.insertExperimentRun(
+              projectDAO, artifactStoreDAO, experimentRun, userInfo);
       responseObserver.onNext(
           CreateExperimentRun.Response.newBuilder().setExperimentRun(experimentRun).build());
       responseObserver.onCompleted();
@@ -2614,7 +2616,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       ExperimentRun clonedExperimentRun =
           experimentRunDAO.cloneExperimentRun(
-              projectDAO, request, authService.getCurrentLoginUserInfo());
+              projectDAO, artifactStoreDAO, request, authService.getCurrentLoginUserInfo());
       responseObserver.onNext(
           CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build());
       responseObserver.onCompleted();

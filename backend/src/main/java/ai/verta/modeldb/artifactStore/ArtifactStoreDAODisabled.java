@@ -4,6 +4,7 @@ import ai.verta.modeldb.GetUrlForArtifact.Response;
 import ai.verta.modeldb.ModelDBException;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.rpc.Code;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
@@ -37,6 +38,12 @@ public class ArtifactStoreDAODisabled implements ArtifactStoreDAO {
   @Override
   public void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
       throws ModelDBException {
+    LOGGER.debug("Artifact store is disabled");
+    throw new ModelDBException("Artifact store is disabled", Code.UNIMPLEMENTED);
+  }
+
+  @Override
+  public InputStream downloadArtifact(String artifactPath) throws ModelDBException {
     LOGGER.debug("Artifact store is disabled");
     throw new ModelDBException("Artifact store is disabled", Code.UNIMPLEMENTED);
   }

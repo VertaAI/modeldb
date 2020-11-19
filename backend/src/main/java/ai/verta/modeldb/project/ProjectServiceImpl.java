@@ -953,7 +953,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
-      Project project = projectDAO.deepCopyProjectForUser(request.getId(), userInfo);
+      Project project =
+          projectDAO.deepCopyProjectForUser(artifactStoreDAO, request.getId(), userInfo);
 
       responseObserver.onNext(DeepCopyProject.Response.newBuilder().setProject(project).build());
       responseObserver.onCompleted();

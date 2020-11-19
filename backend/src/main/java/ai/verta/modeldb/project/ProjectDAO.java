@@ -7,6 +7,7 @@ import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -193,7 +194,8 @@ public interface ProjectDAO {
    * @param Project project
    * @return Project
    */
-  Project deepCopyProjectForUser(String srcProjectID, UserInfo userInfo)
+  Project deepCopyProjectForUser(
+      ArtifactStoreDAO artifactStoreDAO, String srcProjectID, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException;
 
   /**

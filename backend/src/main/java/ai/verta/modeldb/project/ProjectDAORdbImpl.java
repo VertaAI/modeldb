@@ -18,6 +18,7 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -665,7 +666,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
    * @param srcProject : source project
    * @return updatedProject
    */
-  private Project copyProjectAndUpdateDetails(Project srcProject, UserInfo userInfo) {
+  private Project copyProjectAndUpdateDetails(
+      ArtifactStoreDAO artifactStoreDAO, Project srcProject, UserInfo userInfo) {
     Project.Builder projectBuilder =
         Project.newBuilder(srcProject).setId(UUID.randomUUID().toString());
 
@@ -676,7 +678,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   }
 
   @Override
-  public Project deepCopyProjectForUser(String srcProjectID, UserInfo newOwner)
+  public Project deepCopyProjectForUser(
+      ArtifactStoreDAO artifactStoreDAO, String srcProjectID, UserInfo newOwner)
       throws InvalidProtocolBufferException, ModelDBException {
     // if no project id specified , default to the one captured from config.yaml
     // TODO: extend the starter project to be set of projects, so parameterizing this function makes
@@ -705,7 +708,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
 
     // cloned project
-    Project newProject = copyProjectAndUpdateDetails(srcProject, newOwner);
+    Project newProject = copyProjectAndUpdateDetails(artifactStoreDAO, srcProject, newOwner);
     insertProject(newProject, newOwner);
     newProject = getProjectByID(newProject.getId());
 
@@ -735,7 +738,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 .setSrcExperimentRunId(srcExperimentRun.getId())
                 .setDestExperimentId(newExperiment.getId())
                 .build();
-        this.experimentRunDAO.cloneExperimentRun(this, cloneExperimentRun, newOwner);
+        this.experimentRunDAO.cloneExperimentRun(
+            this, artifactStoreDAO, cloneExperimentRun, newOwner);
       }
     }
 
