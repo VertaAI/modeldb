@@ -9,6 +9,7 @@ import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
+import ai.verta.modeldb.audit_log.AuditLogLocalDAODisabled;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAORdbImpl;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
@@ -504,7 +505,12 @@ public class App implements ApplicationContextAware {
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
     LineageDAO lineageDAO = new LineageDAORdbImpl();
     DatasetVersionDAO datasetVersionDAO = new DatasetVersionDAORdbImpl(authService, roleService);
-    AuditLogLocalDAO auditLogLocalDAO = new AuditLogLocalDAORdbImpl();
+    AuditLogLocalDAO auditLogLocalDAO;
+    if (authService instanceof PublicAuthServiceUtils) {
+      auditLogLocalDAO = new AuditLogLocalDAODisabled();
+    } else {
+      auditLogLocalDAO = new AuditLogLocalDAORdbImpl();
+    }
     LOGGER.info("All DAO initialized");
     // --------------- Finish Initialize DAO --------------------------
     initializeBackendServices(
