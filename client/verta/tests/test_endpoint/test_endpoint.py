@@ -701,7 +701,7 @@ class TestEndpoint:
             df_model = DataFrameModel()
             model_version.log_model(df_model, custom_modules=["dataframe_custom_model/"])
 
-            env = Python(requirements=["pandas=={}".format(pd.__version__), "verta=={}".format(verta.__version__)])
+            env = Python(requirements=["pandas=={}".format(pd.__version__)])
             model_version.log_environment(env)
 
             path = verta._internal_utils._utils.generate_default_name()
