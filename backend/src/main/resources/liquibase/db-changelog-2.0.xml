@@ -137,7 +137,7 @@
         <tagDatabase tag="db_version_2.4"/>
     </changeSet>
 
-    <changeSet id="add-workspace-id-to-project" author="anandJ">
+    <changeSet id="add-workspace-id-to-project" author="cory">
         <preConditions onFail="MARK_RAN">
             <not>
                 <columnExists tableName="project" columnName="workspace_id"/>
@@ -153,5 +153,23 @@
 
     <changeSet id="db_version_2.5" author="cory">
         <tagDatabase tag="db_version_2.5"/>
+    </changeSet>
+
+    <changeSet id="add-workspace-id-to-dataset" author="cory">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="dataset" columnName="workspace_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="dataset">
+            <column name="workspace_id" type="int8"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="dataset" columnName="workspace_id"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.6" author="cory">
+        <tagDatabase tag="db_version_2.6"/>
     </changeSet>
 </databaseChangeLog>
