@@ -34,6 +34,7 @@ import ai.verta.modeldb.entities.RawDatasetVersionInfoEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.entities.UploadStatusEntity;
 import ai.verta.modeldb.entities.UserCommentEntity;
+import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
@@ -170,7 +171,8 @@ public class ModelDBHibernateUtil {
     DatasetRepositoryMappingEntity.class,
     UploadStatusEntity.class,
     KeyValuePropertyMappingEntity.class,
-    QueryDatasetComponentBlobEntity.class
+    QueryDatasetComponentBlobEntity.class,
+    AuditLogLocalEntity.class
   };
   private static Integer minConnectionPoolSize;
   private static Integer maxConnectionPoolSize;
