@@ -24,7 +24,8 @@ case class RegistryRegisteredModel (
   time_created: Option[BigInt] = None,
   time_updated: Option[BigInt] = None,
   visibility: Option[VisibilityEnumVisibility] = None,
-  workspace_id: Option[String] = None
+  workspace_id: Option[BigInt] = None,
+  workspace_name: Option[String] = None
 ) extends BaseSwagger {
   def toJson(): JValue = RegistryRegisteredModel.toJson(this)
 }
@@ -43,7 +44,8 @@ object RegistryRegisteredModel {
         obj.time_created.map(x => JField("time_created", JInt(x))),
         obj.time_updated.map(x => JField("time_updated", JInt(x))),
         obj.visibility.map(x => JField("visibility", ((x: VisibilityEnumVisibility) => VisibilityEnumVisibility.toJson(x))(x))),
-        obj.workspace_id.map(x => JField("workspace_id", JString(x)))
+        obj.workspace_id.map(x => JField("workspace_id", JInt(x))),
+        obj.workspace_name.map(x => JField("workspace_name", JString(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
         case None => Nil
@@ -67,7 +69,8 @@ object RegistryRegisteredModel {
           time_created = fieldsMap.get("time_created").map(JsonConverter.fromJsonInteger),
           time_updated = fieldsMap.get("time_updated").map(JsonConverter.fromJsonInteger),
           visibility = fieldsMap.get("visibility").map(VisibilityEnumVisibility.fromJson),
-          workspace_id = fieldsMap.get("workspace_id").map(JsonConverter.fromJsonString)
+          workspace_id = fieldsMap.get("workspace_id").map(JsonConverter.fromJsonInteger),
+          workspace_name = fieldsMap.get("workspace_name").map(JsonConverter.fromJsonString)
         )
       }
       case _ => throw new IllegalArgumentException(s"unknown type ${value.getClass.toString}")

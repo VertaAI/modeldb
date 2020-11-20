@@ -1471,6 +1471,10 @@
         "parent_id": {
           "type": "string"
         },
+        "environment": {
+          "$ref": "#/definitions/versioningEnvironmentBlob",
+          "title": "Requirement"
+        },
         "tags": {
           "type": "array",
           "items": {
@@ -2485,6 +2489,54 @@
         }
       }
     },
+    "versioningDockerEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "sha": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "python": {
+          "$ref": "#/definitions/versioningPythonEnvironmentBlob"
+        },
+        "docker": {
+          "$ref": "#/definitions/versioningDockerEnvironmentBlob"
+        },
+        "environment_variables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
+          }
+        },
+        "command_line": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "versioningEnvironmentVariablesBlob": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
     "versioningPathDatasetBlob": {
       "type": "object",
       "properties": {
@@ -2521,6 +2573,40 @@
         },
         "base_path": {
           "type": "string"
+        }
+      }
+    },
+    "versioningPythonEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "$ref": "#/definitions/versioningVersionEnvironmentBlob"
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
+          }
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
+          }
+        }
+      }
+    },
+    "versioningPythonRequirementEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "library": {
+          "type": "string"
+        },
+        "constraint": {
+          "type": "string"
+        },
+        "version": {
+          "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         }
       }
     },
@@ -2573,6 +2659,26 @@
           "$ref": "#/definitions/versioningPathDatasetComponentBlob"
         },
         "s3_version_id": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningVersionEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "major": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "minor": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "patch": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "suffix": {
           "type": "string"
         }
       }

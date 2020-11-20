@@ -853,7 +853,7 @@ public class DeleteEntitiesCron extends TimerTask {
       // Delete workspace based roleBindings
       List<String> repoOrgWorkspaceRoleBindings =
           roleService.getWorkspaceRoleBindings(
-              repositoryEntity.getWorkspace_id(),
+              repositoryEntity.getWorkspace_name(),
               WorkspaceTypeEnum.WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
               String.valueOf(repositoryEntity.getId()),
               ModelDBConstants.ROLE_REPOSITORY_ADMIN,

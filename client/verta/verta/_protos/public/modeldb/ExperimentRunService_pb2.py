@@ -14,6 +14,7 @@ _sym_db = _symbol_database.Default()
 from ..common import CommonService_pb2 as common_dot_CommonService__pb2
 from ..modeldb import CommonService_pb2 as modeldb_dot_CommonService__pb2
 from ..modeldb.versioning import VersioningService_pb2 as modeldb_dot_versioning_dot_VersioningService__pb2
+from ..modeldb.versioning import Environment_pb2 as modeldb_dot_versioning_dot_Environment__pb2
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 
@@ -23,9 +24,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb',
   syntax='proto3',
   serialized_options=b'P\001Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb',
-  serialized_pb=b'\n\"modeldb/ExperimentRunService.proto\x12\x10\x61i.verta.modeldb\x1a\x1a\x63ommon/CommonService.proto\x1a\x1bmodeldb/CommonService.proto\x1a*modeldb/versioning/VersioningService.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x8d\x07\n\rExperimentRun\x12\n\n\x02id\x18\x01 \x01(\t\x12\x12\n\nproject_id\x18\x02 \x01(\t\x12\x15\n\rexperiment_id\x18\x03 \x01(\t\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x06 \x01(\x03\x12\x14\n\x0c\x64\x61te_updated\x18\x07 \x01(\x03\x12\x12\n\nstart_time\x18\x08 \x01(\x03\x12\x10\n\x08\x65nd_time\x18\t \x01(\x03\x12\x14\n\x0c\x63ode_version\x18\n \x01(\t\x12<\n\x15\x63ode_version_snapshot\x18\x0b \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\x12\x11\n\tparent_id\x18\x0c \x01(\t\x12\x0c\n\x04tags\x18\x14 \x03(\t\x12-\n\nattributes\x18\x15 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x32\n\x0fhyperparameters\x18\x16 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12,\n\tartifacts\x18\x17 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12+\n\x08\x64\x61tasets\x18\x18 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12*\n\x07metrics\x18\x19 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x33\n\x0cobservations\x18\x1a \x03(\x0b\x32\x1d.ai.verta.modeldb.Observation\x12+\n\x08\x66\x65\x61tures\x18\x1b \x03(\x0b\x32\x19.ai.verta.modeldb.Feature\x12\x0e\n\x06job_id\x18\x1c \x01(\t\x12\r\n\x05owner\x18\x1d \x01(\t\x12;\n\x10versioned_inputs\x18\x1e \x01(\x0b\x32!.ai.verta.modeldb.VersioningEntry\x12X\n\x16\x63ode_version_from_blob\x18\x1f \x03(\x0b\x32\x38.ai.verta.modeldb.ExperimentRun.CodeVersionFromBlobEntry\x1aY\n\x18\x43odeVersionFromBlobEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12,\n\x05value\x18\x02 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion:\x02\x38\x01\"\xdc\x01\n\x0fVersioningEntry\x12\x15\n\rrepository_id\x18\x01 \x01(\x04\x12\x0e\n\x06\x63ommit\x18\x02 \x01(\t\x12O\n\x10key_location_map\x18\x03 \x03(\x0b\x32\x35.ai.verta.modeldb.VersioningEntry.KeyLocationMapEntry\x1aQ\n\x13KeyLocationMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12)\n\x05value\x18\x02 \x01(\x0b\x32\x1a.ai.verta.modeldb.Location:\x02\x38\x01\"\x1c\n\x08Location\x12\x10\n\x08location\x18\x01 \x03(\t\"h\n\x11LogVersionedInput\x12\n\n\x02id\x18\x01 \x01(\t\x12;\n\x10versioned_inputs\x18\x02 \x01(\x0b\x32!.ai.verta.modeldb.VersioningEntry\x1a\n\n\x08Response\"h\n\x11GetVersionedInput\x12\n\n\x02id\x18\x01 \x01(\t\x1aG\n\x08Response\x12;\n\x10versioned_inputs\x18\x01 \x01(\x0b\x32!.ai.verta.modeldb.VersioningEntry\"\xb6\x01\n\x0bObservation\x12.\n\tattribute\x18\x01 \x01(\x0b\x32\x19.ai.verta.common.KeyValueH\x00\x12-\n\x08\x61rtifact\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.ArtifactH\x00\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12,\n\x0c\x65poch_number\x18\x04 \x01(\x0b\x32\x16.google.protobuf.ValueB\x07\n\x05oneOf\"\x84\x06\n\x13\x43reateExperimentRun\x12\n\n\x02id\x18\x01 \x01(\t\x12\x12\n\nproject_id\x18\x02 \x01(\t\x12\x15\n\rexperiment_id\x18\x03 \x01(\t\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x06 \x01(\x03\x12\x14\n\x0c\x64\x61te_updated\x18\x07 \x01(\x03\x12\x12\n\nstart_time\x18\x08 \x01(\x03\x12\x10\n\x08\x65nd_time\x18\t \x01(\x03\x12\x14\n\x0c\x63ode_version\x18\n \x01(\t\x12<\n\x15\x63ode_version_snapshot\x18\x0b \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\x12\x11\n\tparent_id\x18\x0c \x01(\t\x12\x0c\n\x04tags\x18\x14 \x03(\t\x12-\n\nattributes\x18\x15 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x32\n\x0fhyperparameters\x18\x16 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12,\n\tartifacts\x18\x17 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12+\n\x08\x64\x61tasets\x18\x18 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12*\n\x07metrics\x18\x19 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x33\n\x0cobservations\x18\x1a \x03(\x0b\x32\x1d.ai.verta.modeldb.Observation\x12+\n\x08\x66\x65\x61tures\x18\x1b \x03(\x0b\x32\x19.ai.verta.modeldb.Feature\x12;\n\x10versioned_inputs\x18\x1c \x01(\x0b\x32!.ai.verta.modeldb.VersioningEntry\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"=\n\x13\x44\x65leteExperimentRun\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\xdb\x01\n\x1aGetExperimentRunsInProject\x12\x12\n\nproject_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xe1\x01\n\x1dGetExperimentRunsInExperiment\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"g\n\x14GetExperimentRunById\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"\x82\x01\n\x16GetExperimentRunByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"?\n\x17UpdateExperimentRunName\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x1a\n\n\x08Response\"\x86\x01\n\x1eUpdateExperimentRunDescription\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"u\n\x14\x41\x64\x64\x45xperimentRunTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"\x8c\x01\n\x17\x44\x65leteExperimentRunTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"s\n\x13\x41\x64\x64\x45xperimentRunTag\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"v\n\x16\x44\x65leteExperimentRunTag\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"c\n\x1a\x41\x64\x64\x45xperimentRunAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"c\n\x1d\x44\x65leteExperimentRunAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\n\n\x08Response\"}\n\x1bLogExperimentRunCodeVersion\x12\n\n\x02id\x18\x01 \x01(\t\x12\x33\n\x0c\x63ode_version\x18\x02 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\x12\x11\n\toverwrite\x18\x03 \x01(\x08\x1a\n\n\x08Response\"j\n\x1bGetExperimentRunCodeVersion\x12\n\n\x02id\x18\x01 \x01(\t\x1a?\n\x08Response\x12\x33\n\x0c\x63ode_version\x18\x01 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\"\\\n\x0eLogObservation\x12\n\n\x02id\x18\x01 \x01(\t\x12\x32\n\x0bobservation\x18\x02 \x01(\x0b\x32\x1d.ai.verta.modeldb.Observation\x1a\n\n\x08Response\"^\n\x0fLogObservations\x12\n\n\x02id\x18\x01 \x01(\t\x12\x33\n\x0cobservations\x18\x02 \x03(\x0b\x32\x1d.ai.verta.modeldb.Observation\x1a\n\n\x08Response\"w\n\x0fGetObservations\x12\n\n\x02id\x18\x01 \x01(\t\x12\x17\n\x0fobservation_key\x18\x02 \x01(\t\x1a?\n\x08Response\x12\x33\n\x0cobservations\x18\x01 \x03(\x0b\x32\x1d.ai.verta.modeldb.Observation\"Z\n\x12\x44\x65leteObservations\x12\n\n\x02id\x18\x01 \x01(\t\x12\x18\n\x10observation_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\n\n\x08Response\"N\n\tLogMetric\x12\n\n\x02id\x18\x01 \x01(\t\x12)\n\x06metric\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"P\n\nLogMetrics\x12\n\n\x02id\x18\x01 \x01(\t\x12*\n\x07metrics\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"P\n\nGetMetrics\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07metrics\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"P\n\rDeleteMetrics\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0bmetric_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\n\n\x08Response\"c\n\nLogDataset\x12\n\n\x02id\x18\x01 \x01(\t\x12*\n\x07\x64\x61taset\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.Artifact\x12\x11\n\toverwrite\x18\x03 \x01(\x08\x1a\n\n\x08Response\"e\n\x0bLogDatasets\x12\n\n\x02id\x18\x01 \x01(\t\x12+\n\x08\x64\x61tasets\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12\x11\n\toverwrite\x18\x03 \x01(\x08\x1a\n\n\x08Response\"R\n\x0bGetDatasets\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x37\n\x08Response\x12+\n\x08\x64\x61tasets\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.Artifact\"R\n\x0bLogArtifact\x12\n\n\x02id\x18\x01 \x01(\t\x12+\n\x08\x61rtifact\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.Artifact\x1a\n\n\x08Response\"T\n\x0cLogArtifacts\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tartifacts\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x1a\n\n\x08Response\"5\n\x0e\x44\x65leteArtifact\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response\"^\n\x11LogHyperparameter\x12\n\n\x02id\x18\x01 \x01(\t\x12\x31\n\x0ehyperparameter\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"`\n\x12LogHyperparameters\x12\n\n\x02id\x18\x01 \x01(\t\x12\x32\n\x0fhyperparameters\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"`\n\x12GetHyperparameters\x12\n\n\x02id\x18\x01 \x01(\t\x1a>\n\x08Response\x12\x32\n\x0fhyperparameters\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"`\n\x15\x44\x65leteHyperparameters\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1b\n\x13hyperparameter_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\n\n\x08Response\"T\n\x0cLogAttribute\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tattribute\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"V\n\rLogAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"\xfb\x02\n\x12\x46indExperimentRuns\x12\x14\n\nproject_id\x18\x01 \x01(\tH\x00\x12\x17\n\rexperiment_id\x18\x02 \x01(\tH\x00\x12\x1a\n\x12\x65xperiment_run_ids\x18\x03 \x03(\t\x12\x32\n\npredicates\x18\x04 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12\x10\n\x08ids_only\x18\x05 \x01(\x08\x12\x13\n\x0bpage_number\x18\x06 \x01(\x05\x12\x12\n\npage_limit\x18\x07 \x01(\x05\x12\x11\n\tascending\x18\t \x01(\x08\x12\x10\n\x08sort_key\x18\n \x01(\t\x12\x16\n\x0eworkspace_name\x18\x0b \x01(\t\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x42\x11\n\x0f\x65ntity_id_oneof\"\xc4\x01\n\x12SortExperimentRuns\x12\x1a\n\x12\x65xperiment_run_ids\x18\x01 \x03(\t\x12\x10\n\x08sort_key\x18\x02 \x01(\t\x12\x11\n\tascending\x18\x03 \x01(\x08\x12\x10\n\x08ids_only\x18\x04 \x01(\x08\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xee\x01\n\x19TopExperimentRunsSelector\x12\x12\n\nproject_id\x18\x01 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x12\x1a\n\x12\x65xperiment_run_ids\x18\x03 \x03(\t\x12\x10\n\x08sort_key\x18\x04 \x01(\t\x12\x11\n\tascending\x18\x05 \x01(\x08\x12\r\n\x05top_k\x18\x06 \x01(\x05\x12\x10\n\x08ids_only\x18\x07 \x01(\x08\x1a\x44\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"2\n\x08LogJobId\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06job_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"2\n\x08GetJobId\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06job_id\x18\x01 \x01(\t\"\xe1\x01\n\x19GetChildrenExperimentRuns\x12\x19\n\x11\x65xperiment_run_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"T\n\x18SetParentExperimentRunId\x12\x19\n\x11\x65xperiment_run_id\x18\x01 \x01(\t\x12\x11\n\tparent_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"\xec\x01\n#GetExperimentRunsByDatasetVersionId\x12\x1a\n\x12\x64\x61taset_version_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x04\"?\n\x14\x44\x65leteExperimentRuns\x12\x0b\n\x03ids\x18\x01 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x86\x02\n\x1fListCommitExperimentRunsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x1aP\n\x08Response\x12-\n\x04runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x96\x02\n\x1dListBlobExperimentRunsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x12\x10\n\x08location\x18\x04 \x03(\t\x1aP\n\x08Response\x12-\n\x04runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xab\x01\n\x12\x43loneExperimentRun\x12\x1d\n\x15src_experiment_run_id\x18\x01 \x01(\t\x12 \n\x18\x64\x65st_experiment_run_name\x18\x02 \x01(\t\x12\x1a\n\x12\x64\x65st_experiment_id\x18\x03 \x01(\t\x1a\x38\n\x08Response\x12,\n\x03run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun2\xf1I\n\x14\x45xperimentRunService\x12\x9f\x01\n\x13\x63reateExperimentRun\x12%.ai.verta.modeldb.CreateExperimentRun\x1a..ai.verta.modeldb.CreateExperimentRun.Response\"1\x82\xd3\xe4\x93\x02+\"&/v1/experiment-run/createExperimentRun:\x01*\x12\x9f\x01\n\x13\x64\x65leteExperimentRun\x12%.ai.verta.modeldb.DeleteExperimentRun\x1a..ai.verta.modeldb.DeleteExperimentRun.Response\"1\x82\xd3\xe4\x93\x02+*&/v1/experiment-run/deleteExperimentRun:\x01*\x12\xb8\x01\n\x1agetExperimentRunsInProject\x12,.ai.verta.modeldb.GetExperimentRunsInProject\x1a\x35.ai.verta.modeldb.GetExperimentRunsInProject.Response\"5\x82\xd3\xe4\x93\x02/\x12-/v1/experiment-run/getExperimentRunsInProject\x12\xc4\x01\n\x1dgetExperimentRunsInExperiment\x12/.ai.verta.modeldb.GetExperimentRunsInExperiment\x1a\x38.ai.verta.modeldb.GetExperimentRunsInExperiment.Response\"8\x82\xd3\xe4\x93\x02\x32\x12\x30/v1/experiment-run/getExperimentRunsInExperiment\x12\xa0\x01\n\x14getExperimentRunById\x12&.ai.verta.modeldb.GetExperimentRunById\x1a/.ai.verta.modeldb.GetExperimentRunById.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/experiment-run/getExperimentRunById\x12\xa8\x01\n\x16getExperimentRunByName\x12(.ai.verta.modeldb.GetExperimentRunByName\x1a\x31.ai.verta.modeldb.GetExperimentRunByName.Response\"1\x82\xd3\xe4\x93\x02+\x12)/v1/experiment-run/getExperimentRunByName\x12\xaf\x01\n\x17updateExperimentRunName\x12).ai.verta.modeldb.UpdateExperimentRunName\x1a\x32.ai.verta.modeldb.UpdateExperimentRunName.Response\"5\x82\xd3\xe4\x93\x02/\"*/v1/experiment-run/updateExperimentRunName:\x01*\x12\xcb\x01\n\x1eupdateExperimentRunDescription\x12\x30.ai.verta.modeldb.UpdateExperimentRunDescription\x1a\x39.ai.verta.modeldb.UpdateExperimentRunDescription.Response\"<\x82\xd3\xe4\x93\x02\x36\"1/v1/experiment-run/updateExperimentRunDescription:\x01*\x12\xa3\x01\n\x14\x61\x64\x64\x45xperimentRunTags\x12&.ai.verta.modeldb.AddExperimentRunTags\x1a/.ai.verta.modeldb.AddExperimentRunTags.Response\"2\x82\xd3\xe4\x93\x02,\"\'/v1/experiment-run/addExperimentRunTags:\x01*\x12\x86\x01\n\x14getExperimentRunTags\x12\x19.ai.verta.modeldb.GetTags\x1a\".ai.verta.modeldb.GetTags.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/experiment-run/getExperimentRunTags\x12\xaf\x01\n\x17\x64\x65leteExperimentRunTags\x12).ai.verta.modeldb.DeleteExperimentRunTags\x1a\x32.ai.verta.modeldb.DeleteExperimentRunTags.Response\"5\x82\xd3\xe4\x93\x02/**/v1/experiment-run/deleteExperimentRunTags:\x01*\x12\x9f\x01\n\x13\x61\x64\x64\x45xperimentRunTag\x12%.ai.verta.modeldb.AddExperimentRunTag\x1a..ai.verta.modeldb.AddExperimentRunTag.Response\"1\x82\xd3\xe4\x93\x02+\"&/v1/experiment-run/addExperimentRunTag:\x01*\x12\xab\x01\n\x16\x64\x65leteExperimentRunTag\x12(.ai.verta.modeldb.DeleteExperimentRunTag\x1a\x31.ai.verta.modeldb.DeleteExperimentRunTag.Response\"4\x82\xd3\xe4\x93\x02.*)/v1/experiment-run/deleteExperimentRunTag:\x01*\x12\x8b\x01\n\x0elogObservation\x12 .ai.verta.modeldb.LogObservation\x1a).ai.verta.modeldb.LogObservation.Response\",\x82\xd3\xe4\x93\x02&\"!/v1/experiment-run/logObservation:\x01*\x12\x8f\x01\n\x0flogObservations\x12!.ai.verta.modeldb.LogObservations\x1a*.ai.verta.modeldb.LogObservations.Response\"-\x82\xd3\xe4\x93\x02\'\"\"/v1/experiment-run/logObservations:\x01*\x12\x8c\x01\n\x0fgetObservations\x12!.ai.verta.modeldb.GetObservations\x1a*.ai.verta.modeldb.GetObservations.Response\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/experiment-run/getObservations\x12w\n\tlogMetric\x12\x1b.ai.verta.modeldb.LogMetric\x1a$.ai.verta.modeldb.LogMetric.Response\"\'\x82\xd3\xe4\x93\x02!\"\x1c/v1/experiment-run/logMetric:\x01*\x12{\n\nlogMetrics\x12\x1c.ai.verta.modeldb.LogMetrics\x1a%.ai.verta.modeldb.LogMetrics.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/experiment-run/logMetrics:\x01*\x12x\n\ngetMetrics\x12\x1c.ai.verta.modeldb.GetMetrics\x1a%.ai.verta.modeldb.GetMetrics.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/experiment-run/getMetrics\x12{\n\nlogDataset\x12\x1c.ai.verta.modeldb.LogDataset\x1a%.ai.verta.modeldb.LogDataset.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/experiment-run/logDataset:\x01*\x12\x7f\n\x0blogDatasets\x12\x1d.ai.verta.modeldb.LogDatasets\x1a&.ai.verta.modeldb.LogDatasets.Response\")\x82\xd3\xe4\x93\x02#\"\x1e/v1/experiment-run/logDatasets:\x01*\x12|\n\x0bgetDatasets\x12\x1d.ai.verta.modeldb.GetDatasets\x1a&.ai.verta.modeldb.GetDatasets.Response\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/experiment-run/getDatasets\x12\x97\x01\n\x11logHyperparameter\x12#.ai.verta.modeldb.LogHyperparameter\x1a,.ai.verta.modeldb.LogHyperparameter.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/experiment-run/logHyperparameter:\x01*\x12\x9b\x01\n\x12logHyperparameters\x12$.ai.verta.modeldb.LogHyperparameters\x1a-.ai.verta.modeldb.LogHyperparameters.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/experiment-run/logHyperparameters:\x01*\x12\x98\x01\n\x12getHyperparameters\x12$.ai.verta.modeldb.GetHyperparameters\x1a-.ai.verta.modeldb.GetHyperparameters.Response\"-\x82\xd3\xe4\x93\x02\'\x12%/v1/experiment-run/getHyperparameters\x12\x83\x01\n\x0clogAttribute\x12\x1e.ai.verta.modeldb.LogAttribute\x1a\'.ai.verta.modeldb.LogAttribute.Response\"*\x82\xd3\xe4\x93\x02$\"\x1f/v1/experiment-run/logAttribute:\x01*\x12\x87\x01\n\rlogAttributes\x12\x1f.ai.verta.modeldb.LogAttributes\x1a(.ai.verta.modeldb.LogAttributes.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/experiment-run/logAttributes:\x01*\x12\x91\x01\n\x1agetExperimentRunAttributes\x12\x1f.ai.verta.modeldb.GetAttributes\x1a(.ai.verta.modeldb.GetAttributes.Response\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/experiment-run/getAttributes\x12\xbb\x01\n\x1a\x61\x64\x64\x45xperimentRunAttributes\x12,.ai.verta.modeldb.AddExperimentRunAttributes\x1a\x35.ai.verta.modeldb.AddExperimentRunAttributes.Response\"8\x82\xd3\xe4\x93\x02\x32\"-/v1/experiment-run/addExperimentRunAttributes:\x01*\x12\xc7\x01\n\x1d\x64\x65leteExperimentRunAttributes\x12/.ai.verta.modeldb.DeleteExperimentRunAttributes\x1a\x38.ai.verta.modeldb.DeleteExperimentRunAttributes.Response\";\x82\xd3\xe4\x93\x02\x35*0/v1/experiment-run/deleteExperimentRunAttributes:\x01*\x12\xbf\x01\n\x1blogExperimentRunCodeVersion\x12-.ai.verta.modeldb.LogExperimentRunCodeVersion\x1a\x36.ai.verta.modeldb.LogExperimentRunCodeVersion.Response\"9\x82\xd3\xe4\x93\x02\x33\"./v1/experiment-run/logExperimentRunCodeVersion:\x01*\x12\xbc\x01\n\x1bgetExperimentRunCodeVersion\x12-.ai.verta.modeldb.GetExperimentRunCodeVersion\x1a\x36.ai.verta.modeldb.GetExperimentRunCodeVersion.Response\"6\x82\xd3\xe4\x93\x02\x30\x12./v1/experiment-run/getExperimentRunCodeVersion\x12\x7f\n\x0blogArtifact\x12\x1d.ai.verta.modeldb.LogArtifact\x1a&.ai.verta.modeldb.LogArtifact.Response\")\x82\xd3\xe4\x93\x02#\"\x1e/v1/experiment-run/logArtifact:\x01*\x12\x83\x01\n\x0clogArtifacts\x12\x1e.ai.verta.modeldb.LogArtifacts\x1a\'.ai.verta.modeldb.LogArtifacts.Response\"*\x82\xd3\xe4\x93\x02$\"\x1f/v1/experiment-run/logArtifacts:\x01*\x12\x80\x01\n\x0cgetArtifacts\x12\x1e.ai.verta.modeldb.GetArtifacts\x1a\'.ai.verta.modeldb.GetArtifacts.Response\"\'\x82\xd3\xe4\x93\x02!\x12\x1f/v1/experiment-run/getArtifacts\x12\x8b\x01\n\x0e\x64\x65leteArtifact\x12 .ai.verta.modeldb.DeleteArtifact\x1a).ai.verta.modeldb.DeleteArtifact.Response\",\x82\xd3\xe4\x93\x02&*!/v1/experiment-run/deleteArtifact:\x01*\x12\x97\x01\n\x11getUrlForArtifact\x12#.ai.verta.modeldb.GetUrlForArtifact\x1a,.ai.verta.modeldb.GetUrlForArtifact.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/experiment-run/getUrlForArtifact:\x01*\x12\x9b\x01\n\x12\x63ommitArtifactPart\x12$.ai.verta.modeldb.CommitArtifactPart\x1a-.ai.verta.modeldb.CommitArtifactPart.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/experiment-run/commitArtifactPart:\x01*\x12\xb4\x01\n\x19getCommittedArtifactParts\x12+.ai.verta.modeldb.GetCommittedArtifactParts\x1a\x34.ai.verta.modeldb.GetCommittedArtifactParts.Response\"4\x82\xd3\xe4\x93\x02.\x12,/v1/experiment-run/getCommittedArtifactParts\x12\xaf\x01\n\x17\x63ommitMultipartArtifact\x12).ai.verta.modeldb.CommitMultipartArtifact\x1a\x32.ai.verta.modeldb.CommitMultipartArtifact.Response\"5\x82\xd3\xe4\x93\x02/\"*/v1/experiment-run/commitMultipartArtifact:\x01*\x12\x9b\x01\n\x12\x66indExperimentRuns\x12$.ai.verta.modeldb.FindExperimentRuns\x1a-.ai.verta.modeldb.FindExperimentRuns.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/experiment-run/findExperimentRuns:\x01*\x12\x98\x01\n\x12sortExperimentRuns\x12$.ai.verta.modeldb.SortExperimentRuns\x1a-.ai.verta.modeldb.SortExperimentRuns.Response\"-\x82\xd3\xe4\x93\x02\'\x12%/v1/experiment-run/sortExperimentRuns\x12\xaa\x01\n\x14getTopExperimentRuns\x12+.ai.verta.modeldb.TopExperimentRunsSelector\x1a\x34.ai.verta.modeldb.TopExperimentRunsSelector.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/experiment-run/getTopExperimentRuns\x12p\n\x08logJobId\x12\x1a.ai.verta.modeldb.LogJobId\x1a#.ai.verta.modeldb.LogJobId.Response\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/v1/experiment-run/logJobId\x12p\n\x08getJobId\x12\x1a.ai.verta.modeldb.GetJobId\x1a#.ai.verta.modeldb.GetJobId.Response\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/v1/experiment-run/getJobId\x12\xb4\x01\n\x19getChildrenExperimentRuns\x12+.ai.verta.modeldb.GetChildrenExperimentRuns\x1a\x34.ai.verta.modeldb.GetChildrenExperimentRuns.Response\"4\x82\xd3\xe4\x93\x02.\x12,/v1/experiment-run/getChildrenExperimentRuns\x12\xb3\x01\n\x18setParentExperimentRunId\x12*.ai.verta.modeldb.SetParentExperimentRunId\x1a\x33.ai.verta.modeldb.SetParentExperimentRunId.Response\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/experiment-run/setParentExperimentRunId:\x01*\x12\xdc\x01\n#getExperimentRunsByDatasetVersionId\x12\x35.ai.verta.modeldb.GetExperimentRunsByDatasetVersionId\x1a>.ai.verta.modeldb.GetExperimentRunsByDatasetVersionId.Response\">\x82\xd3\xe4\x93\x02\x38\x12\x36/v1/experiment-run/getExperimentRunsByDatasetVersionId\x12\xa3\x01\n\x14\x64\x65leteExperimentRuns\x12&.ai.verta.modeldb.DeleteExperimentRuns\x1a/.ai.verta.modeldb.DeleteExperimentRuns.Response\"2\x82\xd3\xe4\x93\x02,*\'/v1/experiment-run/deleteExperimentRuns:\x01*\x12\x97\x01\n\x11logVersionedInput\x12#.ai.verta.modeldb.LogVersionedInput\x1a,.ai.verta.modeldb.LogVersionedInput.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/experiment-run/logVersionedInput:\x01*\x12\x95\x01\n\x12getVersionedInputs\x12#.ai.verta.modeldb.GetVersionedInput\x1a,.ai.verta.modeldb.GetVersionedInput.Response\",\x82\xd3\xe4\x93\x02&\x12$/v1/experiment-run/getVersionedInput\x12\xed\x02\n\x18ListCommitExperimentRuns\x12\x31.ai.verta.modeldb.ListCommitExperimentRunsRequest\x1a:.ai.verta.modeldb.ListCommitExperimentRunsRequest.Response\"\xe1\x01\x82\xd3\xe4\x93\x02\xda\x01\x12\x86\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/runsZO\x12M/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/runs\x12\xf1\x02\n\x16ListBlobExperimentRuns\x12/.ai.verta.modeldb.ListBlobExperimentRunsRequest\x1a\x38.ai.verta.modeldb.ListBlobExperimentRunsRequest.Response\"\xeb\x01\x82\xd3\xe4\x93\x02\xe4\x01\x12\x8b\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path/runsZT\x12R/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path/runs\x12\x9b\x01\n\x12\x64\x65leteObservations\x12$.ai.verta.modeldb.DeleteObservations\x1a-.ai.verta.modeldb.DeleteObservations.Response\"0\x82\xd3\xe4\x93\x02**%/v1/experiment-run/deleteObservations:\x01*\x12\x87\x01\n\rdeleteMetrics\x12\x1f.ai.verta.modeldb.DeleteMetrics\x1a(.ai.verta.modeldb.DeleteMetrics.Response\"+\x82\xd3\xe4\x93\x02%* /v1/experiment-run/deleteMetrics:\x01*\x12\xa7\x01\n\x15\x64\x65leteHyperparameters\x12\'.ai.verta.modeldb.DeleteHyperparameters\x1a\x30.ai.verta.modeldb.DeleteHyperparameters.Response\"3\x82\xd3\xe4\x93\x02-*(/v1/experiment-run/deleteHyperparameters:\x01*\x12\x9b\x01\n\x12\x63loneExperimentRun\x12$.ai.verta.modeldb.CloneExperimentRun\x1a-.ai.verta.modeldb.CloneExperimentRun.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/experiment-run/cloneExperimentRun:\x01*BBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
+  serialized_pb=b'\n\"modeldb/ExperimentRunService.proto\x12\x10\x61i.verta.modeldb\x1a\x1a\x63ommon/CommonService.proto\x1a\x1bmodeldb/CommonService.proto\x1a*modeldb/versioning/VersioningService.proto\x1a$modeldb/versioning/Environment.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xd0\x07\n\rExperimentRun\x12\n\n\x02id\x18\x01 \x01(\t\x12\x12\n\nproject_id\x18\x02 \x01(\t\x12\x15\n\rexperiment_id\x18\x03 \x01(\t\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x06 \x01(\x03\x12\x14\n\x0c\x64\x61te_updated\x18\x07 \x01(\x03\x12\x12\n\nstart_time\x18\x08 \x01(\x03\x12\x10\n\x08\x65nd_time\x18\t \x01(\x03\x12\x14\n\x0c\x63ode_version\x18\n \x01(\t\x12<\n\x15\x63ode_version_snapshot\x18\x0b \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\x12\x11\n\tparent_id\x18\x0c \x01(\t\x12\x41\n\x0b\x65nvironment\x18\r \x01(\x0b\x32,.ai.verta.modeldb.versioning.EnvironmentBlob\x12\x0c\n\x04tags\x18\x14 \x03(\t\x12-\n\nattributes\x18\x15 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x32\n\x0fhyperparameters\x18\x16 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12,\n\tartifacts\x18\x17 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12+\n\x08\x64\x61tasets\x18\x18 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12*\n\x07metrics\x18\x19 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x33\n\x0cobservations\x18\x1a \x03(\x0b\x32\x1d.ai.verta.modeldb.Observation\x12+\n\x08\x66\x65\x61tures\x18\x1b \x03(\x0b\x32\x19.ai.verta.modeldb.Feature\x12\x0e\n\x06job_id\x18\x1c \x01(\t\x12\r\n\x05owner\x18\x1d \x01(\t\x12;\n\x10versioned_inputs\x18\x1e \x01(\x0b\x32!.ai.verta.modeldb.VersioningEntry\x12X\n\x16\x63ode_version_from_blob\x18\x1f \x03(\x0b\x32\x38.ai.verta.modeldb.ExperimentRun.CodeVersionFromBlobEntry\x1aY\n\x18\x43odeVersionFromBlobEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12,\n\x05value\x18\x02 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion:\x02\x38\x01\"\xdc\x01\n\x0fVersioningEntry\x12\x15\n\rrepository_id\x18\x01 \x01(\x04\x12\x0e\n\x06\x63ommit\x18\x02 \x01(\t\x12O\n\x10key_location_map\x18\x03 \x03(\x0b\x32\x35.ai.verta.modeldb.VersioningEntry.KeyLocationMapEntry\x1aQ\n\x13KeyLocationMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12)\n\x05value\x18\x02 \x01(\x0b\x32\x1a.ai.verta.modeldb.Location:\x02\x38\x01\"\x1c\n\x08Location\x12\x10\n\x08location\x18\x01 \x03(\t\"h\n\x11LogVersionedInput\x12\n\n\x02id\x18\x01 \x01(\t\x12;\n\x10versioned_inputs\x18\x02 \x01(\x0b\x32!.ai.verta.modeldb.VersioningEntry\x1a\n\n\x08Response\"h\n\x11GetVersionedInput\x12\n\n\x02id\x18\x01 \x01(\t\x1aG\n\x08Response\x12;\n\x10versioned_inputs\x18\x01 \x01(\x0b\x32!.ai.verta.modeldb.VersioningEntry\"\xb6\x01\n\x0bObservation\x12.\n\tattribute\x18\x01 \x01(\x0b\x32\x19.ai.verta.common.KeyValueH\x00\x12-\n\x08\x61rtifact\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.ArtifactH\x00\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12,\n\x0c\x65poch_number\x18\x04 \x01(\x0b\x32\x16.google.protobuf.ValueB\x07\n\x05oneOf\"\x84\x06\n\x13\x43reateExperimentRun\x12\n\n\x02id\x18\x01 \x01(\t\x12\x12\n\nproject_id\x18\x02 \x01(\t\x12\x15\n\rexperiment_id\x18\x03 \x01(\t\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x06 \x01(\x03\x12\x14\n\x0c\x64\x61te_updated\x18\x07 \x01(\x03\x12\x12\n\nstart_time\x18\x08 \x01(\x03\x12\x10\n\x08\x65nd_time\x18\t \x01(\x03\x12\x14\n\x0c\x63ode_version\x18\n \x01(\t\x12<\n\x15\x63ode_version_snapshot\x18\x0b \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\x12\x11\n\tparent_id\x18\x0c \x01(\t\x12\x0c\n\x04tags\x18\x14 \x03(\t\x12-\n\nattributes\x18\x15 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x32\n\x0fhyperparameters\x18\x16 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12,\n\tartifacts\x18\x17 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12+\n\x08\x64\x61tasets\x18\x18 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12*\n\x07metrics\x18\x19 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x33\n\x0cobservations\x18\x1a \x03(\x0b\x32\x1d.ai.verta.modeldb.Observation\x12+\n\x08\x66\x65\x61tures\x18\x1b \x03(\x0b\x32\x19.ai.verta.modeldb.Feature\x12;\n\x10versioned_inputs\x18\x1c \x01(\x0b\x32!.ai.verta.modeldb.VersioningEntry\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"=\n\x13\x44\x65leteExperimentRun\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\xdb\x01\n\x1aGetExperimentRunsInProject\x12\x12\n\nproject_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xe1\x01\n\x1dGetExperimentRunsInExperiment\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"g\n\x14GetExperimentRunById\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"\x82\x01\n\x16GetExperimentRunByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"?\n\x17UpdateExperimentRunName\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x1a\n\n\x08Response\"\x86\x01\n\x1eUpdateExperimentRunDescription\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"u\n\x14\x41\x64\x64\x45xperimentRunTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"\x8c\x01\n\x17\x44\x65leteExperimentRunTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"s\n\x13\x41\x64\x64\x45xperimentRunTag\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"v\n\x16\x44\x65leteExperimentRunTag\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a\x43\n\x08Response\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"c\n\x1a\x41\x64\x64\x45xperimentRunAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"c\n\x1d\x44\x65leteExperimentRunAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\n\n\x08Response\"}\n\x1bLogExperimentRunCodeVersion\x12\n\n\x02id\x18\x01 \x01(\t\x12\x33\n\x0c\x63ode_version\x18\x02 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\x12\x11\n\toverwrite\x18\x03 \x01(\x08\x1a\n\n\x08Response\"j\n\x1bGetExperimentRunCodeVersion\x12\n\n\x02id\x18\x01 \x01(\t\x1a?\n\x08Response\x12\x33\n\x0c\x63ode_version\x18\x01 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\"\\\n\x0eLogObservation\x12\n\n\x02id\x18\x01 \x01(\t\x12\x32\n\x0bobservation\x18\x02 \x01(\x0b\x32\x1d.ai.verta.modeldb.Observation\x1a\n\n\x08Response\"^\n\x0fLogObservations\x12\n\n\x02id\x18\x01 \x01(\t\x12\x33\n\x0cobservations\x18\x02 \x03(\x0b\x32\x1d.ai.verta.modeldb.Observation\x1a\n\n\x08Response\"w\n\x0fGetObservations\x12\n\n\x02id\x18\x01 \x01(\t\x12\x17\n\x0fobservation_key\x18\x02 \x01(\t\x1a?\n\x08Response\x12\x33\n\x0cobservations\x18\x01 \x03(\x0b\x32\x1d.ai.verta.modeldb.Observation\"Z\n\x12\x44\x65leteObservations\x12\n\n\x02id\x18\x01 \x01(\t\x12\x18\n\x10observation_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\n\n\x08Response\"N\n\tLogMetric\x12\n\n\x02id\x18\x01 \x01(\t\x12)\n\x06metric\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"P\n\nLogMetrics\x12\n\n\x02id\x18\x01 \x01(\t\x12*\n\x07metrics\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"P\n\nGetMetrics\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07metrics\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"P\n\rDeleteMetrics\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0bmetric_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\n\n\x08Response\"c\n\nLogDataset\x12\n\n\x02id\x18\x01 \x01(\t\x12*\n\x07\x64\x61taset\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.Artifact\x12\x11\n\toverwrite\x18\x03 \x01(\x08\x1a\n\n\x08Response\"e\n\x0bLogDatasets\x12\n\n\x02id\x18\x01 \x01(\t\x12+\n\x08\x64\x61tasets\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12\x11\n\toverwrite\x18\x03 \x01(\x08\x1a\n\n\x08Response\"R\n\x0bGetDatasets\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x37\n\x08Response\x12+\n\x08\x64\x61tasets\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.Artifact\"R\n\x0bLogArtifact\x12\n\n\x02id\x18\x01 \x01(\t\x12+\n\x08\x61rtifact\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.Artifact\x1a\n\n\x08Response\"T\n\x0cLogArtifacts\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tartifacts\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x1a\n\n\x08Response\"5\n\x0e\x44\x65leteArtifact\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response\"^\n\x11LogHyperparameter\x12\n\n\x02id\x18\x01 \x01(\t\x12\x31\n\x0ehyperparameter\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"`\n\x12LogHyperparameters\x12\n\n\x02id\x18\x01 \x01(\t\x12\x32\n\x0fhyperparameters\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"`\n\x12GetHyperparameters\x12\n\n\x02id\x18\x01 \x01(\t\x1a>\n\x08Response\x12\x32\n\x0fhyperparameters\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"`\n\x15\x44\x65leteHyperparameters\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1b\n\x13hyperparameter_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\n\n\x08Response\"T\n\x0cLogAttribute\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tattribute\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"V\n\rLogAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response\"\xfb\x02\n\x12\x46indExperimentRuns\x12\x14\n\nproject_id\x18\x01 \x01(\tH\x00\x12\x17\n\rexperiment_id\x18\x02 \x01(\tH\x00\x12\x1a\n\x12\x65xperiment_run_ids\x18\x03 \x03(\t\x12\x32\n\npredicates\x18\x04 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12\x10\n\x08ids_only\x18\x05 \x01(\x08\x12\x13\n\x0bpage_number\x18\x06 \x01(\x05\x12\x12\n\npage_limit\x18\x07 \x01(\x05\x12\x11\n\tascending\x18\t \x01(\x08\x12\x10\n\x08sort_key\x18\n \x01(\t\x12\x16\n\x0eworkspace_name\x18\x0b \x01(\t\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x42\x11\n\x0f\x65ntity_id_oneof\"\xc4\x01\n\x12SortExperimentRuns\x12\x1a\n\x12\x65xperiment_run_ids\x18\x01 \x03(\t\x12\x10\n\x08sort_key\x18\x02 \x01(\t\x12\x11\n\tascending\x18\x03 \x01(\x08\x12\x10\n\x08ids_only\x18\x04 \x01(\x08\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xee\x01\n\x19TopExperimentRunsSelector\x12\x12\n\nproject_id\x18\x01 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x12\x1a\n\x12\x65xperiment_run_ids\x18\x03 \x03(\t\x12\x10\n\x08sort_key\x18\x04 \x01(\t\x12\x11\n\tascending\x18\x05 \x01(\x08\x12\r\n\x05top_k\x18\x06 \x01(\x05\x12\x10\n\x08ids_only\x18\x07 \x01(\x08\x1a\x44\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"2\n\x08LogJobId\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06job_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"2\n\x08GetJobId\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06job_id\x18\x01 \x01(\t\"\xe1\x01\n\x19GetChildrenExperimentRuns\x12\x19\n\x11\x65xperiment_run_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"T\n\x18SetParentExperimentRunId\x12\x19\n\x11\x65xperiment_run_id\x18\x01 \x01(\t\x12\x11\n\tparent_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"\xec\x01\n#GetExperimentRunsByDatasetVersionId\x12\x1a\n\x12\x64\x61taset_version_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a[\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x04\"?\n\x14\x44\x65leteExperimentRuns\x12\x0b\n\x03ids\x18\x01 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x86\x02\n\x1fListCommitExperimentRunsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x1aP\n\x08Response\x12-\n\x04runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x96\x02\n\x1dListBlobExperimentRunsRequest\x12L\n\rrepository_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.modeldb.versioning.RepositoryIdentification\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x12\x12\n\ncommit_sha\x18\x03 \x01(\t\x12\x10\n\x08location\x18\x04 \x03(\t\x1aP\n\x08Response\x12-\n\x04runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xab\x01\n\x12\x43loneExperimentRun\x12\x1d\n\x15src_experiment_run_id\x18\x01 \x01(\t\x12 \n\x18\x64\x65st_experiment_run_name\x18\x02 \x01(\t\x12\x1a\n\x12\x64\x65st_experiment_id\x18\x03 \x01(\t\x1a\x38\n\x08Response\x12,\n\x03run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun2\xf1I\n\x14\x45xperimentRunService\x12\x9f\x01\n\x13\x63reateExperimentRun\x12%.ai.verta.modeldb.CreateExperimentRun\x1a..ai.verta.modeldb.CreateExperimentRun.Response\"1\x82\xd3\xe4\x93\x02+\"&/v1/experiment-run/createExperimentRun:\x01*\x12\x9f\x01\n\x13\x64\x65leteExperimentRun\x12%.ai.verta.modeldb.DeleteExperimentRun\x1a..ai.verta.modeldb.DeleteExperimentRun.Response\"1\x82\xd3\xe4\x93\x02+*&/v1/experiment-run/deleteExperimentRun:\x01*\x12\xb8\x01\n\x1agetExperimentRunsInProject\x12,.ai.verta.modeldb.GetExperimentRunsInProject\x1a\x35.ai.verta.modeldb.GetExperimentRunsInProject.Response\"5\x82\xd3\xe4\x93\x02/\x12-/v1/experiment-run/getExperimentRunsInProject\x12\xc4\x01\n\x1dgetExperimentRunsInExperiment\x12/.ai.verta.modeldb.GetExperimentRunsInExperiment\x1a\x38.ai.verta.modeldb.GetExperimentRunsInExperiment.Response\"8\x82\xd3\xe4\x93\x02\x32\x12\x30/v1/experiment-run/getExperimentRunsInExperiment\x12\xa0\x01\n\x14getExperimentRunById\x12&.ai.verta.modeldb.GetExperimentRunById\x1a/.ai.verta.modeldb.GetExperimentRunById.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/experiment-run/getExperimentRunById\x12\xa8\x01\n\x16getExperimentRunByName\x12(.ai.verta.modeldb.GetExperimentRunByName\x1a\x31.ai.verta.modeldb.GetExperimentRunByName.Response\"1\x82\xd3\xe4\x93\x02+\x12)/v1/experiment-run/getExperimentRunByName\x12\xaf\x01\n\x17updateExperimentRunName\x12).ai.verta.modeldb.UpdateExperimentRunName\x1a\x32.ai.verta.modeldb.UpdateExperimentRunName.Response\"5\x82\xd3\xe4\x93\x02/\"*/v1/experiment-run/updateExperimentRunName:\x01*\x12\xcb\x01\n\x1eupdateExperimentRunDescription\x12\x30.ai.verta.modeldb.UpdateExperimentRunDescription\x1a\x39.ai.verta.modeldb.UpdateExperimentRunDescription.Response\"<\x82\xd3\xe4\x93\x02\x36\"1/v1/experiment-run/updateExperimentRunDescription:\x01*\x12\xa3\x01\n\x14\x61\x64\x64\x45xperimentRunTags\x12&.ai.verta.modeldb.AddExperimentRunTags\x1a/.ai.verta.modeldb.AddExperimentRunTags.Response\"2\x82\xd3\xe4\x93\x02,\"\'/v1/experiment-run/addExperimentRunTags:\x01*\x12\x86\x01\n\x14getExperimentRunTags\x12\x19.ai.verta.modeldb.GetTags\x1a\".ai.verta.modeldb.GetTags.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/experiment-run/getExperimentRunTags\x12\xaf\x01\n\x17\x64\x65leteExperimentRunTags\x12).ai.verta.modeldb.DeleteExperimentRunTags\x1a\x32.ai.verta.modeldb.DeleteExperimentRunTags.Response\"5\x82\xd3\xe4\x93\x02/**/v1/experiment-run/deleteExperimentRunTags:\x01*\x12\x9f\x01\n\x13\x61\x64\x64\x45xperimentRunTag\x12%.ai.verta.modeldb.AddExperimentRunTag\x1a..ai.verta.modeldb.AddExperimentRunTag.Response\"1\x82\xd3\xe4\x93\x02+\"&/v1/experiment-run/addExperimentRunTag:\x01*\x12\xab\x01\n\x16\x64\x65leteExperimentRunTag\x12(.ai.verta.modeldb.DeleteExperimentRunTag\x1a\x31.ai.verta.modeldb.DeleteExperimentRunTag.Response\"4\x82\xd3\xe4\x93\x02.*)/v1/experiment-run/deleteExperimentRunTag:\x01*\x12\x8b\x01\n\x0elogObservation\x12 .ai.verta.modeldb.LogObservation\x1a).ai.verta.modeldb.LogObservation.Response\",\x82\xd3\xe4\x93\x02&\"!/v1/experiment-run/logObservation:\x01*\x12\x8f\x01\n\x0flogObservations\x12!.ai.verta.modeldb.LogObservations\x1a*.ai.verta.modeldb.LogObservations.Response\"-\x82\xd3\xe4\x93\x02\'\"\"/v1/experiment-run/logObservations:\x01*\x12\x8c\x01\n\x0fgetObservations\x12!.ai.verta.modeldb.GetObservations\x1a*.ai.verta.modeldb.GetObservations.Response\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/experiment-run/getObservations\x12w\n\tlogMetric\x12\x1b.ai.verta.modeldb.LogMetric\x1a$.ai.verta.modeldb.LogMetric.Response\"\'\x82\xd3\xe4\x93\x02!\"\x1c/v1/experiment-run/logMetric:\x01*\x12{\n\nlogMetrics\x12\x1c.ai.verta.modeldb.LogMetrics\x1a%.ai.verta.modeldb.LogMetrics.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/experiment-run/logMetrics:\x01*\x12x\n\ngetMetrics\x12\x1c.ai.verta.modeldb.GetMetrics\x1a%.ai.verta.modeldb.GetMetrics.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/experiment-run/getMetrics\x12{\n\nlogDataset\x12\x1c.ai.verta.modeldb.LogDataset\x1a%.ai.verta.modeldb.LogDataset.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/experiment-run/logDataset:\x01*\x12\x7f\n\x0blogDatasets\x12\x1d.ai.verta.modeldb.LogDatasets\x1a&.ai.verta.modeldb.LogDatasets.Response\")\x82\xd3\xe4\x93\x02#\"\x1e/v1/experiment-run/logDatasets:\x01*\x12|\n\x0bgetDatasets\x12\x1d.ai.verta.modeldb.GetDatasets\x1a&.ai.verta.modeldb.GetDatasets.Response\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/experiment-run/getDatasets\x12\x97\x01\n\x11logHyperparameter\x12#.ai.verta.modeldb.LogHyperparameter\x1a,.ai.verta.modeldb.LogHyperparameter.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/experiment-run/logHyperparameter:\x01*\x12\x9b\x01\n\x12logHyperparameters\x12$.ai.verta.modeldb.LogHyperparameters\x1a-.ai.verta.modeldb.LogHyperparameters.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/experiment-run/logHyperparameters:\x01*\x12\x98\x01\n\x12getHyperparameters\x12$.ai.verta.modeldb.GetHyperparameters\x1a-.ai.verta.modeldb.GetHyperparameters.Response\"-\x82\xd3\xe4\x93\x02\'\x12%/v1/experiment-run/getHyperparameters\x12\x83\x01\n\x0clogAttribute\x12\x1e.ai.verta.modeldb.LogAttribute\x1a\'.ai.verta.modeldb.LogAttribute.Response\"*\x82\xd3\xe4\x93\x02$\"\x1f/v1/experiment-run/logAttribute:\x01*\x12\x87\x01\n\rlogAttributes\x12\x1f.ai.verta.modeldb.LogAttributes\x1a(.ai.verta.modeldb.LogAttributes.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/experiment-run/logAttributes:\x01*\x12\x91\x01\n\x1agetExperimentRunAttributes\x12\x1f.ai.verta.modeldb.GetAttributes\x1a(.ai.verta.modeldb.GetAttributes.Response\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/experiment-run/getAttributes\x12\xbb\x01\n\x1a\x61\x64\x64\x45xperimentRunAttributes\x12,.ai.verta.modeldb.AddExperimentRunAttributes\x1a\x35.ai.verta.modeldb.AddExperimentRunAttributes.Response\"8\x82\xd3\xe4\x93\x02\x32\"-/v1/experiment-run/addExperimentRunAttributes:\x01*\x12\xc7\x01\n\x1d\x64\x65leteExperimentRunAttributes\x12/.ai.verta.modeldb.DeleteExperimentRunAttributes\x1a\x38.ai.verta.modeldb.DeleteExperimentRunAttributes.Response\";\x82\xd3\xe4\x93\x02\x35*0/v1/experiment-run/deleteExperimentRunAttributes:\x01*\x12\xbf\x01\n\x1blogExperimentRunCodeVersion\x12-.ai.verta.modeldb.LogExperimentRunCodeVersion\x1a\x36.ai.verta.modeldb.LogExperimentRunCodeVersion.Response\"9\x82\xd3\xe4\x93\x02\x33\"./v1/experiment-run/logExperimentRunCodeVersion:\x01*\x12\xbc\x01\n\x1bgetExperimentRunCodeVersion\x12-.ai.verta.modeldb.GetExperimentRunCodeVersion\x1a\x36.ai.verta.modeldb.GetExperimentRunCodeVersion.Response\"6\x82\xd3\xe4\x93\x02\x30\x12./v1/experiment-run/getExperimentRunCodeVersion\x12\x7f\n\x0blogArtifact\x12\x1d.ai.verta.modeldb.LogArtifact\x1a&.ai.verta.modeldb.LogArtifact.Response\")\x82\xd3\xe4\x93\x02#\"\x1e/v1/experiment-run/logArtifact:\x01*\x12\x83\x01\n\x0clogArtifacts\x12\x1e.ai.verta.modeldb.LogArtifacts\x1a\'.ai.verta.modeldb.LogArtifacts.Response\"*\x82\xd3\xe4\x93\x02$\"\x1f/v1/experiment-run/logArtifacts:\x01*\x12\x80\x01\n\x0cgetArtifacts\x12\x1e.ai.verta.modeldb.GetArtifacts\x1a\'.ai.verta.modeldb.GetArtifacts.Response\"\'\x82\xd3\xe4\x93\x02!\x12\x1f/v1/experiment-run/getArtifacts\x12\x8b\x01\n\x0e\x64\x65leteArtifact\x12 .ai.verta.modeldb.DeleteArtifact\x1a).ai.verta.modeldb.DeleteArtifact.Response\",\x82\xd3\xe4\x93\x02&*!/v1/experiment-run/deleteArtifact:\x01*\x12\x97\x01\n\x11getUrlForArtifact\x12#.ai.verta.modeldb.GetUrlForArtifact\x1a,.ai.verta.modeldb.GetUrlForArtifact.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/experiment-run/getUrlForArtifact:\x01*\x12\x9b\x01\n\x12\x63ommitArtifactPart\x12$.ai.verta.modeldb.CommitArtifactPart\x1a-.ai.verta.modeldb.CommitArtifactPart.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/experiment-run/commitArtifactPart:\x01*\x12\xb4\x01\n\x19getCommittedArtifactParts\x12+.ai.verta.modeldb.GetCommittedArtifactParts\x1a\x34.ai.verta.modeldb.GetCommittedArtifactParts.Response\"4\x82\xd3\xe4\x93\x02.\x12,/v1/experiment-run/getCommittedArtifactParts\x12\xaf\x01\n\x17\x63ommitMultipartArtifact\x12).ai.verta.modeldb.CommitMultipartArtifact\x1a\x32.ai.verta.modeldb.CommitMultipartArtifact.Response\"5\x82\xd3\xe4\x93\x02/\"*/v1/experiment-run/commitMultipartArtifact:\x01*\x12\x9b\x01\n\x12\x66indExperimentRuns\x12$.ai.verta.modeldb.FindExperimentRuns\x1a-.ai.verta.modeldb.FindExperimentRuns.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/experiment-run/findExperimentRuns:\x01*\x12\x98\x01\n\x12sortExperimentRuns\x12$.ai.verta.modeldb.SortExperimentRuns\x1a-.ai.verta.modeldb.SortExperimentRuns.Response\"-\x82\xd3\xe4\x93\x02\'\x12%/v1/experiment-run/sortExperimentRuns\x12\xaa\x01\n\x14getTopExperimentRuns\x12+.ai.verta.modeldb.TopExperimentRunsSelector\x1a\x34.ai.verta.modeldb.TopExperimentRunsSelector.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/experiment-run/getTopExperimentRuns\x12p\n\x08logJobId\x12\x1a.ai.verta.modeldb.LogJobId\x1a#.ai.verta.modeldb.LogJobId.Response\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/v1/experiment-run/logJobId\x12p\n\x08getJobId\x12\x1a.ai.verta.modeldb.GetJobId\x1a#.ai.verta.modeldb.GetJobId.Response\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/v1/experiment-run/getJobId\x12\xb4\x01\n\x19getChildrenExperimentRuns\x12+.ai.verta.modeldb.GetChildrenExperimentRuns\x1a\x34.ai.verta.modeldb.GetChildrenExperimentRuns.Response\"4\x82\xd3\xe4\x93\x02.\x12,/v1/experiment-run/getChildrenExperimentRuns\x12\xb3\x01\n\x18setParentExperimentRunId\x12*.ai.verta.modeldb.SetParentExperimentRunId\x1a\x33.ai.verta.modeldb.SetParentExperimentRunId.Response\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/experiment-run/setParentExperimentRunId:\x01*\x12\xdc\x01\n#getExperimentRunsByDatasetVersionId\x12\x35.ai.verta.modeldb.GetExperimentRunsByDatasetVersionId\x1a>.ai.verta.modeldb.GetExperimentRunsByDatasetVersionId.Response\">\x82\xd3\xe4\x93\x02\x38\x12\x36/v1/experiment-run/getExperimentRunsByDatasetVersionId\x12\xa3\x01\n\x14\x64\x65leteExperimentRuns\x12&.ai.verta.modeldb.DeleteExperimentRuns\x1a/.ai.verta.modeldb.DeleteExperimentRuns.Response\"2\x82\xd3\xe4\x93\x02,*\'/v1/experiment-run/deleteExperimentRuns:\x01*\x12\x97\x01\n\x11logVersionedInput\x12#.ai.verta.modeldb.LogVersionedInput\x1a,.ai.verta.modeldb.LogVersionedInput.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/experiment-run/logVersionedInput:\x01*\x12\x95\x01\n\x12getVersionedInputs\x12#.ai.verta.modeldb.GetVersionedInput\x1a,.ai.verta.modeldb.GetVersionedInput.Response\",\x82\xd3\xe4\x93\x02&\x12$/v1/experiment-run/getVersionedInput\x12\xed\x02\n\x18ListCommitExperimentRuns\x12\x31.ai.verta.modeldb.ListCommitExperimentRunsRequest\x1a:.ai.verta.modeldb.ListCommitExperimentRunsRequest.Response\"\xe1\x01\x82\xd3\xe4\x93\x02\xda\x01\x12\x86\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/runsZO\x12M/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/runs\x12\xf1\x02\n\x16ListBlobExperimentRuns\x12/.ai.verta.modeldb.ListBlobExperimentRunsRequest\x1a\x38.ai.verta.modeldb.ListBlobExperimentRunsRequest.Response\"\xeb\x01\x82\xd3\xe4\x93\x02\xe4\x01\x12\x8b\x01/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path/runsZT\x12R/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path/runs\x12\x9b\x01\n\x12\x64\x65leteObservations\x12$.ai.verta.modeldb.DeleteObservations\x1a-.ai.verta.modeldb.DeleteObservations.Response\"0\x82\xd3\xe4\x93\x02**%/v1/experiment-run/deleteObservations:\x01*\x12\x87\x01\n\rdeleteMetrics\x12\x1f.ai.verta.modeldb.DeleteMetrics\x1a(.ai.verta.modeldb.DeleteMetrics.Response\"+\x82\xd3\xe4\x93\x02%* /v1/experiment-run/deleteMetrics:\x01*\x12\xa7\x01\n\x15\x64\x65leteHyperparameters\x12\'.ai.verta.modeldb.DeleteHyperparameters\x1a\x30.ai.verta.modeldb.DeleteHyperparameters.Response\"3\x82\xd3\xe4\x93\x02-*(/v1/experiment-run/deleteHyperparameters:\x01*\x12\x9b\x01\n\x12\x63loneExperimentRun\x12$.ai.verta.modeldb.CloneExperimentRun\x1a-.ai.verta.modeldb.CloneExperimentRun.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/experiment-run/cloneExperimentRun:\x01*BBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
   ,
-  dependencies=[common_dot_CommonService__pb2.DESCRIPTOR,modeldb_dot_CommonService__pb2.DESCRIPTOR,modeldb_dot_versioning_dot_VersioningService__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
+  dependencies=[common_dot_CommonService__pb2.DESCRIPTOR,modeldb_dot_CommonService__pb2.DESCRIPTOR,modeldb_dot_versioning_dot_VersioningService__pb2.DESCRIPTOR,modeldb_dot_versioning_dot_Environment__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
 
 
 
@@ -63,8 +64,8 @@ _EXPERIMENTRUN_CODEVERSIONFROMBLOBENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1038,
-  serialized_end=1127,
+  serialized_start=1143,
+  serialized_end=1232,
 )
 
 _EXPERIMENTRUN = _descriptor.Descriptor(
@@ -159,84 +160,91 @@ _EXPERIMENTRUN = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='tags', full_name='ai.verta.modeldb.ExperimentRun.tags', index=12,
+      name='environment', full_name='ai.verta.modeldb.ExperimentRun.environment', index=12,
+      number=13, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='tags', full_name='ai.verta.modeldb.ExperimentRun.tags', index=13,
       number=20, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='attributes', full_name='ai.verta.modeldb.ExperimentRun.attributes', index=13,
+      name='attributes', full_name='ai.verta.modeldb.ExperimentRun.attributes', index=14,
       number=21, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='hyperparameters', full_name='ai.verta.modeldb.ExperimentRun.hyperparameters', index=14,
+      name='hyperparameters', full_name='ai.verta.modeldb.ExperimentRun.hyperparameters', index=15,
       number=22, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='artifacts', full_name='ai.verta.modeldb.ExperimentRun.artifacts', index=15,
+      name='artifacts', full_name='ai.verta.modeldb.ExperimentRun.artifacts', index=16,
       number=23, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='datasets', full_name='ai.verta.modeldb.ExperimentRun.datasets', index=16,
+      name='datasets', full_name='ai.verta.modeldb.ExperimentRun.datasets', index=17,
       number=24, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='metrics', full_name='ai.verta.modeldb.ExperimentRun.metrics', index=17,
+      name='metrics', full_name='ai.verta.modeldb.ExperimentRun.metrics', index=18,
       number=25, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='observations', full_name='ai.verta.modeldb.ExperimentRun.observations', index=18,
+      name='observations', full_name='ai.verta.modeldb.ExperimentRun.observations', index=19,
       number=26, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='features', full_name='ai.verta.modeldb.ExperimentRun.features', index=19,
+      name='features', full_name='ai.verta.modeldb.ExperimentRun.features', index=20,
       number=27, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='job_id', full_name='ai.verta.modeldb.ExperimentRun.job_id', index=20,
+      name='job_id', full_name='ai.verta.modeldb.ExperimentRun.job_id', index=21,
       number=28, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='owner', full_name='ai.verta.modeldb.ExperimentRun.owner', index=21,
+      name='owner', full_name='ai.verta.modeldb.ExperimentRun.owner', index=22,
       number=29, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='versioned_inputs', full_name='ai.verta.modeldb.ExperimentRun.versioned_inputs', index=22,
+      name='versioned_inputs', full_name='ai.verta.modeldb.ExperimentRun.versioned_inputs', index=23,
       number=30, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='code_version_from_blob', full_name='ai.verta.modeldb.ExperimentRun.code_version_from_blob', index=23,
+      name='code_version_from_blob', full_name='ai.verta.modeldb.ExperimentRun.code_version_from_blob', index=24,
       number=31, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -254,8 +262,8 @@ _EXPERIMENTRUN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=218,
-  serialized_end=1127,
+  serialized_start=256,
+  serialized_end=1232,
 )
 
 
@@ -292,8 +300,8 @@ _VERSIONINGENTRY_KEYLOCATIONMAPENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1269,
-  serialized_end=1350,
+  serialized_start=1374,
+  serialized_end=1455,
 )
 
 _VERSIONINGENTRY = _descriptor.Descriptor(
@@ -336,8 +344,8 @@ _VERSIONINGENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1130,
-  serialized_end=1350,
+  serialized_start=1235,
+  serialized_end=1455,
 )
 
 
@@ -367,8 +375,8 @@ _LOCATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1352,
-  serialized_end=1380,
+  serialized_start=1457,
+  serialized_end=1485,
 )
 
 
@@ -391,8 +399,8 @@ _LOGVERSIONEDINPUT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGVERSIONEDINPUT = _descriptor.Descriptor(
@@ -428,8 +436,8 @@ _LOGVERSIONEDINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1382,
-  serialized_end=1486,
+  serialized_start=1487,
+  serialized_end=1591,
 )
 
 
@@ -459,8 +467,8 @@ _GETVERSIONEDINPUT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1521,
-  serialized_end=1592,
+  serialized_start=1626,
+  serialized_end=1697,
 )
 
 _GETVERSIONEDINPUT = _descriptor.Descriptor(
@@ -489,8 +497,8 @@ _GETVERSIONEDINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1488,
-  serialized_end=1592,
+  serialized_start=1593,
+  serialized_end=1697,
 )
 
 
@@ -544,8 +552,8 @@ _OBSERVATION = _descriptor.Descriptor(
       name='oneOf', full_name='ai.verta.modeldb.Observation.oneOf',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1595,
-  serialized_end=1777,
+  serialized_start=1700,
+  serialized_end=1882,
 )
 
 
@@ -575,8 +583,8 @@ _CREATEEXPERIMENTRUN_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2485,
-  serialized_end=2552,
+  serialized_start=2590,
+  serialized_end=2657,
 )
 
 _CREATEEXPERIMENTRUN = _descriptor.Descriptor(
@@ -745,8 +753,8 @@ _CREATEEXPERIMENTRUN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1780,
-  serialized_end=2552,
+  serialized_start=1885,
+  serialized_end=2657,
 )
 
 
@@ -776,8 +784,8 @@ _DELETEEXPERIMENTRUN_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2589,
-  serialized_end=2615,
+  serialized_start=2694,
+  serialized_end=2720,
 )
 
 _DELETEEXPERIMENTRUN = _descriptor.Descriptor(
@@ -806,8 +814,8 @@ _DELETEEXPERIMENTRUN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2554,
-  serialized_end=2615,
+  serialized_start=2659,
+  serialized_end=2720,
 )
 
 
@@ -844,8 +852,8 @@ _GETEXPERIMENTRUNSINPROJECT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2746,
-  serialized_end=2837,
+  serialized_start=2851,
+  serialized_end=2942,
 )
 
 _GETEXPERIMENTRUNSINPROJECT = _descriptor.Descriptor(
@@ -902,8 +910,8 @@ _GETEXPERIMENTRUNSINPROJECT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2618,
-  serialized_end=2837,
+  serialized_start=2723,
+  serialized_end=2942,
 )
 
 
@@ -940,8 +948,8 @@ _GETEXPERIMENTRUNSINEXPERIMENT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2746,
-  serialized_end=2837,
+  serialized_start=2851,
+  serialized_end=2942,
 )
 
 _GETEXPERIMENTRUNSINEXPERIMENT = _descriptor.Descriptor(
@@ -998,8 +1006,8 @@ _GETEXPERIMENTRUNSINEXPERIMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2840,
-  serialized_end=3065,
+  serialized_start=2945,
+  serialized_end=3170,
 )
 
 
@@ -1029,8 +1037,8 @@ _GETEXPERIMENTRUNBYID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2485,
-  serialized_end=2552,
+  serialized_start=2590,
+  serialized_end=2657,
 )
 
 _GETEXPERIMENTRUNBYID = _descriptor.Descriptor(
@@ -1059,8 +1067,8 @@ _GETEXPERIMENTRUNBYID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3067,
-  serialized_end=3170,
+  serialized_start=3172,
+  serialized_end=3275,
 )
 
 
@@ -1090,8 +1098,8 @@ _GETEXPERIMENTRUNBYNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2485,
-  serialized_end=2552,
+  serialized_start=2590,
+  serialized_end=2657,
 )
 
 _GETEXPERIMENTRUNBYNAME = _descriptor.Descriptor(
@@ -1127,8 +1135,8 @@ _GETEXPERIMENTRUNBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3173,
-  serialized_end=3303,
+  serialized_start=3278,
+  serialized_end=3408,
 )
 
 
@@ -1151,8 +1159,8 @@ _UPDATEEXPERIMENTRUNNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _UPDATEEXPERIMENTRUNNAME = _descriptor.Descriptor(
@@ -1188,8 +1196,8 @@ _UPDATEEXPERIMENTRUNNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3305,
-  serialized_end=3368,
+  serialized_start=3410,
+  serialized_end=3473,
 )
 
 
@@ -1219,8 +1227,8 @@ _UPDATEEXPERIMENTRUNDESCRIPTION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2485,
-  serialized_end=2552,
+  serialized_start=2590,
+  serialized_end=2657,
 )
 
 _UPDATEEXPERIMENTRUNDESCRIPTION = _descriptor.Descriptor(
@@ -1256,8 +1264,8 @@ _UPDATEEXPERIMENTRUNDESCRIPTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3371,
-  serialized_end=3505,
+  serialized_start=3476,
+  serialized_end=3610,
 )
 
 
@@ -1287,8 +1295,8 @@ _ADDEXPERIMENTRUNTAGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2485,
-  serialized_end=2552,
+  serialized_start=2590,
+  serialized_end=2657,
 )
 
 _ADDEXPERIMENTRUNTAGS = _descriptor.Descriptor(
@@ -1324,8 +1332,8 @@ _ADDEXPERIMENTRUNTAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3507,
-  serialized_end=3624,
+  serialized_start=3612,
+  serialized_end=3729,
 )
 
 
@@ -1355,8 +1363,8 @@ _DELETEEXPERIMENTRUNTAGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2485,
-  serialized_end=2552,
+  serialized_start=2590,
+  serialized_end=2657,
 )
 
 _DELETEEXPERIMENTRUNTAGS = _descriptor.Descriptor(
@@ -1399,8 +1407,8 @@ _DELETEEXPERIMENTRUNTAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3627,
-  serialized_end=3767,
+  serialized_start=3732,
+  serialized_end=3872,
 )
 
 
@@ -1430,8 +1438,8 @@ _ADDEXPERIMENTRUNTAG_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2485,
-  serialized_end=2552,
+  serialized_start=2590,
+  serialized_end=2657,
 )
 
 _ADDEXPERIMENTRUNTAG = _descriptor.Descriptor(
@@ -1467,8 +1475,8 @@ _ADDEXPERIMENTRUNTAG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3769,
-  serialized_end=3884,
+  serialized_start=3874,
+  serialized_end=3989,
 )
 
 
@@ -1498,8 +1506,8 @@ _DELETEEXPERIMENTRUNTAG_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2485,
-  serialized_end=2552,
+  serialized_start=2590,
+  serialized_end=2657,
 )
 
 _DELETEEXPERIMENTRUNTAG = _descriptor.Descriptor(
@@ -1535,8 +1543,8 @@ _DELETEEXPERIMENTRUNTAG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3886,
-  serialized_end=4004,
+  serialized_start=3991,
+  serialized_end=4109,
 )
 
 
@@ -1559,8 +1567,8 @@ _ADDEXPERIMENTRUNATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _ADDEXPERIMENTRUNATTRIBUTES = _descriptor.Descriptor(
@@ -1596,8 +1604,8 @@ _ADDEXPERIMENTRUNATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4006,
-  serialized_end=4105,
+  serialized_start=4111,
+  serialized_end=4210,
 )
 
 
@@ -1620,8 +1628,8 @@ _DELETEEXPERIMENTRUNATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _DELETEEXPERIMENTRUNATTRIBUTES = _descriptor.Descriptor(
@@ -1664,8 +1672,8 @@ _DELETEEXPERIMENTRUNATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4107,
-  serialized_end=4206,
+  serialized_start=4212,
+  serialized_end=4311,
 )
 
 
@@ -1688,8 +1696,8 @@ _LOGEXPERIMENTRUNCODEVERSION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGEXPERIMENTRUNCODEVERSION = _descriptor.Descriptor(
@@ -1732,8 +1740,8 @@ _LOGEXPERIMENTRUNCODEVERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4208,
-  serialized_end=4333,
+  serialized_start=4313,
+  serialized_end=4438,
 )
 
 
@@ -1763,8 +1771,8 @@ _GETEXPERIMENTRUNCODEVERSION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4378,
-  serialized_end=4441,
+  serialized_start=4483,
+  serialized_end=4546,
 )
 
 _GETEXPERIMENTRUNCODEVERSION = _descriptor.Descriptor(
@@ -1793,8 +1801,8 @@ _GETEXPERIMENTRUNCODEVERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4335,
-  serialized_end=4441,
+  serialized_start=4440,
+  serialized_end=4546,
 )
 
 
@@ -1817,8 +1825,8 @@ _LOGOBSERVATION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGOBSERVATION = _descriptor.Descriptor(
@@ -1854,8 +1862,8 @@ _LOGOBSERVATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4443,
-  serialized_end=4535,
+  serialized_start=4548,
+  serialized_end=4640,
 )
 
 
@@ -1878,8 +1886,8 @@ _LOGOBSERVATIONS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGOBSERVATIONS = _descriptor.Descriptor(
@@ -1915,8 +1923,8 @@ _LOGOBSERVATIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4537,
-  serialized_end=4631,
+  serialized_start=4642,
+  serialized_end=4736,
 )
 
 
@@ -1946,8 +1954,8 @@ _GETOBSERVATIONS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4689,
-  serialized_end=4752,
+  serialized_start=4794,
+  serialized_end=4857,
 )
 
 _GETOBSERVATIONS = _descriptor.Descriptor(
@@ -1983,8 +1991,8 @@ _GETOBSERVATIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4633,
-  serialized_end=4752,
+  serialized_start=4738,
+  serialized_end=4857,
 )
 
 
@@ -2007,8 +2015,8 @@ _DELETEOBSERVATIONS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _DELETEOBSERVATIONS = _descriptor.Descriptor(
@@ -2051,8 +2059,8 @@ _DELETEOBSERVATIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4754,
-  serialized_end=4844,
+  serialized_start=4859,
+  serialized_end=4949,
 )
 
 
@@ -2075,8 +2083,8 @@ _LOGMETRIC_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGMETRIC = _descriptor.Descriptor(
@@ -2112,8 +2120,8 @@ _LOGMETRIC = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4846,
-  serialized_end=4924,
+  serialized_start=4951,
+  serialized_end=5029,
 )
 
 
@@ -2136,8 +2144,8 @@ _LOGMETRICS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGMETRICS = _descriptor.Descriptor(
@@ -2173,8 +2181,8 @@ _LOGMETRICS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4926,
-  serialized_end=5006,
+  serialized_start=5031,
+  serialized_end=5111,
 )
 
 
@@ -2204,8 +2212,8 @@ _GETMETRICS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5034,
-  serialized_end=5088,
+  serialized_start=5139,
+  serialized_end=5193,
 )
 
 _GETMETRICS = _descriptor.Descriptor(
@@ -2234,8 +2242,8 @@ _GETMETRICS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5008,
-  serialized_end=5088,
+  serialized_start=5113,
+  serialized_end=5193,
 )
 
 
@@ -2258,8 +2266,8 @@ _DELETEMETRICS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _DELETEMETRICS = _descriptor.Descriptor(
@@ -2302,8 +2310,8 @@ _DELETEMETRICS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5090,
-  serialized_end=5170,
+  serialized_start=5195,
+  serialized_end=5275,
 )
 
 
@@ -2326,8 +2334,8 @@ _LOGDATASET_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGDATASET = _descriptor.Descriptor(
@@ -2370,8 +2378,8 @@ _LOGDATASET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5172,
-  serialized_end=5271,
+  serialized_start=5277,
+  serialized_end=5376,
 )
 
 
@@ -2394,8 +2402,8 @@ _LOGDATASETS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGDATASETS = _descriptor.Descriptor(
@@ -2438,8 +2446,8 @@ _LOGDATASETS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5273,
-  serialized_end=5374,
+  serialized_start=5378,
+  serialized_end=5479,
 )
 
 
@@ -2469,8 +2477,8 @@ _GETDATASETS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5403,
-  serialized_end=5458,
+  serialized_start=5508,
+  serialized_end=5563,
 )
 
 _GETDATASETS = _descriptor.Descriptor(
@@ -2499,8 +2507,8 @@ _GETDATASETS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5376,
-  serialized_end=5458,
+  serialized_start=5481,
+  serialized_end=5563,
 )
 
 
@@ -2523,8 +2531,8 @@ _LOGARTIFACT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGARTIFACT = _descriptor.Descriptor(
@@ -2560,8 +2568,8 @@ _LOGARTIFACT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5460,
-  serialized_end=5542,
+  serialized_start=5565,
+  serialized_end=5647,
 )
 
 
@@ -2584,8 +2592,8 @@ _LOGARTIFACTS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGARTIFACTS = _descriptor.Descriptor(
@@ -2621,8 +2629,8 @@ _LOGARTIFACTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5544,
-  serialized_end=5628,
+  serialized_start=5649,
+  serialized_end=5733,
 )
 
 
@@ -2645,8 +2653,8 @@ _DELETEARTIFACT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _DELETEARTIFACT = _descriptor.Descriptor(
@@ -2682,8 +2690,8 @@ _DELETEARTIFACT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5630,
-  serialized_end=5683,
+  serialized_start=5735,
+  serialized_end=5788,
 )
 
 
@@ -2706,8 +2714,8 @@ _LOGHYPERPARAMETER_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGHYPERPARAMETER = _descriptor.Descriptor(
@@ -2743,8 +2751,8 @@ _LOGHYPERPARAMETER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5685,
-  serialized_end=5779,
+  serialized_start=5790,
+  serialized_end=5884,
 )
 
 
@@ -2767,8 +2775,8 @@ _LOGHYPERPARAMETERS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGHYPERPARAMETERS = _descriptor.Descriptor(
@@ -2804,8 +2812,8 @@ _LOGHYPERPARAMETERS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5781,
-  serialized_end=5877,
+  serialized_start=5886,
+  serialized_end=5982,
 )
 
 
@@ -2835,8 +2843,8 @@ _GETHYPERPARAMETERS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5913,
-  serialized_end=5975,
+  serialized_start=6018,
+  serialized_end=6080,
 )
 
 _GETHYPERPARAMETERS = _descriptor.Descriptor(
@@ -2865,8 +2873,8 @@ _GETHYPERPARAMETERS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5879,
-  serialized_end=5975,
+  serialized_start=5984,
+  serialized_end=6080,
 )
 
 
@@ -2889,8 +2897,8 @@ _DELETEHYPERPARAMETERS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _DELETEHYPERPARAMETERS = _descriptor.Descriptor(
@@ -2933,8 +2941,8 @@ _DELETEHYPERPARAMETERS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5977,
-  serialized_end=6073,
+  serialized_start=6082,
+  serialized_end=6178,
 )
 
 
@@ -2957,8 +2965,8 @@ _LOGATTRIBUTE_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGATTRIBUTE = _descriptor.Descriptor(
@@ -2994,8 +3002,8 @@ _LOGATTRIBUTE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6075,
-  serialized_end=6159,
+  serialized_start=6180,
+  serialized_end=6264,
 )
 
 
@@ -3018,8 +3026,8 @@ _LOGATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGATTRIBUTES = _descriptor.Descriptor(
@@ -3055,8 +3063,8 @@ _LOGATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6161,
-  serialized_end=6247,
+  serialized_start=6266,
+  serialized_end=6352,
 )
 
 
@@ -3093,8 +3101,8 @@ _FINDEXPERIMENTRUNS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2746,
-  serialized_end=2837,
+  serialized_start=2851,
+  serialized_end=2942,
 )
 
 _FINDEXPERIMENTRUNS = _descriptor.Descriptor(
@@ -3189,8 +3197,8 @@ _FINDEXPERIMENTRUNS = _descriptor.Descriptor(
       name='entity_id_oneof', full_name='ai.verta.modeldb.FindExperimentRuns.entity_id_oneof',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=6250,
-  serialized_end=6629,
+  serialized_start=6355,
+  serialized_end=6734,
 )
 
 
@@ -3227,8 +3235,8 @@ _SORTEXPERIMENTRUNS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2746,
-  serialized_end=2837,
+  serialized_start=2851,
+  serialized_end=2942,
 )
 
 _SORTEXPERIMENTRUNS = _descriptor.Descriptor(
@@ -3278,8 +3286,8 @@ _SORTEXPERIMENTRUNS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6632,
-  serialized_end=6828,
+  serialized_start=6737,
+  serialized_end=6933,
 )
 
 
@@ -3309,8 +3317,8 @@ _TOPEXPERIMENTRUNSSELECTOR_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2746,
-  serialized_end=2814,
+  serialized_start=2851,
+  serialized_end=2919,
 )
 
 _TOPEXPERIMENTRUNSSELECTOR = _descriptor.Descriptor(
@@ -3381,8 +3389,8 @@ _TOPEXPERIMENTRUNSSELECTOR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6831,
-  serialized_end=7069,
+  serialized_start=6936,
+  serialized_end=7174,
 )
 
 
@@ -3405,8 +3413,8 @@ _LOGJOBID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _LOGJOBID = _descriptor.Descriptor(
@@ -3442,8 +3450,8 @@ _LOGJOBID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7071,
-  serialized_end=7121,
+  serialized_start=7176,
+  serialized_end=7226,
 )
 
 
@@ -3473,8 +3481,8 @@ _GETJOBID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7147,
-  serialized_end=7173,
+  serialized_start=7252,
+  serialized_end=7278,
 )
 
 _GETJOBID = _descriptor.Descriptor(
@@ -3503,8 +3511,8 @@ _GETJOBID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7123,
-  serialized_end=7173,
+  serialized_start=7228,
+  serialized_end=7278,
 )
 
 
@@ -3541,8 +3549,8 @@ _GETCHILDRENEXPERIMENTRUNS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2746,
-  serialized_end=2837,
+  serialized_start=2851,
+  serialized_end=2942,
 )
 
 _GETCHILDRENEXPERIMENTRUNS = _descriptor.Descriptor(
@@ -3599,8 +3607,8 @@ _GETCHILDRENEXPERIMENTRUNS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7176,
-  serialized_end=7401,
+  serialized_start=7281,
+  serialized_end=7506,
 )
 
 
@@ -3623,8 +3631,8 @@ _SETPARENTEXPERIMENTRUNID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1476,
-  serialized_end=1486,
+  serialized_start=1581,
+  serialized_end=1591,
 )
 
 _SETPARENTEXPERIMENTRUNID = _descriptor.Descriptor(
@@ -3660,8 +3668,8 @@ _SETPARENTEXPERIMENTRUNID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7403,
-  serialized_end=7487,
+  serialized_start=7508,
+  serialized_end=7592,
 )
 
 
@@ -3698,8 +3706,8 @@ _GETEXPERIMENTRUNSBYDATASETVERSIONID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7635,
-  serialized_end=7726,
+  serialized_start=7740,
+  serialized_end=7831,
 )
 
 _GETEXPERIMENTRUNSBYDATASETVERSIONID = _descriptor.Descriptor(
@@ -3756,8 +3764,8 @@ _GETEXPERIMENTRUNSBYDATASETVERSIONID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7490,
-  serialized_end=7726,
+  serialized_start=7595,
+  serialized_end=7831,
 )
 
 
@@ -3787,8 +3795,8 @@ _DELETEEXPERIMENTRUNS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2589,
-  serialized_end=2615,
+  serialized_start=2694,
+  serialized_end=2720,
 )
 
 _DELETEEXPERIMENTRUNS = _descriptor.Descriptor(
@@ -3817,8 +3825,8 @@ _DELETEEXPERIMENTRUNS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7728,
-  serialized_end=7791,
+  serialized_start=7833,
+  serialized_end=7896,
 )
 
 
@@ -3855,8 +3863,8 @@ _LISTCOMMITEXPERIMENTRUNSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7976,
-  serialized_end=8056,
+  serialized_start=8081,
+  serialized_end=8161,
 )
 
 _LISTCOMMITEXPERIMENTRUNSREQUEST = _descriptor.Descriptor(
@@ -3899,8 +3907,8 @@ _LISTCOMMITEXPERIMENTRUNSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7794,
-  serialized_end=8056,
+  serialized_start=7899,
+  serialized_end=8161,
 )
 
 
@@ -3937,8 +3945,8 @@ _LISTBLOBEXPERIMENTRUNSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=7976,
-  serialized_end=8056,
+  serialized_start=8081,
+  serialized_end=8161,
 )
 
 _LISTBLOBEXPERIMENTRUNSREQUEST = _descriptor.Descriptor(
@@ -3988,8 +3996,8 @@ _LISTBLOBEXPERIMENTRUNSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=8059,
-  serialized_end=8337,
+  serialized_start=8164,
+  serialized_end=8442,
 )
 
 
@@ -4019,8 +4027,8 @@ _CLONEEXPERIMENTRUN_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=8455,
-  serialized_end=8511,
+  serialized_start=8560,
+  serialized_end=8616,
 )
 
 _CLONEEXPERIMENTRUN = _descriptor.Descriptor(
@@ -4063,13 +4071,14 @@ _CLONEEXPERIMENTRUN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=8340,
-  serialized_end=8511,
+  serialized_start=8445,
+  serialized_end=8616,
 )
 
 _EXPERIMENTRUN_CODEVERSIONFROMBLOBENTRY.fields_by_name['value'].message_type = modeldb_dot_CommonService__pb2._CODEVERSION
 _EXPERIMENTRUN_CODEVERSIONFROMBLOBENTRY.containing_type = _EXPERIMENTRUN
 _EXPERIMENTRUN.fields_by_name['code_version_snapshot'].message_type = modeldb_dot_CommonService__pb2._CODEVERSION
+_EXPERIMENTRUN.fields_by_name['environment'].message_type = modeldb_dot_versioning_dot_Environment__pb2._ENVIRONMENTBLOB
 _EXPERIMENTRUN.fields_by_name['attributes'].message_type = common_dot_CommonService__pb2._KEYVALUE
 _EXPERIMENTRUN.fields_by_name['hyperparameters'].message_type = common_dot_CommonService__pb2._KEYVALUE
 _EXPERIMENTRUN.fields_by_name['artifacts'].message_type = common_dot_CommonService__pb2._ARTIFACT
@@ -5061,8 +5070,8 @@ _EXPERIMENTRUNSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=8514,
-  serialized_end=17971,
+  serialized_start=8619,
+  serialized_end=18076,
   methods=[
   _descriptor.MethodDescriptor(
     name='createExperimentRun',
