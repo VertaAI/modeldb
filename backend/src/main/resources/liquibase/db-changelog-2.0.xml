@@ -144,7 +144,7 @@
             </not>
         </preConditions>
         <addColumn tableName="project">
-            <column name="workspace_id" type="varchar(255)"/>
+            <column name="workspace_id" type="int8"/>
         </addColumn>
         <rollback>
             <dropColumn tableName="project" columnName="workspace_id"/>
