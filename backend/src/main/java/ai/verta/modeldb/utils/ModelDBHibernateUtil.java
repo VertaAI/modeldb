@@ -924,8 +924,9 @@ public class ModelDBHibernateUtil {
     boolean dbExists = false;
     while (resultSet.next()) {
       String databaseNameRes = resultSet.getString(1);
-      if (databaseName.equals(databaseNameRes)) {
+      if (databaseName.equals("`" + databaseNameRes + "`")) {
         dbExists = true;
+        break;
       }
     }
 
