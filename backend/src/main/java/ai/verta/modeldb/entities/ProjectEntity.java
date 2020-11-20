@@ -271,7 +271,6 @@ public class ProjectEntity {
     }
     this.attributeMapping.addAll(attributeMapping);
   }
-
   public Long getWorkspaceId() {
     return workspaceId;
   }
@@ -284,8 +283,8 @@ public class ProjectEntity {
     return legacy_workspace_id;
   }
 
-  public void setLegacyWorkspaceId(String workspace) {
-    this.legacy_workspace_id = workspace;
+  public void setLegacyWorkspaceId(String legacy_workspace_id) {
+    this.legacy_workspace_id = legacy_workspace_id;
   }
 
   public Integer getWorkspace_type() {

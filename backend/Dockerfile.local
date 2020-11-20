@@ -1,0 +1,24 @@
+FROM openjdk:14-jdk-alpine3.10 as builder
+
+RUN apk add wget
+
+RUN GRPC_HEALTH_PROBE_VERSION=v0.3.0 && \
+    wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
+    chmod +x /bin/grpc_health_probe
+
+FROM openjdk:14-jdk-alpine3.10
+COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe
+
+RUN mkdir -p modeldb-project-work-dir
+WORKDIR /modeldb-project-work-dir
+
+COPY target/modeldb-1.0-SNAPSHOT-client-build.jar modeldb-1.0-SNAPSHOT-client-build.jar
+COPY src/main/resources/liquibase/ src/main/resources/liquibase/
+COPY src/main/resources/c3p0.properties c3p0.properties
+
+# Define environment variable
+ENV NAME modeldb-backend
+ENV VERTA_MODELDB_CONFIG /config/config.yaml
+
+ENTRYPOINT ["java"]
+CMD ["-jar", "modeldb-1.0-SNAPSHOT-client-build.jar"]
