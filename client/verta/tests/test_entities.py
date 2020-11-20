@@ -609,6 +609,12 @@ class TestExperimentRuns:
         assert len(expt.expt_runs.find(["tags ~= {}".format(tag), "hyperparameters.some-hyper == 1"])) == 1  # old syntax
         assert len(expt.expt_runs.find("tags ~= {}".format(tag), "hyperparameters.some-hyper == 1")) == 1  # new syntax
 
+        # if any predicate is not string, should fail:
+        with pytest.raises(TypeError) as excinfo:
+            expt.expt_runs.find("tag ~= {}".format(tag), 1234)
+
+        assert "predicates must all be strings" in str(excinfo.value).strip()
+
 
     @pytest.mark.skip("functionality removed")
     def test_add(self, client):
