@@ -137,4 +137,21 @@
         <tagDatabase tag="db_version_2.4"/>
     </changeSet>
 
+    <changeSet id="add-workspace-id-to-project" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="workspace_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="workspace_id" type="varchar(255)"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="project" columnName="workspace_id"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.5" author="cory">
+        <tagDatabase tag="db_version_2.5"/>
+    </changeSet>
 </databaseChangeLog>
