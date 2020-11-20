@@ -271,6 +271,7 @@ public class ProjectEntity {
     }
     this.attributeMapping.addAll(attributeMapping);
   }
+
   public Long getWorkspaceId() {
     return workspaceId;
   }
