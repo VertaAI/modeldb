@@ -291,7 +291,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       responseObserver.onNext(
           GenerateRandomNameRequest.Response.newBuilder()
-              .setName(Nomen.est().adjective().color().animal().get())
+              .setName(Nomen.est().adjective().color().animal().withSeparator("-").get())
               .build());
       responseObserver.onCompleted();
     } catch (Exception e) {
