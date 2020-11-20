@@ -7,3 +7,5 @@ config.k8s.yaml
 .settings/*
 .project
 .factorypath
+.idea/
+*.iml
