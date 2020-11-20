@@ -8,6 +8,7 @@ option java_multiple_files = true;
 import "common/CommonService.proto";
 import "modeldb/CommonService.proto";
 import "modeldb/versioning/VersioningService.proto";
+import "modeldb/versioning/Environment.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 
@@ -29,6 +30,9 @@ message ExperimentRun {
     string code_version = 10;
     CodeVersion code_version_snapshot = 11;
     string parent_id = 12;
+
+    //Requirement
+    versioning.EnvironmentBlob environment = 13;
 
     repeated string tags = 20;
     repeated common.KeyValue attributes = 21;

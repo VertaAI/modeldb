@@ -26,6 +26,8 @@ import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.metadata.GenerateRandomNameRequest;
+import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
@@ -121,6 +123,7 @@ public class ExperimentRunTest {
   private static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
   private static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
       datasetVersionServiceStub;
+  private static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
 
   @SuppressWarnings("unchecked")
   @BeforeClass
@@ -182,6 +185,7 @@ public class ExperimentRunTest {
     versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
+    metadataServiceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
 
     // Create all entities
     createProjectEntities();
@@ -8227,5 +8231,16 @@ public class ExperimentRunTest {
     }
 
     LOGGER.info("Clone experimentRun test stop................................");
+  }
+
+  @Test
+  public void randomNameGeneration() {
+    LOGGER.info("Random name generation test start................................");
+    GenerateRandomNameRequest.Response response =
+        metadataServiceBlockingStub.generateRandomName(
+            GenerateRandomNameRequest.newBuilder().build());
+    LOGGER.info("Random name: {}", response.getName());
+    assertFalse("Random name should not be empty", response.getName().isEmpty());
+    LOGGER.info("Random name generation test stop................................");
   }
 }

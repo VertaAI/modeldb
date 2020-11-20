@@ -9,6 +9,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Any;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import com.oblac.nomen.Nomen;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
@@ -278,6 +279,24 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteKeyValuePropertiesRequest.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void generateRandomName(
+      GenerateRandomNameRequest request,
+      StreamObserver<GenerateRandomNameRequest.Response> responseObserver) {
+    QPSCountResource.inc();
+    try (RequestLatencyResource latencyResource =
+        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      responseObserver.onNext(
+          GenerateRandomNameRequest.Response.newBuilder()
+              .setName(Nomen.est().adjective().color().animal().withSeparator("-").get())
+              .build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(
+          responseObserver, e, GenerateRandomNameRequest.Response.getDefaultInstance());
     }
   }
 }
