@@ -86,7 +86,8 @@ public class CronJobUtils {
             TimerTask task =
                 new PopulateEnvironmentInRunCron(artifactStoreService, recordUpdateLimit);
             ModelDBUtils.scheduleTask(task, initialDelay, cronExecutionFrequency, TimeUnit.SECONDS);
-            LOGGER.info("{} cron job scheduled successfully", ModelDBConstants.DELETE_ENTITIES);
+            LOGGER.info(
+                "{} cron job scheduled successfully", ModelDBConstants.UPDATE_RUN_ENVIRONMENTS);
           } else {
             LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());
           }

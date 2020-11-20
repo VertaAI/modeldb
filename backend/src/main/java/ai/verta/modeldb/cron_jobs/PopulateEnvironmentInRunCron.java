@@ -165,9 +165,9 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
     InputStream inputStream = artifactStoreDAO.downloadArtifact(artifact.getPath());
 
     try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+      Pattern pattern = Pattern.compile(ModelDBConstants.VER_SPEC_PATTERN);
       String line;
       while ((line = br.readLine()) != null) {
-        Pattern pattern = Pattern.compile(ModelDBConstants.VER_SPEC_PATTERN);
         Matcher matcher = pattern.matcher(line);
         PythonRequirementEnvironmentBlob.Builder requirementEnvironmentBlob =
             PythonRequirementEnvironmentBlob.newBuilder();
