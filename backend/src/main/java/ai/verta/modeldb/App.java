@@ -470,7 +470,8 @@ public class App implements ApplicationContextAware {
     initializeTelemetryBasedOnConfig(propertiesMap);
 
     // Initialize cron jobs
-    CronJobUtils.initializeBasedOnConfig(propertiesMap, authService, roleService);
+    CronJobUtils.initializeBasedOnConfig(
+        propertiesMap, authService, roleService, artifactStoreService);
   }
 
   private static void initializeRelationalDBServices(

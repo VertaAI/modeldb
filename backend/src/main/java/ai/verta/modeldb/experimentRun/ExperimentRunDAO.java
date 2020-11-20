@@ -19,7 +19,6 @@ import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
@@ -43,10 +42,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   ExperimentRun insertExperimentRun(
-      ProjectDAO projectDAO,
-      ArtifactStoreDAO artifactStoreDAO,
-      ExperimentRun experimentRun,
-      UserInfo userInfo)
+      ProjectDAO projectDAO, ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException;
 
   /**
@@ -497,9 +493,6 @@ public interface ExperimentRunDAO {
       throws ModelDBException, InvalidProtocolBufferException;
 
   ExperimentRun cloneExperimentRun(
-      ProjectDAO projectDAO,
-      ArtifactStoreDAO artifactStoreDAO,
-      CloneExperimentRun cloneExperimentRun,
-      UserInfo userInfo)
+      ProjectDAO projectDAO, CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException;
 }

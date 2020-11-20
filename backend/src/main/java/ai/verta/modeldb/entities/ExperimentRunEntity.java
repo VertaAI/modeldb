@@ -87,8 +87,10 @@ public class ExperimentRunEntity {
               ModelDBConstants.CODE_VERSION, experimentRun.getCodeVersionSnapshot()));
     }
 
-    EnvironmentBlob environmentBlob = sortPythonEnvironmentBlob(experimentRun.getEnvironment());
-    this.environment = ModelDBUtils.getStringFromProtoObject(environmentBlob);
+    if (experimentRun.getEnvironment().hasPython() || experimentRun.getEnvironment().hasDocker()) {
+      EnvironmentBlob environmentBlob = sortPythonEnvironmentBlob(experimentRun.getEnvironment());
+      this.environment = ModelDBUtils.getStringFromProtoObject(environmentBlob);
+    }
   }
 
   @Id
@@ -459,6 +461,10 @@ public class ExperimentRunEntity {
     this.deleted = deleted;
   }
 
+  public void setEnvironment(String environment) {
+    this.environment = environment;
+  }
+
   public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {
     LOGGER.trace("starting conversion");
     if (keyValueEntityMap.size() == 0) {
@@ -536,9 +542,11 @@ public class ExperimentRunEntity {
       experimentRunBuilder.setVersionedInputs(versioningEntry);
     }
 
-    EnvironmentBlob.Builder environmentBlobBuilder = EnvironmentBlob.newBuilder();
-    ModelDBUtils.getProtoObjectFromString(this.environment, environmentBlobBuilder);
-    experimentRunBuilder.setEnvironment(environmentBlobBuilder.build());
+    if (this.environment != null && !this.environment.isEmpty()) {
+      EnvironmentBlob.Builder environmentBlobBuilder = EnvironmentBlob.newBuilder();
+      ModelDBUtils.getProtoObjectFromString(this.environment, environmentBlobBuilder);
+      experimentRunBuilder.setEnvironment(environmentBlobBuilder.build());
+    }
 
     LOGGER.trace("Returning converted ExperimentRun");
     return experimentRunBuilder.build();

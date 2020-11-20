@@ -2,6 +2,8 @@ package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
+import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -17,7 +19,10 @@ public class CronJobUtils {
   public static Integer deleteEntitiesFrequency = 60;
 
   public static void initializeBasedOnConfig(
-      Map<String, Object> propertiesMap, AuthService authService, RoleService roleService) {
+      Map<String, Object> propertiesMap,
+      AuthService authService,
+      RoleService roleService,
+      ArtifactStoreService artifactStoreService) {
 
     App app = App.getInstance();
     LOGGER.info("Enter in CronJobUtils: initializeBasedOnConfig()");
@@ -61,6 +66,26 @@ public class CronJobUtils {
             TimerTask task = new DeleteEntitiesCron(authService, roleService, recordUpdateLimit);
             ModelDBUtils.scheduleTask(
                 task, initialDelay, deleteEntitiesFrequency, TimeUnit.SECONDS);
+            LOGGER.info("{} cron job scheduled successfully", ModelDBConstants.DELETE_ENTITIES);
+          } else if (cronJob.getKey().equals(ModelDBConstants.UPDATE_RUN_ENVIRONMENTS)
+              && artifactStoreService != null
+              && !(artifactStoreService instanceof ArtifactStoreDAODisabled)) {
+            Map<String, Object> updateRunEnvironmentCronMap =
+                (Map<String, Object>) cronJob.getValue();
+            int cronExecutionFrequency =
+                (int) updateRunEnvironmentCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);
+            int recordUpdateLimit =
+                (int)
+                    updateRunEnvironmentCronMap.getOrDefault(
+                        ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+            int initialDelay =
+                (int)
+                    updateRunEnvironmentCronMap.getOrDefault(
+                        ModelDBConstants.INITIAL_DELAY, ModelDBConstants.INITIAL_CRON_DELAY);
+            // creating an instance of task to be scheduled
+            TimerTask task =
+                new PopulateEnvironmentInRunCron(artifactStoreService, recordUpdateLimit);
+            ModelDBUtils.scheduleTask(task, initialDelay, cronExecutionFrequency, TimeUnit.SECONDS);
             LOGGER.info("{} cron job scheduled successfully", ModelDBConstants.DELETE_ENTITIES);
           } else {
             LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());

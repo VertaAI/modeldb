@@ -108,7 +108,7 @@
             </not>
         </preConditions>
         <addColumn tableName="experiment_run">
-            <column name="environment" type="TEXT" value=""/>
+            <column name="environment" type="TEXT"/>
         </addColumn>
         <rollback>
             <dropColumn tableName="experiment_run" columnName="environment"/>

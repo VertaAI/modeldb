@@ -295,4 +295,5 @@ public interface ModelDBConstants {
   String DELETE_ENTITIES = "delete_entities";
   String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
   String EXPIRED_TOKEN = "ExpiredToken";
+  String UPDATE_RUN_ENVIRONMENTS = "update_run_environments";
 }

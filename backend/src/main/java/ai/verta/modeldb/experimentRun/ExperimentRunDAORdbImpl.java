@@ -33,7 +33,6 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.VersioningEntry;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
@@ -70,16 +69,12 @@ import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
-import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
-import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
-import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
-import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.Role;
@@ -88,10 +83,6 @@ import com.amazonaws.services.s3.model.PartETag;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.MalformedJsonException;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -99,10 +90,6 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -124,8 +111,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
@@ -402,10 +387,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRun insertExperimentRun(
-      ProjectDAO projectDAO,
-      ArtifactStoreDAO artifactStoreDAO,
-      ExperimentRun experimentRun,
-      UserInfo userInfo)
+      ProjectDAO projectDAO, ExperimentRun experimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
     checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
@@ -418,8 +400,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
       }
 
-      experimentRun =
-          populateEnvironmentBasedOnExperimentRunArtifacts(artifactStoreDAO, experimentRun);
       ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
         Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
@@ -445,7 +425,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       return experimentRun;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return insertExperimentRun(projectDAO, artifactStoreDAO, experimentRun, userInfo);
+        return insertExperimentRun(projectDAO, experimentRun, userInfo);
       } else {
         throw ex;
       }
@@ -3031,10 +3011,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRun cloneExperimentRun(
-      ProjectDAO projectDAO,
-      ArtifactStoreDAO artifactStoreDAO,
-      CloneExperimentRun cloneExperimentRun,
-      UserInfo userInfo)
+      ProjectDAO projectDAO, CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
     ExperimentRun srcExperimentRun = getExperimentRun(cloneExperimentRun.getSrcExperimentRunId());
 
@@ -3079,185 +3056,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
 
     desExperimentRunBuilder.clearOwner().setOwner(authService.getVertaIdFromUserInfo(userInfo));
-    return insertExperimentRun(
-        projectDAO, artifactStoreDAO, desExperimentRunBuilder.build(), userInfo);
-  }
-
-  private ExperimentRun populateEnvironmentBasedOnExperimentRunArtifacts(
-      ArtifactStoreDAO artifactStoreDAO, ExperimentRun experimentRun) throws ModelDBException {
-    ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
-    List<Artifact> experimentRunArtifacts = experimentRun.getArtifactsList();
-    if (experimentRunArtifacts.isEmpty()) {
-      return experimentRun;
-    } else {
-      PythonEnvironmentBlob.Builder pythonEnvironmentBuilder = PythonEnvironmentBlob.newBuilder();
-      for (Artifact artifact : experimentRunArtifacts) {
-        if (artifact.getKey().equals(ModelDBConstants.MODEL_API_JSON)) {
-          addVersionInPythonEnvironmentBlob(artifactStoreDAO, pythonEnvironmentBuilder, artifact);
-        } else if (artifact.getKey().equals(ModelDBConstants.REQUIREMENTS_TXT)) {
-          addRequirementsInPythonEnvironmentBlob(
-              artifactStoreDAO, pythonEnvironmentBuilder, artifact);
-        }
-      }
-
-      if (pythonEnvironmentBuilder.getConstraintsCount() > 0
-          || pythonEnvironmentBuilder.hasVersion()) {
-        EnvironmentBlob.Builder environmentBlobBuilder = EnvironmentBlob.newBuilder();
-        environmentBlobBuilder.setPython(pythonEnvironmentBuilder.build());
-        experimentRunBuilder.setEnvironment(environmentBlobBuilder.build());
-      }
-    }
-    return experimentRunBuilder.build();
-  }
-
-  private void addRequirementsInPythonEnvironmentBlob(
-      ArtifactStoreDAO artifactStoreDAO,
-      PythonEnvironmentBlob.Builder pythonEnvironmentBuilder,
-      Artifact artifact)
-      throws ModelDBException {
-    InputStream inputStream = artifactStoreDAO.downloadArtifact(artifact.getPath());
-
-    try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
-      String line;
-      while ((line = br.readLine()) != null) {
-        Pattern pattern = Pattern.compile(ModelDBConstants.VER_SPEC_PATTERN);
-        Matcher matcher = pattern.matcher(line);
-        PythonRequirementEnvironmentBlob.Builder requirementEnvironmentBlob =
-            PythonRequirementEnvironmentBlob.newBuilder();
-        if (matcher.find()) {
-          String[] requirementArr = pattern.split(line);
-          requirementEnvironmentBlob.setLibrary(requirementArr[0]);
-          requirementEnvironmentBlob.setConstraint(matcher.group());
-          requirementEnvironmentBlob.setVersion(getVersionEnvironmentBlob(requirementArr[1]));
-        } else {
-          requirementEnvironmentBlob.setLibrary(line);
-        }
-        pythonEnvironmentBuilder.addRequirements(requirementEnvironmentBlob.build());
-      }
-    } catch (IOException e) {
-      LOGGER.warn(e.getMessage());
-      throw new ModelDBException(e.getMessage(), Code.INTERNAL);
-    }
-  }
-
-  public VersionEnvironmentBlob getVersionEnvironmentBlob(String version) {
-    VersionEnvironmentBlob.Builder versionBuilder = VersionEnvironmentBlob.newBuilder();
-    String[] versionArr = version.split("\\.");
-    int validVersionLength = 0;
-    if (versionArr.length > 0) {
-      String majorStr = versionArr[0];
-      try {
-        versionBuilder.setMajor(Integer.parseInt(majorStr));
-        validVersionLength = validVersionLength + majorStr.length();
-      } catch (NumberFormatException ex) {
-        String[] requirementArr = majorStr.split(ModelDBConstants.VER_NUM_PATTERN);
-        if (requirementArr.length > 0 && !requirementArr[0].isEmpty()) {
-          try {
-            versionBuilder.setMajor(Integer.parseInt(requirementArr[0]));
-            validVersionLength = validVersionLength + requirementArr[0].length();
-            versionBuilder.setSuffix(version.substring(validVersionLength));
-            return versionBuilder.build();
-          } catch (NumberFormatException e) {
-            versionBuilder.setSuffix(version);
-            return versionBuilder.build();
-          }
-        } else {
-          versionBuilder.setSuffix(version);
-          return versionBuilder.build();
-        }
-      }
-      validVersionLength = validVersionLength + 1;
-    }
-    if (versionArr.length > 1) {
-      String minorStr = versionArr[1];
-      try {
-        versionBuilder.setMinor(Integer.parseInt(minorStr));
-        validVersionLength = validVersionLength + minorStr.length();
-      } catch (NumberFormatException ex) {
-        String[] requirementArr = minorStr.split(ModelDBConstants.VER_NUM_PATTERN);
-        if (requirementArr.length > 0) {
-          try {
-            versionBuilder.setMinor(Integer.parseInt(requirementArr[0]));
-            validVersionLength = validVersionLength + requirementArr[0].length();
-            versionBuilder.setSuffix(version.substring(validVersionLength));
-            return versionBuilder.build();
-          } catch (NumberFormatException e) {
-            versionBuilder.setSuffix(version.substring(validVersionLength));
-            return versionBuilder.build();
-          }
-        } else {
-          versionBuilder.setSuffix(version.substring(validVersionLength));
-          return versionBuilder.build();
-        }
-      }
-      validVersionLength = validVersionLength + 1;
-    }
-    if (versionArr.length > 2) {
-      String patchStr = versionArr[2];
-      try {
-        versionBuilder.setPatch(Integer.parseInt(patchStr));
-        validVersionLength = validVersionLength + patchStr.length();
-      } catch (NumberFormatException ex) {
-        String[] requirementArr = patchStr.split(ModelDBConstants.VER_NUM_PATTERN);
-        if (requirementArr.length > 0) {
-          try {
-            versionBuilder.setPatch(Integer.parseInt(requirementArr[0]));
-            validVersionLength = validVersionLength + requirementArr[0].length();
-            versionBuilder.setSuffix(version.substring(validVersionLength));
-            return versionBuilder.build();
-          } catch (NumberFormatException e) {
-            versionBuilder.setSuffix(version.substring(validVersionLength));
-            return versionBuilder.build();
-          }
-        } else {
-          versionBuilder.setSuffix(version.substring(validVersionLength));
-          return versionBuilder.build();
-        }
-      }
-    }
-    if (versionArr.length > 3) {
-      versionBuilder.setSuffix(versionArr[3]);
-    }
-    return versionBuilder.build();
-  }
-
-  private void addVersionInPythonEnvironmentBlob(
-      ArtifactStoreDAO artifactStoreDAO,
-      PythonEnvironmentBlob.Builder pythonEnvironmentBuilder,
-      Artifact artifact)
-      throws ModelDBException {
-    InputStream inputStream = artifactStoreDAO.downloadArtifact(artifact.getPath());
-
-    addVersionInPythonEnvironmentBlob(pythonEnvironmentBuilder, inputStream);
-  }
-
-  public void addVersionInPythonEnvironmentBlob(
-      PythonEnvironmentBlob.Builder pythonEnvironmentBuilder, InputStream inputStream)
-      throws ModelDBException {
-
-    try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-      StringBuilder sb = new StringBuilder();
-      String line;
-      while ((line = bufferedReader.readLine()) != null) {
-        sb.append(line);
-      }
-
-      Gson gson = new Gson();
-      JsonObject jsonObject = gson.fromJson(sb.toString(), JsonObject.class);
-      if (jsonObject.has("model_packaging")) {
-        JsonObject modelPackagingObject = jsonObject.get("model_packaging").getAsJsonObject();
-        if (modelPackagingObject.has("python_version")) {
-          String version = modelPackagingObject.get("python_version").getAsString();
-          pythonEnvironmentBuilder.setVersion(getVersionEnvironmentBlob(version));
-        }
-      }
-    } catch (JsonSyntaxException | MalformedJsonException e) {
-      String errorMessage = "model_api.json file could not be parsed";
-      LOGGER.info(errorMessage);
-      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
-    } catch (Exception e) {
-      LOGGER.warn(e.getMessage());
-      throw new ModelDBException(e);
-    }
+    return insertExperimentRun(projectDAO, desExperimentRunBuilder.build(), userInfo);
   }
 }
