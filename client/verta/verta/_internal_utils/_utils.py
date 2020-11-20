@@ -272,7 +272,7 @@ class LazyList(object):
 
         Parameters
         ----------
-        args : strs or a list of str
+        *args : strs
             Predicates specifying results to get.
 
         Returns
