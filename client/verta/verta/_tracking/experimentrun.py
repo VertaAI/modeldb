@@ -226,41 +226,23 @@ class ExperimentRun(_DeployableEntity):
                                        "{}://{}/api/v1/modeldb/experiment-run/logArtifact".format(self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
         if not response.ok:
-            conflict_error = ValueError("artifact with key {} already exists;"
-                                        " consider setting overwrite=True".format(key))
             if response.status_code == 409:
-                # TODO: check that `artifact_hash` hasn't changed
-
-                # check if multipart upload was in progress
-                msg = _CommonService.GetCommittedArtifactParts(id=self.id, key=key)
-                response = self._conn.make_proto_request("GET", "/api/v1/modeldb/experiment-run/getCommittedArtifactParts", params=msg)
-                response = self._conn.must_proto_response(response, msg.Response)
-                if not response.artifact_parts:
-                    url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
-
-                    if url_for_artifact.multipart_upload_ok:  # multipart artifact logged to MDB, but no parts uploaded
-                        last_part_num = 0
-                    else:
-                        raise conflict_error
-                else:
-                    last_part_num = max(part.part_number for part in response.artifact_parts)
-
-                # resume upload
-                self._upload_artifact(key, artifact_stream, start_part_num=last_part_num + 1)
+                raise ValueError("artifact with key {} already exists;"
+                                 " consider setting overwrite=True".format(key))
             else:
                 _utils.raise_for_http_error(response)
+
+        if VERTA_ARTIFACT_DIR:
+            print("logging artifact")
+            with open(artifact_path, 'wb') as f:
+                shutil.copyfileobj(artifact_stream, f)
+            print("log complete; file written to {}".format(artifact_path))
         else:
-            if VERTA_ARTIFACT_DIR:
-                print("logging artifact")
-                with open(artifact_path, 'wb') as f:
-                    shutil.copyfileobj(artifact_stream, f)
-                print("log complete; file written to {}".format(artifact_path))
-            else:
-                self._upload_artifact(key, artifact_stream)
+            self._upload_artifact(key, artifact_stream)
 
         self._clear_cache()
 
-    def _upload_artifact(self, key, artifact_stream, start_part_num=1):
+    def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
         """
         Uploads `artifact_stream` to ModelDB artifact store.
 
@@ -268,17 +250,16 @@ class ExperimentRun(_DeployableEntity):
         ----------
         key : str
         artifact_stream : file-like
-        start_part_num : int, default 1
-            If using multipart upload, what part number to start uploading with.
+        part_size : int, default 64 MB
+            If using multipart upload, number of bytes to upload per part.
 
         """
         # TODO: add to Client config
         env_part_size = os.environ.get('VERTA_ARTIFACT_PART_SIZE', "")
         try:
-            # use part size from an environment, that is used in test
             part_size = int(float(env_part_size))
         except ValueError:  # not an int
-            part_size = _artifact_utils.MULTIPART_UPLOAD_PART_SIZE  # use default part size
+            pass
         else:
             print("set artifact part size {} from environment".format(part_size))
 
@@ -291,15 +272,9 @@ class ExperimentRun(_DeployableEntity):
         url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
 
         if url_for_artifact.multipart_upload_ok:
-            file_parts = iter(lambda: artifact_stream.read(part_size), b'')
-            enumerated_file_parts = enumerate(file_parts, start=1)
-
-            # advance iterator until `start_part_num`
-            for _ in range(start_part_num - 1):
-                six.next(file_parts)
-
             # TODO: parallelize this
-            for part_num, file_part in enumerated_file_parts:
+            file_parts = iter(lambda: artifact_stream.read(part_size), b'')
+            for part_num, file_part in enumerate(file_parts, start=1):
                 print("uploading part {}".format(part_num), end='\r')
 
                 # get presigned URL
