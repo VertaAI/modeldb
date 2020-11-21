@@ -232,8 +232,12 @@ class ExperimentRun(_DeployableEntity):
                 # TODO: check that `artifact_hash` hasn't changed
 
                 # check if multipart upload was in progress
+                url = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                )
                 msg = _CommonService.GetCommittedArtifactParts(id=self.id, key=key)
-                response = self._conn.make_proto_request("GET", "/api/v1/modeldb/experiment-run/getCommittedArtifactParts", params=msg)
+                response = self._conn.make_proto_request("GET", url, params=msg)
                 response = self._conn.must_proto_response(response, msg.Response)
                 if not response.artifact_parts:
                     url_for_artifact = self._get_url_for_artifact(key, "PUT", part_num=1)
