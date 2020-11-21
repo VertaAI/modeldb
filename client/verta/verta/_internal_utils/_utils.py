@@ -292,8 +292,8 @@ class LazyList(object):
             # <ExperimentRuns containing 3 runs>
 
         """
-        if len(args) == 1 and isinstance(args[0], list):
-            # to keep backward compatibility, in case user pass in a list
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+            # to keep backward compatibility, in case user pass in a list or tuple
             return self.find(*args[0])
         elif not all(isinstance(predicate, six.string_types) for predicate in args):
             raise TypeError("predicates must all be strings")
