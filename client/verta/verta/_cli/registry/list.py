@@ -33,7 +33,7 @@ def lst_model(filter, output, workspace):
     """
     client = Client()
 
-    models = client.registered_models.with_workspace(workspace).find(filter)
+    models = client.registered_models.with_workspace(workspace).find(*filter)
 
     click.echo()
     if output == "json":
@@ -66,7 +66,7 @@ def lst_model_version(model_name, filter, output, workspace):
         click.echo("Listing versions for model {}".format(model_name))
         registered_model = client.get_registered_model(model_name, workspace)
 
-    model_versions = client.registered_model_versions.with_model(registered_model).find(filter)
+    model_versions = client.registered_model_versions.with_model(registered_model).find(*filter)
 
     click.echo()
     if output == "json":
