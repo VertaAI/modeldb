@@ -22,10 +22,13 @@ class HDFSPath(Path):
 
         filepaths = set()
         for path in paths:
+            previous_length = len(filepaths)
             for base, dirs, files in self.client.walk(path):
                 for filename in files:
                     filepaths.add(base + "/" + filename)
-            else:
+
+            # If the path was a file, then we didn't add any new entry and we should add the file
+            if len(filepaths) == previous_length:
                 filepaths.add(path)
 
         paths = sorted(list(filepaths))
