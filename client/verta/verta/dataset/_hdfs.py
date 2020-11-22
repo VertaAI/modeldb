@@ -10,6 +10,8 @@ from ..external import six
 
 from . import _dataset
 
+_HDFS_PREFIX = "hdfs:/"
+
 class HDFSPath(Path):
     # TODO: support mdb versioning
     def __init__(self, hdfs_client, paths, base_path=None):
@@ -18,18 +20,20 @@ class HDFSPath(Path):
         if isinstance(paths, six.string_types):
             paths = [paths]
 
-        paths = list(map(lambda path: "hdfs:/"+path if not path.startswith("hdfs:/") else path, paths))
-        if base_path and not base_path.startswith("hdfs:/"):
-            base_path = "hdfs:/"+base_path
+        paths = list(map(lambda path: _HDFS_PREFIX+path if not path.startswith(_HDFS_PREFIX) else path, paths))
+        if base_path and not base_path.startswith(_HDFS_PREFIX):
+            base_path = _HDFS_PREFIX+base_path
 
         super(HDFSPath, self).__init__(paths, base_path)
 
     def _file_to_component(self, filepath):
+        original_filepath = filepath
+        filepath = filepath[len(_HDFS_PREFIX):]
         metadata = self.client.status(filepath)
         return _dataset.Component(
-            path=filepath,
+            path=original_filepath,
             size=metadata['length'],
-            last_modified=metadata['modificationTime'],
+            last_modified=metadata['modificationTime'], # handle timezone?
             md5=self._hash_file(filepath),
         )
 
@@ -43,7 +47,6 @@ class HDFSPath(Path):
         https://stackoverflow.com/questions/1131220.
 
         """
-        return
         file_hash = hashlib.md5()
         with self.client.read(filepath) as f:
             for chunk in iter(lambda: f.read(2**20), b''):

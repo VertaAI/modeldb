@@ -56,11 +56,11 @@ class Path(_dataset._Dataset):
 
     """
     def __init__(self, paths, base_path=None, enable_mdb_versioning=False):
+        super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
+
         if isinstance(paths, six.string_types):
             paths = [paths]
         paths = map(os.path.expanduser, paths)
-
-        super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
         filepaths = _file_utils.flatten_file_trees(paths)
         components = list(map(self._file_to_component, filepaths))
