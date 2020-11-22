@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import functools
 import hashlib
 
 from ._path import Path
@@ -10,7 +11,7 @@ from ..external import six
 
 from . import _dataset
 
-_HDFS_PREFIX = "hdfs:/"
+_HDFS_PREFIX = "hdfs://"
 
 class HDFSPath(Path):
     # TODO: support mdb versioning
@@ -65,3 +66,31 @@ class HDFSPath(Path):
             for chunk in iter(lambda: f.read(2**20), b''):
                 file_hash.update(chunk)
         return file_hash.hexdigest()
+
+    @staticmethod
+    def with_spark(sc, paths):
+        if isinstance(paths, six.string_types):
+            paths = [paths]
+
+        rdds = list(map(sc.binaryFiles(paths)))
+        rdd = functools.reduce(lambda a,b: a.union(b), rdds)
+
+        def get_component(entry):
+            filepath, content = entry
+            h = hashlib.md5(content).hexdigest()
+            return _dataset.Component(
+                path=filepath,
+                # size=metadata['length'],
+                # last_modified=metadata['modificationTime'], # handle timezone?
+                md5=hashlib.md5(content).hexdigest(),
+            )
+
+        result = rdd.map(get_component)
+        result = result.collect()
+        obj = HDFSPath(None, [])
+        obj._components_map.update({
+            component.path: component
+            for component
+            in result
+        })
+        return obj

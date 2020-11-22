@@ -1,2 +1,24 @@
 sudo yum install -y gcc python3-devel krb5-devel
 pip3 install hdfs[kerberos] --user
+
+
+https://www.usessionbuddy.com/post/How-To-Install-Spark-and-Pyspark-On-Centos/
+sudo yum install java-1.8.0-openjdk
+sudo su
+cd /opt
+wget https://mirror.csclub.uwaterloo.ca/apache/spark/spark-2.4.7/spark-2.4.7-bin-hadoop2.7.tgz
+tar -xzf spark-2.4.7-bin-hadoop2.7.tgz
+ln -s spark-2.4.7-bin-hadoop2.7 /opt/spark
+exit
+echo 'export SPARK_HOME=/opt/spark' >> ~/.bashrc
+echo 'export PATH=$SPARK_HOME/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+sudo chown -R ec2-user:ec2-user /opt/spark-2.4.7-bin-hadoop2.7
+sudo yum install -y python34-setuptools
+sudo easy_install-3.4 pip
+$SPARK_HOME/sbin/start-master.sh
+pip3 install wheel --user
+pip3 install pyspark==2.4.7 --user
+echo 'export PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip' >> ~/.bashrc
+source ~/.bashrc
+export PYSPARK_PYTHON=python3
