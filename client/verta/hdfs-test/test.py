@@ -8,6 +8,8 @@ print(client.content('/data/census/census-test.csv'))
 from verta.dataset import HDFSPath
 
 print(HDFSPath(client, '/data/census/census-test.csv'))
+print(HDFSPath(client, '/data/census/'))
+print(HDFSPath(client, '/data/census'))
 
 # with client.read('/data/census/census-test.csv') as reader:
 #     print(reader.read())

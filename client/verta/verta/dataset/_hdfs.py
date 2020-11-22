@@ -20,6 +20,16 @@ class HDFSPath(Path):
         if isinstance(paths, six.string_types):
             paths = [paths]
 
+        filepaths = set()
+        for path in paths:
+            for base, dirs, files in self.client.walk(path):
+                for filename in files:
+                    filepaths.add(base + filename)
+            else:
+                filepaths.add(path)
+
+        paths = sorted(list(filepaths))
+
         paths = list(map(lambda path: _HDFS_PREFIX+path if not path.startswith(_HDFS_PREFIX) else path, paths))
         if base_path and not base_path.startswith(_HDFS_PREFIX):
             base_path = _HDFS_PREFIX+base_path
