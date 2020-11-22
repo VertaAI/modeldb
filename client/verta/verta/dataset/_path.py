@@ -13,10 +13,10 @@ from .._internal_utils import _artifact_utils
 from .._internal_utils import _file_utils
 from .._internal_utils import _utils
 
-from . import _dataset
+from . import _dataset_blob
 
 
-class Path(_dataset._DatasetBlob):
+class Path(_dataset_blob._DatasetBlob):
     """
     Captures metadata about files.
 

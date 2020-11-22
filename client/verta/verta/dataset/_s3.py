@@ -14,10 +14,10 @@ from .._protos.public.modeldb.versioning import VersioningService_pb2 as _Versio
 from .._internal_utils import _artifact_utils
 from .._internal_utils import _utils
 
-from . import _dataset
+from . import _dataset_blob
 
 
-class S3(_dataset._DatasetBlob):
+class S3(_dataset_blob._DatasetBlob):
     """
     Captures metadata about S3 objects.
 
