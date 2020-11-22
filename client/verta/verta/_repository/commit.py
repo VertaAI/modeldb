@@ -443,7 +443,7 @@ class Commit(object):
         except KeyError:
             self._raise_lookup_error(path)
 
-        if isinstance(blob, dataset._Dataset):
+        if isinstance(blob, dataset._DatasetBlob):
             # for _Dataset.download()
             blob._set_commit_and_blob_path(self, path)
 
@@ -492,7 +492,7 @@ class Commit(object):
         # prepare ModelDB-versioned blobs, and track for upload after commit save
         mdb_versioned_blobs = dict()
         for blob_path, blob in self._blobs.items():
-            if isinstance(blob, dataset._Dataset) and blob._mdb_versioned:
+            if isinstance(blob, dataset._DatasetBlob) and blob._mdb_versioned:
                 blob._prepare_components_to_upload()
                 mdb_versioned_blobs[blob_path] = blob
 

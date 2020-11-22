@@ -17,7 +17,7 @@ from .._internal_utils import _utils
 from . import _dataset
 
 
-class S3(_dataset._Dataset):
+class S3(_dataset._DatasetBlob):
     """
     Captures metadata about S3 objects.
 

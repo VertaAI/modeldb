@@ -21,13 +21,13 @@ from .._repository import blob
 DEFAULT_DOWNLOAD_DIR = "mdb-data-download"  # to be in cwd
 
 
-class _Dataset(blob.Blob):
+class _DatasetBlob(blob.Blob):
     """
     Base class for dataset versioning. Not for human consumption.
 
     """
     def __init__(self, paths=None, enable_mdb_versioning=False):
-        super(_Dataset, self).__init__()
+        super(_DatasetBlob, self).__init__()
 
         self._components_map = dict()  # paths to Component objects
 

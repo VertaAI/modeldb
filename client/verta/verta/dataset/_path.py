@@ -16,7 +16,7 @@ from .._internal_utils import _utils
 from . import _dataset
 
 
-class Path(_dataset._Dataset):
+class Path(_dataset._DatasetBlob):
     """
     Captures metadata about files.
 
