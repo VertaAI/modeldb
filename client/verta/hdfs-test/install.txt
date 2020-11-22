@@ -1,0 +1,2 @@
+sudo yum install -y gcc python3-devel krb5-devel
+pip3 install hdfs[kerberos] --user
