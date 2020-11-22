@@ -72,7 +72,7 @@ class HDFSPath(Path):
         if isinstance(paths, six.string_types):
             paths = [paths]
 
-        rdds = list(map(sc.binaryFiles(paths)))
+        rdds = list(map(sc.binaryFiles, paths))
         rdd = functools.reduce(lambda a,b: a.union(b), rdds)
 
         def get_component(entry):
