@@ -24,7 +24,7 @@ class HDFSPath(Path):
         for path in paths:
             for base, dirs, files in self.client.walk(path):
                 for filename in files:
-                    filepaths.add(base + filename)
+                    filepaths.add(base + "/" + filename)
             else:
                 filepaths.add(path)
 
