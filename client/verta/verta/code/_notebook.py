@@ -8,7 +8,7 @@ from .._protos.public.modeldb.versioning import VersioningService_pb2 as _Versio
 
 from .._internal_utils import _git_utils
 from .._internal_utils import _utils
-from ..dataset import _dataset, _path
+from ..dataset import _dataset_blob, _path
 from . import _code
 from . import _git
 
@@ -73,7 +73,7 @@ class Notebook(_code._Code):
     def __repr__(self):
         lines = ["Notebook Version"]
         notebook_component_msg = self._msg.notebook.path
-        notebook_component = _dataset.Component._from_proto(notebook_component_msg)
+        notebook_component = _dataset_blob.Component._from_proto(notebook_component_msg)
         if notebook_component.path:
             lines.extend(repr(notebook_component).splitlines())
         git_msg = self._msg.notebook.git_repo
