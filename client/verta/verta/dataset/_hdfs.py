@@ -80,7 +80,7 @@ class HDFSPath(Path):
             h = hashlib.md5(content).hexdigest()
             return _dataset.Component(
                 path=filepath,
-                # size=metadata['length'],
+                size=len(content),
                 # last_modified=metadata['modificationTime'], # handle timezone?
                 md5=hashlib.md5(content).hexdigest(),
             )
