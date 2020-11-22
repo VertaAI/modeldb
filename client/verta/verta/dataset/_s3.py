@@ -10,11 +10,13 @@ from ..external import six
 from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import Dataset_pb2 as _Dataset
 
 from .._internal_utils import _artifact_utils
 from .._internal_utils import _utils
 
 from . import _dataset_blob
+from . import _path
 
 
 class S3(_dataset_blob._DatasetBlob):
@@ -89,7 +91,7 @@ class S3(_dataset_blob._DatasetBlob):
         obj = cls(paths=[])
 
         for component_msg in blob_msg.dataset.s3.components:
-            component = _dataset.S3Component._from_proto(component_msg)
+            component = S3Component._from_proto(component_msg)
             obj._components_map[component.path] = component
 
         return obj
@@ -140,7 +142,7 @@ class S3(_dataset_blob._DatasetBlob):
 
     @classmethod
     def _s3_obj_to_component(cls, obj, bucket_name, key):
-        component = _dataset.S3Component(
+        component = S3Component(
             path=cls._S3_PATH.format(bucket_name, key),
             size=obj.get('Size') or obj.get('ContentLength') or 0,
             last_modified=_utils.timestamp_to_ms(_utils.ensure_timestamp(obj['LastModified'])),
@@ -281,3 +283,35 @@ class S3Location(object):
             key = None
 
         return bucket_name, key
+
+
+class S3Component(_path.Component):
+    def __init__(self, s3_version_id=None, **kwargs):
+        super(S3Component, self).__init__(**kwargs)
+
+        # S3 versioning
+        self.s3_version_id = s3_version_id
+
+    def __repr__(self):
+        repr_str = super(S3Component, self).__repr__()
+        lines = repr_str.split("\n    ")
+
+        if self.s3_version_id:
+            lines.append("S3 version ID: {}".format(self.s3_version_id))
+
+        return "\n    ".join(lines)
+
+
+    @classmethod
+    def _from_proto(cls, s3_component_msg):
+        obj = super(S3Component, cls)._from_proto(s3_component_msg.path)
+        obj.s3_version_id = s3_component_msg.s3_version_id
+
+        return obj
+
+    def _as_proto(self):
+        s3_component_msg = _Dataset.S3DatasetComponentBlob()
+        s3_component_msg.path.CopyFrom(super(S3Component, self)._as_proto())
+        s3_component_msg.s3_version_id = self.s3_version_id or ""
+
+        return s3_component_msg

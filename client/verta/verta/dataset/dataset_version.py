@@ -8,11 +8,14 @@ from ..external import six
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
 from .._tracking import entity
 from .._internal_utils import (
     _utils,
 )
+
+from . import _path
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -21,7 +24,28 @@ class DatasetVersion(entity._ModelDBEntity):
         super(DatasetVersion, self).__init__(conn, conf, _DatasetVersionService, "dataset-version", msg)
 
     def __repr__(self):
-        raise NotImplementedError
+        self._refresh_cache()
+        msg = self._msg
+
+        return '\n'.join((
+            "version: {}".format(msg.version),
+            # "url: {}://{}/{}/datasets/{}/summary".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_logged))),
+            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
+            "description: {}".format(msg.description),
+            "tags: {}".format(msg.tags),
+            "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
+            "id: {}".format(msg.id),
+            "content:",
+            "{}".format(self.content)
+        ))
+
+    @property
+    def content(self):
+        self._refresh_cache()
+        if self._msg.dataset_blob.HasField("path"):
+            return _path.Path._from_proto(_VersioningService.Blob(dataset=self._msg.dataset_blob))
+        # TODO: add others
 
     @property
     def name(self):
@@ -41,7 +65,7 @@ class DatasetVersion(entity._ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).dataset_version
 
     @classmethod
-    def _get_latest_version_by_dataset_id(cls, conn, dataset_id):
+    def _get_proto_latest_version_by_dataset_id(cls, conn, dataset_id):
         Message = _DatasetVersionService.GetLatestDatasetVersionByDatasetId
         msg = Message(dataset_id=dataset_id)
         endpoint = "/api/v1/modeldb/dataset-version/getLatestDatasetVersionByDatasetId"
@@ -50,6 +74,10 @@ class DatasetVersion(entity._ModelDBEntity):
         dataset_version = conn.must_proto_response(response, Message.Response).dataset_version
         print("got existing dataset version: {}".format(dataset_version.id))
         return dataset_version
+
+    @classmethod
+    def _get_latest_version_by_dataset_id(cls, conn, conf, dataset_id):
+        return DatasetVersion(conn, conf, DatasetVersion._get_proto_latest_version_by_dataset_id(conn, dataset_id))
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):

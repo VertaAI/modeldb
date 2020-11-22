@@ -313,61 +313,69 @@ class Dataset(entity._ModelDBEntity):
         endpoint = "/api/v1/modeldb/dataset/deleteDatasetAttributes"
         self._update(msg, Message.Response, endpoint, "DELETE")
 
-    def create_s3_version(self, paths, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
-        """
-        Creates s3 dataset version
-
-        Parameters
-        ----------
-        paths : list of str
-            Dataset version paths.
-        desc : str, optional
-            Description of the Dataset version.
-        tags : list of str, optional
-            Tags of the Dataset Version.
-        attrs : dict of str to {None, bool, float, int, str}, optional
-            Attributes of the Dataset Version.
-
-        Returns
-        -------
-        `DatasetVersion <dataset.html>`_
-
-        """
-        dataset_blob = dataset.S3(paths=paths)
+    def create_version(self, content, desc=None, tags=None, attrs=None, date_created=None):
         return DatasetVersion._create(
             self._conn, self._conf,
-            dataset=self, dataset_blob=dataset_blob,
+            dataset=self, dataset_blob=content,
             desc=desc, tags=tags, attrs=attrs,
             time_logged=date_created, time_updated=date_created,
         )
 
-    def create_path_version(self, paths, base_path=None, desc=None, tags=None, attrs=None, date_created=None):
-        """
-        Creates path dataset version
+    # def create_s3_version(self, paths, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
+    #     """
+    #     Creates s3 dataset version
 
-        Parameters
-        ----------
-        paths : list of str
-            Dataset version paths.
-        desc : str, optional
-            Description of the Dataset version.
-        tags : list of str, optional
-            Tags of the Dataset Version.
-        attrs : dict of str to {None, bool, float, int, str}, optional
-            Attributes of the Dataset Version.
+    #     Parameters
+    #     ----------
+    #     paths : list of str
+    #         Dataset version paths.
+    #     desc : str, optional
+    #         Description of the Dataset version.
+    #     tags : list of str, optional
+    #         Tags of the Dataset Version.
+    #     attrs : dict of str to {None, bool, float, int, str}, optional
+    #         Attributes of the Dataset Version.
 
-        Returns
-        -------
-        `DatasetVersion <dataset.html>`_
+    #     Returns
+    #     -------
+    #     `DatasetVersion <dataset.html>`_
 
-        """
-        dataset_blob = dataset.Path(paths=paths, base_path=base_path)
-        return DatasetVersion._create(
-            self._conn, self._conf,
-            dataset=self, dataset_blob=dataset_blob,
-            desc=desc, tags=tags, attrs=attrs,
-            time_logged=date_created, time_updated=date_created,
-        )
+    #     """
+    #     dataset_blob = dataset.S3(paths=paths)
+    #     return DatasetVersion._create(
+    #         self._conn, self._conf,
+    #         dataset=self, dataset_blob=dataset_blob,
+    #         desc=desc, tags=tags, attrs=attrs,
+    #         time_logged=date_created, time_updated=date_created,
+    #     )
+
+    # def create_path_version(self, paths, base_path=None, desc=None, tags=None, attrs=None, date_created=None):
+    #     """
+    #     Creates path dataset version
+
+    #     Parameters
+    #     ----------
+    #     paths : list of str
+    #         Dataset version paths.
+    #     desc : str, optional
+    #         Description of the Dataset version.
+    #     tags : list of str, optional
+    #         Tags of the Dataset Version.
+    #     attrs : dict of str to {None, bool, float, int, str}, optional
+    #         Attributes of the Dataset Version.
+
+    #     Returns
+    #     -------
+    #     `DatasetVersion <dataset.html>`_
+
+    #     """
+    #     dataset_blob = dataset.Path(paths=paths, base_path=base_path)
+    #     return DatasetVersion._create(
+    #         self._conn, self._conf,
+    #         dataset=self, dataset_blob=dataset_blob,
+    #         desc=desc, tags=tags, attrs=attrs,
+    #         time_logged=date_created, time_updated=date_created,
+    #     )
 
     def get_version(self, id):
         """
@@ -394,7 +402,7 @@ class Dataset(entity._ModelDBEntity):
         `DatasetVersion <dataset.html>`_
 
         """
-        return DatasetVersion._get_latest_version_by_dataset_id(self._conn, self.id)
+        return DatasetVersion._get_latest_version_by_dataset_id(self._conn, self._conf, self.id)
 
     def _update(self, msg, response_proto, endpoint, method):
         response = self._conn.make_proto_request(method, endpoint, body=msg)

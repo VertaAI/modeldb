@@ -6,6 +6,7 @@ import hashlib
 import os
 
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import Dataset_pb2 as _Dataset
 
 from ..external import six
 
@@ -92,7 +93,7 @@ class Path(_dataset_blob._DatasetBlob):
         obj = cls(paths=[])
 
         for component_msg in blob_msg.dataset.path.components:
-            component = _dataset.Component._from_proto(component_msg)
+            component = Component._from_proto(component_msg)
             obj._components_map[component.path] = component
 
         return obj
@@ -108,7 +109,7 @@ class Path(_dataset_blob._DatasetBlob):
 
     @classmethod
     def _file_to_component(cls, filepath):
-        return _dataset.Component(
+        return Component(
             path=filepath,
             size=os.stat(filepath).st_size,
             last_modified=_utils.timestamp_to_ms(os.stat(filepath).st_mtime),
@@ -185,3 +186,91 @@ class Path(_dataset_blob._DatasetBlob):
         )
 
         self += other
+
+
+class Component(object):
+    """
+    A dataset component returned by ``dataset.list_components()``.
+
+    Attributes
+    ----------
+    path : str
+        File path.
+    base_path : str
+        Prefix of `path`.
+    size : int
+        File size.
+    last_modified : int
+        Unix time when this file was last modified.
+    sha256 : str
+        SHA-256 checksum.
+    md5 : str
+        MD5 checksum.
+
+    """
+    def __init__(
+            self,
+            path, size=None, last_modified=None,
+            sha256=None, md5=None,
+            base_path=None,
+            internal_versioned_path=None, local_path=None):
+        # metadata
+        self.path = path
+        self.size = size
+        self.last_modified = last_modified
+
+        # checksums
+        self.sha256 = sha256
+        self.md5 = md5
+
+        # base path
+        self.base_path = base_path
+
+        # ModelDB versioning
+        self._internal_versioned_path = internal_versioned_path
+        self._local_path = local_path
+
+    def __repr__(self):
+        lines = [self.path]
+
+        if self.base_path:
+            lines.append("base path: {}".format(self.base_path))
+        if self.size:
+            lines.append("{} bytes".format(self.size))
+        if self.last_modified:
+            lines.append("last modified: {}".format(_utils.timestamp_to_str(self.last_modified)))
+        if self.sha256:
+            lines.append("SHA-256 checksum: {}".format(self.sha256))
+        if self.md5:
+            lines.append("MD5 checksum: {}".format(self.md5))
+
+        return "\n    ".join(lines)
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self.__dict__ == other.__dict__
+
+    @classmethod
+    def _from_proto(cls, component_msg):
+        return cls(
+            path=component_msg.path,
+            size=component_msg.size or None,
+            last_modified=component_msg.last_modified_at_source or None,
+            sha256=component_msg.sha256 or None,
+            md5=component_msg.md5 or None,
+            internal_versioned_path=component_msg.internal_versioned_path or None,
+            base_path=component_msg.base_path,
+        )
+
+    def _as_proto(self):
+        return _Dataset.PathDatasetComponentBlob(
+            path=self.path or "",
+            size=self.size or 0,
+            last_modified_at_source=self.last_modified or 0,
+            sha256=self.sha256 or "",
+            md5=self.md5 or "",
+            internal_versioned_path=self._internal_versioned_path or "",
+            base_path=self.base_path or "",
+        )
