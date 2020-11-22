@@ -6,12 +6,17 @@ import hashlib
 
 from ._path import Path
 
+from ..external import six
+
 from . import _dataset
 
 class HDFSPath(Path):
     # TODO: support mdb versioning
     def __init__(self, hdfs_client, paths, base_path=None):
         self.client = hdfs_client
+
+        if isinstance(paths, six.string_types):
+            paths = [paths]
 
         paths = list(map(lambda path: "hdfs:/"+path if not path.startswith("hdfs:/") else path, paths))
         if base_path and not base_path.startswith("hdfs:/"):
