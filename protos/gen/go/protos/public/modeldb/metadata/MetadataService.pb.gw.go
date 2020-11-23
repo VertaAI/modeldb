@@ -413,6 +413,24 @@ func local_request_MetadataService_DeleteKeyValueProperties_0(ctx context.Contex
 
 }
 
+func request_MetadataService_GenerateRandomName_0(ctx context.Context, marshaler runtime.Marshaler, client MetadataServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GenerateRandomNameRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.GenerateRandomName(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_MetadataService_GenerateRandomName_0(ctx context.Context, marshaler runtime.Marshaler, server MetadataServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GenerateRandomNameRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.GenerateRandomName(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 // RegisterMetadataServiceHandlerServer registers the http handlers for service MetadataService to "mux".
 // UnaryRPC     :call MetadataServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -635,6 +653,26 @@ func RegisterMetadataServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		}
 
 		forward_MetadataService_DeleteKeyValueProperties_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_MetadataService_GenerateRandomName_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_MetadataService_GenerateRandomName_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_MetadataService_GenerateRandomName_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -899,6 +937,26 @@ func RegisterMetadataServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
+	mux.Handle("GET", pattern_MetadataService_GenerateRandomName_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_MetadataService_GenerateRandomName_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_MetadataService_GenerateRandomName_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -924,6 +982,8 @@ var (
 	pattern_MetadataService_GetKeyValueProperties_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "metadata", "keyValueProperties"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_MetadataService_DeleteKeyValueProperties_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "metadata", "keyValueProperties"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_MetadataService_GenerateRandomName_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "metadata", "generateRandomName"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
@@ -948,4 +1008,6 @@ var (
 	forward_MetadataService_GetKeyValueProperties_0 = runtime.ForwardResponseMessage
 
 	forward_MetadataService_DeleteKeyValueProperties_0 = runtime.ForwardResponseMessage
+
+	forward_MetadataService_GenerateRandomName_0 = runtime.ForwardResponseMessage
 )

@@ -2035,9 +2035,9 @@
           "$ref": "#/definitions/VisibilityEnumVisibility",
           "title": "Visibility of Registered Models"
         },
-        "workspace_id": {
+        "legacy_workspace_id": {
           "type": "string",
-          "title": "id of the workspace this belongs to\nnot storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files"
+          "title": "Legacy id of the workspace this belongs to"
         },
         "readme_text": {
           "type": "string",
@@ -2053,6 +2053,11 @@
             "$ref": "#/definitions/commonKeyValue"
           },
           "title": "Other attributes"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the workspace that this ``registered_model`` belongs to"
         }
       }
     },
