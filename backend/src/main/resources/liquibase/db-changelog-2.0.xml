@@ -137,6 +137,24 @@
         <tagDatabase tag="db_version_2.4"/>
     </changeSet>
 
+    <changeSet id="add-environment-in-experiment-run" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment_run" columnName="environment"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment_run">
+            <column name="environment" type="TEXT"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="experiment_run" columnName="environment"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.5" author="anandJ">
+        <tagDatabase tag="db_version_2.5"/>
+    </changeSet>
+
     <changeSet id="add-workspace-id-to-project" author="cory">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -151,8 +169,8 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="db_version_2.5" author="cory">
-        <tagDatabase tag="db_version_2.5"/>
+    <changeSet id="db_version_2.6" author="cory">
+        <tagDatabase tag="db_version_2.6"/>
     </changeSet>
 
     <changeSet id="rename-workspace-to-legacy-workspace-id-on-project" author="cory">
@@ -165,8 +183,8 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="db_version_2.6" author="cory">
-        <tagDatabase tag="db_version_2.6"/>
+    <changeSet id="db_version_2.7" author="cory">
+        <tagDatabase tag="db_version_2.7"/>
     </changeSet>
 
 </databaseChangeLog>

@@ -59,6 +59,14 @@ class MetadataServiceApi(client: HttpClient, val basePath: String = "/v1") {
 
   def MetadataService_DeleteProperty(body: MetadataDeletePropertyRequest)(implicit ec: ExecutionContext): Try[MetadataDeletePropertyRequestResponse] = Await.result(MetadataService_DeletePropertyAsync(body), Duration.Inf)
 
+  def MetadataService_GenerateRandomNameAsync()(implicit ec: ExecutionContext): Future[Try[MetadataGenerateRandomNameRequestResponse]] = {
+    var __query = new mutable.HashMap[String,List[String]]
+    val body: String = null
+    return client.request[String, MetadataGenerateRandomNameRequestResponse]("GET", basePath + s"/metadata/generateRandomName", __query.toMap, body, MetadataGenerateRandomNameRequestResponse.fromJson)
+  }
+
+  def MetadataService_GenerateRandomName()(implicit ec: ExecutionContext): Try[MetadataGenerateRandomNameRequestResponse] = Await.result(MetadataService_GenerateRandomNameAsync(), Duration.Inf)
+
   def MetadataService_GetKeyValuePropertiesAsync(getAll: Option[Boolean]=None, id_id_type: Option[String]=None, id_int_id: Option[BigInt]=None, id_string_id: Option[String]=None, keys: Option[List[String]]=None, property_name: Option[String]=None)(implicit ec: ExecutionContext): Future[Try[MetadataGetKeyValuePropertiesRequestResponse]] = {
     var __query = new mutable.HashMap[String,List[String]]
     if (id_id_type.isDefined) __query.update("id.id_type", client.toQuery(id_id_type.get))

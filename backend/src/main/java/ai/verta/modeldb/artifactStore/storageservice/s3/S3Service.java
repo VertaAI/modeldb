@@ -20,6 +20,7 @@ import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PartETag;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.amazonaws.services.s3.transfer.TransferManager;
@@ -31,6 +32,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -372,6 +374,32 @@ public class S3Service implements ArtifactStoreService {
           Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
       LOGGER.info(errorMessage);
       throw StatusProto.toStatusRuntimeException(status);
+    }
+  }
+
+  @Override
+  public InputStream downloadFileFromStorage(String key) throws ModelDBException {
+    if (!doesBucketExist(bucketName)) {
+      throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
+    }
+
+    return downloadFileFromStorage(bucketName, key);
+  }
+
+  private InputStream downloadFileFromStorage(String bucketName, String key)
+      throws ModelDBException {
+    try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
+      if (client.getClient().doesObjectExist(bucketName, key)) {
+        LOGGER.debug("file exist in storage");
+        S3Object s3object = client.getClient().getObject(bucketName, key);
+        S3ObjectInputStream inputStream = s3object.getObjectContent();
+        LOGGER.info("file fetched successfully from s3 storage");
+        return inputStream;
+      }
+
+      String errorMessage = "s3 object not found in s3 storage for given key : " + key;
+      LOGGER.info(errorMessage);
+      throw new ModelDBException(errorMessage, Code.NOT_FOUND);
     }
   }
 }

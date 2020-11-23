@@ -6,10 +6,15 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.versioning.EnvironmentBlob;
+import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
+import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +85,11 @@ public class ExperimentRunEntity {
       setCode_version_snapshot(
           RdbmsUtils.generateCodeVersionEntity(
               ModelDBConstants.CODE_VERSION, experimentRun.getCodeVersionSnapshot()));
+    }
+
+    if (experimentRun.getEnvironment().hasPython() || experimentRun.getEnvironment().hasDocker()) {
+      EnvironmentBlob environmentBlob = sortPythonEnvironmentBlob(experimentRun.getEnvironment());
+      this.environment = ModelDBUtils.getStringFromProtoObject(environmentBlob);
     }
   }
 
@@ -192,6 +202,9 @@ public class ExperimentRunEntity {
 
   @Column(name = "deleted")
   private Boolean deleted = false;
+
+  @Column(name = "environment", columnDefinition = "TEXT")
+  private String environment;
 
   @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 
@@ -448,6 +461,10 @@ public class ExperimentRunEntity {
     this.deleted = deleted;
   }
 
+  public void setEnvironment(String environment) {
+    this.environment = environment;
+  }
+
   public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {
     LOGGER.trace("starting conversion");
     if (keyValueEntityMap.size() == 0) {
@@ -524,6 +541,13 @@ public class ExperimentRunEntity {
       VersioningEntry versioningEntry = RdbmsUtils.getVersioningEntryFromList(versioned_inputs);
       experimentRunBuilder.setVersionedInputs(versioningEntry);
     }
+
+    if (this.environment != null && !this.environment.isEmpty()) {
+      EnvironmentBlob.Builder environmentBlobBuilder = EnvironmentBlob.newBuilder();
+      ModelDBUtils.getProtoObjectFromString(this.environment, environmentBlobBuilder);
+      experimentRunBuilder.setEnvironment(environmentBlobBuilder.build());
+    }
+
     LOGGER.trace("Returning converted ExperimentRun");
     return experimentRunBuilder.build();
   }
@@ -533,5 +557,30 @@ public class ExperimentRunEntity {
       addArtifactInMap(artifactMapping);
     }
     return artifactEntityMap;
+  }
+
+  public EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {
+    EnvironmentBlob.Builder builder = environmentBlob.toBuilder();
+    if (builder.hasPython()) {
+      PythonEnvironmentBlob.Builder pythonEnvironmentBlobBuilder = builder.getPython().toBuilder();
+
+      // Compare requirementEnvironmentBlobs
+      List<PythonRequirementEnvironmentBlob> requirementEnvironmentBlobs =
+          new ArrayList<>(pythonEnvironmentBlobBuilder.getRequirementsList());
+      requirementEnvironmentBlobs.sort(
+          Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
+      pythonEnvironmentBlobBuilder
+          .clearRequirements()
+          .addAllRequirements(requirementEnvironmentBlobs);
+
+      // Compare
+      List<PythonRequirementEnvironmentBlob> constraintsBlobs =
+          new ArrayList<>(pythonEnvironmentBlobBuilder.getConstraintsList());
+      constraintsBlobs.sort(Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
+      pythonEnvironmentBlobBuilder.clearConstraints().addAllConstraints(constraintsBlobs);
+
+      builder.setPython(pythonEnvironmentBlobBuilder.build());
+    }
+    return builder.build();
   }
 }

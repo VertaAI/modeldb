@@ -62,10 +62,7 @@ public class TrialUtils {
 
         // TODO: We can be replaced by a count(*) query instead .setIdsOnly(true)
         FindExperimentRuns findExperimentRuns =
-            FindExperimentRuns.newBuilder()
-                .setIdsOnly(true)
-                .setProjectId(projectId)
-                .build();
+            FindExperimentRuns.newBuilder().setIdsOnly(true).setProjectId(projectId).build();
         ExperimentRunPaginationDTO paginationDTO =
             experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
         if (app.getMaxExperimentRunPerWorkspace() != null
