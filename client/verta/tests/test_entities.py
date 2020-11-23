@@ -182,13 +182,10 @@ class TestClient:
         try:
             os.environ[EMAIL_KEY] = "abc@email.com"
             os.environ[DEV_KEY_KEY] = "def"
+            err_msg = "401 Client Error: User not authorized. Please check the developer_key."
 
-            with pytest.raises(requests.exceptions.HTTPError) as excinfo:
+            with pytest.raises(requests.exceptions.HTTPError, match=err_msg) as excinfo:
                 verta.Client()
-
-            excinfo_value = str(excinfo.value).strip()
-            assert "401 Client Error" in excinfo_value
-            assert "User not authorized. Please check the developer_key" in excinfo_value
         finally:
             os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = old_email, old_dev_key
 
