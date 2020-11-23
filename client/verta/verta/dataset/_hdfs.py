@@ -42,7 +42,7 @@ class HDFSPath(Path):  # TODO: docstrings, add to docs
 
     def _file_to_component(self, filepath):
         original_filepath = filepath
-        filepath = filepath[len(_HDFS_PREFIX):]
+        filepath = filepath[len(_HDFS_PREFIX):]  # prefix prepended in init
         metadata = self.client.status(filepath)
         return _dataset.Component(
             path=original_filepath,
