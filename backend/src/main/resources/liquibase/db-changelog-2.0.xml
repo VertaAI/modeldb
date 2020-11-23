@@ -155,4 +155,36 @@
         <tagDatabase tag="db_version_2.5"/>
     </changeSet>
 
+    <changeSet id="add-workspace-id-to-project" author="cory">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="workspace_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="workspace_id" type="int8"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="project" columnName="workspace_id"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.6" author="cory">
+        <tagDatabase tag="db_version_2.6"/>
+    </changeSet>
+
+    <changeSet id="rename-workspace-to-legacy-workspace-id-on-project" author="cory">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="project" columnName="workspace"/>
+        </preConditions>
+        <renameColumn tableName="project" oldColumnName="workspace" newColumnName="legacy_workspace_id" columnDataType="VARCHAR(255)"/>
+        <rollback>
+            <renameColumn tableName="project" oldColumnName="legacy_workspace_id" newColumnName="workspace" columnDataType="VARCHAR(255)"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.7" author="cory">
+        <tagDatabase tag="db_version_2.7"/>
+    </changeSet>
+
 </databaseChangeLog>
