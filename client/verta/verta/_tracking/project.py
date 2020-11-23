@@ -22,6 +22,8 @@ from .._internal_utils import (
 
 from .._protos.public.uac import Collaborator_pb2 as _Collaborator
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
+from .._protos.public.modeldb import CommonService_pb2 as _CommonService
+
 
 class Project(_ModelDBEntity):
     """
@@ -133,6 +135,63 @@ class Project(_ModelDBEntity):
 
         print("created new Project: {} in {}".format(proj.name, WORKSPACE_PRINT_MSG))
         return proj
+
+    def log_tag(self, tag):
+        """
+        Logs a tag to this Project.
+
+        Parameters
+        ----------
+        tag : str
+            Tag.
+
+        """
+        if not isinstance(tag, six.string_types):
+            raise TypeError("`tag` must be a string")
+        self.log_tags([tag])
+
+    def log_tags(self, tags):
+        """
+        Logs multiple tags to this Project.
+
+        Parameters
+        ----------
+        tags : list of str
+            Tags.
+
+        """
+        tags = _utils.as_list_of_str(tags)
+
+        Message = _ProjectService.AddProjectTags
+        msg = Message(id=self.id, tags=tags)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("POST",
+                                       "{}://{}/api/v1/modeldb/project/addProjectTags".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, json=data)
+        _utils.raise_for_http_error(response)
+
+        self._clear_cache()
+
+    def get_tags(self):
+        """
+        Gets all tags from this Project.
+
+        Returns
+        -------
+        list of str
+            All tags.
+
+        """
+        Message = _CommonService.GetTags
+        msg = Message(id=self.id)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                       "{}://{}/api/v1/modeldb/project/getProjectTags".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        return response_msg.tags
 
     def _add_collaborator(self, email=None, username=None, collaborator_type=None, can_deploy=False, authz_entity_type=None):
         if not email and not username:
