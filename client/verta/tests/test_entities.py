@@ -277,6 +277,21 @@ class TestProject:
         verta._internal_utils._utils.raise_for_http_error(response)
         assert response.json().get('tags', []) == [TAG]
 
+    def test_find_with_tag(self, client, created_projects):
+        tag = "some-tag"
+        diff_tag = "diff-tag"
+
+        project_with_diff_tag = client.set_project("run-with-diff-tag")
+        project_with_diff_tag.log_tag(diff_tag)
+
+        projects_with_tag = []
+        for _ in range(5):
+            projects_with_tag.append(client.set_project())
+            projects_with_tag[-1].log_tag(tag)
+
+        found_projects = client.projects.find("tags ~= {}".format(tag))
+        assert len(found_projects) == len(projects_with_tag)
+
 
 class TestExperiment:
     def test_create(self, client):
@@ -346,6 +361,34 @@ class TestExperiment:
         response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': expt.id})
         verta._internal_utils._utils.raise_for_http_error(response)
         assert response.json().get('tags', []) == [TAG]
+
+    def test_tags(self, client):
+        proj = client.set_project()
+        expt = client.set_experiment(tags=["tag1", "tag2"])
+
+        assert expt.get_tags() == ["tag1", "tag2"]
+
+        expt.add_tag("tag3")
+        assert expt.get_tags() == ["tag1", "tag2", "tag3"]
+
+        expt.add_tags(["tag1", "tag4", "tag5"])
+        assert expt.get_tags() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
+
+    def test_find_with_tag(self, client):
+        proj = client.set_project()
+        tag = "some-tag"
+        diff_tag = "diff-tag"
+
+        expt_with_diff_tag = client.set_experiment("run-with-diff-tag")
+        expt_with_diff_tag.log_tag(diff_tag)
+
+        expts_with_tag = []
+        for _ in range(5):
+            expts_with_tag.append(client.set_experiment())
+            expts_with_tag[-1].log_tag(tag)
+
+        found_expts = proj.experiments.find("tags ~= {}".format(tag))
+        assert len(found_expts) == len(expts_with_tag)
 
 
 class TestExperimentRun:

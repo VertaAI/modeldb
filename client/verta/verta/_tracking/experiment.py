@@ -10,6 +10,7 @@ from .experimentruns import ExperimentRuns
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
+from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 
 from ..external import six
 
@@ -57,6 +58,63 @@ class Experiment(_ModelDBEntity):
     @classmethod
     def _generate_default_name(cls):
         return "Expt {}".format(_utils.generate_default_name())
+
+    def log_tag(self, tag):
+        """
+        Logs a tag to this Experiment.
+
+        Parameters
+        ----------
+        tag : str
+            Tag.
+
+        """
+        if not isinstance(tag, six.string_types):
+            raise TypeError("`tag` must be a string")
+        self.log_tags([tag])
+
+    def log_tags(self, tags):
+        """
+        Logs multiple tags to this Experiment.
+
+        Parameters
+        ----------
+        tags : list of str
+            Tags.
+
+        """
+        tags = _utils.as_list_of_str(tags)
+
+        Message = _ExperimentService.AddExperimentTags
+        msg = Message(id=self.id, tags=tags)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("POST",
+                                       "{}://{}/api/v1/modeldb/experiment/addExperimentTags".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, json=data)
+        _utils.raise_for_http_error(response)
+
+        self._clear_cache()
+
+    def get_tags(self):
+        """
+        Gets all tags from this Experiment.
+
+        Returns
+        -------
+        list of str
+            All tags.
+
+        """
+        Message = _CommonService.GetTags
+        msg = Message(id=self.id)
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("GET",
+                                       "{}://{}/api/v1/modeldb/experiment/getExperimentTags".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        return response_msg.tags
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
