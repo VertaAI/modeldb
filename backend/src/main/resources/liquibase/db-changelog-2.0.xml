@@ -261,7 +261,7 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="db_version_2.7" author="cory">
-        <tagDatabase tag="db_version_2.7"/>
+    <changeSet id="db_version_2.11" author="cory">
+        <tagDatabase tag="db_version_2.11"/>
     </changeSet>
 </databaseChangeLog>
