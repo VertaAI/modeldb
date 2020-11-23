@@ -6,6 +6,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import com.amazonaws.services.s3.model.PartETag;
 import io.grpc.Metadata;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -118,4 +119,6 @@ public interface ArtifactStoreService {
 
     return uriComponentsBuilder.toUriString();
   }
+
+  InputStream downloadFileFromStorage(String artifactPath) throws ModelDBException;
 }
