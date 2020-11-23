@@ -201,8 +201,8 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="db_version_2.7" author="cory">
-        <tagDatabase tag="db_version_2.7"/>
+    <changeSet id="db_version_2.8" author="cory">
+        <tagDatabase tag="db_version_2.8"/>
     </changeSet>
 
     <changeSet id="rename-workspace-to-legacy-workspace-id-on-dataset" author="cory">
@@ -215,7 +215,7 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="db_version_2.8" author="cory">
-        <tagDatabase tag="db_version_2.8"/>
+    <changeSet id="db_version_2.9" author="cory">
+        <tagDatabase tag="db_version_2.9"/>
     </changeSet>
 </databaseChangeLog>
