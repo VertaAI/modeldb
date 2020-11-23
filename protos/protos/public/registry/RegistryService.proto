@@ -33,7 +33,7 @@ message RegisteredModel {
     common.VisibilityEnum.Visibility visibility = 7;
 
     // Legacy id of the workspace this belongs to
-    string legacy_workspace_id = 8;
+    string workspace_id = 8;
 
     //readme
     string readme_text = 9;
@@ -45,7 +45,7 @@ message RegisteredModel {
     repeated common.KeyValue attributes = 11;
 
     // id of the workspace that this ``registered_model`` belongs to
-    uint64 workspace_id = 12;
+    uint64 parent_workspace_id = 12;
 }
 
 //CRUD for Registred Models

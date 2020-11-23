@@ -2035,7 +2035,7 @@
           "$ref": "#/definitions/VisibilityEnumVisibility",
           "title": "Visibility of Registered Models"
         },
-        "legacy_workspace_id": {
+        "workspace_id": {
           "type": "string",
           "title": "Legacy id of the workspace this belongs to"
         },
@@ -2054,7 +2054,7 @@
           },
           "title": "Other attributes"
         },
-        "workspace_id": {
+        "parent_workspace_id": {
           "type": "string",
           "format": "uint64",
           "title": "id of the workspace that this ``registered_model`` belongs to"
