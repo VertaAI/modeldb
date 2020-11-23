@@ -188,7 +188,7 @@ class TestClient:
 
             excinfo_value = str(excinfo.value).strip()
             assert "401 Client Error" in excinfo_value
-            assert "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`" in excinfo_value
+            assert "User not authorized. Please check the developer_key" in excinfo_value
         finally:
             os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = old_email, old_dev_key
 
