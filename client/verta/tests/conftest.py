@@ -444,3 +444,11 @@ def requirements_file():
         tempf.seek(0)
 
         yield tempf
+
+@pytest.fixture
+def created_projects():
+    to_delete =[]
+    yield to_delete
+
+    for project in to_delete:
+        project.delete()
