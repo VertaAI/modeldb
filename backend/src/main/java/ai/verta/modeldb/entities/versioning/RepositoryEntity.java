@@ -60,11 +60,11 @@ public class RepositoryEntity {
     }
     this.repository_visibility = repository.getRepositoryVisibilityValue();
     if (workspaceDTO.getWorkspaceId() != null) {
-      this.legacy_workspace_id = workspaceDTO.getWorkspaceId();
+      this.legacyWorkspaceId = workspaceDTO.getWorkspaceId();
       this.workspace_type = workspaceDTO.getWorkspaceType().getNumber();
       this.owner = repository.getOwner();
     } else {
-      this.legacy_workspace_id = "";
+      this.legacyWorkspaceId = "";
       this.workspace_type = 0;
       this.owner = "";
     }
@@ -103,7 +103,7 @@ public class RepositoryEntity {
   private Long workspaceId;
 
   @Column(name = "legacy_workspace_id")
-  private String legacy_workspace_id;
+  private String legacyWorkspaceId;
 
   @Column(name = "workspace_type", columnDefinition = "varchar")
   private Integer workspace_type;
@@ -167,8 +167,8 @@ public class RepositoryEntity {
     this.workspaceId = workspaceId;
   }
 
-  public String getLegacy_workspace_id() {
-    return legacy_workspace_id;
+  public String getLegacyWorkspaceId() {
+    return legacyWorkspaceId;
   }
 
   public Set<CommitEntity> getCommits() {
@@ -204,7 +204,7 @@ public class RepositoryEntity {
         .setName(this.name)
         .setDateCreated(this.date_created)
         .setDateUpdated(this.date_updated)
-        .setWorkspaceId(this.legacy_workspace_id)
+        .setWorkspaceId(this.legacyWorkspaceId)
         .setWorkspaceTypeValue(this.workspace_type)
         .addAllAttributes(
             RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
@@ -224,7 +224,7 @@ public class RepositoryEntity {
     this.name = repository.getName();
     this.description = repository.getDescription();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
-    this.legacy_workspace_id = repository.getWorkspaceId();
+    this.legacyWorkspaceId = repository.getWorkspaceId();
     this.workspace_type = repository.getWorkspaceTypeValue();
     update();
     updateAttribute(repository.getAttributesList());
