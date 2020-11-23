@@ -103,9 +103,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   private static final String IDS_FILTERED_BY_WORKSPACE =
       NON_DELETED_DATASET_IDS_BY_IDS
           + " AND d."
-          + ModelDBConstants.WORKSPACE
+          + ModelDBConstants.LEGACY_WORKSPACE_ID
           + " = :"
-          + ModelDBConstants.WORKSPACE
+          + ModelDBConstants.LEGACY_WORKSPACE_ID
           + " AND d."
           + ModelDBConstants.WORKSPACE_TYPE
           + " = :"
@@ -125,7 +125,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           "Dataset",
           "datasetName",
           dataset.getName(),
-          ModelDBConstants.WORKSPACE,
+          ModelDBConstants.LEGACY_WORKSPACE_ID,
           dataset.getWorkspaceId(),
           dataset.getWorkspaceType(),
           LOGGER);
@@ -432,7 +432,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           finalPredicatesList.add(
               builder.not(
                   builder.and(
-                      datasetRoot.get(ModelDBConstants.WORKSPACE).in(orgIds),
+                      datasetRoot.get(ModelDBConstants.LEGACY_WORKSPACE_ID).in(orgIds),
                       builder.equal(
                           datasetRoot.get(ModelDBConstants.WORKSPACE_TYPE),
                           WorkspaceType.ORGANIZATION_VALUE))));
@@ -445,7 +445,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           if (workspacePredicates.size() > 0) {
             Predicate privateWorkspacePredicate =
                 builder.equal(
-                    datasetRoot.get(ModelDBConstants.WORKSPACE),
+                    datasetRoot.get(ModelDBConstants.LEGACY_WORKSPACE_ID),
                     workspacePredicates.get(0).getValue().getStringValue());
             Predicate privateWorkspaceTypePredicate =
                 builder.equal(
@@ -580,7 +580,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       Dataset dataset =
           Dataset.newBuilder()
               .setName(datasetName)
-              .setWorkspaceId(datasetObj.getWorkspace())
+              .setWorkspaceId(datasetObj.getLegacy_workspace_id())
               .setWorkspaceTypeValue(datasetObj.getWorkspace_type())
               .build();
       // Check entity already exists
@@ -886,12 +886,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             oldVisibility,
             datasetId,
             datasetEntity.getWorkspace_type(),
-            datasetEntity.getWorkspace());
+            datasetEntity.getLegacy_workspace_id());
         createNewVisibilityBasedBinding(
             datasetVisibility,
             datasetId,
             datasetEntity.getWorkspace_type(),
-            datasetEntity.getWorkspace());
+            datasetEntity.getLegacy_workspace_id());
       }
 
       LOGGER.debug("Dataset by Id getting successfully");
@@ -993,7 +993,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       DatasetEntity datasetEntity =
           session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       getWorkspaceRoleBindings(
-          datasetEntity.getWorkspace(),
+          datasetEntity.getLegacy_workspace_id(),
           WorkspaceType.forNumber(datasetEntity.getWorkspace_type()),
           datasetId,
           DatasetVisibility.forNumber(datasetEntity.getDataset_visibility()));
@@ -1002,7 +1002,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           workspaceDTO.getWorkspaceType(),
           datasetId,
           DatasetVisibility.forNumber(datasetEntity.getDataset_visibility()));
-      datasetEntity.setWorkspace(workspaceDTO.getWorkspaceId());
+      datasetEntity.setLegacy_workspace_id(workspaceDTO.getWorkspaceId());
       datasetEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
       datasetEntity.setTime_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();
