@@ -141,10 +141,7 @@ public interface ModelDBConstants {
   // Common verb constants
   String ORDER_ASC = "asc";
   String ORDER_DESC = "desc";
-  String ADD = "add";
-  String UPDATE = "update";
   String GET = "get";
-  String DELETE = "delete";
   String PUT = "put";
   String POST = "post";
 
@@ -296,4 +293,17 @@ public interface ModelDBConstants {
   String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
   String EXPIRED_TOKEN = "ExpiredToken";
   String UPDATE_RUN_ENVIRONMENTS = "update_run_environments";
+  String DELETE_AUDIT_LOGS = "delete_audit_logs";
+
+  // Audit log constants
+  String CREATE = "CREATE";
+  String UPDATE = "UPDATE";
+  String DELETE = "DELETE";
+  String SERVICE_NAME = "MDB";
+  String METADATA_JSON_TEMPLATE = "{\"action\" : {\"%s_%s\" : \"%s\"}}";
+  String PROJECT = "PROJECT";
+  String EXPERIMENT = "EXPERIMENT";
+  String EXPERIMENT_RUN = "EXPERIMENT_RUN";
+  String DATASET = "DATASET";
+  String DATASET_VERSION = "DATASET_VERSION";
 }

@@ -375,9 +375,8 @@ class _DeployableEntity(_ModelDBEntity):
             _utils.raise_for_http_error(response)
         except requests.HTTPError as e:
             if e.response.status_code == 404:
-                raise RuntimeError("log_training_data() may not yet have been called")
+                e.args = ("log_training_data() may not yet have been called; error message: \n\n{}".format(e.args[0]),) + e.args[1:]
 
-            # if not 404 error (e.g 429), throw them as-is:
             raise e
 
         return response.json()

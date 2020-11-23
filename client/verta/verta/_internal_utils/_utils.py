@@ -260,11 +260,11 @@ class LazyList(object):
 
         return total_records
 
-    def find(self, where):
+    def find(self, *args):
         """
-        Gets the results from this collection that match predicates `where`.
+        Gets the results from this collection that match input predicates.
 
-        A predicate in `where` is a string containing a simple boolean expression consisting of:
+        A predicate is a string containing a simple boolean expression consisting of:
 
             - a dot-delimited property such as ``metrics.accuracy``
             - a Python boolean operator such as ``>=``
@@ -272,7 +272,7 @@ class LazyList(object):
 
         Parameters
         ----------
-        where : str or list of str
+        *args : strs
             Predicates specifying results to get.
 
         Returns
@@ -283,16 +283,23 @@ class LazyList(object):
         --------
         .. code-block:: python
 
+            runs.find("hyperparameters.hidden_size == 256",
+                       "metrics.accuracy >= .8")
+            # <ExperimentRuns containing 3 runs>
+            # alternatively:
             runs.find(["hyperparameters.hidden_size == 256",
                        "metrics.accuracy >= .8"])
             # <ExperimentRuns containing 3 runs>
 
         """
-        new_list = copy.deepcopy(self)
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+            # to keep backward compatibility, in case user pass in a list or tuple
+            return self.find(*args[0])
+        elif not all(isinstance(predicate, six.string_types) for predicate in args):
+            raise TypeError("predicates must all be strings")
 
-        if isinstance(where, six.string_types):
-            where = [where]
-        for predicate in where:
+        new_list = copy.deepcopy(self)
+        for predicate in args:
             # split predicate
             try:
                 key, operator, value = map(lambda token: token.strip(), self._OP_PATTERN.split(predicate, maxsplit=1))

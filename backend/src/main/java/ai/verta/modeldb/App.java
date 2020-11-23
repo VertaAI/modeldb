@@ -8,6 +8,9 @@ import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
+import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
+import ai.verta.modeldb.audit_log.AuditLogLocalDAODisabled;
+import ai.verta.modeldb.audit_log.AuditLogLocalDAORdbImpl;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
@@ -503,6 +506,12 @@ public class App implements ApplicationContextAware {
     DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
     LineageDAO lineageDAO = new LineageDAORdbImpl();
     DatasetVersionDAO datasetVersionDAO = new DatasetVersionDAORdbImpl(authService, roleService);
+    AuditLogLocalDAO auditLogLocalDAO;
+    if (authService instanceof PublicAuthServiceUtils) {
+      auditLogLocalDAO = new AuditLogLocalDAODisabled();
+    } else {
+      auditLogLocalDAO = new AuditLogLocalDAORdbImpl();
+    }
     LOGGER.info("All DAO initialized");
     // --------------- Finish Initialize DAO --------------------------
     initializeBackendServices(
@@ -519,6 +528,7 @@ public class App implements ApplicationContextAware {
         repositoryDAO,
         commitDAO,
         blobDAO,
+        auditLogLocalDAO,
         authService,
         roleService);
   }
@@ -537,18 +547,28 @@ public class App implements ApplicationContextAware {
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       BlobDAO blobDAO,
+      AuditLogLocalDAO auditLogLocalDAO,
       AuthService authService,
       RoleService roleService) {
-    App app = App.getInstance();
     wrapService(
         serverBuilder,
         new ProjectServiceImpl(
-            authService, roleService, projectDAO, experimentRunDAO, artifactStoreDAO));
+            authService,
+            roleService,
+            projectDAO,
+            experimentRunDAO,
+            artifactStoreDAO,
+            auditLogLocalDAO));
     LOGGER.trace("Project serviceImpl initialized");
     wrapService(
         serverBuilder,
         new ExperimentServiceImpl(
-            authService, roleService, experimentDAO, projectDAO, artifactStoreDAO));
+            authService,
+            roleService,
+            experimentDAO,
+            projectDAO,
+            artifactStoreDAO,
+            auditLogLocalDAO));
     LOGGER.trace("Experiment serviceImpl initialized");
     wrapService(
         serverBuilder,
@@ -561,7 +581,8 @@ public class App implements ApplicationContextAware {
             artifactStoreDAO,
             datasetVersionDAO,
             repositoryDAO,
-            commitDAO));
+            commitDAO,
+            auditLogLocalDAO));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
     wrapService(
         serverBuilder,
@@ -579,7 +600,8 @@ public class App implements ApplicationContextAware {
             experimentRunDAO,
             repositoryDAO,
             commitDAO,
-            metadataDAO));
+            metadataDAO,
+            auditLogLocalDAO));
     LOGGER.trace("Dataset serviceImpl initialized");
     wrapService(
         serverBuilder,
@@ -590,7 +612,8 @@ public class App implements ApplicationContextAware {
             commitDAO,
             blobDAO,
             metadataDAO,
-            artifactStoreDAO));
+            artifactStoreDAO,
+            auditLogLocalDAO));
     LOGGER.trace("Dataset Version serviceImpl initialized");
     wrapService(
         serverBuilder,

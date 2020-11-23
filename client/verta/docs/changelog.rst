@@ -37,6 +37,22 @@ Release Notes
      <>`__
 
 
+v0.15.9 (2020-11-21)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `enable find() to take *args rather than a single list
+  <https://github.com/VertaAI/modeldb/pull/1680>`__
+
+Bug Fixes
+^^^^^^^^^
+- `remove limitation on searching for runs by tag
+  <https://github.com/VertaAI/modeldb/pull/1666>`__
+- `temporarily disable continuing interrupted multipart uploads
+  <https://github.com/VertaAI/modeldb/pull/1687>`__
+
+
 v0.15.8 (2020-11-17)
 --------------------
 
