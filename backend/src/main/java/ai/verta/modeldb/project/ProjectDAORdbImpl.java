@@ -140,9 +140,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   private static final String IDS_FILTERED_BY_WORKSPACE =
       NON_DELETED_PROJECT_IDS_BY_IDS
           + " AND p."
-          + ModelDBConstants.WORKSPACE
+          + ModelDBConstants.LEGACY_WORKSPACE_ID
           + " = :"
-          + ModelDBConstants.WORKSPACE
+          + ModelDBConstants.LEGACY_WORKSPACE_ID
           + " AND p."
           + ModelDBConstants.WORKSPACE_TYPE
           + " = :"
@@ -201,7 +201,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         "Project",
         "projectName",
         project.getName(),
-        ModelDBConstants.WORKSPACE,
+        ModelDBConstants.LEGACY_WORKSPACE_ID,
         project.getWorkspaceId(),
         project.getWorkspaceType(),
         LOGGER);
@@ -1103,7 +1103,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           finalPredicatesList.add(
               builder.not(
                   builder.and(
-                      projectRoot.get(ModelDBConstants.WORKSPACE).in(orgIds),
+                      projectRoot.get(ModelDBConstants.LEGACY_WORKSPACE_ID).in(orgIds),
                       builder.equal(
                           projectRoot.get(ModelDBConstants.WORKSPACE_TYPE),
                           WorkspaceType.ORGANIZATION_VALUE))));
@@ -1415,7 +1415,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         @SuppressWarnings("unchecked")
         Query<String> query = session.createQuery(IDS_FILTERED_BY_WORKSPACE);
         query.setParameterList(ModelDBConstants.PROJECT_IDS, accessibleProjectIds);
-        query.setParameter(ModelDBConstants.WORKSPACE, workspaceDTO.getWorkspaceId());
+        query.setParameter(ModelDBConstants.LEGACY_WORKSPACE_ID, workspaceDTO.getWorkspaceId());
         query.setParameter(
             ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
         resultProjects = query.list();
