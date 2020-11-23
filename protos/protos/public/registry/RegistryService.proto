@@ -32,9 +32,8 @@ message RegisteredModel {
     // Visibility of Registered Models
     common.VisibilityEnum.Visibility visibility = 7;
 
-    // id of the workspace this belongs to
-    //not storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files
-    string workspace_id = 8;
+    // Legacy id of the workspace this belongs to
+    string legacy_workspace_id = 8;
 
     //readme
     string readme_text = 9;
@@ -44,6 +43,9 @@ message RegisteredModel {
 
     // Other attributes
     repeated common.KeyValue attributes = 11;
+
+    // id of the workspace that this ``registered_model`` belongs to
+    uint64 workspace_id = 12;
 }
 
 //CRUD for Registred Models
