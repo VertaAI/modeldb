@@ -50,7 +50,7 @@ public class ProjectEntity {
           RdbmsUtils.generateCodeVersionEntity(
               ModelDBConstants.CODE_VERSION, project.getCodeVersionSnapshot()));
     }
-    setWorkspace(project.getWorkspaceId());
+    setLegacy_workspace_id(project.getWorkspaceId());
     setWorkspace_type(project.getWorkspaceTypeValue());
   }
 
@@ -123,8 +123,8 @@ public class ProjectEntity {
   @Column(name = "workspace_id")
   private Long workspaceId;
 
-  @Column(name = "workspace")
-  private String workspace;
+  @Column(name = "legacy_workspace_id")
+  private String legacy_workspace_id;
 
   @Column(name = "workspace_type")
   private Integer workspace_type;
@@ -280,12 +280,12 @@ public class ProjectEntity {
     this.workspaceId = workspaceId;
   }
 
-  public String getWorkspace() {
-    return workspace;
+  public String getLegacy_workspace_id() {
+    return legacy_workspace_id;
   }
 
-  public void setWorkspace(String workspace) {
-    this.workspace = workspace;
+  public void setLegacy_workspace_id(String workspace) {
+    this.legacy_workspace_id = workspace;
   }
 
   public Integer getWorkspace_type() {
@@ -322,7 +322,7 @@ public class ProjectEntity {
                     getArtifactMapping(ModelDBConstants.ARTIFACTS)))
             .setOwner(getOwner())
             .setReadmeText(getReadme_text())
-            .setWorkspaceId(getWorkspace())
+            .setWorkspaceId(getLegacy_workspace_id())
             .setWorkspaceTypeValue(getWorkspace_type());
 
     if (getCode_version_snapshot() != null) {
