@@ -1047,7 +1047,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         @SuppressWarnings("unchecked")
         Query<String> query = session.createQuery(IDS_FILTERED_BY_WORKSPACE);
         query.setParameterList(ModelDBConstants.DATASET_IDS, accessibleDatasetIds);
-        query.setParameter(ModelDBConstants.WORKSPACE, workspaceDTO.getWorkspaceId());
+        query.setParameter(ModelDBConstants.LEGACY_WORKSPACE_ID, workspaceDTO.getWorkspaceId());
         query.setParameter(
             ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
         resultDatasets = query.list();
