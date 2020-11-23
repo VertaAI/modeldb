@@ -13,6 +13,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.rpc.Code;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
@@ -75,5 +76,10 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
   public void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
       throws ModelDBException {
     artifactStoreService.commitMultipart(s3Path, uploadId, partETags);
+  }
+
+  @Override
+  public InputStream downloadArtifact(String artifactPath) throws ModelDBException {
+    return artifactStoreService.downloadFileFromStorage(artifactPath);
   }
 }

@@ -4,6 +4,7 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetUrlForArtifact.Response;
 import ai.verta.modeldb.ModelDBException;
 import com.amazonaws.services.s3.model.PartETag;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +18,6 @@ public interface ArtifactStoreDAO {
 
   void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
       throws ModelDBException;
+
+  InputStream downloadArtifact(String artifactPath) throws ModelDBException;
 }

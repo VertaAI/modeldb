@@ -220,4 +220,25 @@ public class NFSService implements ArtifactStoreService {
       throws ModelDBException {
     throw new ModelDBException("Not supported by NFS", Code.FAILED_PRECONDITION);
   }
+
+  @Override
+  public InputStream downloadFileFromStorage(String artifactPath) throws ModelDBException {
+
+    try {
+      Path filePath = this.fileStorageLocation.resolve(artifactPath).normalize();
+      Resource resource = new UrlResource(filePath.toUri());
+      if (resource.exists()) {
+        LOGGER.info("file exist in NFS storage");
+        InputStream fileInputStream = resource.getInputStream();
+        LOGGER.info("file fetched successfully from storage");
+        return fileInputStream;
+      }
+    } catch (IOException e) {
+      throw new ModelDBException(e.getMessage(), Code.INTERNAL);
+    }
+
+    String errorMessage = "artifact file not found in NFS storage for given key : " + artifactPath;
+    LOGGER.info(errorMessage);
+    throw new ModelDBException(errorMessage, Code.NOT_FOUND);
+  }
 }
