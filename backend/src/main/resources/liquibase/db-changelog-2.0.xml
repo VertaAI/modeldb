@@ -137,7 +137,7 @@
         <tagDatabase tag="db_version_2.4"/>
     </changeSet>
 
-    <changeSet id="add-workspace-id-to-project" author="anandJ">
+    <changeSet id="add-workspace-id-to-project" author="cory">
         <preConditions onFail="MARK_RAN">
             <not>
                 <columnExists tableName="project" columnName="workspace_id"/>
