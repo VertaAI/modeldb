@@ -13,7 +13,7 @@ from . import _dataset
 
 _HDFS_PREFIX = "hdfs://"
 
-class HDFSPath(Path):
+class HDFSPath(Path):  # TODO: docstrings, add to docs
     # TODO: support mdb versioning
     def __init__(self, hdfs_client, paths, base_path=None):
         self.client = hdfs_client
