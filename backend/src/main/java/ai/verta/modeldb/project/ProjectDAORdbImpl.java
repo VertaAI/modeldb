@@ -140,9 +140,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   private static final String IDS_FILTERED_BY_WORKSPACE =
       NON_DELETED_PROJECT_IDS_BY_IDS
           + " AND p."
-          + ModelDBConstants.WORKSPACE
+          + ModelDBConstants.LEGACY_WORKSPACE_ID
           + " = :"
-          + ModelDBConstants.WORKSPACE
+          + ModelDBConstants.LEGACY_WORKSPACE_ID
           + " AND p."
           + ModelDBConstants.WORKSPACE_TYPE
           + " = :"
@@ -201,7 +201,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         "Project",
         "projectName",
         project.getName(),
-        ModelDBConstants.WORKSPACE,
+        ModelDBConstants.LEGACY_WORKSPACE_ID,
         project.getWorkspaceId(),
         project.getWorkspaceType(),
         LOGGER);
@@ -276,7 +276,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Project project =
           Project.newBuilder()
               .setName(projectName)
-              .setWorkspaceId(projectEntity.getWorkspace())
+              .setWorkspaceId(projectEntity.getLegacy_workspace_id())
               .setWorkspaceTypeValue(projectEntity.getWorkspace_type())
               .build();
       checkIfEntityAlreadyExists(session, project);
@@ -940,12 +940,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             oldVisibility,
             projectId,
             projectEntity.getWorkspace_type(),
-            projectEntity.getWorkspace());
+            projectEntity.getLegacy_workspace_id());
         createNewVisibilityBasedBinding(
             projectVisibility,
             projectId,
             projectEntity.getWorkspace_type(),
-            projectEntity.getWorkspace());
+            projectEntity.getLegacy_workspace_id());
       }
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
       return projectEntity.getProtoObject();
@@ -1103,7 +1103,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           finalPredicatesList.add(
               builder.not(
                   builder.and(
-                      projectRoot.get(ModelDBConstants.WORKSPACE).in(orgIds),
+                      projectRoot.get(ModelDBConstants.LEGACY_WORKSPACE_ID).in(orgIds),
                       builder.equal(
                           projectRoot.get(ModelDBConstants.WORKSPACE_TYPE),
                           WorkspaceType.ORGANIZATION_VALUE))));
@@ -1354,7 +1354,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
       List<String> roleBindingNames =
           getWorkspaceRoleBindings(
-              projectEntity.getWorkspace(),
+              projectEntity.getLegacy_workspace_id(),
               WorkspaceType.forNumber(projectEntity.getWorkspace_type()),
               projectId,
               ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
@@ -1364,7 +1364,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           workspaceDTO.getWorkspaceType(),
           projectId,
           ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
-      projectEntity.setWorkspace(workspaceDTO.getWorkspaceId());
+      projectEntity.setLegacy_workspace_id(workspaceDTO.getWorkspaceId());
       projectEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();
@@ -1415,7 +1415,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         @SuppressWarnings("unchecked")
         Query<String> query = session.createQuery(IDS_FILTERED_BY_WORKSPACE);
         query.setParameterList(ModelDBConstants.PROJECT_IDS, accessibleProjectIds);
-        query.setParameter(ModelDBConstants.WORKSPACE, workspaceDTO.getWorkspaceId());
+        query.setParameter(ModelDBConstants.LEGACY_WORKSPACE_ID, workspaceDTO.getWorkspaceId());
         query.setParameter(
             ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
         resultProjects = query.list();
