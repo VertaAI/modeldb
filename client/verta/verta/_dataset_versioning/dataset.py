@@ -12,7 +12,6 @@ from .._tracking import entity
 from .._internal_utils import (
     _utils,
 )
-from .. import dataset
 
 from .dataset_version import DatasetVersion
 
@@ -313,14 +312,14 @@ class Dataset(entity._ModelDBEntity):
         endpoint = "/api/v1/modeldb/dataset/deleteDatasetAttributes"
         self._update(msg, Message.Response, endpoint, "DELETE")
 
-    def create_s3_version(self, paths, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
+    def create_version(self, content, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
         """
-        Creates s3 dataset version
+        Creates a dataset version.
 
         Parameters
         ----------
-        paths : list of str
-            Dataset version paths.
+        content : :class:`~verta.dataset._dataset._Dataset`
+            Dataset blob.
         desc : str, optional
             Description of the Dataset version.
         tags : list of str, optional
@@ -333,38 +332,9 @@ class Dataset(entity._ModelDBEntity):
         `DatasetVersion <dataset.html>`_
 
         """
-        dataset_blob = dataset.S3(paths=paths)
         return DatasetVersion._create(
             self._conn, self._conf,
-            dataset=self, dataset_blob=dataset_blob,
-            desc=desc, tags=tags, attrs=attrs,
-            time_logged=date_created, time_updated=date_created,
-        )
-
-    def create_path_version(self, paths, base_path=None, desc=None, tags=None, attrs=None, date_created=None):
-        """
-        Creates path dataset version
-
-        Parameters
-        ----------
-        paths : list of str
-            Dataset version paths.
-        desc : str, optional
-            Description of the Dataset version.
-        tags : list of str, optional
-            Tags of the Dataset Version.
-        attrs : dict of str to {None, bool, float, int, str}, optional
-            Attributes of the Dataset Version.
-
-        Returns
-        -------
-        `DatasetVersion <dataset.html>`_
-
-        """
-        dataset_blob = dataset.Path(paths=paths, base_path=base_path)
-        return DatasetVersion._create(
-            self._conn, self._conf,
-            dataset=self, dataset_blob=dataset_blob,
+            dataset=self, dataset_blob=content,
             desc=desc, tags=tags, attrs=attrs,
             time_logged=date_created, time_updated=date_created,
         )
