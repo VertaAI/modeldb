@@ -11,7 +11,7 @@ ignore=CVS,
     # everything below was added by @convoliution
        _swagger,
        _protos,
-       external
+       external,
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
@@ -151,7 +151,7 @@ disable=print-statement,
         useless-else-on-loop,
         abstract-method,
         superfluous-parens,
-        deprecated-lambda
+        deprecated-lambda,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -277,42 +277,12 @@ ignore-on-opaque-inference=yes
 ignored-classes=optparse.Values,
                 thread._local,
                 _thread._local,
-    # everything below was added by @convoliution
-                OperatorEnum,
-                TernaryEnum,
-                OperatorEnum,
-                ArtifactTypeEnum,
-                DatasetTypeEnum,
-                DatasetVisibilityEnum,
-                VisibilityEnum,
-                PathLocationTypeEnum,
-                EnvironmentBlob,
-                PythonRequirementEnvironmentBlob,
-                HyperparameterSetConfigBlob,
-                HyperparameterConfigBlob,
-                ConfigBlob,
-                CodeBlob,
-                NotebookCodeBlob,
-                DatasetBlob,
-                LogVersionedInput,
-                DiffStatusEnum,
-                CreateCommitRequest,
-                MergeRepositoryCommitsRequest,
-                RevertRepositoryCommitsRequest,
-                CommitArtifactPart,
-                CommitMultipartVersionedBlobArtifact,
-                CommitVersionedBlobArtifactPart,
-                PurePath,
-                PathDatasetComponentBlob,
-                BlobExpanded,
-                Blob,
-                S3DatasetComponentBlob
 
 # List of module names for which member attributes should not be checked
 # (useful for modules/projects where namespaces are manipulated during runtime
 # and thus existing member attributes cannot be deduced by static analysis. It
 # supports qualified module names, as well as Unix pattern matching.
-ignored-modules=
+ignored-modules=verta._protos
 
 # Show a hint with possible names when a member name was not found. The aspect
 # of finding the hint is based on edit distance.
