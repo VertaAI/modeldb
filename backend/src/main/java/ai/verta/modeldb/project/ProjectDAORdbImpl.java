@@ -276,7 +276,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Project project =
           Project.newBuilder()
               .setName(projectName)
-              .setWorkspaceId(projectEntity.getLegacy_workspace_id())
+              .setWorkspaceId(projectEntity.getLegacyWorkspaceId())
               .setWorkspaceTypeValue(projectEntity.getWorkspace_type())
               .build();
       checkIfEntityAlreadyExists(session, project);
@@ -940,12 +940,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             oldVisibility,
             projectId,
             projectEntity.getWorkspace_type(),
-            projectEntity.getLegacy_workspace_id());
+            projectEntity.getLegacyWorkspaceId());
         createNewVisibilityBasedBinding(
             projectVisibility,
             projectId,
             projectEntity.getWorkspace_type(),
-            projectEntity.getLegacy_workspace_id());
+            projectEntity.getLegacyWorkspaceId());
       }
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
       return projectEntity.getProtoObject();
@@ -1354,7 +1354,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
       List<String> roleBindingNames =
           getWorkspaceRoleBindings(
-              projectEntity.getLegacy_workspace_id(),
+              projectEntity.getLegacyWorkspaceId(),
               WorkspaceType.forNumber(projectEntity.getWorkspace_type()),
               projectId,
               ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
@@ -1364,7 +1364,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           workspaceDTO.getWorkspaceType(),
           projectId,
           ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
-      projectEntity.setLegacy_workspace_id(workspaceDTO.getWorkspaceId());
+      projectEntity.setLegacyWorkspaceId(workspaceDTO.getWorkspaceId());
       projectEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();
