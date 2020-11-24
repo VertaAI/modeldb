@@ -92,6 +92,7 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -1925,10 +1926,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
-
       experimentRunDAO.logAttributes(
           request.getId(), Collections.singletonList(request.getAttribute()));
       saveAuditLogs(
@@ -1939,7 +1940,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               ModelDBConstants.METADATA_JSON_TEMPLATE,
               "add",
               "attribute",
-              new Gson().toJsonTree(request.getAttribute())));
+              request.getAttribute()));
+      LOGGER.info("Auditing complete, creating response.");
       responseObserver.onNext(LogAttribute.Response.newBuilder().build());
       responseObserver.onCompleted();
 
