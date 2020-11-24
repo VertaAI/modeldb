@@ -35,7 +35,10 @@ from .._internal_utils import (
     importer,
 )
 
-from .. import _dataset
+from .._dataset_versioning import (
+    dataset as _dataset,
+    dataset_version as _dataset_version,
+)
 from .. import _repository
 from .._repository import commit as commit_module
 from .. import deployment
@@ -965,7 +968,7 @@ class ExperimentRun(_DeployableEntity):
                 " please create a DatasetVersion for logging"
             )
 
-        if not isinstance(dataset, _dataset.DatasetVersion):
+        if not isinstance(dataset, _dataset_version.DatasetVersion):
             raise TypeError(
                 "`dataset` must be of type DatasetVersion;"
                 " to log an artifact, consider using run.log_artifact() instead"
@@ -1012,38 +1015,6 @@ class ExperimentRun(_DeployableEntity):
 
         self._clear_cache()
 
-    def log_dataset_path(self, key, path):
-        """
-        Logs the filesystem path of an dataset to this Experiment Run.
-
-        .. deprecated:: 0.13.0
-           The :meth:`~ExperimentRun.log_dataset_path` method will removed in v0.16.0; consider using
-           :meth:`client.set_dataset(…, type="local") <verta.client.Client.set_dataset>` and :meth:`~ExperimentRun.log_dataset_version` instead.
-
-        This function makes no attempt to open a file at `dataset_path`. Only the path string itself
-        is logged.
-
-        Parameters
-        ----------
-        key : str
-            Name of the dataset.
-        dataset_path : str
-            Filesystem path of the dataset.
-
-        """
-        _utils.validate_flat_key(key)
-
-        warnings.warn("`log_dataset_path()` is deprecated and will removed in a later version;"
-                      " consider using `client.set_dataset(..., type=\"local\")`"
-                      " and `run.log_dataset_version()` instead",
-                      category=FutureWarning)
-
-        # create impromptu DatasetVersion
-        dataset = _dataset.LocalDataset(self._conn, self._conf, name=key)
-        dataset_version = dataset.create_version(path=path)
-
-        self.log_dataset_version(key, dataset_version)
-
     def get_dataset(self, key):
         """
         Gets the dataset artifact with name `key` from this Experiment Run.
@@ -1068,7 +1039,10 @@ class ExperimentRun(_DeployableEntity):
         dataset, path_only, linked_id = self._get_dataset(key)
         if path_only:
             if linked_id:
-                return _dataset.DatasetVersion(self._conn, self._conf, _dataset_version_id=linked_id)
+                return _dataset_version.DatasetVersion(
+                    self._conn, self._conf,
+                    _dataset_version.DatasetVersion._get_proto_by_id(self._conn, linked_id),
+                )
             else:
                 return dataset
         else:
