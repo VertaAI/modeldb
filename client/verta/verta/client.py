@@ -21,7 +21,6 @@ import zipfile
 import requests
 import yaml
 from verta._tracking.organization import Organization
-from ._dataset_versioning.dataset_version import DatasetVersion
 from ._internal_utils._utils import check_unnecessary_params_warning
 
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -68,6 +67,7 @@ from ._registry import (
 )
 from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
+from ._dataset_versioning.dataset_version import DatasetVersion
 from .endpoint._endpoint import Endpoint
 from .endpoint._endpoints import Endpoints
 from .endpoint.update import DirectUpdateStrategy
@@ -1488,7 +1488,7 @@ class Client(object):
 
     @property
     def datasets(self):
-        raise NotImplementedError
+        return Datasets(self._conn, self._conf)
 
     def get_dataset_version(self, id):
         """

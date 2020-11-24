@@ -14,6 +14,7 @@ from .._internal_utils import (
 )
 
 from .dataset_version import DatasetVersion
+from .dataset_versions import DatasetVersions
 
 
 class Dataset(entity._ModelDBEntity):
@@ -73,7 +74,7 @@ class Dataset(entity._ModelDBEntity):
 
     @property
     def versions(self):
-        raise NotImplementedError
+        return DatasetVersions(self._conn, self._conf).with_dataset(self)
 
     @classmethod
     def _generate_default_name(cls):
