@@ -23,7 +23,21 @@ class DatasetVersion(entity._ModelDBEntity):
         super(DatasetVersion, self).__init__(conn, conf, _DatasetVersionService, "dataset-version", msg)
 
     def __repr__(self):
-        raise NotImplementedError
+        self._refresh_cache()
+        msg = self._msg
+
+        return '\n'.join((
+            "version: {}".format(msg.version),
+            # TODO: "url: {}://{}/{}/datasets/{}/summary".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_logged))),
+            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
+            "description: {}".format(msg.description),
+            "tags: {}".format(msg.tags),
+            "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
+            "id: {}".format(msg.id),
+            "content:",
+            "{}".format(self.get_content()),  # TODO: increase indentation
+        ))
 
     @property
     def name(self):
