@@ -394,7 +394,7 @@ class Dataset(entity._ModelDBEntity):
         `DatasetVersion <dataset.html>`_
 
         """
-        return DatasetVersion._get_latest_version_by_dataset_id(self._conn, self.id)
+        return DatasetVersion._get_latest_version_by_dataset_id(self._conn, self._conf, self.id)
 
     def _update(self, msg, response_proto, endpoint, method):
         response = self._conn.make_proto_request(method, endpoint, body=msg)
