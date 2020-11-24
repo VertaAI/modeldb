@@ -63,6 +63,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -411,6 +413,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       repositoryEntity = new RepositoryEntity(repository, workspaceDTO, repositoryType);
     } else {
       repositoryEntity = getRepositoryById(session, repoId, true, false, repositoryType);
+      session.lock(repositoryEntity, LockMode.PESSIMISTIC_WRITE);
       if (!repository.getName().isEmpty()
           && !repositoryEntity.getName().equals(repository.getName())) {
         StringBuilder getRepoCountByNamePrefixHQL =
@@ -544,7 +547,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public void deleteRepositories(
       Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds) {
-    Query deletedRepositoriesQuery = session.createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING);
+    Query deletedRepositoriesQuery =
+        session
+            .createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING)
+            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     deletedRepositoriesQuery.setParameter("deleted", true);
     final List<Long> repositoriesIdsLong =
         allowedRepositoryIds.stream().map(Long::valueOf).collect(Collectors.toList());
@@ -800,6 +806,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public SetTagRequest.Response setTag(SetTagRequest request) throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
+      session.lock(repository, LockMode.PESSIMISTIC_WRITE);
 
       boolean exists =
           VersioningUtils.commitRepositoryMappingExists(
@@ -864,7 +871,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId(), true);
       TagsEntity tagsEntity =
-          session.get(TagsEntity.class, new TagsEntity.TagId(request.getTag(), repository.getId()));
+          session.get(
+              TagsEntity.class,
+              new TagsEntity.TagId(request.getTag(), repository.getId()),
+              LockMode.PESSIMISTIC_WRITE);
       if (tagsEntity == null) {
         throw new ModelDBException("Tag not found " + request.getTag(), Code.NOT_FOUND);
       }
@@ -925,6 +935,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               session, request.getRepositoryId(), true, canNotOperateOnProtected, repositoryType);
 
       session.beginTransaction();
+      session.lock(repository, LockMode.PESSIMISTIC_READ);
       saveBranch(session, request.getCommitSha(), request.getBranch(), repository);
       session.getTransaction().commit();
       return SetBranchRequest.Response.newBuilder().build();
@@ -952,7 +963,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           Code.NOT_FOUND);
     }
 
-    Query query = session.createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL);
+    Query query =
+        session
+            .createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL)
+            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     query.setParameter("repositoryId", repository.getId());
     query.setParameter("branch", branch);
     BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
@@ -1009,7 +1023,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       BranchEntity branchEntity =
           session.get(
               BranchEntity.class,
-              new BranchEntity.BranchId(request.getBranch(), repository.getId()));
+              new BranchEntity.BranchId(request.getBranch(), repository.getId()),
+              LockMode.PESSIMISTIC_WRITE);
       if (branchEntity == null) {
         throw new ModelDBException(
             ModelDBConstants.BRANCH_NOT_FOUND + request.getBranch(), Code.NOT_FOUND);
@@ -1033,7 +1048,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             .append(BranchEntity.class.getSimpleName())
             .append(" br where br.id.repository_id = :repositoryId ")
             .append(" AND br.commit_hash = :commitHash ");
-    Query deleteBranchQuery = session.createQuery(deleteBranchesHQLBuilder.toString());
+    Query deleteBranchQuery =
+        session
+            .createQuery(deleteBranchesHQLBuilder.toString())
+            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     deleteBranchQuery.setParameter("repositoryId", repoId);
     deleteBranchQuery.setParameter("commitHash", commitHash);
     deleteBranchQuery.executeUpdate();
@@ -1273,6 +1291,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       RepositoryEntity repositoryEntity =
           getRepositoryById(
               session, repositoryIdentification, true, canNotOperateOnProtected, repositoryType);
+      session.lock(repositoryEntity, LockMode.PESSIMISTIC_WRITE);
       repositoryEntity.update();
       List<String> tagsOld =
           metadataDAO.getLabels(
@@ -1526,6 +1545,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       RepositoryEntity repositoryEntity =
           getRepositoryById(
               session, repositoryIdentification, true, canNotOperateOnProtected, repositoryType);
+      session.lock(repositoryEntity, LockMode.PESSIMISTIC_WRITE);
       repositoryEntity.update();
       metadataDAO.deleteLabels(
           IdentificationType.newBuilder()
@@ -1630,13 +1650,19 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               true,
               canNotOperateOnProtected,
               repositoryType);
-
+      session.lock(repositoryEntity, LockMode.PESSIMISTIC_WRITE);
       if (deleteAll) {
-        Query query = session.createQuery(DELETE_ALL_REPOSITORY_ATTRIBUTES_HQL);
+        Query query =
+            session
+                .createQuery(DELETE_ALL_REPOSITORY_ATTRIBUTES_HQL)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter("repoId", repositoryEntity.getId());
         query.executeUpdate();
       } else {
-        Query query = session.createQuery(DELETE_SELECTED_REPOSITORY_ATTRIBUTES_HQL);
+        Query query =
+            session
+                .createQuery(DELETE_SELECTED_REPOSITORY_ATTRIBUTES_HQL)
+                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter("keys", attributesKeys);
         query.setParameter("repoId", repositoryEntity.getId());
         query.executeUpdate();
