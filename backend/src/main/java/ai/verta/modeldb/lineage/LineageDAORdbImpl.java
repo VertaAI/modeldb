@@ -21,8 +21,6 @@ import java.util.Optional;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.LockMode;
-import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
@@ -200,12 +198,7 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private void deleteLineage(Session session, LineageEntry input, LineageEntry output) {
-    getExisting(session, input, output)
-        .ifPresent(
-            lineageEntity -> {
-              session.lock(lineageEntity, LockMode.PESSIMISTIC_WRITE);
-              session.delete(lineageEntity);
-            });
+    getExisting(session, input, output).ifPresent(session::delete);
   }
 
   private void addLineage(Session session, LineageEntry input, LineageEntry output) {
@@ -213,9 +206,7 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private void saveOrUpdate(Session session, LineageEntry input, LineageEntry output) {
-    LineageEntity lineageEntity = new LineageEntity(input, output);
-    session.buildLockRequest(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
-    session.saveOrUpdate(lineageEntity);
+    session.saveOrUpdate(new LineageEntity(input, output));
   }
 
   private Optional<LineageEntity> getExisting(

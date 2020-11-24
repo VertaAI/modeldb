@@ -48,7 +48,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
@@ -962,14 +961,8 @@ public class HydratedServiceTest {
 
     for (Experiment experiment : experimentMap.values()) {
       Experiment responseExperiment = hydratedExperimentMap.get(experiment.getId()).getExperiment();
-      List<String> tags = experiment.getTagsList().stream().sorted().collect(Collectors.toList());
       experiment =
-          experiment
-              .toBuilder()
-              .clearTags()
-              .addAllTags(tags)
-              .setDateUpdated(responseExperiment.getDateUpdated())
-              .build();
+          experiment.toBuilder().setDateUpdated(responseExperiment.getDateUpdated()).build();
       experimentMap.put(experiment.getId(), experiment);
       assertEquals(
           "Expected experimentRun not exist in the hydrated experimentRun",
@@ -1690,15 +1683,8 @@ public class HydratedServiceTest {
         LOGGER.info("GetExperimentsInProject Response : " + experimentList.size());
         for (Experiment experiment : experimentList) {
           Experiment expectedExperiment = experimentMap.get(experiment.getId());
-          List<String> tags =
-              expectedExperiment.getTagsList().stream().sorted().collect(Collectors.toList());
           expectedExperiment =
-              expectedExperiment
-                  .toBuilder()
-                  .clearTags()
-                  .addAllTags(tags)
-                  .setDateUpdated(experiment.getDateUpdated())
-                  .build();
+              expectedExperiment.toBuilder().setDateUpdated(experiment.getDateUpdated()).build();
           experimentMap.put(expectedExperiment.getId(), expectedExperiment);
           assertEquals(
               "Experiment not match with expected Experiment", expectedExperiment, experiment);
@@ -2069,15 +2055,8 @@ public class HydratedServiceTest {
         isExpectedResultFound = true;
         for (Experiment experiment : experimentList) {
           Experiment expectedExperiment = experimentMap.get(experiment.getId());
-          List<String> tags =
-              expectedExperiment.getTagsList().stream().sorted().collect(Collectors.toList());
           expectedExperiment =
-              expectedExperiment
-                  .toBuilder()
-                  .clearTags()
-                  .addAllTags(tags)
-                  .setDateUpdated(experiment.getDateUpdated())
-                  .build();
+              expectedExperiment.toBuilder().setDateUpdated(experiment.getDateUpdated()).build();
           experimentMap.put(expectedExperiment.getId(), expectedExperiment);
           assertEquals(
               "Experiment not match with expected experiment", expectedExperiment, experiment);

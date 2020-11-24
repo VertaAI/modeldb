@@ -20,8 +20,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.LockMode;
-import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -126,7 +124,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
     MetadataPropertyMappingEntity.LabelMappingId id0 =
         MetadataPropertyMappingEntity.createId(id, key);
     MetadataPropertyMappingEntity existingEntity =
-        session.get(MetadataPropertyMappingEntity.class, id0, LockMode.PESSIMISTIC_WRITE);
+        session.get(MetadataPropertyMappingEntity.class, id0);
     if (existingEntity == null) {
       session.saveOrUpdate(new MetadataPropertyMappingEntity(id0, value));
     } else {
@@ -139,8 +137,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   public void addLabels(Session session, IdentificationType id, List<String> labels) {
     for (String label : labels) {
       LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
-      LabelsMappingEntity existingLabelsMappingEntity =
-          session.get(LabelsMappingEntity.class, id0, LockMode.PESSIMISTIC_WRITE);
+      LabelsMappingEntity existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
       if (existingLabelsMappingEntity == null) {
         session.save(new LabelsMappingEntity(id0));
       }
@@ -312,10 +309,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
           .append(ModelDBConstants.ENTITY_TYPE)
           .append(" = :")
           .append(ModelDBConstants.ENTITY_TYPE);
-      Query<LabelsMappingEntity> query =
-          session
-              .createQuery(stringQueryBuilder.toString())
-              .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+      Query<LabelsMappingEntity> query = session.createQuery(stringQueryBuilder.toString());
       query.setParameter(ModelDBConstants.ENTITY_HASH, getEntityHash(id));
       query.setParameter(ModelDBConstants.ENTITY_TYPE, id.getIdTypeValue());
       query.executeUpdate();
@@ -323,7 +317,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       for (String label : labels) {
         LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
         LabelsMappingEntity existingLabelsMappingEntity =
-            session.get(LabelsMappingEntity.class, id0, LockMode.PESSIMISTIC_WRITE);
+            session.get(LabelsMappingEntity.class, id0);
         if (existingLabelsMappingEntity != null) {
           session.delete(existingLabelsMappingEntity);
         }
@@ -339,7 +333,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       MetadataPropertyMappingEntity.LabelMappingId id0 =
           MetadataPropertyMappingEntity.createId(id, key);
       MetadataPropertyMappingEntity existingMetadataMappingEntity =
-          session.get(MetadataPropertyMappingEntity.class, id0, LockMode.PESSIMISTIC_WRITE);
+          session.get(MetadataPropertyMappingEntity.class, id0);
       if (existingMetadataMappingEntity != null) {
         session.delete(existingMetadataMappingEntity);
       } else {
@@ -370,7 +364,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
             KeyValuePropertyMappingEntity.createId(
                 request.getId(), keyValue.getKey(), request.getPropertyName());
         KeyValuePropertyMappingEntity existingEntity =
-            session.get(KeyValuePropertyMappingEntity.class, id0, LockMode.PESSIMISTIC_WRITE);
+            session.get(KeyValuePropertyMappingEntity.class, id0);
         if (existingEntity == null) {
           existingEntity = new KeyValuePropertyMappingEntity(id0, keyValue.getValue());
           session.saveOrUpdate(existingEntity);
@@ -443,10 +437,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
             .append(ModelDBConstants.PROPERTY_NAME)
             .append(" = :")
             .append(ModelDBConstants.PROPERTY_NAME);
-        Query<LabelsMappingEntity> query =
-            session
-                .createQuery(stringQueryBuilder.toString())
-                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+        Query<LabelsMappingEntity> query = session.createQuery(stringQueryBuilder.toString());
         query.setParameter(ModelDBConstants.ENTITY_HASH, getEntityHash(request.getId()));
         query.setParameter(ModelDBConstants.PROPERTY_NAME, request.getPropertyName());
         query.executeUpdate();
@@ -456,7 +447,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
               KeyValuePropertyMappingEntity.createId(
                   request.getId(), key, request.getPropertyName());
           KeyValuePropertyMappingEntity kvEntity =
-              session.get(KeyValuePropertyMappingEntity.class, id0, LockMode.PESSIMISTIC_WRITE);
+              session.get(KeyValuePropertyMappingEntity.class, id0);
           if (kvEntity != null) {
             session.delete(kvEntity);
           }
