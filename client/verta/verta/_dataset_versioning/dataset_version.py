@@ -8,8 +8,10 @@ from ..external import six
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
 from .._tracking import entity
+from .._repository import commit
 from .._internal_utils import (
     _utils,
 )
@@ -67,6 +69,14 @@ class DatasetVersion(entity._ModelDBEntity):
 
         print("created new Dataset Version: {} for {}".format(dataset_version.version, dataset.name))
         return dataset_version
+
+    def get_content(self):
+        self._refresh_cache()
+
+        # create wrapper blob msg so we can reuse the repository system's proto-to-obj
+        blob = _VersioningService.Blob()
+        blob.dataset.CopyFrom(self._msg.dataset_blob)
+        return commit.blob_msg_to_object(blob)
 
     def set_description(self, desc):
         """
