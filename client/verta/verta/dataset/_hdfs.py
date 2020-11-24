@@ -13,7 +13,20 @@ from . import _dataset
 
 _HDFS_PREFIX = "hdfs://"
 
-class HDFSPath(Path):  # TODO: docstrings, add to docs
+class HDFSPath(Path):
+    """
+    Captures metadata about files from HDFS.
+
+    Parameters
+    ----------
+    hdfs_client : hdfs.client.Client
+        Instance of HDFS client.
+    paths : str or list of strs
+        A path, or a list of paths, to files from HDFS.
+    base_path : str, optional
+        Directory path to be removed from the beginning of `paths` before saving to ModelDB.
+
+    """
     # TODO: support mdb versioning
     def __init__(self, hdfs_client, paths, base_path=None):
         self.client = hdfs_client
@@ -70,14 +83,19 @@ class HDFSPath(Path):  # TODO: docstrings, add to docs
     @staticmethod
     def with_spark(sc, paths):
         """
-        Create an HDFSPath blob with Spark.
+        Creates an HDFSPath blob with a SparkContext instance.
 
         Parameters
         ----------
         sc : pyspark.SparkContext
             SparkContext instance.
         paths : str or list of strs
-            A path, or a list of paths, to binary input data file(s) from HDFS.
+            Path, or list of paths, to binary input data file(s) from HDFS.
+
+        Returns
+        -------
+        :class:`~verta.dataset.HDFSPath`
+            HDFSPath blob capturing the metadata of the binary files.
 
         """
         if isinstance(paths, six.string_types):
