@@ -69,6 +69,17 @@ class HDFSPath(Path):  # TODO: docstrings, add to docs
 
     @staticmethod
     def with_spark(sc, paths):
+        """
+        Create an HDFSPath blob with Spark.
+
+        Parameters
+        ----------
+        sc : pyspark.SparkContext
+            SparkContext instance.
+        paths : str or list of strs
+            A path, or a list of paths, to binary input data file(s) from HDFS.
+
+        """
         if isinstance(paths, six.string_types):
             paths = [paths]
 
