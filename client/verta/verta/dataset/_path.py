@@ -56,11 +56,11 @@ class Path(_dataset._Dataset):
 
     """
     def __init__(self, paths, base_path=None, enable_mdb_versioning=False):
+        super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
+
         if isinstance(paths, six.string_types):
             paths = [paths]
         paths = map(os.path.expanduser, paths)
-
-        super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
         filepaths = _file_utils.flatten_file_trees(paths)
         components = list(map(self._file_to_component, filepaths))
@@ -106,18 +106,16 @@ class Path(_dataset._Dataset):
 
         return blob_msg
 
-    @classmethod
-    def _file_to_component(cls, filepath):
+    def _file_to_component(self, filepath):
         return _dataset.Component(
             path=filepath,
             size=os.stat(filepath).st_size,
             last_modified=_utils.timestamp_to_ms(os.stat(filepath).st_mtime),
-            md5=cls._hash_file(filepath),
+            md5=self._hash_file(filepath),
         )
 
     # TODO: move to _file_utils.calc_md5()
-    @staticmethod
-    def _hash_file(filepath):
+    def _hash_file(self, filepath):
         """
         Returns the MD5 hash of `filename`.
 
