@@ -33,8 +33,6 @@ import java.util.stream.Collectors;
 import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.LockMode;
-import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -798,10 +796,7 @@ public class DeleteEntitiesCron extends TimerTask {
             .append(ModelDBConstants.ENTITY_TYPE)
             .append(" = :entityType")
             .toString();
-    Query deleteLabelsQuery =
-        session
-            .createQuery(deleteLabelsQueryString)
-            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+    Query deleteLabelsQuery = session.createQuery(deleteLabelsQueryString);
     deleteLabelsQuery.setParameter("entityHash", entityHash);
     deleteLabelsQuery.setParameter("entityType", idType.getNumber());
     deleteLabelsQuery.executeUpdate();
@@ -815,10 +810,7 @@ public class DeleteEntitiesCron extends TimerTask {
             .append(" AND at.entity_name ")
             .append(" = :entityName")
             .toString();
-    Query deleteLabelsQuery =
-        session
-            .createQuery(deleteAllAttributes)
-            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+    Query deleteLabelsQuery = session.createQuery(deleteAllAttributes);
     deleteLabelsQuery.setParameter("entityHash", entityHash);
     deleteLabelsQuery.setParameter("entityName", ModelDBConstants.BLOB);
     deleteLabelsQuery.executeUpdate();
