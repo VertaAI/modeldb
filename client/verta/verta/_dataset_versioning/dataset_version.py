@@ -121,7 +121,7 @@ class DatasetVersion(entity._ModelDBEntity):
 
         Returns
         -------
-        `dataset blob subclass <api/api/versioning.html#dataset>`__
+        `dataset blob subclass <versioning.html#dataset>`__
             Dataset content.
 
         """

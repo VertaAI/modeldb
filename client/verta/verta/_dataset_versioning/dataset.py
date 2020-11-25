@@ -347,7 +347,7 @@ class Dataset(entity._ModelDBEntity):
 
         Parameters
         ----------
-        content : `dataset blob subclass <api/api/versioning.html#dataset>`__
+        content : `dataset blob subclass <versioning.html#dataset>`__
             Dataset content.
         desc : str, optional
             Description of the dataset version.
