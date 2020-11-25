@@ -1184,8 +1184,7 @@ class Client(object):
         Gets or creates a dataset.
 
         .. versionchanged:: 0.15.10
-            The dataset versioning interface was updated for flexibility,
-            robustness, and consistency with other ModelDB entities.
+            The dataset versioning interface was overhauled.
 
         If an accessible dataset with name `name` does not already exist, it will be created
         and initialized with specified metadata parameters. If such a dataset does already exist,
@@ -1253,8 +1252,7 @@ class Client(object):
         Alias for :meth:`Client.get_or_create_dataset()`.
 
         .. versionchanged:: 0.15.10
-            The dataset versioning interface was updated for flexibility,
-            robustness, and consistency with other ModelDB entities.
+            The dataset versioning interface was overhauled.
 
         """
         return self.get_or_create_dataset(*args, **kwargs)
@@ -1264,8 +1262,7 @@ class Client(object):
         Creates a dataset, initialized with specified metadata parameters.
 
         .. versionchanged:: 0.15.10
-            The dataset versioning interface was updated for flexibility,
-            robustness, and consistency with other ModelDB entities.
+            The dataset versioning interface was overhauled.
 
         Parameters
         ----------
@@ -1307,8 +1304,7 @@ class Client(object):
         Gets a dataset.
 
         .. versionchanged:: 0.15.10
-            The dataset versioning interface was updated for flexibility,
-            robustness, and consistency with other ModelDB entities.
+            The dataset versioning interface was overhauled.
 
         Parameters
         ----------
@@ -1354,8 +1350,7 @@ class Client(object):
         Gets a dataset version.
 
         .. versionchanged:: 0.15.10
-            The dataset versioning interface was updated for flexibility,
-            robustness, and consistency with other ModelDB entities.
+            The dataset versioning interface was overhauled.
 
         Parameters
         ----------
