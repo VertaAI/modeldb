@@ -194,7 +194,7 @@ class Client(object):
                     e.args = ("authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`\n\n{}".format(
                         e.args[0]),) + e.args[1:]
 
-                raise e
+                    raise e
 
             _utils.raise_for_http_error(response)
             print("connection successfully established")
