@@ -21,8 +21,8 @@ class HDFSPath(Path):
     ----------
     hdfs_client : hdfs.client.Client
         Instance of HDFS client.
-    paths : str or list of strs
-        A path, or a list of paths, to files from HDFS.
+    paths : list of strs
+        List of paths to files from HDFS.
     base_path : str, optional
         Directory path to be removed from the beginning of `paths` before saving to ModelDB.
 
@@ -89,8 +89,8 @@ class HDFSPath(Path):
         ----------
         sc : pyspark.SparkContext
             SparkContext instance.
-        paths : str or list of strs
-            Path, or list of paths, to binary input data file(s) from HDFS.
+        paths : list of strs
+            List of paths to binary input data file(s) from HDFS.
 
         Returns
         -------
