@@ -165,6 +165,6 @@ class TestLogging:
             retrieved_version = experiment_run.get_dataset_version(key)
             assert retrieved_version.id == version.id
 
-            retreved_components = sorted(retrieved_version.get_content().list_components(), key=lambda component: component.path)
+            retrieved_components = sorted(retrieved_version.get_content().list_components(), key=lambda component: component.path)
             components          = sorted(version.get_content().list_components(),           key=lambda component: component.path)
-            assert retreved_components == components
+            assert retrieved_components == components
