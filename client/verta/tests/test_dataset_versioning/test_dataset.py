@@ -1,21 +1,76 @@
-import verta
+import collections
+
 import pytest
 import requests
 
+import verta
 
-class TestDataset:
-    def test_description(self, client, created_datasets):
-        original_description = "this is a cool dataset"
-        dataset = client.set_dataset(desc=original_description)
+
+class TestMetadata:
+    def test_description(self, client, created_datasets, strs):
+        first_desc, second_desc = strs[:2]
+
+        dataset = client.create_dataset(desc=first_desc)
         created_datasets.append(dataset)
-        assert dataset.get_description() == original_description
+        assert dataset.get_description() == first_desc
 
-        updated_description = "this is an uncool dataset"
-        dataset.set_description(updated_description)
-        assert dataset.get_description() == updated_description
+        dataset.set_description(second_desc)
+        assert dataset.get_description() == second_desc
 
-        assert client.get_dataset(id=dataset.id).get_description() == updated_description
+        assert client.get_dataset(id=dataset.id).get_description() == second_desc
 
+    def test_tags(self, client, created_datasets, strs):
+        tag1, tag2, tag3, tag4 = strs[:4]
+
+        dataset = client.create_dataset(tags=[tag1])
+        created_datasets.append(dataset)
+        assert set(dataset.get_tags()) == {tag1}
+
+        dataset.add_tag(tag2)
+        assert set(dataset.get_tags()) == {tag1, tag2}
+
+        dataset.add_tags([tag3, tag4])
+        assert set(dataset.get_tags()) == {tag1, tag2, tag3, tag4}
+
+        dataset.del_tag(tag3)
+        dataset.del_tag(tag3)  # no error if nonexistent
+        assert set(dataset.get_tags()) == {tag1, tag2, tag4}
+
+        assert set(client.get_dataset(id=dataset.id).get_tags()) == {tag1, tag2, tag4}
+
+    def test_attributes(self, client, created_datasets):
+        Attr = collections.namedtuple('Attr', ['key', 'value'])
+        attr1 = Attr('key1', {'a': 1})
+        attr2 = Attr('key2', ['a', 1])
+        attr3 = Attr('key3', 'a')
+        attr4 = Attr('key4', 1)
+
+        dataset = client.create_dataset(attrs=dict([attr1]))
+        created_datasets.append(dataset)
+        assert dataset.get_attributes() == dict([attr1])
+
+        dataset.add_attribute(*attr2)
+        assert dataset.get_attributes() == dict([attr1, attr2])
+
+        dataset.add_attributes(dict([attr3, attr4]))
+        assert dataset.get_attributes() == dict([attr1, attr2, attr3, attr4])
+
+        dataset.del_attribute(attr3.key)
+        dataset.del_attribute(attr3.key)  # no error if nonexistent
+        assert dataset.get_attributes() == dict([attr1, attr2, attr4])
+
+        assert client.get_dataset(id=dataset.id).get_attributes() == dict([attr1, attr2, attr4])
+
+        for attr in [attr1, attr2, attr4]:
+            assert dataset.get_attribute(attr.key) == attr.value
+
+        # overwrite
+        new_val = 'b'
+        dataset.add_attribute(attr1.key, new_val)
+        assert dataset.get_attribute(attr1.key) == new_val
+
+
+class TestCreateGet:
     def test_create(self, client, created_datasets):
         dataset = client.set_dataset()
         assert dataset
@@ -26,12 +81,9 @@ class TestDataset:
         assert dataset
         created_datasets.append(dataset)
 
-        with pytest.raises(requests.HTTPError) as excinfo:
+        with pytest.raises(requests.HTTPError, match="already exists"):
             assert client.create_dataset(name)
-        excinfo_value = str(excinfo.value).strip()
-        assert "409" in excinfo_value
-        assert "already exists" in excinfo_value
-        with pytest.warns(UserWarning, match='.*already exists.*'):
+        with pytest.warns(UserWarning, match="already exists"):
             client.set_dataset(name=dataset.name, time_created=123)
 
     def test_get(self, client, created_datasets):
@@ -46,42 +98,28 @@ class TestDataset:
         assert dataset.id == client.get_dataset(dataset.name).id
         assert dataset.id == client.get_dataset(id=dataset.id).id
 
-    def test_attributes(self, client, created_datasets):
-        name = verta._internal_utils._utils.generate_default_name()
-        dataset = client.set_dataset(name, attrs={"string-attr": "some-attr", "int-attr": 12, "bool-attr": False})
-        created_datasets.append(dataset)
-        assert dataset.get_attributes() == {"string-attr": "some-attr", "int-attr": 12, "bool-attr": False}
-
-        dataset.add_attribute("float-attr", 0.4)
-        assert dataset.get_attribute("float-attr") == 0.4
-
-        # Test overwriting
-        dataset.add_attribute("int-attr", 15)
-        assert dataset.get_attribute("int-attr") == 15
-
-        # Test deleting:
-        dataset.del_attribute('string-attr')
-        assert dataset.get_attributes() ==  {"int-attr": 15, "bool-attr": False, "float-attr": 0.4}
-
         # Deleting non-existing key:
         dataset.del_attribute("non-existing")
 
-    def test_tags(self, client, created_datasets):
-        name = verta._internal_utils._utils.generate_default_name()
-        dataset = client.set_dataset(name, tags=["tag1", "tag2"])
-        created_datasets.append(dataset)
-        assert dataset.get_tags() == ["tag1", "tag2"]
+    def test_find(self, client, created_datasets, strs):
+        name1, name2, name3, name4, tag1, tag2 = (
+            s + str(verta._internal_utils._utils.now())
+            for s in strs[:6]
+        )
 
-        dataset.add_tag("tag3")
-        assert dataset.get_tags() == ["tag1", "tag2", "tag3"]
+        dataset1 = client.create_dataset(name1, tags=[tag1])
+        dataset2 = client.create_dataset(name2, tags=[tag1])
+        dataset3 = client.create_dataset(name3, tags=[tag2])
+        dataset4 = client.create_dataset(name4, tags=[tag2])
+        created_datasets.extend([dataset1, dataset2, dataset3, dataset4])
 
-        dataset.add_tags(["tag1", "tag4", "tag5"])
-        assert dataset.get_tags() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
+        datasets = client.datasets.find("name == {}".format(name3))
+        assert len(datasets) == 1
+        assert datasets[0].id == dataset3.id
 
-        dataset.del_tag("tag2")
-        assert dataset.get_tags() == ["tag1", "tag3", "tag4", "tag5"]
-
-        dataset.del_tag("tag100") # delete non-existing tag does not error out
+        datasets = client.datasets.find("tags ~= {}".format(tag1))
+        assert len(datasets) == 2
+        assert set(dataset.id for dataset in datasets) == {dataset1.id, dataset2.id}
 
     def test_repr(self, client, created_datasets):
         description = "this is a cool dataset"
