@@ -1,15 +1,85 @@
+import collections
+
 import pytest
 
 import verta
+from verta.dataset import Path, S3
 
 
-class TestDatasetVersion:
+class TestMetadata:  # essentially copied from test_dataset.py
+    def test_description(self, client, created_datasets, strs):
+        first_desc, second_desc = strs[:2]
+        dataset = client.create_dataset()
+        created_datasets.append(dataset)
+
+        version = dataset.create_version(Path("conftest.py"), desc=first_desc)
+        assert version.get_description() == first_desc
+
+        version.set_description(second_desc)
+        assert version.get_description() == second_desc
+
+        assert dataset.get_version(id=version.id).get_description() == second_desc
+
+    def test_tags(self, client, created_datasets, strs):
+        tag1, tag2, tag3, tag4 = strs[:4]
+        dataset = client.create_dataset()
+        created_datasets.append(dataset)
+
+        version = dataset.create_version(Path("conftest.py"), tags=[tag1])
+        assert set(version.get_tags()) == {tag1}
+
+        version.add_tag(tag2)
+        assert set(version.get_tags()) == {tag1, tag2}
+
+        version.add_tags([tag3, tag4])
+        assert set(version.get_tags()) == {tag1, tag2, tag3, tag4}
+
+        version.del_tag(tag3)
+        version.del_tag(tag3)  # no error if nonexistent
+        assert set(version.get_tags()) == {tag1, tag2, tag4}
+
+        assert set(dataset.get_version(id=version.id).get_tags()) == {tag1, tag2, tag4}
+
+    def test_attributes(self, client, created_datasets):
+        Attr = collections.namedtuple('Attr', ['key', 'value'])
+        attr1 = Attr('key1', {'a': 1})
+        attr2 = Attr('key2', ['a', 1])
+        attr3 = Attr('key3', 'a')
+        attr4 = Attr('key4', 1)
+        dataset = client.create_dataset()
+        created_datasets.append(dataset)
+
+        version = dataset.create_version(Path("conftest.py"), attrs=dict([attr1]))
+        assert version.get_attributes() == dict([attr1])
+
+        version.add_attribute(*attr2)
+        assert version.get_attributes() == dict([attr1, attr2])
+
+        version.add_attributes(dict([attr3, attr4]))
+        assert version.get_attributes() == dict([attr1, attr2, attr3, attr4])
+
+        version.del_attribute(attr3.key)
+        version.del_attribute(attr3.key)  # no error if nonexistent
+        assert version.get_attributes() == dict([attr1, attr2, attr4])
+
+        assert dataset.get_version(id=version.id).get_attributes() == dict([attr1, attr2, attr4])
+
+        for attr in [attr1, attr2, attr4]:
+            assert version.get_attribute(attr.key) == attr.value
+
+        # overwrite
+        new_val = 'b'
+        dataset.add_attribute(attr1.key, new_val)
+        assert dataset.get_attribute(attr1.key) == new_val
+
+
+class TestCreateGet:
     def test_create_get_path(self, client, created_datasets):
         name = verta._internal_utils._utils.generate_default_name()
         dataset = client.set_dataset(name)
         created_datasets.append(dataset)
-        dataset_version = dataset.create_path_version(paths=["modelapi_hypothesis/"])
-        dataset_version2 = dataset.create_path_version(paths=["modelapi_hypothesis/api_generator.py"])
+        dataset_version = dataset.create_version(Path(["modelapi_hypothesis/"]))
+        dataset_version2 = dataset.create_version(Path(["modelapi_hypothesis/api_generator.py"]))
 
         assert dataset_version.id == client.get_dataset_version(dataset_version.id).id
         assert dataset_version2.id == client.get_dataset_version(id=dataset_version2.id).id
@@ -20,7 +90,7 @@ class TestDatasetVersion:
         dataset = client.set_dataset(name)
         created_datasets.append(dataset)
 
-        dataset_version = dataset.create_path_version(paths=["modelapi_hypothesis/"])
+        dataset_version = dataset.create_version(Path(["modelapi_hypothesis/"]))
         dataset.get_latest_version()
 
         captured = capsys.readouterr()
@@ -32,69 +102,67 @@ class TestDatasetVersion:
         name = verta._internal_utils._utils.generate_default_name()
         dataset = client.set_dataset(name)
         created_datasets.append(dataset)
-        dataset_version = dataset.create_s3_version(paths=["s3://verta-starter/", "s3://verta-starter/census-test.csv"])
+        dataset_version = dataset.create_version(S3(["s3://verta-starter/", "s3://verta-starter/census-test.csv"]))
 
-        assert dataset_version.id == client.get_dataset_version(dataset_version.id).id
+        assert dataset_version.id == dataset.get_version(id=dataset_version.id).id
 
-    def test_description(self, client, created_datasets):
-        name = verta._internal_utils._utils.generate_default_name()
-        dataset = client.set_dataset(name)
+    def test_find(self, client, created_datasets, strs):  # essentially copied from test_dataset.py
+        name1, name2, name3, name4, tag1, tag2 = (
+            s + str(verta._internal_utils._utils.now())
+            for s in strs[:6]
+        )
+
+        dataset1 = client.create_dataset(name1, tags=[tag1])
+        dataset2 = client.create_dataset(name2, tags=[tag1])
+        dataset3 = client.create_dataset(name3, tags=[tag2])
+        dataset4 = client.create_dataset(name4, tags=[tag2])
+        created_datasets.extend([dataset1, dataset2, dataset3, dataset4])
+
+        datasets = client.datasets.find("name == {}".format(name3))
+        assert len(datasets) == 1
+        assert datasets[0].id == dataset3.id
+
+        datasets = client.datasets.find("tags ~= {}".format(tag1))
+        assert len(datasets) == 2
+        assert set(dataset.id for dataset in datasets) == {dataset1.id, dataset2.id}
+
+    def test_repr(self, client, created_datasets):  # essentially copied from test_dataset.py
+        description = "this is a cool version"
+        tags = [u"tag1", u"tag2"]
+        dataset = client.create_dataset()
         created_datasets.append(dataset)
-        original_description = "original description"
-        dataset_version = dataset.create_path_version(paths=["modelapi_hypothesis/",
-                                                             "modelapi_hypothesis/api_generator.py"],
-                                                              desc=original_description)
-        assert dataset_version.get_description() == original_description
+        version = dataset.create_version(Path("conftest.py"), desc=description, tags=tags)
 
-        updated_description = "updated description"
-        dataset_version.set_description(updated_description)
-        assert dataset_version.get_description() == updated_description
+        str_repr = repr(version)
 
-        assert client.get_dataset_version(id=dataset_version.id).get_description() == updated_description
+        assert "version: {}".format(version.version) in str_repr
+        assert "id: {}".format(version.id) in str_repr
+        assert "time created" in str_repr
+        assert "time updated" in str_repr
+        assert "description: {}".format(description) in str_repr
+        assert "tags: {}".format(tags) in str_repr
 
-    def test_tags(self, client, created_datasets):
-        name = verta._internal_utils._utils.generate_default_name()
-        dataset = client.set_dataset(name)
-        dataset_version = dataset.create_path_version(paths=["modelapi_hypothesis/",
-                                                             "modelapi_hypothesis/api_generator.py"],
-                                                      tags=["tag1", "tag2"])
-        created_datasets.append(dataset)
-        assert dataset_version.get_tags() == ["tag1", "tag2"]
+        # check content
+        content = version.get_content()
+        for repr_line in repr(content).splitlines():
+            assert repr_line in str_repr.split("content:")[-1]
 
-        dataset_version.add_tag("tag3")
-        assert dataset_version.get_tags() == ["tag1", "tag2", "tag3"]
 
-        dataset_version.add_tags(["tag1", "tag4", "tag5"])
-        assert dataset_version.get_tags() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
+class TestLogging:
+    def test_log_get(self, client, experiment_run, created_datasets, strs):
+        """Tests ExperimentRun.log_dataset_version() and ExperimentRun.get_dataset_version()."""
+        key1, key2 = strs[:2]
+        dataset = client.create_dataset()
+        version1 = dataset.create_version(Path("conftest.py"))
+        version2 = dataset.create_version(S3("s3://verta-starter/census-train.csv"))
 
-        dataset_version.del_tag("tag2")
-        assert dataset_version.get_tags() == ["tag1", "tag3", "tag4", "tag5"]
+        experiment_run.log_dataset_version(key1, version1)
+        experiment_run.log_dataset_version(key2, version2)
 
-        dataset_version.del_tag("tag100") # delete non-existing tag does not error out
+        for key, version in [(key1, version1), (key2, version2)]:
+            retrieved_version = experiment_run.get_dataset_version(key)
+            assert retrieved_version.id == version.id
 
-    def test_attributes(self, client, created_datasets):
-        name = verta._internal_utils._utils.generate_default_name()
-        dataset = client.set_dataset(name)
-        created_datasets.append(dataset)
-        dataset_version = dataset.create_path_version(paths=["modelapi_hypothesis/",
-                                                             "modelapi_hypothesis/api_generator.py"],
-                                                      attrs={"string-attr": "some-attr",
-                                                             "int-attr": 12, "bool-attr": False})
-        assert dataset_version.get_attributes() == {"string-attr": "some-attr", "int-attr": 12,
-                                                    "bool-attr": False}
-
-        dataset_version.add_attribute("float-attr", 0.4)
-        assert dataset_version.get_attribute("float-attr") == 0.4
-
-        # Test overwriting
-        # TODO: add overwrite test when it is enabled on backend
-        # dataset_version.add_attribute("int-attr", 15)
-        # assert dataset_version.get_attribute("int-attr") == 15
-
-        # Test deleting:
-        dataset_version.del_attribute('string-attr')
-        assert dataset_version.get_attributes() == {"int-attr": 12, "bool-attr": False,
-                                                    "float-attr": 0.4}
-
-        # Deleting non-existing key:
-        dataset_version.del_attribute("non-existing")
+            retreved_components = sorted(retrieved_version.get_content().list_components(), key=lambda component: component.path)
+            components          = sorted(version.get_content().list_components(),           key=lambda component: component.path)
+            assert retreved_components == components
