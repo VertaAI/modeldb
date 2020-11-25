@@ -21,6 +21,10 @@ class Dataset(entity._ModelDBEntity):
     """
     Object representing a ModelDB dataset.
 
+    .. versionchanged:: 0.15.10
+        The dataset versioning interface was updated for flexibility,
+        robustness, and consistency with other ModelDB entities.
+
     This class provides read/write functionality for dataset metadata and access to its versions.
 
     There should not be a need to instantiate this class directly; please use

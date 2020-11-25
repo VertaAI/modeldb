@@ -1183,6 +1183,10 @@ class Client(object):
         """
         Gets or creates a dataset.
 
+        .. versionchanged:: 0.15.10
+            The dataset versioning interface was updated for flexibility,
+            robustness, and consistency with other ModelDB entities.
+
         If an accessible dataset with name `name` does not already exist, it will be created
         and initialized with specified metadata parameters. If such a dataset does already exist,
         it will be retrieved; specifying metadata parameters in this case will raise a warning.
@@ -1248,12 +1252,20 @@ class Client(object):
         """
         Alias for :meth:`Client.get_or_create_dataset()`.
 
+        .. versionchanged:: 0.15.10
+            The dataset versioning interface was updated for flexibility,
+            robustness, and consistency with other ModelDB entities.
+
         """
         return self.get_or_create_dataset(*args, **kwargs)
 
     def create_dataset(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None):
         """
         Creates a dataset, initialized with specified metadata parameters.
+
+        .. versionchanged:: 0.15.10
+            The dataset versioning interface was updated for flexibility,
+            robustness, and consistency with other ModelDB entities.
 
         Parameters
         ----------
@@ -1293,6 +1305,10 @@ class Client(object):
     def get_dataset(self, name=None, workspace=None, id=None):
         """
         Gets a dataset.
+
+        .. versionchanged:: 0.15.10
+            The dataset versioning interface was updated for flexibility,
+            robustness, and consistency with other ModelDB entities.
 
         Parameters
         ----------
@@ -1336,6 +1352,10 @@ class Client(object):
     def get_dataset_version(self, id):
         """
         Gets a dataset version.
+
+        .. versionchanged:: 0.15.10
+            The dataset versioning interface was updated for flexibility,
+            robustness, and consistency with other ModelDB entities.
 
         Parameters
         ----------
