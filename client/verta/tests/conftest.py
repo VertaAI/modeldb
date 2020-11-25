@@ -362,12 +362,8 @@ def created_datasets(client):
 
     yield created_datasets
 
-    datasets_conn = {}  # prevent duplication
     for dataset in created_datasets:
-        datasets_conn[dataset.id] = dataset._conn
-
-    for dataset_id in datasets_conn:
-        utils.delete_datasets([dataset_id], datasets_conn[dataset_id])
+        dataset.delete()
 
 
 @pytest.fixture
@@ -391,16 +387,6 @@ def created_registered_models():
 @pytest.fixture
 def model_version(registered_model):
     yield registered_model.get_or_create_version()
-
-
-@pytest.fixture
-def created_endpoints():
-    to_delete = []
-
-    yield to_delete
-
-    for endpoint in to_delete:
-        endpoint.delete()
 
 
 @pytest.fixture

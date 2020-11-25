@@ -125,10 +125,3 @@ def sys_path_manager():
 def get_build_ids(status):
     # get the set of build_ids in the status of the stage:
     return set(map(lambda comp: comp["build_id"], status["components"]))
-
-
-def delete_datasets(ids, conn):
-    request_url = "{}://{}/api/v1/modeldb/dataset/deleteDatasets".format(conn.scheme, conn.socket)
-    response = requests.delete(request_url, json={'ids': ids}, headers=conn.auth)
-    _utils.raise_for_http_error(response)
-
