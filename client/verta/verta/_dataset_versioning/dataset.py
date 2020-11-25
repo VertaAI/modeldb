@@ -371,3 +371,14 @@ class Dataset(entity._ModelDBEntity):
         response = self._conn.make_proto_request(method, endpoint, body=msg)
         self._conn.must_proto_response(response, response_proto)
         self._clear_cache()
+
+    def delete(self):
+        """
+        Deletes this dataset.
+
+        """
+        msg = _DatasetService.DeleteDataset(id=self.id)
+        response = self._conn.make_proto_request(
+            "DELETE", "/api/v1/modeldb/dataset/deleteDataset", body=msg,
+        )
+        self._conn.must_response(response)

@@ -281,3 +281,14 @@ class DatasetVersion(entity._ModelDBEntity):
         response = self._conn.make_proto_request(method, endpoint, body=msg)
         self._conn.must_proto_response(response, response_proto)
         self._clear_cache()
+
+    def delete(self):
+        """
+        Deletes this dataset version.
+
+        """
+        msg = _DatasetVersionService.DeleteDatasetVersion(id=self.id)
+        response = self._conn.make_proto_request(
+            "DELETE", "/api/v1/modeldb/dataset-version/deleteDatasetVersion", body=msg,
+        )
+        self._conn.must_response(response)
