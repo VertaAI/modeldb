@@ -16,7 +16,6 @@ ExperimentRun
 - `Artifacts`_
 
   - `General`_
-  - `Datasets`_
   - `Images`_
 
 - `Advanced Uses`_
@@ -82,12 +81,6 @@ General
 .. automethod:: ExperimentRun.log_artifact_path
 .. automethod:: ExperimentRun.get_artifact
 .. automethod:: ExperimentRun.download_artifact
-
-Datasets
-^^^^^^^^
-.. automethod:: ExperimentRun.log_dataset
-.. automethod:: ExperimentRun.log_dataset_path
-.. automethod:: ExperimentRun.get_dataset
 
 Images
 ^^^^^^
