@@ -2,8 +2,6 @@
 
 from __future__ import print_function
 
-import abc
-
 from ..external import six
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -17,7 +15,6 @@ from .._internal_utils import (
 )
 
 
-@six.add_metaclass(abc.ABCMeta)
 class DatasetVersion(entity._ModelDBEntity):
     def __init__(self, conn, conf, msg):
         super(DatasetVersion, self).__init__(conn, conf, _DatasetVersionService, "dataset-version", msg)
