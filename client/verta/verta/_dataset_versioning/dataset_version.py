@@ -41,6 +41,16 @@ class DatasetVersion(entity._ModelDBEntity):
         self._refresh_cache()
         return self._msg.version
 
+    @property
+    def dataset_id(self):
+        self._refresh_cache()
+        return self._msg.dataset_id
+
+    @property
+    def parent_id(self):
+        self._refresh_cache()
+        return self._msg.parent_id
+
     @classmethod
     def _generate_default_name(cls):
         return "DatasetVersion {}".format(_utils.generate_default_name())
