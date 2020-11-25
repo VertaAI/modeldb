@@ -16,6 +16,26 @@ from .._internal_utils import (
 
 
 class DatasetVersion(entity._ModelDBEntity):
+    """
+    Object representing a ModelDB dataset version.
+
+    This class provides read/write functionality for dataset version metadata and access to its content.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`Dataset.create_version() <verta._dataset_versioning.dataset.Dataset.create_version>`.
+
+    Attributes
+    ----------
+    id : str
+        ID of this dataset version.
+    version : int
+        Version number of this dataset version.
+    dataset_id : str
+        ID of this version's dataset.
+    parent_id : str
+        ID of this version's preceding version.
+
+    """
     def __init__(self, conn, conf, msg):
         super(DatasetVersion, self).__init__(conn, conf, _DatasetVersionService, "dataset-version", msg)
 
@@ -92,6 +112,15 @@ class DatasetVersion(entity._ModelDBEntity):
         return dataset_version
 
     def get_content(self):
+        """
+        Returns the content of this dataset version.
+
+        Returns
+        -------
+        `dataset blob subclass <api/api/versioning.html#dataset>`__
+            Dataset content.
+
+        """
         self._refresh_cache()
 
         # create wrapper blob msg so we can reuse the repository system's proto-to-obj
@@ -101,7 +130,7 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def set_description(self, desc):
         """
-        Sets the description of this Dataset Version.
+        Sets the description of this dataset version.
 
         Parameters
         ----------
@@ -116,12 +145,12 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def get_description(self):
         """
-        Gets the description of this Dataset Version.
+        Gets the description of this dataset version.
 
         Returns
         -------
         str
-            Description of this Dataset Version.
+            Description of this dataset version.
 
         """
         self._refresh_cache()
@@ -129,7 +158,7 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def add_tag(self, tag):
         """
-        Adds a tag to this Dataset Version.
+        Adds a tag to this dataset version.
 
         Parameters
         ----------
@@ -144,7 +173,7 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def add_tags(self, tags):
         """
-        Adds multiple tags to this Dataset Version.
+        Adds multiple tags to this dataset version.
 
         Parameters
         ----------
@@ -160,7 +189,7 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def get_tags(self):
         """
-        Gets all tags from this Dataset Version.
+        Gets all tags from this dataset version.
 
         Returns
         -------
@@ -173,7 +202,9 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def del_tag(self, tag):
         """
-        Deletes a tag from this Dataset Version.
+        Deletes a tag from this dataset version.
+
+        This method will not raise an error if the tag does not exist.
 
         Parameters
         ----------
@@ -191,7 +222,7 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def add_attribute(self, key, value):
         """
-        Adds an attribute to this Dataset Version.
+        Adds an attribute to this dataset version.
 
         Parameters
         ----------
@@ -205,7 +236,7 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def add_attributes(self, attrs):
         """
-        Adds potentially multiple attributes to this Dataset Version.
+        Adds potentially multiple attributes to this dataset version.
 
         Parameters
         ----------
@@ -232,7 +263,7 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def get_attribute(self, key):
         """
-        Gets the attribute with name `key` from this Dataset Version.
+        Gets the attribute with name `key` from this dataset version.
 
         Parameters
         ----------
@@ -255,7 +286,7 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def get_attributes(self):
         """
-        Gets all attributes from this Dataset Version.
+        Gets all attributes from this dataset version.
 
         Returns
         -------
@@ -268,7 +299,9 @@ class DatasetVersion(entity._ModelDBEntity):
 
     def del_attribute(self, key):
         """
-        Deletes the attribute with name `key` from this Dataset Version
+        Deletes the attribute with name `key` from this dataset version.
+
+        This method will not raise an error if the attribute does not exist.
 
         Parameters
         ----------
