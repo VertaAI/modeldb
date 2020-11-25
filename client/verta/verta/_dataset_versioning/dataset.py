@@ -365,7 +365,7 @@ class Dataset(entity._ModelDBEntity):
         .. code-block:: python
 
             from verta.dataset import Path
-            version = dataset.create_version(Path(["data.csv"]))
+            version = dataset.create_version(Path("data.csv"))
 
         """
         return DatasetVersion._create(
