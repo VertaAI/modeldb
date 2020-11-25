@@ -72,6 +72,16 @@ class TestMetadata:  # essentially copied from test_dataset.py
         dataset.add_attribute(attr1.key, new_val)
         assert dataset.get_attribute(attr1.key) == new_val
 
+    def test_dataset_and_parent_ids(self, client, created_datasets):
+        dataset = client.create_dataset()
+        created_datasets.append(dataset)
+
+        version1 = dataset.create_version(Path("conftest.py"))
+        version2 = dataset.create_version(S3("s3://verta-starter/census-train.csv"))
+
+        assert version1.dataset_id == version2.dataset_id == dataset.id
+        assert version2.parent_id == version1.id
+
 
 class TestCreateGet:
     def test_create_get_path(self, client, created_datasets):
