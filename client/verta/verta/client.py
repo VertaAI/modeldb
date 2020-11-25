@@ -188,8 +188,13 @@ class Client(object):
 
             if is_unauthorized(response):
                 # response.reason was "Unauthorized"
-                new_reason = "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`\n\n{}".format(response.reason)
-                response.reason = new_reason
+                try:
+                    response.raise_for_status()
+                except requests.HTTPError as e:
+                    e.args = ("authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`\n\n{}".format(
+                        e.args[0]),) + e.args[1:]
+
+                raise e
 
             _utils.raise_for_http_error(response)
             print("connection successfully established")
