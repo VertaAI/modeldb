@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 
+import warnings
+
 from ..external import six
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -336,3 +338,66 @@ class DatasetVersion(entity._ModelDBEntity):
             "DELETE", "/api/v1/modeldb/dataset-version/deleteDatasetVersion", body=msg,
         )
         self._conn.must_response(response)
+
+    # The following properties are holdovers for backwards compatibility
+    @property
+    def desc(self):
+        warnings.warn(
+            "this attribute is deprecated and will removed in an upcoming version;"
+            " consider using `get_description()` instead",
+            category=FutureWarning,
+        )
+        return self.get_description()
+
+    @property
+    def attrs(self):
+        warnings.warn(
+            "this attribute is deprecated and will removed in an upcoming version;"
+            " consider using `get_attributes()` instead",
+            category=FutureWarning,
+        )
+        return self.get_attributes()
+
+    @property
+    def tags(self):
+        warnings.warn(
+            "this attribute is deprecated and will removed in an upcoming version;"
+            " consider using `get_tags()` instead",
+            category=FutureWarning,
+        )
+        return self.get_tags()
+
+    @property
+    def _dataset_type(self):
+        warnings.warn(
+            "this attribute is deprecated and will removed in an upcoming version;"
+            " consider checking `get_content()` instead",
+            category=FutureWarning,
+        )
+        # enum value for PATH, which is currently the only supported type
+        # https://github.com/VertaAI/modeldb/blob/af5e3a7/protos/protos/public/modeldb/DatasetService.proto#L32
+        return 1
+
+    @property
+    def dataset_version(self):
+        warnings.warn(
+            "this attribute is deprecated and will removed in an upcoming version;"
+            " interfacing directly with the internal protobuf structure is not recommended",
+            category=FutureWarning,
+        )
+        self._refresh_cache()
+        return self._msg
+
+    @property
+    def dataset_version_info(self):
+        warnings.warn(
+            "this attribute is deprecated and will removed in an upcoming version;"
+            " consider using `get_content()` instead",
+            category=FutureWarning,
+        )
+        self._refresh_cache()
+        version_info_oneof = self._msg.WhichOneof('dataset_version_info')
+        return getattr(self._msg, version_info_oneof)
+
+    # TODO: base_path
+    # TODO: list_components
