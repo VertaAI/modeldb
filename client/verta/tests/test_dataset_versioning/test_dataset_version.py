@@ -107,24 +107,26 @@ class TestCreateGet:
         assert dataset_version.id == dataset.get_version(id=dataset_version.id).id
 
     def test_find(self, client, created_datasets, strs):  # essentially copied from test_dataset.py
-        name1, name2, name3, name4, tag1, tag2 = (
-            s + str(verta._internal_utils._utils.now())
-            for s in strs[:6]
-        )
+        tag1, tag2, tag3 = strs[:3]
+        dataset = client.create_dataset()
+        created_datasets.append(dataset)
 
-        dataset1 = client.create_dataset(name1, tags=[tag1])
-        dataset2 = client.create_dataset(name2, tags=[tag1])
-        dataset3 = client.create_dataset(name3, tags=[tag2])
-        dataset4 = client.create_dataset(name4, tags=[tag2])
-        created_datasets.extend([dataset1, dataset2, dataset3, dataset4])
+        version1 = dataset.create_version(Path("conftest.py"), tags=[tag1])
+        version2 = dataset.create_version(Path("conftest.py"), tags=[tag1])
+        version3 = dataset.create_version(Path("conftest.py"), tags=[tag1, tag2])
+        version4 = dataset.create_version(Path("conftest.py"), tags=[      tag2, tag3])
 
-        datasets = client.datasets.find("name == {}".format(name3))
-        assert len(datasets) == 1
-        assert datasets[0].id == dataset3.id
+        versions = dataset.versions.find("tags ~= {}".format(tag1))
+        assert len(versions) == 3
+        assert set(version.id for version in versions) == {version1.id, version2.id, version3.id}
 
-        datasets = client.datasets.find("tags ~= {}".format(tag1))
-        assert len(datasets) == 2
-        assert set(dataset.id for dataset in datasets) == {dataset1.id, dataset2.id}
+        versions = dataset.versions.find("tags ~= {}".format(tag2))
+        assert len(versions) == 2
+        assert set(version.id for version in versions) == {version3.id, version4.id}
+
+        versions = dataset.versions.find("tags ~= {}".format(tag3))
+        assert len(versions) == 1
+        assert set(version.id for version in versions) == {version4.id}
 
     def test_repr(self, client, created_datasets):  # essentially copied from test_dataset.py
         description = "this is a cool version"
