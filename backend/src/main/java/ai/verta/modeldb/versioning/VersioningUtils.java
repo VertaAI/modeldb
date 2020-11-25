@@ -227,7 +227,6 @@ public class VersioningUtils {
         new ArtifactPartEntity(
             artifactId, artifactType, artifactPart.getPartNumber(), artifactPart.getEtag());
     session.beginTransaction();
-    session.lock(artifactPartEntity, LockMode.PESSIMISTIC_WRITE);
     session.saveOrUpdate(artifactPartEntity);
     session.getTransaction().commit();
   }
