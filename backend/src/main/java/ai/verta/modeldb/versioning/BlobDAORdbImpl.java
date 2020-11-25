@@ -2024,7 +2024,7 @@ public class BlobDAORdbImpl implements BlobDAO {
           getDatasetComponentBlob(blobExpandedMap.getKey().getBlob(), pathDatasetComponentBlobPath);
       String computeSha = componentWithSHAMap.get("computeSha");
 
-      VersioningUtils.saveOrUpdateArtifactPartEntity(
+      VersioningUtils.saveArtifactPartEntity(
           artifactPart, session, computeSha, ArtifactPartEntity.VERSION_BLOB_ARTIFACT);
       return CommitVersionedBlobArtifactPart.Response.newBuilder().build();
     } catch (Exception e) {

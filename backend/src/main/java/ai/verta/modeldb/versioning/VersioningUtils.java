@@ -221,7 +221,7 @@ public class VersioningUtils {
     }
   }
 
-  public static void saveOrUpdateArtifactPartEntity(
+  public static void saveArtifactPartEntity(
       ArtifactPart artifactPart, Session session, String artifactId, int artifactType) {
     ArtifactPartEntity artifactPartEntity =
         new ArtifactPartEntity(

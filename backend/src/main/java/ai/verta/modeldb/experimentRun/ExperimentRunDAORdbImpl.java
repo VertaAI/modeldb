@@ -2753,7 +2753,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           acquireWriteLock(
               buildArtifactPartLockKey(
                   artifactEntity.getId(), request.getArtifactPart().getPartNumber()))) {
-        VersioningUtils.saveOrUpdateArtifactPartEntity(
+        VersioningUtils.saveArtifactPartEntity(
             request.getArtifactPart(),
             session,
             String.valueOf(artifactEntity.getId()),
