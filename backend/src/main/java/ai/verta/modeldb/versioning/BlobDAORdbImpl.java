@@ -76,6 +76,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -201,6 +203,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       session.beginTransaction();
       CommitEntity commitEntity =
           commitDAO.getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
+      session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
       setBlobsAttributes(
           session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList, addAttribute);
       commitEntity.setDate_updated(new Date().getTime());
@@ -287,6 +290,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       session.beginTransaction();
       CommitEntity commitEntity =
           commitDAO.getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
+      session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
       if (deleteAll) {
         String entityHash =
             VersioningUtils.getVersioningCompositeId(
@@ -299,6 +303,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         for (String removeAttrKey : attributesKeys) {
           for (AttributeEntity existingAttribute : existingAttributes) {
             if (existingAttribute.getKey().equals(removeAttrKey)) {
+              session.lock(existingAttribute, LockMode.PESSIMISTIC_WRITE);
               session.delete(existingAttribute);
             }
           }
@@ -900,26 +905,32 @@ public class BlobDAORdbImpl implements BlobDAO {
       String errorNameB = null;
       if (!request.getCommitA().isEmpty()) {
         errorNameA = request.getCommitA();
-        internalCommitA = session.get(CommitEntity.class, request.getCommitA());
+        internalCommitA =
+            session.get(CommitEntity.class, request.getCommitA(), LockMode.PESSIMISTIC_WRITE);
       }
 
       if (!request.getCommitB().isEmpty()) {
         errorNameB = request.getCommitB();
-        internalCommitB = session.get(CommitEntity.class, request.getCommitB());
+        internalCommitB =
+            session.get(CommitEntity.class, request.getCommitB(), LockMode.PESSIMISTIC_WRITE);
       }
 
       if (!request.getBranchA().isEmpty()) {
         errorNameA = request.getBranchA();
         BranchEntity branchAEntity =
             repositoryDAO.getBranchEntity(session, repositoryEntity.getId(), request.getBranchA());
-        internalCommitA = session.get(CommitEntity.class, branchAEntity.getCommit_hash());
+        internalCommitA =
+            session.get(
+                CommitEntity.class, branchAEntity.getCommit_hash(), LockMode.PESSIMISTIC_WRITE);
       }
 
       if (!request.getBranchB().isEmpty()) {
         errorNameB = request.getBranchB();
         BranchEntity branchBEntity =
             repositoryDAO.getBranchEntity(session, repositoryEntity.getId(), request.getBranchB());
-        internalCommitB = session.get(CommitEntity.class, branchBEntity.getCommit_hash());
+        internalCommitB =
+            session.get(
+                CommitEntity.class, branchBEntity.getCommit_hash(), LockMode.PESSIMISTIC_WRITE);
       }
 
       if (internalCommitA == null) {
@@ -1078,7 +1089,9 @@ public class BlobDAORdbImpl implements BlobDAO {
         BranchEntity branchAEntity =
             repositoryDAO.getBranchEntity(
                 readSession, repositoryEntity.getId(), request.getBranchA());
-        internalCommitA = readSession.get(CommitEntity.class, branchAEntity.getCommit_hash());
+        internalCommitA =
+            readSession.get(
+                CommitEntity.class, branchAEntity.getCommit_hash(), LockMode.PESSIMISTIC_WRITE);
       }
 
       if (!request.getBranchB().isEmpty()) {
@@ -1087,19 +1100,25 @@ public class BlobDAORdbImpl implements BlobDAO {
         BranchEntity branchBEntity =
             repositoryDAO.getBranchEntity(
                 readSession, repositoryEntity.getId(), request.getBranchB());
-        internalCommitB = readSession.get(CommitEntity.class, branchBEntity.getCommit_hash());
+        internalCommitB =
+            readSession.get(
+                CommitEntity.class, branchBEntity.getCommit_hash(), LockMode.PESSIMISTIC_WRITE);
       }
 
       if (!request.getCommitShaA().isEmpty()) {
         LOGGER.debug("Commit A found in request");
         branchOrCommitA = request.getCommitShaA().substring(0, 7);
-        internalCommitA = readSession.get(CommitEntity.class, request.getCommitShaA());
+        internalCommitA =
+            readSession.get(
+                CommitEntity.class, request.getCommitShaA(), LockMode.PESSIMISTIC_WRITE);
       }
 
       if (!request.getCommitShaB().isEmpty()) {
         LOGGER.debug("Commit B found in request");
         branchOrCommitB = request.getCommitShaB().substring(0, 7);
-        internalCommitB = readSession.get(CommitEntity.class, request.getCommitShaB());
+        internalCommitB =
+            readSession.get(
+                CommitEntity.class, request.getCommitShaB(), LockMode.PESSIMISTIC_WRITE);
       }
 
       if (internalCommitA == null) {
@@ -1186,6 +1205,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                 parentCommits,
                 blobContainerList,
                 mergeMessage);
+        writeSession.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
         writeSession.saveOrUpdate(commitEntity);
         writeSession.getTransaction().commit();
         return MergeRepositoryCommitsRequest.Response.newBuilder()
@@ -1279,8 +1299,11 @@ public class BlobDAORdbImpl implements BlobDAO {
             Status.Code.NOT_FOUND);
       }
 
-      commitToRevertEntity = session.get(CommitEntity.class, request.getCommitToRevertSha());
-      baseCommitEntity = session.get(CommitEntity.class, request.getBaseCommitSha());
+      commitToRevertEntity =
+          session.get(
+              CommitEntity.class, request.getCommitToRevertSha(), LockMode.PESSIMISTIC_WRITE);
+      baseCommitEntity =
+          session.get(CommitEntity.class, request.getBaseCommitSha(), LockMode.PESSIMISTIC_WRITE);
 
       if (commitToRevertEntity.getParent_commits() == null
           || commitToRevertEntity.getParent_commits().isEmpty()) {
@@ -1944,7 +1967,10 @@ public class BlobDAORdbImpl implements BlobDAO {
     } else {
       throw new ModelDBException("Invalid content case found in DatasetBlob", Status.Code.INTERNAL);
     }
-    Query query = session.createQuery(getUploadStatusQuery.toString());
+    Query query =
+        session
+            .createQuery(getUploadStatusQuery.toString())
+            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     query.setParameter("pathId", datasetComponentPathId);
     return query.list();
   }
@@ -1977,6 +2003,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repository);
+      session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
 
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
           getCommitBlobMapWithHash(
@@ -1997,7 +2024,7 @@ public class BlobDAORdbImpl implements BlobDAO {
           getDatasetComponentBlob(blobExpandedMap.getKey().getBlob(), pathDatasetComponentBlobPath);
       String computeSha = componentWithSHAMap.get("computeSha");
 
-      VersioningUtils.saveOrUpdateArtifactPartEntity(
+      VersioningUtils.saveArtifactPartEntity(
           artifactPart, session, computeSha, ArtifactPartEntity.VERSION_BLOB_ARTIFACT);
       return CommitVersionedBlobArtifactPart.Response.newBuilder().build();
     } catch (Exception e) {
@@ -2098,6 +2125,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repository);
+      session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
 
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
           getCommitBlobMapWithHash(

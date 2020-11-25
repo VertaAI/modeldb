@@ -52,6 +52,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
@@ -580,11 +582,16 @@ public class CommitDAORdbImpl implements CommitDAO {
         }
 
         session.beginTransaction();
+        session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
         if (!commitEntity.getChild_commits().isEmpty()) {
           CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
+          session.lock(childCommit, LockMode.PESSIMISTIC_WRITE);
           String updateChildEntity =
               "UPDATE commit_parent SET parent_hash = :parentHash WHERE child_hash = :childHash";
-          Query updateChildQuery = session.createSQLQuery(updateChildEntity);
+          Query updateChildQuery =
+              session
+                  .createSQLQuery(updateChildEntity)
+                  .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
           updateChildQuery.setParameter("parentHash", parentDatasetVersion.getCommit_hash());
           updateChildQuery.setParameter("childHash", childCommit.getCommit_hash());
           updateChildQuery.executeUpdate();
@@ -700,7 +707,9 @@ public class CommitDAORdbImpl implements CommitDAO {
               + ModelDBConstants.ENTITY_TYPE
               + " = :entityType";
       Query<LabelsMappingEntity> query =
-          session.createQuery(getLabelsHql, LabelsMappingEntity.class);
+          session
+              .createQuery(getLabelsHql, LabelsMappingEntity.class)
+              .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
       query.setParameter("entityHashes", commitShas);
       query.setParameter("entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_VALUE);
       List<LabelsMappingEntity> labelsMappingEntities = query.list();
@@ -710,6 +719,7 @@ public class CommitDAORdbImpl implements CommitDAO {
 
       commitEntities.forEach(
           (commitEntity) -> {
+            session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
             if (commitEntity.getRepository().size() == 1) {
               String compositeId =
                   VersioningUtils.getVersioningCompositeId(
@@ -1374,7 +1384,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryIdentification.Builder repositoryIdentification =
           RepositoryIdentification.newBuilder();
       if (datasetId == null || datasetId.isEmpty()) {
-        commitEntity = session.get(CommitEntity.class, datasetVersionId);
+        commitEntity =
+            session.get(CommitEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
 
         if (commitEntity == null) {
           throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
@@ -1397,6 +1408,7 @@ public class CommitDAORdbImpl implements CommitDAO {
 
       if (commitEntity == null) {
         commitEntity = getCommitEntity(session, datasetVersionId, (session1 -> repositoryEntity));
+        session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
       }
       String compositeId =
           VersioningUtils.getVersioningCompositeId(

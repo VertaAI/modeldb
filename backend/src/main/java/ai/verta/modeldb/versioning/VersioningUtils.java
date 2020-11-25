@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
@@ -220,7 +221,7 @@ public class VersioningUtils {
     }
   }
 
-  public static void saveOrUpdateArtifactPartEntity(
+  public static void saveArtifactPartEntity(
       ArtifactPart artifactPart, Session session, String artifactId, int artifactType) {
     ArtifactPartEntity artifactPartEntity =
         new ArtifactPartEntity(
