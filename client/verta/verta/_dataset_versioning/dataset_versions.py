@@ -9,7 +9,7 @@ from . import dataset_version
 
 
 class DatasetVersions(_utils.LazyList):
-    """
+    r"""
     ``list``-like object containing :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`\ s.
 
     This class provides functionality for filtering and sorting its contents.
