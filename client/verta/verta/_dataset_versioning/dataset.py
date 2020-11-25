@@ -356,6 +356,13 @@ class Dataset(entity._ModelDBEntity):
         -------
         :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
 
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.dataset import Path
+            version = dataset.create_version(Path(["data.csv"]))
+
         """
         return DatasetVersion._create(
             self._conn, self._conf,
