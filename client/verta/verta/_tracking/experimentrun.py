@@ -983,7 +983,9 @@ class ExperimentRun(_DeployableEntity):
         Parameters
         ----------
         key : str
-        dataset_version : `DatasetVersion <dataset.html>`_
+            Name of the dataset version.
+        dataset_version : :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+            Dataset version.
         overwrite : bool, default False
             Whether to allow overwriting a dataset version.
 

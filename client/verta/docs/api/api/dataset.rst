@@ -1,34 +1,38 @@
-Data Versioning
+Data versioning
 ===============
+
 .. note::
+    |dataset versioning overhaul| If you have been using an older version of
+    the client, please refer to
+    `this quick guide <../../tutorials/migate_dataset.html>`__
+    on updating your code.
 
-    Verta's versioning system has been redesigned! Take a look at the new `versioning page
-    <versioning.html>`__ for the up-to-date API.
+Contents
+--------
+- `Classes`_
 
+  - :class:`~verta._dataset_versioning.dataset.Dataset`
+  - :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
 
-Dataset Creation and Retrieval
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automethod:: verta.client.Client.set_dataset
-    :noindex:
-.. automethod:: verta.client.Client.find_datasets
-    :noindex:
+- `Collections`_
 
+  - :class:`~verta._dataset_versioning.datasets.Datasets`
+  - :class:`~verta._dataset_versioning.dataset_versions.DatasetVersions`
 
-Dataset Version Creation
-^^^^^^^^^^^^^^^^^^^^^^^^
-.. automethod:: verta._dataset.LocalDataset.create_version
-    :noindex:
-.. automethod:: verta._dataset.S3Dataset.create_version
-    :noindex:
-.. autoclass:: verta._dataset.DatasetVersion
+Classes
+-------
+.. autoclass:: verta._dataset_versioning.dataset.Dataset()
     :members:
 
+.. autoclass:: verta._dataset_versioning.dataset_version.DatasetVersion()
+    :members:
 
-Dataset Version Logging and Retrieval
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automethod:: verta.client.ExperimentRun.log_dataset_version
-    :noindex:
-.. automethod:: verta.client.ExperimentRun.get_dataset_version
-    :noindex:
-.. automethod:: verta.client.Client.get_dataset_version
-    :noindex:
+Collections
+-----------
+.. autoclass:: verta._dataset_versioning.datasets.Datasets()
+    :inherited-members:
+    :members:
+
+.. autoclass:: verta._dataset_versioning.dataset_versions.DatasetVersions()
+    :inherited-members:
+    :members:

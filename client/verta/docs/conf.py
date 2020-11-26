@@ -108,6 +108,9 @@ rst_prolog = '\n'.join([
 ".. |observations description| replace:: Observations are recurring metadata"
     " that are repeatedly measured over time, such as batch losses over an"
     " epoch or memory usage.",
+".. |dataset versioning overhaul| replace:: In ``verta==0.15.10``, the dataset"
+    " versioning interface was overhauled to be more flexible, robust, and"
+    " consistent with other ModelDB entities.",
 ])
 
 

@@ -18,6 +18,30 @@ from .dataset_versions import DatasetVersions
 
 
 class Dataset(entity._ModelDBEntity):
+    """
+    Object representing a ModelDB dataset.
+
+    .. versionchanged:: 0.15.10
+        The dataset versioning interface was updated for flexibility,
+        robustness, and consistency with other ModelDB entities.
+
+    This class provides read/write functionality for dataset metadata and access to its versions.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`Client.create_dataset() <verta.client.Client.create_dataset>`.
+
+    Attributes
+    ----------
+    id : str
+        ID of this dataset.
+    name : str
+        Name of this dataset.
+    workspace : str
+        Workspace containing this dataset.
+    versions : :class:`~verta._dataset_versioning.dataset_versions.DatasetVersions`
+        Versions of this dataset.
+
+    """
     def __init__(self, conn, conf, msg):
         super(Dataset, self).__init__(conn, conf, _DatasetService, "dataset", msg)
 
@@ -133,7 +157,7 @@ class Dataset(entity._ModelDBEntity):
 
     def set_description(self, desc):
         """
-        Sets the description of this Dataset.
+        Sets the description of this dataset.
 
         Parameters
         ----------
@@ -148,12 +172,12 @@ class Dataset(entity._ModelDBEntity):
 
     def get_description(self):
         """
-        Gets the description of this Dataset.
+        Gets the description of this dataset.
 
         Returns
         -------
         str
-            Description of this Dataset.
+            Description of this dataset.
 
         """
         self._refresh_cache()
@@ -161,7 +185,7 @@ class Dataset(entity._ModelDBEntity):
 
     def add_tag(self, tag):
         """
-        Adds a tag to this Dataset.
+        Adds a tag to this dataset.
 
         Parameters
         ----------
@@ -176,7 +200,7 @@ class Dataset(entity._ModelDBEntity):
 
     def add_tags(self, tags):
         """
-        Adds multiple tags to this Dataset.
+        Adds multiple tags to this dataset.
 
         Parameters
         ----------
@@ -192,7 +216,7 @@ class Dataset(entity._ModelDBEntity):
 
     def get_tags(self):
         """
-        Gets all tags from this Dataset.
+        Gets all tags from this dataset.
 
         Returns
         -------
@@ -205,7 +229,9 @@ class Dataset(entity._ModelDBEntity):
 
     def del_tag(self, tag):
         """
-        Deletes a tag from this Dataset.
+        Deletes a tag from this dataset.
+
+        This method will not raise an error if the tag does not exist.
 
         Parameters
         ----------
@@ -223,7 +249,7 @@ class Dataset(entity._ModelDBEntity):
 
     def add_attribute(self, key, value):
         """
-        Adds an attribute to this Dataset.
+        Adds an attribute to this dataset.
 
         Parameters
         ----------
@@ -237,7 +263,7 @@ class Dataset(entity._ModelDBEntity):
 
     def add_attributes(self, attrs):
         """
-        Adds potentially multiple attributes to this Dataset.
+        Adds potentially multiple attributes to this dataset.
 
         Parameters
         ----------
@@ -261,7 +287,7 @@ class Dataset(entity._ModelDBEntity):
 
     def get_attribute(self, key):
         """
-        Gets the attribute with name `key` from this Dataset.
+        Gets the attribute with name `key` from this dataset.
 
         Parameters
         ----------
@@ -284,7 +310,7 @@ class Dataset(entity._ModelDBEntity):
 
     def get_attributes(self):
         """
-        Gets all attributes from this Dataset.
+        Gets all attributes from this dataset.
 
         Returns
         -------
@@ -297,7 +323,9 @@ class Dataset(entity._ModelDBEntity):
 
     def del_attribute(self, key):
         """
-        Deletes the attribute with name `key` from this Dataset
+        Deletes the attribute with name `key` from this dataset.
+
+        This method will not raise an error if the attribute does not exist.
 
         Parameters
         ----------
@@ -319,18 +347,25 @@ class Dataset(entity._ModelDBEntity):
 
         Parameters
         ----------
-        content : :class:`~verta.dataset._dataset._Dataset`
-            Dataset blob.
+        content : `dataset blob subclass <versioning.html#dataset>`__
+            Dataset content.
         desc : str, optional
-            Description of the Dataset version.
+            Description of the dataset version.
         tags : list of str, optional
-            Tags of the Dataset Version.
+            Tags of the dataset version.
         attrs : dict of str to {None, bool, float, int, str}, optional
-            Attributes of the Dataset Version.
+            Attributes of the dataset version.
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.dataset import Path
+            version = dataset.create_version(Path("data.csv"))
 
         """
         return DatasetVersion._create(
@@ -347,11 +382,11 @@ class Dataset(entity._ModelDBEntity):
         Parameters
         ----------
         id : str
-            Dataset version id
+            Dataset version ID.
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
 
         """
         return DatasetVersion._get_by_id(self._conn, self._conf, id)
@@ -362,7 +397,7 @@ class Dataset(entity._ModelDBEntity):
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
 
         """
         return DatasetVersion._get_latest_version_by_dataset_id(self._conn, self._conf, self.id)

@@ -59,25 +59,24 @@ Now, in Python, we'll instantiate the :class:`~verta.client.Client`:
 .. code-block:: python
 
     from verta import Client
-    client = Client(host, email, dev_key)
+    client = Client(host, email=email, dev_key=dev_key)
     # connection successfully established
 
-The client can be used to create an :class:`~verta._dataset.S3Dataset`:
+The client can be used to create an :class:`~verta._dataset_versioning.dataset.Dataset`:
 
 .. code-block:: python
 
-    dataset = client.set_dataset(name="Important Data",
-                                 type="s3")
+    dataset = client.create_dataset(name="Census Income Data")
 
 A *Dataset* is a collection of related *DatasetVersion*\ s, and we'll need to create an
 :class:`~verta._dataset.S3DatasetVersion` to be logged:
 
 .. code-block:: python
 
-    dataset_version = dataset.create_version(bucket_name="datasets",
-                                             key="important-data.csv")
+    from verta.dataset import S3
+    dataset_version = dataset.create_version(S3("s3://verta-starter/census-train.csv"))
 
-Note here that ``key`` is optional; if omitted, we would instead be tracking the entire bucket.
+If we wished to track the entire bucket, we could pass in ``"s3://verta-starter"`` instead.
 
 As we track our data science workflow, we can log this dataset version:
 

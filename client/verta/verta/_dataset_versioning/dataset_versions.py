@@ -9,11 +9,27 @@ from . import dataset_version
 
 
 class DatasetVersions(_utils.LazyList):
+    r"""
+    ``list``-like object containing :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`\ s.
+
+    This class provides functionality for filtering and sorting its contents.
+
+    There should not be a need to instantiate this class directly; please use
+    :class:`Dataset.versions <verta._dataset_versioning.dataset.Dataset>`.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        versions = dataset.versions.find("tags ~= normalized")
+        version = versions.sort("time_created", descending=True)[0]  # most recent
+
+    """
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
         'id',
         'dataset_id',
-        'name',
+        'version',
         'tags',
         'time_logged',
     }
@@ -37,7 +53,21 @@ class DatasetVersions(_utils.LazyList):
     def _create_element(self, msg):
         return dataset_version.DatasetVersion(self._conn, self._conf, msg)
 
-    def with_dataset(self, dataset=None):
+    def with_dataset(self, dataset):
+        """
+        Returns versions of the specified dataset.
+
+        Parameters
+        ----------
+        dataset : :class:`~verta._dataset_versioning.dataset.Dataset` or None
+            Dataset. If ``None``, returns versions across all datasets.
+
+        Returns
+        -------
+        :class:`DatasetVersions`
+            Filtered dataset versions.
+
+        """
         new_list = copy.deepcopy(self)
         if dataset:
             new_list._msg.dataset_id = dataset.id
