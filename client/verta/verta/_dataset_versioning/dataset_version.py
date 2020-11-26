@@ -339,6 +339,9 @@ class DatasetVersion(entity._ModelDBEntity):
         )
         self._conn.must_response(response)
 
+    def list_components(self):  # from legacy DatasetVersion
+        return self.get_content().list_components()
+
     # The following properties are holdovers for backwards compatibility
     @property
     def desc(self):
@@ -399,5 +402,18 @@ class DatasetVersion(entity._ModelDBEntity):
         version_info_oneof = self._msg.WhichOneof('dataset_version_info')
         return getattr(self._msg, version_info_oneof)
 
-    # TODO: base_path
-    # TODO: list_components
+    @property
+    def base_path(self):  # copied from legacy DatasetVersion
+        warnings.warn(
+            "this attribute is deprecated and will removed in an upcoming version;"
+            " consider checking individual files' base paths"
+            " with `get_content().list_components()` instead",
+            category=FutureWarning,
+        )
+        components = self.get_content().list_components()
+        base_paths = set(component.base_path for component in components)
+
+        if len(base_paths) == 1:
+            return base_paths.pop()
+        else:  # shouldn't happen: DVs don't have an interface to have different base paths
+            raise AttributeError("multiple base paths among components: {}".format(base_paths))
