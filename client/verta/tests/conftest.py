@@ -430,3 +430,10 @@ def requirements_file():
         tempf.seek(0)
 
         yield tempf
+
+
+@pytest.fixture
+def with_boto3():
+    """For tests that require AWS's boto3."""
+    pytest.importorskip("boto3")
+    yield
