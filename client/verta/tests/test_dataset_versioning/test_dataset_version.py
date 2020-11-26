@@ -72,7 +72,7 @@ class TestMetadata:  # essentially copied from test_dataset.py
         dataset.add_attribute(attr1.key, new_val)
         assert dataset.get_attribute(attr1.key) == new_val
 
-    def test_dataset_and_parent_ids(self, client, created_datasets):
+    def test_dataset_and_parent_ids(self, client, created_datasets, with_boto3):
         dataset = client.create_dataset()
         created_datasets.append(dataset)
 
@@ -106,7 +106,7 @@ class TestCreateGet:
         captured = capsys.readouterr()
         assert "got existing dataset version: {}".format(dataset_version.id) in captured.out
 
-    def test_create_get_s3(self, client, created_datasets):
+    def test_create_get_s3(self, client, created_datasets, with_boto3):
         pytest.importorskip("boto3")
 
         name = verta._internal_utils._utils.generate_default_name()
@@ -161,7 +161,7 @@ class TestCreateGet:
 
 
 class TestLogging:
-    def test_log_get(self, client, experiment_run, created_datasets, strs):
+    def test_log_get(self, client, experiment_run, created_datasets, strs, with_boto3):
         """Tests ExperimentRun.log_dataset_version() and ExperimentRun.get_dataset_version()."""
         key1, key2 = strs[:2]
         dataset = client.create_dataset()

@@ -11,12 +11,6 @@ from verta.dataset import _dataset
 from verta._internal_utils import _file_utils
 
 
-@pytest.fixture
-def with_boto3():
-    pytest.importorskip("boto3")
-    yield
-
-
 def assert_dirs_match(dirpath1, dirpath2):
     files1 = set(_file_utils.walk_files(dirpath1))
     files2 = set(_file_utils.walk_files(dirpath2))
