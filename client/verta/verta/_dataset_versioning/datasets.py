@@ -5,6 +5,7 @@ import copy
 from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 
 from .._internal_utils import _utils
+from . import dataset
 
 
 class Datasets(_utils.LazyList):
@@ -33,9 +34,7 @@ class Datasets(_utils.LazyList):
         return response.datasets, response.total_records
 
     def _create_element(self, msg):
-        from .._dataset import Dataset  # TODO: avoid circular import
-        # old interface; takes ID instead of msg
-        return Dataset(self._conn, self._conf, _dataset_id=msg.id)
+        return dataset.Dataset(self._conn, self._conf, msg)
 
     def with_workspace(self, workspace_name=None):
         new_list = copy.deepcopy(self)

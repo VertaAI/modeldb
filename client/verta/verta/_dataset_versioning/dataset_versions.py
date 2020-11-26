@@ -5,6 +5,7 @@ import copy
 from .._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 
 from .._internal_utils import _utils
+from . import dataset_version
 
 
 class DatasetVersions(_utils.LazyList):
@@ -34,9 +35,7 @@ class DatasetVersions(_utils.LazyList):
         return response.dataset_versions, response.total_records
 
     def _create_element(self, msg):
-        from .._dataset import DatasetVersion  # TODO: avoid circular import
-        # old interface; takes ID instead of msg
-        return DatasetVersion(self._conn, self._conf, _dataset_version_id=msg.id)
+        return dataset_version.DatasetVersion(self._conn, self._conf, msg)
 
     def with_dataset(self, dataset=None):
         new_list = copy.deepcopy(self)

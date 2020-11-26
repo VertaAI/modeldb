@@ -21,7 +21,6 @@ import zipfile
 import requests
 import yaml
 from verta._tracking.organization import Organization
-from ._dataset_versioning.dataset_version import DatasetVersion
 from ._internal_utils._utils import check_unnecessary_params_warning
 
 from ._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -44,7 +43,6 @@ from ._internal_utils import (
     _utils,
 )
 
-from . import _dataset
 from . import _repository
 from ._repository import commit as commit_module
 from . import deployment
@@ -69,6 +67,7 @@ from ._registry import (
 )
 from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
+from ._dataset_versioning.dataset_version import DatasetVersion
 from .endpoint._endpoint import Endpoint
 from .endpoint._endpoints import Endpoints
 from .endpoint.update import DirectUpdateStrategy
@@ -649,161 +648,6 @@ class Client(object):
         else:
             raise ValueError("must specify either `name` or `id`")
 
-    # NOTE: dataset visibility cannot be set via a client
-    def set_dataset(self, name=None, type="local",
-                    desc=None, tags=None, attrs=None,
-                    workspace=None,
-                    public_within_org=None,
-                    id=None):
-        """
-        Attaches a Dataset to this Client.
-
-        If an accessible Dataset with name `name` does not already exist, it will be created
-        and initialized with specified metadata parameters. If such a Dataset does already exist,
-        it will be retrieved; specifying metadata parameters in this case will raise a warning.
-
-        Parameters
-        ----------
-        name : str, optional
-            Name of the Dataset. If no name is provided, one will be generated.
-        type : str, one of {'local', 's3', 'big query', 'atlas hive', 'postgres'}
-            The type of the dataset so we can collect the right type of metadata
-        desc : str, optional
-            Description of the Dataset.
-        tags : list of str, optional
-            Tags of the Dataset.
-        attrs : dict of str to {None, bool, float, int, str}, optional
-            Attributes of the Dataset.
-        workspace : str, optional
-            Workspace under which the Dataset with name `name` exists. If not provided, the current
-            user's personal workspace will be used.
-        public_within_org : bool, default False
-            If creating a Dataset in an organization's workspace, whether to make this Dataset
-            accessible to all members of that organization.
-        id : str, optional
-            ID of the Dataset. This parameter cannot be provided alongside `name`, and other
-            parameters will be ignored.
-
-        Returns
-        -------
-        `Dataset <dataset.html>`_
-
-        Raises
-        ------
-        ValueError
-            If a Dataset with `name` already exists, but metadata parameters are passed in.
-
-        """
-        # Note: If a dataset with `name` already exists,
-        #       there is no way to determine its type/subclass from back end,
-        #       so it is assumed that the user has passed in the correct `type`.
-        if type == "local":
-            DatasetSubclass = _dataset.LocalDataset
-        elif type == "s3":
-            DatasetSubclass = _dataset.S3Dataset
-        elif type == "big query":
-            DatasetSubclass = _dataset.BigQueryDataset
-        elif type == "atlas hive":
-            DatasetSubclass = _dataset.AtlasHiveDataset
-        elif type == "postgres":
-            DatasetSubclass = _dataset.RDBMSDataset
-        else:
-            raise ValueError("`type` must be one of {'local', 's3', 'big query', 'atlas hive', 'postgres'}")
-
-        name = self._set_from_config_if_none(name, "dataset")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
-        return DatasetSubclass(self._conn, self._conf,
-                               name=name, desc=desc, tags=tags, attrs=attrs,
-                               workspace=workspace,
-                               public_within_org=public_within_org,
-                               _dataset_id=id)
-
-    def get_dataset(self, name=None, id=None):
-        """
-        Retrieve an already created Dataset. Only one of name or id can be provided.
-
-        Parameters
-        ----------
-        name : str, optional
-            Name of the Dataset.
-        id : str, optional
-            ID of the Dataset. This parameter cannot be provided alongside `name`.
-
-        Returns
-        -------
-        `Dataset <dataset.html>`_
-        """
-        return _dataset.Dataset(self._conn, self._conf, name=name, _dataset_id=id)
-
-    def find_datasets(self,
-                      dataset_ids=None, name=None,
-                      tags=None,
-                      sort_key=None, ascending=False,
-                      workspace=None):
-        """
-        Gets the Datasets in `workspace` that match the given query parameters. If no parameters
-        are specified, we return all datasets.
-
-        Parameters
-        ----------
-        dataset_ids : list of str, optional
-            IDs of datasets that we wish to retrieve
-        name: str, optional
-            Name of dataset we wish to retrieve. Fuzzy matches supported.
-        tags: list of str, optional
-            List of tags by which we'd like to query datasets.
-        sort_key: string, optional
-            Key by which the resulting list of datasets should be sorted.
-        ascending: bool, default: False
-            Whether to sort returned datasets in ascending or descending order.
-        workspace : str, optional
-            Workspace in which to look for datasets. If not provided, the current user's personal
-            workspace will be used.
-
-        Returns
-        -------
-        list of `Dataset <dataset.html>`_
-
-        """
-        datasets = Datasets(self._conn, self._conf)
-        if dataset_ids:
-            datasets = datasets.with_ids(_utils.as_list_of_str(dataset_ids))
-        if sort_key:
-            datasets = datasets.sort(sort_key, not ascending)
-        if workspace:
-            datasets = datasets.with_workspace(workspace)
-
-        predicates = []
-        if tags is not None:
-            tags = _utils.as_list_of_str(tags)
-            predicates.extend(
-                "tags == \"{}\"".format(tag)
-                for tag in tags
-            )
-        if name is not None:
-            if not isinstance(name, six.string_types):
-                raise TypeError("`name` must be str, not {}".format(type(name)))
-            predicates.append("name ~= \"{}\"".format(name))
-        if predicates:
-            datasets = datasets.find(predicates)
-
-        return datasets
-
-    def get_dataset_version(self, id):
-        """
-        Retrieve an already created DatasetVersion.
-
-        Parameters
-        ----------
-        id : str
-            ID of the DatasetVersion.
-
-        Returns
-        -------
-        `DatasetVersion <dataset.html>`_
-        """
-        return _dataset.DatasetVersion(self._conn, self._conf, _dataset_version_id=id)
-
     # set aliases for get-or-create functions for API compatibility
     def get_or_create_project(self, *args, **kwargs):
         """
@@ -825,13 +669,6 @@ class Client(object):
 
         """
         return self.set_experiment_run(*args, **kwargs)
-
-    def get_or_create_dataset(self, *args, **kwargs):
-        """
-        Alias for :meth:`Client.set_dataset()`.
-
-        """
-        return self.set_dataset(*args, **kwargs)
 
     def set_repository(self, *args, **kwargs):
         """
@@ -1342,7 +1179,7 @@ class Client(object):
             downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 
-    def _get_or_create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, id=None):
+    def get_or_create_dataset(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, id=None):
         """
         Gets or creates a Dataset.
 
@@ -1380,7 +1217,6 @@ class Client(object):
             If a Dataset with `name` already exists, but metadata parameters are passed in.
 
         """
-        # TODO: when MVP, remove '2'
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -1408,15 +1244,14 @@ class Client(object):
 
         return dataset
 
-    def _set_dataset2(self, *args, **kwargs):
+    def set_dataset(self, *args, **kwargs):
         """
         Alias for :meth:`Client.get_or_create_dataset2()`.
 
         """
-        # TODO: when MVP, remove '2'
-        return self._get_or_create_dataset2(*args, **kwargs)
+        return self.get_or_create_dataset(*args, **kwargs)
 
-    def _create_dataset2(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None):
+    def create_dataset(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None):
         """
         Creates a Dataset, initialized with specified metadata parameters.
 
@@ -1447,7 +1282,6 @@ class Client(object):
             If a Dataset with `name` already exists.
 
         """
-        # TODO: when MVP, remove '2'
         name = self._set_from_config_if_none(name, "dataset")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
@@ -1456,7 +1290,7 @@ class Client(object):
         return Dataset._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs,
                                time_created=time_created, public_within_org=public_within_org)
 
-    def _get_dataset2(self, name=None, workspace=None, id=None):
+    def get_dataset(self, name=None, workspace=None, id=None):
         """
         Gets a Dataset.
 
@@ -1475,7 +1309,6 @@ class Client(object):
         :class:`~verta._dataset.Dataset`
 
         """
-        # TODO: when MVP, remove '2'
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
@@ -1497,10 +1330,10 @@ class Client(object):
         return dataset
 
     @property
-    def _datasets(self):
-        raise NotImplementedError
+    def datasets(self):
+        return Datasets(self._conn, self._conf)
 
-    def _get_dataset_version2(self, id):
+    def get_dataset_version(self, id):
         """
         Gets a Dataset version.
 
@@ -1514,7 +1347,6 @@ class Client(object):
         `DatasetVersion <dataset.html>`_
 
         """
-        # TODO: when MVP, remove '2'
         self._ctx = _Context(self._conn, self._conf)
 
         dataset_version = DatasetVersion._get_by_id(self._conn, self._conf, id)
