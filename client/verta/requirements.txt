@@ -12,6 +12,7 @@ six>=1.11
 pytest>=4.3
 
 # unit testing dependencies
+blis<0.7.3; python_version == '2.7'  # needed for spaCy, https://github.com/explosion/cython-blis/issues/42
 boto3
 google-cloud-bigquery
 h5py<3.0.0  # https://github.com/tensorflow/tensorflow/issues/44467
