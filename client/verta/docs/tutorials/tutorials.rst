@@ -49,6 +49,7 @@ Core Verta functionality
     Model ingredient versioning <ingredients>
     Model versioning <workflow>
     Data versioning <dataset>
+    migrate_dataset
     Metadata querying <querying>
     Merge conflicts <merge>
     Packaging <packaging/packaging>

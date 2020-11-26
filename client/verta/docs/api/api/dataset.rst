@@ -1,5 +1,11 @@
-Data Versioning
+Data versioning
 ===============
+
+.. note::
+    |dataset versioning overhaul| If you have been using an older version of
+    the client, please refer to
+    `this quick guide <../../tutorials/migate_dataset.html>`__
+    on updating your code.
 
 Contents
 --------
