@@ -162,7 +162,7 @@ class TestClient:
                     try:
                         assert dataset.name == DATASET_NAME
                     finally:
-                        utils.delete_datasets([dataset.id], conn)
+                        dataset.delete()
                 else:
                     assert client._set_from_config_if_none(None, "project") == PROJECT_NAME
                     assert client._set_from_config_if_none(None, "experiment") == EXPERIMENT_NAME
@@ -595,7 +595,7 @@ class TestExperimentRuns:
 
         run_with_diff_tag = client.set_experiment_run("run-with-diff-tag")
         run_with_diff_tag.log_tag(diff_tag)
-        
+
         runs_with_tag = []
         for _ in range(5):
             runs_with_tag.append(client.set_experiment_run())
