@@ -52,7 +52,7 @@ class TestOrganization:
         run = client.create_experiment_run(run_name)
         repository = client.get_or_create_repository(name=repository_name)
 
-        dataset = client._create_dataset2(dataset_name)
+        dataset = client.create_dataset(dataset_name)
         created_datasets.append(dataset)
         model = client.create_registered_model(name=model_name)
         version = model.create_version(name=version_name)
@@ -75,7 +75,7 @@ class TestOrganization:
         new_run = client.create_experiment_run(run_name)
         new_repository = client.get_or_create_repository(name=repository_name, workspace=organization.name)
 
-        new_dataset = client._create_dataset2(dataset_name, workspace=organization.name)
+        new_dataset = client.create_dataset(dataset_name, workspace=organization.name)
         created_datasets.append(new_dataset)
 
         # created_endpoints.append(new_endpoint)  TODO: uncomment after VR-6053
