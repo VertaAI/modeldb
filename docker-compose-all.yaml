@@ -1,4 +1,5 @@
 version: "3.5"
+
 services:
     modeldb-backend:
         image: vertaaiofficial/modeldb-backend:2.0.8.1
