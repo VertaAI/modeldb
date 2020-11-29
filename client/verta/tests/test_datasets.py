@@ -1,5 +1,7 @@
 import pytest
 
+pytest.skip("outdated tests for legacy API", allow_module_level=True)
+
 import six
 
 import os
@@ -17,7 +19,6 @@ from verta._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from verta._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 
 
-pytest.skip("outdated tests for legacy API", allow_module_level=True)
 
 
 DEFAULT_S3_TEST_BUCKET = "bucket"
