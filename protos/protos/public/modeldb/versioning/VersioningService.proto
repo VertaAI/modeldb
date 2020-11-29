@@ -105,6 +105,7 @@ message Repository {
 
     string workspace_id = 5;
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
+    uint64 workspace_service_id = 8;
 
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
 

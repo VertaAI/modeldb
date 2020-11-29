@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb',
   syntax='proto3',
   serialized_options=b'P\001Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb',
-  serialized_pb=b'\n\x1cmodeldb/ProjectService.proto\x12\x10\x61i.verta.modeldb\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x1bmodeldb/CommonService.proto\"\xe6\x03\n\x07Project\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x04 \x01(\x04\x12\x14\n\x0c\x64\x61te_updated\x18\x05 \x01(\x04\x12\x12\n\nshort_name\x18\x06 \x01(\t\x12\x13\n\x0breadme_text\x18\x07 \x01(\t\x12?\n\x12project_visibility\x18\x08 \x01(\x0e\x32#.ai.verta.modeldb.ProjectVisibility\x12\x14\n\x0cworkspace_id\x18\t \x01(\t\x12H\n\x0eworkspace_type\x18\n \x01(\x0e\x32\x30.ai.verta.common.WorkspaceTypeEnum.WorkspaceType\x12-\n\nattributes\x18\x14 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x0c\n\x04tags\x18\x15 \x03(\t\x12\r\n\x05owner\x18\x16 \x01(\t\x12<\n\x15\x63ode_version_snapshot\x18\x17 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\x12,\n\tartifacts\x18\x18 \x03(\x0b\x32\x19.ai.verta.common.Artifact\"\xd9\x02\n\rCreateProject\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12-\n\nattributes\x18\x03 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x0c\n\x04tags\x18\x04 \x03(\t\x12\x13\n\x0breadme_text\x18\x05 \x01(\t\x12?\n\x12project_visibility\x18\x06 \x01(\x0e\x32#.ai.verta.modeldb.ProjectVisibility\x12,\n\tartifacts\x18\x07 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12\x16\n\x0eworkspace_name\x18\x08 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\t \x01(\x03\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"7\n\rDeleteProject\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"e\n\x11UpdateProjectName\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"s\n\x18UpdateProjectDescription\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"b\n\x0e\x41\x64\x64ProjectTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"y\n\x11\x44\x65leteProjectTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"`\n\rAddProjectTag\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"c\n\x10\x44\x65leteProjectTag\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"]\n\x14GetProjectAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x39\n\x08Response\x12-\n\nattributes\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"\x89\x01\n\x14\x41\x64\x64ProjectAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"\x8b\x01\n\x17UpdateProjectAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tattribute\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"\x89\x01\n\x17\x44\x65leteProjectAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"\x90\x01\n\x15LogProjectCodeVersion\x12\n\n\x02id\x18\x01 \x01(\t\x12\x33\n\x0c\x63ode_version\x18\x02 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"d\n\x15GetProjectCodeVersion\x12\n\n\x02id\x18\x01 \x01(\t\x1a?\n\x08Response\x12\x33\n\x0c\x63ode_version\x18\x01 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\"\xc3\x01\n\x0bGetProjects\x12\x13\n\x0bpage_number\x18\x01 \x01(\x05\x12\x12\n\npage_limit\x18\x02 \x01(\x05\x12\x11\n\tascending\x18\x03 \x01(\x08\x12\x10\n\x08sort_key\x18\x04 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x05 \x01(\t\x1aN\n\x08Response\x12+\n\x08projects\x18\x01 \x03(\x0b\x32\x19.ai.verta.modeldb.Project\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"u\n\x11GetPublicProjects\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\x1a\x37\n\x08Response\x12+\n\x08projects\x18\x01 \x03(\x0b\x32\x19.ai.verta.modeldb.Project\"T\n\x0eGetProjectById\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"\xac\x01\n\x10GetProjectByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\x1ar\n\x08Response\x12\x32\n\x0fproject_by_user\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\x12\x32\n\x0fshared_projects\x18\x02 \x03(\x0b\x32\x19.ai.verta.modeldb.Project\"\x07\n\x05\x45mpty\"*\n\x18VerifyConnectionResponse\x12\x0e\n\x06status\x18\x01 \x01(\x08\"U\n\x0f\x44\x65\x65pCopyProject\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"C\n\x0eMetricsSummary\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x11\n\tmin_value\x18\x02 \x01(\x01\x12\x11\n\tmax_value\x18\x03 \x01(\x01\"K\n LastModifiedExperimentRunSummary\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x19\n\x11last_updated_time\x18\x02 \x01(\x04\"\xa1\x02\n\nGetSummary\x12\x10\n\x08\x65ntityId\x18\x01 \x01(\t\x1a\x80\x02\n\x08Response\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x19\n\x11last_updated_time\x18\x02 \x01(\x04\x12\x18\n\x10total_experiment\x18\x03 \x01(\x03\x12\x1d\n\x15total_experiment_runs\x18\x04 \x01(\x03\x12_\n#last_modified_experimentRun_summary\x18\x05 \x01(\x0b\x32\x32.ai.verta.modeldb.LastModifiedExperimentRunSummary\x12\x31\n\x07metrics\x18\x06 \x03(\x0b\x32 .ai.verta.modeldb.MetricsSummary\"k\n\x10SetProjectReadme\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0breadme_text\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"?\n\x10GetProjectReadme\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1f\n\x08Response\x12\x13\n\x0breadme_text\x18\x01 \x01(\t\"\x9a\x01\n\x13SetProjectVisibilty\x12\n\n\x02id\x18\x01 \x01(\t\x12?\n\x12project_visibility\x18\x02 \x01(\x0e\x32#.ai.verta.modeldb.ProjectVisibility\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"m\n\x13SetProjectShortName\x12\n\n\x02id\x18\x01 \x01(\t\x12\x12\n\nshort_name\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"A\n\x13GetProjectShortName\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1e\n\x08Response\x12\x12\n\nshort_name\x18\x02 \x01(\t\"\x9f\x02\n\x0c\x46indProjects\x12\x13\n\x0bproject_ids\x18\x01 \x03(\t\x12\x32\n\npredicates\x18\x02 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12\x10\n\x08ids_only\x18\x03 \x01(\x08\x12\x16\n\x0eworkspace_name\x18\x08 \x01(\t\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x12\x11\n\tascending\x18\x06 \x01(\x08\x12\x10\n\x08sort_key\x18\x07 \x01(\t\x1aN\n\x08Response\x12+\n\x08projects\x18\x01 \x03(\x0b\x32\x19.ai.verta.modeldb.Project\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x87\x01\n\x13LogProjectArtifacts\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tartifacts\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"h\n\x15\x44\x65leteProjectArtifact\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"9\n\x0e\x44\x65leteProjects\x12\x0b\n\x03ids\x18\x01 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"q\n\x13SetProjectWorkspace\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project*C\n\x11ProjectVisibility\x12\x0b\n\x07PRIVATE\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x15\n\x11ORG_SCOPED_PUBLIC\x10\x02\x32\x8e&\n\x0eProjectService\x12\x80\x01\n\rcreateProject\x12\x1f.ai.verta.modeldb.CreateProject\x1a(.ai.verta.modeldb.CreateProject.Response\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/project/createProject:\x01*\x12u\n\x0bgetProjects\x12\x1d.ai.verta.modeldb.GetProjects\x1a&.ai.verta.modeldb.GetProjects.Response\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/v1/project/getProjects\x12\x8d\x01\n\x11getPublicProjects\x12#.ai.verta.modeldb.GetPublicProjects\x1a,.ai.verta.modeldb.GetPublicProjects.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/project/getPublicProjects\x12\x81\x01\n\x0egetProjectById\x12 .ai.verta.modeldb.GetProjectById\x1a).ai.verta.modeldb.GetProjectById.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/project/getProjectById\x12\x89\x01\n\x10getProjectByName\x12\".ai.verta.modeldb.GetProjectByName\x1a+.ai.verta.modeldb.GetProjectByName.Response\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/project/getProjectByName\x12\x80\x01\n\rdeleteProject\x12\x1f.ai.verta.modeldb.DeleteProject\x1a(.ai.verta.modeldb.DeleteProject.Response\"$\x82\xd3\xe4\x93\x02\x1e*\x19/v1/project/deleteProject:\x01*\x12\x90\x01\n\x11updateProjectName\x12#.ai.verta.modeldb.UpdateProjectName\x1a,.ai.verta.modeldb.UpdateProjectName.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/project/updateProjectName:\x01*\x12\xac\x01\n\x18updateProjectDescription\x12*.ai.verta.modeldb.UpdateProjectDescription\x1a\x33.ai.verta.modeldb.UpdateProjectDescription.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/project/updateProjectDescription:\x01*\x12\x84\x01\n\x0e\x61\x64\x64ProjectTags\x12 .ai.verta.modeldb.AddProjectTags\x1a).ai.verta.modeldb.AddProjectTags.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/project/addProjectTags:\x01*\x12s\n\x0egetProjectTags\x12\x19.ai.verta.modeldb.GetTags\x1a\".ai.verta.modeldb.GetTags.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/project/getProjectTags\x12\x90\x01\n\x11\x64\x65leteProjectTags\x12#.ai.verta.modeldb.DeleteProjectTags\x1a,.ai.verta.modeldb.DeleteProjectTags.Response\"(\x82\xd3\xe4\x93\x02\"*\x1d/v1/project/deleteProjectTags:\x01*\x12\x80\x01\n\raddProjectTag\x12\x1f.ai.verta.modeldb.AddProjectTag\x1a(.ai.verta.modeldb.AddProjectTag.Response\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/project/addProjectTag:\x01*\x12\x8c\x01\n\x10\x64\x65leteProjectTag\x12\".ai.verta.modeldb.DeleteProjectTag\x1a+.ai.verta.modeldb.DeleteProjectTag.Response\"\'\x82\xd3\xe4\x93\x02!*\x1c/v1/project/deleteProjectTag:\x01*\x12\xa8\x01\n\x17updateProjectAttributes\x12).ai.verta.modeldb.UpdateProjectAttributes\x1a\x32.ai.verta.modeldb.UpdateProjectAttributes.Response\".\x82\xd3\xe4\x93\x02(\"#/v1/project/updateProjectAttributes:\x01*\x12\x8b\x01\n\x14getProjectAttributes\x12\x1f.ai.verta.modeldb.GetAttributes\x1a(.ai.verta.modeldb.GetAttributes.Response\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/project/getProjectAttributes\x12\x9c\x01\n\x14\x61\x64\x64ProjectAttributes\x12&.ai.verta.modeldb.AddProjectAttributes\x1a/.ai.verta.modeldb.AddProjectAttributes.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/project/addProjectAttributes:\x01*\x12\xa8\x01\n\x17\x64\x65leteProjectAttributes\x12).ai.verta.modeldb.DeleteProjectAttributes\x1a\x32.ai.verta.modeldb.DeleteProjectAttributes.Response\".\x82\xd3\xe4\x93\x02(*#/v1/project/deleteProjectAttributes:\x01*\x12\xa0\x01\n\x15logProjectCodeVersion\x12\'.ai.verta.modeldb.LogProjectCodeVersion\x1a\x30.ai.verta.modeldb.LogProjectCodeVersion.Response\",\x82\xd3\xe4\x93\x02&\"!/v1/project/logProjectCodeVersion:\x01*\x12\x9d\x01\n\x15getProjectCodeVersion\x12\'.ai.verta.modeldb.GetProjectCodeVersion\x1a\x30.ai.verta.modeldb.GetProjectCodeVersion.Response\")\x82\xd3\xe4\x93\x02#\x12!/v1/project/getProjectCodeVersion\x12}\n\x10verifyConnection\x12\x17.ai.verta.modeldb.Empty\x1a*.ai.verta.modeldb.VerifyConnectionResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/project/verifyConnection\x12\x88\x01\n\x0f\x64\x65\x65pCopyProject\x12!.ai.verta.modeldb.DeepCopyProject\x1a*.ai.verta.modeldb.DeepCopyProject.Response\"&\x82\xd3\xe4\x93\x02 \"\x1b/v1/project/deepCopyProject:\x01*\x12q\n\ngetSummary\x12\x1c.ai.verta.modeldb.GetSummary\x1a%.ai.verta.modeldb.GetSummary.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/project/getSummary\x12\x8c\x01\n\x10setProjectReadme\x12\".ai.verta.modeldb.SetProjectReadme\x1a+.ai.verta.modeldb.SetProjectReadme.Response\"\'\x82\xd3\xe4\x93\x02!\"\x1c/v1/project/setProjectReadme:\x01*\x12\x89\x01\n\x10getProjectReadme\x12\".ai.verta.modeldb.GetProjectReadme\x1a+.ai.verta.modeldb.GetProjectReadme.Response\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/project/getProjectReadme\x12\x9a\x01\n\x14setProjectVisibility\x12%.ai.verta.modeldb.SetProjectVisibilty\x1a..ai.verta.modeldb.SetProjectVisibilty.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/project/setProjectVisibility:\x01*\x12\x98\x01\n\x13setProjectShortName\x12%.ai.verta.modeldb.SetProjectShortName\x1a..ai.verta.modeldb.SetProjectShortName.Response\"*\x82\xd3\xe4\x93\x02$\"\x1f/v1/project/setProjectShortName:\x01*\x12\x95\x01\n\x13getProjectShortName\x12%.ai.verta.modeldb.GetProjectShortName\x1a..ai.verta.modeldb.GetProjectShortName.Response\"\'\x82\xd3\xe4\x93\x02!\x12\x1f/v1/project/getProjectShortName\x12\x90\x01\n\x11getUrlForArtifact\x12#.ai.verta.modeldb.GetUrlForArtifact\x1a,.ai.verta.modeldb.GetUrlForArtifact.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/project/getUrlForArtifact:\x01*\x12|\n\x0c\x66indProjects\x12\x1e.ai.verta.modeldb.FindProjects\x1a\'.ai.verta.modeldb.FindProjects.Response\"#\x82\xd3\xe4\x93\x02\x1d\"\x18/v1/project/findProjects:\x01*\x12\x8a\x01\n\x0clogArtifacts\x12%.ai.verta.modeldb.LogProjectArtifacts\x1a..ai.verta.modeldb.LogProjectArtifacts.Response\"#\x82\xd3\xe4\x93\x02\x1d\"\x18/v1/project/logArtifacts:\x01*\x12y\n\x0cgetArtifacts\x12\x1e.ai.verta.modeldb.GetArtifacts\x1a\'.ai.verta.modeldb.GetArtifacts.Response\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/v1/project/getArtifacts\x12\x92\x01\n\x0e\x64\x65leteArtifact\x12\'.ai.verta.modeldb.DeleteProjectArtifact\x1a\x30.ai.verta.modeldb.DeleteProjectArtifact.Response\"%\x82\xd3\xe4\x93\x02\x1f*\x1a/v1/project/deleteArtifact:\x01*\x12\x84\x01\n\x0e\x64\x65leteProjects\x12 .ai.verta.modeldb.DeleteProjects\x1a).ai.verta.modeldb.DeleteProjects.Response\"%\x82\xd3\xe4\x93\x02\x1f*\x1a/v1/project/deleteProjects:\x01*\x12\x98\x01\n\x13setProjectWorkspace\x12%.ai.verta.modeldb.SetProjectWorkspace\x1a..ai.verta.modeldb.SetProjectWorkspace.Response\"*\x82\xd3\xe4\x93\x02$\"\x1f/v1/project/setProjectWorkspace:\x01*BBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
+  serialized_pb=b'\n\x1cmodeldb/ProjectService.proto\x12\x10\x61i.verta.modeldb\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x1bmodeldb/CommonService.proto\"\x84\x04\n\x07Project\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x04 \x01(\x04\x12\x14\n\x0c\x64\x61te_updated\x18\x05 \x01(\x04\x12\x12\n\nshort_name\x18\x06 \x01(\t\x12\x13\n\x0breadme_text\x18\x07 \x01(\t\x12?\n\x12project_visibility\x18\x08 \x01(\x0e\x32#.ai.verta.modeldb.ProjectVisibility\x12\x14\n\x0cworkspace_id\x18\t \x01(\t\x12H\n\x0eworkspace_type\x18\n \x01(\x0e\x32\x30.ai.verta.common.WorkspaceTypeEnum.WorkspaceType\x12\x1c\n\x14workspace_service_id\x18\x0b \x01(\x04\x12-\n\nattributes\x18\x14 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x0c\n\x04tags\x18\x15 \x03(\t\x12\r\n\x05owner\x18\x16 \x01(\t\x12<\n\x15\x63ode_version_snapshot\x18\x17 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\x12,\n\tartifacts\x18\x18 \x03(\x0b\x32\x19.ai.verta.common.Artifact\"\xd9\x02\n\rCreateProject\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12-\n\nattributes\x18\x03 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x0c\n\x04tags\x18\x04 \x03(\t\x12\x13\n\x0breadme_text\x18\x05 \x01(\t\x12?\n\x12project_visibility\x18\x06 \x01(\x0e\x32#.ai.verta.modeldb.ProjectVisibility\x12,\n\tartifacts\x18\x07 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12\x16\n\x0eworkspace_name\x18\x08 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\t \x01(\x03\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"7\n\rDeleteProject\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"e\n\x11UpdateProjectName\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"s\n\x18UpdateProjectDescription\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"b\n\x0e\x41\x64\x64ProjectTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"y\n\x11\x44\x65leteProjectTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"`\n\rAddProjectTag\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"c\n\x10\x44\x65leteProjectTag\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03tag\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"]\n\x14GetProjectAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x39\n\x08Response\x12-\n\nattributes\x18\x01 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"\x89\x01\n\x14\x41\x64\x64ProjectAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"\x8b\x01\n\x17UpdateProjectAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tattribute\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"\x89\x01\n\x17\x44\x65leteProjectAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"\x90\x01\n\x15LogProjectCodeVersion\x12\n\n\x02id\x18\x01 \x01(\t\x12\x33\n\x0c\x63ode_version\x18\x02 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"d\n\x15GetProjectCodeVersion\x12\n\n\x02id\x18\x01 \x01(\t\x1a?\n\x08Response\x12\x33\n\x0c\x63ode_version\x18\x01 \x01(\x0b\x32\x1d.ai.verta.modeldb.CodeVersion\"\xc3\x01\n\x0bGetProjects\x12\x13\n\x0bpage_number\x18\x01 \x01(\x05\x12\x12\n\npage_limit\x18\x02 \x01(\x05\x12\x11\n\tascending\x18\x03 \x01(\x08\x12\x10\n\x08sort_key\x18\x04 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x05 \x01(\t\x1aN\n\x08Response\x12+\n\x08projects\x18\x01 \x03(\x0b\x32\x19.ai.verta.modeldb.Project\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"u\n\x11GetPublicProjects\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\x1a\x37\n\x08Response\x12+\n\x08projects\x18\x01 \x03(\x0b\x32\x19.ai.verta.modeldb.Project\"T\n\x0eGetProjectById\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"\xac\x01\n\x10GetProjectByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\x1ar\n\x08Response\x12\x32\n\x0fproject_by_user\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\x12\x32\n\x0fshared_projects\x18\x02 \x03(\x0b\x32\x19.ai.verta.modeldb.Project\"\x07\n\x05\x45mpty\"*\n\x18VerifyConnectionResponse\x12\x0e\n\x06status\x18\x01 \x01(\x08\"U\n\x0f\x44\x65\x65pCopyProject\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"C\n\x0eMetricsSummary\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x11\n\tmin_value\x18\x02 \x01(\x01\x12\x11\n\tmax_value\x18\x03 \x01(\x01\"K\n LastModifiedExperimentRunSummary\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x19\n\x11last_updated_time\x18\x02 \x01(\x04\"\xa1\x02\n\nGetSummary\x12\x10\n\x08\x65ntityId\x18\x01 \x01(\t\x1a\x80\x02\n\x08Response\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x19\n\x11last_updated_time\x18\x02 \x01(\x04\x12\x18\n\x10total_experiment\x18\x03 \x01(\x03\x12\x1d\n\x15total_experiment_runs\x18\x04 \x01(\x03\x12_\n#last_modified_experimentRun_summary\x18\x05 \x01(\x0b\x32\x32.ai.verta.modeldb.LastModifiedExperimentRunSummary\x12\x31\n\x07metrics\x18\x06 \x03(\x0b\x32 .ai.verta.modeldb.MetricsSummary\"k\n\x10SetProjectReadme\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0breadme_text\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"?\n\x10GetProjectReadme\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1f\n\x08Response\x12\x13\n\x0breadme_text\x18\x01 \x01(\t\"\x9a\x01\n\x13SetProjectVisibilty\x12\n\n\x02id\x18\x01 \x01(\t\x12?\n\x12project_visibility\x18\x02 \x01(\x0e\x32#.ai.verta.modeldb.ProjectVisibility\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"m\n\x13SetProjectShortName\x12\n\n\x02id\x18\x01 \x01(\t\x12\x12\n\nshort_name\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"A\n\x13GetProjectShortName\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1e\n\x08Response\x12\x12\n\nshort_name\x18\x02 \x01(\t\"\x9f\x02\n\x0c\x46indProjects\x12\x13\n\x0bproject_ids\x18\x01 \x03(\t\x12\x32\n\npredicates\x18\x02 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12\x10\n\x08ids_only\x18\x03 \x01(\x08\x12\x16\n\x0eworkspace_name\x18\x08 \x01(\t\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x12\x11\n\tascending\x18\x06 \x01(\x08\x12\x10\n\x08sort_key\x18\x07 \x01(\t\x1aN\n\x08Response\x12+\n\x08projects\x18\x01 \x03(\x0b\x32\x19.ai.verta.modeldb.Project\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x87\x01\n\x13LogProjectArtifacts\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tartifacts\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"h\n\x15\x44\x65leteProjectArtifact\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\"9\n\x0e\x44\x65leteProjects\x12\x0b\n\x03ids\x18\x01 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"q\n\x13SetProjectWorkspace\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project*C\n\x11ProjectVisibility\x12\x0b\n\x07PRIVATE\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x15\n\x11ORG_SCOPED_PUBLIC\x10\x02\x32\x8e&\n\x0eProjectService\x12\x80\x01\n\rcreateProject\x12\x1f.ai.verta.modeldb.CreateProject\x1a(.ai.verta.modeldb.CreateProject.Response\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/project/createProject:\x01*\x12u\n\x0bgetProjects\x12\x1d.ai.verta.modeldb.GetProjects\x1a&.ai.verta.modeldb.GetProjects.Response\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/v1/project/getProjects\x12\x8d\x01\n\x11getPublicProjects\x12#.ai.verta.modeldb.GetPublicProjects\x1a,.ai.verta.modeldb.GetPublicProjects.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/project/getPublicProjects\x12\x81\x01\n\x0egetProjectById\x12 .ai.verta.modeldb.GetProjectById\x1a).ai.verta.modeldb.GetProjectById.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/project/getProjectById\x12\x89\x01\n\x10getProjectByName\x12\".ai.verta.modeldb.GetProjectByName\x1a+.ai.verta.modeldb.GetProjectByName.Response\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/project/getProjectByName\x12\x80\x01\n\rdeleteProject\x12\x1f.ai.verta.modeldb.DeleteProject\x1a(.ai.verta.modeldb.DeleteProject.Response\"$\x82\xd3\xe4\x93\x02\x1e*\x19/v1/project/deleteProject:\x01*\x12\x90\x01\n\x11updateProjectName\x12#.ai.verta.modeldb.UpdateProjectName\x1a,.ai.verta.modeldb.UpdateProjectName.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/project/updateProjectName:\x01*\x12\xac\x01\n\x18updateProjectDescription\x12*.ai.verta.modeldb.UpdateProjectDescription\x1a\x33.ai.verta.modeldb.UpdateProjectDescription.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/project/updateProjectDescription:\x01*\x12\x84\x01\n\x0e\x61\x64\x64ProjectTags\x12 .ai.verta.modeldb.AddProjectTags\x1a).ai.verta.modeldb.AddProjectTags.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/project/addProjectTags:\x01*\x12s\n\x0egetProjectTags\x12\x19.ai.verta.modeldb.GetTags\x1a\".ai.verta.modeldb.GetTags.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/project/getProjectTags\x12\x90\x01\n\x11\x64\x65leteProjectTags\x12#.ai.verta.modeldb.DeleteProjectTags\x1a,.ai.verta.modeldb.DeleteProjectTags.Response\"(\x82\xd3\xe4\x93\x02\"*\x1d/v1/project/deleteProjectTags:\x01*\x12\x80\x01\n\raddProjectTag\x12\x1f.ai.verta.modeldb.AddProjectTag\x1a(.ai.verta.modeldb.AddProjectTag.Response\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/project/addProjectTag:\x01*\x12\x8c\x01\n\x10\x64\x65leteProjectTag\x12\".ai.verta.modeldb.DeleteProjectTag\x1a+.ai.verta.modeldb.DeleteProjectTag.Response\"\'\x82\xd3\xe4\x93\x02!*\x1c/v1/project/deleteProjectTag:\x01*\x12\xa8\x01\n\x17updateProjectAttributes\x12).ai.verta.modeldb.UpdateProjectAttributes\x1a\x32.ai.verta.modeldb.UpdateProjectAttributes.Response\".\x82\xd3\xe4\x93\x02(\"#/v1/project/updateProjectAttributes:\x01*\x12\x8b\x01\n\x14getProjectAttributes\x12\x1f.ai.verta.modeldb.GetAttributes\x1a(.ai.verta.modeldb.GetAttributes.Response\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/project/getProjectAttributes\x12\x9c\x01\n\x14\x61\x64\x64ProjectAttributes\x12&.ai.verta.modeldb.AddProjectAttributes\x1a/.ai.verta.modeldb.AddProjectAttributes.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/project/addProjectAttributes:\x01*\x12\xa8\x01\n\x17\x64\x65leteProjectAttributes\x12).ai.verta.modeldb.DeleteProjectAttributes\x1a\x32.ai.verta.modeldb.DeleteProjectAttributes.Response\".\x82\xd3\xe4\x93\x02(*#/v1/project/deleteProjectAttributes:\x01*\x12\xa0\x01\n\x15logProjectCodeVersion\x12\'.ai.verta.modeldb.LogProjectCodeVersion\x1a\x30.ai.verta.modeldb.LogProjectCodeVersion.Response\",\x82\xd3\xe4\x93\x02&\"!/v1/project/logProjectCodeVersion:\x01*\x12\x9d\x01\n\x15getProjectCodeVersion\x12\'.ai.verta.modeldb.GetProjectCodeVersion\x1a\x30.ai.verta.modeldb.GetProjectCodeVersion.Response\")\x82\xd3\xe4\x93\x02#\x12!/v1/project/getProjectCodeVersion\x12}\n\x10verifyConnection\x12\x17.ai.verta.modeldb.Empty\x1a*.ai.verta.modeldb.VerifyConnectionResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/project/verifyConnection\x12\x88\x01\n\x0f\x64\x65\x65pCopyProject\x12!.ai.verta.modeldb.DeepCopyProject\x1a*.ai.verta.modeldb.DeepCopyProject.Response\"&\x82\xd3\xe4\x93\x02 \"\x1b/v1/project/deepCopyProject:\x01*\x12q\n\ngetSummary\x12\x1c.ai.verta.modeldb.GetSummary\x1a%.ai.verta.modeldb.GetSummary.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/project/getSummary\x12\x8c\x01\n\x10setProjectReadme\x12\".ai.verta.modeldb.SetProjectReadme\x1a+.ai.verta.modeldb.SetProjectReadme.Response\"\'\x82\xd3\xe4\x93\x02!\"\x1c/v1/project/setProjectReadme:\x01*\x12\x89\x01\n\x10getProjectReadme\x12\".ai.verta.modeldb.GetProjectReadme\x1a+.ai.verta.modeldb.GetProjectReadme.Response\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/project/getProjectReadme\x12\x9a\x01\n\x14setProjectVisibility\x12%.ai.verta.modeldb.SetProjectVisibilty\x1a..ai.verta.modeldb.SetProjectVisibilty.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/project/setProjectVisibility:\x01*\x12\x98\x01\n\x13setProjectShortName\x12%.ai.verta.modeldb.SetProjectShortName\x1a..ai.verta.modeldb.SetProjectShortName.Response\"*\x82\xd3\xe4\x93\x02$\"\x1f/v1/project/setProjectShortName:\x01*\x12\x95\x01\n\x13getProjectShortName\x12%.ai.verta.modeldb.GetProjectShortName\x1a..ai.verta.modeldb.GetProjectShortName.Response\"\'\x82\xd3\xe4\x93\x02!\x12\x1f/v1/project/getProjectShortName\x12\x90\x01\n\x11getUrlForArtifact\x12#.ai.verta.modeldb.GetUrlForArtifact\x1a,.ai.verta.modeldb.GetUrlForArtifact.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/project/getUrlForArtifact:\x01*\x12|\n\x0c\x66indProjects\x12\x1e.ai.verta.modeldb.FindProjects\x1a\'.ai.verta.modeldb.FindProjects.Response\"#\x82\xd3\xe4\x93\x02\x1d\"\x18/v1/project/findProjects:\x01*\x12\x8a\x01\n\x0clogArtifacts\x12%.ai.verta.modeldb.LogProjectArtifacts\x1a..ai.verta.modeldb.LogProjectArtifacts.Response\"#\x82\xd3\xe4\x93\x02\x1d\"\x18/v1/project/logArtifacts:\x01*\x12y\n\x0cgetArtifacts\x12\x1e.ai.verta.modeldb.GetArtifacts\x1a\'.ai.verta.modeldb.GetArtifacts.Response\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/v1/project/getArtifacts\x12\x92\x01\n\x0e\x64\x65leteArtifact\x12\'.ai.verta.modeldb.DeleteProjectArtifact\x1a\x30.ai.verta.modeldb.DeleteProjectArtifact.Response\"%\x82\xd3\xe4\x93\x02\x1f*\x1a/v1/project/deleteArtifact:\x01*\x12\x84\x01\n\x0e\x64\x65leteProjects\x12 .ai.verta.modeldb.DeleteProjects\x1a).ai.verta.modeldb.DeleteProjects.Response\"%\x82\xd3\xe4\x93\x02\x1f*\x1a/v1/project/deleteProjects:\x01*\x12\x98\x01\n\x13setProjectWorkspace\x12%.ai.verta.modeldb.SetProjectWorkspace\x1a..ai.verta.modeldb.SetProjectWorkspace.Response\"*\x82\xd3\xe4\x93\x02$\"\x1f/v1/project/setProjectWorkspace:\x01*BBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,modeldb_dot_CommonService__pb2.DESCRIPTOR,])
 
@@ -47,8 +47,8 @@ _PROJECTVISIBILITY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=4812,
-  serialized_end=4879,
+  serialized_start=4842,
+  serialized_end=4909,
 )
 _sym_db.RegisterEnumDescriptor(_PROJECTVISIBILITY)
 
@@ -137,35 +137,42 @@ _PROJECT = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='attributes', full_name='ai.verta.modeldb.Project.attributes', index=10,
+      name='workspace_service_id', full_name='ai.verta.modeldb.Project.workspace_service_id', index=10,
+      number=11, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='attributes', full_name='ai.verta.modeldb.Project.attributes', index=11,
       number=20, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='tags', full_name='ai.verta.modeldb.Project.tags', index=11,
+      name='tags', full_name='ai.verta.modeldb.Project.tags', index=12,
       number=21, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='owner', full_name='ai.verta.modeldb.Project.owner', index=12,
+      name='owner', full_name='ai.verta.modeldb.Project.owner', index=13,
       number=22, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='code_version_snapshot', full_name='ai.verta.modeldb.Project.code_version_snapshot', index=13,
+      name='code_version_snapshot', full_name='ai.verta.modeldb.Project.code_version_snapshot', index=14,
       number=23, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='artifacts', full_name='ai.verta.modeldb.Project.artifacts', index=14,
+      name='artifacts', full_name='ai.verta.modeldb.Project.artifacts', index=15,
       number=24, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -184,7 +191,7 @@ _PROJECT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=138,
-  serialized_end=624,
+  serialized_end=654,
 )
 
 
@@ -214,8 +221,8 @@ _CREATEPROJECT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _CREATEPROJECT = _descriptor.Descriptor(
@@ -300,8 +307,8 @@ _CREATEPROJECT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=627,
-  serialized_end=972,
+  serialized_start=657,
+  serialized_end=1002,
 )
 
 
@@ -331,8 +338,8 @@ _DELETEPROJECT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1003,
-  serialized_end=1029,
+  serialized_start=1033,
+  serialized_end=1059,
 )
 
 _DELETEPROJECT = _descriptor.Descriptor(
@@ -361,8 +368,8 @@ _DELETEPROJECT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=974,
-  serialized_end=1029,
+  serialized_start=1004,
+  serialized_end=1059,
 )
 
 
@@ -392,8 +399,8 @@ _UPDATEPROJECTNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _UPDATEPROJECTNAME = _descriptor.Descriptor(
@@ -429,8 +436,8 @@ _UPDATEPROJECTNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1031,
-  serialized_end=1132,
+  serialized_start=1061,
+  serialized_end=1162,
 )
 
 
@@ -460,8 +467,8 @@ _UPDATEPROJECTDESCRIPTION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _UPDATEPROJECTDESCRIPTION = _descriptor.Descriptor(
@@ -497,8 +504,8 @@ _UPDATEPROJECTDESCRIPTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1134,
-  serialized_end=1249,
+  serialized_start=1164,
+  serialized_end=1279,
 )
 
 
@@ -528,8 +535,8 @@ _ADDPROJECTTAGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _ADDPROJECTTAGS = _descriptor.Descriptor(
@@ -565,8 +572,8 @@ _ADDPROJECTTAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1251,
-  serialized_end=1349,
+  serialized_start=1281,
+  serialized_end=1379,
 )
 
 
@@ -596,8 +603,8 @@ _DELETEPROJECTTAGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _DELETEPROJECTTAGS = _descriptor.Descriptor(
@@ -640,8 +647,8 @@ _DELETEPROJECTTAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1351,
-  serialized_end=1472,
+  serialized_start=1381,
+  serialized_end=1502,
 )
 
 
@@ -671,8 +678,8 @@ _ADDPROJECTTAG_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _ADDPROJECTTAG = _descriptor.Descriptor(
@@ -708,8 +715,8 @@ _ADDPROJECTTAG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1474,
-  serialized_end=1570,
+  serialized_start=1504,
+  serialized_end=1600,
 )
 
 
@@ -739,8 +746,8 @@ _DELETEPROJECTTAG_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _DELETEPROJECTTAG = _descriptor.Descriptor(
@@ -776,8 +783,8 @@ _DELETEPROJECTTAG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1572,
-  serialized_end=1671,
+  serialized_start=1602,
+  serialized_end=1701,
 )
 
 
@@ -807,8 +814,8 @@ _GETPROJECTATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1709,
-  serialized_end=1766,
+  serialized_start=1739,
+  serialized_end=1796,
 )
 
 _GETPROJECTATTRIBUTES = _descriptor.Descriptor(
@@ -837,8 +844,8 @@ _GETPROJECTATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1673,
-  serialized_end=1766,
+  serialized_start=1703,
+  serialized_end=1796,
 )
 
 
@@ -868,8 +875,8 @@ _ADDPROJECTATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _ADDPROJECTATTRIBUTES = _descriptor.Descriptor(
@@ -905,8 +912,8 @@ _ADDPROJECTATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1769,
-  serialized_end=1906,
+  serialized_start=1799,
+  serialized_end=1936,
 )
 
 
@@ -936,8 +943,8 @@ _UPDATEPROJECTATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _UPDATEPROJECTATTRIBUTES = _descriptor.Descriptor(
@@ -973,8 +980,8 @@ _UPDATEPROJECTATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1909,
-  serialized_end=2048,
+  serialized_start=1939,
+  serialized_end=2078,
 )
 
 
@@ -1004,8 +1011,8 @@ _DELETEPROJECTATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _DELETEPROJECTATTRIBUTES = _descriptor.Descriptor(
@@ -1048,8 +1055,8 @@ _DELETEPROJECTATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2051,
-  serialized_end=2188,
+  serialized_start=2081,
+  serialized_end=2218,
 )
 
 
@@ -1079,8 +1086,8 @@ _LOGPROJECTCODEVERSION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _LOGPROJECTCODEVERSION = _descriptor.Descriptor(
@@ -1116,8 +1123,8 @@ _LOGPROJECTCODEVERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2191,
-  serialized_end=2335,
+  serialized_start=2221,
+  serialized_end=2365,
 )
 
 
@@ -1147,8 +1154,8 @@ _GETPROJECTCODEVERSION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2374,
-  serialized_end=2437,
+  serialized_start=2404,
+  serialized_end=2467,
 )
 
 _GETPROJECTCODEVERSION = _descriptor.Descriptor(
@@ -1177,8 +1184,8 @@ _GETPROJECTCODEVERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2337,
-  serialized_end=2437,
+  serialized_start=2367,
+  serialized_end=2467,
 )
 
 
@@ -1215,8 +1222,8 @@ _GETPROJECTS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2557,
-  serialized_end=2635,
+  serialized_start=2587,
+  serialized_end=2665,
 )
 
 _GETPROJECTS = _descriptor.Descriptor(
@@ -1273,8 +1280,8 @@ _GETPROJECTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2440,
-  serialized_end=2635,
+  serialized_start=2470,
+  serialized_end=2665,
 )
 
 
@@ -1304,8 +1311,8 @@ _GETPUBLICPROJECTS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2557,
-  serialized_end=2612,
+  serialized_start=2587,
+  serialized_end=2642,
 )
 
 _GETPUBLICPROJECTS = _descriptor.Descriptor(
@@ -1341,8 +1348,8 @@ _GETPUBLICPROJECTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2637,
-  serialized_end=2754,
+  serialized_start=2667,
+  serialized_end=2784,
 )
 
 
@@ -1372,8 +1379,8 @@ _GETPROJECTBYID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _GETPROJECTBYID = _descriptor.Descriptor(
@@ -1402,8 +1409,8 @@ _GETPROJECTBYID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2756,
-  serialized_end=2840,
+  serialized_start=2786,
+  serialized_end=2870,
 )
 
 
@@ -1440,8 +1447,8 @@ _GETPROJECTBYNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2901,
-  serialized_end=3015,
+  serialized_start=2931,
+  serialized_end=3045,
 )
 
 _GETPROJECTBYNAME = _descriptor.Descriptor(
@@ -1477,8 +1484,8 @@ _GETPROJECTBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2843,
-  serialized_end=3015,
+  serialized_start=2873,
+  serialized_end=3045,
 )
 
 
@@ -1501,8 +1508,8 @@ _EMPTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3017,
-  serialized_end=3024,
+  serialized_start=3047,
+  serialized_end=3054,
 )
 
 
@@ -1532,8 +1539,8 @@ _VERIFYCONNECTIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3026,
-  serialized_end=3068,
+  serialized_start=3056,
+  serialized_end=3098,
 )
 
 
@@ -1563,8 +1570,8 @@ _DEEPCOPYPROJECT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _DEEPCOPYPROJECT = _descriptor.Descriptor(
@@ -1593,8 +1600,8 @@ _DEEPCOPYPROJECT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3070,
-  serialized_end=3155,
+  serialized_start=3100,
+  serialized_end=3185,
 )
 
 
@@ -1638,8 +1645,8 @@ _METRICSSUMMARY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3157,
-  serialized_end=3224,
+  serialized_start=3187,
+  serialized_end=3254,
 )
 
 
@@ -1676,8 +1683,8 @@ _LASTMODIFIEDEXPERIMENTRUNSUMMARY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3226,
-  serialized_end=3301,
+  serialized_start=3256,
+  serialized_end=3331,
 )
 
 
@@ -1742,8 +1749,8 @@ _GETSUMMARY_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3337,
-  serialized_end=3593,
+  serialized_start=3367,
+  serialized_end=3623,
 )
 
 _GETSUMMARY = _descriptor.Descriptor(
@@ -1772,8 +1779,8 @@ _GETSUMMARY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3304,
-  serialized_end=3593,
+  serialized_start=3334,
+  serialized_end=3623,
 )
 
 
@@ -1803,8 +1810,8 @@ _SETPROJECTREADME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _SETPROJECTREADME = _descriptor.Descriptor(
@@ -1840,8 +1847,8 @@ _SETPROJECTREADME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3595,
-  serialized_end=3702,
+  serialized_start=3625,
+  serialized_end=3732,
 )
 
 
@@ -1871,8 +1878,8 @@ _GETPROJECTREADME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3736,
-  serialized_end=3767,
+  serialized_start=3766,
+  serialized_end=3797,
 )
 
 _GETPROJECTREADME = _descriptor.Descriptor(
@@ -1901,8 +1908,8 @@ _GETPROJECTREADME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3704,
-  serialized_end=3767,
+  serialized_start=3734,
+  serialized_end=3797,
 )
 
 
@@ -1932,8 +1939,8 @@ _SETPROJECTVISIBILTY_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _SETPROJECTVISIBILTY = _descriptor.Descriptor(
@@ -1969,8 +1976,8 @@ _SETPROJECTVISIBILTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3770,
-  serialized_end=3924,
+  serialized_start=3800,
+  serialized_end=3954,
 )
 
 
@@ -2000,8 +2007,8 @@ _SETPROJECTSHORTNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _SETPROJECTSHORTNAME = _descriptor.Descriptor(
@@ -2037,8 +2044,8 @@ _SETPROJECTSHORTNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3926,
-  serialized_end=4035,
+  serialized_start=3956,
+  serialized_end=4065,
 )
 
 
@@ -2068,8 +2075,8 @@ _GETPROJECTSHORTNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4072,
-  serialized_end=4102,
+  serialized_start=4102,
+  serialized_end=4132,
 )
 
 _GETPROJECTSHORTNAME = _descriptor.Descriptor(
@@ -2098,8 +2105,8 @@ _GETPROJECTSHORTNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4037,
-  serialized_end=4102,
+  serialized_start=4067,
+  serialized_end=4132,
 )
 
 
@@ -2136,8 +2143,8 @@ _FINDPROJECTS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2557,
-  serialized_end=2635,
+  serialized_start=2587,
+  serialized_end=2665,
 )
 
 _FINDPROJECTS = _descriptor.Descriptor(
@@ -2215,8 +2222,8 @@ _FINDPROJECTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4105,
-  serialized_end=4392,
+  serialized_start=4135,
+  serialized_end=4422,
 )
 
 
@@ -2246,8 +2253,8 @@ _LOGPROJECTARTIFACTS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _LOGPROJECTARTIFACTS = _descriptor.Descriptor(
@@ -2283,8 +2290,8 @@ _LOGPROJECTARTIFACTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4395,
-  serialized_end=4530,
+  serialized_start=4425,
+  serialized_end=4560,
 )
 
 
@@ -2314,8 +2321,8 @@ _DELETEPROJECTARTIFACT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _DELETEPROJECTARTIFACT = _descriptor.Descriptor(
@@ -2351,8 +2358,8 @@ _DELETEPROJECTARTIFACT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4532,
-  serialized_end=4636,
+  serialized_start=4562,
+  serialized_end=4666,
 )
 
 
@@ -2382,8 +2389,8 @@ _DELETEPROJECTS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1003,
-  serialized_end=1029,
+  serialized_start=1033,
+  serialized_end=1059,
 )
 
 _DELETEPROJECTS = _descriptor.Descriptor(
@@ -2412,8 +2419,8 @@ _DELETEPROJECTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4638,
-  serialized_end=4695,
+  serialized_start=4668,
+  serialized_end=4725,
 )
 
 
@@ -2443,8 +2450,8 @@ _SETPROJECTWORKSPACE_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=918,
-  serialized_end=972,
+  serialized_start=948,
+  serialized_end=1002,
 )
 
 _SETPROJECTWORKSPACE = _descriptor.Descriptor(
@@ -2480,8 +2487,8 @@ _SETPROJECTWORKSPACE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4697,
-  serialized_end=4810,
+  serialized_start=4727,
+  serialized_end=4840,
 )
 
 _PROJECT.fields_by_name['project_visibility'].enum_type = _PROJECTVISIBILITY
@@ -3088,8 +3095,8 @@ _PROJECTSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=4882,
-  serialized_end=9760,
+  serialized_start=4912,
+  serialized_end=9790,
   methods=[
   _descriptor.MethodDescriptor(
     name='createProject',

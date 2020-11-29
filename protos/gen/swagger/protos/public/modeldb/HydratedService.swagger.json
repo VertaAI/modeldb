@@ -1295,6 +1295,10 @@
         },
         "workspace_type": {
           "$ref": "#/definitions/WorkspaceTypeEnumWorkspaceType"
+        },
+        "workspace_service_id": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
@@ -2130,6 +2134,10 @@
         },
         "workspace_type": {
           "$ref": "#/definitions/WorkspaceTypeEnumWorkspaceType"
+        },
+        "workspace_service_id": {
+          "type": "string",
+          "format": "uint64"
         },
         "attributes": {
           "type": "array",
