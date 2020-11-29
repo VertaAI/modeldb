@@ -29,6 +29,7 @@ case class ModeldbProject (
   short_name: Option[String] = None,
   tags: Option[List[String]] = None,
   workspace_id: Option[String] = None,
+  workspace_service_id: Option[BigInt] = None,
   workspace_type: Option[WorkspaceTypeEnumWorkspaceType] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbProject.toJson(this)
@@ -52,6 +53,7 @@ object ModeldbProject {
         obj.short_name.map(x => JField("short_name", JString(x))),
         obj.tags.map(x => JField("tags", ((x: List[String]) => JArray(x.map(JString)))(x))),
         obj.workspace_id.map(x => JField("workspace_id", JString(x))),
+        obj.workspace_service_id.map(x => JField("workspace_service_id", JInt(x))),
         obj.workspace_type.map(x => JField("workspace_type", ((x: WorkspaceTypeEnumWorkspaceType) => WorkspaceTypeEnumWorkspaceType.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -80,6 +82,7 @@ object ModeldbProject {
           short_name = fieldsMap.get("short_name").map(JsonConverter.fromJsonString),
           tags = fieldsMap.get("tags").map((x: JValue) => x match {case JArray(elements) => elements.map(JsonConverter.fromJsonString); case _ => throw new IllegalArgumentException(s"unknown type ${x.getClass.toString}")}),
           workspace_id = fieldsMap.get("workspace_id").map(JsonConverter.fromJsonString),
+          workspace_service_id = fieldsMap.get("workspace_service_id").map(JsonConverter.fromJsonInteger),
           workspace_type = fieldsMap.get("workspace_type").map(WorkspaceTypeEnumWorkspaceType.fromJson)
         )
       }

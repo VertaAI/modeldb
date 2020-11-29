@@ -3994,6 +3994,10 @@
         "workspace_type": {
           "$ref": "#/definitions/WorkspaceTypeEnumWorkspaceType"
         },
+        "workspace_service_id": {
+          "type": "string",
+          "format": "uint64"
+        },
         "repository_visibility": {
           "$ref": "#/definitions/RepositoryVisibilityEnumRepositoryVisibility"
         },

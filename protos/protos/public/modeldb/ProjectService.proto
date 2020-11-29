@@ -22,8 +22,10 @@ message Project {
     string short_name = 6;
     string readme_text = 7;
     ProjectVisibility project_visibility = 8;
+
     string workspace_id = 9;
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 10;
+    uint64 workspace_service_id = 11;
 
     repeated common.KeyValue attributes = 20;
     repeated string tags = 21;

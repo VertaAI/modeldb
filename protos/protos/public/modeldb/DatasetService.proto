@@ -22,16 +22,18 @@ message Dataset {
     repeated common.KeyValue attributes = 8;
     uint64 time_created = 9;
     uint64 time_updated = 10;
+
     string workspace_id = 11;
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 12;
+    uint64 workspace_service_id = 13;
 }
 
-message DatasetTypeEnum {	
-    enum DatasetType{	
-        RAW = 0;// default	
-        PATH = 1;	
-        QUERY = 2;	
-    }	
+message DatasetTypeEnum {
+    enum DatasetType{
+        RAW = 0;// default
+        PATH = 1;
+        QUERY = 2;
+    }
 }
 
 message DatasetVisibilityEnum {

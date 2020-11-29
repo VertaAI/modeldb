@@ -35,6 +35,7 @@ case class ModeldbDataset (
   time_created: Option[BigInt] = None,
   time_updated: Option[BigInt] = None,
   workspace_id: Option[String] = None,
+  workspace_service_id: Option[BigInt] = None,
   workspace_type: Option[WorkspaceTypeEnumWorkspaceType] = None
 ) extends BaseSwagger {
   def toJson(): JValue = ModeldbDataset.toJson(this)
@@ -55,6 +56,7 @@ object ModeldbDataset {
         obj.time_created.map(x => JField("time_created", JInt(x))),
         obj.time_updated.map(x => JField("time_updated", JInt(x))),
         obj.workspace_id.map(x => JField("workspace_id", JString(x))),
+        obj.workspace_service_id.map(x => JField("workspace_service_id", JInt(x))),
         obj.workspace_type.map(x => JField("workspace_type", ((x: WorkspaceTypeEnumWorkspaceType) => WorkspaceTypeEnumWorkspaceType.toJson(x))(x)))
       ).flatMap(x => x match {
         case Some(y) => List(y)
@@ -80,6 +82,7 @@ object ModeldbDataset {
           time_created = fieldsMap.get("time_created").map(JsonConverter.fromJsonInteger),
           time_updated = fieldsMap.get("time_updated").map(JsonConverter.fromJsonInteger),
           workspace_id = fieldsMap.get("workspace_id").map(JsonConverter.fromJsonString),
+          workspace_service_id = fieldsMap.get("workspace_service_id").map(JsonConverter.fromJsonInteger),
           workspace_type = fieldsMap.get("workspace_type").map(WorkspaceTypeEnumWorkspaceType.fromJson)
         )
       }
