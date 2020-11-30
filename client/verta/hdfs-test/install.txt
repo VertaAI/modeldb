@@ -18,6 +18,7 @@ sudo chown -R ec2-user:ec2-user /opt/spark-2.4.7-bin-hadoop2.7
 #sudo easy_install-3.4 pip
 $SPARK_HOME/sbin/start-master.sh
 pip3 install wheel --user
+pip3 install -U setuptools --user
 pip3 install pyspark==2.4.7 --user
 echo 'export PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip' >> ~/.bashrc
 source ~/.bashrc
