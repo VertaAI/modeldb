@@ -82,6 +82,7 @@ import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.experiment.ExperimentDAO;
+import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -190,17 +191,14 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       CreateExperimentRun request, UserInfo userInfo) {
 
     String errorMessage = null;
-    if (request.getProjectId().isEmpty()
-        && request.getExperimentId().isEmpty()
-        && request.getName().isEmpty()) {
-      errorMessage =
-          "Project ID and Experiment ID and ExperimentRun name not found in CreateExperimentRun request";
+    if (request.getProjectId().isEmpty() && request.getExperimentId().isEmpty()) {
+      errorMessage = "Project ID and Experiment ID not found in CreateExperimentRun request";
     } else if (request.getProjectId().isEmpty()) {
       errorMessage = "Project ID not found in CreateExperimentRun request";
     } else if (request.getExperimentId().isEmpty()) {
       errorMessage = "Experiment ID not found in CreateExperimentRun request";
     } else if (request.getName().isEmpty()) {
-      errorMessage = "ExperimentRun name not found in CreateExperimentRun request";
+      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
     }
 
     if (errorMessage != null) {

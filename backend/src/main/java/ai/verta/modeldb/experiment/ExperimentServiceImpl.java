@@ -44,6 +44,7 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
+import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -128,12 +129,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
   private Experiment getExperimentFromRequest(CreateExperiment request, UserInfo userInfo) {
 
     String errorMessage = null;
-    if (request.getProjectId().isEmpty() && request.getName().isEmpty()) {
-      errorMessage = "Project ID and Experiment name not found in CreateExperiment request";
-    } else if (request.getProjectId().isEmpty()) {
+    if (request.getProjectId().isEmpty()) {
       errorMessage = "Project ID not found in CreateExperiment request";
     } else if (request.getName().isEmpty()) {
-      errorMessage = "Experiment name not found in CreateExperiment request";
+      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
     }
 
     if (errorMessage != null) {
@@ -394,9 +393,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
                     Any.pack(UpdateExperimentNameOrDescription.Response.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
-      } else if (request.getName().isEmpty() && request.getDescription().isEmpty()) {
-        throw new ModelDBException(
-            "Name OR Description should not be empty", Code.INVALID_ARGUMENT);
+      } else if (request.getName().isEmpty()) {
+        request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -412,6 +410,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             experimentDAO.updateExperimentName(
                 request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
       }
+      // FIXME: this code never allows us to set the description as an empty string
       if (!request.getDescription().isEmpty()) {
         updatedExperiment =
             experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
@@ -456,7 +455,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       if (request.getId().isEmpty()) {
         errorMessage = "Experiment ID not found in UpdateExperimentName request";
       } else if (request.getName().isEmpty()) {
-        errorMessage = "Experiment name not found in UpdateExperimentName request";
+        request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
       }
 
       if (errorMessage != null) {

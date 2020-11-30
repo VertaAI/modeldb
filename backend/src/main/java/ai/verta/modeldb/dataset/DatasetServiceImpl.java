@@ -51,6 +51,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
+import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -156,14 +157,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try (RequestLatencyResource latencyResource =
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       if (request.getName().isEmpty()) {
-        LOGGER.info(ModelDBMessages.DATASET_NAME_NOT_FOUND_IN_REQUEST);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBMessages.DATASET_NAME_NOT_FOUND_IN_REQUEST)
-                .addDetails(Any.pack(CreateDataset.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
       }
 
       roleService.validateEntityUserWithUserInfo(
@@ -460,7 +454,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       } else if (request.getId().isEmpty()) {
         errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
       } else if (request.getName().isEmpty()) {
-        errorMessage = ModelDBMessages.DATASET_NAME_NOT_FOUND_IN_REQUEST;
+        request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
       }
 
       if (errorMessage != null) {

@@ -61,6 +61,7 @@ import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -148,15 +149,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   private Project getProjectFromRequest(CreateProject request, UserInfo userInfo) {
 
     if (request.getName().isEmpty()) {
-      String errorMessage = "Project name not found in CreateProject request";
-      LOGGER.info(errorMessage);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage(errorMessage)
-              .addDetails(Any.pack(CreateProject.Response.getDefaultInstance()))
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
     }
 
     String projectShortName = ModelDBUtils.convertToProjectShortName(request.getName());
