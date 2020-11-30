@@ -59,6 +59,36 @@ class CollaboratorServiceStub(object):
         request_serializer=uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
         response_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
         )
+    self.addOrUpdateEndpointCollaborator = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/addOrUpdateEndpointCollaborator',
+        request_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.FromString,
+        )
+    self.removeEndpointCollaborator = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/removeEndpointCollaborator',
+        request_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.FromString,
+        )
+    self.getEndpointCollaborators = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/getEndpointCollaborators',
+        request_serializer=uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
+        )
+    self.addOrUpdateRegisteredModelCollaborator = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/addOrUpdateRegisteredModelCollaborator',
+        request_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.FromString,
+        )
+    self.removeRegisteredModelCollaborator = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/removeRegisteredModelCollaborator',
+        request_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.FromString,
+        )
+    self.getRegisteredModelCollaborators = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/getRegisteredModelCollaborators',
+        request_serializer=uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
+        )
 
 
 class CollaboratorServiceServicer(object):
@@ -128,6 +158,48 @@ class CollaboratorServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def addOrUpdateEndpointCollaborator(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def removeEndpointCollaborator(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getEndpointCollaborators(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def addOrUpdateRegisteredModelCollaborator(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def removeRegisteredModelCollaborator(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getRegisteredModelCollaborators(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_CollaboratorServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -173,6 +245,36 @@ def add_CollaboratorServiceServicer_to_server(servicer, server):
       ),
       'getRepositoryCollaborators': grpc.unary_unary_rpc_method_handler(
           servicer.getRepositoryCollaborators,
+          request_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
+      ),
+      'addOrUpdateEndpointCollaborator': grpc.unary_unary_rpc_method_handler(
+          servicer.addOrUpdateEndpointCollaborator,
+          request_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.SerializeToString,
+      ),
+      'removeEndpointCollaborator': grpc.unary_unary_rpc_method_handler(
+          servicer.removeEndpointCollaborator,
+          request_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.SerializeToString,
+      ),
+      'getEndpointCollaborators': grpc.unary_unary_rpc_method_handler(
+          servicer.getEndpointCollaborators,
+          request_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
+      ),
+      'addOrUpdateRegisteredModelCollaborator': grpc.unary_unary_rpc_method_handler(
+          servicer.addOrUpdateRegisteredModelCollaborator,
+          request_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.SerializeToString,
+      ),
+      'removeRegisteredModelCollaborator': grpc.unary_unary_rpc_method_handler(
+          servicer.removeRegisteredModelCollaborator,
+          request_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.SerializeToString,
+      ),
+      'getRegisteredModelCollaborators': grpc.unary_unary_rpc_method_handler(
+          servicer.getRegisteredModelCollaborators,
           request_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.FromString,
           response_serializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
       ),

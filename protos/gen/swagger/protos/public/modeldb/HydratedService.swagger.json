@@ -931,6 +931,20 @@
       ],
       "default": "IMAGE"
     },
+    "AuthzActionEnumAuthzServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "IS_ALLOWED",
+        "GET",
+        "CREATE",
+        "READ",
+        "UPDATE",
+        "DELETE"
+      ],
+      "default": "UNKNOWN"
+    },
     "CollaboratorTypeEnumCollaboratorType": {
       "type": "string",
       "enum": [
@@ -956,6 +970,18 @@
         "ORG_SCOPED_PUBLIC"
       ],
       "default": "PRIVATE"
+    },
+    "DeploymentActionEnumDeploymentServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "CREATE",
+        "READ",
+        "UPDATE",
+        "DELETE"
+      ],
+      "default": "UNKNOWN"
     },
     "EntitiesEnumEntitiesTypes": {
       "type": "string",
@@ -1018,12 +1044,29 @@
       ],
       "default": "LOCAL_FILE_SYSTEM"
     },
+    "RoleActionEnumRoleServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "GET_BY_ID",
+        "GET_BY_NAME",
+        "CREATE",
+        "UPDATE",
+        "LIST",
+        "DELETE"
+      ],
+      "default": "UNKNOWN"
+    },
     "ServiceEnumService": {
       "type": "string",
       "enum": [
         "UNKNOWN",
         "ALL",
-        "MODELDB_SERVICE"
+        "ROLE_SERVICE",
+        "AUTHZ_SERVICE",
+        "MODELDB_SERVICE",
+        "DEPLOYMENT_SERVICE"
       ],
       "default": "UNKNOWN"
     },
@@ -2306,8 +2349,17 @@
         "service": {
           "$ref": "#/definitions/ServiceEnumService"
         },
+        "role_service_action": {
+          "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
+        },
+        "authz_service_action": {
+          "$ref": "#/definitions/AuthzActionEnumAuthzServiceActions"
+        },
         "modeldb_service_action": {
           "$ref": "#/definitions/ModelDBActionEnumModelDBServiceActions"
+        },
+        "deployment_service_action": {
+          "$ref": "#/definitions/DeploymentActionEnumDeploymentServiceActions"
         }
       },
       "title": "An action describes a specific operation that can be performed on a service"
@@ -2448,6 +2500,9 @@
         },
         "verta_info": {
           "$ref": "#/definitions/uacVertaUserInfo"
+        },
+        "secondary_dev_key": {
+          "type": "string"
         }
       }
     },

@@ -11,6 +11,39 @@
     "application/json"
   ],
   "paths": {
+    "/uac/addDevKey": {
+      "post": {
+        "summary": "adds new user developer key",
+        "operationId": "UACService_addDevKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacUserInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacEmpty"
+            }
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
     "/uac/createUser": {
       "post": {
         "summary": "For now, any user can create a new user",
@@ -36,6 +69,72 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/uacCreateUser"
+            }
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
+    "/uac/deletePrimaryDevKey": {
+      "delete": {
+        "summary": "deletes primary developer key",
+        "operationId": "UACService_deletePrimaryDevKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacUserInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacEmpty"
+            }
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
+    "/uac/deleteSecondaryDevKey": {
+      "delete": {
+        "summary": "deletes secondary developer key",
+        "operationId": "UACService_deleteSecondaryDevKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacUserInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacEmpty"
             }
           }
         ],
@@ -323,6 +422,9 @@
         }
       }
     },
+    "uacEmpty": {
+      "type": "object"
+    },
     "uacFlagEnum": {
       "type": "string",
       "enum": [
@@ -458,6 +560,9 @@
         },
         "verta_info": {
           "$ref": "#/definitions/uacVertaUserInfo"
+        },
+        "secondary_dev_key": {
+          "type": "string"
         }
       }
     },

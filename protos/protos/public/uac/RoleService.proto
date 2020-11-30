@@ -14,11 +14,39 @@ message ServiceEnum {
     enum Service {
         UNKNOWN = 0; // Service 0 should always cause an error
         ALL = 1;
-        reserved 2, 3, 5;
+        ROLE_SERVICE = 2;
+        AUTHZ_SERVICE = 3;
         MODELDB_SERVICE = 4;
+        DEPLOYMENT_SERVICE = 5;
     }
 };
 
+message RoleActionEnum {
+    enum RoleServiceActions {
+        UNKNOWN = 0; // Action 0 should always cause an error
+        ALL = 1;
+        GET_BY_ID = 2;
+        GET_BY_NAME = 3;
+        CREATE = 4;
+        UPDATE = 5;
+        LIST = 6;
+        DELETE = 7;
+    }
+};
+
+message AuthzActionEnum {
+    enum AuthzServiceActions {
+        UNKNOWN = 0; // Action 0 should always cause an error
+        ALL = 1;
+        IS_ALLOWED = 2;
+        GET = 3;
+        CREATE = 4;
+        READ = 5;
+        UPDATE = 6;
+        DELETE = 7;
+    }
+
+};
 
 message ModelDBActionEnum {
     enum ModelDBServiceActions {
@@ -33,20 +61,61 @@ message ModelDBActionEnum {
     }
 };
 
+message DeploymentActionEnum {
+    enum DeploymentServiceActions {
+        UNKNOWN = 0; // Action 0 should always cause an error
+        ALL = 1;
+        CREATE = 2;
+        READ = 3;
+        UPDATE = 4;
+        DELETE = 5;
+    }
+};
 
 // An action describes a specific operation that can be performed on a service
 message Action {
     ServiceEnum.Service service = 1;
-    reserved 2, 3, 5;
     oneof action {
+        RoleActionEnum.RoleServiceActions role_service_action = 2;
+        AuthzActionEnum.AuthzServiceActions authz_service_action = 3;
         ModelDBActionEnum.ModelDBServiceActions modeldb_service_action = 4;
+        DeploymentActionEnum.DeploymentServiceActions deployment_service_action = 5;
+    }
+};
+
+message RoleResourceEnum {
+    enum RoleServiceResourceTypes {
+        UNKNOWN = 0; // Resource 0 should always cause an error
+        ALL = 1;
+        ROLE = 2;
+        ROLE_BINDING = 3;
+    }
+};
+
+message AuthzResourceEnum {
+    enum AuthzServiceResourceTypes {
+        UNKNOWN = 0; // Resource 0 should always cause an error
+        ALL = 1;
+        ORGANIZATION = 2;
+        TEAM = 3;
+    }
+};
+
+message DeploymentResourceEnum {
+    enum DeploymentServiceResourceTypes {
+        UNKNOWN = 0; // Resource 0 should always cause an error
+        ALL = 1;
+        ENDPOINT = 2;
     }
 };
 
 message ResourceType {
-    reserved 1, 2, 4;
 	oneof resource {
+    // Separate based on the service itself
+        RoleResourceEnum.RoleServiceResourceTypes role_service_resource_type = 1;
+        AuthzResourceEnum.AuthzServiceResourceTypes authz_service_resource_type = 2;
         common.ModelDBResourceEnum.ModelDBServiceResourceTypes modeldb_service_resource_type = 3;
+        DeploymentResourceEnum.DeploymentServiceResourceTypes deployment_service_resource_type = 4;
     };
 }
 

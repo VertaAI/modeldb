@@ -43,9 +43,73 @@
         ]
       }
     },
+    "/collaborator/addOrUpdateEndpointCollaborator": {
+      "post": {
+        "operationId": "CollaboratorService_addOrUpdateEndpointCollaborator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
     "/collaborator/addOrUpdateProjectCollaborator": {
       "post": {
         "operationId": "CollaboratorService_addOrUpdateProjectCollaborator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/addOrUpdateRegisteredModelCollaborator": {
+      "post": {
+        "operationId": "CollaboratorService_addOrUpdateRegisteredModelCollaborator",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -137,9 +201,69 @@
         ]
       }
     },
+    "/collaborator/getEndpointCollaborators": {
+      "get": {
+        "operationId": "CollaboratorService_getEndpointCollaborators",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
     "/collaborator/getProjectCollaborators": {
       "get": {
         "operationId": "CollaboratorService_getProjectCollaborators",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/getRegisteredModelCollaborators": {
+      "get": {
+        "operationId": "CollaboratorService_getRegisteredModelCollaborators",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -253,9 +377,121 @@
         ]
       }
     },
+    "/collaborator/removeEndpointCollaborator": {
+      "delete": {
+        "operationId": "CollaboratorService_removeEndpointCollaborator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacRemoveCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "date_deleted",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "authz_entity_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ORGANIZATION",
+              "TEAM",
+              "USER"
+            ],
+            "default": "UNKNOWN"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
     "/collaborator/removeProjectCollaborator": {
       "delete": {
         "operationId": "CollaboratorService_removeProjectCollaborator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacRemoveCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "date_deleted",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "authz_entity_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ORGANIZATION",
+              "TEAM",
+              "USER"
+            ],
+            "default": "UNKNOWN"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/removeRegisteredModelCollaborator": {
+      "delete": {
+        "operationId": "CollaboratorService_removeRegisteredModelCollaborator",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -367,6 +603,20 @@
     }
   },
   "definitions": {
+    "AuthzActionEnumAuthzServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "IS_ALLOWED",
+        "GET",
+        "CREATE",
+        "READ",
+        "UPDATE",
+        "DELETE"
+      ],
+      "default": "UNKNOWN"
+    },
     "CollaboratorTypeEnumCollaboratorType": {
       "type": "string",
       "enum": [
@@ -374,6 +624,18 @@
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
+    },
+    "DeploymentActionEnumDeploymentServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "CREATE",
+        "READ",
+        "UPDATE",
+        "DELETE"
+      ],
+      "default": "UNKNOWN"
     },
     "EntitiesEnumEntitiesTypes": {
       "type": "string",
@@ -411,12 +673,29 @@
       ],
       "default": "UNKNOWN"
     },
+    "RoleActionEnumRoleServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "GET_BY_ID",
+        "GET_BY_NAME",
+        "CREATE",
+        "UPDATE",
+        "LIST",
+        "DELETE"
+      ],
+      "default": "UNKNOWN"
+    },
     "ServiceEnumService": {
       "type": "string",
       "enum": [
         "UNKNOWN",
         "ALL",
-        "MODELDB_SERVICE"
+        "ROLE_SERVICE",
+        "AUTHZ_SERVICE",
+        "MODELDB_SERVICE",
+        "DEPLOYMENT_SERVICE"
       ],
       "default": "UNKNOWN"
     },
@@ -468,8 +747,17 @@
         "service": {
           "$ref": "#/definitions/ServiceEnumService"
         },
+        "role_service_action": {
+          "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
+        },
+        "authz_service_action": {
+          "$ref": "#/definitions/AuthzActionEnumAuthzServiceActions"
+        },
         "modeldb_service_action": {
           "$ref": "#/definitions/ModelDBActionEnumModelDBServiceActions"
+        },
+        "deployment_service_action": {
+          "$ref": "#/definitions/DeploymentActionEnumDeploymentServiceActions"
         }
       },
       "title": "An action describes a specific operation that can be performed on a service"
@@ -547,8 +835,31 @@
         "shared_users": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/uacGetCollaboratorResponse"
+            "$ref": "#/definitions/uacGetCollaboratorResponseItem"
           }
+        }
+      }
+    },
+    "uacGetCollaboratorResponseItem": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "share_via_type": {
+          "$ref": "#/definitions/uacShareViaEnum"
+        },
+        "verta_id": {
+          "type": "string"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "authz_entity_type": {
+          "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
         }
       }
     },
@@ -703,6 +1014,9 @@
         },
         "verta_info": {
           "$ref": "#/definitions/uacVertaUserInfo"
+        },
+        "secondary_dev_key": {
+          "type": "string"
         }
       }
     },

@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x15uac/RoleService.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"U\n\x0bServiceEnum\"F\n\x07Service\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x13\n\x0fMODELDB_SERVICE\x10\x04\"\x04\x08\x02\x10\x02\"\x04\x08\x03\x10\x03\"\x04\x08\x05\x10\x05\"\x8d\x01\n\x11ModelDBActionEnum\"x\n\x15ModelDBServiceActions\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\n\n\x06\x43REATE\x10\x02\x12\x08\n\x04READ\x10\x03\x12\n\n\x06UPDATE\x10\x04\x12\n\n\x06\x44\x45LETE\x10\x05\x12\n\n\x06\x44\x45PLOY\x10\x06\x12\x0f\n\x0bPUBLIC_READ\x10\x07\"\xb1\x01\n\x06\x41\x63tion\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12W\n\x16modeldb_service_action\x18\x04 \x01(\x0e\x32\x35.ai.verta.uac.ModelDBActionEnum.ModelDBServiceActionsH\x00\x42\x08\n\x06\x61\x63tionJ\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04J\x04\x08\x05\x10\x06\"\x97\x01\n\x0cResourceType\x12i\n\x1dmodeldb_service_resource_type\x18\x03 \x01(\x0e\x32@.ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypesH\x00\x42\n\n\x08resourceJ\x04\x08\x01\x10\x02J\x04\x08\x02\x10\x03J\x04\x08\x04\x10\x05\"\x88\x01\n\tResources\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x14\n\x0cresource_ids\x18\x02 \x03(\t\x12\x31\n\rresource_type\x18\x06 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\",\n\tRoleScope\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x0f\n\x07team_id\x18\x02 \x01(\t\"h\n\x13ResourceActionGroup\x12*\n\tresources\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\x8b\x01\n\x04Role\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12&\n\x05scope\x18\x03 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x12\x41\n\x16resource_action_groups\x18\x04 \x03(\x0b\x32!.ai.verta.uac.ResourceActionGroup\"?\n\x08\x45ntities\x12\x10\n\x08user_ids\x18\x01 \x03(\t\x12\x0f\n\x07org_ids\x18\x02 \x03(\t\x12\x10\n\x08team_ids\x18\x03 \x03(\t\"\xd9\x01\n\x0bRoleBinding\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12&\n\x05scope\x18\x03 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x12(\n\x08\x65ntities\x18\x05 \x03(\x0b\x32\x16.ai.verta.uac.Entities\x12*\n\tresources\x18\x06 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x12\x0f\n\x07role_id\x18\x07 \x01(\t\x12\x11\n\trole_name\x18\t \x01(\t\x12\x0e\n\x06public\x18\x08 \x01(\x08\"G\n\x0bGetRoleById\x12\n\n\x02id\x18\x01 \x01(\t\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"s\n\rGetRoleByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"b\n\tListRoles\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a-\n\x08Response\x12!\n\x05roles\x18\x01 \x03(\x0b\x32\x12.ai.verta.uac.Role\"Y\n\x07SetRole\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"4\n\nDeleteRole\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"]\n\x12GetRoleBindingById\x12\n\n\x02id\x18\x01 \x01(\t\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\"\x89\x01\n\x14GetRoleBindingByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\"\x8b\x01\n\x10ListRoleBindings\x12\x11\n\tentity_id\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a<\n\x08Response\x12\x30\n\rrole_bindings\x18\x01 \x03(\x0b\x32\x19.ai.verta.uac.RoleBinding\"~\n\x0eSetRoleBinding\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\";\n\x11\x44\x65leteRoleBinding\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"J\n\x12\x44\x65leteRoleBindings\x12\x18\n\x10roleBindingNames\x18\x01 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"v\n\x0fRemoveResources\x12\x14\n\x0cresource_ids\x18\x01 \x03(\t\x12\x31\n\rresource_type\x18\x02 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\x32\xc9\x0b\n\x0bRoleService\x12j\n\x0bgetRoleById\x12\x19.ai.verta.uac.GetRoleById\x1a\".ai.verta.uac.GetRoleById.Response\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/role/getRoleById\x12r\n\rgetRoleByName\x12\x1b.ai.verta.uac.GetRoleByName\x1a$.ai.verta.uac.GetRoleByName.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/role/getRoleByName\x12\x62\n\tlistRoles\x12\x17.ai.verta.uac.ListRoles\x1a .ai.verta.uac.ListRoles.Response\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/v1/role/listRoles\x12]\n\x07setRole\x12\x15.ai.verta.uac.SetRole\x1a\x1e.ai.verta.uac.SetRole.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\"\x10/v1/role/setRole:\x01*\x12i\n\ndeleteRole\x12\x18.ai.verta.uac.DeleteRole\x1a!.ai.verta.uac.DeleteRole.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/role/deleteRole:\x01*\x12\x86\x01\n\x12getBindingRoleById\x12 .ai.verta.uac.GetRoleBindingById\x1a).ai.verta.uac.GetRoleBindingById.Response\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/v1/role/getRoleBindingById\x12\x8e\x01\n\x14getRoleBindingByName\x12\".ai.verta.uac.GetRoleBindingByName\x1a+.ai.verta.uac.GetRoleBindingByName.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/role/getRoleBindingByName\x12~\n\x10listRoleBindings\x12\x1e.ai.verta.uac.ListRoleBindings\x1a\'.ai.verta.uac.ListRoleBindings.Response\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/role/listRoleBindings\x12y\n\x0esetRoleBinding\x12\x1c.ai.verta.uac.SetRoleBinding\x1a%.ai.verta.uac.SetRoleBinding.Response\"\"\x82\xd3\xe4\x93\x02\x1c\"\x17/v1/role/setRoleBinding:\x01*\x12\x85\x01\n\x11\x64\x65leteRoleBinding\x12\x1f.ai.verta.uac.DeleteRoleBinding\x1a(.ai.verta.uac.DeleteRoleBinding.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/role/deleteRoleBinding:\x01*\x12\x89\x01\n\x12\x64\x65leteRoleBindings\x12 .ai.verta.uac.DeleteRoleBindings\x1a).ai.verta.uac.DeleteRoleBindings.Response\"&\x82\xd3\xe4\x93\x02 \"\x1b/v1/role/deleteRoleBindings:\x01*\x12\x82\x01\n\x0fremoveResources\x12\x1d.ai.verta.uac.RemoveResources\x1a&.ai.verta.uac.RemoveResources.Response\"(\x82\xd3\xe4\x93\x02\"* /v1/collaborator/removeResourcesB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x15uac/RoleService.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"\x80\x01\n\x0bServiceEnum\"q\n\x07Service\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x10\n\x0cROLE_SERVICE\x10\x02\x12\x11\n\rAUTHZ_SERVICE\x10\x03\x12\x13\n\x0fMODELDB_SERVICE\x10\x04\x12\x16\n\x12\x44\x45PLOYMENT_SERVICE\x10\x05\"\x8a\x01\n\x0eRoleActionEnum\"x\n\x12RoleServiceActions\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\r\n\tGET_BY_ID\x10\x02\x12\x0f\n\x0bGET_BY_NAME\x10\x03\x12\n\n\x06\x43REATE\x10\x04\x12\n\n\x06UPDATE\x10\x05\x12\x08\n\x04LIST\x10\x06\x12\n\n\x06\x44\x45LETE\x10\x07\"\x85\x01\n\x0f\x41uthzActionEnum\"r\n\x13\x41uthzServiceActions\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x0e\n\nIS_ALLOWED\x10\x02\x12\x07\n\x03GET\x10\x03\x12\n\n\x06\x43REATE\x10\x04\x12\x08\n\x04READ\x10\x05\x12\n\n\x06UPDATE\x10\x06\x12\n\n\x06\x44\x45LETE\x10\x07\"\x8d\x01\n\x11ModelDBActionEnum\"x\n\x15ModelDBServiceActions\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\n\n\x06\x43REATE\x10\x02\x12\x08\n\x04READ\x10\x03\x12\n\n\x06UPDATE\x10\x04\x12\n\n\x06\x44\x45LETE\x10\x05\x12\n\n\x06\x44\x45PLOY\x10\x06\x12\x0f\n\x0bPUBLIC_READ\x10\x07\"v\n\x14\x44\x65ploymentActionEnum\"^\n\x18\x44\x65ploymentServiceActions\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\n\n\x06\x43REATE\x10\x02\x12\x08\n\x04READ\x10\x03\x12\n\n\x06UPDATE\x10\x04\x12\n\n\x06\x44\x45LETE\x10\x05\"\xa4\x03\n\x06\x41\x63tion\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12N\n\x13role_service_action\x18\x02 \x01(\x0e\x32/.ai.verta.uac.RoleActionEnum.RoleServiceActionsH\x00\x12Q\n\x14\x61uthz_service_action\x18\x03 \x01(\x0e\x32\x31.ai.verta.uac.AuthzActionEnum.AuthzServiceActionsH\x00\x12W\n\x16modeldb_service_action\x18\x04 \x01(\x0e\x32\x35.ai.verta.uac.ModelDBActionEnum.ModelDBServiceActionsH\x00\x12`\n\x19\x64\x65ployment_service_action\x18\x05 \x01(\x0e\x32;.ai.verta.uac.DeploymentActionEnum.DeploymentServiceActionsH\x00\x42\x08\n\x06\x61\x63tion\"`\n\x10RoleResourceEnum\"L\n\x18RoleServiceResourceTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x08\n\x04ROLE\x10\x02\x12\x10\n\x0cROLE_BINDING\x10\x03\"b\n\x11\x41uthzResourceEnum\"M\n\x19\x41uthzServiceResourceTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x10\n\x0cORGANIZATION\x10\x02\x12\x08\n\x04TEAM\x10\x03\"^\n\x16\x44\x65ploymentResourceEnum\"D\n\x1e\x44\x65ploymentServiceResourceTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x0c\n\x08\x45NDPOINT\x10\x02\"\xb7\x03\n\x0cResourceType\x12]\n\x1arole_service_resource_type\x18\x01 \x01(\x0e\x32\x37.ai.verta.uac.RoleResourceEnum.RoleServiceResourceTypesH\x00\x12`\n\x1b\x61uthz_service_resource_type\x18\x02 \x01(\x0e\x32\x39.ai.verta.uac.AuthzResourceEnum.AuthzServiceResourceTypesH\x00\x12i\n\x1dmodeldb_service_resource_type\x18\x03 \x01(\x0e\x32@.ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypesH\x00\x12o\n deployment_service_resource_type\x18\x04 \x01(\x0e\x32\x43.ai.verta.uac.DeploymentResourceEnum.DeploymentServiceResourceTypesH\x00\x42\n\n\x08resource\"\x88\x01\n\tResources\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x14\n\x0cresource_ids\x18\x02 \x03(\t\x12\x31\n\rresource_type\x18\x06 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\",\n\tRoleScope\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x0f\n\x07team_id\x18\x02 \x01(\t\"h\n\x13ResourceActionGroup\x12*\n\tresources\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x12%\n\x07\x61\x63tions\x18\x02 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\x8b\x01\n\x04Role\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12&\n\x05scope\x18\x03 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x12\x41\n\x16resource_action_groups\x18\x04 \x03(\x0b\x32!.ai.verta.uac.ResourceActionGroup\"?\n\x08\x45ntities\x12\x10\n\x08user_ids\x18\x01 \x03(\t\x12\x0f\n\x07org_ids\x18\x02 \x03(\t\x12\x10\n\x08team_ids\x18\x03 \x03(\t\"\xd9\x01\n\x0bRoleBinding\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12&\n\x05scope\x18\x03 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x12(\n\x08\x65ntities\x18\x05 \x03(\x0b\x32\x16.ai.verta.uac.Entities\x12*\n\tresources\x18\x06 \x03(\x0b\x32\x17.ai.verta.uac.Resources\x12\x0f\n\x07role_id\x18\x07 \x01(\t\x12\x11\n\trole_name\x18\t \x01(\t\x12\x0e\n\x06public\x18\x08 \x01(\x08\"G\n\x0bGetRoleById\x12\n\n\x02id\x18\x01 \x01(\t\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"s\n\rGetRoleByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"b\n\tListRoles\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a-\n\x08Response\x12!\n\x05roles\x18\x01 \x03(\x0b\x32\x12.ai.verta.uac.Role\"Y\n\x07SetRole\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\x1a,\n\x08Response\x12 \n\x04role\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Role\"4\n\nDeleteRole\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"]\n\x12GetRoleBindingById\x12\n\n\x02id\x18\x01 \x01(\t\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\"\x89\x01\n\x14GetRoleBindingByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\"\x8b\x01\n\x10ListRoleBindings\x12\x11\n\tentity_id\x18\x01 \x01(\t\x12&\n\x05scope\x18\x02 \x01(\x0b\x32\x17.ai.verta.uac.RoleScope\x1a<\n\x08Response\x12\x30\n\rrole_bindings\x18\x01 \x03(\x0b\x32\x19.ai.verta.uac.RoleBinding\"~\n\x0eSetRoleBinding\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\x1a;\n\x08Response\x12/\n\x0crole_binding\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.RoleBinding\";\n\x11\x44\x65leteRoleBinding\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"J\n\x12\x44\x65leteRoleBindings\x12\x18\n\x10roleBindingNames\x18\x01 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"v\n\x0fRemoveResources\x12\x14\n\x0cresource_ids\x18\x01 \x03(\t\x12\x31\n\rresource_type\x18\x02 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\x32\xc9\x0b\n\x0bRoleService\x12j\n\x0bgetRoleById\x12\x19.ai.verta.uac.GetRoleById\x1a\".ai.verta.uac.GetRoleById.Response\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/role/getRoleById\x12r\n\rgetRoleByName\x12\x1b.ai.verta.uac.GetRoleByName\x1a$.ai.verta.uac.GetRoleByName.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/role/getRoleByName\x12\x62\n\tlistRoles\x12\x17.ai.verta.uac.ListRoles\x1a .ai.verta.uac.ListRoles.Response\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/v1/role/listRoles\x12]\n\x07setRole\x12\x15.ai.verta.uac.SetRole\x1a\x1e.ai.verta.uac.SetRole.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\"\x10/v1/role/setRole:\x01*\x12i\n\ndeleteRole\x12\x18.ai.verta.uac.DeleteRole\x1a!.ai.verta.uac.DeleteRole.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/role/deleteRole:\x01*\x12\x86\x01\n\x12getBindingRoleById\x12 .ai.verta.uac.GetRoleBindingById\x1a).ai.verta.uac.GetRoleBindingById.Response\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/v1/role/getRoleBindingById\x12\x8e\x01\n\x14getRoleBindingByName\x12\".ai.verta.uac.GetRoleBindingByName\x1a+.ai.verta.uac.GetRoleBindingByName.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/role/getRoleBindingByName\x12~\n\x10listRoleBindings\x12\x1e.ai.verta.uac.ListRoleBindings\x1a\'.ai.verta.uac.ListRoleBindings.Response\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/role/listRoleBindings\x12y\n\x0esetRoleBinding\x12\x1c.ai.verta.uac.SetRoleBinding\x1a%.ai.verta.uac.SetRoleBinding.Response\"\"\x82\xd3\xe4\x93\x02\x1c\"\x17/v1/role/setRoleBinding:\x01*\x12\x85\x01\n\x11\x64\x65leteRoleBinding\x12\x1f.ai.verta.uac.DeleteRoleBinding\x1a(.ai.verta.uac.DeleteRoleBinding.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/role/deleteRoleBinding:\x01*\x12\x89\x01\n\x12\x64\x65leteRoleBindings\x12 .ai.verta.uac.DeleteRoleBindings\x1a).ai.verta.uac.DeleteRoleBindings.Response\"&\x82\xd3\xe4\x93\x02 \"\x1b/v1/role/deleteRoleBindings:\x01*\x12\x82\x01\n\x0fremoveResources\x12\x1d.ai.verta.uac.RemoveResources\x1a&.ai.verta.uac.RemoveResources.Response\"(\x82\xd3\xe4\x93\x02\"* /v1/collaborator/removeResourcesB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
@@ -41,16 +41,120 @@ _SERVICEENUM_SERVICE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='MODELDB_SERVICE', index=2, number=4,
+      name='ROLE_SERVICE', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='AUTHZ_SERVICE', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='MODELDB_SERVICE', index=4, number=4,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='DEPLOYMENT_SERVICE', index=5, number=5,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=112,
-  serialized_end=182,
+  serialized_start=113,
+  serialized_end=226,
 )
 _sym_db.RegisterEnumDescriptor(_SERVICEENUM_SERVICE)
+
+_ROLEACTIONENUM_ROLESERVICEACTIONS = _descriptor.EnumDescriptor(
+  name='RoleServiceActions',
+  full_name='ai.verta.uac.RoleActionEnum.RoleServiceActions',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ALL', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='GET_BY_ID', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='GET_BY_NAME', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='CREATE', index=4, number=4,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='UPDATE', index=5, number=5,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='LIST', index=6, number=6,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='DELETE', index=7, number=7,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=247,
+  serialized_end=367,
+)
+_sym_db.RegisterEnumDescriptor(_ROLEACTIONENUM_ROLESERVICEACTIONS)
+
+_AUTHZACTIONENUM_AUTHZSERVICEACTIONS = _descriptor.EnumDescriptor(
+  name='AuthzServiceActions',
+  full_name='ai.verta.uac.AuthzActionEnum.AuthzServiceActions',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ALL', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='IS_ALLOWED', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='GET', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='CREATE', index=4, number=4,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='READ', index=5, number=5,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='UPDATE', index=6, number=6,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='DELETE', index=7, number=7,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=389,
+  serialized_end=503,
+)
+_sym_db.RegisterEnumDescriptor(_AUTHZACTIONENUM_AUTHZSERVICEACTIONS)
 
 _MODELDBACTIONENUM_MODELDBSERVICEACTIONS = _descriptor.EnumDescriptor(
   name='ModelDBServiceActions',
@@ -93,10 +197,134 @@ _MODELDBACTIONENUM_MODELDBSERVICEACTIONS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=206,
-  serialized_end=326,
+  serialized_start=527,
+  serialized_end=647,
 )
 _sym_db.RegisterEnumDescriptor(_MODELDBACTIONENUM_MODELDBSERVICEACTIONS)
+
+_DEPLOYMENTACTIONENUM_DEPLOYMENTSERVICEACTIONS = _descriptor.EnumDescriptor(
+  name='DeploymentServiceActions',
+  full_name='ai.verta.uac.DeploymentActionEnum.DeploymentServiceActions',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ALL', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='CREATE', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='READ', index=3, number=3,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='UPDATE', index=4, number=4,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='DELETE', index=5, number=5,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=673,
+  serialized_end=767,
+)
+_sym_db.RegisterEnumDescriptor(_DEPLOYMENTACTIONENUM_DEPLOYMENTSERVICEACTIONS)
+
+_ROLERESOURCEENUM_ROLESERVICERESOURCETYPES = _descriptor.EnumDescriptor(
+  name='RoleServiceResourceTypes',
+  full_name='ai.verta.uac.RoleResourceEnum.RoleServiceResourceTypes',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ALL', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ROLE', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ROLE_BINDING', index=3, number=3,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=1212,
+  serialized_end=1288,
+)
+_sym_db.RegisterEnumDescriptor(_ROLERESOURCEENUM_ROLESERVICERESOURCETYPES)
+
+_AUTHZRESOURCEENUM_AUTHZSERVICERESOURCETYPES = _descriptor.EnumDescriptor(
+  name='AuthzServiceResourceTypes',
+  full_name='ai.verta.uac.AuthzResourceEnum.AuthzServiceResourceTypes',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ALL', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ORGANIZATION', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='TEAM', index=3, number=3,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=1311,
+  serialized_end=1388,
+)
+_sym_db.RegisterEnumDescriptor(_AUTHZRESOURCEENUM_AUTHZSERVICERESOURCETYPES)
+
+_DEPLOYMENTRESOURCEENUM_DEPLOYMENTSERVICERESOURCETYPES = _descriptor.EnumDescriptor(
+  name='DeploymentServiceResourceTypes',
+  full_name='ai.verta.uac.DeploymentResourceEnum.DeploymentServiceResourceTypes',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ALL', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ENDPOINT', index=2, number=2,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=1416,
+  serialized_end=1484,
+)
+_sym_db.RegisterEnumDescriptor(_DEPLOYMENTRESOURCEENUM_DEPLOYMENTSERVICERESOURCETYPES)
 
 
 _SERVICEENUM = _descriptor.Descriptor(
@@ -119,8 +347,58 @@ _SERVICEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=97,
-  serialized_end=182,
+  serialized_start=98,
+  serialized_end=226,
+)
+
+
+_ROLEACTIONENUM = _descriptor.Descriptor(
+  name='RoleActionEnum',
+  full_name='ai.verta.uac.RoleActionEnum',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _ROLEACTIONENUM_ROLESERVICEACTIONS,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=229,
+  serialized_end=367,
+)
+
+
+_AUTHZACTIONENUM = _descriptor.Descriptor(
+  name='AuthzActionEnum',
+  full_name='ai.verta.uac.AuthzActionEnum',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _AUTHZACTIONENUM_AUTHZSERVICEACTIONS,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=370,
+  serialized_end=503,
 )
 
 
@@ -144,8 +422,33 @@ _MODELDBACTIONENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=185,
-  serialized_end=326,
+  serialized_start=506,
+  serialized_end=647,
+)
+
+
+_DEPLOYMENTACTIONENUM = _descriptor.Descriptor(
+  name='DeploymentActionEnum',
+  full_name='ai.verta.uac.DeploymentActionEnum',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _DEPLOYMENTACTIONENUM_DEPLOYMENTSERVICEACTIONS,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=649,
+  serialized_end=767,
 )
 
 
@@ -164,8 +467,29 @@ _ACTION = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='modeldb_service_action', full_name='ai.verta.uac.Action.modeldb_service_action', index=1,
+      name='role_service_action', full_name='ai.verta.uac.Action.role_service_action', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='authz_service_action', full_name='ai.verta.uac.Action.authz_service_action', index=2,
+      number=3, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='modeldb_service_action', full_name='ai.verta.uac.Action.modeldb_service_action', index=3,
       number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='deployment_service_action', full_name='ai.verta.uac.Action.deployment_service_action', index=4,
+      number=5, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -185,8 +509,83 @@ _ACTION = _descriptor.Descriptor(
       name='action', full_name='ai.verta.uac.Action.action',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=329,
-  serialized_end=506,
+  serialized_start=770,
+  serialized_end=1190,
+)
+
+
+_ROLERESOURCEENUM = _descriptor.Descriptor(
+  name='RoleResourceEnum',
+  full_name='ai.verta.uac.RoleResourceEnum',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _ROLERESOURCEENUM_ROLESERVICERESOURCETYPES,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1192,
+  serialized_end=1288,
+)
+
+
+_AUTHZRESOURCEENUM = _descriptor.Descriptor(
+  name='AuthzResourceEnum',
+  full_name='ai.verta.uac.AuthzResourceEnum',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _AUTHZRESOURCEENUM_AUTHZSERVICERESOURCETYPES,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1290,
+  serialized_end=1388,
+)
+
+
+_DEPLOYMENTRESOURCEENUM = _descriptor.Descriptor(
+  name='DeploymentResourceEnum',
+  full_name='ai.verta.uac.DeploymentResourceEnum',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _DEPLOYMENTRESOURCEENUM_DEPLOYMENTSERVICERESOURCETYPES,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1390,
+  serialized_end=1484,
 )
 
 
@@ -198,8 +597,29 @@ _RESOURCETYPE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='modeldb_service_resource_type', full_name='ai.verta.uac.ResourceType.modeldb_service_resource_type', index=0,
+      name='role_service_resource_type', full_name='ai.verta.uac.ResourceType.role_service_resource_type', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='authz_service_resource_type', full_name='ai.verta.uac.ResourceType.authz_service_resource_type', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='modeldb_service_resource_type', full_name='ai.verta.uac.ResourceType.modeldb_service_resource_type', index=2,
       number=3, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='deployment_service_resource_type', full_name='ai.verta.uac.ResourceType.deployment_service_resource_type', index=3,
+      number=4, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -219,8 +639,8 @@ _RESOURCETYPE = _descriptor.Descriptor(
       name='resource', full_name='ai.verta.uac.ResourceType.resource',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=509,
-  serialized_end=660,
+  serialized_start=1487,
+  serialized_end=1926,
 )
 
 
@@ -264,8 +684,8 @@ _RESOURCES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=663,
-  serialized_end=799,
+  serialized_start=1929,
+  serialized_end=2065,
 )
 
 
@@ -302,8 +722,8 @@ _ROLESCOPE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=801,
-  serialized_end=845,
+  serialized_start=2067,
+  serialized_end=2111,
 )
 
 
@@ -340,8 +760,8 @@ _RESOURCEACTIONGROUP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=847,
-  serialized_end=951,
+  serialized_start=2113,
+  serialized_end=2217,
 )
 
 
@@ -392,8 +812,8 @@ _ROLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=954,
-  serialized_end=1093,
+  serialized_start=2220,
+  serialized_end=2359,
 )
 
 
@@ -437,8 +857,8 @@ _ENTITIES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1095,
-  serialized_end=1158,
+  serialized_start=2361,
+  serialized_end=2424,
 )
 
 
@@ -517,8 +937,8 @@ _ROLEBINDING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1161,
-  serialized_end=1378,
+  serialized_start=2427,
+  serialized_end=2644,
 )
 
 
@@ -548,8 +968,8 @@ _GETROLEBYID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1407,
-  serialized_end=1451,
+  serialized_start=2673,
+  serialized_end=2717,
 )
 
 _GETROLEBYID = _descriptor.Descriptor(
@@ -578,8 +998,8 @@ _GETROLEBYID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1380,
-  serialized_end=1451,
+  serialized_start=2646,
+  serialized_end=2717,
 )
 
 
@@ -609,8 +1029,8 @@ _GETROLEBYNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1407,
-  serialized_end=1451,
+  serialized_start=2673,
+  serialized_end=2717,
 )
 
 _GETROLEBYNAME = _descriptor.Descriptor(
@@ -646,8 +1066,8 @@ _GETROLEBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1453,
-  serialized_end=1568,
+  serialized_start=2719,
+  serialized_end=2834,
 )
 
 
@@ -677,8 +1097,8 @@ _LISTROLES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1623,
-  serialized_end=1668,
+  serialized_start=2889,
+  serialized_end=2934,
 )
 
 _LISTROLES = _descriptor.Descriptor(
@@ -707,8 +1127,8 @@ _LISTROLES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1570,
-  serialized_end=1668,
+  serialized_start=2836,
+  serialized_end=2934,
 )
 
 
@@ -738,8 +1158,8 @@ _SETROLE_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1407,
-  serialized_end=1451,
+  serialized_start=2673,
+  serialized_end=2717,
 )
 
 _SETROLE = _descriptor.Descriptor(
@@ -768,8 +1188,8 @@ _SETROLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1670,
-  serialized_end=1759,
+  serialized_start=2936,
+  serialized_end=3025,
 )
 
 
@@ -799,8 +1219,8 @@ _DELETEROLE_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1787,
-  serialized_end=1813,
+  serialized_start=3053,
+  serialized_end=3079,
 )
 
 _DELETEROLE = _descriptor.Descriptor(
@@ -829,8 +1249,8 @@ _DELETEROLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1761,
-  serialized_end=1813,
+  serialized_start=3027,
+  serialized_end=3079,
 )
 
 
@@ -860,8 +1280,8 @@ _GETROLEBINDINGBYID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1849,
-  serialized_end=1908,
+  serialized_start=3115,
+  serialized_end=3174,
 )
 
 _GETROLEBINDINGBYID = _descriptor.Descriptor(
@@ -890,8 +1310,8 @@ _GETROLEBINDINGBYID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1815,
-  serialized_end=1908,
+  serialized_start=3081,
+  serialized_end=3174,
 )
 
 
@@ -921,8 +1341,8 @@ _GETROLEBINDINGBYNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1849,
-  serialized_end=1908,
+  serialized_start=3115,
+  serialized_end=3174,
 )
 
 _GETROLEBINDINGBYNAME = _descriptor.Descriptor(
@@ -958,8 +1378,8 @@ _GETROLEBINDINGBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1911,
-  serialized_end=2048,
+  serialized_start=3177,
+  serialized_end=3314,
 )
 
 
@@ -989,8 +1409,8 @@ _LISTROLEBINDINGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2130,
-  serialized_end=2190,
+  serialized_start=3396,
+  serialized_end=3456,
 )
 
 _LISTROLEBINDINGS = _descriptor.Descriptor(
@@ -1026,8 +1446,8 @@ _LISTROLEBINDINGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2051,
-  serialized_end=2190,
+  serialized_start=3317,
+  serialized_end=3456,
 )
 
 
@@ -1057,8 +1477,8 @@ _SETROLEBINDING_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1849,
-  serialized_end=1908,
+  serialized_start=3115,
+  serialized_end=3174,
 )
 
 _SETROLEBINDING = _descriptor.Descriptor(
@@ -1087,8 +1507,8 @@ _SETROLEBINDING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2192,
-  serialized_end=2318,
+  serialized_start=3458,
+  serialized_end=3584,
 )
 
 
@@ -1118,8 +1538,8 @@ _DELETEROLEBINDING_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1787,
-  serialized_end=1813,
+  serialized_start=3053,
+  serialized_end=3079,
 )
 
 _DELETEROLEBINDING = _descriptor.Descriptor(
@@ -1148,8 +1568,8 @@ _DELETEROLEBINDING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2320,
-  serialized_end=2379,
+  serialized_start=3586,
+  serialized_end=3645,
 )
 
 
@@ -1179,8 +1599,8 @@ _DELETEROLEBINDINGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1787,
-  serialized_end=1813,
+  serialized_start=3053,
+  serialized_end=3079,
 )
 
 _DELETEROLEBINDINGS = _descriptor.Descriptor(
@@ -1209,8 +1629,8 @@ _DELETEROLEBINDINGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2381,
-  serialized_end=2455,
+  serialized_start=3647,
+  serialized_end=3721,
 )
 
 
@@ -1240,8 +1660,8 @@ _REMOVERESOURCES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1787,
-  serialized_end=1813,
+  serialized_start=3053,
+  serialized_end=3079,
 )
 
 _REMOVERESOURCES = _descriptor.Descriptor(
@@ -1277,21 +1697,51 @@ _REMOVERESOURCES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2457,
-  serialized_end=2575,
+  serialized_start=3723,
+  serialized_end=3841,
 )
 
 _SERVICEENUM_SERVICE.containing_type = _SERVICEENUM
+_ROLEACTIONENUM_ROLESERVICEACTIONS.containing_type = _ROLEACTIONENUM
+_AUTHZACTIONENUM_AUTHZSERVICEACTIONS.containing_type = _AUTHZACTIONENUM
 _MODELDBACTIONENUM_MODELDBSERVICEACTIONS.containing_type = _MODELDBACTIONENUM
+_DEPLOYMENTACTIONENUM_DEPLOYMENTSERVICEACTIONS.containing_type = _DEPLOYMENTACTIONENUM
 _ACTION.fields_by_name['service'].enum_type = _SERVICEENUM_SERVICE
+_ACTION.fields_by_name['role_service_action'].enum_type = _ROLEACTIONENUM_ROLESERVICEACTIONS
+_ACTION.fields_by_name['authz_service_action'].enum_type = _AUTHZACTIONENUM_AUTHZSERVICEACTIONS
 _ACTION.fields_by_name['modeldb_service_action'].enum_type = _MODELDBACTIONENUM_MODELDBSERVICEACTIONS
+_ACTION.fields_by_name['deployment_service_action'].enum_type = _DEPLOYMENTACTIONENUM_DEPLOYMENTSERVICEACTIONS
+_ACTION.oneofs_by_name['action'].fields.append(
+  _ACTION.fields_by_name['role_service_action'])
+_ACTION.fields_by_name['role_service_action'].containing_oneof = _ACTION.oneofs_by_name['action']
+_ACTION.oneofs_by_name['action'].fields.append(
+  _ACTION.fields_by_name['authz_service_action'])
+_ACTION.fields_by_name['authz_service_action'].containing_oneof = _ACTION.oneofs_by_name['action']
 _ACTION.oneofs_by_name['action'].fields.append(
   _ACTION.fields_by_name['modeldb_service_action'])
 _ACTION.fields_by_name['modeldb_service_action'].containing_oneof = _ACTION.oneofs_by_name['action']
+_ACTION.oneofs_by_name['action'].fields.append(
+  _ACTION.fields_by_name['deployment_service_action'])
+_ACTION.fields_by_name['deployment_service_action'].containing_oneof = _ACTION.oneofs_by_name['action']
+_ROLERESOURCEENUM_ROLESERVICERESOURCETYPES.containing_type = _ROLERESOURCEENUM
+_AUTHZRESOURCEENUM_AUTHZSERVICERESOURCETYPES.containing_type = _AUTHZRESOURCEENUM
+_DEPLOYMENTRESOURCEENUM_DEPLOYMENTSERVICERESOURCETYPES.containing_type = _DEPLOYMENTRESOURCEENUM
+_RESOURCETYPE.fields_by_name['role_service_resource_type'].enum_type = _ROLERESOURCEENUM_ROLESERVICERESOURCETYPES
+_RESOURCETYPE.fields_by_name['authz_service_resource_type'].enum_type = _AUTHZRESOURCEENUM_AUTHZSERVICERESOURCETYPES
 _RESOURCETYPE.fields_by_name['modeldb_service_resource_type'].enum_type = common_dot_CommonService__pb2._MODELDBRESOURCEENUM_MODELDBSERVICERESOURCETYPES
+_RESOURCETYPE.fields_by_name['deployment_service_resource_type'].enum_type = _DEPLOYMENTRESOURCEENUM_DEPLOYMENTSERVICERESOURCETYPES
+_RESOURCETYPE.oneofs_by_name['resource'].fields.append(
+  _RESOURCETYPE.fields_by_name['role_service_resource_type'])
+_RESOURCETYPE.fields_by_name['role_service_resource_type'].containing_oneof = _RESOURCETYPE.oneofs_by_name['resource']
+_RESOURCETYPE.oneofs_by_name['resource'].fields.append(
+  _RESOURCETYPE.fields_by_name['authz_service_resource_type'])
+_RESOURCETYPE.fields_by_name['authz_service_resource_type'].containing_oneof = _RESOURCETYPE.oneofs_by_name['resource']
 _RESOURCETYPE.oneofs_by_name['resource'].fields.append(
   _RESOURCETYPE.fields_by_name['modeldb_service_resource_type'])
 _RESOURCETYPE.fields_by_name['modeldb_service_resource_type'].containing_oneof = _RESOURCETYPE.oneofs_by_name['resource']
+_RESOURCETYPE.oneofs_by_name['resource'].fields.append(
+  _RESOURCETYPE.fields_by_name['deployment_service_resource_type'])
+_RESOURCETYPE.fields_by_name['deployment_service_resource_type'].containing_oneof = _RESOURCETYPE.oneofs_by_name['resource']
 _RESOURCES.fields_by_name['service'].enum_type = _SERVICEENUM_SERVICE
 _RESOURCES.fields_by_name['resource_type'].message_type = _RESOURCETYPE
 _RESOURCEACTIONGROUP.fields_by_name['resources'].message_type = _RESOURCES
@@ -1329,8 +1779,14 @@ _DELETEROLEBINDINGS_RESPONSE.containing_type = _DELETEROLEBINDINGS
 _REMOVERESOURCES_RESPONSE.containing_type = _REMOVERESOURCES
 _REMOVERESOURCES.fields_by_name['resource_type'].message_type = _RESOURCETYPE
 DESCRIPTOR.message_types_by_name['ServiceEnum'] = _SERVICEENUM
+DESCRIPTOR.message_types_by_name['RoleActionEnum'] = _ROLEACTIONENUM
+DESCRIPTOR.message_types_by_name['AuthzActionEnum'] = _AUTHZACTIONENUM
 DESCRIPTOR.message_types_by_name['ModelDBActionEnum'] = _MODELDBACTIONENUM
+DESCRIPTOR.message_types_by_name['DeploymentActionEnum'] = _DEPLOYMENTACTIONENUM
 DESCRIPTOR.message_types_by_name['Action'] = _ACTION
+DESCRIPTOR.message_types_by_name['RoleResourceEnum'] = _ROLERESOURCEENUM
+DESCRIPTOR.message_types_by_name['AuthzResourceEnum'] = _AUTHZRESOURCEENUM
+DESCRIPTOR.message_types_by_name['DeploymentResourceEnum'] = _DEPLOYMENTRESOURCEENUM
 DESCRIPTOR.message_types_by_name['ResourceType'] = _RESOURCETYPE
 DESCRIPTOR.message_types_by_name['Resources'] = _RESOURCES
 DESCRIPTOR.message_types_by_name['RoleScope'] = _ROLESCOPE
@@ -1359,6 +1815,20 @@ ServiceEnum = _reflection.GeneratedProtocolMessageType('ServiceEnum', (_message.
   })
 _sym_db.RegisterMessage(ServiceEnum)
 
+RoleActionEnum = _reflection.GeneratedProtocolMessageType('RoleActionEnum', (_message.Message,), {
+  'DESCRIPTOR' : _ROLEACTIONENUM,
+  '__module__' : 'uac.RoleService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.RoleActionEnum)
+  })
+_sym_db.RegisterMessage(RoleActionEnum)
+
+AuthzActionEnum = _reflection.GeneratedProtocolMessageType('AuthzActionEnum', (_message.Message,), {
+  'DESCRIPTOR' : _AUTHZACTIONENUM,
+  '__module__' : 'uac.RoleService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.AuthzActionEnum)
+  })
+_sym_db.RegisterMessage(AuthzActionEnum)
+
 ModelDBActionEnum = _reflection.GeneratedProtocolMessageType('ModelDBActionEnum', (_message.Message,), {
   'DESCRIPTOR' : _MODELDBACTIONENUM,
   '__module__' : 'uac.RoleService_pb2'
@@ -1366,12 +1836,40 @@ ModelDBActionEnum = _reflection.GeneratedProtocolMessageType('ModelDBActionEnum'
   })
 _sym_db.RegisterMessage(ModelDBActionEnum)
 
+DeploymentActionEnum = _reflection.GeneratedProtocolMessageType('DeploymentActionEnum', (_message.Message,), {
+  'DESCRIPTOR' : _DEPLOYMENTACTIONENUM,
+  '__module__' : 'uac.RoleService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.DeploymentActionEnum)
+  })
+_sym_db.RegisterMessage(DeploymentActionEnum)
+
 Action = _reflection.GeneratedProtocolMessageType('Action', (_message.Message,), {
   'DESCRIPTOR' : _ACTION,
   '__module__' : 'uac.RoleService_pb2'
   # @@protoc_insertion_point(class_scope:ai.verta.uac.Action)
   })
 _sym_db.RegisterMessage(Action)
+
+RoleResourceEnum = _reflection.GeneratedProtocolMessageType('RoleResourceEnum', (_message.Message,), {
+  'DESCRIPTOR' : _ROLERESOURCEENUM,
+  '__module__' : 'uac.RoleService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.RoleResourceEnum)
+  })
+_sym_db.RegisterMessage(RoleResourceEnum)
+
+AuthzResourceEnum = _reflection.GeneratedProtocolMessageType('AuthzResourceEnum', (_message.Message,), {
+  'DESCRIPTOR' : _AUTHZRESOURCEENUM,
+  '__module__' : 'uac.RoleService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.AuthzResourceEnum)
+  })
+_sym_db.RegisterMessage(AuthzResourceEnum)
+
+DeploymentResourceEnum = _reflection.GeneratedProtocolMessageType('DeploymentResourceEnum', (_message.Message,), {
+  'DESCRIPTOR' : _DEPLOYMENTRESOURCEENUM,
+  '__module__' : 'uac.RoleService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.DeploymentResourceEnum)
+  })
+_sym_db.RegisterMessage(DeploymentResourceEnum)
 
 ResourceType = _reflection.GeneratedProtocolMessageType('ResourceType', (_message.Message,), {
   'DESCRIPTOR' : _RESOURCETYPE,
@@ -1611,8 +2109,8 @@ _ROLESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2578,
-  serialized_end=4059,
+  serialized_start=3844,
+  serialized_end=5325,
   methods=[
   _descriptor.MethodDescriptor(
     name='getRoleById',

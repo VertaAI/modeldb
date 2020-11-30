@@ -2039,6 +2039,10 @@
           "type": "string",
           "title": "id of the workspace this belongs to\nnot storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files"
         },
+        "workspace_service_id": {
+          "type": "string",
+          "format": "uint64"
+        },
         "readme_text": {
           "type": "string",
           "title": "readme"
