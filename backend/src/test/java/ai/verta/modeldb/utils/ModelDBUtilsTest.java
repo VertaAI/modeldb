@@ -6,7 +6,7 @@ import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.uac.GetCollaboratorResponse;
+import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.Organization;
 import ai.verta.uac.Team;
 import ai.verta.uac.UserInfo;
@@ -38,18 +38,18 @@ public class ModelDBUtilsTest {
     final CollaboratorType readWrite = CollaboratorType.READ_WRITE;
 
     final Ternary aTrue = Ternary.TRUE;
-    List<GetCollaboratorResponse> collaboratorList =
+    List<GetCollaboratorResponseItem> collaboratorList =
         Arrays.asList(
-            GetCollaboratorResponse.newBuilder()
+              GetCollaboratorResponseItem.newBuilder()
                 .setAuthzEntityType(EntitiesTypes.USER)
                 .setVertaId(USER_ID)
                 .setCollaboratorType(readWrite)
                 .build(),
-            GetCollaboratorResponse.newBuilder()
+              GetCollaboratorResponseItem.newBuilder()
                 .setAuthzEntityType(EntitiesTypes.ORGANIZATION)
                 .setVertaId(ORG_ID)
                 .build(),
-            GetCollaboratorResponse.newBuilder()
+              GetCollaboratorResponseItem.newBuilder()
                 .setAuthzEntityType(EntitiesTypes.TEAM)
                 .setCanDeploy(aTrue)
                 .setVertaId(TEAM_ID)
