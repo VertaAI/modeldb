@@ -9,6 +9,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.QPSCountResource;
 import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -121,7 +122,15 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
         if (request.getRepository().getName().isEmpty()) {
-          throw new ModelDBException("Repository name is empty", Code.INVALID_ARGUMENT);
+          request =
+              request
+                  .toBuilder()
+                  .setRepository(
+                      request
+                          .getRepository()
+                          .toBuilder()
+                          .setName(MetadataServiceImpl.createRandomName()))
+                  .build();
         }
 
         roleService.validateEntityUserWithUserInfo(
@@ -153,12 +162,19 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       try (RequestLatencyResource latencyResource =
           new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        if (request.getRepository().getName().isEmpty()
-            && request.getRepository().getDescription().isEmpty()) {
-          throw new ModelDBException(
-              "Repository name and description is empty", Code.INVALID_ARGUMENT);
+        if (request.getRepository().getDescription().isEmpty()) {
+          // FIXME: allow empty description
+          throw new ModelDBException("Description is empty", Code.INVALID_ARGUMENT);
         } else if (request.getRepository().getName().isEmpty()) {
-          throw new ModelDBException("Repository name should not be empty", Code.INVALID_ARGUMENT);
+          request =
+              request
+                  .toBuilder()
+                  .setRepository(
+                      request
+                          .getRepository()
+                          .toBuilder()
+                          .setName(MetadataServiceImpl.createRandomName()))
+                  .build();
         }
 
         ModelDBUtils.validateEntityNameWithColonAndSlash(request.getRepository().getName());

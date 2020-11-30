@@ -282,6 +282,10 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
     }
   }
 
+  public static String createRandomName() {
+    return Nomen.est().adjective().color().animal().withSeparator("-").get();
+  }
+
   @Override
   public void generateRandomName(
       GenerateRandomNameRequest request,
@@ -291,7 +295,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
         new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
       responseObserver.onNext(
           GenerateRandomNameRequest.Response.newBuilder()
-              .setName(Nomen.est().adjective().color().animal().withSeparator("-").get())
+              .setName(MetadataServiceImpl.createRandomName())
               .build());
       responseObserver.onCompleted();
     } catch (Exception e) {
