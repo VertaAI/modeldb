@@ -23,7 +23,7 @@ import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
-import ai.verta.uac.GetCollaboratorResponse;
+import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.ShareViaEnum;
 import ai.verta.uac.UserInfo;
 import com.amazonaws.AmazonServiceException;
@@ -201,12 +201,12 @@ public class ModelDBUtils {
    *     email_ids.
    */
   public static Map<String, List<String>> getVertaIdOrEmailIdMapFromCollaborator(
-      List<GetCollaboratorResponse> entityCollaboratorList) {
+      List<GetCollaboratorResponseItem> entityCollaboratorList) {
 
     Set<String> vertaIdSet = new HashSet<>();
     Set<String> emailIdSet = new HashSet<>();
 
-    for (GetCollaboratorResponse collaborator : entityCollaboratorList) {
+    for (GetCollaboratorResponseItem collaborator : entityCollaboratorList) {
       if (collaborator.getAuthzEntityType() == EntitiesTypes.USER) {
         if (collaborator.getShareViaType().ordinal() == ShareViaEnum.EMAIL_ID_VALUE
             && ModelDBUtils.isValidEmail(collaborator.getVertaId())) {
@@ -236,7 +236,7 @@ public class ModelDBUtils {
   public static List<CollaboratorUserInfo> getHydratedCollaboratorUserInfo(
       AuthService authService,
       RoleService roleService,
-      List<GetCollaboratorResponse> collaboratorList,
+      List<GetCollaboratorResponseItem> collaboratorList,
       Map<String, UserInfo> userInfoMap) {
 
     return getHydratedCollaboratorUserInfoByAuthz(
@@ -246,13 +246,13 @@ public class ModelDBUtils {
   private static List<CollaboratorUserInfo> getHydratedCollaboratorUserInfoByAuthz(
       AuthService authService,
       RoleService roleService,
-      List<GetCollaboratorResponse> collaboratorList,
+      List<GetCollaboratorResponseItem> collaboratorList,
       Map<String, UserInfo> userInfoMap) {
 
     List<CollaboratorUserInfo> collaboratorUserInfos = new ArrayList<>();
 
     if (collaboratorList != null && !collaboratorList.isEmpty()) {
-      for (GetCollaboratorResponse collaborator : collaboratorList) {
+      for (GetCollaboratorResponseItem collaborator : collaboratorList) {
 
         try {
           CollaboratorBase collaborator1 = null;

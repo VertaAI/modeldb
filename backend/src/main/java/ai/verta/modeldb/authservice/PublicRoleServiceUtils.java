@@ -19,7 +19,7 @@ import ai.verta.modeldb.versioning.BlobDAORdbImpl;
 import ai.verta.modeldb.versioning.CommitDAORdbImpl;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.Actions;
-import ai.verta.uac.GetCollaboratorResponse;
+import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.Role;
@@ -120,7 +120,7 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<GetCollaboratorResponse> getResourceCollaborators(
+  public List<GetCollaboratorResponseItem> getResourceCollaborators(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
       String resourceOwnerId,

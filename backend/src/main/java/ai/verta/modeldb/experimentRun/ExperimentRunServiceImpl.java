@@ -92,7 +92,6 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -1937,10 +1936,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBConstants.UPDATE,
           Collections.singletonList(request.getId()),
           String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "attribute",
-              request.getAttribute()));
+              ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "attribute", request.getAttribute()));
       LOGGER.info("Auditing complete, creating response.");
       responseObserver.onNext(LogAttribute.Response.newBuilder().build());
       responseObserver.onCompleted();
