@@ -123,7 +123,7 @@ public class ProjectEntity {
   @Column(name = "workspace_id")
   private Long workspaceId;
 
-  @Column(name = "legacy_workspace_id")
+  @Column(name = "workspace")
   private String legacy_workspace_id;
 
   @Column(name = "workspace_type")

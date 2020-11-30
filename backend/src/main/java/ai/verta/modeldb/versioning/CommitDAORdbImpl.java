@@ -918,6 +918,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         }
 
         if (predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE)
+            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.LEGACY_WORKSPACE_ID)
             || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_ID)
             || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_NAME)
             || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_TYPE)) {

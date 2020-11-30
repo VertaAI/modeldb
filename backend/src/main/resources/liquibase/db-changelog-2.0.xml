@@ -269,4 +269,14 @@
         <tagDatabase tag="db_version_2.11"/>
     </changeSet>
 
+    <changeSet id="rename-legacy-workspace-id-to-workspace-on-project" author="cory">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="project" columnName="legacy_workspace_id"/>
+        </preConditions>
+        <renameColumn tableName="project" oldColumnName="legacy_workspace_id" newColumnName="workspace" columnDataType="VARCHAR(255)"/>
+        <rollback>
+            <renameColumn tableName="project" oldColumnName="workspace" newColumnName="legacy_workspace_id" columnDataType="VARCHAR(255)"/>
+        </rollback>
+    </changeSet>
+
 </databaseChangeLog>
