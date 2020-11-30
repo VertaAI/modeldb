@@ -23,7 +23,7 @@ import ai.verta.uac.DeleteRoleBindings;
 import ai.verta.uac.Entities;
 import ai.verta.uac.GetAllowedEntities;
 import ai.verta.uac.GetAllowedResources;
-import ai.verta.uac.GetCollaboratorResponse;
+import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.GetOrganizationById;
 import ai.verta.uac.GetOrganizationByName;
 import ai.verta.uac.GetRoleBindingByName;
@@ -367,7 +367,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<GetCollaboratorResponse> getResourceCollaborators(
+  public List<GetCollaboratorResponseItem> getResourceCollaborators(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
       String resourceOwnerId,
@@ -376,7 +376,7 @@ public class RoleServiceUtils implements RoleService {
         true, modelDBServiceResourceTypes, resourceId, resourceOwnerId, requestHeaders);
   }
 
-  private List<GetCollaboratorResponse> getResourceCollaborators(
+  private List<GetCollaboratorResponseItem> getResourceCollaborators(
       boolean retry,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
@@ -391,11 +391,11 @@ public class RoleServiceUtils implements RoleService {
           modelDBServiceResourceTypes,
           requestHeaders);
     } catch (StatusRuntimeException ex) {
-      return (List<GetCollaboratorResponse>)
+      return (List<GetCollaboratorResponseItem>)
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<List<GetCollaboratorResponse>>)
+              (ModelDBUtils.RetryCallInterface<List<GetCollaboratorResponseItem>>)
                   (retry1) ->
                       getResourceCollaborators(
                           retry1,
@@ -485,13 +485,13 @@ public class RoleServiceUtils implements RoleService {
     return collaborators;
   }
 
-  private List<GetCollaboratorResponse> getCollaborators(
+  private List<GetCollaboratorResponseItem> getCollaborators(
       AuthServiceChannel authServiceChannel,
       String resourceOwnerId,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       Metadata requestHeaders) {
-    List<GetCollaboratorResponse> getCollaboratorResponseList = new ArrayList<>();
+    List<GetCollaboratorResponseItem> getCollaboratorResponseList = new ArrayList<>();
 
     try {
       // Run a task specified by a Supplier object asynchronously
@@ -543,8 +543,8 @@ public class RoleServiceUtils implements RoleService {
       if (readOnlyCollaborators.size() > 0) {
         LOGGER.debug("ReadOnly Collaborators count: " + readOnlyCollaborators.size());
         for (CollaboratorBase collaborator : readOnlyCollaborators) {
-          GetCollaboratorResponse.Builder getCollaboratorResponseBuilder =
-              GetCollaboratorResponse.newBuilder()
+          GetCollaboratorResponseItem.Builder getCollaboratorResponseBuilder =
+              GetCollaboratorResponseItem.newBuilder()
                   .setAuthzEntityType(collaborator.getAuthzEntityType())
                   .setVertaId(collaborator.getId())
                   .setCollaboratorType(CollaboratorType.READ_ONLY);
@@ -561,8 +561,8 @@ public class RoleServiceUtils implements RoleService {
       if (readWriteCollaborators.size() > 0) {
         LOGGER.debug("ReadWrite Collaborators count: " + readWriteCollaborators.size());
         for (CollaboratorBase collaborator : readWriteCollaborators) {
-          GetCollaboratorResponse.Builder getCollaboratorResponseBuilder =
-              GetCollaboratorResponse.newBuilder()
+          GetCollaboratorResponseItem.Builder getCollaboratorResponseBuilder =
+              GetCollaboratorResponseItem.newBuilder()
                   .setAuthzEntityType(collaborator.getAuthzEntityType())
                   .setVertaId(collaborator.getId())
                   .setCollaboratorType(CollaboratorType.READ_WRITE);

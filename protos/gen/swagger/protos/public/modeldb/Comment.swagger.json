@@ -334,6 +334,9 @@
         },
         "verta_info": {
           "$ref": "#/definitions/uacVertaUserInfo"
+        },
+        "secondary_dev_key": {
+          "type": "string"
         }
       }
     },

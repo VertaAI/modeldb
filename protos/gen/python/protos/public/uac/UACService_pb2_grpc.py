@@ -19,6 +19,21 @@ class UACServiceStub(object):
         request_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
         response_deserializer=uac_dot_UACService__pb2.UserInfo.FromString,
         )
+    self.addDevKey = channel.unary_unary(
+        '/ai.verta.uac.UACService/addDevKey',
+        request_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
+        response_deserializer=uac_dot_UACService__pb2.UserInfo.FromString,
+        )
+    self.deletePrimaryDevKey = channel.unary_unary(
+        '/ai.verta.uac.UACService/deletePrimaryDevKey',
+        request_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
+        response_deserializer=uac_dot_UACService__pb2.UserInfo.FromString,
+        )
+    self.deleteSecondaryDevKey = channel.unary_unary(
+        '/ai.verta.uac.UACService/deleteSecondaryDevKey',
+        request_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
+        response_deserializer=uac_dot_UACService__pb2.UserInfo.FromString,
+        )
     self.getUser = channel.unary_unary(
         '/ai.verta.uac.UACService/getUser',
         request_serializer=uac_dot_UACService__pb2.GetUser.SerializeToString,
@@ -57,6 +72,27 @@ class UACServiceServicer(object):
 
   def getCurrentUser(self, request, context):
     """Get the current user information verifying JWT token
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def addDevKey(self, request, context):
+    """adds new user developer key
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def deletePrimaryDevKey(self, request, context):
+    """deletes primary developer key
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def deleteSecondaryDevKey(self, request, context):
+    """deletes secondary developer key
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
@@ -109,6 +145,21 @@ def add_UACServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'getCurrentUser': grpc.unary_unary_rpc_method_handler(
           servicer.getCurrentUser,
+          request_deserializer=uac_dot_UACService__pb2.Empty.FromString,
+          response_serializer=uac_dot_UACService__pb2.UserInfo.SerializeToString,
+      ),
+      'addDevKey': grpc.unary_unary_rpc_method_handler(
+          servicer.addDevKey,
+          request_deserializer=uac_dot_UACService__pb2.Empty.FromString,
+          response_serializer=uac_dot_UACService__pb2.UserInfo.SerializeToString,
+      ),
+      'deletePrimaryDevKey': grpc.unary_unary_rpc_method_handler(
+          servicer.deletePrimaryDevKey,
+          request_deserializer=uac_dot_UACService__pb2.Empty.FromString,
+          response_serializer=uac_dot_UACService__pb2.UserInfo.SerializeToString,
+      ),
+      'deleteSecondaryDevKey': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteSecondaryDevKey,
           request_deserializer=uac_dot_UACService__pb2.Empty.FromString,
           response_serializer=uac_dot_UACService__pb2.UserInfo.SerializeToString,
       ),

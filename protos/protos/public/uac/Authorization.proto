@@ -34,11 +34,11 @@ message GetAllowedEntitiesWithActions {
     repeated Resources resources = 2;
 
     message Response {
-        repeated GetAllowedEntitiesWithActionsResponse entitiesWithActions = 1;
+        repeated GetAllowedEntitiesWithActionsResponseItem entitiesWithActions = 1;
     };
 };
 
-message GetAllowedEntitiesWithActionsResponse {
+message GetAllowedEntitiesWithActionsResponseItem {
     repeated Entities entities = 1;
     Action actions = 2;
 }

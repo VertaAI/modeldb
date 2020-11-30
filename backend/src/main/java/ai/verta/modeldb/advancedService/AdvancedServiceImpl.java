@@ -73,7 +73,7 @@ import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
-import ai.verta.uac.GetCollaboratorResponse;
+import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
@@ -142,8 +142,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
     List<HydratedProject> hydratedProjects = new ArrayList<>();
     // Map from project id to list of users (owners + collaborators) which need to be resolved
-    Map<String, List<GetCollaboratorResponse>> projectCollaboratorMap =
-        new ConcurrentHashMap<String, List<GetCollaboratorResponse>>();
+    Map<String, List<GetCollaboratorResponseItem>> projectCollaboratorMap =
+        new ConcurrentHashMap<String, List<GetCollaboratorResponseItem>>();
     Set<String> vertaIds = new HashSet<>();
     Set<String> emailIds = new HashSet<>();
     LOGGER.trace("projects {}", projects);
@@ -156,7 +156,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             (project) -> {
               vertaIds.add(project.getOwner());
               resourceIds.add(project.getId());
-              List<GetCollaboratorResponse> projectCollaboratorList =
+              List<GetCollaboratorResponseItem> projectCollaboratorList =
                   roleService.getResourceCollaborators(
                       ModelDBServiceResourceTypes.PROJECT,
                       project.getId(),
@@ -894,7 +894,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     List<HydratedDataset> hydratedDatasets = new ArrayList<>();
 
     // Map from dataset id to list of users (owners + collaborators) which need to be resolved
-    Map<String, List<GetCollaboratorResponse>> datasetCollaboratorMap = new HashMap<>();
+    Map<String, List<GetCollaboratorResponseItem>> datasetCollaboratorMap = new HashMap<>();
     Set<String> vertaIds = new HashSet<>();
     Set<String> emailIds = new HashSet<>();
     Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
@@ -906,7 +906,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             (dataset) -> {
               vertaIds.add(dataset.getOwner());
               resourceIds.add(dataset.getId());
-              List<GetCollaboratorResponse> datasetCollaboratorList =
+              List<GetCollaboratorResponseItem> datasetCollaboratorList =
                   roleService.getResourceCollaborators(
                       ModelDBServiceResourceTypes.DATASET,
                       dataset.getId(),

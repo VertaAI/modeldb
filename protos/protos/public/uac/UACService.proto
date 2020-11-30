@@ -86,7 +86,7 @@ message UserInfo {
     string image_url = 8;
     string dev_key = 9;
     VertaUserInfo verta_info = 10;
-    reserved 11;
+    string secondary_dev_key = 11;
 }
 
 message CreateUser {
@@ -121,6 +121,30 @@ service UACService {
     rpc getCurrentUser (Empty) returns (UserInfo) {
         option (google.api.http) = {
             get: "/v1/uac/getCurrentUser"
+        };
+    };
+
+    // adds new user developer key
+    rpc addDevKey(Empty) returns (UserInfo) {
+        option (google.api.http) = {
+            post: "/v1/uac/addDevKey"
+            body: "*"
+        };
+    };
+
+    // deletes primary developer key
+    rpc deletePrimaryDevKey(Empty) returns (UserInfo) {
+        option (google.api.http) = {
+            delete: "/v1/uac/deletePrimaryDevKey"
+            body: "*"
+        };
+    };
+
+    // deletes secondary developer key
+    rpc deleteSecondaryDevKey(Empty) returns (UserInfo) {
+        option (google.api.http) = {
+            delete: "/v1/uac/deleteSecondaryDevKey"
+            body: "*"
         };
     };
 

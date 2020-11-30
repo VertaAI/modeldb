@@ -36,7 +36,7 @@ import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
-import ai.verta.uac.GetCollaboratorResponse;
+import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -320,7 +320,7 @@ public class DatasetToRepositoryMigration {
   }
 
   private static void migrateDatasetCollaborators(String datasetId, Repository repository) {
-    List<GetCollaboratorResponse> collaboratorResponses =
+    List<GetCollaboratorResponseItem> collaboratorResponses =
         roleService.getResourceCollaborators(
             ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET,
             datasetId,
@@ -328,7 +328,7 @@ public class DatasetToRepositoryMigration {
             null);
 
     if (!collaboratorResponses.isEmpty()) {
-      for (GetCollaboratorResponse collaboratorResponse : collaboratorResponses) {
+      for (GetCollaboratorResponseItem collaboratorResponse : collaboratorResponses) {
         CollaboratorBase collaboratorBase;
         if (collaboratorResponse
             .getAuthzEntityType()

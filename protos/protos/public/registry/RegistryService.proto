@@ -36,6 +36,8 @@ message RegisteredModel {
     //not storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files
     string workspace_id = 8;
 
+    uint64 workspace_service_id = 12;
+
     //readme
     string readme_text = 9;
 

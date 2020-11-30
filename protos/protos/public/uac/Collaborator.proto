@@ -52,7 +52,7 @@ message RemoveCollaborator {
     }
 }
 
-message GetCollaboratorResponse {
+message GetCollaboratorResponseItem {
     string user_id = 1 [deprecated=true];
     common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 2;
     ShareViaEnum share_via_type = 3;
@@ -65,7 +65,7 @@ message GetCollaborator {
     string entity_id = 1;
 
     message Response {
-        repeated GetCollaboratorResponse shared_users = 1;
+        repeated GetCollaboratorResponseItem shared_users = 1;
     }
 }
 
@@ -124,6 +124,44 @@ service CollaboratorService {
     rpc getRepositoryCollaborators (GetCollaborator) returns (GetCollaborator.Response){
         option (google.api.http) = {
             get: "/v1/collaborator/getRepositoryCollaborators"
+        };
+    };
+
+    rpc addOrUpdateEndpointCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
+        option (google.api.http) = {
+            post: "/v1/collaborator/addOrUpdateEndpointCollaborator"
+            body: "*"
+        };
+    };
+
+    rpc removeEndpointCollaborator (RemoveCollaborator) returns (RemoveCollaborator.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeEndpointCollaborator"
+        };
+    };
+
+    rpc getEndpointCollaborators (GetCollaborator) returns (GetCollaborator.Response){
+        option (google.api.http) = {
+            get: "/v1/collaborator/getEndpointCollaborators"
+        };
+    };
+
+    rpc addOrUpdateRegisteredModelCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
+        option (google.api.http) = {
+            post: "/v1/collaborator/addOrUpdateRegisteredModelCollaborator"
+            body: "*"
+        };
+    };
+
+    rpc removeRegisteredModelCollaborator (RemoveCollaborator) returns (RemoveCollaborator.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeRegisteredModelCollaborator"
+        };
+    };
+
+    rpc getRegisteredModelCollaborators (GetCollaborator) returns (GetCollaborator.Response){
+        option (google.api.http) = {
+            get: "/v1/collaborator/getRegisteredModelCollaborators"
         };
     };
 }

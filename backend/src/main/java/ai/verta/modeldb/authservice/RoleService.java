@@ -6,7 +6,7 @@ import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.Actions;
-import ai.verta.uac.GetCollaboratorResponse;
+import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
@@ -57,7 +57,7 @@ public interface RoleService {
 
   boolean deleteRoleBindings(List<String> roleBindingNames);
 
-  List<GetCollaboratorResponse> getResourceCollaborators(
+  List<GetCollaboratorResponseItem> getResourceCollaborators(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
       String resourceOwnerId,
