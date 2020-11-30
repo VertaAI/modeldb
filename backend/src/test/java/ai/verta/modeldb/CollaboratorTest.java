@@ -20,7 +20,7 @@ import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetCollaborator;
-import ai.verta.uac.GetCollaboratorResponse;
+import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.RemoveCollaborator;
 import ai.verta.uac.UACServiceGrpc;
@@ -544,7 +544,7 @@ public class CollaboratorTest {
       GetCollaborator.Response getCollaboratorResponse =
           collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
 
-      List<GetCollaboratorResponse> sharedUserList = getCollaboratorResponse.getSharedUsersList();
+      List<GetCollaboratorResponseItem> sharedUserList = getCollaboratorResponse.getSharedUsersList();
       LOGGER.info(
           "Founded collaborator users count : " + getCollaboratorResponse.getSharedUsersCount());
       assertEquals(
@@ -829,7 +829,7 @@ public class CollaboratorTest {
       GetCollaborator.Response getCollaboratorResponse =
           collaboratorServiceStub.getRepositoryCollaborators(getCollaboratorRequest);
 
-      List<GetCollaboratorResponse> sharedUserList = getCollaboratorResponse.getSharedUsersList();
+      List<GetCollaboratorResponseItem> sharedUserList = getCollaboratorResponse.getSharedUsersList();
       LOGGER.info(
           "Found collaborator users count : " + getCollaboratorResponse.getSharedUsersCount());
       assertEquals(

@@ -747,15 +747,22 @@ public class ExperimentTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    try {
-      experimentServiceStub.updateExperimentNameOrDescription(
+    UpdateExperimentNameOrDescription.Response updateExperimentNameOrDescriptionResponse = experimentServiceStub.updateExperimentNameOrDescription(
           UpdateExperimentNameOrDescription.newBuilder().setId(experiment.getId()).build());
-      fail();
-    } catch (StatusRuntimeException ex) {
-      Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
+    LOGGER.info("UpdateExperimentNameOrDescription Response : " + updateExperimentNameOrDescriptionResponse.getExperiment());
+    assertFalse(
+            "Experiment name is empty",
+            updateExperimentNameOrDescriptionResponse.getExperiment().getName().isEmpty());
+    assertEquals(
+            "Experiment description not match with expected experiment name",
+            experiment.getDescription(),
+            updateExperimentNameOrDescriptionResponse.getExperiment().getDescription());
+    assertNotEquals(
+            "Experiment date_updated field not update on database",
+            experiment.getDateUpdated(),
+            updateExperimentNameOrDescriptionResponse.getExperiment().getDateUpdated());
+    experiment = response.getExperiment();
+
 
     LOGGER.info("Update Experiment Name & Description test stop................................");
   }
