@@ -529,17 +529,17 @@ public class ProjectTest {
       LOGGER.info("Project Created Successfully");
       projects.add(response.getProject());
 
-      createProjectRequest = getCreateProjectRequest("");
+      projectName = "";
+      createProjectRequest = getCreateProjectRequest(projectName);
       createProjectRequest = createProjectRequest.toBuilder().build();
-      try {
-        projectServiceStub.createProject(createProjectRequest);
-        fail();
-      } catch (StatusRuntimeException e) {
-        Status status = Status.fromThrowable(e);
-        LOGGER.warn(
-            "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-      }
+      response = projectServiceStub.createProject(createProjectRequest);
+      projectShortName = projectName;
+      projectShortName = ModelDBUtils.convertToProjectShortName(projectShortName);
+      assertFalse(response.getProject().getName().isEmpty());
+      assertFalse(response.getProject().getShortName().isEmpty());
+      LOGGER.info("Project Created Successfully");
+      projects.add(response.getProject());
+
     } finally {
       for (Project project : projects) {
         // Delete all data related to project
@@ -552,43 +552,6 @@ public class ProjectTest {
     }
 
     LOGGER.info("Create Project with MD5 logic test stop................................");
-  }
-
-  @Test
-  public void b_projectCreateNegativeTest() {
-    LOGGER.info("Create Project Negative test start................................");
-
-    List<KeyValue> metadataList = new ArrayList<>();
-    for (int count = 0; count < 5; count++) {
-      Value stringValue =
-          Value.newBuilder()
-              .setStringValue(
-                  "attribute_" + count + "_" + Calendar.getInstance().getTimeInMillis() + "_value")
-              .build();
-      KeyValue keyValue =
-          KeyValue.newBuilder()
-              .setKey("attribute_" + count + "_" + Calendar.getInstance().getTimeInMillis())
-              .setValue(stringValue)
-              .build();
-      metadataList.add(keyValue);
-    }
-
-    CreateProject request =
-        CreateProject.newBuilder()
-            .setDescription("This is a project description.")
-            .addTags("tag_" + Calendar.getInstance().getTimeInMillis())
-            .addTags("tag_" + +Calendar.getInstance().getTimeInMillis())
-            .addAllAttributes(metadataList)
-            .build();
-
-    try {
-      projectServiceStub.createProject(request);
-      fail();
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
   }
 
   @Test

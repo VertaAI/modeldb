@@ -332,7 +332,7 @@ public class RepositoryTest {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
-        assertEquals(Code.PERMISSION_DENIED, e.getStatus().getCode());
+        assertEquals(Code.INVALID_ARGUMENT, e.getStatus().getCode());
       }
       try {
         versioningServiceBlockingStubClient2.getRepository(
