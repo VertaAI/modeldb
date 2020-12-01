@@ -2162,8 +2162,7 @@ public class RdbmsUtils {
             builder.equal(
                 entityRoot.get(ModelDBConstants.WORKSPACE_TYPE),
                 workspacePredicates.get(1).getValue().getNumberValue());
-        Predicate privatePredicate =
-            builder.and(builder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
+        Predicate privatePredicate = builder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
 
         finalPredicatesList.add(privatePredicate);
       }
