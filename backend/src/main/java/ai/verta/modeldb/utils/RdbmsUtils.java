@@ -2157,12 +2157,16 @@ public class RdbmsUtils {
             builder.equal(
                 entityRoot.get(ModelDBConstants.WORKSPACE),
                 workspacePredicates.get(0).getValue().getStringValue());
+        Predicate privateLegacyWorkspaceIdPredicate =
+                builder.equal(
+                        entityRoot.get(ModelDBConstants.LEGACY_WORKSPACE_ID),
+                        workspacePredicates.get(0).getValue().getStringValue());
         Predicate privateWorkspaceTypePredicate =
             builder.equal(
                 entityRoot.get(ModelDBConstants.WORKSPACE_TYPE),
                 workspacePredicates.get(1).getValue().getNumberValue());
         Predicate privatePredicate =
-            builder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
+            builder.and(builder.and(privateWorkspacePredicate, privateLegacyWorkspaceIdPredicate), privateWorkspaceTypePredicate);
 
         finalPredicatesList.add(privatePredicate);
       }
