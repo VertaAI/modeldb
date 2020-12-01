@@ -1385,7 +1385,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           finalPredicatesList.add(
               builder.not(
                   builder.and(
-                      repositoryRoot.get(ModelDBConstants.WORKSPACE_ID).in(orgIds),
+                      repositoryRoot.get(ModelDBConstants.LEGACY_WORKSPACE_ID_PROPERTY).in(orgIds),
                       builder.equal(
                           repositoryRoot.get(ModelDBConstants.WORKSPACE_TYPE),
                           WorkspaceType.ORGANIZATION_VALUE))));
@@ -1398,7 +1398,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           if (workspacePredicates.size() > 0) {
             Predicate privateWorkspacePredicate =
                 builder.equal(
-                    repositoryRoot.get(ModelDBConstants.WORKSPACE_ID),
+                    repositoryRoot.get(ModelDBConstants.LEGACY_WORKSPACE_ID_PROPERTY),
                     workspacePredicates.get(0).getValue().getStringValue());
             Predicate privateWorkspaceTypePredicate =
                 builder.equal(
