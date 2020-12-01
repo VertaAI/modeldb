@@ -89,6 +89,9 @@ public class DatasetEntity {
   @Column(name = "time_updated")
   private Long time_updated;
 
+  @Column(name = "workspace_id")
+  private Long workspaceId;
+
   @Column(name = "workspace")
   private String workspace;
 
@@ -179,6 +182,14 @@ public class DatasetEntity {
       this.attributeMapping = new ArrayList<>();
     }
     this.attributeMapping.addAll(attributeMapping);
+  }
+
+  public Long getWorkspaceId() {
+    return workspaceId;
+  }
+
+  public void setWorkspaceId(Long workspaceId) {
+    this.workspaceId = workspaceId;
   }
 
   public String getWorkspace() {
