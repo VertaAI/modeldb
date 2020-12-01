@@ -1,5 +1,6 @@
 package ai.verta.modeldb.versioning;
 
+import static ai.verta.modeldb.ModelDBConstants.LEGACY_WORKSPACE_ID_PROPERTY;
 import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
 
 import ai.verta.common.KeyValueQuery;
@@ -1202,6 +1203,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
         for (KeyValueQuery predicate : request.getPredicatesList()) {
           // Validate if current user has access to the entity or not where predicate key has an id
+          LOGGER.info("Validating predicate: " + predicate);
           RdbmsUtils.validatePredicates(
               ModelDBConstants.REPOSITORY, accessibleResourceIds, predicate, roleService);
         }
@@ -1215,6 +1217,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 .setPageLimit(request.getPageLimit())
                 .setPageNumber(request.getPageNumber())
                 .build();
+
+        LOGGER.info("findRepositoriesQuery: " + findRepositoriesQuery);
         List<RepositoryEntity> repositoryEntities =
             findRepositoriesQuery.getFindRepositoriesHQLQuery().list();
         Long totalRecords =
@@ -1385,7 +1389,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           finalPredicatesList.add(
               builder.not(
                   builder.and(
-                      repositoryRoot.get("legacyWorkspaceId").in(orgIds),
+                      repositoryRoot.get(LEGACY_WORKSPACE_ID_PROPERTY).in(orgIds),
                       builder.equal(
                           repositoryRoot.get(ModelDBConstants.WORKSPACE_TYPE),
                           WorkspaceType.ORGANIZATION_VALUE))));
@@ -1395,11 +1399,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           List<KeyValueQuery> workspacePredicates =
               ModelDBUtils.getKeyValueQueriesByWorkspace(
                   roleService, currentLoginUserInfo, workspaceName);
-          LOGGER.info("workspacePredicates: " + workspacePredicates);
           if (workspacePredicates.size() > 0) {
             Predicate privateWorkspacePredicate =
                 builder.equal(
-                    repositoryRoot.get("legacyWorkspaceId"),
+                    repositoryRoot.get(LEGACY_WORKSPACE_ID_PROPERTY),
                     workspacePredicates.get(0).getValue().getStringValue());
             Predicate privateWorkspaceTypePredicate =
                 builder.equal(
