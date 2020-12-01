@@ -1385,7 +1385,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           finalPredicatesList.add(
               builder.not(
                   builder.and(
-                      repositoryRoot.get(ModelDBConstants.WORKSPACE_ID).in(orgIds),
+                      repositoryRoot.get("legacyWorkspaceId").in(orgIds),
                       builder.equal(
                           repositoryRoot.get(ModelDBConstants.WORKSPACE_TYPE),
                           WorkspaceType.ORGANIZATION_VALUE))));
