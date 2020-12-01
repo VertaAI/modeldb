@@ -389,12 +389,12 @@ service DatasetVersionService {
         };
     };
 
-    rpc setDatasetVersionVisibility(SetDatasetVersionVisibilty) returns (SetDatasetVersionVisibilty.Response) {
-        option (google.api.http) = {
-            post: "/v1/dataset-version/setDatasetVersionVisibility"
-            body: "*"
-        };
-    };
+    // rpc setDatasetVersionVisibility(SetDatasetVersionVisibilty) returns (SetDatasetVersionVisibilty.Response) {
+    //     option (google.api.http) = {
+    //         post: "/v1/dataset-version/setDatasetVersionVisibility"
+    //         body: "*"
+    //     };
+    // };
 
     rpc getUrlForDatasetBlobVersioned (GetUrlForDatasetBlobVersioned) returns (GetUrlForDatasetBlobVersioned.Response) {
         option (google.api.http) = {

@@ -237,12 +237,12 @@ service ExperimentService {
         };
     };
 
-    rpc updateExperimentNameOrDescription(UpdateExperimentNameOrDescription) returns (UpdateExperimentNameOrDescription.Response) {
-        option (google.api.http) = {
-            post: "/v1/experiment/updateExperimentNameOrDescription"
-            body: "*"
-        };
-    };
+    // rpc updateExperimentNameOrDescription(UpdateExperimentNameOrDescription) returns (UpdateExperimentNameOrDescription.Response) {
+    //     option (google.api.http) = {
+    //         post: "/v1/experiment/updateExperimentNameOrDescription"
+    //         body: "*"
+    //     };
+    // };
 
     rpc updateExperimentName(UpdateExperimentName) returns (UpdateExperimentName.Response) {
         option (google.api.http) = {
@@ -321,24 +321,24 @@ service ExperimentService {
     };
 
     // code version
-    rpc logExperimentCodeVersion(LogExperimentCodeVersion) returns (LogExperimentCodeVersion.Response) {
-        option (google.api.http) = {
-            post: "/v1/experiment/logExperimentCodeVersion"
-            body: "*"
-        };
-    };
+    // rpc logExperimentCodeVersion(LogExperimentCodeVersion) returns (LogExperimentCodeVersion.Response) {
+    //     option (google.api.http) = {
+    //         post: "/v1/experiment/logExperimentCodeVersion"
+    //         body: "*"
+    //     };
+    // };
 
-    rpc getExperimentCodeVersion(GetExperimentCodeVersion) returns (GetExperimentCodeVersion.Response) {
-        option (google.api.http) = {
-            get: "/v1/experiment/getExperimentCodeVersion"
-        };
-    };
+    // rpc getExperimentCodeVersion(GetExperimentCodeVersion) returns (GetExperimentCodeVersion.Response) {
+    //     option (google.api.http) = {
+    //         get: "/v1/experiment/getExperimentCodeVersion"
+    //     };
+    // };
 
-    rpc getExperimentsInProject(GetExperimentsInProject) returns (GetExperimentsInProject.Response) {
-        option (google.api.http) = {
-            get: "/v1/experiment/getExperimentsInProject"
-        };
-    };
+    // rpc getExperimentsInProject(GetExperimentsInProject) returns (GetExperimentsInProject.Response) {
+    //     option (google.api.http) = {
+    //         get: "/v1/experiment/getExperimentsInProject"
+    //     };
+    // };
 
     rpc getExperimentById(GetExperimentById) returns (GetExperimentById.Response) {
         option (google.api.http) = {
@@ -396,10 +396,10 @@ service ExperimentService {
         };
     };
 
-    rpc deleteExperiments(DeleteExperiments) returns (DeleteExperiments.Response){
-        option (google.api.http) = {
-            delete: "/v1/experiment/deleteExperiments"
-            body: "*"
-        };
-    };
+    // rpc deleteExperiments(DeleteExperiments) returns (DeleteExperiments.Response){
+    //     option (google.api.http) = {
+    //         delete: "/v1/experiment/deleteExperiments"
+    //         body: "*"
+    //     };
+    // };
 }

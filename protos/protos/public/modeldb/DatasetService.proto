@@ -234,11 +234,11 @@ service DatasetService {
         };
     };
 
-    rpc getAllDatasets (GetAllDatasets) returns (GetAllDatasets.Response) {
-        option (google.api.http) = {
-            get: "/v1/dataset/getAllDatasets"
-        };
-    };
+    // rpc getAllDatasets (GetAllDatasets) returns (GetAllDatasets.Response) {
+    //     option (google.api.http) = {
+    //         get: "/v1/dataset/getAllDatasets"
+    //     };
+    // };
 
     rpc getDatasetById (GetDatasetById) returns (GetDatasetById.Response) {
         option (google.api.http) = {
@@ -259,12 +259,12 @@ service DatasetService {
         };
     };
 
-    rpc deleteDatasets (DeleteDatasets) returns (DeleteDatasets.Response) {
-        option (google.api.http) = {
-            delete: "/v1/dataset/deleteDatasets"
-            body: "*"
-        };
-    };
+    // rpc deleteDatasets (DeleteDatasets) returns (DeleteDatasets.Response) {
+    //     option (google.api.http) = {
+    //         delete: "/v1/dataset/deleteDatasets"
+    //         body: "*"
+    //     };
+    // };
 
     // queries
     rpc findDatasets(FindDatasets) returns (FindDatasets.Response){
@@ -329,12 +329,12 @@ service DatasetService {
         };
     };
 
-    rpc setDatasetVisibility(SetDatasetVisibilty) returns (SetDatasetVisibilty.Response) {
-        option (google.api.http) = {
-            post: "/v1/dataset/setDatasetVisibility"
-            body: "*"
-        };
-    };
+    // rpc setDatasetVisibility(SetDatasetVisibilty) returns (SetDatasetVisibilty.Response) {
+    //     option (google.api.http) = {
+    //         post: "/v1/dataset/setDatasetVisibility"
+    //         body: "*"
+    //     };
+    // };
 
     rpc getLastExperimentByDatasetId(LastExperimentByDatasetId) returns (LastExperimentByDatasetId.Response){
         option (google.api.http) = {
@@ -348,10 +348,10 @@ service DatasetService {
             body: "*"
         };
     };
-    rpc setDatasetWorkspace(SetDatasetWorkspace) returns (SetDatasetWorkspace.Response) {
-        option (google.api.http) = {
-            post: "/v1/dataset/setDatasetWorkspace"
-            body: "*"
-        };
-    };
+    // rpc setDatasetWorkspace(SetDatasetWorkspace) returns (SetDatasetWorkspace.Response) {
+    //     option (google.api.http) = {
+    //         post: "/v1/dataset/setDatasetWorkspace"
+    //         body: "*"
+    //     };
+    // };
 }

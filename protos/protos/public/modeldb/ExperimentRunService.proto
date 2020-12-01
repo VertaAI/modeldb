@@ -595,17 +595,17 @@ service ExperimentRunService {
     };
 
     // basic queries
-    rpc getExperimentRunsInProject (GetExperimentRunsInProject) returns (GetExperimentRunsInProject.Response) {
-        option (google.api.http) = {
-            get: "/v1/experiment-run/getExperimentRunsInProject"
-        };
-    };
+    // rpc getExperimentRunsInProject (GetExperimentRunsInProject) returns (GetExperimentRunsInProject.Response) {
+    //     option (google.api.http) = {
+    //         get: "/v1/experiment-run/getExperimentRunsInProject"
+    //     };
+    // };
 
-    rpc getExperimentRunsInExperiment (GetExperimentRunsInExperiment) returns (GetExperimentRunsInExperiment.Response) {
-        option (google.api.http) = {
-            get: "/v1/experiment-run/getExperimentRunsInExperiment"
-        };
-    };
+    // rpc getExperimentRunsInExperiment (GetExperimentRunsInExperiment) returns (GetExperimentRunsInExperiment.Response) {
+    //     option (google.api.http) = {
+    //         get: "/v1/experiment-run/getExperimentRunsInExperiment"
+    //     };
+    // };
 
     rpc getExperimentRunById(GetExperimentRunById) returns (GetExperimentRunById.Response) {
         option (google.api.http) = {
@@ -902,18 +902,18 @@ service ExperimentRunService {
         };
     };
 
-    rpc getChildrenExperimentRuns (GetChildrenExperimentRuns) returns (GetChildrenExperimentRuns.Response){
-        option (google.api.http) = {
-            get: "/v1/experiment-run/getChildrenExperimentRuns"
-        };
-    };
+    // rpc getChildrenExperimentRuns (GetChildrenExperimentRuns) returns (GetChildrenExperimentRuns.Response){
+    //     option (google.api.http) = {
+    //         get: "/v1/experiment-run/getChildrenExperimentRuns"
+    //     };
+    // };
 
-    rpc setParentExperimentRunId (SetParentExperimentRunId) returns (SetParentExperimentRunId.Response){
-        option (google.api.http) = {
-            post: "/v1/experiment-run/setParentExperimentRunId"
-            body: "*"
-        };
-    };
+    // rpc setParentExperimentRunId (SetParentExperimentRunId) returns (SetParentExperimentRunId.Response){
+    //     option (google.api.http) = {
+    //         post: "/v1/experiment-run/setParentExperimentRunId"
+    //         body: "*"
+    //     };
+    // };
 
     rpc getExperimentRunsByDatasetVersionId (GetExperimentRunsByDatasetVersionId) returns (GetExperimentRunsByDatasetVersionId.Response){
         option (google.api.http) = {
@@ -921,12 +921,12 @@ service ExperimentRunService {
         };
     };
 
-    rpc deleteExperimentRuns(DeleteExperimentRuns) returns (DeleteExperimentRuns.Response){
-        option (google.api.http) = {
-            delete: "/v1/experiment-run/deleteExperimentRuns"
-            body: "*"
-        };
-    };
+    // rpc deleteExperimentRuns(DeleteExperimentRuns) returns (DeleteExperimentRuns.Response){
+    //     option (google.api.http) = {
+    //         delete: "/v1/experiment-run/deleteExperimentRuns"
+    //         body: "*"
+    //     };
+    // };
 
     rpc logVersionedInput(LogVersionedInput) returns (LogVersionedInput.Response) {
         option (google.api.http) = {
@@ -940,7 +940,7 @@ service ExperimentRunService {
             get: "/v1/experiment-run/getVersionedInput"
         };
     };
-    
+
     // Getting ExperimentRuns linked to a commit
     rpc ListCommitExperimentRuns(ListCommitExperimentRunsRequest) returns (ListCommitExperimentRunsRequest.Response) {
         option (google.api.http) = {

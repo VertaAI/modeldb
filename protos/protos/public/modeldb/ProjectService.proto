@@ -360,17 +360,17 @@ service ProjectService {
         };
     };
 
-    rpc getProjects(GetProjects) returns (GetProjects.Response) {
-        option (google.api.http) = {
-            get: "/v1/project/getProjects"
-        };
-    };
+    // rpc getProjects(GetProjects) returns (GetProjects.Response) {
+    //     option (google.api.http) = {
+    //         get: "/v1/project/getProjects"
+    //     };
+    // };
 
-    rpc getPublicProjects (GetPublicProjects) returns (GetPublicProjects.Response) {
-        option (google.api.http) = {
-            get: "/v1/project/getPublicProjects"
-        };
-    };
+    // rpc getPublicProjects (GetPublicProjects) returns (GetPublicProjects.Response) {
+    //     option (google.api.http) = {
+    //         get: "/v1/project/getPublicProjects"
+    //     };
+    // };
 
     rpc getProjectById(GetProjectById) returns (GetProjectById.Response) {
         option (google.api.http) = {
@@ -468,18 +468,18 @@ service ProjectService {
     };
 
     // code version
-    rpc logProjectCodeVersion(LogProjectCodeVersion) returns (LogProjectCodeVersion.Response) {
-        option (google.api.http) = {
-            post: "/v1/project/logProjectCodeVersion"
-            body: "*"
-        };
-    };
+    // rpc logProjectCodeVersion(LogProjectCodeVersion) returns (LogProjectCodeVersion.Response) {
+    //     option (google.api.http) = {
+    //         post: "/v1/project/logProjectCodeVersion"
+    //         body: "*"
+    //     };
+    // };
 
-    rpc getProjectCodeVersion(GetProjectCodeVersion) returns (GetProjectCodeVersion.Response) {
-        option (google.api.http) = {
-            get: "/v1/project/getProjectCodeVersion"
-        };
-    };
+    // rpc getProjectCodeVersion(GetProjectCodeVersion) returns (GetProjectCodeVersion.Response) {
+    //     option (google.api.http) = {
+    //         get: "/v1/project/getProjectCodeVersion"
+    //     };
+    // };
 
     rpc verifyConnection(Empty) returns (VerifyConnectionResponse) {
         option (google.api.http) = {
@@ -487,18 +487,18 @@ service ProjectService {
         };
     };
 
-    rpc deepCopyProject(DeepCopyProject) returns (DeepCopyProject.Response) {
-       option (google.api.http) = {
-           post: "/v1/project/deepCopyProject"
-           body: "*"
-       };
-    };
+    // rpc deepCopyProject(DeepCopyProject) returns (DeepCopyProject.Response) {
+    //    option (google.api.http) = {
+    //        post: "/v1/project/deepCopyProject"
+    //        body: "*"
+    //    };
+    // };
 
-    rpc getSummary(GetSummary) returns (GetSummary.Response) {
-        option (google.api.http) = {
-            get: "/v1/project/getSummary"
-        };
-    };
+    // rpc getSummary(GetSummary) returns (GetSummary.Response) {
+    //     option (google.api.http) = {
+    //         get: "/v1/project/getSummary"
+    //     };
+    // };
 
     rpc setProjectReadme(SetProjectReadme) returns (SetProjectReadme.Response) {
         option (google.api.http) = {
@@ -507,31 +507,31 @@ service ProjectService {
        };
     };
 
-    rpc getProjectReadme(GetProjectReadme) returns (GetProjectReadme.Response) {
-        option (google.api.http) = {
-            get: "/v1/project/getProjectReadme"
-        };
-    };
+    // rpc getProjectReadme(GetProjectReadme) returns (GetProjectReadme.Response) {
+    //     option (google.api.http) = {
+    //         get: "/v1/project/getProjectReadme"
+    //     };
+    // };
 
-    rpc setProjectVisibility(SetProjectVisibilty) returns (SetProjectVisibilty.Response) {
-        option (google.api.http) = {
-            post: "/v1/project/setProjectVisibility"
-            body: "*"
-        };
-    };
+    // rpc setProjectVisibility(SetProjectVisibilty) returns (SetProjectVisibilty.Response) {
+    //     option (google.api.http) = {
+    //         post: "/v1/project/setProjectVisibility"
+    //         body: "*"
+    //     };
+    // };
 
-    rpc setProjectShortName(SetProjectShortName) returns (SetProjectShortName.Response) {
-        option (google.api.http) = {
-            post: "/v1/project/setProjectShortName"
-            body: "*"
-       };
-    };
+    // rpc setProjectShortName(SetProjectShortName) returns (SetProjectShortName.Response) {
+    //     option (google.api.http) = {
+    //         post: "/v1/project/setProjectShortName"
+    //         body: "*"
+    //    };
+    // };
 
-    rpc getProjectShortName(GetProjectShortName) returns (GetProjectShortName.Response) {
-        option (google.api.http) = {
-            get: "/v1/project/getProjectShortName"
-        };
-    };
+    // rpc getProjectShortName(GetProjectShortName) returns (GetProjectShortName.Response) {
+    //     option (google.api.http) = {
+    //         get: "/v1/project/getProjectShortName"
+    //     };
+    // };
 
     // artifacts
     rpc getUrlForArtifact(GetUrlForArtifact) returns (GetUrlForArtifact.Response) {
@@ -570,17 +570,17 @@ service ProjectService {
         };
     };
 
-    rpc deleteProjects(DeleteProjects) returns (DeleteProjects.Response){
-        option (google.api.http) = {
-            delete: "/v1/project/deleteProjects"
-            body: "*"
-        };
-    };
+    // rpc deleteProjects(DeleteProjects) returns (DeleteProjects.Response){
+    //     option (google.api.http) = {
+    //         delete: "/v1/project/deleteProjects"
+    //         body: "*"
+    //     };
+    // };
 
-    rpc setProjectWorkspace(SetProjectWorkspace) returns (SetProjectWorkspace.Response) {
-        option (google.api.http) = {
-            post: "/v1/project/setProjectWorkspace"
-            body: "*"
-        };
-    };
+    // rpc setProjectWorkspace(SetProjectWorkspace) returns (SetProjectWorkspace.Response) {
+    //     option (google.api.http) = {
+    //         post: "/v1/project/setProjectWorkspace"
+    //         body: "*"
+    //     };
+    // };
 }
