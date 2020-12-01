@@ -2152,21 +2152,18 @@ public class RdbmsUtils {
     if (userInfo != null) {
       List<KeyValueQuery> workspacePredicates =
           ModelDBUtils.getKeyValueQueriesByWorkspace(roleService, userInfo, workspaceName);
+      LOGGER.info("workspacePredicates: " + workspacePredicates);
       if (workspacePredicates.size() > 0) {
         Predicate privateWorkspacePredicate =
             builder.equal(
                 entityRoot.get(ModelDBConstants.WORKSPACE),
                 workspacePredicates.get(0).getValue().getStringValue());
-        Predicate privateLegacyWorkspaceIdPredicate =
-                builder.equal(
-                        entityRoot.get(ModelDBConstants.LEGACY_WORKSPACE_ID),
-                        workspacePredicates.get(0).getValue().getStringValue());
         Predicate privateWorkspaceTypePredicate =
             builder.equal(
                 entityRoot.get(ModelDBConstants.WORKSPACE_TYPE),
                 workspacePredicates.get(1).getValue().getNumberValue());
         Predicate privatePredicate =
-            builder.and(builder.and(privateWorkspacePredicate, privateLegacyWorkspaceIdPredicate), privateWorkspaceTypePredicate);
+            builder.and(builder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
 
         finalPredicatesList.add(privatePredicate);
       }
