@@ -24,7 +24,6 @@ import ai.verta.modeldb.GetDatasetVersionById;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
 import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.SetDatasetVersionVisibilty;
@@ -39,6 +38,9 @@ import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
@@ -179,10 +181,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     try {
       /*Parameter validation*/
       if (request.getDatasetId().isEmpty()) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(CreateDatasetVersion.Response.getDefaultInstance()));
+        throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
 
       /*Get the user info from the Context*/
@@ -225,12 +224,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       StreamObserver<GetAllDatasetVersionsByDatasetId.Response> responseObserver) {
     try {
       /*Parameter validation*/
-
       if (request.getDatasetId().isEmpty()) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(GetAllDatasetVersionsByDatasetId.Response.getDefaultInstance()));
+        throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
       DatasetVersionDTO datasetVersionDTO =
           getDatasetVersionDTOByDatasetId(
@@ -319,10 +314,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     try {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(DeleteDatasetVersion.Response.getDefaultInstance()));
+        throw new InvalidArgumentException(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);
       }
 
       commitDAO.deleteDatasetVersions(
@@ -351,10 +343,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     try {
       /*Parameter validation*/
       if (request.getDatasetId().isEmpty()) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
+        throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
 
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
@@ -376,10 +365,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               sortKey,
               request.getAscending());
       if (commitPaginationDTO.getCommitEntities().size() != 1) {
-        ModelDBUtils.logAndThrowError(
-            "No datasetVersion found for dataset '" + request.getDatasetId() + "'",
-            Code.NOT_FOUND_VALUE,
-            Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
+        throw new NotFoundException(
+            "No datasetVersion found for dataset '" + request.getDatasetId() + "'");
       }
 
       RepositoryEntity repositoryEntity = null;
@@ -396,10 +383,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               convertRepoDatasetVersions(repositoryEntity, commitPaginationDTO.getCommits()));
 
       if (datasetVersions.size() != 1) {
-        ModelDBUtils.logAndThrowError(
-            "No datasetVersion found for dataset '" + request.getDatasetId() + "'",
-            Code.NOT_FOUND_VALUE,
-            Any.pack(GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance()));
+        throw new NotFoundException(
+            "No datasetVersion found for dataset '" + request.getDatasetId() + "'");
       }
       /*Build response*/
       responseObserver.onNext(
@@ -892,10 +877,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     try {
       /*Parameter validation*/
       if (request.getIdsList().isEmpty()) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(DeleteDatasetVersions.Response.getDefaultInstance()));
+        throw new InvalidArgumentException(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);
       }
 
       commitDAO.deleteDatasetVersions(

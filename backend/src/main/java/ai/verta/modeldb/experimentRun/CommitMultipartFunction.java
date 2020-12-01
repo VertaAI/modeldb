@@ -1,6 +1,6 @@
 package ai.verta.modeldb.experimentRun;
 
-import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import com.amazonaws.services.s3.model.PartETag;
 import java.util.List;
 

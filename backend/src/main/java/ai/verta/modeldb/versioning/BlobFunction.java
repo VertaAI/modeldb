@@ -1,6 +1,6 @@
 package ai.verta.modeldb.versioning;
 
-import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import java.security.NoSuchAlgorithmException;
 import org.hibernate.Session;
 

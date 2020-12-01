@@ -6,10 +6,11 @@ import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasetVersions;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
+import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status;
@@ -40,7 +41,7 @@ public interface DatasetVersionDAO {
       boolean isAscending,
       String sortKey,
       UserInfo currentLoginUser)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, PermissionDeniedException;
 
   /**
    * Delete all datasetVersions with dataset ids matching the ids in request.
@@ -88,7 +89,7 @@ public interface DatasetVersionDAO {
    */
   DatasetVersionDTO findDatasetVersions(
       DatasetDAO datasetDAO, FindDatasetVersions queryParameters, UserInfo userInfo)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, PermissionDeniedException;
 
   /**
    * Update DatasetVersion description in database using datasetVersionId.

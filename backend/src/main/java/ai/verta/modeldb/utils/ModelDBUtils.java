@@ -11,7 +11,6 @@ import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.GetHydratedProjects;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.UpdateProjectName;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -20,6 +19,7 @@ import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponseItem;
@@ -307,29 +307,6 @@ public class ModelDBUtils {
     }
 
     return collaboratorUserInfos;
-  }
-
-  /**
-   * This is the common method for all to throw an exception to the UI
-   *
-   * @param errorMessage : error message throws by any service
-   * @param errorCode : error code like Code.NOT_FOUND, Code.INTERNAL etc.
-   * @param defaultResponse : Method reference to identify the error block
-   */
-  public static void logAndThrowError(String errorMessage, int errorCode, Any defaultResponse) {
-    boolean isClientError = isClientError(errorCode);
-    if (isClientError) {
-      LOGGER.info(errorMessage);
-    } else {
-      LOGGER.warn(errorMessage);
-    }
-    Status status =
-        Status.newBuilder()
-            .setCode(errorCode)
-            .setMessage(errorMessage)
-            .addDetails(defaultResponse)
-            .build();
-    throw StatusProto.toStatusRuntimeException(status);
   }
 
   /**

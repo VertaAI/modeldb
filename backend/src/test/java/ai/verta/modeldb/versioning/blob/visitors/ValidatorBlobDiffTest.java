@@ -2,7 +2,7 @@ package ai.verta.modeldb.versioning.blob.visitors;
 
 import static org.junit.Assert.fail;
 
-import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.BlobDiff;
 import ai.verta.modeldb.versioning.CodeDiff;
 import ai.verta.modeldb.versioning.ConfigDiff;

@@ -1,6 +1,6 @@
 package ai.verta.modeldb.versioning.blob.diff;
 
-import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDiff;
 import ai.verta.modeldb.versioning.DiffStatusEnum.DiffStatus;

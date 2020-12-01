@@ -1,6 +1,6 @@
 package ai.verta.modeldb.metadata;
 
-import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Any;
