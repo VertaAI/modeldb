@@ -296,4 +296,33 @@
     <changeSet id="db_version_2.13" author="cory">
         <tagDatabase tag="db_version_2.13"/>
     </changeSet>
+
+    <changeSet id="rename-workspace-id-to-workspace-service-id-on-repository" author="cory">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="repository" columnName="workspace_id"/>
+        </preConditions>
+        <renameColumn tableName="repository" oldColumnName="workspace_id" newColumnName="workspace_service_id" columnDataType="int8"/>
+        <rollback>
+            <renameColumn tableName="repository" oldColumnName="workspace_service_id" newColumnName="workspace_id" columnDataType="int8"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.14" author="cory">
+        <tagDatabase tag="db_version_2.14"/>
+    </changeSet>
+
+    <changeSet id="rename-legacy-workspace-id-to-workspace-id-on-repository" author="cory">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="repository" columnName="legacy_workspace_id"/>
+        </preConditions>
+        <renameColumn tableName="repository" oldColumnName="legacy_workspace_id" newColumnName="workspace_id" columnDataType="VARCHAR(255)"/>
+        <rollback>
+            <renameColumn tableName="repository" oldColumnName="workspace_id" newColumnName="legacy_workspace_id" columnDataType="VARCHAR(255)"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.15" author="cory">
+        <tagDatabase tag="db_version_2.15"/>
+    </changeSet>
+
 </databaseChangeLog>

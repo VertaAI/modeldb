@@ -99,10 +99,10 @@ public class RepositoryEntity {
   @Column(name = "date_updated")
   private Long date_updated;
 
-  @Column(name = "workspace_id")
+  @Column(name = "workspace_service_id")
   private Long workspaceId;
 
-  @Column(name = "legacy_workspace_id")
+  @Column(name = "workspace_id")
   private String legacyWorkspaceId;
 
   @Column(name = "workspace_type", columnDefinition = "varchar")
