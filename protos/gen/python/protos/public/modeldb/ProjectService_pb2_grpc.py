@@ -20,16 +20,6 @@ class ProjectServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.CreateProject.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.CreateProject.Response.FromString,
         )
-    self.getProjects = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/getProjects',
-        request_serializer=modeldb_dot_ProjectService__pb2.GetProjects.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.GetProjects.Response.FromString,
-        )
-    self.getPublicProjects = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/getPublicProjects',
-        request_serializer=modeldb_dot_ProjectService__pb2.GetPublicProjects.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.GetPublicProjects.Response.FromString,
-        )
     self.getProjectById = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/getProjectById',
         request_serializer=modeldb_dot_ProjectService__pb2.GetProjectById.SerializeToString,
@@ -100,55 +90,15 @@ class ProjectServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.DeleteProjectAttributes.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjectAttributes.Response.FromString,
         )
-    self.logProjectCodeVersion = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/logProjectCodeVersion',
-        request_serializer=modeldb_dot_ProjectService__pb2.LogProjectCodeVersion.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.LogProjectCodeVersion.Response.FromString,
-        )
-    self.getProjectCodeVersion = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/getProjectCodeVersion',
-        request_serializer=modeldb_dot_ProjectService__pb2.GetProjectCodeVersion.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.GetProjectCodeVersion.Response.FromString,
-        )
     self.verifyConnection = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/verifyConnection',
         request_serializer=modeldb_dot_ProjectService__pb2.Empty.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.VerifyConnectionResponse.FromString,
         )
-    self.deepCopyProject = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/deepCopyProject',
-        request_serializer=modeldb_dot_ProjectService__pb2.DeepCopyProject.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.DeepCopyProject.Response.FromString,
-        )
-    self.getSummary = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/getSummary',
-        request_serializer=modeldb_dot_ProjectService__pb2.GetSummary.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.GetSummary.Response.FromString,
-        )
     self.setProjectReadme = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/setProjectReadme',
         request_serializer=modeldb_dot_ProjectService__pb2.SetProjectReadme.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectReadme.Response.FromString,
-        )
-    self.getProjectReadme = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/getProjectReadme',
-        request_serializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.Response.FromString,
-        )
-    self.setProjectVisibility = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/setProjectVisibility',
-        request_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.Response.FromString,
-        )
-    self.setProjectShortName = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/setProjectShortName',
-        request_serializer=modeldb_dot_ProjectService__pb2.SetProjectShortName.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectShortName.Response.FromString,
-        )
-    self.getProjectShortName = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/getProjectShortName',
-        request_serializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.Response.FromString,
         )
     self.getUrlForArtifact = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/getUrlForArtifact',
@@ -175,16 +125,6 @@ class ProjectServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.DeleteProjectArtifact.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjectArtifact.Response.FromString,
         )
-    self.deleteProjects = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/deleteProjects',
-        request_serializer=modeldb_dot_ProjectService__pb2.DeleteProjects.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjects.Response.FromString,
-        )
-    self.setProjectWorkspace = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/setProjectWorkspace',
-        request_serializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.Response.FromString,
-        )
 
 
 class ProjectServiceServicer(object):
@@ -198,23 +138,20 @@ class ProjectServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getProjects(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getPublicProjects(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def getProjectById(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
+    """rpc getProjects(GetProjects) returns (GetProjects.Response) {
+    option (google.api.http) = {
+    get: "/v1/project/getProjects"
+    };
+    };
+
+    rpc getPublicProjects (GetPublicProjects) returns (GetPublicProjects.Response) {
+    option (google.api.http) = {
+    get: "/v1/project/getPublicProjects"
+    };
+    };
+
+    """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -310,78 +247,73 @@ class ProjectServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def logProjectCodeVersion(self, request, context):
+  def verifyConnection(self, request, context):
     """code version
+    rpc logProjectCodeVersion(LogProjectCodeVersion) returns (LogProjectCodeVersion.Response) {
+    option (google.api.http) = {
+    post: "/v1/project/logProjectCodeVersion"
+    body: "*"
+    };
+    };
+
+    rpc getProjectCodeVersion(GetProjectCodeVersion) returns (GetProjectCodeVersion.Response) {
+    option (google.api.http) = {
+    get: "/v1/project/getProjectCodeVersion"
+    };
+    };
+
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getProjectCodeVersion(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def verifyConnection(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def deepCopyProject(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getSummary(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def setProjectReadme(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
+    """rpc deepCopyProject(DeepCopyProject) returns (DeepCopyProject.Response) {
+    option (google.api.http) = {
+    post: "/v1/project/deepCopyProject"
+    body: "*"
+    };
+    };
 
-  def getProjectReadme(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
+    rpc getSummary(GetSummary) returns (GetSummary.Response) {
+    option (google.api.http) = {
+    get: "/v1/project/getSummary"
+    };
+    };
 
-  def setProjectVisibility(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def setProjectShortName(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getProjectShortName(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
+    """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
   def getUrlForArtifact(self, request, context):
-    """artifacts
+    """rpc getProjectReadme(GetProjectReadme) returns (GetProjectReadme.Response) {
+    option (google.api.http) = {
+    get: "/v1/project/getProjectReadme"
+    };
+    };
+
+    rpc setProjectVisibility(SetProjectVisibilty) returns (SetProjectVisibilty.Response) {
+    option (google.api.http) = {
+    post: "/v1/project/setProjectVisibility"
+    body: "*"
+    };
+    };
+
+    rpc setProjectShortName(SetProjectShortName) returns (SetProjectShortName.Response) {
+    option (google.api.http) = {
+    post: "/v1/project/setProjectShortName"
+    body: "*"
+    };
+    };
+
+    rpc getProjectShortName(GetProjectShortName) returns (GetProjectShortName.Response) {
+    option (google.api.http) = {
+    get: "/v1/project/getProjectShortName"
+    };
+    };
+
+    artifacts
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
@@ -415,20 +347,6 @@ class ProjectServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def deleteProjects(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def setProjectWorkspace(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
 
 def add_ProjectServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -436,16 +354,6 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           servicer.createProject,
           request_deserializer=modeldb_dot_ProjectService__pb2.CreateProject.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.CreateProject.Response.SerializeToString,
-      ),
-      'getProjects': grpc.unary_unary_rpc_method_handler(
-          servicer.getProjects,
-          request_deserializer=modeldb_dot_ProjectService__pb2.GetProjects.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.GetProjects.Response.SerializeToString,
-      ),
-      'getPublicProjects': grpc.unary_unary_rpc_method_handler(
-          servicer.getPublicProjects,
-          request_deserializer=modeldb_dot_ProjectService__pb2.GetPublicProjects.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.GetPublicProjects.Response.SerializeToString,
       ),
       'getProjectById': grpc.unary_unary_rpc_method_handler(
           servicer.getProjectById,
@@ -517,55 +425,15 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           request_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjectAttributes.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.DeleteProjectAttributes.Response.SerializeToString,
       ),
-      'logProjectCodeVersion': grpc.unary_unary_rpc_method_handler(
-          servicer.logProjectCodeVersion,
-          request_deserializer=modeldb_dot_ProjectService__pb2.LogProjectCodeVersion.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.LogProjectCodeVersion.Response.SerializeToString,
-      ),
-      'getProjectCodeVersion': grpc.unary_unary_rpc_method_handler(
-          servicer.getProjectCodeVersion,
-          request_deserializer=modeldb_dot_ProjectService__pb2.GetProjectCodeVersion.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.GetProjectCodeVersion.Response.SerializeToString,
-      ),
       'verifyConnection': grpc.unary_unary_rpc_method_handler(
           servicer.verifyConnection,
           request_deserializer=modeldb_dot_ProjectService__pb2.Empty.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.VerifyConnectionResponse.SerializeToString,
       ),
-      'deepCopyProject': grpc.unary_unary_rpc_method_handler(
-          servicer.deepCopyProject,
-          request_deserializer=modeldb_dot_ProjectService__pb2.DeepCopyProject.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.DeepCopyProject.Response.SerializeToString,
-      ),
-      'getSummary': grpc.unary_unary_rpc_method_handler(
-          servicer.getSummary,
-          request_deserializer=modeldb_dot_ProjectService__pb2.GetSummary.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.GetSummary.Response.SerializeToString,
-      ),
       'setProjectReadme': grpc.unary_unary_rpc_method_handler(
           servicer.setProjectReadme,
           request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectReadme.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.SetProjectReadme.Response.SerializeToString,
-      ),
-      'getProjectReadme': grpc.unary_unary_rpc_method_handler(
-          servicer.getProjectReadme,
-          request_deserializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.Response.SerializeToString,
-      ),
-      'setProjectVisibility': grpc.unary_unary_rpc_method_handler(
-          servicer.setProjectVisibility,
-          request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.Response.SerializeToString,
-      ),
-      'setProjectShortName': grpc.unary_unary_rpc_method_handler(
-          servicer.setProjectShortName,
-          request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectShortName.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.SetProjectShortName.Response.SerializeToString,
-      ),
-      'getProjectShortName': grpc.unary_unary_rpc_method_handler(
-          servicer.getProjectShortName,
-          request_deserializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.Response.SerializeToString,
       ),
       'getUrlForArtifact': grpc.unary_unary_rpc_method_handler(
           servicer.getUrlForArtifact,
@@ -591,16 +459,6 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           servicer.deleteArtifact,
           request_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjectArtifact.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.DeleteProjectArtifact.Response.SerializeToString,
-      ),
-      'deleteProjects': grpc.unary_unary_rpc_method_handler(
-          servicer.deleteProjects,
-          request_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjects.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.DeleteProjects.Response.SerializeToString,
-      ),
-      'setProjectWorkspace': grpc.unary_unary_rpc_method_handler(
-          servicer.setProjectWorkspace,
-          request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

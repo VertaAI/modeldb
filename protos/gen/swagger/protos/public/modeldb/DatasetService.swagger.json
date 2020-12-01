@@ -203,38 +203,6 @@
         ]
       }
     },
-    "/dataset/deleteDatasets": {
-      "delete": {
-        "operationId": "DatasetService_deleteDatasets",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbDeleteDatasetsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbDeleteDatasets"
-            }
-          }
-        ],
-        "tags": [
-          "DatasetService"
-        ]
-      }
-    },
     "/dataset/findDatasets": {
       "post": {
         "summary": "queries",
@@ -261,64 +229,6 @@
             "schema": {
               "$ref": "#/definitions/modeldbFindDatasets"
             }
-          }
-        ],
-        "tags": [
-          "DatasetService"
-        ]
-      }
-    },
-    "/dataset/getAllDatasets": {
-      "get": {
-        "operationId": "DatasetService_getAllDatasets",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetAllDatasetsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "page_number",
-            "description": "For pagination.",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "ascending",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          },
-          {
-            "name": "sort_key",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "workspace_name",
-            "in": "query",
-            "required": false,
-            "type": "string"
           }
         ],
         "tags": [
@@ -477,70 +387,6 @@
             "in": "query",
             "required": false,
             "type": "string"
-          }
-        ],
-        "tags": [
-          "DatasetService"
-        ]
-      }
-    },
-    "/dataset/setDatasetVisibility": {
-      "post": {
-        "operationId": "DatasetService_setDatasetVisibility",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetVisibiltyResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetVisibilty"
-            }
-          }
-        ],
-        "tags": [
-          "DatasetService"
-        ]
-      }
-    },
-    "/dataset/setDatasetWorkspace": {
-      "post": {
-        "operationId": "DatasetService_setDatasetWorkspace",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetWorkspaceResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetWorkspace"
-            }
           }
         ],
         "tags": [
@@ -1003,26 +849,6 @@
         }
       }
     },
-    "modeldbDeleteDatasets": {
-      "type": "object",
-      "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "modeldbDeleteDatasetsResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
-    },
     "modeldbExperiment": {
       "type": "object",
       "properties": {
@@ -1248,21 +1074,6 @@
         }
       }
     },
-    "modeldbGetAllDatasetsResponse": {
-      "type": "object",
-      "properties": {
-        "datasets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/modeldbDataset"
-          }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
     "modeldbGetDatasetByIdResponse": {
       "type": "object",
       "properties": {
@@ -1361,44 +1172,6 @@
         }
       },
       "title": "observations with the same key are not overwritten, the are appended to a list"
-    },
-    "modeldbSetDatasetVisibilty": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "dataset_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
-        }
-      }
-    },
-    "modeldbSetDatasetVisibiltyResponse": {
-      "type": "object",
-      "properties": {
-        "dataset": {
-          "$ref": "#/definitions/modeldbDataset"
-        }
-      }
-    },
-    "modeldbSetDatasetWorkspace": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "workspace_name": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbSetDatasetWorkspaceResponse": {
-      "type": "object",
-      "properties": {
-        "dataset": {
-          "$ref": "#/definitions/modeldbDataset"
-        }
-      }
     },
     "modeldbUpdateDatasetAttributes": {
       "type": "object",

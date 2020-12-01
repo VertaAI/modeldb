@@ -20,11 +20,6 @@ class ExperimentServiceStub(object):
         request_serializer=modeldb_dot_ExperimentService__pb2.CreateExperiment.SerializeToString,
         response_deserializer=modeldb_dot_ExperimentService__pb2.CreateExperiment.Response.FromString,
         )
-    self.updateExperimentNameOrDescription = channel.unary_unary(
-        '/ai.verta.modeldb.ExperimentService/updateExperimentNameOrDescription',
-        request_serializer=modeldb_dot_ExperimentService__pb2.UpdateExperimentNameOrDescription.SerializeToString,
-        response_deserializer=modeldb_dot_ExperimentService__pb2.UpdateExperimentNameOrDescription.Response.FromString,
-        )
     self.updateExperimentName = channel.unary_unary(
         '/ai.verta.modeldb.ExperimentService/updateExperimentName',
         request_serializer=modeldb_dot_ExperimentService__pb2.UpdateExperimentName.SerializeToString,
@@ -80,21 +75,6 @@ class ExperimentServiceStub(object):
         request_serializer=modeldb_dot_ExperimentService__pb2.DeleteExperimentAttributes.SerializeToString,
         response_deserializer=modeldb_dot_ExperimentService__pb2.DeleteExperimentAttributes.Response.FromString,
         )
-    self.logExperimentCodeVersion = channel.unary_unary(
-        '/ai.verta.modeldb.ExperimentService/logExperimentCodeVersion',
-        request_serializer=modeldb_dot_ExperimentService__pb2.LogExperimentCodeVersion.SerializeToString,
-        response_deserializer=modeldb_dot_ExperimentService__pb2.LogExperimentCodeVersion.Response.FromString,
-        )
-    self.getExperimentCodeVersion = channel.unary_unary(
-        '/ai.verta.modeldb.ExperimentService/getExperimentCodeVersion',
-        request_serializer=modeldb_dot_ExperimentService__pb2.GetExperimentCodeVersion.SerializeToString,
-        response_deserializer=modeldb_dot_ExperimentService__pb2.GetExperimentCodeVersion.Response.FromString,
-        )
-    self.getExperimentsInProject = channel.unary_unary(
-        '/ai.verta.modeldb.ExperimentService/getExperimentsInProject',
-        request_serializer=modeldb_dot_ExperimentService__pb2.GetExperimentsInProject.SerializeToString,
-        response_deserializer=modeldb_dot_ExperimentService__pb2.GetExperimentsInProject.Response.FromString,
-        )
     self.getExperimentById = channel.unary_unary(
         '/ai.verta.modeldb.ExperimentService/getExperimentById',
         request_serializer=modeldb_dot_ExperimentService__pb2.GetExperimentById.SerializeToString,
@@ -135,11 +115,6 @@ class ExperimentServiceStub(object):
         request_serializer=modeldb_dot_ExperimentService__pb2.DeleteExperimentArtifact.SerializeToString,
         response_deserializer=modeldb_dot_ExperimentService__pb2.DeleteExperimentArtifact.Response.FromString,
         )
-    self.deleteExperiments = channel.unary_unary(
-        '/ai.verta.modeldb.ExperimentService/deleteExperiments',
-        request_serializer=modeldb_dot_ExperimentService__pb2.DeleteExperiments.SerializeToString,
-        response_deserializer=modeldb_dot_ExperimentService__pb2.DeleteExperiments.Response.FromString,
-        )
 
 
 class ExperimentServiceServicer(object):
@@ -153,16 +128,15 @@ class ExperimentServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def updateExperimentNameOrDescription(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def updateExperimentName(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
+    """rpc updateExperimentNameOrDescription(UpdateExperimentNameOrDescription) returns (UpdateExperimentNameOrDescription.Response) {
+    option (google.api.http) = {
+    post: "/v1/experiment/updateExperimentNameOrDescription"
+    body: "*"
+    };
+    };
+
+    """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -237,30 +211,28 @@ class ExperimentServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def logExperimentCodeVersion(self, request, context):
-    """code version
-    """
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getExperimentCodeVersion(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getExperimentsInProject(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def getExperimentById(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
+    """code version
+    rpc logExperimentCodeVersion(LogExperimentCodeVersion) returns (LogExperimentCodeVersion.Response) {
+    option (google.api.http) = {
+    post: "/v1/experiment/logExperimentCodeVersion"
+    body: "*"
+    };
+    };
+
+    rpc getExperimentCodeVersion(GetExperimentCodeVersion) returns (GetExperimentCodeVersion.Response) {
+    option (google.api.http) = {
+    get: "/v1/experiment/getExperimentCodeVersion"
+    };
+    };
+
+    rpc getExperimentsInProject(GetExperimentsInProject) returns (GetExperimentsInProject.Response) {
+    option (google.api.http) = {
+    get: "/v1/experiment/getExperimentsInProject"
+    };
+    };
+
+    """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -314,13 +286,6 @@ class ExperimentServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def deleteExperiments(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
 
 def add_ExperimentServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -328,11 +293,6 @@ def add_ExperimentServiceServicer_to_server(servicer, server):
           servicer.createExperiment,
           request_deserializer=modeldb_dot_ExperimentService__pb2.CreateExperiment.FromString,
           response_serializer=modeldb_dot_ExperimentService__pb2.CreateExperiment.Response.SerializeToString,
-      ),
-      'updateExperimentNameOrDescription': grpc.unary_unary_rpc_method_handler(
-          servicer.updateExperimentNameOrDescription,
-          request_deserializer=modeldb_dot_ExperimentService__pb2.UpdateExperimentNameOrDescription.FromString,
-          response_serializer=modeldb_dot_ExperimentService__pb2.UpdateExperimentNameOrDescription.Response.SerializeToString,
       ),
       'updateExperimentName': grpc.unary_unary_rpc_method_handler(
           servicer.updateExperimentName,
@@ -389,21 +349,6 @@ def add_ExperimentServiceServicer_to_server(servicer, server):
           request_deserializer=modeldb_dot_ExperimentService__pb2.DeleteExperimentAttributes.FromString,
           response_serializer=modeldb_dot_ExperimentService__pb2.DeleteExperimentAttributes.Response.SerializeToString,
       ),
-      'logExperimentCodeVersion': grpc.unary_unary_rpc_method_handler(
-          servicer.logExperimentCodeVersion,
-          request_deserializer=modeldb_dot_ExperimentService__pb2.LogExperimentCodeVersion.FromString,
-          response_serializer=modeldb_dot_ExperimentService__pb2.LogExperimentCodeVersion.Response.SerializeToString,
-      ),
-      'getExperimentCodeVersion': grpc.unary_unary_rpc_method_handler(
-          servicer.getExperimentCodeVersion,
-          request_deserializer=modeldb_dot_ExperimentService__pb2.GetExperimentCodeVersion.FromString,
-          response_serializer=modeldb_dot_ExperimentService__pb2.GetExperimentCodeVersion.Response.SerializeToString,
-      ),
-      'getExperimentsInProject': grpc.unary_unary_rpc_method_handler(
-          servicer.getExperimentsInProject,
-          request_deserializer=modeldb_dot_ExperimentService__pb2.GetExperimentsInProject.FromString,
-          response_serializer=modeldb_dot_ExperimentService__pb2.GetExperimentsInProject.Response.SerializeToString,
-      ),
       'getExperimentById': grpc.unary_unary_rpc_method_handler(
           servicer.getExperimentById,
           request_deserializer=modeldb_dot_ExperimentService__pb2.GetExperimentById.FromString,
@@ -443,11 +388,6 @@ def add_ExperimentServiceServicer_to_server(servicer, server):
           servicer.deleteArtifact,
           request_deserializer=modeldb_dot_ExperimentService__pb2.DeleteExperimentArtifact.FromString,
           response_serializer=modeldb_dot_ExperimentService__pb2.DeleteExperimentArtifact.Response.SerializeToString,
-      ),
-      'deleteExperiments': grpc.unary_unary_rpc_method_handler(
-          servicer.deleteExperiments,
-          request_deserializer=modeldb_dot_ExperimentService__pb2.DeleteExperiments.FromString,
-          response_serializer=modeldb_dot_ExperimentService__pb2.DeleteExperiments.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

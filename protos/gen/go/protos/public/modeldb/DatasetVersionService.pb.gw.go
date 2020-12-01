@@ -515,40 +515,6 @@ func local_request_DatasetVersionService_DeleteDatasetVersionAttributes_0(ctx co
 
 }
 
-func request_DatasetVersionService_SetDatasetVersionVisibility_0(ctx context.Context, marshaler runtime.Marshaler, client DatasetVersionServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq SetDatasetVersionVisibilty
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.SetDatasetVersionVisibility(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_DatasetVersionService_SetDatasetVersionVisibility_0(ctx context.Context, marshaler runtime.Marshaler, server DatasetVersionServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq SetDatasetVersionVisibilty
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.SetDatasetVersionVisibility(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
 func request_DatasetVersionService_GetUrlForDatasetBlobVersioned_0(ctx context.Context, marshaler runtime.Marshaler, client DatasetVersionServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetUrlForDatasetBlobVersioned
 	var metadata runtime.ServerMetadata
@@ -1144,26 +1110,6 @@ func RegisterDatasetVersionServiceHandlerServer(ctx context.Context, mux *runtim
 
 	})
 
-	mux.Handle("POST", pattern_DatasetVersionService_SetDatasetVersionVisibility_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_DatasetVersionService_SetDatasetVersionVisibility_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DatasetVersionService_SetDatasetVersionVisibility_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("POST", pattern_DatasetVersionService_GetUrlForDatasetBlobVersioned_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1585,26 +1531,6 @@ func RegisterDatasetVersionServiceHandlerClient(ctx context.Context, mux *runtim
 
 	})
 
-	mux.Handle("POST", pattern_DatasetVersionService_SetDatasetVersionVisibility_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_DatasetVersionService_SetDatasetVersionVisibility_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DatasetVersionService_SetDatasetVersionVisibility_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("POST", pattern_DatasetVersionService_GetUrlForDatasetBlobVersioned_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1737,8 +1663,6 @@ var (
 
 	pattern_DatasetVersionService_DeleteDatasetVersionAttributes_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "dataset-version", "deleteDatasetVersionAttributes"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DatasetVersionService_SetDatasetVersionVisibility_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "dataset-version", "setDatasetVersionVisibility"}, "", runtime.AssumeColonVerbOpt(true)))
-
 	pattern_DatasetVersionService_GetUrlForDatasetBlobVersioned_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"v1", "dataset-version", "workspaces", "workspace_name", "dataset", "dataset_id", "datasetVersion", "dataset_version_id", "getUrlForDatasetBlobVersioned"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_DatasetVersionService_GetUrlForDatasetBlobVersioned_1 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"v1", "dataset-version", "dataset", "dataset_id", "datasetVersion", "dataset_version_id", "getUrlForDatasetBlobVersioned"}, "", runtime.AssumeColonVerbOpt(true)))
@@ -1778,8 +1702,6 @@ var (
 	forward_DatasetVersionService_GetDatasetVersionAttributes_0 = runtime.ForwardResponseMessage
 
 	forward_DatasetVersionService_DeleteDatasetVersionAttributes_0 = runtime.ForwardResponseMessage
-
-	forward_DatasetVersionService_SetDatasetVersionVisibility_0 = runtime.ForwardResponseMessage
 
 	forward_DatasetVersionService_GetUrlForDatasetBlobVersioned_0 = runtime.ForwardResponseMessage
 

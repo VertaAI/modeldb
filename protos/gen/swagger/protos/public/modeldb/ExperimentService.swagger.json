@@ -346,38 +346,6 @@
         ]
       }
     },
-    "/experiment/deleteExperiments": {
-      "delete": {
-        "operationId": "ExperimentService_deleteExperiments",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbDeleteExperimentsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbDeleteExperiments"
-            }
-          }
-        ],
-        "tags": [
-          "ExperimentService"
-        ]
-      }
-    },
     "/experiment/findExperiments": {
       "post": {
         "summary": "queries",
@@ -560,36 +528,6 @@
         ]
       }
     },
-    "/experiment/getExperimentCodeVersion": {
-      "get": {
-        "operationId": "ExperimentService_getExperimentCodeVersion",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetExperimentCodeVersionResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "ExperimentService"
-        ]
-      }
-    },
     "/experiment/getExperimentTags": {
       "get": {
         "operationId": "ExperimentService_getExperimentTags",
@@ -610,63 +548,6 @@
         "parameters": [
           {
             "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "ExperimentService"
-        ]
-      }
-    },
-    "/experiment/getExperimentsInProject": {
-      "get": {
-        "operationId": "ExperimentService_getExperimentsInProject",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetExperimentsInProjectResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "project_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "ascending",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          },
-          {
-            "name": "sort_key",
             "in": "query",
             "required": false,
             "type": "string"
@@ -743,39 +624,6 @@
         ]
       }
     },
-    "/experiment/logExperimentCodeVersion": {
-      "post": {
-        "summary": "code version",
-        "operationId": "ExperimentService_logExperimentCodeVersion",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbLogExperimentCodeVersionResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbLogExperimentCodeVersion"
-            }
-          }
-        ],
-        "tags": [
-          "ExperimentService"
-        ]
-      }
-    },
     "/experiment/updateExperimentDescription": {
       "post": {
         "operationId": "ExperimentService_updateExperimentDescription",
@@ -832,38 +680,6 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/modeldbUpdateExperimentName"
-            }
-          }
-        ],
-        "tags": [
-          "ExperimentService"
-        ]
-      }
-    },
-    "/experiment/updateExperimentNameOrDescription": {
-      "post": {
-        "operationId": "ExperimentService_updateExperimentNameOrDescription",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbUpdateExperimentNameOrDescriptionResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbUpdateExperimentNameOrDescription"
             }
           }
         ],
@@ -1215,26 +1031,6 @@
         }
       }
     },
-    "modeldbDeleteExperiments": {
-      "type": "object",
-      "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "modeldbDeleteExperimentsResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
-    },
     "modeldbExperiment": {
       "type": "object",
       "properties": {
@@ -1380,29 +1176,6 @@
         }
       }
     },
-    "modeldbGetExperimentCodeVersionResponse": {
-      "type": "object",
-      "properties": {
-        "code_version": {
-          "$ref": "#/definitions/modeldbCodeVersion"
-        }
-      }
-    },
-    "modeldbGetExperimentsInProjectResponse": {
-      "type": "object",
-      "properties": {
-        "experiments": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/modeldbExperiment"
-          }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "modeldbGetTagsResponse": {
       "type": "object",
       "properties": {
@@ -1496,26 +1269,6 @@
         }
       }
     },
-    "modeldbLogExperimentCodeVersion": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "code_version": {
-          "$ref": "#/definitions/modeldbCodeVersion"
-        }
-      },
-      "title": "code version"
-    },
-    "modeldbLogExperimentCodeVersionResponse": {
-      "type": "object",
-      "properties": {
-        "experiment": {
-          "$ref": "#/definitions/modeldbExperiment"
-        }
-      }
-    },
     "modeldbUpdateExperimentDescription": {
       "type": "object",
       "properties": {
@@ -1543,28 +1296,6 @@
         },
         "name": {
           "type": "string"
-        }
-      }
-    },
-    "modeldbUpdateExperimentNameOrDescription": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbUpdateExperimentNameOrDescriptionResponse": {
-      "type": "object",
-      "properties": {
-        "experiment": {
-          "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },

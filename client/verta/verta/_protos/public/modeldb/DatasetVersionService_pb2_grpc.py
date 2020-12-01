@@ -84,11 +84,6 @@ class DatasetVersionServiceStub(object):
         request_serializer=modeldb_dot_DatasetVersionService__pb2.DeleteDatasetVersionAttributes.SerializeToString,
         response_deserializer=modeldb_dot_DatasetVersionService__pb2.DeleteDatasetVersionAttributes.Response.FromString,
         )
-    self.setDatasetVersionVisibility = channel.unary_unary(
-        '/ai.verta.modeldb.DatasetVersionService/setDatasetVersionVisibility',
-        request_serializer=modeldb_dot_DatasetVersionService__pb2.SetDatasetVersionVisibilty.SerializeToString,
-        response_deserializer=modeldb_dot_DatasetVersionService__pb2.SetDatasetVersionVisibilty.Response.FromString,
-        )
     self.getUrlForDatasetBlobVersioned = channel.unary_unary(
         '/ai.verta.modeldb.DatasetVersionService/getUrlForDatasetBlobVersioned',
         request_serializer=modeldb_dot_DatasetVersionService__pb2.GetUrlForDatasetBlobVersioned.SerializeToString,
@@ -213,16 +208,15 @@ class DatasetVersionServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def setDatasetVersionVisibility(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def getUrlForDatasetBlobVersioned(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
+    """rpc setDatasetVersionVisibility(SetDatasetVersionVisibilty) returns (SetDatasetVersionVisibilty.Response) {
+    option (google.api.http) = {
+    post: "/v1/dataset-version/setDatasetVersionVisibility"
+    body: "*"
+    };
+    };
+
+    """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -320,11 +314,6 @@ def add_DatasetVersionServiceServicer_to_server(servicer, server):
           servicer.deleteDatasetVersionAttributes,
           request_deserializer=modeldb_dot_DatasetVersionService__pb2.DeleteDatasetVersionAttributes.FromString,
           response_serializer=modeldb_dot_DatasetVersionService__pb2.DeleteDatasetVersionAttributes.Response.SerializeToString,
-      ),
-      'setDatasetVersionVisibility': grpc.unary_unary_rpc_method_handler(
-          servicer.setDatasetVersionVisibility,
-          request_deserializer=modeldb_dot_DatasetVersionService__pb2.SetDatasetVersionVisibilty.FromString,
-          response_serializer=modeldb_dot_DatasetVersionService__pb2.SetDatasetVersionVisibilty.Response.SerializeToString,
       ),
       'getUrlForDatasetBlobVersioned': grpc.unary_unary_rpc_method_handler(
           servicer.getUrlForDatasetBlobVersioned,

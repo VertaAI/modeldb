@@ -100,78 +100,6 @@ func local_request_ExperimentRunService_DeleteExperimentRun_0(ctx context.Contex
 }
 
 var (
-	filter_ExperimentRunService_GetExperimentRunsInProject_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_ExperimentRunService_GetExperimentRunsInProject_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetExperimentRunsInProject
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExperimentRunService_GetExperimentRunsInProject_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.GetExperimentRunsInProject(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_ExperimentRunService_GetExperimentRunsInProject_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentRunServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetExperimentRunsInProject
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExperimentRunService_GetExperimentRunsInProject_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.GetExperimentRunsInProject(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
-var (
-	filter_ExperimentRunService_GetExperimentRunsInExperiment_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_ExperimentRunService_GetExperimentRunsInExperiment_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetExperimentRunsInExperiment
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExperimentRunService_GetExperimentRunsInExperiment_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.GetExperimentRunsInExperiment(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_ExperimentRunService_GetExperimentRunsInExperiment_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentRunServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetExperimentRunsInExperiment
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExperimentRunService_GetExperimentRunsInExperiment_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.GetExperimentRunsInExperiment(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
-var (
 	filter_ExperimentRunService_GetExperimentRunById_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
@@ -1596,76 +1524,6 @@ func local_request_ExperimentRunService_GetJobId_0(ctx context.Context, marshale
 }
 
 var (
-	filter_ExperimentRunService_GetChildrenExperimentRuns_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_ExperimentRunService_GetChildrenExperimentRuns_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetChildrenExperimentRuns
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExperimentRunService_GetChildrenExperimentRuns_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.GetChildrenExperimentRuns(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_ExperimentRunService_GetChildrenExperimentRuns_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentRunServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetChildrenExperimentRuns
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExperimentRunService_GetChildrenExperimentRuns_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.GetChildrenExperimentRuns(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
-func request_ExperimentRunService_SetParentExperimentRunId_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq SetParentExperimentRunId
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.SetParentExperimentRunId(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_ExperimentRunService_SetParentExperimentRunId_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentRunServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq SetParentExperimentRunId
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.SetParentExperimentRunId(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
-var (
 	filter_ExperimentRunService_GetExperimentRunsByDatasetVersionId_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
@@ -1697,40 +1555,6 @@ func local_request_ExperimentRunService_GetExperimentRunsByDatasetVersionId_0(ct
 	}
 
 	msg, err := server.GetExperimentRunsByDatasetVersionId(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
-func request_ExperimentRunService_DeleteExperimentRuns_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq DeleteExperimentRuns
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.DeleteExperimentRuns(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_ExperimentRunService_DeleteExperimentRuns_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentRunServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq DeleteExperimentRuns
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.DeleteExperimentRuns(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -2403,46 +2227,6 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 		}
 
 		forward_ExperimentRunService_DeleteExperimentRun_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunsInProject_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_ExperimentRunService_GetExperimentRunsInProject_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ExperimentRunService_GetExperimentRunsInProject_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunsInExperiment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_ExperimentRunService_GetExperimentRunsInExperiment_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ExperimentRunService_GetExperimentRunsInExperiment_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -3266,46 +3050,6 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 
 	})
 
-	mux.Handle("GET", pattern_ExperimentRunService_GetChildrenExperimentRuns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_ExperimentRunService_GetChildrenExperimentRuns_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ExperimentRunService_GetChildrenExperimentRuns_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("POST", pattern_ExperimentRunService_SetParentExperimentRunId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_ExperimentRunService_SetParentExperimentRunId_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ExperimentRunService_SetParentExperimentRunId_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunsByDatasetVersionId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -3323,26 +3067,6 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 		}
 
 		forward_ExperimentRunService_GetExperimentRunsByDatasetVersionId_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("DELETE", pattern_ExperimentRunService_DeleteExperimentRuns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_ExperimentRunService_DeleteExperimentRuns_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ExperimentRunService_DeleteExperimentRuns_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -3624,46 +3348,6 @@ func RegisterExperimentRunServiceHandlerClient(ctx context.Context, mux *runtime
 		}
 
 		forward_ExperimentRunService_DeleteExperimentRun_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunsInProject_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_ExperimentRunService_GetExperimentRunsInProject_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ExperimentRunService_GetExperimentRunsInProject_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunsInExperiment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_ExperimentRunService_GetExperimentRunsInExperiment_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ExperimentRunService_GetExperimentRunsInExperiment_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -4487,46 +4171,6 @@ func RegisterExperimentRunServiceHandlerClient(ctx context.Context, mux *runtime
 
 	})
 
-	mux.Handle("GET", pattern_ExperimentRunService_GetChildrenExperimentRuns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_ExperimentRunService_GetChildrenExperimentRuns_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ExperimentRunService_GetChildrenExperimentRuns_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("POST", pattern_ExperimentRunService_SetParentExperimentRunId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_ExperimentRunService_SetParentExperimentRunId_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ExperimentRunService_SetParentExperimentRunId_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("GET", pattern_ExperimentRunService_GetExperimentRunsByDatasetVersionId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -4544,26 +4188,6 @@ func RegisterExperimentRunServiceHandlerClient(ctx context.Context, mux *runtime
 		}
 
 		forward_ExperimentRunService_GetExperimentRunsByDatasetVersionId_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("DELETE", pattern_ExperimentRunService_DeleteExperimentRuns_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_ExperimentRunService_DeleteExperimentRuns_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_ExperimentRunService_DeleteExperimentRuns_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -4775,10 +4399,6 @@ var (
 
 	pattern_ExperimentRunService_DeleteExperimentRun_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "deleteExperimentRun"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_ExperimentRunService_GetExperimentRunsInProject_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "getExperimentRunsInProject"}, "", runtime.AssumeColonVerbOpt(true)))
-
-	pattern_ExperimentRunService_GetExperimentRunsInExperiment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "getExperimentRunsInExperiment"}, "", runtime.AssumeColonVerbOpt(true)))
-
 	pattern_ExperimentRunService_GetExperimentRunById_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "getExperimentRunById"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_ExperimentRunService_GetExperimentRunByName_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "getExperimentRunByName"}, "", runtime.AssumeColonVerbOpt(true)))
@@ -4861,13 +4481,7 @@ var (
 
 	pattern_ExperimentRunService_GetJobId_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "getJobId"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_ExperimentRunService_GetChildrenExperimentRuns_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "getChildrenExperimentRuns"}, "", runtime.AssumeColonVerbOpt(true)))
-
-	pattern_ExperimentRunService_SetParentExperimentRunId_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "setParentExperimentRunId"}, "", runtime.AssumeColonVerbOpt(true)))
-
 	pattern_ExperimentRunService_GetExperimentRunsByDatasetVersionId_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "getExperimentRunsByDatasetVersionId"}, "", runtime.AssumeColonVerbOpt(true)))
-
-	pattern_ExperimentRunService_DeleteExperimentRuns_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "deleteExperimentRuns"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_ExperimentRunService_LogVersionedInput_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "logVersionedInput"}, "", runtime.AssumeColonVerbOpt(true)))
 
@@ -4894,10 +4508,6 @@ var (
 	forward_ExperimentRunService_CreateExperimentRun_0 = runtime.ForwardResponseMessage
 
 	forward_ExperimentRunService_DeleteExperimentRun_0 = runtime.ForwardResponseMessage
-
-	forward_ExperimentRunService_GetExperimentRunsInProject_0 = runtime.ForwardResponseMessage
-
-	forward_ExperimentRunService_GetExperimentRunsInExperiment_0 = runtime.ForwardResponseMessage
 
 	forward_ExperimentRunService_GetExperimentRunById_0 = runtime.ForwardResponseMessage
 
@@ -4981,13 +4591,7 @@ var (
 
 	forward_ExperimentRunService_GetJobId_0 = runtime.ForwardResponseMessage
 
-	forward_ExperimentRunService_GetChildrenExperimentRuns_0 = runtime.ForwardResponseMessage
-
-	forward_ExperimentRunService_SetParentExperimentRunId_0 = runtime.ForwardResponseMessage
-
 	forward_ExperimentRunService_GetExperimentRunsByDatasetVersionId_0 = runtime.ForwardResponseMessage
-
-	forward_ExperimentRunService_DeleteExperimentRuns_0 = runtime.ForwardResponseMessage
 
 	forward_ExperimentRunService_LogVersionedInput_0 = runtime.ForwardResponseMessage
 

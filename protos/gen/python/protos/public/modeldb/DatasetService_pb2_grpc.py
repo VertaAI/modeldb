@@ -20,11 +20,6 @@ class DatasetServiceStub(object):
         request_serializer=modeldb_dot_DatasetService__pb2.CreateDataset.SerializeToString,
         response_deserializer=modeldb_dot_DatasetService__pb2.CreateDataset.Response.FromString,
         )
-    self.getAllDatasets = channel.unary_unary(
-        '/ai.verta.modeldb.DatasetService/getAllDatasets',
-        request_serializer=modeldb_dot_DatasetService__pb2.GetAllDatasets.SerializeToString,
-        response_deserializer=modeldb_dot_DatasetService__pb2.GetAllDatasets.Response.FromString,
-        )
     self.getDatasetById = channel.unary_unary(
         '/ai.verta.modeldb.DatasetService/getDatasetById',
         request_serializer=modeldb_dot_DatasetService__pb2.GetDatasetById.SerializeToString,
@@ -39,11 +34,6 @@ class DatasetServiceStub(object):
         '/ai.verta.modeldb.DatasetService/deleteDataset',
         request_serializer=modeldb_dot_DatasetService__pb2.DeleteDataset.SerializeToString,
         response_deserializer=modeldb_dot_DatasetService__pb2.DeleteDataset.Response.FromString,
-        )
-    self.deleteDatasets = channel.unary_unary(
-        '/ai.verta.modeldb.DatasetService/deleteDatasets',
-        request_serializer=modeldb_dot_DatasetService__pb2.DeleteDatasets.SerializeToString,
-        response_deserializer=modeldb_dot_DatasetService__pb2.DeleteDatasets.Response.FromString,
         )
     self.findDatasets = channel.unary_unary(
         '/ai.verta.modeldb.DatasetService/findDatasets',
@@ -90,11 +80,6 @@ class DatasetServiceStub(object):
         request_serializer=modeldb_dot_DatasetService__pb2.DeleteDatasetAttributes.SerializeToString,
         response_deserializer=modeldb_dot_DatasetService__pb2.DeleteDatasetAttributes.Response.FromString,
         )
-    self.setDatasetVisibility = channel.unary_unary(
-        '/ai.verta.modeldb.DatasetService/setDatasetVisibility',
-        request_serializer=modeldb_dot_DatasetService__pb2.SetDatasetVisibilty.SerializeToString,
-        response_deserializer=modeldb_dot_DatasetService__pb2.SetDatasetVisibilty.Response.FromString,
-        )
     self.getLastExperimentByDatasetId = channel.unary_unary(
         '/ai.verta.modeldb.DatasetService/getLastExperimentByDatasetId',
         request_serializer=modeldb_dot_DatasetService__pb2.LastExperimentByDatasetId.SerializeToString,
@@ -104,11 +89,6 @@ class DatasetServiceStub(object):
         '/ai.verta.modeldb.DatasetService/getExperimentRunByDataset',
         request_serializer=modeldb_dot_DatasetService__pb2.GetExperimentRunByDataset.SerializeToString,
         response_deserializer=modeldb_dot_DatasetService__pb2.GetExperimentRunByDataset.Response.FromString,
-        )
-    self.setDatasetWorkspace = channel.unary_unary(
-        '/ai.verta.modeldb.DatasetService/setDatasetWorkspace',
-        request_serializer=modeldb_dot_DatasetService__pb2.SetDatasetWorkspace.SerializeToString,
-        response_deserializer=modeldb_dot_DatasetService__pb2.SetDatasetWorkspace.Response.FromString,
         )
 
 
@@ -123,16 +103,14 @@ class DatasetServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getAllDatasets(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def getDatasetById(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
+    """rpc getAllDatasets (GetAllDatasets) returns (GetAllDatasets.Response) {
+    option (google.api.http) = {
+    get: "/v1/dataset/getAllDatasets"
+    };
+    };
+
+    """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -151,15 +129,15 @@ class DatasetServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def deleteDatasets(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def findDatasets(self, request, context):
-    """queries
+    """rpc deleteDatasets (DeleteDatasets) returns (DeleteDatasets.Response) {
+    option (google.api.http) = {
+    delete: "/v1/dataset/deleteDatasets"
+    body: "*"
+    };
+    };
+
+    queries
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
@@ -221,28 +199,20 @@ class DatasetServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def setDatasetVisibility(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def getLastExperimentByDatasetId(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
+    """rpc setDatasetVisibility(SetDatasetVisibilty) returns (SetDatasetVisibilty.Response) {
+    option (google.api.http) = {
+    post: "/v1/dataset/setDatasetVisibility"
+    body: "*"
+    };
+    };
+
+    """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
   def getExperimentRunByDataset(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def setDatasetWorkspace(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -256,11 +226,6 @@ def add_DatasetServiceServicer_to_server(servicer, server):
           servicer.createDataset,
           request_deserializer=modeldb_dot_DatasetService__pb2.CreateDataset.FromString,
           response_serializer=modeldb_dot_DatasetService__pb2.CreateDataset.Response.SerializeToString,
-      ),
-      'getAllDatasets': grpc.unary_unary_rpc_method_handler(
-          servicer.getAllDatasets,
-          request_deserializer=modeldb_dot_DatasetService__pb2.GetAllDatasets.FromString,
-          response_serializer=modeldb_dot_DatasetService__pb2.GetAllDatasets.Response.SerializeToString,
       ),
       'getDatasetById': grpc.unary_unary_rpc_method_handler(
           servicer.getDatasetById,
@@ -276,11 +241,6 @@ def add_DatasetServiceServicer_to_server(servicer, server):
           servicer.deleteDataset,
           request_deserializer=modeldb_dot_DatasetService__pb2.DeleteDataset.FromString,
           response_serializer=modeldb_dot_DatasetService__pb2.DeleteDataset.Response.SerializeToString,
-      ),
-      'deleteDatasets': grpc.unary_unary_rpc_method_handler(
-          servicer.deleteDatasets,
-          request_deserializer=modeldb_dot_DatasetService__pb2.DeleteDatasets.FromString,
-          response_serializer=modeldb_dot_DatasetService__pb2.DeleteDatasets.Response.SerializeToString,
       ),
       'findDatasets': grpc.unary_unary_rpc_method_handler(
           servicer.findDatasets,
@@ -327,11 +287,6 @@ def add_DatasetServiceServicer_to_server(servicer, server):
           request_deserializer=modeldb_dot_DatasetService__pb2.DeleteDatasetAttributes.FromString,
           response_serializer=modeldb_dot_DatasetService__pb2.DeleteDatasetAttributes.Response.SerializeToString,
       ),
-      'setDatasetVisibility': grpc.unary_unary_rpc_method_handler(
-          servicer.setDatasetVisibility,
-          request_deserializer=modeldb_dot_DatasetService__pb2.SetDatasetVisibilty.FromString,
-          response_serializer=modeldb_dot_DatasetService__pb2.SetDatasetVisibilty.Response.SerializeToString,
-      ),
       'getLastExperimentByDatasetId': grpc.unary_unary_rpc_method_handler(
           servicer.getLastExperimentByDatasetId,
           request_deserializer=modeldb_dot_DatasetService__pb2.LastExperimentByDatasetId.FromString,
@@ -341,11 +296,6 @@ def add_DatasetServiceServicer_to_server(servicer, server):
           servicer.getExperimentRunByDataset,
           request_deserializer=modeldb_dot_DatasetService__pb2.GetExperimentRunByDataset.FromString,
           response_serializer=modeldb_dot_DatasetService__pb2.GetExperimentRunByDataset.Response.SerializeToString,
-      ),
-      'setDatasetWorkspace': grpc.unary_unary_rpc_method_handler(
-          servicer.setDatasetWorkspace,
-          request_deserializer=modeldb_dot_DatasetService__pb2.SetDatasetWorkspace.FromString,
-          response_serializer=modeldb_dot_DatasetService__pb2.SetDatasetWorkspace.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

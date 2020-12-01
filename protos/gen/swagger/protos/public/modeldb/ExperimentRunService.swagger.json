@@ -397,38 +397,6 @@
         ]
       }
     },
-    "/experiment-run/deleteExperimentRuns": {
-      "delete": {
-        "operationId": "ExperimentRunService_deleteExperimentRuns",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbDeleteExperimentRunsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbDeleteExperimentRuns"
-            }
-          }
-        ],
-        "tags": [
-          "ExperimentRunService"
-        ]
-      }
-    },
     "/experiment-run/deleteHyperparameters": {
       "delete": {
         "operationId": "ExperimentRunService_deleteHyperparameters",
@@ -634,63 +602,6 @@
             "required": false,
             "type": "boolean",
             "format": "boolean"
-          }
-        ],
-        "tags": [
-          "ExperimentRunService"
-        ]
-      }
-    },
-    "/experiment-run/getChildrenExperimentRuns": {
-      "get": {
-        "operationId": "ExperimentRunService_getChildrenExperimentRuns",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetChildrenExperimentRunsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "experiment_run_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "ascending",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          },
-          {
-            "name": "sort_key",
-            "in": "query",
-            "required": false,
-            "type": "string"
           }
         ],
         "tags": [
@@ -910,121 +821,6 @@
         "parameters": [
           {
             "name": "dataset_version_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "ascending",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          },
-          {
-            "name": "sort_key",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "ExperimentRunService"
-        ]
-      }
-    },
-    "/experiment-run/getExperimentRunsInExperiment": {
-      "get": {
-        "operationId": "ExperimentRunService_getExperimentRunsInExperiment",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetExperimentRunsInExperimentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "experiment_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "ascending",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          },
-          {
-            "name": "sort_key",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "ExperimentRunService"
-        ]
-      }
-    },
-    "/experiment-run/getExperimentRunsInProject": {
-      "get": {
-        "summary": "basic queries",
-        "operationId": "ExperimentRunService_getExperimentRunsInProject",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetExperimentRunsInProjectResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "project_id",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1813,38 +1609,6 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/modeldbLogVersionedInput"
-            }
-          }
-        ],
-        "tags": [
-          "ExperimentRunService"
-        ]
-      }
-    },
-    "/experiment-run/setParentExperimentRunId": {
-      "post": {
-        "operationId": "ExperimentRunService_setParentExperimentRunId",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetParentExperimentRunIdResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetParentExperimentRunId"
             }
           }
         ],
@@ -2696,26 +2460,6 @@
         }
       }
     },
-    "modeldbDeleteExperimentRuns": {
-      "type": "object",
-      "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "modeldbDeleteExperimentRunsResponse": {
-      "type": "object",
-      "properties": {
-        "status": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
-    },
     "modeldbDeleteHyperparameters": {
       "type": "object",
       "properties": {
@@ -2989,21 +2733,6 @@
         }
       }
     },
-    "modeldbGetChildrenExperimentRunsResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_runs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/modeldbExperimentRun"
-          }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "modeldbGetCommittedArtifactPartsResponse": {
       "type": "object",
       "properties": {
@@ -3062,36 +2791,6 @@
         "total_records": {
           "type": "string",
           "format": "uint64"
-        }
-      }
-    },
-    "modeldbGetExperimentRunsInExperimentResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_runs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/modeldbExperimentRun"
-          }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
-    "modeldbGetExperimentRunsInProjectResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_runs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/modeldbExperimentRun"
-          }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
@@ -3504,20 +3203,6 @@
         }
       },
       "title": "observations with the same key are not overwritten, the are appended to a list"
-    },
-    "modeldbSetParentExperimentRunId": {
-      "type": "object",
-      "properties": {
-        "experiment_run_id": {
-          "type": "string"
-        },
-        "parent_id": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbSetParentExperimentRunIdResponse": {
-      "type": "object"
     },
     "modeldbSortExperimentRunsResponse": {
       "type": "object",
