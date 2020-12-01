@@ -1201,12 +1201,14 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               .build();
         }
 
+        LOGGER.info("Validating predicates...");
         for (KeyValueQuery predicate : request.getPredicatesList()) {
           // Validate if current user has access to the entity or not where predicate key has an id
           LOGGER.info("Validating predicate: " + predicate);
           RdbmsUtils.validatePredicates(
               ModelDBConstants.REPOSITORY, accessibleResourceIds, predicate, roleService);
         }
+        LOGGER.info("Predicate validation complete.  Building query.");
 
         FindRepositoriesQuery findRepositoriesQuery =
             new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(
