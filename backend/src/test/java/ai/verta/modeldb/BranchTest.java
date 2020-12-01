@@ -4,12 +4,7 @@ import static ai.verta.modeldb.CommitTest.getDatasetBlobFromPath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import ai.verta.modeldb.authservice.AuthService;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -104,7 +99,7 @@ public class BranchTest {
     ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new ModelDBAuthInterceptor());
+    serverBuilder.intercept(new AuthInterceptor());
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {

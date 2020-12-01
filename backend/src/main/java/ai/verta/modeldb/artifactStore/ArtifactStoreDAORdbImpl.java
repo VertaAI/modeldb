@@ -4,11 +4,9 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetUrlForArtifact.Response;
 import ai.verta.modeldb.HttpCodeToGRPCCode;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.model.PartETag;
@@ -39,8 +37,7 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
   @Override
   public Response getUrlForArtifactMultipart(
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (App.getInstance().getTrialEnabled()) {
         return artifactStoreService.generatePresignedUrlForTrial(
             s3Key, method, partNumber, uploadId);

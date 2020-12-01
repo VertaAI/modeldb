@@ -41,7 +41,6 @@ import ai.verta.modeldb.HydratedExperiment;
 import ai.verta.modeldb.HydratedExperimentRun;
 import ai.verta.modeldb.HydratedProject;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceImplBase;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBConstants.UserIdentifier;
 import ai.verta.modeldb.ModelDBMessages;
@@ -50,6 +49,7 @@ import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.authservice.AuthInterceptor;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -67,8 +67,6 @@ import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
@@ -148,7 +146,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     Set<String> emailIds = new HashSet<>();
     LOGGER.trace("projects {}", projects);
     List<String> resourceIds = new LinkedList<>();
-    Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
+    Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
 
     projects
         .parallelStream()
@@ -215,10 +213,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   @Override
   public void getHydratedProjects(
       GetHydratedProjects request, StreamObserver<GetHydratedProjects.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       ProjectPaginationDTO projectPaginationDTO;
@@ -259,10 +254,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   @Override
   public void getHydratedPublicProjects(
       GetHydratedProjects request, StreamObserver<GetHydratedProjects.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       ProjectPaginationDTO projectPaginationDTO =
           projectDAO.getProjects(
               null,
@@ -295,9 +287,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void getHydratedProjectById(
       GetHydratedProjectById request,
       StreamObserver<GetHydratedProjectById.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetHydratedProjectById request";
         LOGGER.info(errorMessage);
@@ -330,9 +320,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void getHydratedExperimentsByProjectId(
       GetHydratedExperimentsByProjectId request,
       StreamObserver<GetHydratedExperimentsByProjectId.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getProjectId().isEmpty()) {
         String errorMessage = "Project ID not found in GetHydratedExperimentsByProjectId request";
         LOGGER.info(errorMessage);
@@ -382,9 +370,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void getHydratedExperimentRunsInProject(
       GetHydratedExperimentRunsByProjectId request,
       StreamObserver<GetHydratedExperimentRunsByProjectId.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getProjectId().isEmpty()) {
         String errorMessage =
             "Project ID not found in GetHydratedExperimentRunsByProjectId request";
@@ -541,9 +527,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void getHydratedExperimentRunById(
       GetHydratedExperimentRunById request,
       StreamObserver<GetHydratedExperimentRunById.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetHydratedExperimentRunById request";
         LOGGER.info(errorMessage);
@@ -599,11 +583,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void findHydratedExperimentRuns(
       FindExperimentRuns request,
       StreamObserver<AdvancedQueryExperimentRunsResponse> responseObserver) {
-    LOGGER.trace("Starting findHydratedExperimentRuns");
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       LOGGER.trace("got current logged in user info");
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
@@ -659,9 +639,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void sortHydratedExperimentRuns(
       SortExperimentRuns request,
       StreamObserver<AdvancedQueryExperimentRunsResponse> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getExperimentRunIdsList().isEmpty() && request.getSortKey().isEmpty()) {
         errorMessage = "ExperimentRun Id's and sort key not found in SortExperimentRuns request";
@@ -710,10 +688,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void getTopHydratedExperimentRuns(
       TopExperimentRunsSelector request,
       StreamObserver<AdvancedQueryExperimentRunsResponse> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
         roleService.validateEntityUserWithUserInfo(
@@ -808,10 +783,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   @Override
   public void findHydratedExperiments(
       FindExperiments request, StreamObserver<AdvancedQueryExperimentsResponse> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
         roleService.validateEntityUserWithUserInfo(
@@ -854,9 +826,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   @Override
   public void findHydratedProjects(
       FindProjects request, StreamObserver<AdvancedQueryProjectsResponse> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
@@ -897,7 +867,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     Map<String, List<GetCollaboratorResponseItem>> datasetCollaboratorMap = new HashMap<>();
     Set<String> vertaIds = new HashSet<>();
     Set<String> emailIds = new HashSet<>();
-    Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
+    Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
     List<String> resourceIds = new LinkedList<>();
 
     datasets
@@ -981,9 +951,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   @Override
   public void findHydratedDatasets(
       FindDatasets request, StreamObserver<AdvancedQueryDatasetsResponse> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetPaginationDTO datasetPaginationDTO =
@@ -1009,9 +977,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   @Override
   public void findHydratedPublicDatasets(
       FindDatasets request, StreamObserver<AdvancedQueryDatasetsResponse> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetPaginationDTO datasetPaginationDTO =
@@ -1085,9 +1051,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void findHydratedDatasetVersions(
       FindDatasetVersions request,
       StreamObserver<AdvancedQueryDatasetVersionsResponse> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
@@ -1134,9 +1098,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void getHydratedDatasetByName(
       GetHydratedDatasetByName request,
       StreamObserver<GetHydratedDatasetByName.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getName().isEmpty()) {
         String errorMessage = "Dataset Name not found in GetHydratedDatasetByName request";
         LOGGER.info(errorMessage);
@@ -1216,10 +1178,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   @Override
   public void findHydratedPublicProjects(
       FindProjects request, StreamObserver<AdvancedQueryProjectsResponse> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       ProjectPaginationDTO projectPaginationDTO =
           projectDAO.findProjects(request, null, null, ProjectVisibility.PUBLIC);
       LOGGER.debug(
@@ -1276,10 +1235,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void findHydratedProjectsByUser(
       FindHydratedProjectsByUser request,
       StreamObserver<AdvancedQueryProjectsResponse> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       String errorMessage = null;
       if (request.getEmail().isEmpty() && request.getVertaId().isEmpty()) {
         errorMessage = "Email OR vertaId not found in the FindHydratedPublicProjects request";
@@ -1327,10 +1283,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void findHydratedProjectsByOrganization(
       FindHydratedProjectsByOrganization request,
       StreamObserver<AdvancedQueryProjectsResponse> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getName().isEmpty()) {
         errorMessage = "id OR name not found in the FindHydratedProjectsByOrganization request";
@@ -1371,10 +1324,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void findHydratedProjectsByTeam(
       FindHydratedProjectsByTeam request,
       StreamObserver<AdvancedQueryProjectsResponse> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()
           && (request.getName().isEmpty() || request.getOrgId().isEmpty())) {
@@ -1432,9 +1382,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public void getHydratedDatasetsByProjectId(
       GetHydratedDatasetsByProjectId request,
       StreamObserver<GetHydratedDatasetsByProjectId.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getProjectId().isEmpty()) {
         String errorMessage = "Project ID not found in GetHydratedDatasetsByProjectId request";
         LOGGER.info(errorMessage);

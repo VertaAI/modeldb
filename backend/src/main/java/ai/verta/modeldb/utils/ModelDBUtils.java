@@ -20,7 +20,6 @@ import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponseItem;
@@ -502,7 +501,6 @@ public class ModelDBUtils {
       }
       statusRuntimeException = StatusProto.toStatusRuntimeException(status);
     }
-    ErrorCountResource.inc(statusRuntimeException);
     responseObserver.onError(statusRuntimeException);
   }
 

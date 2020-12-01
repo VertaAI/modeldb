@@ -1,7 +1,6 @@
 package ai.verta.modeldb.authservice;
 
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -65,7 +64,7 @@ public class AuthServiceChannel implements AutoCloseable {
     int backgroundUtilsCount = ModelDBUtils.getRegisteredBackgroundUtilsCount();
     LOGGER.trace("Header attaching with stub : backgroundUtilsCount : {}", backgroundUtilsCount);
     Metadata requestHeaders;
-    if (backgroundUtilsCount > 0 && ModelDBAuthInterceptor.METADATA_INFO.get() == null) {
+    if (backgroundUtilsCount > 0 && AuthInterceptor.METADATA_INFO.get() == null) {
       requestHeaders = new Metadata();
       Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> dev_key =
@@ -76,7 +75,7 @@ public class AuthServiceChannel implements AutoCloseable {
       requestHeaders.put(dev_key, this.serviceUserDevKey);
       requestHeaders.put(source_key, "PythonClient");
     } else {
-      requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
+      requestHeaders = AuthInterceptor.METADATA_INFO.get();
     }
     return requestHeaders;
   }

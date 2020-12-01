@@ -7,14 +7,11 @@ import ai.verta.modeldb.CommentServiceGrpc.CommentServiceImplBase;
 import ai.verta.modeldb.DeleteComment;
 import ai.verta.modeldb.GetComments;
 import ai.verta.modeldb.GetComments.Response;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.UpdateComment;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
@@ -128,9 +125,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
   @Override
   public void addExperimentRunComment(
       AddComment request, StreamObserver<AddComment.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       Comment comment = getCommentFromRequest(request, userInfo);
@@ -146,9 +141,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
   @Override
   public void updateExperimentRunComment(
       UpdateComment request, StreamObserver<UpdateComment.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       Comment updatedComment = getUpdatedCommentFromRequest(request, userInfo);
@@ -166,9 +159,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
   @Override
   public void getExperimentRunComments(
       GetComments request, StreamObserver<Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getEntityId().isEmpty()) {
         String errorMessage = "Entity ID not found in GetComments request";
         LOGGER.info(errorMessage);
@@ -196,9 +187,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
   @Override
   public void deleteExperimentRunComment(
       DeleteComment request, StreamObserver<DeleteComment.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getEntityId().isEmpty() && request.getId().isEmpty()) {
         errorMessage = "Entity ID and Comment ID not found in DeleteComment request";

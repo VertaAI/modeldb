@@ -63,7 +63,6 @@ import ai.verta.modeldb.LogMetrics;
 import ai.verta.modeldb.LogObservation;
 import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.LogVersionedInput;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
@@ -83,8 +82,6 @@ import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CommitDAO;
@@ -268,9 +265,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void createExperimentRun(
       CreateExperimentRun request, StreamObserver<CreateExperimentRun.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
 
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
@@ -300,9 +295,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void deleteExperimentRun(
       DeleteExperimentRun request, StreamObserver<DeleteExperimentRun.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in DeleteExperimentRun request";
         LOGGER.info(errorMessage);
@@ -332,9 +325,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void getExperimentRunsInProject(
       GetExperimentRunsInProject request,
       StreamObserver<GetExperimentRunsInProject.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
 
       if (request.getProjectId().isEmpty()) {
         String errorMessage = "Project ID not found in GetExperimentRunsInProject request";
@@ -378,9 +369,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void getExperimentRunsInExperiment(
       GetExperimentRunsInExperiment request,
       StreamObserver<GetExperimentRunsInExperiment.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
 
       if (request.getExperimentId().isEmpty()) {
         String errorMessage = "Experiment ID not found in GetExperimentRunsInExperiment request";
@@ -435,9 +424,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void getExperimentRunById(
       GetExperimentRunById request,
       StreamObserver<GetExperimentRunById.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetExperimentRunById request";
@@ -482,9 +469,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void getExperimentRunByName(
       GetExperimentRunByName request,
       StreamObserver<GetExperimentRunByName.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getName().isEmpty() && request.getExperimentId().isEmpty()) {
         errorMessage =
@@ -565,10 +550,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void updateExperimentRunDescription(
       UpdateExperimentRunDescription request,
       StreamObserver<UpdateExperimentRunDescription.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage =
             "ExperimentRun ID not found in UpdateExperimentRunDescription request";
@@ -615,10 +597,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void updateExperimentRunName(
       UpdateExperimentRunName request,
       StreamObserver<UpdateExperimentRunName.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in UpdateExperimentRunName request";
         LOGGER.info(errorMessage);
@@ -672,9 +651,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void addExperimentRunTags(
       AddExperimentRunTags request,
       StreamObserver<AddExperimentRunTags.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getTagsList().isEmpty()) {
         errorMessage =
@@ -728,9 +705,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void addExperimentRunTag(
       AddExperimentRunTag request, StreamObserver<AddExperimentRunTag.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getTag().isEmpty()) {
         errorMessage =
@@ -779,9 +754,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void getExperimentRunTags(
       GetTags request, StreamObserver<GetTags.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetExperimentRunTags request";
         LOGGER.info(errorMessage);
@@ -812,9 +785,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void deleteExperimentRunTags(
       DeleteExperimentRunTags request,
       StreamObserver<DeleteExperimentRunTags.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getTagsList().isEmpty() && !request.getDeleteAll()) {
         errorMessage =
@@ -869,9 +840,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void deleteExperimentRunTag(
       DeleteExperimentRunTag request,
       StreamObserver<DeleteExperimentRunTag.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getTag().isEmpty()) {
         errorMessage =
@@ -923,9 +892,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void addExperimentRunAttributes(
       AddExperimentRunAttributes request,
       StreamObserver<AddExperimentRunAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getAttributesList().isEmpty()) {
@@ -976,9 +943,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void deleteExperimentRunAttributes(
       DeleteExperimentRunAttributes request,
       StreamObserver<DeleteExperimentRunAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()
           && request.getAttributeKeysList().isEmpty()
@@ -1031,9 +996,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void logObservation(
       LogObservation request, StreamObserver<LogObservation.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()
           && !request.getObservation().hasArtifact()
@@ -1084,9 +1047,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void logObservations(
       LogObservations request, StreamObserver<LogObservations.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getObservationsList().isEmpty()) {
         errorMessage = "ExperimentRun ID and Observations not found in LogObservations request";
@@ -1133,9 +1094,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void getObservations(
       GetObservations request, StreamObserver<GetObservations.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getObservationKey().isEmpty()) {
         errorMessage = "ExperimentRun ID and Observation key not found in GetObservations request";
@@ -1174,9 +1133,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   @Override
   public void logMetric(LogMetric request, StreamObserver<LogMetric.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()
           && (request.getMetric().getKey() == null || request.getMetric().getValue() == null)) {
@@ -1224,9 +1181,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   @Override
   public void logMetrics(LogMetrics request, StreamObserver<LogMetrics.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getMetricsList().isEmpty()) {
         errorMessage = "ExperimentRun ID and New Metrics not found in LogMetrics request";
@@ -1272,10 +1227,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   @Override
   public void getMetrics(GetMetrics request, StreamObserver<GetMetrics.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetMetrics request";
         LOGGER.info(errorMessage);
@@ -1305,10 +1257,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void getDatasets(
       GetDatasets request, StreamObserver<GetDatasets.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetDatasets request";
         LOGGER.info(errorMessage);
@@ -1339,9 +1288,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void getUrlForArtifact(
       GetUrlForArtifact request, StreamObserver<GetUrlForArtifact.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()
           && request.getKey().isEmpty()
@@ -1491,9 +1438,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void logArtifact(
       LogArtifact request, StreamObserver<LogArtifact.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()
           && request.getArtifact().getKey().isEmpty()
@@ -1557,9 +1502,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void logArtifacts(
       LogArtifacts request, StreamObserver<LogArtifacts.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getArtifactsList().isEmpty()) {
         errorMessage = "ExperimentRun ID and Artifacts not found in LogArtifacts request";
@@ -1609,10 +1552,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void getArtifacts(
       GetArtifacts request, StreamObserver<GetArtifacts.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetArtifacts request";
         LOGGER.info(errorMessage);
@@ -1644,9 +1584,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void logExperimentRunCodeVersion(
       LogExperimentRunCodeVersion request,
       StreamObserver<LogExperimentRunCodeVersion.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       /*Parameter validation*/
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getCodeVersion() == null) {
@@ -1718,9 +1656,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void getExperimentRunCodeVersion(
       GetExperimentRunCodeVersion request,
       StreamObserver<GetExperimentRunCodeVersion.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetCodeVersion request";
@@ -1758,9 +1694,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void logHyperparameter(
       LogHyperparameter request, StreamObserver<LogHyperparameter.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getHyperparameter().getKey().isEmpty()) {
         errorMessage =
@@ -1810,9 +1744,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void logHyperparameters(
       LogHyperparameters request, StreamObserver<LogHyperparameters.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getHyperparametersList().isEmpty()) {
         errorMessage =
@@ -1861,10 +1793,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void getHyperparameters(
       GetHyperparameters request, StreamObserver<GetHyperparameters.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (request.getId().isEmpty()) {
         String errorMessaeg = "ExperimentRun ID not found in GetHyperparameters request";
         LOGGER.info(errorMessaeg);
@@ -1899,9 +1828,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void logAttribute(
       LogAttribute request, StreamObserver<LogAttribute.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getAttribute().getKey().isEmpty()) {
         errorMessage = "ExperimentRun ID and New Attribute not found in LogAttribute request";
@@ -1947,9 +1874,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void logAttributes(
       LogAttributes request, StreamObserver<LogAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getAttributesList().isEmpty()) {
         errorMessage = "ExperimentRun ID and New Attributes not found in LogAttributes request";
@@ -1996,9 +1921,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void getExperimentRunAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()
           && request.getAttributeKeysList().isEmpty()
@@ -2041,10 +1964,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void findExperimentRuns(
       FindExperimentRuns request, StreamObserver<FindExperimentRuns.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
         roleService.validateEntityUserWithUserInfo(
@@ -2080,10 +2000,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void sortExperimentRuns(
       SortExperimentRuns request, StreamObserver<SortExperimentRuns.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getExperimentRunIdsList().isEmpty() && request.getSortKey().isEmpty()) {
         errorMessage = "ExperimentRun Id's and sort key not found in SortExperimentRuns request";
@@ -2123,11 +2040,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void getTopExperimentRuns(
       TopExperimentRunsSelector request,
       StreamObserver<TopExperimentRunsSelector.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
         roleService.validateEntityUserWithUserInfo(
@@ -2160,9 +2073,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   @Override
   public void logJobId(LogJobId request, StreamObserver<LogJobId.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getJobId().isEmpty()) {
         errorMessage = "ExperimentRun ID and Job ID not found in LogJobId request";
@@ -2204,9 +2115,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   @Override
   public void getJobId(GetJobId request, StreamObserver<GetJobId.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetJobId request";
         LOGGER.info(errorMessage);
@@ -2237,9 +2146,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void getChildrenExperimentRuns(
       GetChildrenExperimentRuns request,
       StreamObserver<GetChildrenExperimentRuns.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getExperimentRunId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetChildrenExperimentRuns request";
         LOGGER.info(errorMessage);
@@ -2284,9 +2191,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void setParentExperimentRunId(
       SetParentExperimentRunId request,
       StreamObserver<SetParentExperimentRunId.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getExperimentRunId().isEmpty() && request.getParentId().isEmpty()) {
         errorMessage =
@@ -2343,9 +2248,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   @Override
   public void logDataset(LogDataset request, StreamObserver<LogDataset.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()
           && request.getDataset().getLinkedArtifactId().isEmpty()
@@ -2396,10 +2299,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void logDatasets(
       LogDatasets request, StreamObserver<ai.verta.modeldb.LogDatasets.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getDatasetsList().isEmpty()) {
         errorMessage = "ExperimentRun ID and Datasets not found in LogDatasets request";
@@ -2454,9 +2354,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void deleteArtifact(
       DeleteArtifact request, StreamObserver<DeleteArtifact.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getKey().isEmpty()) {
         errorMessage = "ExperimentRun ID and Artifact key not found in DeleteArtifact request";
@@ -2501,9 +2399,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void deleteExperimentRuns(
       DeleteExperimentRuns request,
       StreamObserver<DeleteExperimentRuns.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getIdsList().isEmpty()) {
         String errorMessage = "ExperimentRun IDs not found in DeleteExperimentRuns request";
         ModelDBUtils.logAndThrowError(
@@ -2530,9 +2426,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void logVersionedInput(
       LogVersionedInput request, StreamObserver<LogVersionedInput.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getVersionedInputs() == null) {
         errorMessage =
@@ -2571,9 +2465,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void getVersionedInputs(
       GetVersionedInput request, StreamObserver<GetVersionedInput.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()) {
         errorMessage = "ExperimentRun ID not found in GetVersionedInput request";
@@ -2595,9 +2487,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void commitArtifactPart(
       CommitArtifactPart request, StreamObserver<CommitArtifactPart.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()) {
         errorMessage = "ExperimentRun ID not found in CommitArtifactPart request";
@@ -2642,9 +2532,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void getCommittedArtifactParts(
       GetCommittedArtifactParts request,
       StreamObserver<GetCommittedArtifactParts.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()) {
         errorMessage = "ExperimentRun ID not found in GetCommittedArtifactParts request";
@@ -2675,9 +2563,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void commitMultipartArtifact(
       CommitMultipartArtifact request,
       StreamObserver<CommitMultipartArtifact.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()) {
         errorMessage = "ExperimentRun ID not found in CommitMultipartArtifact request";
@@ -2726,9 +2612,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void deleteHyperparameters(
       DeleteHyperparameters request,
       StreamObserver<DeleteHyperparameters.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()) {
         errorMessage = "ExperimentRun ID not found in DeleteHyperparameters request";
@@ -2768,9 +2652,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void deleteMetrics(
       DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()) {
         errorMessage = "ExperimentRun ID not found in DeleteMetrics request";
@@ -2809,9 +2691,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void deleteObservations(
       DeleteObservations request, StreamObserver<DeleteObservations.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()) {
         errorMessage = "ExperimentRun ID not found in DeleteObservations request";
@@ -2849,9 +2729,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void listCommitExperimentRuns(
       ListCommitExperimentRunsRequest request,
       StreamObserver<ListCommitExperimentRunsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getCommitSha().isEmpty()) {
         throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
       }
@@ -2875,9 +2753,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void listBlobExperimentRuns(
       ListBlobExperimentRunsRequest request,
       StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getCommitSha().isEmpty()) {
         throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
       }
@@ -2901,9 +2777,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void getExperimentRunsByDatasetVersionId(
       GetExperimentRunsByDatasetVersionId request,
       StreamObserver<GetExperimentRunsByDatasetVersionId.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getDatasetVersionId().isEmpty()) {
         throw new ModelDBException("DatasetVersion Id should not be empty", Code.INVALID_ARGUMENT);
       }
@@ -2926,9 +2800,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void cloneExperimentRun(
       CloneExperimentRun request, StreamObserver<CloneExperimentRun.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getSrcExperimentRunId().isEmpty()) {
         throw new ModelDBException(
             "Source ExperimentRun Id should not be empty", Code.INVALID_ARGUMENT);

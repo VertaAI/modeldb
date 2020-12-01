@@ -11,12 +11,7 @@ import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
-import ai.verta.modeldb.authservice.AuthService;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -98,7 +93,7 @@ public class LineageTest {
     ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new ModelDBAuthInterceptor());
+    serverBuilder.intercept(new AuthInterceptor());
     serverBuilder.build().start();
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");

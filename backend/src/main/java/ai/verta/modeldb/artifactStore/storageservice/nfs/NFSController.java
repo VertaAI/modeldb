@@ -2,9 +2,6 @@ package ai.verta.modeldb.artifactStore.storageservice.nfs;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
@@ -37,10 +34,7 @@ public class NFSController {
   public UploadFileResponse storeArtifact(
       HttpServletRequest requestEntity, @RequestParam("artifact_path") String artifactPath)
       throws ModelDBException, IOException {
-    LOGGER.debug("storeArtifact called");
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBConstants.STORE_ARTIFACT_ENDPOINT)) {
+    try {
       InputStream inputStream = requestEntity.getInputStream();
       String fileName = nfsService.storeFile(artifactPath, inputStream, requestEntity);
       LOGGER.trace("storeArtifact - file name : {}", fileName);
@@ -48,13 +42,11 @@ public class NFSController {
       return new UploadFileResponse(fileName, null, null, -1L, null);
     } catch (ModelDBException e) {
       LOGGER.info(e.getMessage(), e);
-      ErrorCountResource.inc(e);
       Status status =
           Status.newBuilder().setCode(e.getCode().value()).setMessage(e.getMessage()).build();
       throw StatusProto.toStatusRuntimeException(status);
     } catch (Exception e) {
       LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
       Status status =
           Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
       throw StatusProto.toStatusRuntimeException(status);
@@ -67,10 +59,7 @@ public class NFSController {
       @RequestParam("artifact_path") String artifactPath,
       HttpServletRequest request)
       throws ModelDBException {
-    LOGGER.debug("getArtifact called");
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBConstants.GET_ARTIFACT_ENDPOINT)) {
+    try {
       // Load file as Resource
       Resource resource = nfsService.loadFileAsResource(artifactPath);
 
@@ -93,7 +82,6 @@ public class NFSController {
           .body(resource);
     } catch (ModelDBException e) {
       LOGGER.info(e.getMessage(), e);
-      ErrorCountResource.inc(e);
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
     }
   }

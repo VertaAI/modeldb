@@ -19,8 +19,6 @@
 
 package ai.verta.modeldb.health;
 
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -103,8 +101,7 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       produces = "application/json")
   public ResponseEntity<String> check(@PathVariable("service") String service) {
     LOGGER.trace("Spring custom health check called");
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource = new RequestLatencyResource("check/" + service)) {
+    try {
       HealthCheckRequest request = HealthCheckRequest.newBuilder().setService(service).build();
       ServingStatus status = getServingStatus(request);
       if (status == null) {

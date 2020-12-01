@@ -1,9 +1,9 @@
 package ai.verta.modeldb.artifactStore.storageservice;
 
 import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.authservice.AuthInterceptor;
 import com.amazonaws.services.s3.model.PartETag;
 import io.grpc.Metadata;
 import java.io.InputStream;
@@ -41,7 +41,7 @@ public interface ArtifactStoreService {
       boolean pickNFSHostFromConfig,
       String artifactStoreServerHost) {
     String scheme =
-        ModelDBAuthInterceptor.METADATA_INFO
+        AuthInterceptor.METADATA_INFO
             .get()
             .get(Metadata.Key.of("scheme", Metadata.ASCII_STRING_MARSHALLER));
     if (scheme == null || scheme.isEmpty()) {
@@ -64,12 +64,12 @@ public interface ArtifactStoreService {
       boolean pickNFSHostFromConfig,
       String artifactStoreServerHost) {
     String scheme =
-        ModelDBAuthInterceptor.METADATA_INFO
+        AuthInterceptor.METADATA_INFO
             .get()
             .get(Metadata.Key.of("scheme", Metadata.ASCII_STRING_MARSHALLER));
     if (scheme == null || scheme.isEmpty()) {
       String url =
-          ModelDBAuthInterceptor.METADATA_INFO
+          AuthInterceptor.METADATA_INFO
               .get()
               .get(Metadata.Key.of("grpcgateway-origin", Metadata.ASCII_STRING_MARSHALLER));
 
@@ -91,7 +91,7 @@ public interface ArtifactStoreService {
       String artifactStoreServerHost) {
 
     String host =
-        ModelDBAuthInterceptor.METADATA_INFO
+        AuthInterceptor.METADATA_INFO
             .get()
             .get(Metadata.Key.of("x-forwarded-host", Metadata.ASCII_STRING_MARSHALLER));
     if (host == null || host.isEmpty() || pickNFSHostFromConfig) {

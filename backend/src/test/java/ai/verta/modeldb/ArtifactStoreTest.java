@@ -10,12 +10,7 @@ import ai.verta.artifactstore.DeleteArtifact;
 import ai.verta.artifactstore.GetArtifact;
 import ai.verta.artifactstore.StoreArtifact;
 import ai.verta.artifactstore.StoreArtifactWithStream;
-import ai.verta.modeldb.authservice.AuthService;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.api.client.util.IOUtils;
@@ -93,7 +88,7 @@ public class ArtifactStoreTest {
     ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new ModelDBAuthInterceptor());
+    serverBuilder.intercept(new AuthInterceptor());
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
