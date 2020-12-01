@@ -60,11 +60,11 @@ public class RepositoryEntity {
     }
     this.repository_visibility = repository.getRepositoryVisibilityValue();
     if (workspaceDTO.getWorkspaceId() != null) {
-      this.legacyWorkspaceId = workspaceDTO.getWorkspaceId();
+      this.workspace_id = workspaceDTO.getWorkspaceId();
       this.workspace_type = workspaceDTO.getWorkspaceType().getNumber();
       this.owner = repository.getOwner();
     } else {
-      this.legacyWorkspaceId = "";
+      this.workspace_id = "";
       this.workspace_type = 0;
       this.owner = "";
     }
@@ -100,10 +100,7 @@ public class RepositoryEntity {
   private Long date_updated;
 
   @Column(name = "workspace_id")
-  private Long workspaceId;
-
-  @Column(name = "legacy_workspace_id")
-  private String legacyWorkspaceId;
+  private String workspace_id;
 
   @Column(name = "workspace_type", columnDefinition = "varchar")
   private Integer workspace_type;
@@ -159,16 +156,8 @@ public class RepositoryEntity {
     this.date_updated = date_updated;
   }
 
-  public Long getWorkspaceId() {
-    return workspaceId;
-  }
-
-  public void setWorkspaceId(Long workspaceId) {
-    this.workspaceId = workspaceId;
-  }
-
-  public String getLegacyWorkspaceId() {
-    return legacyWorkspaceId;
+  public String getWorkspace_id() {
+    return workspace_id;
   }
 
   public Set<CommitEntity> getCommits() {
@@ -204,7 +193,7 @@ public class RepositoryEntity {
         .setName(this.name)
         .setDateCreated(this.date_created)
         .setDateUpdated(this.date_updated)
-        .setWorkspaceId(this.legacyWorkspaceId)
+        .setWorkspaceId(this.workspace_id)
         .setWorkspaceTypeValue(this.workspace_type)
         .addAllAttributes(
             RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
@@ -224,7 +213,7 @@ public class RepositoryEntity {
     this.name = repository.getName();
     this.description = repository.getDescription();
     this.repository_visibility = repository.getRepositoryVisibilityValue();
-    this.legacyWorkspaceId = repository.getWorkspaceId();
+    this.workspace_id = repository.getWorkspaceId();
     this.workspace_type = repository.getWorkspaceTypeValue();
     update();
     updateAttribute(repository.getAttributesList());
