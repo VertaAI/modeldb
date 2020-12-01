@@ -2152,7 +2152,6 @@ public class RdbmsUtils {
     if (userInfo != null) {
       List<KeyValueQuery> workspacePredicates =
           ModelDBUtils.getKeyValueQueriesByWorkspace(roleService, userInfo, workspaceName);
-      LOGGER.info("workspacePredicates: " + workspacePredicates);
       if (workspacePredicates.size() > 0) {
         Predicate privateWorkspacePredicate =
             builder.equal(
