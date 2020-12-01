@@ -169,7 +169,7 @@ public class FindRepositoriesQuery {
           && workspaceDTO.getWorkspaceId() != null
           && !workspaceDTO.getWorkspaceId().isEmpty()) {
         whereClauseList.add(
-            alias + "." + ModelDBConstants.WORKSPACE_ID + " = :" + ModelDBConstants.WORKSPACE_ID);
+            alias + "." + ModelDBConstants.LEGACY_WORKSPACE_ID_PROPERTY + " = :" + ModelDBConstants.LEGACY_WORKSPACE_ID_PROPERTY);
         parametersMap.put(ModelDBConstants.WORKSPACE_ID, workspaceDTO.getWorkspaceId());
         whereClauseList.add(
             alias
