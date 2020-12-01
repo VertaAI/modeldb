@@ -427,7 +427,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             "repositoryName",
             repository.getName(),
             ModelDBConstants.WORKSPACE_ID,
-            repositoryEntity.getLegacyWorkspaceId(),
+            repositoryEntity.getWorkspace_id(),
             WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
             LOGGER);
       }
@@ -496,7 +496,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         String.valueOf(repository.getId()),
         ModelDBServiceResourceTypes.REPOSITORY);
     roleService.createWorkspaceRoleBinding(
-        repository.getLegacyWorkspaceId(),
+        repository.getWorkspace_id(),
         WorkspaceType.forNumber(repository.getWorkspace_type()),
         String.valueOf(repository.getId()),
         ModelDBConstants.ROLE_REPOSITORY_ADMIN,
@@ -658,7 +658,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     dataset
         .setDatasetVisibilityValue(repositoryEntity.getRepository_visibility())
         .setWorkspaceTypeValue(repositoryEntity.getWorkspace_type())
-        .setWorkspaceId(repositoryEntity.getLegacyWorkspaceId())
+        .setWorkspaceId(repositoryEntity.getWorkspace_id())
         .setTimeCreated(repositoryEntity.getDate_created())
         .setTimeUpdated(repositoryEntity.getDate_updated())
         .setName(repositoryEntity.getName())

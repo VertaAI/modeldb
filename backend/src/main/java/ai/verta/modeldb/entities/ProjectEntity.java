@@ -284,8 +284,8 @@ public class ProjectEntity {
     return legacy_workspace_id;
   }
 
-  public void setLegacyWorkspaceId(String legacy_workspace_id) {
-    this.legacy_workspace_id = legacy_workspace_id;
+  public void setLegacyWorkspaceId(String workspace) {
+    this.legacy_workspace_id = workspace;
   }
 
   public Integer getWorkspace_type() {
