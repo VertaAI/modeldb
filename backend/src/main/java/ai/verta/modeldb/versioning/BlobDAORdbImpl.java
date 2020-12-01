@@ -1196,6 +1196,7 @@ public class BlobDAORdbImpl implements BlobDAO {
           mergeMessage = "Merge " + branchOrCommitA + " into " + branchOrCommitB;
         }
 
+        writeSession.beginTransaction();
         CommitEntity commitEntity =
             getCommitEntityObj(
                 writeSession,
@@ -1205,6 +1206,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                 blobContainerList,
                 mergeMessage);
         writeSession.saveOrUpdate(commitEntity);
+        writeSession.getTransaction().commit();
         return MergeRepositoryCommitsRequest.Response.newBuilder()
             .setCommit(commitEntity.toCommitProto())
             .build();
