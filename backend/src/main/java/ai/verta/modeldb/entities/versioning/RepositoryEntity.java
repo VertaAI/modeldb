@@ -99,6 +99,9 @@ public class RepositoryEntity {
   @Column(name = "date_updated")
   private Long date_updated;
 
+  @Column(name = "workspace_service_id")
+  private Long workspaceServiceId;
+
   @Column(name = "workspace_id")
   private String workspace_id;
 
@@ -154,6 +157,14 @@ public class RepositoryEntity {
 
   public void setDate_updated(Long date_updated) {
     this.date_updated = date_updated;
+  }
+
+  public Long getWorkspaceServiceId() {
+    return workspaceServiceId;
+  }
+
+  public void setWorkspaceServiceId(Long workspaceServiceId) {
+    this.workspaceServiceId = workspaceServiceId;
   }
 
   public String getWorkspace_id() {
