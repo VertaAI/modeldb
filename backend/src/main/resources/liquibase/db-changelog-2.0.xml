@@ -282,4 +282,18 @@
     <changeSet id="db_version_2.12" author="cory">
         <tagDatabase tag="db_version_2.12"/>
     </changeSet>
+
+    <changeSet id="rename-legacy-workspace-id-to-workspace-on-dataset" author="cory">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="dataset" columnName="legacy_workspace_id"/>
+        </preConditions>
+        <renameColumn tableName="dataset" oldColumnName="legacy_workspace_id" newColumnName="workspace" columnDataType="VARCHAR(255)"/>
+        <rollback>
+            <renameColumn tableName="dataset" oldColumnName="workspace" newColumnName="legacy_workspace_id" columnDataType="VARCHAR(255)"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.13" author="cory">
+        <tagDatabase tag="db_version_2.13"/>
+    </changeSet>
 </databaseChangeLog>
