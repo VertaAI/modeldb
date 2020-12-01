@@ -1967,10 +1967,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     } else {
       throw new ModelDBException("Invalid content case found in DatasetBlob", Status.Code.INTERNAL);
     }
-    Query query =
-        session
-            .createQuery(getUploadStatusQuery.toString())
-            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+    Query query = session.createQuery(getUploadStatusQuery.toString());
     query.setParameter("pathId", datasetComponentPathId);
     return query.list();
   }
