@@ -125,7 +125,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           "Dataset",
           "datasetName",
           dataset.getName(),
-          ModelDBConstants.LEGACY_WORKSPACE_ID,
+          ModelDBConstants.LEGACY_WORKSPACE_ID_PROPERTY,
           dataset.getWorkspaceId(),
           dataset.getWorkspaceType(),
           LOGGER);
