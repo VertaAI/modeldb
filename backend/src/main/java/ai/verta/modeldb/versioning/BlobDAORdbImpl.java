@@ -1204,11 +1204,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                 parentCommits,
                 blobContainerList,
                 mergeMessage);
-
-        writeSession.beginTransaction();
-        writeSession.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
         writeSession.saveOrUpdate(commitEntity);
-        writeSession.getTransaction().commit();
         return MergeRepositoryCommitsRequest.Response.newBuilder()
             .setCommit(commitEntity.toCommitProto())
             .build();
