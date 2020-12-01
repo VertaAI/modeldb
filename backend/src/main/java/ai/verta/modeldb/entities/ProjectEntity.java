@@ -121,7 +121,7 @@ public class ProjectEntity {
   @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
 
   @Column(name = "workspace_id")
-  private Long workspaceId;
+  private Long workspaceServiceId;
 
   @Column(name = "workspace")
   private String workspace;
@@ -272,12 +272,12 @@ public class ProjectEntity {
     this.attributeMapping.addAll(attributeMapping);
   }
 
-  public Long getWorkspaceId() {
-    return workspaceId;
+  public Long getWorkspaceServiceId() {
+    return workspaceServiceId;
   }
 
-  public void setWorkspaceId(Long workspaceId) {
-    this.workspaceId = workspaceId;
+  public void setWorkspaceServiceId(Long workspaceId) {
+    this.workspaceServiceId = workspaceId;
   }
 
   public String getWorkspace() {
