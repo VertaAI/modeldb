@@ -2156,7 +2156,7 @@ public class RdbmsUtils {
       if (workspacePredicates.size() > 0) {
         Predicate privateWorkspacePredicate =
             builder.equal(
-                entityRoot.get(ModelDBConstants.WORKSPACE),
+                entityRoot.get(ModelDBConstants.LEGACY_WORKSPACE_ID),
                 workspacePredicates.get(0).getValue().getStringValue());
         Predicate privateWorkspaceTypePredicate =
             builder.equal(
