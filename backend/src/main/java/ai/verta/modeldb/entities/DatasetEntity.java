@@ -36,7 +36,7 @@ public class DatasetEntity {
     setTime_created(dataset.getTimeCreated());
     setTime_updated(dataset.getTimeUpdated());
     setOwner(dataset.getOwner());
-    setLegacy_workspace_id(dataset.getWorkspaceId());
+    setWorkspace(dataset.getWorkspaceId());
     setWorkspace_type(dataset.getWorkspaceTypeValue());
   }
 
@@ -89,11 +89,8 @@ public class DatasetEntity {
   @Column(name = "time_updated")
   private Long time_updated;
 
-  @Column(name = "workspace_id")
-  private Long workspaceId;
-
-  @Column(name = "legacy_workspace_id")
-  private String legacy_workspace_id;
+  @Column(name = "workspace")
+  private String workspace;
 
   @Column(name = "workspace_type")
   private Integer workspace_type;
@@ -184,20 +181,12 @@ public class DatasetEntity {
     this.attributeMapping.addAll(attributeMapping);
   }
 
-  public Long getWorkspaceId() {
-    return workspaceId;
+  public String getWorkspace() {
+    return workspace;
   }
 
-  public void setWorkspaceId(Long workspaceId) {
-    this.workspaceId = workspaceId;
-  }
-
-  public String getLegacy_workspace_id() {
-    return legacy_workspace_id;
-  }
-
-  public void setLegacy_workspace_id(String workspace) {
-    this.legacy_workspace_id = workspace;
+  public void setWorkspace(String workspace) {
+    this.workspace = workspace;
   }
 
   public Integer getWorkspace_type() {
@@ -229,7 +218,7 @@ public class DatasetEntity {
             RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))
         .setTimeCreated(getTime_created())
         .setTimeUpdated(getTime_updated())
-        .setWorkspaceId(getLegacy_workspace_id())
+        .setWorkspaceId(getWorkspace())
         .setWorkspaceTypeValue(getWorkspace_type())
         .build();
   }
