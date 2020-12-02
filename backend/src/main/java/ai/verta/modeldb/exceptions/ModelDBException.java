@@ -1,4 +1,4 @@
-package ai.verta.modeldb;
+package ai.verta.modeldb.exceptions;
 
 import io.grpc.Status.Code;
 

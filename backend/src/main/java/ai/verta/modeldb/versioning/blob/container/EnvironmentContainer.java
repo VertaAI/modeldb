@@ -3,13 +3,13 @@ package ai.verta.modeldb.versioning.blob.container;
 import static ai.verta.modeldb.versioning.blob.factory.BlobFactory.DOCKER_ENVIRONMENT_BLOB;
 import static ai.verta.modeldb.versioning.blob.factory.BlobFactory.PYTHON_ENVIRONMENT_BLOB;
 
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.environment.DockerEnvironmentBlobEntity;
 import ai.verta.modeldb.entities.environment.EnvironmentBlobEntity;
 import ai.verta.modeldb.entities.environment.EnvironmentCommandLineEntity;
 import ai.verta.modeldb.entities.environment.EnvironmentVariablesEntity;
 import ai.verta.modeldb.entities.environment.PythonEnvironmentBlobEntity;
 import ai.verta.modeldb.entities.environment.PythonEnvironmentRequirementBlobEntity;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.DockerEnvironmentBlob;
 import ai.verta.modeldb.versioning.EnvironmentBlob;

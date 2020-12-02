@@ -9,6 +9,7 @@ import ai.verta.common.Pagination;
 import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.AddLabelsRequest;
 import ai.verta.modeldb.metadata.DeleteLabelsRequest;
 import ai.verta.modeldb.metadata.IDTypeEnum;

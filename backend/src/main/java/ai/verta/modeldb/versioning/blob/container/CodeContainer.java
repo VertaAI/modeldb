@@ -3,9 +3,9 @@ package ai.verta.modeldb.versioning.blob.container;
 import static ai.verta.modeldb.versioning.blob.factory.BlobFactory.GIT_CODE_BLOB;
 import static ai.verta.modeldb.versioning.blob.factory.BlobFactory.NOTEBOOK_CODE_BLOB;
 
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.FileHasher;

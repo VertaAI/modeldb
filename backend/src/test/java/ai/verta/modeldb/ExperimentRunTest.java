@@ -21,6 +21,7 @@ import ai.verta.modeldb.GetExperimentRunById.Response;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.GenerateRandomNameRequest;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;

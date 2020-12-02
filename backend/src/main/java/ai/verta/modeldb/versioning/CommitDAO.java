@@ -1,10 +1,10 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.UserInfo;
 import java.security.NoSuchAlgorithmException;

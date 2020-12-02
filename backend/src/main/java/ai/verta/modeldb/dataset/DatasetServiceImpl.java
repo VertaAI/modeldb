@@ -29,7 +29,6 @@ import ai.verta.modeldb.GetExperimentRunByDataset;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LastExperimentByDatasetId;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.SetDatasetVisibilty;
 import ai.verta.modeldb.SetDatasetWorkspace;
@@ -47,6 +46,8 @@ import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
@@ -912,10 +913,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       StreamObserver<LastExperimentByDatasetId.Response> responseObserver) {
     try {
       if (request.getDatasetId().isEmpty()) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(LastExperimentByDatasetId.Response.getDefaultInstance()));
+        throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
 
       // Validate if current user has access to the entity or not
@@ -1014,10 +1012,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       StreamObserver<GetExperimentRunByDataset.Response> responseObserver) {
     try {
       if (request.getDatasetId().isEmpty()) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(GetExperimentRunByDataset.Response.getDefaultInstance()));
+        throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
 
       // Validate if current user has access to the entity or not
@@ -1092,19 +1087,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       SetDatasetWorkspace request, StreamObserver<Response> responseObserver) {
     try {
       // Request Parameter Validation
-      String errorMessage = null;
       if (request.getId().isEmpty() && request.getWorkspaceName().isEmpty()) {
-        errorMessage = "Dataset ID and Workspace not found in SetDatasetWorkspace request";
+        throw new InvalidArgumentException(
+            "Dataset ID and Workspace not found in SetDatasetWorkspace request");
       } else if (request.getId().isEmpty()) {
-        errorMessage = "Dataset ID not found in SetDatasetWorkspace request";
+        throw new InvalidArgumentException("Dataset ID not found in SetDatasetWorkspace request");
       } else if (request.getWorkspaceName().isEmpty()) {
-        errorMessage = "Workspace not found in SetDatasetWorkspace request";
-      }
-      if (errorMessage != null) {
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(SetDatasetWorkspace.Response.getDefaultInstance()));
+        throw new InvalidArgumentException("Workspace not found in SetDatasetWorkspace request");
       }
 
       // Validate if current user has access to the entity or not

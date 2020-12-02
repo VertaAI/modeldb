@@ -15,11 +15,12 @@ import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.ListBlobExperimentRunsRequest;
 import ai.verta.modeldb.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.LogVersionedInput;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
+import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
 import ai.verta.modeldb.versioning.RepositoryFunction;
@@ -74,7 +75,7 @@ public interface ExperimentRunDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, PermissionDeniedException;
 
   /**
    * Get ExperimentRun entity using given experimentRunId from database.
@@ -291,7 +292,7 @@ public interface ExperimentRunDAO {
    */
   ExperimentRunPaginationDTO findExperimentRuns(
       ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, PermissionDeniedException;
 
   /**
    * Return sorted list of experimentRuns based on SortExperimentRuns queryParameters
@@ -303,7 +304,7 @@ public interface ExperimentRunDAO {
    */
   ExperimentRunPaginationDTO sortExperimentRuns(
       ProjectDAO projectDAO, SortExperimentRuns queryParameters)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, PermissionDeniedException;
 
   /**
    * Return "Top n" (e.g. Top 5) experimentRuns after applying the sort queryParameters
@@ -316,7 +317,7 @@ public interface ExperimentRunDAO {
    */
   List<ExperimentRun> getTopExperimentRuns(
       ProjectDAO projectDAO, TopExperimentRunsSelector queryParameters)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, PermissionDeniedException;
 
   /**
    * Fetch ExperimentRun Tags from database using experimentRunId.

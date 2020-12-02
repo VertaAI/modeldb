@@ -7,6 +7,8 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
+import ai.verta.modeldb.exceptions.NotFoundException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -80,7 +82,7 @@ public interface ExperimentDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, PermissionDeniedException;
 
   /**
    * Add List of Experiment Tags in database.
@@ -157,7 +159,8 @@ public interface ExperimentDAO {
    * @param experimentIds : list of experimentRunId
    * @return {@link List} : return deleted ids
    */
-  List<String> deleteExperiments(List<String> experimentIds) throws InvalidProtocolBufferException;
+  List<String> deleteExperiments(List<String> experimentIds)
+      throws InvalidProtocolBufferException, PermissionDeniedException;
 
   /**
    * Return experiment using given key value list. keyValue has key as ModelDBConstants.PROJECT_ID
@@ -215,7 +218,7 @@ public interface ExperimentDAO {
    */
   ExperimentPaginationDTO findExperiments(
       ProjectDAO projectDAO, UserInfo userInfo, FindExperiments queryParameters)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, PermissionDeniedException;
 
   /**
    * Experiment has artifacts field. Add new Artifact in that artifacts List.
@@ -226,7 +229,7 @@ public interface ExperimentDAO {
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   Experiment logArtifacts(String experimentId, List<Artifact> artifacts)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, NotFoundException;
 
   /**
    * Return List<Artifact> artifacts from Experiment entity.

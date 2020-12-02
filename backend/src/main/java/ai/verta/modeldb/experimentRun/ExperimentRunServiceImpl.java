@@ -20,7 +20,6 @@ import ai.verta.modeldb.DeleteExperimentRunAttributes;
 import ai.verta.modeldb.DeleteExperimentRunTag;
 import ai.verta.modeldb.DeleteExperimentRunTags;
 import ai.verta.modeldb.DeleteExperimentRuns;
-import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.DeleteHyperparameters;
 import ai.verta.modeldb.DeleteMetrics;
 import ai.verta.modeldb.DeleteObservations;
@@ -64,7 +63,6 @@ import ai.verta.modeldb.LogObservation;
 import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.Project;
@@ -80,6 +78,10 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
+import ai.verta.modeldb.exceptions.InternalErrorException;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -387,10 +389,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(
               Collections.singletonList(request.getExperimentId()));
       if (projectIdsMap.size() == 0) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN,
-            Code.PERMISSION_DENIED_VALUE,
-            Any.pack(GetExperimentRunsInExperiment.getDefaultInstance()));
+        throw new PermissionDeniedException(ModelDBConstants.ACCESS_DENIED_EXPERIMENT_RUN);
       }
       String projectId = projectIdsMap.get(request.getExperimentId());
 
@@ -1475,9 +1474,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       // get(0) because the input parameter is a single value and function always return a single
       // value.
       if (artifacts.size() != 1) {
-        errorMessage = "Expected artifacts count is one but found " + artifacts.size();
-        ModelDBUtils.logAndThrowError(
-            errorMessage, Code.INTERNAL_VALUE, Any.pack(LogArtifact.Response.getDefaultInstance()));
+        throw new InternalErrorException(
+            "Expected artifacts count is one but found " + artifacts.size());
       }
       Artifact artifact = artifacts.get(0);
 
@@ -2249,25 +2247,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   @Override
   public void logDataset(LogDataset request, StreamObserver<LogDataset.Response> responseObserver) {
     try {
-      String errorMessage = null;
       if (request.getId().isEmpty()
           && request.getDataset().getLinkedArtifactId().isEmpty()
           && !request.getDataset().getArtifactType().equals(ArtifactType.DATA)) {
-        errorMessage =
-            "LogDataset only supported for Artifact type Data.\nExperimentRun ID and Dataset id not found in LogArtifact request.";
+        throw new InvalidArgumentException(
+            "LogDataset only supported for Artifact type Data.\nExperimentRun ID and Dataset id not found in LogArtifact request.");
       } else if (request.getId().isEmpty()) {
-        errorMessage = "ExperimentRun ID not found in LogDataset request";
+        throw new InvalidArgumentException("ExperimentRun ID not found in LogDataset request");
       } else if (request.getDataset().getLinkedArtifactId().isEmpty()) {
-        errorMessage = "Dataset ID not found in LogArtifact request";
+        throw new InvalidArgumentException("Dataset ID not found in LogArtifact request");
       } else if (!request.getDataset().getArtifactType().equals(ArtifactType.DATA)) {
-        errorMessage = "LogDataset only supported for Artifact type Data";
-      }
-
-      if (errorMessage != null) {
-        logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(LogDataset.Response.getDefaultInstance()));
+        throw new InvalidArgumentException("LogDataset only supported for Artifact type Data");
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
@@ -2300,20 +2290,13 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   public void logDatasets(
       LogDatasets request, StreamObserver<ai.verta.modeldb.LogDatasets.Response> responseObserver) {
     try {
-      String errorMessage = null;
       if (request.getId().isEmpty() && request.getDatasetsList().isEmpty()) {
-        errorMessage = "ExperimentRun ID and Datasets not found in LogDatasets request";
+        throw new InvalidArgumentException(
+            "ExperimentRun ID and Datasets not found in LogDatasets request");
       } else if (request.getId().isEmpty()) {
-        errorMessage = "ExperimentRun ID not found in LogDatasets request";
+        throw new InvalidArgumentException("ExperimentRun ID not found in LogDatasets request");
       } else if (request.getDatasetsList().isEmpty()) {
-        errorMessage = "Datasets not found in LogDatasets request";
-      }
-
-      if (errorMessage != null) {
-        logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(LogDatasets.Response.getDefaultInstance()));
+        throw new InvalidArgumentException("Datasets not found in LogDatasets request");
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
@@ -2338,17 +2321,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, LogDatasets.Response.getDefaultInstance());
     }
-  }
-
-  private void logAndThrowError(String errorMessage, int errorCode, Any defaultResponse) {
-    LOGGER.warn(errorMessage);
-    Status status =
-        Status.newBuilder()
-            .setCode(errorCode)
-            .setMessage(errorMessage)
-            .addDetails(defaultResponse)
-            .build();
-    throw StatusProto.toStatusRuntimeException(status);
   }
 
   @Override
@@ -2401,11 +2373,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       StreamObserver<DeleteExperimentRuns.Response> responseObserver) {
     try {
       if (request.getIdsList().isEmpty()) {
-        String errorMessage = "ExperimentRun IDs not found in DeleteExperimentRuns request";
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(DeleteExperiments.Response.getDefaultInstance()));
+        throw new InvalidArgumentException(
+            "ExperimentRun IDs not found in DeleteExperimentRuns request");
       }
 
       List<String> deleteExperimentRunsIds =

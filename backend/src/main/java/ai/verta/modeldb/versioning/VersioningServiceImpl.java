@@ -1,11 +1,11 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;

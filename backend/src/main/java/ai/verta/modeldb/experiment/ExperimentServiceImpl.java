@@ -32,7 +32,6 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
@@ -43,6 +42,10 @@ import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.NotFoundException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -436,18 +439,11 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       UpdateExperimentName request,
       StreamObserver<UpdateExperimentName.Response> responseObserver) {
     try {
-      String errorMessage = null;
       if (request.getId().isEmpty()) {
-        errorMessage = "Experiment ID not found in UpdateExperimentName request";
+        throw new InvalidArgumentException(
+            "Experiment ID not found in UpdateExperimentName request");
       } else if (request.getName().isEmpty()) {
         request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
-      }
-
-      if (errorMessage != null) {
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(UpdateExperimentName.getDefaultInstance()));
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -490,11 +486,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<UpdateExperimentDescription.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in UpdateExperimentDescription request";
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(UpdateExperimentDescription.getDefaultInstance()));
+        throw new InvalidArgumentException(
+            "Experiment ID not found in UpdateExperimentDescription request");
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -798,12 +791,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Map<String, String> projectIdFromExperimentMap =
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
-        String errorMessage =
-            "Access is denied. Experiment not found for given id : " + request.getId();
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.PERMISSION_DENIED_VALUE,
-            Any.pack(AddAttributes.getDefaultInstance()));
+        throw new PermissionDeniedException(
+            "Access is denied. Experiment not found for given id : " + request.getId());
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
@@ -914,11 +903,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Map<String, String> projectIdFromExperimentMap =
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
-        errorMessage = "Access is denied. Experiment not found for given id : " + request.getId();
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.PERMISSION_DENIED_VALUE,
-            Any.pack(GetAttributes.getDefaultInstance()));
+        throw new PermissionDeniedException(
+            "Access is denied. Experiment not found for given id : " + request.getId());
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
@@ -1200,9 +1186,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Map<String, String> projectIdFromExperimentMap =
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
-        errorMessage = "Experiment '" + request.getId() + "' is not associated with any project";
-        ModelDBUtils.logAndThrowError(
-            errorMessage, Code.NOT_FOUND_VALUE, Any.pack(GetUrlForArtifact.getDefaultInstance()));
+        throw new NotFoundException(
+            "Experiment '" + request.getId() + "' is not associated with any project");
       }
 
       String projectId = projectIdFromExperimentMap.get(request.getId());
@@ -1293,11 +1278,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Map<String, String> projectIdFromExperimentMap =
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
-        errorMessage = "Access is denied. Experiment not found for given id : " + request.getId();
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.PERMISSION_DENIED_VALUE,
-            Any.pack(LogExperimentArtifacts.getDefaultInstance()));
+        throw new PermissionDeniedException(
+            "Access is denied. Experiment not found for given id : " + request.getId());
       }
 
       String projectId = projectIdFromExperimentMap.get(request.getId());
@@ -1349,12 +1331,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Map<String, String> projectIdFromExperimentMap =
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
-        String errorMessage =
-            "Access is denied. Experiment not found for given id : " + request.getId();
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.PERMISSION_DENIED_VALUE,
-            Any.pack(GetArtifacts.getDefaultInstance()));
+        throw new PermissionDeniedException(
+            "Access is denied. Experiment not found for given id : " + request.getId());
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
@@ -1425,13 +1403,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
   public void deleteExperiments(
       DeleteExperiments request, StreamObserver<DeleteExperiments.Response> responseObserver) {
     try {
-
       if (request.getIdsList().isEmpty()) {
-        String errorMessage = "Experiment IDs not found in DeleteExperiments request";
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(DeleteExperiment.Response.getDefaultInstance()));
+        throw new InvalidArgumentException("Experiment IDs not found in DeleteExperiments request");
       }
 
       List<String> deletedIds = experimentDAO.deleteExperiments(request.getIdsList());

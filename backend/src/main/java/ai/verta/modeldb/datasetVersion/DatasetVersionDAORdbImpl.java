@@ -8,7 +8,6 @@ import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -18,13 +17,14 @@ import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -121,7 +121,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       boolean isAscending,
       String sortKey,
       UserInfo currentLoginUser)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, PermissionDeniedException {
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
             .setDatasetId(datasetId)
@@ -271,7 +271,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public DatasetVersionDTO findDatasetVersions(
       DatasetDAO datasetDAO, FindDatasetVersions queryParameters, UserInfo currentLoginUserInfo)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, PermissionDeniedException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
       List<String> accessibleDatasetVersionIds = new ArrayList<>();
@@ -281,13 +281,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
                 queryParameters.getDatasetVersionIdsList(),
                 ModelDBActionEnum.ModelDBServiceActions.READ));
         if (accessibleDatasetVersionIds.isEmpty()) {
-          String errorMessage =
+          throw new PermissionDeniedException(
               "Access is denied. User is unauthorized for given DatasetVersion IDs : "
-                  + accessibleDatasetVersionIds;
-          ModelDBUtils.logAndThrowError(
-              errorMessage,
-              Code.PERMISSION_DENIED_VALUE,
-              Any.pack(FindDatasetVersions.getDefaultInstance()));
+                  + accessibleDatasetVersionIds);
         }
       }
 
@@ -344,13 +340,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       }
 
       if (accessibleDatasetVersionIds.isEmpty() && datasetIds.isEmpty()) {
-        String errorMessage =
+        throw new PermissionDeniedException(
             "Access is denied. Accessible datasets not found for given DatasetVersion IDs : "
-                + accessibleDatasetVersionIds;
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.PERMISSION_DENIED_VALUE,
-            Any.pack(FindDatasetVersions.getDefaultInstance()));
+                + accessibleDatasetVersionIds);
       }
 
       if (!datasetIds.isEmpty()) {

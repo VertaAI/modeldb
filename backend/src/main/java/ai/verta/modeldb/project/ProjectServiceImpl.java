@@ -59,6 +59,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -1579,20 +1580,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   public void logArtifacts(
       LogProjectArtifacts request, StreamObserver<LogProjectArtifacts.Response> responseObserver) {
     try {
-      String errorMessage = null;
       if (request.getId().isEmpty() && request.getArtifactsList().isEmpty()) {
-        errorMessage = "Project ID and Artifacts not found in LogArtifacts request";
+        throw new InvalidArgumentException(
+            "Project ID and Artifacts not found in LogArtifacts request");
       } else if (request.getId().isEmpty()) {
-        errorMessage = "Project ID not found in LogArtifacts request";
+        throw new InvalidArgumentException("Project ID not found in LogArtifacts request");
       } else if (request.getArtifactsList().isEmpty()) {
-        errorMessage = "Artifacts not found in LogArtifacts request";
-      }
-
-      if (errorMessage != null) {
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(LogProjectArtifacts.Response.getDefaultInstance()));
+        throw new InvalidArgumentException("Artifacts not found in LogArtifacts request");
       }
 
       // Validate if current user has access to the entity or not
@@ -1627,11 +1621,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       GetArtifacts request, StreamObserver<GetArtifacts.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetArtifacts request";
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(GetArtifacts.Response.getDefaultInstance()));
+        throw new InvalidArgumentException("Project ID not found in GetArtifacts request");
       }
 
       // Validate if current user has access to the entity or not
@@ -1653,20 +1643,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       DeleteProjectArtifact request,
       StreamObserver<DeleteProjectArtifact.Response> responseObserver) {
     try {
-      String errorMessage = null;
       if (request.getId().isEmpty() && request.getKey().isEmpty()) {
-        errorMessage = "Project ID and Artifact key not found in DeleteArtifact request";
+        throw new InvalidArgumentException(
+            "Project ID and Artifact key not found in DeleteArtifact request");
       } else if (request.getId().isEmpty()) {
-        errorMessage = "Project ID not found in DeleteArtifact request";
+        throw new InvalidArgumentException("Project ID not found in DeleteArtifact request");
       } else if (request.getKey().isEmpty()) {
-        errorMessage = "Artifact key not found in DeleteArtifact request";
-      }
-
-      if (errorMessage != null) {
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(DeleteProjectArtifact.Response.getDefaultInstance()));
+        throw new InvalidArgumentException("Artifact key not found in DeleteArtifact request");
       }
 
       // Validate if current user has access to the entity or not
@@ -1696,12 +1679,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getIdsList().isEmpty()) {
-        String errorMessage = "Project IDs not found in DeleteProjects request";
-        LOGGER.info(errorMessage);
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(DeleteProjects.Response.getDefaultInstance()));
+        throw new InvalidArgumentException("Project IDs not found in DeleteProjects request");
       }
 
       List<String> deletedProjectIds = projectDAO.deleteProjects(request.getIdsList());
@@ -1721,20 +1699,15 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       SetProjectWorkspace request, StreamObserver<SetProjectWorkspace.Response> responseObserver) {
     try {
       // Request Parameter Validation
-      String errorMessage = null;
       if (request.getId().isEmpty() && request.getWorkspaceName().isEmpty()) {
-        errorMessage = "Project ID and Workspace not found in SetProjectWorkspace request";
+        throw new InvalidArgumentException(
+            "Project ID and Workspace not found in SetProjectWorkspace request");
       } else if (request.getId().isEmpty()) {
-        errorMessage = "Project ID not found in SetProjectWorkspace request";
+        throw new InvalidArgumentException("Project ID not found in SetProjectWorkspace request");
       } else if (request.getWorkspaceName().isEmpty()) {
-        errorMessage = "Workspace not found in SetProjectWorkspace request";
+        throw new InvalidArgumentException("Workspace not found in SetProjectWorkspace request");
       }
-      if (errorMessage != null) {
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.INVALID_ARGUMENT_VALUE,
-            Any.pack(SetProjectWorkspace.Response.getDefaultInstance()));
-      }
+
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);

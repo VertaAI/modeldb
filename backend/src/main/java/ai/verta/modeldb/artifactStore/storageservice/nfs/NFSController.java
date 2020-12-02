@@ -1,7 +1,7 @@
 package ai.verta.modeldb.artifactStore.storageservice.nfs;
 
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;

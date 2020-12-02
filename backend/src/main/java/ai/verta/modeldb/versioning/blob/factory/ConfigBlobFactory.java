@@ -3,11 +3,11 @@ package ai.verta.modeldb.versioning.blob.factory;
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER_SET;
 
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterSetConfigBlobEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.ConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterConfigBlob;

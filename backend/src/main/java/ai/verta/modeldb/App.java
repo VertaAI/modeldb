@@ -22,6 +22,7 @@ import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAORdbImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experiment.ExperimentDAORdbImpl;
 import ai.verta.modeldb.experiment.ExperimentServiceImpl;

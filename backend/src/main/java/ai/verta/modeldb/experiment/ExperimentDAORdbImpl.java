@@ -5,11 +5,9 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.authservice.AuthService;
@@ -21,6 +19,9 @@ import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.NotFoundException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -28,7 +29,6 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
@@ -359,7 +359,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, PermissionDeniedException {
 
     UserInfo userInfo = authService.getCurrentLoginUserInfo();
     FindExperiments findExperiments =
@@ -576,18 +576,15 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   }
 
   @Override
-  public List<String> deleteExperiments(List<String> experimentIds) {
+  public List<String> deleteExperiments(List<String> experimentIds)
+      throws PermissionDeniedException {
     List<String> accessibleExperimentIds =
         getAccessibleExperimentIDs(experimentIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
     if (accessibleExperimentIds.isEmpty()) {
-      String errorMessage =
+      throw new PermissionDeniedException(
           "Access is denied. User is unauthorized for given Experiment IDs : "
-              + accessibleExperimentIds;
-      ModelDBUtils.logAndThrowError(
-          errorMessage,
-          Code.PERMISSION_DENIED_VALUE,
-          Any.pack(DeleteExperiments.getDefaultInstance()));
+              + accessibleExperimentIds);
     }
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -817,7 +814,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   @Override
   public ExperimentPaginationDTO findExperiments(
       ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperiments queryParameters)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, PermissionDeniedException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
       List<String> accessibleExperimentIds = new ArrayList<>();
@@ -827,13 +824,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
                 queryParameters.getExperimentIdsList(),
                 ModelDBActionEnum.ModelDBServiceActions.READ));
         if (accessibleExperimentIds.isEmpty()) {
-          String errorMessage =
+          throw new PermissionDeniedException(
               "Access is denied. User is unauthorized for given Experiment IDs : "
-                  + accessibleExperimentIds;
-          ModelDBUtils.logAndThrowError(
-              errorMessage,
-              Code.PERMISSION_DENIED_VALUE,
-              Any.pack(FindExperiments.getDefaultInstance()));
+                  + accessibleExperimentIds);
         }
       }
 
@@ -886,13 +879,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       }
 
       if (accessibleExperimentIds.isEmpty() && projectIds.isEmpty()) {
-        String errorMessage =
+        throw new PermissionDeniedException(
             "Access is denied. Accessible projects not found for given Experiment IDs : "
-                + accessibleExperimentIds;
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.PERMISSION_DENIED_VALUE,
-            Any.pack(FindExperiments.getDefaultInstance()));
+                + accessibleExperimentIds);
       }
 
       if (!projectIds.isEmpty()) {
@@ -996,7 +985,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
   @Override
   public Experiment logArtifacts(String experimentId, List<Artifact> newArtifacts)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, NotFoundException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       Query query =
@@ -1006,10 +995,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       query.setParameter("id", experimentId);
       ExperimentEntity experimentEntity = (ExperimentEntity) query.uniqueResult();
       if (experimentEntity == null) {
-        ModelDBUtils.logAndThrowError(
-            ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId,
-            Code.NOT_FOUND_VALUE,
-            Any.newBuilder().build());
+        throw new NotFoundException(ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId);
       }
 
       assert experimentEntity != null;

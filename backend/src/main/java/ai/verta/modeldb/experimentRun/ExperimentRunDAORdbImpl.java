@@ -26,7 +26,6 @@ import ai.verta.modeldb.ListCommitExperimentRunsRequest;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.Project;
@@ -57,6 +56,8 @@ import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
+import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -521,7 +522,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, PermissionDeniedException {
 
     KeyValueQuery entityKeyValuePredicate =
         KeyValueQuery.newBuilder()
@@ -1510,7 +1511,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRunPaginationDTO findExperimentRuns(
       ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, PermissionDeniedException {
 
     LOGGER.trace("trying to open session");
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -1523,13 +1524,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 queryParameters.getExperimentRunIdsList(),
                 ModelDBActionEnum.ModelDBServiceActions.READ));
         if (accessibleExperimentRunIds.isEmpty()) {
-          String errorMessage =
+          throw new PermissionDeniedException(
               "Access is denied. User is unauthorized for given ExperimentRun IDs : "
-                  + accessibleExperimentRunIds;
-          ModelDBUtils.logAndThrowError(
-              errorMessage,
-              Code.PERMISSION_DENIED_VALUE,
-              Any.pack(FindExperimentRuns.getDefaultInstance()));
+                  + accessibleExperimentRunIds);
         }
       }
 
@@ -1593,13 +1590,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (accessibleExperimentRunIds.isEmpty()
           && projectIds.isEmpty()
           && queryParameters.getExperimentId().isEmpty()) {
-        String errorMessage =
+        throw new PermissionDeniedException(
             "Access is denied. Accessible projects not found for given ExperimentRun IDs : "
-                + accessibleExperimentRunIds;
-        ModelDBUtils.logAndThrowError(
-            errorMessage,
-            Code.PERMISSION_DENIED_VALUE,
-            Any.pack(FindExperimentRuns.getDefaultInstance()));
+                + accessibleExperimentRunIds);
       }
 
       if (!projectIds.isEmpty()) {
@@ -1978,7 +1971,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRunPaginationDTO sortExperimentRuns(
       ProjectDAO projectDAO, SortExperimentRuns queryParameters)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, PermissionDeniedException {
     FindExperimentRuns findExperimentRuns =
         FindExperimentRuns.newBuilder()
             .addAllExperimentRunIds(queryParameters.getExperimentRunIdsList())
@@ -1993,7 +1986,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<ExperimentRun> getTopExperimentRuns(
       ProjectDAO projectDAO, TopExperimentRunsSelector queryParameters)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, PermissionDeniedException {
     FindExperimentRuns findExperimentRuns =
         FindExperimentRuns.newBuilder()
             .setProjectId(queryParameters.getProjectId())
