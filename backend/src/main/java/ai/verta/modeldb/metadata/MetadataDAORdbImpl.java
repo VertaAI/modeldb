@@ -369,11 +369,12 @@ public class MetadataDAORdbImpl implements MetadataDAO {
             KeyValuePropertyMappingEntity.createId(
                 request.getId(), keyValue.getKey(), request.getPropertyName());
         KeyValuePropertyMappingEntity existingEntity =
-            session.get(KeyValuePropertyMappingEntity.class, id0, LockMode.PESSIMISTIC_WRITE);
+            session.get(KeyValuePropertyMappingEntity.class, id0);
         if (existingEntity == null) {
           existingEntity = new KeyValuePropertyMappingEntity(id0, keyValue.getValue());
           session.saveOrUpdate(existingEntity);
         } else {
+          session.lock(existingEntity, LockMode.PESSIMISTIC_WRITE);
           existingEntity.setValue(keyValue.getValue());
           session.update(existingEntity);
         }
