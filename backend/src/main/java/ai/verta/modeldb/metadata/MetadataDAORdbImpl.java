@@ -361,7 +361,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public void addOrUpdateKeyValueProperties(AddKeyValuePropertiesRequest request) {
+  public void addKeyValueProperties(AddKeyValuePropertiesRequest request) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       for (KeyValueStringProperty keyValue : request.getKeyValuePropertyList()) {
