@@ -361,7 +361,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   }
 
   @Override
-  public void addOrUpdateKeyValueProperties(AddKeyValuePropertiesRequest request) {
+  public void addKeyValueProperties(AddKeyValuePropertiesRequest request) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       for (KeyValueStringProperty keyValue : request.getKeyValuePropertyList()) {
@@ -369,7 +369,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
             KeyValuePropertyMappingEntity.createId(
                 request.getId(), keyValue.getKey(), request.getPropertyName());
         KeyValuePropertyMappingEntity existingEntity =
-            session.get(KeyValuePropertyMappingEntity.class, id0, LockMode.PESSIMISTIC_WRITE);
+            session.get(KeyValuePropertyMappingEntity.class, id0);
         if (existingEntity == null) {
           existingEntity = new KeyValuePropertyMappingEntity(id0, keyValue.getValue());
           session.saveOrUpdate(existingEntity);
