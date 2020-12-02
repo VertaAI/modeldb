@@ -2528,7 +2528,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         WorkspaceDTO workspaceDTO =
             roleService.getWorkspaceDTOByWorkspaceId(
                 currentLoginUserInfo,
-                repositoryEntity.getLegacyWorkspaceId(),
+                repositoryEntity.getWorkspace_id(),
                 repositoryEntity.getWorkspace_type());
         if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
           findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());
@@ -2604,7 +2604,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         WorkspaceDTO workspaceDTO =
             roleService.getWorkspaceDTOByWorkspaceId(
                 currentLoginUserInfo,
-                repositoryEntity.getLegacyWorkspaceId(),
+                repositoryEntity.getWorkspace_id(),
                 repositoryEntity.getWorkspace_type());
         if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
           findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());

@@ -1205,7 +1205,6 @@ public class BlobDAORdbImpl implements BlobDAO {
                 parentCommits,
                 blobContainerList,
                 mergeMessage);
-        writeSession.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
         writeSession.saveOrUpdate(commitEntity);
         writeSession.getTransaction().commit();
         return MergeRepositoryCommitsRequest.Response.newBuilder()
@@ -1967,10 +1966,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     } else {
       throw new ModelDBException("Invalid content case found in DatasetBlob", Status.Code.INTERNAL);
     }
-    Query query =
-        session
-            .createQuery(getUploadStatusQuery.toString())
-            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+    Query query = session.createQuery(getUploadStatusQuery.toString());
     query.setParameter("pathId", datasetComponentPathId);
     return query.list();
   }

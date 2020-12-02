@@ -14,10 +14,10 @@
     "axios": "^0.19.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "chromedriver": "77.0.0",
+    "chromedriver": "^87.0.0",
     "dotenv": "^8.1.0",
     "faker": "^4.1.0",
-    "mocha": "^6.2.0",
+    "mocha": "^8.2.1",
     "mochawesome": "^4.1.0",
     "ramda": "^0.26.1",
     "selenium-webdriver": "^4.0.0-alpha.4"

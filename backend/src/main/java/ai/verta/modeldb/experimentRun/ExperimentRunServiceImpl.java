@@ -1907,7 +1907,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               ModelDBConstants.METADATA_JSON_TEMPLATE,
               "add",
               "attributes",
-              new Gson().toJsonTree(request.getAttributesList())));
+              request.getAttributesList()));
       responseObserver.onNext(LogAttributes.Response.newBuilder().build());
       responseObserver.onCompleted();
 

@@ -103,9 +103,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   private static final String IDS_FILTERED_BY_WORKSPACE =
       NON_DELETED_DATASET_IDS_BY_IDS
           + " AND d."
-          + ModelDBConstants.LEGACY_WORKSPACE_ID
+          + ModelDBConstants.WORKSPACE
           + " = :"
-          + ModelDBConstants.LEGACY_WORKSPACE_ID
+          + ModelDBConstants.WORKSPACE
           + " AND d."
           + ModelDBConstants.WORKSPACE_TYPE
           + " = :"
@@ -125,7 +125,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           "Dataset",
           "datasetName",
           dataset.getName(),
-          ModelDBConstants.LEGACY_WORKSPACE_ID,
+          ModelDBConstants.WORKSPACE,
           dataset.getWorkspaceId(),
           dataset.getWorkspaceType(),
           LOGGER);
@@ -432,7 +432,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           finalPredicatesList.add(
               builder.not(
                   builder.and(
-                      datasetRoot.get(ModelDBConstants.LEGACY_WORKSPACE_ID).in(orgIds),
+                      datasetRoot.get(ModelDBConstants.WORKSPACE).in(orgIds),
                       builder.equal(
                           datasetRoot.get(ModelDBConstants.WORKSPACE_TYPE),
                           WorkspaceType.ORGANIZATION_VALUE))));
@@ -445,7 +445,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           if (workspacePredicates.size() > 0) {
             Predicate privateWorkspacePredicate =
                 builder.equal(
-                    datasetRoot.get(ModelDBConstants.LEGACY_WORKSPACE_ID),
+                    datasetRoot.get(ModelDBConstants.WORKSPACE),
                     workspacePredicates.get(0).getValue().getStringValue());
             Predicate privateWorkspaceTypePredicate =
                 builder.equal(
@@ -580,7 +580,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       Dataset dataset =
           Dataset.newBuilder()
               .setName(datasetName)
-              .setWorkspaceId(datasetObj.getLegacy_workspace_id())
+              .setWorkspaceId(datasetObj.getWorkspace())
               .setWorkspaceTypeValue(datasetObj.getWorkspace_type())
               .build();
       // Check entity already exists
@@ -886,12 +886,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             oldVisibility,
             datasetId,
             datasetEntity.getWorkspace_type(),
-            datasetEntity.getLegacy_workspace_id());
+            datasetEntity.getWorkspace());
         createNewVisibilityBasedBinding(
             datasetVisibility,
             datasetId,
             datasetEntity.getWorkspace_type(),
-            datasetEntity.getLegacy_workspace_id());
+            datasetEntity.getWorkspace());
       }
 
       LOGGER.debug("Dataset by Id getting successfully");
@@ -993,7 +993,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       DatasetEntity datasetEntity =
           session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       getWorkspaceRoleBindings(
-          datasetEntity.getLegacy_workspace_id(),
+          datasetEntity.getWorkspace(),
           WorkspaceType.forNumber(datasetEntity.getWorkspace_type()),
           datasetId,
           DatasetVisibility.forNumber(datasetEntity.getDataset_visibility()));
@@ -1002,7 +1002,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           workspaceDTO.getWorkspaceType(),
           datasetId,
           DatasetVisibility.forNumber(datasetEntity.getDataset_visibility()));
-      datasetEntity.setLegacy_workspace_id(workspaceDTO.getWorkspaceId());
+      datasetEntity.setWorkspace(workspaceDTO.getWorkspaceId());
       datasetEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
       datasetEntity.setTime_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();
@@ -1047,7 +1047,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         @SuppressWarnings("unchecked")
         Query<String> query = session.createQuery(IDS_FILTERED_BY_WORKSPACE);
         query.setParameterList(ModelDBConstants.DATASET_IDS, accessibleDatasetIds);
-        query.setParameter(ModelDBConstants.LEGACY_WORKSPACE_ID, workspaceDTO.getWorkspaceId());
+        query.setParameter(ModelDBConstants.WORKSPACE, workspaceDTO.getWorkspaceId());
         query.setParameter(
             ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
         resultDatasets = query.list();
