@@ -139,8 +139,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   public void addLabels(Session session, IdentificationType id, List<String> labels) {
     for (String label : labels) {
       LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
-      LabelsMappingEntity existingLabelsMappingEntity =
-          session.get(LabelsMappingEntity.class, id0);
+      LabelsMappingEntity existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
       if (existingLabelsMappingEntity == null) {
         session.save(new LabelsMappingEntity(id0));
       }
