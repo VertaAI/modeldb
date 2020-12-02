@@ -325,4 +325,22 @@
         <tagDatabase tag="db_version_2.15"/>
     </changeSet>
 
+    <changeSet id="add-created-on-project" author="cory">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="created"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="created" type="boolean"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="project" columnName="created"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.16" author="cory">
+        <tagDatabase tag="db_version_2.16"/>
+    </changeSet>
+
 </databaseChangeLog>
