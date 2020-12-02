@@ -332,10 +332,10 @@
             </not>
         </preConditions>
         <addColumn tableName="project">
-            <column name="created" type="boolean" defaultValue="false"/>
+            <column name="created" type="boolean" defaultValueBoolean="false"/>
         </addColumn>
         <update tableName="project">
-            <column name="created" value="true"/>
+            <column name="created" valueBoolean="true"/>
         </update>
         <rollback>
             <dropColumn tableName="project" columnName="created"/>
@@ -344,6 +344,17 @@
 
     <changeSet id="db_version_2.16" author="cory">
         <tagDatabase tag="db_version_2.16"/>
+    </changeSet>
+
+    <changeSet id="set-created-true-on-project-for-existing-projects" author="cory">
+        <update tableName="project">
+            <column name="created" valueBoolean="true"/>
+            <where>created=false AND deleted=false</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="db_version_2.17" author="cory">
+        <tagDatabase tag="db_version_2.17"/>
     </changeSet>
 
 </databaseChangeLog>
