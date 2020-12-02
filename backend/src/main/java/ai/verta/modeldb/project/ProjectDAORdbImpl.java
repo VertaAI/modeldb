@@ -212,11 +212,16 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       checkIfEntityAlreadyExists(session, project);
-      createRoleBindingsForProject(project, userInfo);
 
       Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);
       session.save(projectEntity);
+      transaction.commit();
+      LOGGER.debug("ProjectEntity created successfully");
+      createRoleBindingsForProject(project, userInfo);
+      LOGGER.debug("Project role bindings created successfully");
+      transaction = session.beginTransaction();
+      projectEntity.setCreated(true);
       transaction.commit();
       LOGGER.debug("Project created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
