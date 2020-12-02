@@ -40,7 +40,6 @@ import ai.verta.modeldb.LogProjectArtifacts;
 import ai.verta.modeldb.LogProjectCodeVersion;
 import ai.verta.modeldb.LogProjectCodeVersion.Response;
 import ai.verta.modeldb.MetricsSummary;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
@@ -62,8 +61,6 @@ import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
@@ -203,11 +200,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void createProject(
       CreateProject request, StreamObserver<CreateProject.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, null, ModelDBServiceActions.CREATE);
@@ -244,10 +237,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void updateProjectName(
       UpdateProjectName request, StreamObserver<UpdateProjectName.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in UpdateProjectName request";
@@ -295,10 +285,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   public void updateProjectDescription(
       UpdateProjectDescription request,
       StreamObserver<UpdateProjectDescription.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID is not found in UpdateProjectDescription request";
@@ -341,9 +328,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   public void addProjectAttributes(
       AddProjectAttributes request,
       StreamObserver<AddProjectAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getAttributesList().isEmpty()) {
@@ -400,10 +385,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   public void updateProjectAttributes(
       UpdateProjectAttributes request,
       StreamObserver<UpdateProjectAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getAttribute().getKey().isEmpty()) {
@@ -460,9 +442,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void getProjectAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty()
@@ -506,9 +486,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   public void deleteProjectAttributes(
       DeleteProjectAttributes request,
       StreamObserver<DeleteProjectAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty()
@@ -570,10 +548,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void addProjectTags(
       AddProjectTags request, StreamObserver<AddProjectTags.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in AddProjectTags request";
@@ -614,9 +589,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
   @Override
   public void getProjectTags(GetTags request, StreamObserver<GetTags.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetTags request";
@@ -652,10 +625,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void deleteProjectTags(
       DeleteProjectTags request, StreamObserver<DeleteProjectTags.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getTagsList().isEmpty() && !request.getDeleteAll()) {
@@ -706,9 +676,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void addProjectTag(
       AddProjectTag request, StreamObserver<AddProjectTag.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getTag().isEmpty()) {
@@ -755,9 +723,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void deleteProjectTag(
       DeleteProjectTag request, StreamObserver<DeleteProjectTag.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getTag().isEmpty()) {
@@ -810,10 +776,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void deleteProject(
       DeleteProject request, StreamObserver<DeleteProject.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in DeleteProject request";
@@ -849,10 +812,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void getProjects(
       GetProjects request, StreamObserver<GetProjects.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       LOGGER.debug("getting project");
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
@@ -889,9 +849,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void getPublicProjects(
       GetPublicProjects request, StreamObserver<GetPublicProjects.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       UserInfo hostUserInfo = null;
       if (!request.getUserId().isEmpty()) {
@@ -915,9 +873,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void getProjectById(
       GetProjectById request, StreamObserver<GetProjectById.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectById request";
@@ -947,9 +903,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void getProjectByName(
       GetProjectByName request, StreamObserver<GetProjectByName.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getName().isEmpty()) {
@@ -1027,8 +981,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void verifyConnection(
       Empty request, StreamObserver<VerifyConnectionResponse> responseObserver) {
-    QPSCountResource.inc();
-
     responseObserver.onNext(VerifyConnectionResponse.newBuilder().setStatus(true).build());
     responseObserver.onCompleted();
   }
@@ -1036,10 +988,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void deepCopyProject(
       DeepCopyProject request, StreamObserver<DeepCopyProject.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId() == null) {
         String errorMessage = "Project ID not found in DeepCopyProject request";
@@ -1085,9 +1034,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
   @Override
   public void getSummary(GetSummary request, StreamObserver<GetSummary.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getEntityId().isEmpty()) {
         String errorMessage = "Project ID not found in GetSummary request";
@@ -1206,9 +1153,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void setProjectReadme(
       SetProjectReadme request, StreamObserver<SetProjectReadme.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getReadmeText() == null) {
@@ -1257,9 +1202,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void getProjectReadme(
       GetProjectReadme request, StreamObserver<GetProjectReadme.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectReadme request";
@@ -1290,9 +1233,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void setProjectShortName(
       SetProjectShortName request, StreamObserver<SetProjectShortName.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getShortName().isEmpty()) {
@@ -1357,9 +1298,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void getProjectShortName(
       GetProjectShortName request, StreamObserver<GetProjectShortName.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectShortName request";
@@ -1390,9 +1329,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void setProjectVisibility(
       SetProjectVisibilty request, StreamObserver<SetProjectVisibilty.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in SetProjectVisibilty request";
@@ -1433,9 +1370,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void logProjectCodeVersion(
       LogProjectCodeVersion request, StreamObserver<Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       /*Parameter validation*/
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getCodeVersion() == null) {
@@ -1504,9 +1439,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   public void getProjectCodeVersion(
       GetProjectCodeVersion request,
       StreamObserver<GetProjectCodeVersion.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectCodeVersion request";
@@ -1541,9 +1474,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void findProjects(
       FindProjects request, StreamObserver<FindProjects.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       /*User validation*/
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
@@ -1566,9 +1497,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void getUrlForArtifact(
       GetUrlForArtifact request, StreamObserver<GetUrlForArtifact.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty()
           && request.getKey().isEmpty()
@@ -1649,9 +1578,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void logArtifacts(
       LogProjectArtifacts request, StreamObserver<LogProjectArtifacts.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getArtifactsList().isEmpty()) {
         errorMessage = "Project ID and Artifacts not found in LogArtifacts request";
@@ -1698,10 +1625,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void getArtifacts(
       GetArtifacts request, StreamObserver<GetArtifacts.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetArtifacts request";
         ModelDBUtils.logAndThrowError(
@@ -1728,9 +1652,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   public void deleteArtifact(
       DeleteProjectArtifact request,
       StreamObserver<DeleteProjectArtifact.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getKey().isEmpty()) {
         errorMessage = "Project ID and Artifact key not found in DeleteArtifact request";
@@ -1771,9 +1693,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void deleteProjects(
       DeleteProjects request, StreamObserver<DeleteProjects.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getIdsList().isEmpty()) {
         String errorMessage = "Project IDs not found in DeleteProjects request";
@@ -1799,10 +1719,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void setProjectWorkspace(
       SetProjectWorkspace request, StreamObserver<SetProjectWorkspace.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getWorkspaceName().isEmpty()) {

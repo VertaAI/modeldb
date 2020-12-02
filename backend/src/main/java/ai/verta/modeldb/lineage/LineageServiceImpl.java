@@ -7,11 +7,8 @@ import ai.verta.modeldb.FindAllInputsOutputs;
 import ai.verta.modeldb.FindAllOutputs;
 import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CommitDAO;
 import io.grpc.Status.Code;
@@ -36,7 +33,6 @@ public class LineageServiceImpl extends LineageServiceImplBase {
 
   @Override
   public void addLineage(AddLineage request, StreamObserver<AddLineage.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
       if (request.getInputCount() == 0 && request.getOutputCount() == 0) {
         throw new ModelDBException("Input and output not specified", Code.INVALID_ARGUMENT);
@@ -47,12 +43,9 @@ public class LineageServiceImpl extends LineageServiceImplBase {
           throw new ModelDBException("Output not specified", Code.INVALID_ARGUMENT);
         }
       }
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        AddLineage.Response response = lineageDAO.addLineage(request, this::isResourceExists);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      AddLineage.Response response = lineageDAO.addLineage(request, this::isResourceExists);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, AddLineage.Response.getDefaultInstance());
     }
@@ -61,7 +54,6 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   @Override
   public void deleteLineage(
       DeleteLineage request, StreamObserver<DeleteLineage.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
       if (request.getInputCount() == 0 && request.getOutputCount() == 0) {
         throw new ModelDBException("Input and output not specified", Code.INVALID_ARGUMENT);
@@ -72,12 +64,9 @@ public class LineageServiceImpl extends LineageServiceImplBase {
           throw new ModelDBException("Output not specified", Code.INVALID_ARGUMENT);
         }
       }
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        DeleteLineage.Response response = lineageDAO.deleteLineage(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      DeleteLineage.Response response = lineageDAO.deleteLineage(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, DeleteLineage.Response.getDefaultInstance());
     }
@@ -86,17 +75,13 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   @Override
   public void findAllInputs(
       FindAllInputs request, StreamObserver<FindAllInputs.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
       if (request.getItemsCount() == 0) {
         throw new ModelDBException("Items not specified", Code.INVALID_ARGUMENT);
       }
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllInputs.Response response = lineageDAO.findAllInputs(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      FindAllInputs.Response response = lineageDAO.findAllInputs(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, FindAllInputs.Response.getDefaultInstance());
     }
@@ -105,17 +90,13 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   @Override
   public void findAllOutputs(
       FindAllOutputs request, StreamObserver<FindAllOutputs.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
       if (request.getItemsCount() == 0) {
         throw new ModelDBException("Items not specified", Code.INVALID_ARGUMENT);
       }
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllOutputs.Response response = lineageDAO.findAllOutputs(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      FindAllOutputs.Response response = lineageDAO.findAllOutputs(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, FindAllOutputs.Response.getDefaultInstance());
     }
@@ -125,17 +106,13 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   public void findAllInputsOutputs(
       FindAllInputsOutputs request,
       StreamObserver<FindAllInputsOutputs.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
       if (request.getItemsCount() == 0) {
         throw new ModelDBException("Items not specified", Code.INVALID_ARGUMENT);
       }
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-        FindAllInputsOutputs.Response response = lineageDAO.findAllInputsOutputs(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      FindAllInputsOutputs.Response response = lineageDAO.findAllInputsOutputs(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, FindAllInputsOutputs.Response.getDefaultInstance());

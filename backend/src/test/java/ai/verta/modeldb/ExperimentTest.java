@@ -10,12 +10,7 @@ import ai.verta.modeldb.CommentServiceGrpc.CommentServiceBlockingStub;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
-import ai.verta.modeldb.authservice.AuthService;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -99,7 +94,7 @@ public class ExperimentTest {
     ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, databasePropMap, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new ModelDBAuthInterceptor());
+    serverBuilder.intercept(new AuthInterceptor());
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
     if (testUerPropMap != null && testUerPropMap.size() > 0) {
@@ -747,22 +742,24 @@ public class ExperimentTest {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
-    UpdateExperimentNameOrDescription.Response updateExperimentNameOrDescriptionResponse = experimentServiceStub.updateExperimentNameOrDescription(
-          UpdateExperimentNameOrDescription.newBuilder().setId(experiment.getId()).build());
-    LOGGER.info("UpdateExperimentNameOrDescription Response : " + updateExperimentNameOrDescriptionResponse.getExperiment());
+    UpdateExperimentNameOrDescription.Response updateExperimentNameOrDescriptionResponse =
+        experimentServiceStub.updateExperimentNameOrDescription(
+            UpdateExperimentNameOrDescription.newBuilder().setId(experiment.getId()).build());
+    LOGGER.info(
+        "UpdateExperimentNameOrDescription Response : "
+            + updateExperimentNameOrDescriptionResponse.getExperiment());
     assertFalse(
-            "Experiment name is empty",
-            updateExperimentNameOrDescriptionResponse.getExperiment().getName().isEmpty());
+        "Experiment name is empty",
+        updateExperimentNameOrDescriptionResponse.getExperiment().getName().isEmpty());
     assertEquals(
-            "Experiment description not match with expected experiment name",
-            experiment.getDescription(),
-            updateExperimentNameOrDescriptionResponse.getExperiment().getDescription());
+        "Experiment description not match with expected experiment name",
+        experiment.getDescription(),
+        updateExperimentNameOrDescriptionResponse.getExperiment().getDescription());
     assertNotEquals(
-            "Experiment date_updated field not update on database",
-            experiment.getDateUpdated(),
-            updateExperimentNameOrDescriptionResponse.getExperiment().getDateUpdated());
+        "Experiment date_updated field not update on database",
+        experiment.getDateUpdated(),
+        updateExperimentNameOrDescriptionResponse.getExperiment().getDateUpdated());
     experiment = response.getExperiment();
-
 
     LOGGER.info("Update Experiment Name & Description test stop................................");
   }

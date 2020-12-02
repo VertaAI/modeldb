@@ -28,7 +28,6 @@ import ai.verta.modeldb.GetDatasetByName;
 import ai.verta.modeldb.GetExperimentRunByDataset;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LastExperimentByDatasetId;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
@@ -52,8 +51,6 @@ import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Commit;
@@ -153,9 +150,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void createDataset(
       CreateDataset request, StreamObserver<CreateDataset.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getName().isEmpty()) {
         request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
       }
@@ -240,11 +235,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void getAllDatasets(
       GetAllDatasets request, StreamObserver<GetAllDatasets.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
-      LOGGER.trace("getting dataset");
+    try {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
@@ -285,9 +276,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void deleteDataset(
       DeleteDataset request, StreamObserver<DeleteDataset.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
@@ -317,9 +306,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void getDatasetById(
       GetDatasetById request, StreamObserver<GetDatasetById.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
@@ -347,9 +334,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void findDatasets(
       FindDatasets request, StreamObserver<FindDatasets.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetPaginationDTO datasetPaginationDTO =
@@ -369,9 +354,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void getDatasetByName(
       GetDatasetByName request, StreamObserver<GetDatasetByName.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getName().isEmpty()) {
         LOGGER.info(ModelDBMessages.DATASET_NAME_NOT_FOUND_IN_REQUEST);
@@ -444,9 +427,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void updateDatasetName(
       UpdateDatasetName request, StreamObserver<UpdateDatasetName.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getName().isEmpty()) {
@@ -501,9 +482,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   public void updateDatasetDescription(
       UpdateDatasetDescription request,
       StreamObserver<UpdateDatasetDescription.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         throw new ModelDBException(
@@ -547,9 +526,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void addDatasetTags(
       AddDatasetTags request, StreamObserver<AddDatasetTags.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getTagsList().isEmpty()) {
@@ -599,9 +576,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
   @Override
   public void getDatasetTags(GetTags request, StreamObserver<GetTags.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       LOGGER.info("getDatasetTags not supported");
       throw new ModelDBException("Not supported", Code.UNIMPLEMENTED);
@@ -614,9 +589,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void deleteDatasetTags(
       DeleteDatasetTags request, StreamObserver<DeleteDatasetTags.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getTagsList().isEmpty() && !request.getDeleteAll()) {
@@ -668,9 +641,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   public void addDatasetAttributes(
       AddDatasetAttributes request,
       StreamObserver<AddDatasetAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getAttributesList().isEmpty()) {
@@ -730,10 +701,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   public void updateDatasetAttributes(
       UpdateDatasetAttributes request,
       StreamObserver<UpdateDatasetAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getAttribute().getKey().isEmpty()) {
@@ -789,9 +757,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   public void deleteDatasetAttributes(
       DeleteDatasetAttributes request,
       StreamObserver<DeleteDatasetAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty()
@@ -854,9 +820,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void setDatasetVisibility(
       SetDatasetVisibilty request, StreamObserver<SetDatasetVisibilty.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
@@ -905,9 +869,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void deleteDatasets(
       DeleteDatasets request, StreamObserver<DeleteDatasets.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getIdsList().isEmpty()) {
         LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
@@ -948,10 +910,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   public void getLastExperimentByDatasetId(
       LastExperimentByDatasetId request,
       StreamObserver<LastExperimentByDatasetId.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (request.getDatasetId().isEmpty()) {
         ModelDBUtils.logAndThrowError(
             ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
@@ -1053,10 +1012,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   public void getExperimentRunByDataset(
       GetExperimentRunByDataset request,
       StreamObserver<GetExperimentRunByDataset.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (request.getDatasetId().isEmpty()) {
         ModelDBUtils.logAndThrowError(
             ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
@@ -1134,10 +1090,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   @Override
   public void setDatasetWorkspace(
       SetDatasetWorkspace request, StreamObserver<Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getWorkspaceName().isEmpty()) {

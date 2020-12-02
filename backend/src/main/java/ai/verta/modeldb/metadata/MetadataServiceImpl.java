@@ -1,10 +1,7 @@
 package ai.verta.modeldb.metadata;
 
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Any;
 import com.google.rpc.Code;
@@ -28,10 +25,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   @Override
   public void getLabels(
       GetLabelsRequest request, StreamObserver<GetLabelsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         String errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
@@ -57,9 +51,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   @Override
   public void addLabels(
       AddLabelsRequest request, StreamObserver<AddLabelsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
@@ -91,9 +83,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   @Override
   public void updateLabels(
       AddLabelsRequest request, StreamObserver<AddLabelsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         throw new ModelDBException(
@@ -112,10 +102,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   @Override
   public void getLabelIds(
       GetLabelIdsRequest request, StreamObserver<GetLabelIdsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       if (request.getLabelsList().isEmpty()) {
         throw new ModelDBException("Labels not found in GetLabelIdsRequest", Code.INVALID_ARGUMENT);
       }
@@ -133,9 +120,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   @Override
   public void deleteLabels(
       DeleteLabelsRequest request, StreamObserver<DeleteLabelsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
@@ -170,9 +155,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   public void addKeyValueProperties(
       AddKeyValuePropertiesRequest request,
       StreamObserver<AddKeyValuePropertiesRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
@@ -207,9 +190,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   public void getKeyValueProperties(
       GetKeyValuePropertiesRequest request,
       StreamObserver<GetKeyValuePropertiesRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
@@ -248,9 +229,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   public void deleteKeyValueProperties(
       DeleteKeyValuePropertiesRequest request,
       StreamObserver<DeleteKeyValuePropertiesRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
@@ -290,9 +269,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   public void generateRandomName(
       GenerateRandomNameRequest request,
       StreamObserver<GenerateRandomNameRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       responseObserver.onNext(
           GenerateRandomNameRequest.Response.newBuilder()
               .setName(MetadataServiceImpl.createRandomName())

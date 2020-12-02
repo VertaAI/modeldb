@@ -11,12 +11,7 @@ import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAODisabled;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAORdbImpl;
-import ai.verta.modeldb.authservice.AuthService;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
@@ -41,6 +36,7 @@ import ai.verta.modeldb.lineage.LineageServiceImpl;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
+import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.project.ProjectServiceImpl;
@@ -298,7 +294,8 @@ public class App implements ApplicationContextAware {
           serverBuilder, databasePropMap, propertiesMap, authService, app.roleService);
       // ----------------- Finish Initialize database & modelDB services with DAO --------
 
-      serverBuilder.intercept(new ModelDBAuthInterceptor());
+      serverBuilder.intercept(new MonitoringInterceptor());
+      serverBuilder.intercept(new AuthInterceptor());
 
       Server server = serverBuilder.build();
       // --------------- Finish Initialize modelDB gRPC server --------------------------
@@ -312,9 +309,9 @@ public class App implements ApplicationContextAware {
           .addShutdownHook(
               new Thread(
                   () -> {
-                    int activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
+                    int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
                     while (activeRequestCount > 0) {
-                      activeRequestCount = ModelDBAuthInterceptor.ACTIVE_REQUEST_COUNT.get();
+                      activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
                       System.err.println("Active Request Count in while: " + activeRequestCount);
                       try {
                         Thread.sleep(1000); // wait for 1s
@@ -642,7 +639,6 @@ public class App implements ApplicationContextAware {
             projectDAO,
             experimentDAO,
             experimentRunDAO,
-            new ModelDBAuthInterceptor(),
             new FileHasher(),
             artifactStoreDAO));
     LOGGER.trace("Versioning serviceImpl initialized");

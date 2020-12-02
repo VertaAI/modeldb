@@ -23,7 +23,6 @@ import ai.verta.modeldb.GetDatasetVersionAttributes;
 import ai.verta.modeldb.GetDatasetVersionById;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
 import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.ModelDBMessages;
@@ -41,8 +40,6 @@ import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.metadata.MetadataDAO;
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.Commit;
@@ -179,9 +176,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   @Override
   public void createDatasetVersion(
       CreateDatasetVersion request, StreamObserver<Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       /*Parameter validation*/
       if (request.getDatasetId().isEmpty()) {
         ModelDBUtils.logAndThrowError(
@@ -228,10 +223,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void getAllDatasetVersionsByDatasetId(
       GetAllDatasetVersionsByDatasetId request,
       StreamObserver<GetAllDatasetVersionsByDatasetId.Response> responseObserver) {
-    QPSCountResource.inc();
-    LOGGER.trace(ModelDBMessages.GET_DATASET_VERSION_MSG);
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       /*Parameter validation*/
 
       if (request.getDatasetId().isEmpty()) {
@@ -324,10 +316,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void deleteDatasetVersion(
       DeleteDatasetVersion request,
       StreamObserver<DeleteDatasetVersion.Response> responseObserver) {
-    QPSCountResource.inc();
-    LOGGER.trace(ModelDBMessages.GET_DATASET_VERSION_MSG);
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
         ModelDBUtils.logAndThrowError(
@@ -359,10 +348,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void getLatestDatasetVersionByDatasetId(
       GetLatestDatasetVersionByDatasetId request,
       StreamObserver<GetLatestDatasetVersionByDatasetId.Response> responseObserver) {
-    QPSCountResource.inc();
-    LOGGER.trace("Getting Latest dataset version.");
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       /*Parameter validation*/
       if (request.getDatasetId().isEmpty()) {
         ModelDBUtils.logAndThrowError(
@@ -433,10 +419,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   @Override
   public void findDatasetVersions(
       FindDatasetVersions request, StreamObserver<FindDatasetVersions.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-
+    try {
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       FindRepositoriesBlobs.Builder findRepositoriesBlobs =
           FindRepositoriesBlobs.newBuilder()
@@ -487,9 +470,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void updateDatasetVersionDescription(
       UpdateDatasetVersionDescription request,
       StreamObserver<UpdateDatasetVersionDescription.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         throw new ModelDBException(
@@ -529,9 +510,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void addDatasetVersionTags(
       AddDatasetVersionTags request,
       StreamObserver<AddDatasetVersionTags.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getTagsList().isEmpty()) {
@@ -587,9 +566,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void deleteDatasetVersionTags(
       DeleteDatasetVersionTags request,
       StreamObserver<DeleteDatasetVersionTags.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getTagsList().isEmpty() && !request.getDeleteAll()) {
@@ -645,9 +622,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void addDatasetVersionAttributes(
       AddDatasetVersionAttributes request,
       StreamObserver<AddDatasetVersionAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getAttributesList().isEmpty()) {
@@ -704,10 +679,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void updateDatasetVersionAttributes(
       UpdateDatasetVersionAttributes request,
       StreamObserver<UpdateDatasetVersionAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getAttribute().getKey().isEmpty()) {
@@ -764,9 +736,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void getDatasetVersionAttributes(
       GetDatasetVersionAttributes request,
       StreamObserver<GetDatasetVersionAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty()
@@ -814,9 +784,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void deleteDatasetVersionAttributes(
       DeleteDatasetVersionAttributes request,
       StreamObserver<DeleteDatasetVersionAttributes.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       // Request Parameter Validation
       String errorMessage = null;
       if (request.getId().isEmpty()
@@ -921,10 +889,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void deleteDatasetVersions(
       DeleteDatasetVersions request,
       StreamObserver<DeleteDatasetVersions.Response> responseObserver) {
-    QPSCountResource.inc();
-    LOGGER.trace("Deleting dataset version.");
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       /*Parameter validation*/
       if (request.getIdsList().isEmpty()) {
         ModelDBUtils.logAndThrowError(
@@ -955,25 +920,20 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void getUrlForDatasetBlobVersioned(
       GetUrlForDatasetBlobVersioned request,
       StreamObserver<GetUrlForDatasetBlobVersioned.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+      // Validate request parameters
+      validateGetUrlForVersionedDatasetBlobRequest(request);
 
-        // Validate request parameters
-        validateGetUrlForVersionedDatasetBlobRequest(request);
-
-        GetUrlForDatasetBlobVersioned.Response response =
-            blobDAO.getUrlForVersionedDatasetBlob(
-                artifactStoreDAO,
-                repositoryDAO,
-                request.getDatasetId(),
-                (session, repository) ->
-                    commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
-                request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      GetUrlForDatasetBlobVersioned.Response response =
+          blobDAO.getUrlForVersionedDatasetBlob(
+              artifactStoreDAO,
+              repositoryDAO,
+              request.getDatasetId(),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
+              request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, GetUrlForDatasetBlobVersioned.Response.getDefaultInstance());
@@ -1001,9 +961,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void commitVersionedDatasetBlobArtifactPart(
       CommitVersionedDatasetBlobArtifactPart request,
       StreamObserver<CommitVersionedDatasetBlobArtifactPart.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (!request.hasArtifactPart()) {
         errorMessage = "Artifact Part not found in CommitVersionedDatasetBlobArtifactPart request";
@@ -1043,9 +1001,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void getCommittedVersionedDatasetBlobArtifactParts(
       GetCommittedVersionedDatasetBlobArtifactParts request,
       StreamObserver<GetCommittedVersionedDatasetBlobArtifactParts.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       GetCommittedVersionedDatasetBlobArtifactParts.Response response =
           blobDAO.getCommittedVersionedDatasetBlobArtifactParts(
               repositoryDAO,
@@ -1067,9 +1023,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void commitMultipartVersionedDatasetBlobArtifact(
       CommitMultipartVersionedDatasetBlobArtifact request,
       StreamObserver<CommitMultipartVersionedDatasetBlobArtifact.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getPathDatasetComponentBlobPath().isEmpty()) {
         String errorMessage =
             "Path not found in CommitMultipartVersionedDatasetBlobArtifact request";
@@ -1107,9 +1061,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void getDatasetVersionById(
       GetDatasetVersionById request,
       StreamObserver<GetDatasetVersionById.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       if (request.getId().isEmpty()) {
         String errorMessage = "DatasetVersion id not found in GetDatasetVersionById request";
         throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);

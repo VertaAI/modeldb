@@ -1,7 +1,6 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthService;
@@ -10,8 +9,6 @@ import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.ListRepositoriesRequest.Response;
@@ -41,7 +38,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   private final ProjectDAO projectDAO;
   private final ExperimentDAO experimentDAO;
   private final ExperimentRunDAO experimentRunDAO;
-  private final ModelDBAuthInterceptor modelDBAuthInterceptor;
   private final FileHasher fileHasher;
   private final Validator validator = new Validator();
   private final ArtifactStoreDAO artifactStoreDAO;
@@ -55,7 +51,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
       ExperimentRunDAO experimentRunDAO,
-      ModelDBAuthInterceptor modelDBAuthInterceptor,
       FileHasher fileHasher,
       ArtifactStoreDAO artifactStoreDAO) {
     this.authService = authService;
@@ -66,7 +61,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     this.projectDAO = projectDAO;
     this.experimentDAO = experimentDAO;
     this.experimentRunDAO = experimentRunDAO;
-    this.modelDBAuthInterceptor = modelDBAuthInterceptor;
     this.fileHasher = fileHasher;
     this.artifactStoreDAO = artifactStoreDAO;
   }
@@ -74,22 +68,18 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void listRepositories(
       ListRepositoriesRequest request, StreamObserver<Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        if (request.hasPagination()) {
+      if (request.hasPagination()) {
 
-          if (request.getPagination().getPageLimit() < 1
-              || request.getPagination().getPageLimit() > 100) {
-            throw new ModelDBException("Page limit is invalid", Code.INVALID_ARGUMENT);
-          }
+        if (request.getPagination().getPageLimit() < 1
+            || request.getPagination().getPageLimit() > 100) {
+          throw new ModelDBException("Page limit is invalid", Code.INVALID_ARGUMENT);
         }
-        UserInfo userInfo = authService.getCurrentLoginUserInfo();
-        Response response = repositoryDAO.listRepositories(request, userInfo);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
       }
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      Response response = repositoryDAO.listRepositories(request, userInfo);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, ListRepositoriesRequest.Response.getDefaultInstance());
@@ -100,14 +90,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void getRepository(
       GetRepositoryRequest request,
       StreamObserver<GetRepositoryRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        GetRepositoryRequest.Response response = repositoryDAO.getRepository(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      GetRepositoryRequest.Response response = repositoryDAO.getRepository(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, GetRepositoryRequest.Response.getDefaultInstance());
@@ -117,39 +103,35 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void createRepository(
       SetRepository request, StreamObserver<SetRepository.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        if (request.getRepository().getName().isEmpty()) {
-          request =
-              request
-                  .toBuilder()
-                  .setRepository(
-                      request
-                          .getRepository()
-                          .toBuilder()
-                          .setName(MetadataServiceImpl.createRandomName()))
-                  .build();
-        }
-
-        roleService.validateEntityUserWithUserInfo(
-            ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
-        UserInfo userInfo = authService.getCurrentLoginUserInfo();
-        SetRepository.Builder requestBuilder = request.toBuilder();
-        if (userInfo != null) {
-          String vertaId = authService.getVertaIdFromUserInfo(userInfo);
-          requestBuilder.setRepository(request.getRepository().toBuilder().setOwner(vertaId));
-        }
-
-        ModelDBUtils.validateEntityNameWithColonAndSlash(requestBuilder.getRepository().getName());
-
-        SetRepository.Response response =
-            repositoryDAO.setRepository(commitDAO, requestBuilder.build(), userInfo, true);
-
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+      if (request.getRepository().getName().isEmpty()) {
+        request =
+            request
+                .toBuilder()
+                .setRepository(
+                    request
+                        .getRepository()
+                        .toBuilder()
+                        .setName(MetadataServiceImpl.createRandomName()))
+                .build();
       }
+
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      SetRepository.Builder requestBuilder = request.toBuilder();
+      if (userInfo != null) {
+        String vertaId = authService.getVertaIdFromUserInfo(userInfo);
+        requestBuilder.setRepository(request.getRepository().toBuilder().setOwner(vertaId));
+      }
+
+      ModelDBUtils.validateEntityNameWithColonAndSlash(requestBuilder.getRepository().getName());
+
+      SetRepository.Response response =
+          repositoryDAO.setRepository(commitDAO, requestBuilder.build(), userInfo, true);
+
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, SetRepository.Response.getDefaultInstance());
     }
@@ -158,31 +140,27 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void updateRepository(
       SetRepository request, StreamObserver<SetRepository.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        if (request.getRepository().getDescription().isEmpty()) {
-          // FIXME: allow empty description
-          throw new ModelDBException("Description is empty", Code.INVALID_ARGUMENT);
-        } else if (request.getRepository().getName().isEmpty()) {
-          request =
-              request
-                  .toBuilder()
-                  .setRepository(
-                      request
-                          .getRepository()
-                          .toBuilder()
-                          .setName(MetadataServiceImpl.createRandomName()))
-                  .build();
-        }
-
-        ModelDBUtils.validateEntityNameWithColonAndSlash(request.getRepository().getName());
-        SetRepository.Response response =
-            repositoryDAO.setRepository(commitDAO, request, null, false);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+      if (request.getRepository().getDescription().isEmpty()) {
+        // FIXME: allow empty description
+        throw new ModelDBException("Description is empty", Code.INVALID_ARGUMENT);
+      } else if (request.getRepository().getName().isEmpty()) {
+        request =
+            request
+                .toBuilder()
+                .setRepository(
+                    request
+                        .getRepository()
+                        .toBuilder()
+                        .setName(MetadataServiceImpl.createRandomName()))
+                .build();
       }
+
+      ModelDBUtils.validateEntityNameWithColonAndSlash(request.getRepository().getName());
+      SetRepository.Response response =
+          repositoryDAO.setRepository(commitDAO, request, null, false);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, SetRepository.Response.getDefaultInstance());
     }
@@ -192,20 +170,16 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void deleteRepository(
       DeleteRepositoryRequest request,
       StreamObserver<DeleteRepositoryRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        DeleteRepositoryRequest.Response response =
-            repositoryDAO.deleteRepository(
-                request,
-                commitDAO,
-                experimentRunDAO,
-                true,
-                RepositoryEnums.RepositoryTypeEnum.REGULAR);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      DeleteRepositoryRequest.Response response =
+          repositoryDAO.deleteRepository(
+              request,
+              commitDAO,
+              experimentRunDAO,
+              true,
+              RepositoryEnums.RepositoryTypeEnum.REGULAR);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteRepositoryRequest.Response.getDefaultInstance());
@@ -215,9 +189,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void listCommits(
       ListCommitsRequest request, StreamObserver<ListCommitsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+    try {
       ListCommitsRequest.Response response =
           commitDAO.listCommits(
               request,
@@ -234,18 +206,13 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void getCommit(
       GetCommitRequest request, StreamObserver<GetCommitRequest.Response> responseObserver) {
-
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        Commit commit =
-            commitDAO.getCommit(
-                request.getCommitSha(),
-                (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()));
-        responseObserver.onNext(GetCommitRequest.Response.newBuilder().setCommit(commit).build());
-        responseObserver.onCompleted();
-      }
+      Commit commit =
+          commitDAO.getCommit(
+              request.getCommitSha(),
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()));
+      responseObserver.onNext(GetCommitRequest.Response.newBuilder().setCommit(commit).build());
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, GetCommitRequest.Response.getDefaultInstance());
@@ -255,9 +222,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void createCommit(
       CreateCommitRequest request, StreamObserver<CreateCommitRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+    try {
       if (request.getCommit().getParentShasList().isEmpty()) {
         throw new ModelDBException(
             "Parent commits not found in the CreateCommitRequest", Code.INVALID_ARGUMENT);
@@ -334,17 +299,13 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void deleteCommit(
       DeleteCommitRequest request, StreamObserver<DeleteCommitRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        commitDAO.deleteCommits(
-            request.getRepositoryId(),
-            Collections.singletonList(request.getCommitSha()),
-            repositoryDAO);
-        responseObserver.onNext(DeleteCommitRequest.Response.newBuilder().build());
-        responseObserver.onCompleted();
-      }
+      commitDAO.deleteCommits(
+          request.getRepositoryId(),
+          Collections.singletonList(request.getCommitSha()),
+          repositoryDAO);
+      responseObserver.onNext(DeleteCommitRequest.Response.newBuilder().build());
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteCommitRequest.Response.getDefaultInstance());
@@ -355,9 +316,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void listCommitBlobs(
       ListCommitBlobsRequest request,
       StreamObserver<ListCommitBlobsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+    try {
       if (request.getCommitSha().isEmpty()) {
         throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
       }
@@ -379,9 +338,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void getCommitComponent(
       GetCommitComponentRequest request,
       StreamObserver<GetCommitComponentRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+    try {
       if (request.getCommitSha().isEmpty()) {
         throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
       }
@@ -403,9 +360,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void computeRepositoryDiff(
       ComputeRepositoryDiffRequest request,
       StreamObserver<ComputeRepositoryDiffRequest.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+    try {
       ComputeRepositoryDiffRequest.Response response =
           blobDAO.computeRepositoryDiff(repositoryDAO, request);
       responseObserver.onNext(response);
@@ -421,15 +376,11 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       MergeRepositoryCommitsRequest request,
       StreamObserver<ai.verta.modeldb.versioning.MergeRepositoryCommitsRequest.Response>
           responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        MergeRepositoryCommitsRequest.Response mergeResponse =
-            blobDAO.mergeCommit(repositoryDAO, request);
-        responseObserver.onNext(mergeResponse);
-        responseObserver.onCompleted();
-      }
+      MergeRepositoryCommitsRequest.Response mergeResponse =
+          blobDAO.mergeCommit(repositoryDAO, request);
+      responseObserver.onNext(mergeResponse);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, MergeRepositoryCommitsRequest.Response.getDefaultInstance());
@@ -440,15 +391,11 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void revertRepositoryCommits(
       RevertRepositoryCommitsRequest request,
       StreamObserver<RevertRepositoryCommitsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        RevertRepositoryCommitsRequest.Response mergeResponse =
-            blobDAO.revertCommit(repositoryDAO, request);
-        responseObserver.onNext(mergeResponse);
-        responseObserver.onCompleted();
-      }
+      RevertRepositoryCommitsRequest.Response mergeResponse =
+          blobDAO.revertCommit(repositoryDAO, request);
+      responseObserver.onNext(mergeResponse);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, RevertRepositoryCommitsRequest.Response.getDefaultInstance());
@@ -458,14 +405,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void listBranches(
       ListBranchesRequest request, StreamObserver<ListBranchesRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        ListBranchesRequest.Response response = repositoryDAO.listBranches(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      ListBranchesRequest.Response response = repositoryDAO.listBranches(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, ListBranchesRequest.Response.getDefaultInstance());
@@ -475,15 +418,11 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void getBranch(
       GetBranchRequest request, StreamObserver<GetBranchRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        GetBranchRequest.Response response =
-            repositoryDAO.getBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      GetBranchRequest.Response response =
+          repositoryDAO.getBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, GetBranchRequest.Response.getDefaultInstance());
@@ -493,15 +432,11 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void setBranch(
       SetBranchRequest request, StreamObserver<SetBranchRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        SetBranchRequest.Response response =
-            repositoryDAO.setBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      SetBranchRequest.Response response =
+          repositoryDAO.setBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, SetBranchRequest.Response.getDefaultInstance());
@@ -511,18 +446,14 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void deleteBranch(
       DeleteBranchRequest request, StreamObserver<DeleteBranchRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        if (request.getBranch().isEmpty()) {
-          throw new ModelDBException(
-              "Branch not found in the DeleteBranchRequest", Code.INVALID_ARGUMENT);
-        }
-        DeleteBranchRequest.Response response = repositoryDAO.deleteBranch(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+      if (request.getBranch().isEmpty()) {
+        throw new ModelDBException(
+            "Branch not found in the DeleteBranchRequest", Code.INVALID_ARGUMENT);
       }
+      DeleteBranchRequest.Response response = repositoryDAO.deleteBranch(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteBranchRequest.Response.getDefaultInstance());
@@ -533,14 +464,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void listCommitsLog(
       ListCommitsLogRequest request,
       StreamObserver<ListCommitsLogRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        ListCommitsLogRequest.Response response = repositoryDAO.listCommitsLog(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      ListCommitsLogRequest.Response response = repositoryDAO.listCommitsLog(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, ListCommitsLogRequest.Response.getDefaultInstance());
@@ -550,14 +477,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void listTags(
       ListTagsRequest request, StreamObserver<ListTagsRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        ListTagsRequest.Response response = repositoryDAO.listTags(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      ListTagsRequest.Response response = repositoryDAO.listTags(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, ListTagsRequest.Response.getDefaultInstance());
     }
@@ -566,14 +489,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void getTag(
       GetTagRequest request, StreamObserver<GetTagRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        GetTagRequest.Response response = repositoryDAO.getTag(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      GetTagRequest.Response response = repositoryDAO.getTag(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, GetTagRequest.Response.getDefaultInstance());
     }
@@ -582,14 +501,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void setTag(
       SetTagRequest request, StreamObserver<SetTagRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        SetTagRequest.Response response = repositoryDAO.setTag(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      SetTagRequest.Response response = repositoryDAO.setTag(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, SetTagRequest.Response.getDefaultInstance());
     }
@@ -598,18 +513,13 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void deleteTag(
       DeleteTagRequest request, StreamObserver<DeleteTagRequest.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        if (request.getTag().isEmpty()) {
-          throw new ModelDBException(
-              "Tag not found in the DeleteTagRequest", Code.INVALID_ARGUMENT);
-        }
-        DeleteTagRequest.Response response = repositoryDAO.deleteTag(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+      if (request.getTag().isEmpty()) {
+        throw new ModelDBException("Tag not found in the DeleteTagRequest", Code.INVALID_ARGUMENT);
       }
+      DeleteTagRequest.Response response = repositoryDAO.deleteTag(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteTagRequest.Response.getDefaultInstance());
@@ -619,14 +529,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   @Override
   public void findRepositories(
       FindRepositories request, StreamObserver<FindRepositories.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-        FindRepositories.Response response = repositoryDAO.findRepositories(request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      FindRepositories.Response response = repositoryDAO.findRepositories(request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, FindRepositories.Response.getDefaultInstance());
@@ -637,15 +543,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void findRepositoriesBlobs(
       FindRepositoriesBlobs request,
       StreamObserver<FindRepositoriesBlobs.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
-
-        FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(commitDAO, request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(commitDAO, request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, FindRepositoriesBlobs.Response.getDefaultInstance());
@@ -656,24 +557,19 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void getUrlForBlobVersioned(
       GetUrlForBlobVersioned request,
       StreamObserver<GetUrlForBlobVersioned.Response> responseObserver) {
-    QPSCountResource.inc();
     try {
-      try (RequestLatencyResource latencyResource =
-          new RequestLatencyResource(modelDBAuthInterceptor.getMethodName())) {
+      // Validate request parameters
+      validateGetUrlForVersionedBlobRequest(request);
 
-        // Validate request parameters
-        validateGetUrlForVersionedBlobRequest(request);
-
-        GetUrlForBlobVersioned.Response response =
-            blobDAO.getUrlForVersionedBlob(
-                artifactStoreDAO,
-                (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
-                (session, repository) ->
-                    commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
-                request);
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-      }
+      GetUrlForBlobVersioned.Response response =
+          blobDAO.getUrlForVersionedBlob(
+              artifactStoreDAO,
+              (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
+              (session, repository) ->
+                  commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
+              request);
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, GetUrlForBlobVersioned.Response.getDefaultInstance());
@@ -708,9 +604,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void commitVersionedBlobArtifactPart(
       CommitVersionedBlobArtifactPart request,
       StreamObserver<CommitVersionedBlobArtifactPart.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getCommitSha().isEmpty()
           && request.getLocationList().isEmpty()
@@ -750,9 +644,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void getCommittedVersionedBlobArtifactParts(
       GetCommittedVersionedBlobArtifactParts request,
       StreamObserver<GetCommittedVersionedBlobArtifactParts.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getCommitSha().isEmpty() && request.getLocationList().isEmpty()) {
         errorMessage =
@@ -789,9 +681,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void commitMultipartVersionedBlobArtifact(
       CommitMultipartVersionedBlobArtifact request,
       StreamObserver<CommitMultipartVersionedBlobArtifact.Response> responseObserver) {
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
+    try {
       String errorMessage = null;
       if (request.getCommitSha().isEmpty()
           && request.getLocationList().isEmpty()

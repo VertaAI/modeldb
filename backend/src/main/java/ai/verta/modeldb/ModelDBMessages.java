@@ -21,12 +21,9 @@ public interface ModelDBMessages {
   String LOCATION_TYPE_NOT_MATCH_OF_PATH_DATASET_VERSION_INFO =
       "Location type of PathDatasetVersionInfo does not match with PathDatasetVersionInfo of parent datsetVersion";
   String INVALID_DATSET_TYPE = "Invalid or missing Dataset Type in CreateDatasetVersion request";
-  String DATASET_ID_NOT_FOUND_IN_REQUEST =
-      "Dataset id not found in the request : " + ModelDBAuthInterceptor.METHOD_NAME.get();
-  String DATASET_NAME_NOT_FOUND_IN_REQUEST =
-      "Dataset name not found in the request : " + ModelDBAuthInterceptor.METHOD_NAME.get();
-  String DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST =
-      "Dataset id not found in the request : " + ModelDBAuthInterceptor.METHOD_NAME.get();
+  String DATASET_ID_NOT_FOUND_IN_REQUEST = "Dataset id not found";
+  String DATASET_NAME_NOT_FOUND_IN_REQUEST = "Dataset name not found";
+  String DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST = "Dataset id not found";
   String DATASET_VERSION_TYPE_NOT_MATCH_WITH_DATSET_TYPE =
       "Dataset version type does not match containing dataset type";
   String ACCESSIBLE_DATASET_IN_SERVICE = "Accessible datasets in service : {}";

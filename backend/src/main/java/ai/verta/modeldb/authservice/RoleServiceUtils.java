@@ -6,7 +6,6 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
-import ai.verta.modeldb.ModelDBAuthInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.ProjectVisibility;
@@ -187,7 +186,7 @@ public class RoleServiceUtils implements RoleService {
                       .build())
               .build();
 
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
+      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
       IsSelfAllowed.Response isSelfAllowedResponse =
           authServiceChannel
               .getAuthzServiceBlockingStub(requestHeaders)
@@ -237,7 +236,7 @@ public class RoleServiceUtils implements RoleService {
                       .build())
               .build();
 
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
+      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
       GetSelfAllowedActionsBatch.Response getSelfAllowedActionsBatchResponse =
           authServiceChannel
               .getAuthzServiceBlockingStub(requestHeaders)
@@ -732,7 +731,7 @@ public class RoleServiceUtils implements RoleService {
             .build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
+      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
               .getAuthzServiceBlockingStub(requestHeaders)
@@ -789,7 +788,7 @@ public class RoleServiceUtils implements RoleService {
             .build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
+      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
               .getAuthzServiceBlockingStub(requestHeaders)
@@ -850,7 +849,7 @@ public class RoleServiceUtils implements RoleService {
             .build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Metadata requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
+      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
       GetAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
               .getAuthzServiceBlockingStub(requestHeaders)

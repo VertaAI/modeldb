@@ -3,9 +3,6 @@ package ai.verta.modeldb.artifactStore.storageservice.s3;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBException;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.UploadFileResponse;
-import ai.verta.modeldb.monitoring.ErrorCountResource;
-import ai.verta.modeldb.monitoring.QPSCountResource;
-import ai.verta.modeldb.monitoring.RequestLatencyResource;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
@@ -39,9 +36,7 @@ public class S3Controller {
       @RequestParam("upload_id") String upload_id)
       throws ModelDBException, IOException {
     LOGGER.debug("S3 storeArtifact called");
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBConstants.STORE_ARTIFACT_ENDPOINT)) {
+    try {
       String eTag = s3Service.uploadFile(artifactPath, requestEntity, part_number, upload_id);
       LOGGER.trace("S3 storeArtifact - artifact_path : {}", artifactPath);
       LOGGER.trace("S3 storeArtifact - eTag : {}", eTag);
@@ -50,7 +45,6 @@ public class S3Controller {
       return ResponseEntity.ok().body(new UploadFileResponse(artifactPath, null, null, -1, eTag));
     } catch (IOException | ModelDBException e) {
       LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
       throw e;
     }
   }
@@ -61,21 +55,17 @@ public class S3Controller {
       @RequestParam("artifact_path") String artifactPath)
       throws ModelDBException {
     LOGGER.debug("getArtifact called");
-    QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBConstants.GET_ARTIFACT_ENDPOINT)) {
+    try {
       LOGGER.debug("getArtifact started");
       // Load file as Resource
       return s3Service.loadFileAsResource(fileName, artifactPath);
     } catch (ModelDBException e) {
       LOGGER.info(e.getMessage(), e);
-      ErrorCountResource.inc(e);
       Status status =
           Status.newBuilder().setCode(e.getCode().value()).setMessage(e.getMessage()).build();
       throw StatusProto.toStatusRuntimeException(status);
     } catch (Exception e) {
       LOGGER.warn(e.getMessage(), e);
-      ErrorCountResource.inc(e);
       Status status =
           Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
       throw StatusProto.toStatusRuntimeException(status);
