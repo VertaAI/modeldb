@@ -132,6 +132,9 @@ public class ProjectEntity {
   @Column(name = "deleted")
   private Boolean deleted = false;
 
+  @Column(name = "created")
+  private Boolean created = false;
+
   public String getId() {
     return id;
   }
@@ -302,6 +305,14 @@ public class ProjectEntity {
 
   public void setDeleted(Boolean deleted) {
     this.deleted = deleted;
+  }
+
+  public Boolean getCreated() {
+    return created;
+  }
+
+  public void setCreated(Boolean created) {
+    this.created = created;
   }
 
   public Project getProtoObject() throws InvalidProtocolBufferException {
