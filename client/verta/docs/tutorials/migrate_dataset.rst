@@ -73,13 +73,26 @@ Prefixes are also supported—so long as they end in a slash ``'/'``:
         S3("s3://verta-starter/models/")  # all keys that begin with "models/"
     )
 
-Tips and tricks
----------------
+base_path and other attributes
+------------------------------
 
 Several attributes of the old ``Dataset`` and ``DatasetVersion`` classes have
 been ported over and are still usable; however, most of them have been
 deprecated and will raise warnings accordingly—with guidance on how to update
 them.
+
+``dataset_version.base_path`` in particular is no longer available as a direct
+attribute. Instead, to obtain usable paths of particular files, you may
+retrieve them by accessing the components of the dataset version:
+
+.. code-block:: python
+
+    version = dataset.create_version(S3("s3://verta-starter/census-train.csv"))
+    version.list_components()[0].path
+    # s3://verta-starter/census-train.csv
+
+Tips and tricks
+---------------
 
 One advantage of this new system is that you can preview the contents of your
 dataset version-to-be before creating it in ModelDB:
@@ -119,5 +132,5 @@ its versions can be different types themselves:
     dataset.create_version(Path("census-train.csv"))
     dataset.create_version(S3("s3://verta-starter/census-train.csv"))
 
-For the complete functionality, please see the updated
+For complete functionality, please see the updated
 `API reference <../api/api/dataset.html>`__!
