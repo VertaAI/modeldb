@@ -1370,6 +1370,41 @@ class Client(object):
             raise ValueError("Dataset Version not found")
         return dataset_version
 
+    # holdover for backwards compatibility
+    def find_datasets(self,
+                      dataset_ids=None, name=None,
+                      tags=None,
+                      sort_key=None, ascending=False,
+                      workspace=None):
+        warnings.warn(
+            "this method is deprecated and will removed in an upcoming version;"
+            " consider using `client.datasets.find()` instead",
+            category=FutureWarning,
+        )
+        datasets = self.datasets
+        if dataset_ids:
+            datasets = datasets.with_ids(_utils.as_list_of_str(dataset_ids))
+        if sort_key:
+            datasets = datasets.sort(sort_key, not ascending)
+        if workspace:
+            datasets = datasets.with_workspace(workspace)
+
+        predicates = []
+        if tags is not None:
+            tags = _utils.as_list_of_str(tags)
+            predicates.extend(
+                "tags == \"{}\"".format(tag)
+                for tag in tags
+            )
+        if name is not None:
+            if not isinstance(name, six.string_types):
+                raise TypeError("`name` must be str, not {}".format(type(name)))
+            predicates.append("name ~= \"{}\"".format(name))
+        if predicates:
+            datasets = datasets.find(predicates)
+
+        return datasets
+
     def _create_organization(self, name, desc=None, collaborator_type=None, global_can_deploy=None):
         return Organization._create(self._conn, name, desc, collaborator_type, global_can_deploy)
 

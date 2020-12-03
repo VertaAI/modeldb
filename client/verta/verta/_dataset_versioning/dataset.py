@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 
+import warnings
+
 from ..external import six
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -66,10 +68,6 @@ class Dataset(entity._ModelDBEntity):
         return self._msg.name
 
     @property
-    def dataset_type(self):
-        return self.__class__.__name__
-
-    @property
     def workspace(self):
         self._refresh_cache()
 
@@ -77,24 +75,6 @@ class Dataset(entity._ModelDBEntity):
             return self._get_workspace_name_by_id(self._msg.workspace_id)
         else:
             return entity._OSS_DEFAULT_WORKSPACE
-
-    @property
-    def desc(self):
-        # for backwards compatibility
-        # TODO: deprecate
-        return self.get_description()
-
-    @property
-    def attrs(self):
-        # for backwards compatibility
-        # TODO: deprecate
-        return self.get_attributes()
-
-    @property
-    def tags(self):
-        # for backwards compatibility
-        # TODO: deprecate
-        return self.get_tags()
 
     @property
     def versions(self):
@@ -417,3 +397,45 @@ class Dataset(entity._ModelDBEntity):
             "DELETE", "/api/v1/modeldb/dataset/deleteDataset", body=msg,
         )
         self._conn.must_response(response)
+
+    # The following properties are holdovers for backwards compatibility
+    @property
+    def dataset_type(self):
+        raise AttributeError(
+            "this attribute is no longer supported;"
+            " datasets no longer have a specific associated type",
+        )
+
+    @property
+    def _dataset_type(self):
+        raise AttributeError(
+            "this attribute is no longer supported;"
+            " datasets no longer have a specific associated type",
+        )
+
+    @property
+    def desc(self):
+        warnings.warn(
+            "this attribute is deprecated and will removed in an upcoming version;"
+            " consider using `get_description()` instead",
+            category=FutureWarning,
+        )
+        return self.get_description()
+
+    @property
+    def attrs(self):
+        warnings.warn(
+            "this attribute is deprecated and will removed in an upcoming version;"
+            " consider using `get_attributes()` instead",
+            category=FutureWarning,
+        )
+        return self.get_attributes()
+
+    @property
+    def tags(self):
+        warnings.warn(
+            "this attribute is deprecated and will removed in an upcoming version;"
+            " consider using `get_tags()` instead",
+            category=FutureWarning,
+        )
+        return self.get_tags()
