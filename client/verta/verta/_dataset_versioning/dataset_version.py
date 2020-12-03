@@ -134,6 +134,13 @@ class DatasetVersion(entity._ModelDBEntity):
         blob.dataset.CopyFrom(self._msg.dataset_blob)
         return commit.blob_msg_to_object(blob)
 
+    def list_components(self):  # from legacy DatasetVersion
+        """
+        Shorthand for ``get_content().list_components()``.
+
+        """
+        return self.get_content().list_components()
+
     def set_description(self, desc):
         """
         Sets the description of this dataset version.
@@ -338,9 +345,6 @@ class DatasetVersion(entity._ModelDBEntity):
             "DELETE", "/api/v1/modeldb/dataset-version/deleteDatasetVersion", body=msg,
         )
         self._conn.must_response(response)
-
-    def list_components(self):  # from legacy DatasetVersion
-        return self.get_content().list_components()
 
     # The following properties are holdovers for backwards compatibility
     @property
