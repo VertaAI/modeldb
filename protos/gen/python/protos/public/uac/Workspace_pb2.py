@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x13uac/Workspace.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"\x1e\n\x10GetWorkspaceById\x12\n\n\x02id\x18\x01 \x01(\x04\"\"\n\x12GetWorkspaceByName\x12\x0c\n\x04name\x18\x01 \x01(\t\"n\n\x16GetWorkspaceByLegacyId\x12\n\n\x02id\x18\x01 \x01(\t\x12H\n\x0eworkspace_type\x18\x02 \x01(\x0e\x32\x30.ai.verta.common.WorkspaceTypeEnum.WorkspaceType\"{\n\tWorkspace\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x11\n\x07user_id\x18\x02 \x01(\tH\x00\x12\x10\n\x06org_id\x18\x03 \x01(\tH\x00\x12\x12\n\x08username\x18\x04 \x01(\tH\x01\x12\x12\n\x08org_name\x18\x05 \x01(\tH\x01\x42\r\n\x0binternal_idB\x06\n\x04name2\x8a\x03\n\x10WorkspaceService\x12s\n\x10getWorkspaceById\x12\x1e.ai.verta.uac.GetWorkspaceById\x1a\x17.ai.verta.uac.Workspace\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/workspace/getWorkspaceById\x12y\n\x12getWorkspaceByName\x12 .ai.verta.uac.GetWorkspaceByName\x1a\x17.ai.verta.uac.Workspace\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/workspace/getWorkspaceByName\x12\x85\x01\n\x16getWorkspaceByLegacyId\x12$.ai.verta.uac.GetWorkspaceByLegacyId\x1a\x17.ai.verta.uac.Workspace\",\x82\xd3\xe4\x93\x02&\x12$/v1/workspace/getWorkspaceByLegacyIdB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x13uac/Workspace.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"\x1e\n\x10GetWorkspaceById\x12\n\n\x02id\x18\x01 \x01(\x04\"\"\n\x12GetWorkspaceByName\x12\x0c\n\x04name\x18\x01 \x01(\t\"n\n\x16GetWorkspaceByLegacyId\x12\n\n\x02id\x18\x01 \x01(\t\x12H\n\x0eworkspace_type\x18\x02 \x01(\x0e\x32\x30.ai.verta.common.WorkspaceTypeEnum.WorkspaceType\"{\n\tWorkspace\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x11\n\x07user_id\x18\x02 \x01(\tH\x00\x12\x10\n\x06org_id\x18\x03 \x01(\tH\x00\x12\x12\n\x08username\x18\x04 \x01(\tH\x01\x12\x12\n\x08org_name\x18\x05 \x01(\tH\x01\x42\r\n\x0binternal_idB\x06\n\x04name\"\x16\n\x14GetVisibleWorkspaces\"8\n\nWorkspaces\x12*\n\tworkspace\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Workspace2\x8d\x04\n\x10WorkspaceService\x12s\n\x10getWorkspaceById\x12\x1e.ai.verta.uac.GetWorkspaceById\x1a\x17.ai.verta.uac.Workspace\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/workspace/getWorkspaceById\x12y\n\x12getWorkspaceByName\x12 .ai.verta.uac.GetWorkspaceByName\x1a\x17.ai.verta.uac.Workspace\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/workspace/getWorkspaceByName\x12\x85\x01\n\x16getWorkspaceByLegacyId\x12$.ai.verta.uac.GetWorkspaceByLegacyId\x1a\x17.ai.verta.uac.Workspace\",\x82\xd3\xe4\x93\x02&\x12$/v1/workspace/getWorkspaceByLegacyId\x12\x80\x01\n\x14getVisibleWorkspaces\x12\".ai.verta.uac.GetVisibleWorkspaces\x1a\x18.ai.verta.uac.Workspaces\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/workspace/getVisibleWorkspacesB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
@@ -191,6 +191,61 @@ _WORKSPACE = _descriptor.Descriptor(
   serialized_end=398,
 )
 
+
+_GETVISIBLEWORKSPACES = _descriptor.Descriptor(
+  name='GetVisibleWorkspaces',
+  full_name='ai.verta.uac.GetVisibleWorkspaces',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=400,
+  serialized_end=422,
+)
+
+
+_WORKSPACES = _descriptor.Descriptor(
+  name='Workspaces',
+  full_name='ai.verta.uac.Workspaces',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='workspace', full_name='ai.verta.uac.Workspaces.workspace', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=424,
+  serialized_end=480,
+)
+
 _GETWORKSPACEBYLEGACYID.fields_by_name['workspace_type'].enum_type = common_dot_CommonService__pb2._WORKSPACETYPEENUM_WORKSPACETYPE
 _WORKSPACE.oneofs_by_name['internal_id'].fields.append(
   _WORKSPACE.fields_by_name['user_id'])
@@ -204,10 +259,13 @@ _WORKSPACE.fields_by_name['username'].containing_oneof = _WORKSPACE.oneofs_by_na
 _WORKSPACE.oneofs_by_name['name'].fields.append(
   _WORKSPACE.fields_by_name['org_name'])
 _WORKSPACE.fields_by_name['org_name'].containing_oneof = _WORKSPACE.oneofs_by_name['name']
+_WORKSPACES.fields_by_name['workspace'].message_type = _WORKSPACE
 DESCRIPTOR.message_types_by_name['GetWorkspaceById'] = _GETWORKSPACEBYID
 DESCRIPTOR.message_types_by_name['GetWorkspaceByName'] = _GETWORKSPACEBYNAME
 DESCRIPTOR.message_types_by_name['GetWorkspaceByLegacyId'] = _GETWORKSPACEBYLEGACYID
 DESCRIPTOR.message_types_by_name['Workspace'] = _WORKSPACE
+DESCRIPTOR.message_types_by_name['GetVisibleWorkspaces'] = _GETVISIBLEWORKSPACES
+DESCRIPTOR.message_types_by_name['Workspaces'] = _WORKSPACES
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 GetWorkspaceById = _reflection.GeneratedProtocolMessageType('GetWorkspaceById', (_message.Message,), {
@@ -238,6 +296,20 @@ Workspace = _reflection.GeneratedProtocolMessageType('Workspace', (_message.Mess
   })
 _sym_db.RegisterMessage(Workspace)
 
+GetVisibleWorkspaces = _reflection.GeneratedProtocolMessageType('GetVisibleWorkspaces', (_message.Message,), {
+  'DESCRIPTOR' : _GETVISIBLEWORKSPACES,
+  '__module__' : 'uac.Workspace_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.GetVisibleWorkspaces)
+  })
+_sym_db.RegisterMessage(GetVisibleWorkspaces)
+
+Workspaces = _reflection.GeneratedProtocolMessageType('Workspaces', (_message.Message,), {
+  'DESCRIPTOR' : _WORKSPACES,
+  '__module__' : 'uac.Workspace_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.Workspaces)
+  })
+_sym_db.RegisterMessage(Workspaces)
+
 
 DESCRIPTOR._options = None
 
@@ -247,8 +319,8 @@ _WORKSPACESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=401,
-  serialized_end=795,
+  serialized_start=483,
+  serialized_end=1008,
   methods=[
   _descriptor.MethodDescriptor(
     name='getWorkspaceById',
@@ -276,6 +348,15 @@ _WORKSPACESERVICE = _descriptor.ServiceDescriptor(
     input_type=_GETWORKSPACEBYLEGACYID,
     output_type=_WORKSPACE,
     serialized_options=b'\202\323\344\223\002&\022$/v1/workspace/getWorkspaceByLegacyId',
+  ),
+  _descriptor.MethodDescriptor(
+    name='getVisibleWorkspaces',
+    full_name='ai.verta.uac.WorkspaceService.getVisibleWorkspaces',
+    index=3,
+    containing_service=None,
+    input_type=_GETVISIBLEWORKSPACES,
+    output_type=_WORKSPACES,
+    serialized_options=b'\202\323\344\223\002$\022\"/v1/workspace/getVisibleWorkspaces',
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_WORKSPACESERVICE)

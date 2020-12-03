@@ -11,6 +11,28 @@
     "application/json"
   ],
   "paths": {
+    "/workspace/getVisibleWorkspaces": {
+      "get": {
+        "operationId": "WorkspaceService_getVisibleWorkspaces",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacWorkspaces"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "WorkspaceService"
+        ]
+      }
+    },
     "/workspace/getWorkspaceById": {
       "get": {
         "operationId": "WorkspaceService_getWorkspaceById",
@@ -176,6 +198,17 @@
         },
         "org_name": {
           "type": "string"
+        }
+      }
+    },
+    "uacWorkspaces": {
+      "type": "object",
+      "properties": {
+        "workspace": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacWorkspace"
+          }
         }
       }
     }
