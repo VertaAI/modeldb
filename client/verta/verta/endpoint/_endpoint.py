@@ -88,7 +88,7 @@ class Endpoint(object):
         return data['date_updated']
 
     @classmethod
-    def _create(cls, conn, conf, workspace, public_within_org, path=None, description=None):
+    def _create(cls, conn, conf, workspace, public_within_org, path, description=None):
         endpoint_json = cls._create_json(conn, workspace, public_within_org, path, description)
         if endpoint_json:
             endpoint = cls(conn, conf, workspace, endpoint_json['id'])
@@ -158,12 +158,9 @@ class Endpoint(object):
 
     @classmethod
     def _get_json_by_path(cls, conn, workspace, path):
-        if path is None:
-            return None
         endpoints = cls._get_endpoints(conn, workspace)
         if not path.startswith('/'):
             path = '/' + path
-        # FIXME: ask the backend to implement an API to query by path
         for endpoint in endpoints:
             creator_request = endpoint['creator_request']
             if creator_request['path'] == path:
