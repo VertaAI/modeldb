@@ -401,18 +401,16 @@ class Dataset(entity._ModelDBEntity):
     # The following properties are holdovers for backwards compatibility
     @property
     def dataset_type(self):
-        warnings.warn(
-            "this attribute is deprecated and will removed in an upcoming version;"
+        raise AttributeError(
+            "this attribute is no longer supported;"
             " datasets no longer have a specific associated type",
-            category=FutureWarning,
         )
 
     @property
     def _dataset_type(self):
-        warnings.warn(
-            "this attribute is deprecated and will removed in an upcoming version;"
+        raise AttributeError(
+            "this attribute is no longer supported;"
             " datasets no longer have a specific associated type",
-            category=FutureWarning,
         )
 
     @property
