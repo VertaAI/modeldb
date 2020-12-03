@@ -135,7 +135,7 @@ class _ModelDBEntity(object):
     @classmethod
     def _create(cls, conn, conf, *args, **kwargs):
         if 'name' in kwargs and kwargs['name'] is None:
-            kwargs['name'] = ""
+            kwargs['name'] = cls._generate_default_name()
 
         msg = cls._create_proto(conn, *args, **kwargs)
         if msg:
