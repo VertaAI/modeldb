@@ -141,7 +141,7 @@ class Dataset(entity._ModelDBEntity):
                     " because workspace \"{}\" is not an organization".format(ctx.workspace_name)
                 )
             else:
-                msg.project_visibility = _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
+                msg.dataset_visibility = _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
 
         endpoint = "/api/v1/modeldb/dataset/createDataset"
         response = conn.make_proto_request("POST", endpoint, body=msg)
