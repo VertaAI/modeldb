@@ -863,8 +863,8 @@ class Client(object):
             return Endpoint._get_by_id(self._conn, self._conf, workspace, id)
         else:
             return Endpoint._get_or_create_by_name(self._conn, path,
-                                            lambda name: Endpoint._get_by_path(self._conn, self._conf, workspace, path),
-                                            lambda name: Endpoint._create(self._conn, self._conf, workspace, public_within_org, path, description),
+                                            lambda path: Endpoint._get_by_path(self._conn, self._conf, workspace, path),
+                                            lambda path: Endpoint._create(self._conn, self._conf, workspace, public_within_org, path, description),
                                             lambda: check_unnecessary_params_warning(
                                                  resource_name,
                                                  "path {}".format(path),
