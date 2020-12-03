@@ -407,7 +407,7 @@ class DatasetVersion(entity._ModelDBEntity):
         return getattr(self._msg, version_info_oneof)
 
     @property
-    def base_path(self):  # copied from legacy DatasetVersion
+    def base_path(self):
         raise AttributeError(
             "this attribute is no longer supported;"
             " considering accessing the paths of specific components"
