@@ -389,7 +389,7 @@ class DatasetVersion(entity._ModelDBEntity):
     def dataset_version(self):
         warnings.warn(
             "this attribute is deprecated and will removed in an upcoming version;"
-            " interfacing directly with the internal protobuf structure is not recommended",
+            " interfacing directly with the internal protobuf structure is not supported",
             category=FutureWarning,
         )
         self._refresh_cache()
