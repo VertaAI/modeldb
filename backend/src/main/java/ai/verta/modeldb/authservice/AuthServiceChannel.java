@@ -4,11 +4,7 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.AuthzServiceGrpc;
-import ai.verta.uac.OrganizationServiceGrpc;
-import ai.verta.uac.RoleServiceGrpc;
-import ai.verta.uac.TeamServiceGrpc;
-import ai.verta.uac.UACServiceGrpc;
+import ai.verta.uac.*;
 import ai.verta.uac.versioning.AuditLogServiceGrpc;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -34,6 +30,7 @@ public class AuthServiceChannel implements AutoCloseable {
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
   private AuditLogServiceGrpc.AuditLogServiceBlockingStub auditLogServiceBlockingStub;
+  private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
   private String serviceUserEmail;
   private String serviceUserDevKey;
 
@@ -193,6 +190,22 @@ public class AuthServiceChannel implements AutoCloseable {
       initAuditLogServiceStubChannel();
     }
     return auditLogServiceBlockingStub;
+  }
+
+  private void initCollaboratorServiceStubChannel() {
+    Metadata requestHeaders = getMetadataHeaders();
+    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
+    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
+    collaboratorServiceBlockingStub =
+            CollaboratorServiceGrpc.newBlockingStub(authServiceChannel).withInterceptors(clientInterceptor);
+    LOGGER.trace("Header attached with stub");
+  }
+
+  public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub getCollaboratorServiceBlockingStub() {
+    if (collaboratorServiceBlockingStub == null) {
+      initCollaboratorServiceStubChannel();
+    }
+    return collaboratorServiceBlockingStub;
   }
 
   @Override

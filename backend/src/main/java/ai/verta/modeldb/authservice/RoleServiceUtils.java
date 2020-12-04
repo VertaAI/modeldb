@@ -4,6 +4,7 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
+import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
@@ -15,37 +16,9 @@ import ai.verta.modeldb.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.Action;
-import ai.verta.uac.Actions;
-import ai.verta.uac.DeleteRoleBinding;
-import ai.verta.uac.DeleteRoleBindings;
-import ai.verta.uac.Entities;
-import ai.verta.uac.GetAllowedEntities;
-import ai.verta.uac.GetAllowedResources;
-import ai.verta.uac.GetCollaboratorResponseItem;
-import ai.verta.uac.GetOrganizationById;
-import ai.verta.uac.GetOrganizationByName;
-import ai.verta.uac.GetRoleBindingByName;
-import ai.verta.uac.GetRoleByName;
-import ai.verta.uac.GetSelfAllowedActionsBatch;
-import ai.verta.uac.GetSelfAllowedResources;
-import ai.verta.uac.GetTeamById;
-import ai.verta.uac.GetTeamByName;
-import ai.verta.uac.IsSelfAllowed;
-import ai.verta.uac.ListMyOrganizations;
-import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.Organization;
-import ai.verta.uac.RemoveResources;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.Resources;
-import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.ServiceEnum.Service;
-import ai.verta.uac.SetRoleBinding;
-import ai.verta.uac.UserInfo;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.rpc.Code;
@@ -1141,6 +1114,56 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (ModelDBUtils.RetryCallInterface<List<Organization>>) this::listMyOrganizations);
+    }
+  }
+
+  private ResourceVisibility getResourceVisibility(WorkspaceType workspaceType, boolean orgScopedPublic) {
+    if (workspaceType == WorkspaceType.ORGANIZATION) {
+        if (orgScopedPublic) {
+          return ResourceVisibility.ORG_SCOPED_PUBLIC;
+        }
+        return ResourceVisibility.ORG_DEFAULT;
+    }
+    return ResourceVisibility.PRIVATE;
+  }
+
+  public void createWorkspaceRoleBinding(
+          Long workspaceId,
+          WorkspaceType workspaceType,
+          String resourceId,
+          Long ownerId,
+          ModelDBServiceResourceTypes resourceType,
+          CollaboratorType collaboratorType,
+          boolean orgScopedPublic) {
+
+    // Double-dispatch an identical call via the CollaboratorService to support forward migration
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      LOGGER.info("Calling CollaboratorService to create resources");
+      ResourceType modeldbServiceResourceType = ResourceType.newBuilder()
+              .setModeldbServiceResourceType(resourceType)
+              .build();
+      Resources resources = Resources.newBuilder()
+              .setResourceType(modeldbServiceResourceType)
+              .setService(Service.MODELDB_SERVICE)
+              .addResourceIds(resourceId)
+              .build();
+      ResourceVisibility visibility = getResourceVisibility(workspaceType, orgScopedPublic);
+      SetResources setResources = SetResources.newBuilder()
+              .setWorkspaceId(workspaceId)
+              .setOwnerId(ownerId)
+              .setResources(resources)
+              .setVisibility(visibility)
+              .setCollaboratorType(collaboratorType)
+              .build();
+      SetResources.Response setResourcesResponse =
+              authServiceChannel
+                      .getCollaboratorServiceBlockingStub()
+                      .setResources(setResources);
+
+      LOGGER.info("SetResources message sent.  Response: " + setResourcesResponse);
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
     }
   }
 

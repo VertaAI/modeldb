@@ -1,11 +1,7 @@
 package ai.verta.modeldb.project;
 
-import ai.verta.common.Artifact;
-import ai.verta.common.KeyValue;
-import ai.verta.common.KeyValueQuery;
+import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.OperatorEnum;
-import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CloneExperimentRun;
@@ -246,6 +242,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
       roleService.createPublicRoleBinding(project.getId(), ModelDBServiceResourceTypes.PROJECT);
     }
+
+    roleService.createWorkspaceRoleBinding(project.getWorkspaceServiceId(),
+            project.getWorkspaceType(),
+            project.getId(),
+            project.
+            ModelDBServiceResourceTypes.PROJECT,
+            CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
+            project.getProjectVisibility().equals(ProjectVisibility.ORG_SCOPED_PUBLIC));
 
     createWorkspaceRoleBinding(
         project.getWorkspaceId(),

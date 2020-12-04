@@ -1,5 +1,6 @@
 package ai.verta.modeldb.authservice;
 
+import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
@@ -140,6 +141,15 @@ public interface RoleService {
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
 
   List<Organization> listMyOrganizations();
+
+  void createWorkspaceRoleBinding(
+          Long workspaceId,
+          WorkspaceType workspaceType,
+          String resourceId,
+          Long ownerId,
+          ModelDBServiceResourceTypes resourceType,
+          CollaboratorTypeEnum.CollaboratorType collaboratorType,
+          boolean orgScopedPublic);
 
   void createWorkspaceRoleBinding(
       String workspace_id,
