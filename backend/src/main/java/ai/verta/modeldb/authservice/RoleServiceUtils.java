@@ -1063,16 +1063,17 @@ public class RoleServiceUtils implements RoleService {
       workspaceDTO.setWorkspaceId(vertaId);
       workspaceDTO.setWorkspaceType(WorkspaceType.USER);
       workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
-      Optional<Workspace> workspace = getWorkspaceByLegacyId(workspaceName, WorkspaceType.USER);
+      Optional<Workspace> workspace = getWorkspaceByLegacyId(vertaId, WorkspaceType.USER);
       if (workspace.isPresent()) {
         workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
       }
     } else {
       try {
-        workspaceDTO.setWorkspaceId(new CollaboratorOrg(getOrgByName(workspaceName)).getId());
+        final String legacyWorkspaceId = new CollaboratorOrg(getOrgByName(workspaceName)).getId();
+        workspaceDTO.setWorkspaceId(legacyWorkspaceId);
         workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
         workspaceDTO.setWorkspaceName(workspaceName);
-        Optional<Workspace> workspace = getWorkspaceByLegacyId(workspaceName, WorkspaceType.ORGANIZATION);
+        Optional<Workspace> workspace = getWorkspaceByLegacyId(legacyWorkspaceId, WorkspaceType.ORGANIZATION);
         if (workspace.isPresent()) {
           workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
         }
@@ -1084,7 +1085,7 @@ public class RoleServiceUtils implements RoleService {
         workspaceDTO.setWorkspaceId(collaboratorUser.getId());
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
         workspaceDTO.setWorkspaceName(workspaceName);
-        Optional<Workspace> workspace = getWorkspaceByLegacyId(workspaceName, WorkspaceType.USER);
+        Optional<Workspace> workspace = getWorkspaceByLegacyId(collaboratorUser.getId(), WorkspaceType.USER);
         if (workspace.isPresent()) {
           workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
         }
