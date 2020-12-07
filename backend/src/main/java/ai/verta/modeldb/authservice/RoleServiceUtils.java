@@ -1156,6 +1156,9 @@ public class RoleServiceUtils implements RoleService {
       if (projectVisibility == ProjectVisibility.ORG_SCOPED_PUBLIC) {
         return ResourceVisibility.ORG_SCOPED_PUBLIC;
       }
+      else if (projectVisibility == ProjectVisibility.PRIVATE) {
+        return ResourceVisibility.PRIVATE;
+      }
       return ResourceVisibility.ORG_DEFAULT;
     }
     return ResourceVisibility.PRIVATE;
