@@ -21,7 +21,7 @@ message Project {
     uint64 date_updated = 5;
     string short_name = 6;
     string readme_text = 7;
-    VisibilityEnum.Visibility visibility = 8;
+    common.VisibilityEnum.Visibility visibility = 8;
 
     string workspace_id = 9;
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 10;
@@ -40,7 +40,7 @@ message CreateProject {
     repeated common.KeyValue attributes = 3;
     repeated string tags = 4;
     string readme_text = 5;
-    VisibilityEnum.Visibility visibility = 6;
+    common.VisibilityEnum.Visibility visibility = 6;
     repeated common.Artifact artifacts = 7;
     string workspace_name = 8;
     int64 date_created = 9;
@@ -265,9 +265,9 @@ message GetProjectReadme {
     }
 }
 
-message SetVisibilty {
+message SetVisibility {
     string id = 1;
-    VisibilityEnum.Visibility visibility = 2;
+    common.VisibilityEnum.Visibility visibility = 2;
 
     message Response {
         Project project = 1;
@@ -507,7 +507,7 @@ service ProjectService {
         };
     };
 
-    rpc setVisibility(SetVisibilty) returns (SetVisibilty.Response) {
+    rpc setVisibility(SetVisibility) returns (SetVisibility.Response) {
         option (google.api.http) = {
             post: "/v1/project/setVisibility"
             body: "*"
