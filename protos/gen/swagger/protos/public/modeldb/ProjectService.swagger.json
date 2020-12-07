@@ -951,6 +951,38 @@
         ]
       }
     },
+    "/project/setProjectVisibility": {
+      "post": {
+        "operationId": "ProjectService_setProjectVisibility",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbSetProjectVisibilityResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbSetProjectVisibility"
+            }
+          }
+        ],
+        "tags": [
+          "ProjectService"
+        ]
+      }
+    },
     "/project/setProjectWorkspace": {
       "post": {
         "operationId": "ProjectService_setProjectWorkspace",
@@ -975,38 +1007,6 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/modeldbSetProjectWorkspace"
-            }
-          }
-        ],
-        "tags": [
-          "ProjectService"
-        ]
-      }
-    },
-    "/project/setVisibility": {
-      "post": {
-        "operationId": "ProjectService_setVisibility",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetVisibilityResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetVisibility"
             }
           }
         ],
@@ -1952,6 +1952,25 @@
         }
       }
     },
+    "modeldbSetProjectVisibility": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "visibility": {
+          "$ref": "#/definitions/VisibilityEnumVisibility"
+        }
+      }
+    },
+    "modeldbSetProjectVisibilityResponse": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "$ref": "#/definitions/modeldbProject"
+        }
+      }
+    },
     "modeldbSetProjectWorkspace": {
       "type": "object",
       "properties": {
@@ -1964,25 +1983,6 @@
       }
     },
     "modeldbSetProjectWorkspaceResponse": {
-      "type": "object",
-      "properties": {
-        "project": {
-          "$ref": "#/definitions/modeldbProject"
-        }
-      }
-    },
-    "modeldbSetVisibility": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "visibility": {
-          "$ref": "#/definitions/VisibilityEnumVisibility"
-        }
-      }
-    },
-    "modeldbSetVisibilityResponse": {
       "type": "object",
       "properties": {
         "project": {

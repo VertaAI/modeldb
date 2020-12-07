@@ -265,7 +265,7 @@ message GetProjectReadme {
     }
 }
 
-message SetVisibility {
+message SetProjectVisibility {
     string id = 1;
     common.VisibilityEnum.Visibility visibility = 2;
 
@@ -507,9 +507,9 @@ service ProjectService {
         };
     };
 
-    rpc setVisibility(SetVisibility) returns (SetVisibility.Response) {
+    rpc setProjectVisibility(SetProjectVisibility) returns (SetProjectVisibility.Response) {
         option (google.api.http) = {
-            post: "/v1/project/setVisibility"
+            post: "/v1/project/setProjectVisibility"
             body: "*"
         };
     };
