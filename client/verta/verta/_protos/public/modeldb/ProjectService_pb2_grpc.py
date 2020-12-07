@@ -135,10 +135,10 @@ class ProjectServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.Response.FromString,
         )
-    self.setProjectVisibility = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/setProjectVisibility',
-        request_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.Response.FromString,
+    self.setVisibility = channel.unary_unary(
+        '/ai.verta.modeldb.ProjectService/setVisibility',
+        request_serializer=modeldb_dot_ProjectService__pb2.SetVisibility.SerializeToString,
+        response_deserializer=modeldb_dot_ProjectService__pb2.SetVisibility.Response.FromString,
         )
     self.setProjectShortName = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/setProjectShortName',
@@ -359,7 +359,7 @@ class ProjectServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def setProjectVisibility(self, request, context):
+  def setVisibility(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -552,10 +552,10 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           request_deserializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.Response.SerializeToString,
       ),
-      'setProjectVisibility': grpc.unary_unary_rpc_method_handler(
-          servicer.setProjectVisibility,
-          request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.Response.SerializeToString,
+      'setVisibility': grpc.unary_unary_rpc_method_handler(
+          servicer.setVisibility,
+          request_deserializer=modeldb_dot_ProjectService__pb2.SetVisibility.FromString,
+          response_serializer=modeldb_dot_ProjectService__pb2.SetVisibility.Response.SerializeToString,
       ),
       'setProjectShortName': grpc.unary_unary_rpc_method_handler(
           servicer.setProjectShortName,
