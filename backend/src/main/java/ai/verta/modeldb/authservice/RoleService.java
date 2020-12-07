@@ -146,7 +146,7 @@ public interface RoleService {
 
   boolean createWorkspacePermissions(
           String workspaceName,
-          WorkspaceType workspaceType,
+          Optional<WorkspaceType> workspaceType,
           String resourceId,
           Optional<Long> ownerId,
           ModelDBServiceResourceTypes resourceType,
@@ -155,7 +155,7 @@ public interface RoleService {
 
   boolean createWorkspacePermissions(
           Long workspaceId,
-          WorkspaceType workspaceType,
+          Optional<WorkspaceType> workspaceType,
           String resourceId,
           Optional<Long> ownerId,
           ModelDBServiceResourceTypes resourceType,

@@ -269,7 +269,7 @@ public class PublicRoleServiceUtils implements RoleService {
   @Override
   public boolean createWorkspacePermissions(
           String workspaceName,
-          WorkspaceType workspaceType,
+          Optional<WorkspaceType> workspaceType,
           String resourceId,
           Optional<Long> ownerId,
           ModelDBServiceResourceTypes resourceType,
@@ -281,7 +281,7 @@ public class PublicRoleServiceUtils implements RoleService {
   @Override
   public boolean createWorkspacePermissions(
           Long workspaceId,
-          WorkspaceType workspaceType,
+          Optional<WorkspaceType> workspaceType,
           String resourceId,
           Optional<Long> ownerId,
           ModelDBServiceResourceTypes resourceType,

@@ -1151,8 +1151,11 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private ResourceVisibility getResourceVisibility(
-      WorkspaceType workspaceType, ProjectVisibility projectVisibility) {
-    if (workspaceType == WorkspaceType.ORGANIZATION) {
+      Optional<WorkspaceType> workspaceType, ProjectVisibility projectVisibility) {
+    if (!workspaceType.isPresent()) {
+      return ResourceVisibility.PRIVATE;
+    }
+    if (workspaceType.get() == WorkspaceType.ORGANIZATION) {
       if (projectVisibility == ProjectVisibility.ORG_SCOPED_PUBLIC) {
         return ResourceVisibility.ORG_SCOPED_PUBLIC;
       }
@@ -1167,7 +1170,7 @@ public class RoleServiceUtils implements RoleService {
   private boolean createWorkspacePermissions(
       Optional<Long> workspaceId,
       Optional<String> workspaceName,
-      WorkspaceType workspaceType,
+      Optional<WorkspaceType> workspaceType,
       String resourceId,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
@@ -1216,7 +1219,7 @@ public class RoleServiceUtils implements RoleService {
   @Override
   public boolean createWorkspacePermissions(
           String workspaceName,
-          WorkspaceType workspaceType,
+          Optional<WorkspaceType> workspaceType,
           String resourceId,
           Optional<Long> ownerId,
           ModelDBServiceResourceTypes resourceType,
@@ -1236,7 +1239,7 @@ public class RoleServiceUtils implements RoleService {
   @Override
   public boolean createWorkspacePermissions(
           Long workspaceId,
-          WorkspaceType workspaceType,
+          Optional<WorkspaceType> workspaceType,
           String resourceId,
           Optional<Long> ownerId,
           ModelDBServiceResourceTypes resourceType,

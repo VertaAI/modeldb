@@ -238,7 +238,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     final Optional<Long> ownerId = userInfo != null ? Optional.of(Long.parseLong(userInfo.getUserId())) : Optional.empty();
     roleService.createWorkspacePermissions(
         project.getWorkspaceServiceId(),
-        project.getWorkspaceType(),
+        Optional.ofNullable(project.getWorkspaceType()),
         project.getId(),
         ownerId,
         ModelDBServiceResourceTypes.PROJECT,
