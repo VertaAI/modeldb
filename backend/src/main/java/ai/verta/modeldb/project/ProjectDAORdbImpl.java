@@ -12,7 +12,6 @@ import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -231,7 +230,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         project.getId(),
         ModelDBServiceResourceTypes.PROJECT);
 
-    if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
+    if (project.getVisibility().equals(VisibilityEnum.Visibility.PUBLIC)) {
       roleService.createPublicRoleBinding(project.getId(), ModelDBServiceResourceTypes.PROJECT);
     }
 
@@ -243,14 +242,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         ownerId,
         ModelDBServiceResourceTypes.PROJECT,
         CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-        project.getProjectVisibility());
+        project.getVisibility());
   }
 
   private void createWorkspaceRoleBinding(
       String workspaceId,
       WorkspaceType workspaceType,
       String projectId,
-      ProjectVisibility projectVisibility) {
+      VisibilityEnum.Visibility visibility) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
       roleService.createWorkspacePermissions(
           workspaceId,
@@ -258,7 +257,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           projectId,
           ModelDBConstants.ROLE_PROJECT_ADMIN,
           ModelDBServiceResourceTypes.PROJECT,
-          projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
+          visibility.equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
           "_GLOBAL_SHARING");
     }
   }
@@ -549,7 +548,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      ProjectVisibility projectVisibility)
+      VisibilityEnum.Visibility visibility)
       throws InvalidProtocolBufferException {
 
     FindProjects findProjects =
@@ -559,7 +558,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             .setAscending(order)
             .setSortKey(sortKey)
             .build();
-    return findProjects(findProjects, null, userInfo, projectVisibility);
+    return findProjects(findProjects, null, userInfo, visibility);
   }
 
   @Override
@@ -576,7 +575,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                     .build())
             .build();
     ProjectPaginationDTO projectPaginationDTO =
-        findProjects(findProjects, null, userInfo, ProjectVisibility.PRIVATE);
+        findProjects(findProjects, null, userInfo, VisibilityEnum.Visibility.PRIVATE);
     LOGGER.debug("Projects size is {}", projectPaginationDTO.getProjects().size());
     return projectPaginationDTO.getProjects();
   }
@@ -743,14 +742,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       String workspaceId,
       WorkspaceType workspaceType,
       String projectId,
-      ProjectVisibility projectVisibility) {
+      VisibilityEnum.Visibility visibility) {
     return roleService.getWorkspaceRoleBindings(
         workspaceId,
         workspaceType,
         projectId,
         ModelDBConstants.ROLE_PROJECT_ADMIN,
         ModelDBServiceResourceTypes.PROJECT,
-        projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
+        visibility.equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
         "_GLOBAL_SHARING");
   }
 
@@ -903,7 +902,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             findProjects.build(),
             hostCollaboratorBase,
             currentLoginUserInfo,
-            ProjectVisibility.PUBLIC);
+            VisibilityEnum.Visibility.PUBLIC);
     List<Project> projects = projectPaginationDTO.getProjects();
     if (projects != null) {
       LOGGER.debug("Projects size is {}", projects.size());
@@ -915,7 +914,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   }
 
   @Override
-  public Project setProjectVisibility(String projectId, ProjectVisibility projectVisibility)
+  public Project setVisibility(String projectId, VisibilityEnum.Visibility visibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery(GET_PROJECT_BY_ID_HQL);
@@ -923,12 +922,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
 
       Integer oldVisibilityInt = projectEntity.getProject_visibility();
-      ProjectVisibility oldVisibility = ProjectVisibility.PRIVATE;
+      VisibilityEnum.Visibility oldVisibility = VisibilityEnum.Visibility.PRIVATE;
       if (oldVisibilityInt != null) {
-        oldVisibility = ProjectVisibility.forNumber(oldVisibilityInt);
+        oldVisibility = VisibilityEnum.Visibility.forNumber(oldVisibilityInt);
       }
-      if (!oldVisibility.equals(projectVisibility)) {
-        projectEntity.setProject_visibility(projectVisibility.ordinal());
+      if (!oldVisibility.equals(visibility)) {
+        projectEntity.setProject_visibility(visibility.ordinal());
         projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
         Transaction transaction = session.beginTransaction();
         session.update(projectEntity);
@@ -939,7 +938,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             projectEntity.getWorkspace_type(),
             projectEntity.getWorkspace());
         createNewVisibilityBasedBinding(
-            projectVisibility,
+            visibility,
             projectId,
             projectEntity.getWorkspace_type(),
             projectEntity.getWorkspace());
@@ -948,7 +947,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       return projectEntity.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return setProjectVisibility(projectId, projectVisibility);
+        return setVisibility(projectId, visibility);
       } else {
         throw ex;
       }
@@ -956,7 +955,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   }
 
   private void createNewVisibilityBasedBinding(
-      ProjectVisibility newVisibility,
+      VisibilityEnum.Visibility newVisibility,
       String projectId,
       Integer projectWorkspaceType,
       String workspaceId) {
@@ -982,7 +981,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   }
 
   private void deleteOldVisibilityBasedBinding(
-      ProjectVisibility oldVisibility,
+      VisibilityEnum.Visibility oldVisibility,
       String projectId,
       int projectWorkspaceType,
       String workspaceId) {
@@ -1040,7 +1039,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       FindProjects queryParameters,
       CollaboratorBase host,
       UserInfo currentLoginUserInfo,
-      ProjectVisibility projectVisibility)
+      VisibilityEnum.Visibility visibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
@@ -1048,7 +1047,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           roleService.getAccessibleResourceIds(
               host,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              projectVisibility,
+              visibility,
               ModelDBServiceResourceTypes.PROJECT,
               queryParameters.getProjectIdsList());
 
@@ -1106,7 +1105,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                           WorkspaceType.ORGANIZATION_VALUE))));
         }
       } else {
-        if (projectVisibility.equals(ProjectVisibility.PRIVATE)) {
+        if (visibility.equals(VisibilityEnum.Visibility.PRIVATE)) {
           RdbmsUtils.getWorkspacePredicates(
               host,
               currentLoginUserInfo,
@@ -1200,7 +1199,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       return projectPaginationDTO;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return findProjects(queryParameters, host, currentLoginUserInfo, projectVisibility);
+        return findProjects(queryParameters, host, currentLoginUserInfo, visibility);
       } else {
         throw ex;
       }
@@ -1354,13 +1353,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               projectEntity.getWorkspace(),
               WorkspaceType.forNumber(projectEntity.getWorkspace_type()),
               projectId,
-              ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
+              VisibilityEnum.Visibility.forNumber(projectEntity.getProject_visibility()));
       roleService.deleteRoleBindings(roleBindingNames);
       createWorkspaceRoleBinding(
           workspaceDTO.getWorkspaceId(),
           workspaceDTO.getWorkspaceType(),
           projectId,
-          ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
+          VisibilityEnum.Visibility.forNumber(projectEntity.getProject_visibility()));
       projectEntity.setWorkspace(workspaceDTO.getWorkspaceId());
       projectEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
@@ -1397,7 +1396,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              ProjectVisibility.PRIVATE,
+              VisibilityEnum.Visibility.PRIVATE,
               ModelDBServiceResourceTypes.PROJECT,
               Collections.EMPTY_LIST);
       LOGGER.debug(

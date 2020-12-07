@@ -4,11 +4,11 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
+import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
@@ -960,7 +960,7 @@ public class RoleServiceUtils implements RoleService {
     }
 
     if (resourceVisibility != null
-        && (resourceVisibility.equals(ProjectVisibility.PUBLIC)
+        && (resourceVisibility.equals(VisibilityEnum.Visibility.PUBLIC)
             || resourceVisibility.equals(DatasetVisibility.PUBLIC))) {
       UserInfo unsignedUserInfo = authService.getUnsignedUser();
       List<String> publicResourceIds =
@@ -1151,15 +1151,15 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private ResourceVisibility getResourceVisibility(
-      Optional<WorkspaceType> workspaceType, ProjectVisibility projectVisibility) {
+      Optional<WorkspaceType> workspaceType, VisibilityEnum.Visibility projectVisibility) {
     if (!workspaceType.isPresent()) {
       return ResourceVisibility.PRIVATE;
     }
     if (workspaceType.get() == WorkspaceType.ORGANIZATION) {
-      if (projectVisibility == ProjectVisibility.ORG_SCOPED_PUBLIC) {
+      if (projectVisibility == VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC) {
         return ResourceVisibility.ORG_SCOPED_PUBLIC;
       }
-      else if (projectVisibility == ProjectVisibility.PRIVATE) {
+      else if (projectVisibility == VisibilityEnum.Visibility.PRIVATE) {
         return ResourceVisibility.PRIVATE;
       }
       return ResourceVisibility.ORG_DEFAULT;
@@ -1175,7 +1175,7 @@ public class RoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorType collaboratorType,
-      ProjectVisibility visibility) {
+      VisibilityEnum.Visibility visibility) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info("Calling CollaboratorService to create resources");
       ResourceType modeldbServiceResourceType =
@@ -1224,7 +1224,7 @@ public class RoleServiceUtils implements RoleService {
           Optional<Long> ownerId,
           ModelDBServiceResourceTypes resourceType,
           CollaboratorType collaboratorType,
-          ProjectVisibility visibility) {
+          VisibilityEnum.Visibility visibility) {
     return createWorkspacePermissions(
         Optional.empty(),
         Optional.of(workspaceName),
@@ -1244,7 +1244,7 @@ public class RoleServiceUtils implements RoleService {
           Optional<Long> ownerId,
           ModelDBServiceResourceTypes resourceType,
           CollaboratorType collaboratorType,
-          ProjectVisibility visibility) {
+          VisibilityEnum.Visibility visibility) {
     return createWorkspacePermissions(
         Optional.of(workspaceId),
         Optional.empty(),

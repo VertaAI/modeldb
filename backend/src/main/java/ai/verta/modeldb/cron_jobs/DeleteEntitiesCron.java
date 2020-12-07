@@ -1,10 +1,10 @@
 package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorOrg;
@@ -204,7 +204,7 @@ public class DeleteEntitiesCron extends TimerTask {
         roleBindingNames.add(ownerRoleBindingName);
       }
 
-      if (project.getProject_visibility() == ProjectVisibility.PUBLIC.getNumber()) {
+      if (project.getProject_visibility() == VisibilityEnum.Visibility.PUBLIC.getNumber()) {
         String publicReadRoleBindingName =
             roleService.buildPublicRoleBindingName(projectId, ModelDBServiceResourceTypes.PROJECT);
         if (publicReadRoleBindingName != null) {
@@ -220,8 +220,8 @@ public class DeleteEntitiesCron extends TimerTask {
               projectId,
               ModelDBConstants.ROLE_PROJECT_ADMIN,
               ModelDBServiceResourceTypes.PROJECT,
-              ProjectVisibility.forNumber(project.getProject_visibility())
-                  .equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
+                  VisibilityEnum.Visibility.forNumber(project.getProject_visibility())
+                  .equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
               "_GLOBAL_SHARING");
       roleBindingNames.addAll(workspaceRoleBindingNames);
     }

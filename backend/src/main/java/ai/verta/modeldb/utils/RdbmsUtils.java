@@ -1,9 +1,6 @@
 package ai.verta.modeldb.utils;
 
-import ai.verta.common.Artifact;
-import ai.verta.common.KeyValue;
-import ai.verta.common.KeyValueQuery;
-import ai.verta.common.OperatorEnum;
+import ai.verta.common.*;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.Comment;
@@ -21,7 +18,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.Project;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.QueryDatasetVersionInfo;
 import ai.verta.modeldb.QueryParameter;
 import ai.verta.modeldb.RawDatasetVersionInfo;
@@ -811,7 +807,7 @@ public class RdbmsUtils {
                 builder,
                 valueExpression,
                 operator,
-                ProjectVisibility.valueOf(value.getStringValue()).ordinal());
+                VisibilityEnum.Visibility.valueOf(value.getStringValue()).ordinal());
           } else {
             return getOperatorPredicate(builder, valueExpression, operator, value.getStringValue());
           }

@@ -2,9 +2,9 @@ package ai.verta.modeldb.authservice;
 
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -20,14 +20,8 @@ import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.BlobDAORdbImpl;
 import ai.verta.modeldb.versioning.CommitDAORdbImpl;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
-import ai.verta.uac.Actions;
-import ai.verta.uac.GetCollaboratorResponseItem;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.Organization;
-import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.UserInfo;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
@@ -274,7 +268,7 @@ public class PublicRoleServiceUtils implements RoleService {
           Optional<Long> ownerId,
           ModelDBServiceResourceTypes resourceType,
           CollaboratorTypeEnum.CollaboratorType collaboratorType,
-          ProjectVisibility projectVisibility) {
+          VisibilityEnum.Visibility projectVisibility) {
     return true;
   }
 
@@ -286,7 +280,7 @@ public class PublicRoleServiceUtils implements RoleService {
           Optional<Long> ownerId,
           ModelDBServiceResourceTypes resourceType,
           CollaboratorTypeEnum.CollaboratorType collaboratorType,
-          ProjectVisibility visibility) {
+          VisibilityEnum.Visibility visibility) {
     return true;
   }
 
