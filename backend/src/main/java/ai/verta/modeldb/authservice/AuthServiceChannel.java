@@ -30,7 +30,7 @@ public class AuthServiceChannel implements AutoCloseable {
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
   private AuditLogServiceGrpc.AuditLogServiceBlockingStub auditLogServiceBlockingStub;
-  private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
+  private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStub;
   private String serviceUserEmail;
   private String serviceUserDevKey;
 
@@ -192,20 +192,20 @@ public class AuthServiceChannel implements AutoCloseable {
     return auditLogServiceBlockingStub;
   }
 
-  private void initCollaboratorServiceStubChannel() {
+  private void initWorkspaceServiceStubChannel() {
     Metadata requestHeaders = getMetadataHeaders();
     LOGGER.trace("Header attaching with stub : {}", requestHeaders);
     ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
-    collaboratorServiceBlockingStub =
-            CollaboratorServiceGrpc.newBlockingStub(authServiceChannel).withInterceptors(clientInterceptor);
+    workspaceServiceBlockingStub =
+            WorkspaceServiceGrpc.newBlockingStub(authServiceChannel).withInterceptors(clientInterceptor);
     LOGGER.trace("Header attached with stub");
   }
 
-  public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub getCollaboratorServiceBlockingStub() {
-    if (collaboratorServiceBlockingStub == null) {
-      initCollaboratorServiceStubChannel();
+  public WorkspaceServiceGrpc.WorkspaceServiceBlockingStub getWorkspaceServiceBlockingStub() {
+    if (workspaceServiceBlockingStub == null) {
+      initWorkspaceServiceStubChannel();
     }
-    return collaboratorServiceBlockingStub;
+    return workspaceServiceBlockingStub;
   }
 
   @Override

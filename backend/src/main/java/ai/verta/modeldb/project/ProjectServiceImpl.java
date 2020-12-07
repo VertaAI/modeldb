@@ -186,6 +186,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       if (workspaceDTO.getWorkspaceId() != null) {
         projectBuilder.setWorkspaceId(workspaceDTO.getWorkspaceId());
         projectBuilder.setWorkspaceType(workspaceDTO.getWorkspaceType());
+        if (workspaceDTO.getWorkspaceServiceId() != null) {
+          projectBuilder.setWorkspaceServiceId(workspaceDTO.getWorkspaceServiceId());
+        }
       }
     }
 

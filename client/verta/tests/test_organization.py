@@ -9,6 +9,8 @@ from verta._protos.public.uac import Organization_pb2 as _Organization
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._tracking.organization import Organization, CollaboratorType
 
+pytestmark = pytest.mark.not_oss
+
 
 def test_create_msg():
     assert Organization._create_msg("name", "desc", None, None) == \
