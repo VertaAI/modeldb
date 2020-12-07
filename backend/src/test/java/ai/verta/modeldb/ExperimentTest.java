@@ -469,7 +469,7 @@ public class ExperimentTest {
 
     pageLimit = 1;
     int count = 0;
-    for (int pageNumber = 2; pageNumber < 100; pageNumber++) {
+    for (int pageNumber = 1; pageNumber < 100; pageNumber++) {
       GetExperimentsInProject getExperiment =
           GetExperimentsInProject.newBuilder()
               .setProjectId(project.getId())
@@ -493,6 +493,9 @@ public class ExperimentTest {
         LOGGER.info(
             "GetExperimentsInProject Response : " + experimentResponse.getExperimentsCount());
         for (Experiment experiment : experimentResponse.getExperimentsList()) {
+            if (!experimentMap.containsKey(experiment.getId())){
+                continue;
+            }
           assertEquals(
               "Experiment not match with expected Experiment",
               experimentMap.get(experiment.getId()),
