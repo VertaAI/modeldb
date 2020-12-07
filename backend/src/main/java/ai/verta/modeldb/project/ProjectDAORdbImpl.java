@@ -253,23 +253,23 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               project.getProjectVisibility());
     }
   }
-
-  private void createWorkspaceRoleBinding(
-      String workspaceId,
-      WorkspaceType workspaceType,
-      String projectId,
-      ProjectVisibility projectVisibility) {
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      roleService.createWorkspaceRoleBinding(
-          workspaceId,
-          workspaceType,
-          projectId,
-          ModelDBConstants.ROLE_PROJECT_ADMIN,
-          ModelDBServiceResourceTypes.PROJECT,
-          projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
-          "_GLOBAL_SHARING");
-    }
-  }
+//
+//  private void createWorkspaceRoleBinding(
+//      String workspaceId,
+//      WorkspaceType workspaceType,
+//      String projectId,
+//      ProjectVisibility projectVisibility) {
+//    if (workspaceId != null && !workspaceId.isEmpty()) {
+//      roleService.createWorkspaceRoleBinding(
+//          workspaceId,
+//          workspaceType,
+//          projectId,
+//          ModelDBConstants.ROLE_PROJECT_ADMIN,
+//          ModelDBServiceResourceTypes.PROJECT,
+//          projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
+//          "_GLOBAL_SHARING");
+//    }
+//  }
 
   @Override
   public Project updateProjectName(String projectId, String projectName)
@@ -925,34 +925,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   @Override
   public Project setProjectVisibility(String projectId, ProjectVisibility projectVisibility)
       throws InvalidProtocolBufferException {
+    // Call to UAC to make the change
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery(GET_PROJECT_BY_ID_HQL);
       query.setParameter("id", projectId);
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
-
-      Integer oldVisibilityInt = projectEntity.getProject_visibility();
-      ProjectVisibility oldVisibility = ProjectVisibility.PRIVATE;
-      if (oldVisibilityInt != null) {
-        oldVisibility = ProjectVisibility.forNumber(oldVisibilityInt);
-      }
-      if (!oldVisibility.equals(projectVisibility)) {
-        projectEntity.setProject_visibility(projectVisibility.ordinal());
-        projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
-        Transaction transaction = session.beginTransaction();
-        session.update(projectEntity);
-        transaction.commit();
-        deleteOldVisibilityBasedBinding(
-            oldVisibility,
-            projectId,
-            projectEntity.getWorkspace_type(),
-            projectEntity.getWorkspace());
-        createNewVisibilityBasedBinding(
-            projectVisibility,
-            projectId,
-            projectEntity.getWorkspace_type(),
-            projectEntity.getWorkspace());
-      }
-      LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
+      projectEntity.setProjectVisibility(projectVisibility);
       return projectEntity.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -1357,18 +1335,22 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
+      final ProjectVisibility projectVisibility = ProjectVisibility.forNumber(projectEntity.getProjectVisibility());
       List<String> roleBindingNames =
           getWorkspaceRoleBindings(
               projectEntity.getWorkspace(),
               WorkspaceType.forNumber(projectEntity.getWorkspace_type()),
               projectId,
-              ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
+              projectVisibility);
       roleService.deleteRoleBindings(roleBindingNames);
-      createWorkspaceRoleBinding(
-          workspaceDTO.getWorkspaceId(),
-          workspaceDTO.getWorkspaceType(),
-          projectId,
-          ProjectVisibility.forNumber(projectEntity.getProject_visibility()));
+      final long ownerId = Long.parseLong(projectEntity.getOwner());
+      roleService.createWorkspaceRoleBinding(workspaceDTO.getWorkspaceServiceId(),
+              workspaceDTO.getWorkspaceType(),
+              projectEntity.getId(),
+              ownerId,
+              ModelDBServiceResourceTypes.PROJECT,
+              CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
+              projectVisibility);
       projectEntity.setWorkspace(workspaceDTO.getWorkspaceId());
       projectEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
