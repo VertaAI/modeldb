@@ -493,9 +493,9 @@ public class ExperimentTest {
         LOGGER.info(
             "GetExperimentsInProject Response : " + experimentResponse.getExperimentsCount());
         for (Experiment experiment : experimentResponse.getExperimentsList()) {
-            if (!experimentMap.containsKey(experiment.getId())){
-                continue;
-            }
+          if (!experimentMap.containsKey(experiment.getId())) {
+            continue;
+          }
           assertEquals(
               "Experiment not match with expected Experiment",
               experimentMap.get(experiment.getId()),
