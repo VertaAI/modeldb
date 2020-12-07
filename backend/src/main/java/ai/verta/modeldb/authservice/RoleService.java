@@ -22,6 +22,7 @@ import com.google.protobuf.ProtocolMessageEnum;
 import io.grpc.Metadata;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface RoleService {
 
@@ -144,22 +145,22 @@ public interface RoleService {
   List<Organization> listMyOrganizations();
 
   boolean createWorkspacePermissions(
-      String workspaceName,
-      WorkspaceType workspaceType,
-      String resourceId,
-      Long ownerId,
-      ModelDBServiceResourceTypes resourceType,
-      CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      ProjectVisibility projectVisibility);
+          String workspaceName,
+          WorkspaceType workspaceType,
+          String resourceId,
+          Optional<Long> ownerId,
+          ModelDBServiceResourceTypes resourceType,
+          CollaboratorTypeEnum.CollaboratorType collaboratorType,
+          ProjectVisibility projectVisibility);
 
   boolean createWorkspacePermissions(
-      Long workspaceId,
-      WorkspaceType workspaceType,
-      String resourceId,
-      Long ownerId,
-      ModelDBServiceResourceTypes resourceType,
-      CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      ProjectVisibility projectVisibility);
+          Long workspaceId,
+          WorkspaceType workspaceType,
+          String resourceId,
+          Optional<Long> ownerId,
+          ModelDBServiceResourceTypes resourceType,
+          CollaboratorTypeEnum.CollaboratorType collaboratorType,
+          ProjectVisibility projectVisibility);
 
   void createWorkspacePermissions(
       String workspace_id,

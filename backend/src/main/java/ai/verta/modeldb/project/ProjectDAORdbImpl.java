@@ -41,16 +41,8 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -242,17 +234,16 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     if (project.getProjectVisibility().equals(ProjectVisibility.PUBLIC)) {
       roleService.createPublicRoleBinding(project.getId(), ModelDBServiceResourceTypes.PROJECT);
     }
-    if (userInfo != null) {
-      final long ownerId = Long.parseLong(userInfo.getUserId());
-      roleService.createWorkspacePermissions(
-          project.getWorkspaceServiceId(),
-          project.getWorkspaceType(),
-          project.getId(),
-          ownerId,
-          ModelDBServiceResourceTypes.PROJECT,
-          CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-          project.getProjectVisibility());
-    }
+
+    final Optional<Long> ownerId = userInfo != null ? Optional.of(Long.parseLong(userInfo.getUserId())) : Optional.empty();
+    roleService.createWorkspacePermissions(
+        project.getWorkspaceServiceId(),
+        project.getWorkspaceType(),
+        project.getId(),
+        ownerId,
+        ModelDBServiceResourceTypes.PROJECT,
+        CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
+        project.getProjectVisibility());
   }
 
   private void createWorkspaceRoleBinding(
