@@ -143,7 +143,7 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
-  boolean createWorkspaceRoleBinding(
+  boolean createWorkspacePermissions(
       Long workspaceId,
       WorkspaceType workspaceType,
       String resourceId,
@@ -152,7 +152,7 @@ public interface RoleService {
       CollaboratorTypeEnum.CollaboratorType collaboratorType,
       ProjectVisibility projectVisibility);
 
-  void createWorkspaceRoleBinding(
+  void createWorkspacePermissions(
       String workspace_id,
       WorkspaceType forNumber,
       String valueOf,

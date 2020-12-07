@@ -269,7 +269,7 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean createWorkspaceRoleBinding(
+  public boolean createWorkspacePermissions(
           Long workspaceId,
           WorkspaceType workspaceType,
           String resourceId,
@@ -281,7 +281,7 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public void createWorkspaceRoleBinding(
+  public void createWorkspacePermissions(
       String workspace_id,
       WorkspaceType forNumber,
       String valueOf,

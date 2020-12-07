@@ -495,7 +495,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         new CollaboratorUser(authService, userInfo),
         String.valueOf(repository.getId()),
         ModelDBServiceResourceTypes.REPOSITORY);
-    roleService.createWorkspaceRoleBinding(
+    roleService.createWorkspacePermissions(
         repository.getWorkspace_id(),
         WorkspaceType.forNumber(repository.getWorkspace_type()),
         String.valueOf(repository.getId()),

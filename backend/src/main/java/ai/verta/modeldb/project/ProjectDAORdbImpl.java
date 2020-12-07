@@ -244,7 +244,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
     if (userInfo != null) {
       final long ownerId = Long.parseLong(userInfo.getUserId());
-      roleService.createWorkspaceRoleBinding(project.getWorkspaceServiceId(),
+      roleService.createWorkspacePermissions(project.getWorkspaceServiceId(),
               project.getWorkspaceType(),
               project.getId(),
               ownerId,
@@ -260,7 +260,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       String projectId,
       ProjectVisibility projectVisibility) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      roleService.createWorkspaceRoleBinding(
+      roleService.createWorkspacePermissions(
           workspaceId,
           workspaceType,
           projectId,
