@@ -111,16 +111,19 @@ message SetResources {
     // update on pre-exising resources
     Resources resources = 1;
     // Workspace where the resources belong
-    uint64 workspace_id = 2;
+    oneof workspace {
+        uint64 workspace_id = 2;
+        string workspace_name = 3;
+    }
     // Owner of the resource
-    uint64 owner_id = 3;
+    uint64 owner_id = 4;
     // Type of the visibility
-    ResourceVisibility visibility = 4;
+    ResourceVisibility visibility = 5;
 
     // The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC. We should error
     // otherwise
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 5;
-    common.TernaryEnum.Ternary can_deploy = 6;
+    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 6;
+    common.TernaryEnum.Ternary can_deploy = 7;
 
     message Response{}
 }
