@@ -15,37 +15,9 @@ import ai.verta.modeldb.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.Action;
-import ai.verta.uac.Actions;
-import ai.verta.uac.DeleteRoleBinding;
-import ai.verta.uac.DeleteRoleBindings;
-import ai.verta.uac.Entities;
-import ai.verta.uac.GetAllowedEntities;
-import ai.verta.uac.GetAllowedResources;
-import ai.verta.uac.GetCollaboratorResponseItem;
-import ai.verta.uac.GetOrganizationById;
-import ai.verta.uac.GetOrganizationByName;
-import ai.verta.uac.GetRoleBindingByName;
-import ai.verta.uac.GetRoleByName;
-import ai.verta.uac.GetSelfAllowedActionsBatch;
-import ai.verta.uac.GetSelfAllowedResources;
-import ai.verta.uac.GetTeamById;
-import ai.verta.uac.GetTeamByName;
-import ai.verta.uac.IsSelfAllowed;
-import ai.verta.uac.ListMyOrganizations;
-import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.Organization;
-import ai.verta.uac.RemoveResources;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.Resources;
-import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.ServiceEnum.Service;
-import ai.verta.uac.SetRoleBinding;
-import ai.verta.uac.UserInfo;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.rpc.Code;
@@ -53,12 +25,8 @@ import com.google.rpc.Status;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
@@ -1056,6 +1024,29 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
+  private Optional<Workspace> getWorkspaceByLegacyId(final String legacyWorkspaceId, final WorkspaceType workspaceType) {
+    if (legacyWorkspaceId == null || legacyWorkspaceId.isEmpty()) {
+      return Optional.empty();
+    }
+    try (final AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      LOGGER.info("Fetching workspace " + legacyWorkspaceId);
+      final Workspace workspace =
+              authServiceChannel
+                      .getWorkspaceServiceBlockingStub()
+                      .getWorkspaceByLegacyId(GetWorkspaceByLegacyId.newBuilder().setId(legacyWorkspaceId).setWorkspaceType(workspaceType).build());
+      LOGGER.info("Got workspace " + workspace);
+      return Optional.of(workspace);
+    }
+    catch (StatusRuntimeException ex) {
+      ModelDBUtils.retryOrThrowException(
+              ex,
+              false,
+              (ModelDBUtils.RetryCallInterface<Void>)
+                      (retry1) -> null);
+    }
+    return Optional.empty();
+  }
+
   @Override
   public WorkspaceDTO getWorkspaceDTOByWorkspaceName(
       UserInfo currentLoginUserInfo, String workspaceName) {
@@ -1072,11 +1063,20 @@ public class RoleServiceUtils implements RoleService {
       workspaceDTO.setWorkspaceId(vertaId);
       workspaceDTO.setWorkspaceType(WorkspaceType.USER);
       workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
+      Optional<Workspace> workspace = getWorkspaceByLegacyId(vertaId, WorkspaceType.USER);
+      if (workspace.isPresent()) {
+        workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
+      }
     } else {
       try {
-        workspaceDTO.setWorkspaceId(new CollaboratorOrg(getOrgByName(workspaceName)).getId());
+        final String legacyWorkspaceId = new CollaboratorOrg(getOrgByName(workspaceName)).getId();
+        workspaceDTO.setWorkspaceId(legacyWorkspaceId);
         workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
         workspaceDTO.setWorkspaceName(workspaceName);
+        Optional<Workspace> workspace = getWorkspaceByLegacyId(legacyWorkspaceId, WorkspaceType.ORGANIZATION);
+        if (workspace.isPresent()) {
+          workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
+        }
       } catch (StatusRuntimeException e) {
         CollaboratorUser collaboratorUser =
             new CollaboratorUser(
@@ -1085,6 +1085,10 @@ public class RoleServiceUtils implements RoleService {
         workspaceDTO.setWorkspaceId(collaboratorUser.getId());
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
         workspaceDTO.setWorkspaceName(workspaceName);
+        Optional<Workspace> workspace = getWorkspaceByLegacyId(collaboratorUser.getId(), WorkspaceType.USER);
+        if (workspace.isPresent()) {
+          workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
+        }
       }
     }
     return workspaceDTO;
