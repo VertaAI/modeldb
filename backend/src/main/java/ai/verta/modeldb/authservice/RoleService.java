@@ -144,6 +144,15 @@ public interface RoleService {
   List<Organization> listMyOrganizations();
 
   boolean createWorkspacePermissions(
+      String workspaceName,
+      WorkspaceType workspaceType,
+      String resourceId,
+      Long ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      ProjectVisibility projectVisibility);
+
+  boolean createWorkspacePermissions(
       Long workspaceId,
       WorkspaceType workspaceType,
       String resourceId,

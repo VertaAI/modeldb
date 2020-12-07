@@ -244,13 +244,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
     if (userInfo != null) {
       final long ownerId = Long.parseLong(userInfo.getUserId());
-      roleService.createWorkspacePermissions(project.getWorkspaceServiceId(),
-              project.getWorkspaceType(),
-              project.getId(),
-              ownerId,
-              ModelDBServiceResourceTypes.PROJECT,
-              CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-              project.getProjectVisibility());
+      roleService.createWorkspacePermissions(
+          project.getWorkspaceServiceId(),
+          project.getWorkspaceType(),
+          project.getId(),
+          ownerId,
+          ModelDBServiceResourceTypes.PROJECT,
+          CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
+          project.getProjectVisibility());
     }
   }
 

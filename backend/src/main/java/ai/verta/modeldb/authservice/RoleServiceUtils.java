@@ -1161,9 +1161,9 @@ public class RoleServiceUtils implements RoleService {
     return ResourceVisibility.PRIVATE;
   }
 
-  @Override
-  public boolean createWorkspacePermissions(
-      Long workspaceId,
+  private boolean createWorkspacePermissions(
+      Optional<Long> workspaceId,
+      Optional<String> workspaceName,
       WorkspaceType workspaceType,
       String resourceId,
       Long ownerId,
@@ -1181,14 +1181,21 @@ public class RoleServiceUtils implements RoleService {
               .addResourceIds(resourceId)
               .build();
       ResourceVisibility resourceVisibility = getResourceVisibility(workspaceType, visibility);
-      SetResources setResources =
+      SetResources.Builder setResourcesBuilder =
           SetResources.newBuilder()
-              .setWorkspaceId(workspaceId)
               .setOwnerId(ownerId)
               .setResources(resources)
               .setVisibility(resourceVisibility)
-              .setCollaboratorType(collaboratorType)
-              .build();
+              .setCollaboratorType(collaboratorType);
+      if (workspaceId.isPresent()) {
+        setResourcesBuilder = setResourcesBuilder.setWorkspaceId(workspaceId.get());
+      } else if (workspaceName.isPresent()) {
+        setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
+      } else {
+        throw new IllegalArgumentException(
+            "workspaceId and workspaceName are both empty.  One must be provided.");
+      }
+      SetResources setResources = setResourcesBuilder.build();
       SetResources.Response setResourcesResponse =
           authServiceChannel.getCollaboratorServiceBlockingStub().setResources(setResources);
 
@@ -1199,6 +1206,46 @@ public class RoleServiceUtils implements RoleService {
       ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
     }
     return false;
+  }
+
+  @Override
+  public boolean createWorkspacePermissions(
+      String workspaceName,
+      WorkspaceType workspaceType,
+      String resourceId,
+      Long ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorType collaboratorType,
+      ProjectVisibility visibility) {
+    return createWorkspacePermissions(
+        Optional.empty(),
+        Optional.of(workspaceName),
+        workspaceType,
+        resourceId,
+        ownerId,
+        resourceType,
+        collaboratorType,
+        visibility);
+  }
+
+  @Override
+  public boolean createWorkspacePermissions(
+      Long workspaceId,
+      WorkspaceType workspaceType,
+      String resourceId,
+      Long ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorType collaboratorType,
+      ProjectVisibility visibility) {
+    return createWorkspacePermissions(
+        Optional.of(workspaceId),
+        Optional.empty(),
+        workspaceType,
+        resourceId,
+        ownerId,
+        resourceType,
+        collaboratorType,
+        visibility);
   }
 
   @Override
