@@ -1,8 +1,10 @@
 package ai.verta.modeldb.authservice;
 
+import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -264,6 +266,18 @@ public class PublicRoleServiceUtils implements RoleService {
   @Override
   public List<Organization> listMyOrganizations() {
     return Collections.emptyList();
+  }
+
+  @Override
+  public boolean createWorkspaceRoleBinding(
+          Long workspaceId,
+          WorkspaceType workspaceType,
+          String resourceId,
+          Long ownerId,
+          ModelDBServiceResourceTypes resourceType,
+          CollaboratorTypeEnum.CollaboratorType collaboratorType,
+          ProjectVisibility visibility) {
+    return true;
   }
 
   @Override

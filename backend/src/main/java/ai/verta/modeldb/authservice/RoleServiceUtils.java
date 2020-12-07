@@ -4,7 +4,6 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
-import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
@@ -26,7 +25,6 @@ import com.google.rpc.Status;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -1025,25 +1023,26 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  private Optional<Workspace> getWorkspaceByLegacyId(final String legacyWorkspaceId, final WorkspaceType workspaceType) {
+  private Optional<Workspace> getWorkspaceByLegacyId(
+      final String legacyWorkspaceId, final WorkspaceType workspaceType) {
     if (legacyWorkspaceId == null || legacyWorkspaceId.isEmpty()) {
       return Optional.empty();
     }
     try (final AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info("Fetching workspace " + legacyWorkspaceId);
       final Workspace workspace =
-              authServiceChannel
-                      .getWorkspaceServiceBlockingStub()
-                      .getWorkspaceByLegacyId(GetWorkspaceByLegacyId.newBuilder().setId(legacyWorkspaceId).setWorkspaceType(workspaceType).build());
+          authServiceChannel
+              .getWorkspaceServiceBlockingStub()
+              .getWorkspaceByLegacyId(
+                  GetWorkspaceByLegacyId.newBuilder()
+                      .setId(legacyWorkspaceId)
+                      .setWorkspaceType(workspaceType)
+                      .build());
       LOGGER.info("Got workspace " + workspace);
       return Optional.of(workspace);
-    }
-    catch (StatusRuntimeException ex) {
+    } catch (StatusRuntimeException ex) {
       ModelDBUtils.retryOrThrowException(
-              ex,
-              false,
-              (ModelDBUtils.RetryCallInterface<Void>)
-                      (retry1) -> null);
+          ex, false, (ModelDBUtils.RetryCallInterface<Void>) (retry1) -> null);
     }
     return Optional.empty();
   }
@@ -1074,7 +1073,8 @@ public class RoleServiceUtils implements RoleService {
         workspaceDTO.setWorkspaceId(legacyWorkspaceId);
         workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
         workspaceDTO.setWorkspaceName(workspaceName);
-        Optional<Workspace> workspace = getWorkspaceByLegacyId(legacyWorkspaceId, WorkspaceType.ORGANIZATION);
+        Optional<Workspace> workspace =
+            getWorkspaceByLegacyId(legacyWorkspaceId, WorkspaceType.ORGANIZATION);
         if (workspace.isPresent()) {
           workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
         }
@@ -1086,7 +1086,8 @@ public class RoleServiceUtils implements RoleService {
         workspaceDTO.setWorkspaceId(collaboratorUser.getId());
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
         workspaceDTO.setWorkspaceName(workspaceName);
-        Optional<Workspace> workspace = getWorkspaceByLegacyId(collaboratorUser.getId(), WorkspaceType.USER);
+        Optional<Workspace> workspace =
+            getWorkspaceByLegacyId(collaboratorUser.getId(), WorkspaceType.USER);
         if (workspace.isPresent()) {
           workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
         }
@@ -1149,54 +1150,55 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  private ResourceVisibility getResourceVisibility(WorkspaceType workspaceType, boolean orgScopedPublic) {
+  private ResourceVisibility getResourceVisibility(
+      WorkspaceType workspaceType, ProjectVisibility projectVisibility) {
     if (workspaceType == WorkspaceType.ORGANIZATION) {
-        if (orgScopedPublic) {
-          return ResourceVisibility.ORG_SCOPED_PUBLIC;
-        }
-        return ResourceVisibility.ORG_DEFAULT;
+      if (projectVisibility == ProjectVisibility.ORG_SCOPED_PUBLIC) {
+        return ResourceVisibility.ORG_SCOPED_PUBLIC;
+      }
+      return ResourceVisibility.ORG_DEFAULT;
     }
     return ResourceVisibility.PRIVATE;
   }
 
-  public void createWorkspaceRoleBinding(
-          Long workspaceId,
-          WorkspaceType workspaceType,
-          String resourceId,
-          Long ownerId,
-          ModelDBServiceResourceTypes resourceType,
-          CollaboratorType collaboratorType,
-          boolean orgScopedPublic) {
-
-    // Double-dispatch an identical call via the CollaboratorService to support forward migration
+  @Override
+  public boolean createWorkspaceRoleBinding(
+      Long workspaceId,
+      WorkspaceType workspaceType,
+      String resourceId,
+      Long ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorType collaboratorType,
+      ProjectVisibility visibility) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info("Calling CollaboratorService to create resources");
-      ResourceType modeldbServiceResourceType = ResourceType.newBuilder()
-              .setModeldbServiceResourceType(resourceType)
-              .build();
-      Resources resources = Resources.newBuilder()
+      ResourceType modeldbServiceResourceType =
+          ResourceType.newBuilder().setModeldbServiceResourceType(resourceType).build();
+      Resources resources =
+          Resources.newBuilder()
               .setResourceType(modeldbServiceResourceType)
               .setService(Service.MODELDB_SERVICE)
               .addResourceIds(resourceId)
               .build();
-      ResourceVisibility visibility = getResourceVisibility(workspaceType, orgScopedPublic);
-      SetResources setResources = SetResources.newBuilder()
+      ResourceVisibility resourceVisibility = getResourceVisibility(workspaceType, visibility);
+      SetResources setResources =
+          SetResources.newBuilder()
               .setWorkspaceId(workspaceId)
               .setOwnerId(ownerId)
               .setResources(resources)
-              .setVisibility(visibility)
+              .setVisibility(resourceVisibility)
               .setCollaboratorType(collaboratorType)
               .build();
       SetResources.Response setResourcesResponse =
-              authServiceChannel
-                      .getCollaboratorServiceBlockingStub()
-                      .setResources(setResources);
+          authServiceChannel.getCollaboratorServiceBlockingStub().setResources(setResources);
 
       LOGGER.info("SetResources message sent.  Response: " + setResourcesResponse);
+      return true;
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
       ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
     }
+    return false;
   }
 
   @Override

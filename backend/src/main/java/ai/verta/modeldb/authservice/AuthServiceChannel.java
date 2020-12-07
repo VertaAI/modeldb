@@ -31,6 +31,7 @@ public class AuthServiceChannel implements AutoCloseable {
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
   private AuditLogServiceGrpc.AuditLogServiceBlockingStub auditLogServiceBlockingStub;
   private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStub;
+  private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
   private String serviceUserEmail;
   private String serviceUserDevKey;
 
@@ -197,7 +198,8 @@ public class AuthServiceChannel implements AutoCloseable {
     LOGGER.trace("Header attaching with stub : {}", requestHeaders);
     ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
     workspaceServiceBlockingStub =
-            WorkspaceServiceGrpc.newBlockingStub(authServiceChannel).withInterceptors(clientInterceptor);
+        WorkspaceServiceGrpc.newBlockingStub(authServiceChannel)
+            .withInterceptors(clientInterceptor);
     LOGGER.trace("Header attached with stub");
   }
 
@@ -206,6 +208,24 @@ public class AuthServiceChannel implements AutoCloseable {
       initWorkspaceServiceStubChannel();
     }
     return workspaceServiceBlockingStub;
+  }
+
+  private void initCollaboratorServiceStubChannel() {
+    Metadata requestHeaders = getMetadataHeaders();
+    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
+    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
+    collaboratorServiceBlockingStub =
+        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel)
+            .withInterceptors(clientInterceptor);
+    LOGGER.trace("Header attached with stub");
+  }
+
+  public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
+      getCollaboratorServiceBlockingStub() {
+    if (collaboratorServiceBlockingStub == null) {
+      initCollaboratorServiceStubChannel();
+    }
+    return collaboratorServiceBlockingStub;
   }
 
   @Override
