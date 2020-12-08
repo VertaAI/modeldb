@@ -19,6 +19,8 @@ import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.SetResources;
 import ai.verta.uac.UserInfo;
+import com.google.rpc.Code;
+import io.grpc.StatusRuntimeException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,10 +57,26 @@ public class CollaboratorResourceMigration {
     }
 
     LOGGER.info("Migration start");
-    migrateProjects();
-    LOGGER.info("Projects done migration");
-    // migrateRepositories();
-    // LOGGER.info("Repositories done migration");
+    ModelDBUtils.registeredBackgroundUtilsCount();
+    try {
+      migrateProjects();
+      LOGGER.info("Projects done migration");
+      // migrateRepositories();
+      // LOGGER.info("Repositories done migration");
+    } catch (Exception ex) {
+      if (ex instanceof StatusRuntimeException) {
+        StatusRuntimeException exception = (StatusRuntimeException) ex;
+        if (exception.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
+          LOGGER.warn("CollaboratorResourceMigration Exception: {}", ex.getMessage());
+        } else {
+          LOGGER.warn("CollaboratorResourceMigration Exception: ", ex);
+        }
+      } else {
+        LOGGER.warn("CollaboratorResourceMigration Exception: ", ex);
+      }
+    } finally {
+      ModelDBUtils.unregisteredBackgroundUtilsCount();
+    }
 
     LOGGER.info("Migration End");
   }
@@ -107,9 +125,13 @@ public class CollaboratorResourceMigration {
               authService.getUserInfoFromAuthServer(userIds, null, null);
           for (ProjectEntity project : projectEntities) {
             if (userInfoMap.containsKey(project.getOwner())) {
-              UserInfo ownerInfo = userInfoMap.get(project.getOwner());
-              SetEntityVisibility(authServiceChannel, project, ownerInfo);
-              setWorkspacePermissionsForOwner(project, ownerInfo);
+              try {
+                UserInfo ownerInfo = userInfoMap.get(project.getOwner());
+                SetEntityVisibility(authServiceChannel, project, ownerInfo);
+                setWorkspacePermissionsForOwner(project, ownerInfo);
+              } catch (Exception ex) {
+                LOGGER.warn("CollaboratorResourceMigration Exception: {}", ex.getMessage());
+              }
             } else {
               LOGGER.debug("UserInfo not found for the ownerId: {}", project.getOwner());
             }
@@ -132,7 +154,9 @@ public class CollaboratorResourceMigration {
 
   private void setWorkspacePermissionsForOwner(ProjectEntity project, UserInfo ownerInfo) {
     final Optional<Long> ownerId =
-        ownerInfo != null ? Optional.of(Long.parseLong(ownerInfo.getUserId())) : Optional.empty();
+        ownerInfo != null
+            ? Optional.of(Long.parseLong(authService.getVertaIdFromUserInfo(ownerInfo)))
+            : Optional.empty();
     roleService.createWorkspacePermissions(
         Long.parseLong(project.getWorkspace()),
         Optional.ofNullable(WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),

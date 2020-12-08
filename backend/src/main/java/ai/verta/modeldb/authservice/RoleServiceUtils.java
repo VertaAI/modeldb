@@ -1187,10 +1187,13 @@ public class RoleServiceUtils implements RoleService {
               .build();
       ResourceVisibility resourceVisibility = getResourceVisibility(workspaceType, visibility);
       SetResources.Builder setResourcesBuilder =
-          SetResources.newBuilder()
-              .setResources(resources)
-              .setVisibility(resourceVisibility)
-              .setCollaboratorType(collaboratorType);
+          SetResources.newBuilder().setResources(resources).setVisibility(resourceVisibility);
+
+      if (!(resourceVisibility.equals(ResourceVisibility.ORG_DEFAULT)
+          || resourceVisibility.equals(ResourceVisibility.PRIVATE))) {
+        setResourcesBuilder.setCollaboratorType(collaboratorType);
+      }
+
       if (ownerId.isPresent()) {
         setResourcesBuilder.setOwnerId(ownerId.get());
       }
