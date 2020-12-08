@@ -8,6 +8,8 @@ services:
             - /Users/XYZ/Document/config:/config
         environment:
             VERTA_MODELDB_CONFIG: /config/config.yaml
+            JVM_OPTIONS: "-XX:+PrintFlagsFinal -XX:+UseG1GC -Xmx1350m"
+        mem_limit: 2g
         expose:
             - "8085"
         ports:
