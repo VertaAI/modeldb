@@ -58,4 +58,5 @@ Core Verta functionality
     Web app <webapp>
     sharing
     Workspaces <workspaces>
+    custom_users
     Client config file <config>
