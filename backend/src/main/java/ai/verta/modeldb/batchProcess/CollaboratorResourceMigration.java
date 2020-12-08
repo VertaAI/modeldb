@@ -2,27 +2,20 @@ package ai.verta.modeldb.batchProcess;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.AuthService;
+import ai.verta.modeldb.authservice.AuthServiceChannel;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
-import ai.verta.modeldb.collaborator.CollaboratorUser;
-import ai.verta.modeldb.entities.DatasetVersionEntity;
-import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
-import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
-import ai.verta.uac.Role;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.SetResources;
-import ai.verta.uac.SetResources.Builder;
 import ai.verta.uac.UserInfo;
 import java.util.HashSet;
 import java.util.List;
@@ -35,16 +28,17 @@ import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 public class CollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
   private static AuthService authService;
   private static RoleService roleService;
+  private int paginationSize;
 
   public CollaboratorResourceMigration() {}
 
-  public void execute() {
+  public void execute(int recordUpdateLimit) {
+    this.paginationSize = recordUpdateLimit;
     App app = App.getInstance();
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       app.setAuthServerHost(app.getAuthServerHost());
@@ -60,24 +54,24 @@ public class CollaboratorResourceMigration {
     LOGGER.info("Migration start");
     migrateProjects();
     LOGGER.info("Projects done migration");
-    //migrateRepositories();
-    LOGGER.info("Repositories done migration");
+    // migrateRepositories();
+    // LOGGER.info("Repositories done migration");
 
     LOGGER.info("Migration End");
   }
 
-  private static void migrateProjects() {
+  private void migrateProjects() {
     LOGGER.debug("Projects migration started");
     Long count = getEntityCount(ProjectEntity.class);
 
     int lowerBound = 0;
-    final int pagesize = 5000;
+    final int pagesize = this.paginationSize;
     LOGGER.debug("Total Projects {}", count);
 
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-        Transaction transaction = session.beginTransaction();
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession();
+          AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
         CriteriaQuery<ProjectEntity> criteriaQuery =
@@ -109,22 +103,35 @@ public class CollaboratorResourceMigration {
           Map<String, UserInfo> userInfoMap =
               authService.getUserInfoFromAuthServer(userIds, null, null);
           for (ProjectEntity projectEntity : projectEntities) {
-            Builder setResources = SetResources.newBuilder()
-                .setResources(Resources.newBuilder().setResourceType(
-                    ResourceType.newBuilder()
-                        .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT))
-                    .setService(
-                        Service.MODELDB_SERVICE).addResourceIds(projectEntity.getId()))
-                .setWorkspaceId(projectEntity.getWorkspaceServiceId()).setOwnerId(
-                    Long.parseLong(projectEntity.getOwner())).setVisibility(
-                    ProjectVisibility.forNumber(projectEntity.getProject_visibility())
-                        == ProjectVisibility.ORG_SCOPED_PUBLIC ? ResourceVisibility.ORG_DEFAULT
-                        : ResourceVisibility.PRIVATE);
-            //TODO: call UAC
+            if (userInfoMap.containsKey(projectEntity.getOwner())) {
+              UserInfo ownerInfo = userInfoMap.get(projectEntity.getOwner());
+              SetResources.Builder setResources =
+                  SetResources.newBuilder()
+                      .setResources(
+                          Resources.newBuilder()
+                              .setResourceType(
+                                  ResourceType.newBuilder()
+                                      .setModeldbServiceResourceType(
+                                          ModelDBServiceResourceTypes.PROJECT))
+                              .setService(Service.MODELDB_SERVICE)
+                              .addResourceIds(projectEntity.getId()))
+                      .setWorkspaceId(Long.parseLong(projectEntity.getWorkspace()))
+                      .setOwnerId(Long.parseLong(authService.getVertaIdFromUserInfo(ownerInfo)))
+                      .setVisibility(
+                          ProjectVisibility.forNumber(projectEntity.getProject_visibility())
+                                  == ProjectVisibility.ORG_SCOPED_PUBLIC
+                              ? ResourceVisibility.ORG_DEFAULT
+                              : ResourceVisibility.PRIVATE);
+              authServiceChannel
+                  .getCollaboratorServiceBlockingStub()
+                  .setResources(setResources.build());
+            } else {
+              LOGGER.debug("UserInfo not found for the ownerId: {}", projectEntity.getOwner());
+            }
+          }
         } else {
-          LOGGER.debug("Projects total count 0");
+          LOGGER.debug("Total projects count 0");
         }
-        transaction.commit();
         lowerBound += pagesize;
       } catch (Exception ex) {
         if (ModelDBUtils.needToRetry(ex)) {

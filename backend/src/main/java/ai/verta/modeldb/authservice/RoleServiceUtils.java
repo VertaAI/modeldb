@@ -25,7 +25,6 @@ import com.google.rpc.Status;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -1024,25 +1023,26 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  private Optional<Workspace> getWorkspaceByLegacyId(final String legacyWorkspaceId, final WorkspaceType workspaceType) {
+  private Optional<Workspace> getWorkspaceByLegacyId(
+      final String legacyWorkspaceId, final WorkspaceType workspaceType) {
     if (legacyWorkspaceId == null || legacyWorkspaceId.isEmpty()) {
       return Optional.empty();
     }
     try (final AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info("Fetching workspace " + legacyWorkspaceId);
       final Workspace workspace =
-              authServiceChannel
-                      .getWorkspaceServiceBlockingStub()
-                      .getWorkspaceByLegacyId(GetWorkspaceByLegacyId.newBuilder().setId(legacyWorkspaceId).setWorkspaceType(workspaceType).build());
+          authServiceChannel
+              .getWorkspaceServiceBlockingStub()
+              .getWorkspaceByLegacyId(
+                  GetWorkspaceByLegacyId.newBuilder()
+                      .setId(legacyWorkspaceId)
+                      .setWorkspaceType(workspaceType)
+                      .build());
       LOGGER.info("Got workspace " + workspace);
       return Optional.of(workspace);
-    }
-    catch (StatusRuntimeException ex) {
+    } catch (StatusRuntimeException ex) {
       ModelDBUtils.retryOrThrowException(
-              ex,
-              false,
-              (ModelDBUtils.RetryCallInterface<Void>)
-                      (retry1) -> null);
+          ex, false, (ModelDBUtils.RetryCallInterface<Void>) (retry1) -> null);
     }
     return Optional.empty();
   }
@@ -1073,7 +1073,8 @@ public class RoleServiceUtils implements RoleService {
         workspaceDTO.setWorkspaceId(legacyWorkspaceId);
         workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
         workspaceDTO.setWorkspaceName(workspaceName);
-        Optional<Workspace> workspace = getWorkspaceByLegacyId(legacyWorkspaceId, WorkspaceType.ORGANIZATION);
+        Optional<Workspace> workspace =
+            getWorkspaceByLegacyId(legacyWorkspaceId, WorkspaceType.ORGANIZATION);
         if (workspace.isPresent()) {
           workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
         }
@@ -1085,7 +1086,8 @@ public class RoleServiceUtils implements RoleService {
         workspaceDTO.setWorkspaceId(collaboratorUser.getId());
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
         workspaceDTO.setWorkspaceName(workspaceName);
-        Optional<Workspace> workspace = getWorkspaceByLegacyId(collaboratorUser.getId(), WorkspaceType.USER);
+        Optional<Workspace> workspace =
+            getWorkspaceByLegacyId(collaboratorUser.getId(), WorkspaceType.USER);
         if (workspace.isPresent()) {
           workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
         }

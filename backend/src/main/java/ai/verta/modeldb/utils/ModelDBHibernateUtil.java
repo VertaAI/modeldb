@@ -765,7 +765,11 @@ public class ModelDBHibernateUtil {
                         CompletableFuture<Boolean> futureTask =
                             CompletableFuture.supplyAsync(
                                 () -> {
-                                  new CollaboratorResourceMigration().execute();
+                                  int recordUpdateLimit =
+                                      (int)
+                                          migrationDetailMap.getOrDefault(
+                                              ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+                                  new CollaboratorResourceMigration().execute(recordUpdateLimit);
                                   return true;
                                 });
                         completableFutures[index] = futureTask;
