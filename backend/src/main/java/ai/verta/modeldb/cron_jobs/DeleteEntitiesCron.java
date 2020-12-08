@@ -204,7 +204,7 @@ public class DeleteEntitiesCron extends TimerTask {
         roleBindingNames.add(ownerRoleBindingName);
       }
 
-      if (project.getProject_visibility() == VisibilityEnum.Visibility.PUBLIC.getNumber()) {
+      if (project.getProjectVisibility() == VisibilityEnum.Visibility.PUBLIC) {
         String publicReadRoleBindingName =
             roleService.buildPublicRoleBindingName(projectId, ModelDBServiceResourceTypes.PROJECT);
         if (publicReadRoleBindingName != null) {
@@ -220,8 +220,7 @@ public class DeleteEntitiesCron extends TimerTask {
               projectId,
               ModelDBConstants.ROLE_PROJECT_ADMIN,
               ModelDBServiceResourceTypes.PROJECT,
-                  VisibilityEnum.Visibility.forNumber(project.getProject_visibility())
-                  .equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
+              project.getProjectVisibility().equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
               "_GLOBAL_SHARING");
       roleBindingNames.addAll(workspaceRoleBindingNames);
     }

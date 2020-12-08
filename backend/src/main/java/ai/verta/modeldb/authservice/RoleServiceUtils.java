@@ -1158,8 +1158,7 @@ public class RoleServiceUtils implements RoleService {
     if (workspaceType.get() == WorkspaceType.ORGANIZATION) {
       if (projectVisibility == VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC) {
         return ResourceVisibility.ORG_SCOPED_PUBLIC;
-      }
-      else if (projectVisibility == VisibilityEnum.Visibility.PRIVATE) {
+      } else if (projectVisibility == VisibilityEnum.Visibility.PRIVATE) {
         return ResourceVisibility.PRIVATE;
       }
       return ResourceVisibility.ORG_DEFAULT;
@@ -1218,13 +1217,13 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public boolean createWorkspacePermissions(
-          String workspaceName,
-          Optional<WorkspaceType> workspaceType,
-          String resourceId,
-          Optional<Long> ownerId,
-          ModelDBServiceResourceTypes resourceType,
-          CollaboratorType collaboratorType,
-          VisibilityEnum.Visibility visibility) {
+      String workspaceName,
+      Optional<WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorType collaboratorType,
+      VisibilityEnum.Visibility visibility) {
     return createWorkspacePermissions(
         Optional.empty(),
         Optional.of(workspaceName),
@@ -1238,13 +1237,13 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public boolean createWorkspacePermissions(
-          Long workspaceId,
-          Optional<WorkspaceType> workspaceType,
-          String resourceId,
-          Optional<Long> ownerId,
-          ModelDBServiceResourceTypes resourceType,
-          CollaboratorType collaboratorType,
-          VisibilityEnum.Visibility visibility) {
+      Long workspaceId,
+      Optional<WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorType collaboratorType,
+      VisibilityEnum.Visibility visibility) {
     return createWorkspacePermissions(
         Optional.of(workspaceId),
         Optional.empty(),

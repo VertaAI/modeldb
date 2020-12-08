@@ -13,7 +13,6 @@ import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
 import io.grpc.Metadata;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -139,22 +138,22 @@ public interface RoleService {
   List<Organization> listMyOrganizations();
 
   boolean createWorkspacePermissions(
-          String workspaceName,
-          Optional<WorkspaceType> workspaceType,
-          String resourceId,
-          Optional<Long> ownerId,
-          ModelDBServiceResourceTypes resourceType,
-          CollaboratorTypeEnum.CollaboratorType collaboratorType,
-          VisibilityEnum.Visibility projectVisibility);
+      String workspaceName,
+      Optional<WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      VisibilityEnum.Visibility projectVisibility);
 
   boolean createWorkspacePermissions(
-          Long workspaceId,
-          Optional<WorkspaceType> workspaceType,
-          String resourceId,
-          Optional<Long> ownerId,
-          ModelDBServiceResourceTypes resourceType,
-          CollaboratorTypeEnum.CollaboratorType collaboratorType,
-          VisibilityEnum.Visibility projectVisibility);
+      Long workspaceId,
+      Optional<WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      VisibilityEnum.Visibility projectVisibility);
 
   void createWorkspacePermissions(
       String workspace_id,

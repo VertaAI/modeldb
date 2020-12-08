@@ -29,7 +29,6 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.Metadata;
 import io.grpc.protobuf.StatusProto;
-
 import java.util.*;
 
 public class PublicRoleServiceUtils implements RoleService {
@@ -262,25 +261,25 @@ public class PublicRoleServiceUtils implements RoleService {
 
   @Override
   public boolean createWorkspacePermissions(
-          String workspaceName,
-          Optional<WorkspaceType> workspaceType,
-          String resourceId,
-          Optional<Long> ownerId,
-          ModelDBServiceResourceTypes resourceType,
-          CollaboratorTypeEnum.CollaboratorType collaboratorType,
-          VisibilityEnum.Visibility projectVisibility) {
+      String workspaceName,
+      Optional<WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      VisibilityEnum.Visibility projectVisibility) {
     return true;
   }
 
   @Override
   public boolean createWorkspacePermissions(
-          Long workspaceId,
-          Optional<WorkspaceType> workspaceType,
-          String resourceId,
-          Optional<Long> ownerId,
-          ModelDBServiceResourceTypes resourceType,
-          CollaboratorTypeEnum.CollaboratorType collaboratorType,
-          VisibilityEnum.Visibility visibility) {
+      Long workspaceId,
+      Optional<WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      VisibilityEnum.Visibility visibility) {
     return true;
   }
 

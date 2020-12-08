@@ -4,10 +4,7 @@ import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProject;
 import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInterceptor;
 import static org.junit.Assert.*;
 
-import ai.verta.common.CollaboratorTypeEnum;
-import ai.verta.common.KeyValue;
-import ai.verta.common.KeyValueQuery;
-import ai.verta.common.OperatorEnum;
+import ai.verta.common.*;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
@@ -319,7 +316,7 @@ public class HydratedServiceTest {
             .addTags("Tag_5")
             .addTags("Tag_7")
             .addTags("Tag_8")
-            .setProjectVisibility(ProjectVisibility.PUBLIC)
+            .setVisibility(VisibilityEnum.Visibility.PUBLIC)
             .build();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project4 = createProjectResponse.getProject();
@@ -3161,7 +3158,7 @@ public class HydratedServiceTest {
               .addTags("Tag_5")
               .addTags("Tag_7")
               .addTags("Tag_8")
-              .setProjectVisibility(ProjectVisibility.PUBLIC)
+              .setVisibility(VisibilityEnum.Visibility.PUBLIC)
               .build();
       createProjectResponse = projectServiceStub.createProject(createProjectRequest);
       Project project4 = createProjectResponse.getProject();

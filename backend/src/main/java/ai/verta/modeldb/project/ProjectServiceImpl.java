@@ -28,11 +28,10 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ProjectServiceImpl extends ProjectServiceImplBase {
 
@@ -775,7 +774,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               .setWorkspaceName(request.getWorkspaceName());
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(findProjects.build(), null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+          projectDAO.findProjects(
+              findProjects.build(), null, userInfo, VisibilityEnum.Visibility.PRIVATE);
 
       responseObserver.onNext(
           GetProjects.Response.newBuilder()
@@ -889,7 +889,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       : request.getWorkspaceName());
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(findProjects.build(), null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+          projectDAO.findProjects(
+              findProjects.build(), null, userInfo, VisibilityEnum.Visibility.PRIVATE);
 
       if (projectPaginationDTO.getTotalRecords() == 0) {
         Status status =
@@ -1278,7 +1279,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
   @Override
   public void setProjectVisibility(
-      SetProjectVisibility request, StreamObserver<SetProjectVisibility.Response> responseObserver) {
+      SetProjectVisibility request,
+      StreamObserver<SetProjectVisibility.Response> responseObserver) {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
@@ -1297,8 +1299,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project project =
-          projectDAO.setVisibility(request.getId(), request.getVisibility());
+      Project project = projectDAO.setVisibility(request.getId(), request.getVisibility());
       saveAuditLogs(
           null,
           ModelDBConstants.UPDATE,

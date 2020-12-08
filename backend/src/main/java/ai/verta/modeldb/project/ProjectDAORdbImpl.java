@@ -40,7 +40,6 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -234,7 +233,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       roleService.createPublicRoleBinding(project.getId(), ModelDBServiceResourceTypes.PROJECT);
     }
 
-    final Optional<Long> ownerId = userInfo != null ? Optional.of(Long.parseLong(userInfo.getUserId())) : Optional.empty();
+    final Optional<Long> ownerId =
+        userInfo != null ? Optional.of(Long.parseLong(userInfo.getUserId())) : Optional.empty();
     roleService.createWorkspacePermissions(
         project.getWorkspaceServiceId(),
         Optional.ofNullable(project.getWorkspaceType()),
@@ -921,13 +921,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       query.setParameter("id", projectId);
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
 
-      Integer oldVisibilityInt = projectEntity.getProject_visibility();
-      VisibilityEnum.Visibility oldVisibility = VisibilityEnum.Visibility.PRIVATE;
-      if (oldVisibilityInt != null) {
-        oldVisibility = VisibilityEnum.Visibility.forNumber(oldVisibilityInt);
-      }
+      VisibilityEnum.Visibility oldVisibility = projectEntity.getProjectVisibility();
       if (!oldVisibility.equals(visibility)) {
-        projectEntity.setProject_visibility(visibility.ordinal());
+        projectEntity.setProjectVisibility(visibility);
         projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
         Transaction transaction = session.beginTransaction();
         session.update(projectEntity);
@@ -938,10 +934,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             projectEntity.getWorkspace_type(),
             projectEntity.getWorkspace());
         createNewVisibilityBasedBinding(
-            visibility,
-            projectId,
-            projectEntity.getWorkspace_type(),
-            projectEntity.getWorkspace());
+            visibility, projectId, projectEntity.getWorkspace_type(), projectEntity.getWorkspace());
       }
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
       return projectEntity.getProtoObject();
@@ -1353,13 +1346,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               projectEntity.getWorkspace(),
               WorkspaceType.forNumber(projectEntity.getWorkspace_type()),
               projectId,
-              VisibilityEnum.Visibility.forNumber(projectEntity.getProject_visibility()));
+              projectEntity.getProjectVisibility());
       roleService.deleteRoleBindings(roleBindingNames);
       createWorkspaceRoleBinding(
           workspaceDTO.getWorkspaceId(),
           workspaceDTO.getWorkspaceType(),
           projectId,
-          VisibilityEnum.Visibility.forNumber(projectEntity.getProject_visibility()));
+          projectEntity.getProjectVisibility());
       projectEntity.setWorkspace(workspaceDTO.getWorkspaceId());
       projectEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());

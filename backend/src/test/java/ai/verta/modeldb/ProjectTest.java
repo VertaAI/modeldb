@@ -7,6 +7,7 @@ import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
+import ai.verta.common.VisibilityEnum;
 import ai.verta.modeldb.CommentServiceGrpc.CommentServiceBlockingStub;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
@@ -2044,7 +2045,7 @@ public class ProjectTest {
       CreateProject createProjectRequest =
           getCreateProjectRequest("project-" + new Date().getTime());
       createProjectRequest =
-          createProjectRequest.toBuilder().setProjectVisibility(ProjectVisibility.PUBLIC).build();
+          createProjectRequest.toBuilder().setVisibility(VisibilityEnum.Visibility.PUBLIC).build();
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -2054,16 +2055,16 @@ public class ProjectTest {
           project.getName());
       assertEquals(
           "Project visibility not match with expected project visibility",
-          ProjectVisibility.PUBLIC,
-          project.getProjectVisibility());
+          VisibilityEnum.Visibility.PUBLIC,
+          project.getVisibility());
       LOGGER.info("Project created successfully");
 
-      SetProjectVisibilty setProjectVisibilty =
-          SetProjectVisibilty.newBuilder()
+      SetProjectVisibility setProjectVisibilty =
+          SetProjectVisibility.newBuilder()
               .setId(project.getId())
-              .setProjectVisibility(ProjectVisibility.PRIVATE)
+              .setVisibility(VisibilityEnum.Visibility.PRIVATE)
               .build();
-      SetProjectVisibilty.Response response =
+      SetProjectVisibility.Response response =
           projectServiceStub.setProjectVisibility(setProjectVisibilty);
       Project visibilityProject = response.getProject();
       assertEquals(
@@ -2072,11 +2073,11 @@ public class ProjectTest {
           visibilityProject.getName());
       assertEquals(
           "Project visibility not match with updated project visibility",
-          ProjectVisibility.PRIVATE,
-          visibilityProject.getProjectVisibility());
+          VisibilityEnum.Visibility.PRIVATE,
+          visibilityProject.getVisibility());
       LOGGER.info("Set project visibility successfully");
-      assertNotEquals(
-          "Project date_updated field not update on database",
+      assertEquals(
+          "Project date_updated field was updated in the database",
           project.getDateUpdated(),
           response.getProject().getDateUpdated());
       project = response.getProject();
@@ -3090,7 +3091,7 @@ public class ProjectTest {
           createProjectRequest
               .toBuilder()
               .setWorkspaceName(organization.getName())
-              .setProjectVisibility(ProjectVisibility.ORG_SCOPED_PUBLIC)
+              .setVisibility(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC)
               .build();
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
