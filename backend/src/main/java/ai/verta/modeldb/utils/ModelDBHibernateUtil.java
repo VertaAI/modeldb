@@ -4,6 +4,7 @@ import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.batchProcess.CollaboratorResourceMigration;
 import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
@@ -753,6 +754,22 @@ public class ModelDBHibernateUtil {
                                           migrationDetailMap.getOrDefault(
                                               ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
                                   PopulateVersionMigration.execute(recordUpdateLimit);
+                                  return true;
+                                });
+                        completableFutures[index] = futureTask;
+                        index = index + 1;
+                      }
+                      if (migrationName.equals(ModelDBConstants.COLLABORATOR_RESOURCE_MIGRATION)) {
+                        // Manually migration to create CollaboratorResource for all resources with
+                        // a visibility parameter
+                        CompletableFuture<Boolean> futureTask =
+                            CompletableFuture.supplyAsync(
+                                () -> {
+                                  int recordUpdateLimit =
+                                      (int)
+                                          migrationDetailMap.getOrDefault(
+                                              ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+                                  new CollaboratorResourceMigration().execute(recordUpdateLimit);
                                   return true;
                                 });
                         completableFutures[index] = futureTask;
