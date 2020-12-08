@@ -1,7 +1,9 @@
 package ai.verta.modeldb.batchProcess;
 
+import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.VisibilityEnum;
+import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceChannel;
@@ -20,6 +22,7 @@ import ai.verta.uac.UserInfo;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -102,32 +105,13 @@ public class CollaboratorResourceMigration {
           // Fetch the project owners userInfo
           Map<String, UserInfo> userInfoMap =
               authService.getUserInfoFromAuthServer(userIds, null, null);
-          for (ProjectEntity projectEntity : projectEntities) {
-            if (userInfoMap.containsKey(projectEntity.getOwner())) {
-              UserInfo ownerInfo = userInfoMap.get(projectEntity.getOwner());
-              SetResources.Builder setResources =
-                  SetResources.newBuilder()
-                      .setResources(
-                          Resources.newBuilder()
-                              .setResourceType(
-                                  ResourceType.newBuilder()
-                                      .setModeldbServiceResourceType(
-                                          ModelDBServiceResourceTypes.PROJECT))
-                              .setService(Service.MODELDB_SERVICE)
-                              .addResourceIds(projectEntity.getId()))
-                      .setWorkspaceId(Long.parseLong(projectEntity.getWorkspace()))
-                      .setOwnerId(Long.parseLong(authService.getVertaIdFromUserInfo(ownerInfo)))
-                      .setVisibility(
-                          projectEntity
-                                  .getProjectVisibility()
-                                  .equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC)
-                              ? ResourceVisibility.ORG_DEFAULT
-                              : ResourceVisibility.PRIVATE);
-              authServiceChannel
-                  .getCollaboratorServiceBlockingStub()
-                  .setResources(setResources.build());
+          for (ProjectEntity project : projectEntities) {
+            if (userInfoMap.containsKey(project.getOwner())) {
+              UserInfo ownerInfo = userInfoMap.get(project.getOwner());
+              SetEntityVisibility(authServiceChannel, project, ownerInfo);
+              setWorkspacePermissionsForOwner(project, ownerInfo);
             } else {
-              LOGGER.debug("UserInfo not found for the ownerId: {}", projectEntity.getOwner());
+              LOGGER.debug("UserInfo not found for the ownerId: {}", project.getOwner());
             }
           }
         } else {
@@ -144,6 +128,39 @@ public class CollaboratorResourceMigration {
     }
 
     LOGGER.debug("Projects migration finished");
+  }
+
+  private void setWorkspacePermissionsForOwner(ProjectEntity project, UserInfo ownerInfo) {
+    final Optional<Long> ownerId =
+        ownerInfo != null ? Optional.of(Long.parseLong(ownerInfo.getUserId())) : Optional.empty();
+    roleService.createWorkspacePermissions(
+        Long.parseLong(project.getWorkspace()),
+        Optional.ofNullable(WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
+        project.getId(),
+        ownerId,
+        ModelDBServiceResourceTypes.PROJECT,
+        CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
+        project.getProjectVisibility());
+  }
+
+  private void SetEntityVisibility(
+      AuthServiceChannel authServiceChannel, ProjectEntity project, UserInfo ownerInfo) {
+    SetResources.Builder setResources =
+        SetResources.newBuilder()
+            .setResources(
+                Resources.newBuilder()
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT))
+                    .setService(Service.MODELDB_SERVICE)
+                    .addResourceIds(project.getId()))
+            .setWorkspaceId(Long.parseLong(project.getWorkspace()))
+            .setOwnerId(Long.parseLong(authService.getVertaIdFromUserInfo(ownerInfo)))
+            .setVisibility(
+                project.getProjectVisibility().equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC)
+                    ? ResourceVisibility.ORG_DEFAULT
+                    : ResourceVisibility.PRIVATE);
+    authServiceChannel.getCollaboratorServiceBlockingStub().setResources(setResources.build());
   }
 
   private static Long getEntityCount(Class<?> klass) {

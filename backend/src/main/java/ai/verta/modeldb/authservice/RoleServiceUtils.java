@@ -1192,10 +1192,10 @@ public class RoleServiceUtils implements RoleService {
               .setVisibility(resourceVisibility)
               .setCollaboratorType(collaboratorType);
       if (ownerId.isPresent()) {
-        setResourcesBuilder = setResourcesBuilder.setOwnerId(ownerId.get());
+        setResourcesBuilder.setOwnerId(ownerId.get());
       }
       if (workspaceId.isPresent()) {
-        setResourcesBuilder = setResourcesBuilder.setWorkspaceId(workspaceId.get());
+        setResourcesBuilder.setWorkspaceId(workspaceId.get());
       } else if (workspaceName.isPresent()) {
         setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
       } else {
