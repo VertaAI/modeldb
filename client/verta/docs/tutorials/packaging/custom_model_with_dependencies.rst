@@ -52,8 +52,8 @@ The keys and values of this dictionary map directly to the arguments used to log
 Logging model dependencies
 --------------------------
 
-Any class in the Verta platform that has a ``log_artifact`` method, such as an
-:class:`ExperimentRun <verta._tracking.experimentrun.ExperimentRun>`,
+Any class in the Verta platform that has a ``log_artifact()`` method, such as an
+:class:`~verta._tracking.experimentrun.ExperimentRun`,
 supports logging dependencies for their associated models. The method signature is generally:
 
 .. code-block:: python
@@ -68,6 +68,16 @@ dependency like
 .. code-block:: python
 
     run.log_model(
+        MyModel,  # class, not instance
+        artifacts=["tensorflow_saved_model", "nearest_neighbor_index"],  # logged artifact keys
+    )
+
+The same can be done using a :class:`~verta._registry.modelversion.RegisteredModelVersion`:
+
+.. code-block:: python
+
+    model_version.log_artifact("user-defined-name", "location/on/disk/to/artifact")
+    model_version.log_model(
         MyModel,  # class, not instance
         artifacts=["tensorflow_saved_model", "nearest_neighbor_index"],  # logged artifact keys
     )
