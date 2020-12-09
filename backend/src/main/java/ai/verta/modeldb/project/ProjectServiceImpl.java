@@ -1278,47 +1278,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void setProjectVisibility(
-      SetProjectVisibility request,
-      StreamObserver<SetProjectVisibility.Response> responseObserver) {
-    try {
-      // Request Parameter Validation
-      if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in SetVisibility request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(SetProjectVisibility.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
-
-      Project project = projectDAO.setVisibility(request.getId(), request.getVisibility());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(project.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "update",
-              "visibility",
-              project.getVisibility().name()));
-      responseObserver.onNext(
-          SetProjectVisibility.Response.newBuilder().setProject(project).build());
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, SetProjectVisibility.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
   public void logProjectCodeVersion(
       LogProjectCodeVersion request, StreamObserver<Response> responseObserver) {
     try {
