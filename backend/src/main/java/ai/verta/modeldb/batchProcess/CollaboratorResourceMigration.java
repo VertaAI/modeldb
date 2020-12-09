@@ -2,30 +2,19 @@ package ai.verta.modeldb.batchProcess;
 
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.authservice.AuthService;
-import ai.verta.modeldb.authservice.AuthServiceChannel;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
-import ai.verta.uac.ServiceEnum.Service;
-import ai.verta.uac.SetResources;
-import ai.verta.uac.UserInfo;
 import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -52,7 +41,7 @@ public class CollaboratorResourceMigration {
       authService = new AuthServiceUtils();
       roleService = new RoleServiceUtils(authService);
     } else {
-      LOGGER.debug("AuthService Host & Port not found");
+      LOGGER.debug("AuthService Host & Port not found, OSS setup found");
       return;
     }
 
@@ -91,8 +80,7 @@ public class CollaboratorResourceMigration {
 
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession();
-          AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
         CriteriaQuery<ProjectEntity> criteriaQuery =
@@ -109,31 +97,21 @@ public class CollaboratorResourceMigration {
         List<ProjectEntity> projectEntities = typedQuery.getResultList();
 
         if (projectEntities.size() > 0) {
-          Set<String> userIds = new HashSet<>();
           for (ProjectEntity project : projectEntities) {
-            userIds.add(project.getOwner());
-          }
-          LOGGER.debug("Projects userId list : " + userIds);
-          if (userIds.size() == 0) {
-            LOGGER.warn("userIds not found for Projects on page lower boundary {}", lowerBound);
-            lowerBound += pagesize;
-            continue;
-          }
-
-          // Fetch the project owners userInfo
-          Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
-          for (ProjectEntity project : projectEntities) {
-            if (userInfoMap.containsKey(project.getOwner())) {
-              try {
-                UserInfo ownerInfo = userInfoMap.get(project.getOwner());
-                SetEntityVisibility(authServiceChannel, project, ownerInfo);
-                setWorkspacePermissionsForOwner(project, ownerInfo);
-              } catch (Exception ex) {
-                LOGGER.warn("CollaboratorResourceMigration Exception: {}", ex.getMessage());
-              }
-            } else {
-              LOGGER.debug("UserInfo not found for the ownerId: {}", project.getOwner());
+            try {
+              // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
+              // ignore the CollaboratorType
+              roleService.createWorkspacePermissions(
+                  Long.parseLong(project.getWorkspace()),
+                  Optional.ofNullable(
+                      WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
+                  project.getId(),
+                  Optional.of(Long.parseLong(project.getOwner())),
+                  ModelDBServiceResourceTypes.PROJECT,
+                  CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
+                  project.getProjectVisibility());
+            } catch (Exception ex) {
+              LOGGER.warn("CollaboratorResourceMigration Exception: {}", ex.getMessage());
             }
           }
         } else {
@@ -150,41 +128,6 @@ public class CollaboratorResourceMigration {
     }
 
     LOGGER.debug("Projects migration finished");
-  }
-
-  private void setWorkspacePermissionsForOwner(ProjectEntity project, UserInfo ownerInfo) {
-    final Optional<Long> ownerId =
-        ownerInfo != null
-            ? Optional.of(Long.parseLong(authService.getVertaIdFromUserInfo(ownerInfo)))
-            : Optional.empty();
-    roleService.createWorkspacePermissions(
-        Long.parseLong(project.getWorkspace()),
-        Optional.ofNullable(WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
-        project.getId(),
-        ownerId,
-        ModelDBServiceResourceTypes.PROJECT,
-        CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-        project.getProjectVisibility());
-  }
-
-  private void SetEntityVisibility(
-      AuthServiceChannel authServiceChannel, ProjectEntity project, UserInfo ownerInfo) {
-    SetResources.Builder setResources =
-        SetResources.newBuilder()
-            .setResources(
-                Resources.newBuilder()
-                    .setResourceType(
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT))
-                    .setService(Service.MODELDB_SERVICE)
-                    .addResourceIds(project.getId()))
-            .setWorkspaceId(Long.parseLong(project.getWorkspace()))
-            .setOwnerId(Long.parseLong(authService.getVertaIdFromUserInfo(ownerInfo)))
-            .setVisibility(
-                project.getProjectVisibility().equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC)
-                    ? ResourceVisibility.ORG_DEFAULT
-                    : ResourceVisibility.PRIVATE);
-    authServiceChannel.getCollaboratorServiceBlockingStub().setResources(setResources.build());
   }
 
   private static Long getEntityCount(Class<?> klass) {
