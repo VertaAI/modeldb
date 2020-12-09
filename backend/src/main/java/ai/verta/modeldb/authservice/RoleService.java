@@ -137,6 +137,10 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
+  Resources getResources(String workspaceName);
+
+  Resources getResources(Long workspaceServiceId);
+
   boolean createWorkspacePermissions(
       String workspaceName,
       Optional<WorkspaceType> workspaceType,

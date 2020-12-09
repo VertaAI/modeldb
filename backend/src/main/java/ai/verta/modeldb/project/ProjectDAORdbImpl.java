@@ -244,23 +244,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
         project.getVisibility());
   }
-//
-//  private void createWorkspaceRoleBinding(
-//      String workspaceId,
-//      WorkspaceType workspaceType,
-//      String projectId,
-//      ProjectVisibility projectVisibility) {
-//    if (workspaceId != null && !workspaceId.isEmpty()) {
-//      roleService.createWorkspaceRoleBinding(
-//          workspaceId,
-//          workspaceType,
-//          projectId,
-//          ModelDBConstants.ROLE_PROJECT_ADMIN,
-//          ModelDBServiceResourceTypes.PROJECT,
-//          projectVisibility.equals(ProjectVisibility.ORG_SCOPED_PUBLIC),
-//          "_GLOBAL_SHARING");
-//    }
-//  }
 
   @Override
   public Project updateProjectName(String projectId, String projectName)
@@ -839,6 +822,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
+      final VisibilityEnum.Visibility projectVisibility = roleService.;
+      projectEntity.setProjectVisibility(projectVisibility);
       return projectEntity.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -1315,14 +1300,18 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               projectEntity.getProjectVisibility());
       roleService.deleteRoleBindings(roleBindingNames);
 
-      final Optional<Long> ownerId = projectEntity.getOwner() != null ? Optional.of(Long.parseLong(projectEntity.getOwner())) : Optional.empty();
-      roleService.createWorkspacePermissions(workspaceDTO.getWorkspaceServiceId(),
-              Optional.ofNullable(workspaceDTO.getWorkspaceType()),
-              projectEntity.getId(),
-              ownerId,
-              ModelDBServiceResourceTypes.PROJECT,
-              CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-              projectEntity.getProjectVisibility());
+      final Optional<Long> ownerId =
+          projectEntity.getOwner() != null
+              ? Optional.of(Long.parseLong(projectEntity.getOwner()))
+              : Optional.empty();
+      roleService.createWorkspacePermissions(
+          workspaceDTO.getWorkspaceServiceId(),
+          Optional.ofNullable(workspaceDTO.getWorkspaceType()),
+          projectEntity.getId(),
+          ownerId,
+          ModelDBServiceResourceTypes.PROJECT,
+          CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
+          projectEntity.getProjectVisibility());
       projectEntity.setWorkspace(workspaceDTO.getWorkspaceId());
       projectEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
