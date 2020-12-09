@@ -74,7 +74,8 @@ public class ProjectEntity {
   @Column(name = "date_updated")
   private Long date_updated;
 
-  @Transient private VisibilityEnum.Visibility projectVisibility = VisibilityEnum.Visibility.PRIVATE;
+  @Transient
+  private VisibilityEnum.Visibility projectVisibility = VisibilityEnum.Visibility.PRIVATE;
 
   @OneToMany(
       targetEntity = KeyValueEntity.class,

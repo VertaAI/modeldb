@@ -135,11 +135,6 @@ class ProjectServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.Response.FromString,
         )
-    self.setProjectVisibility = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/setProjectVisibility',
-        request_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibility.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibility.Response.FromString,
-        )
     self.setProjectShortName = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/setProjectShortName',
         request_serializer=modeldb_dot_ProjectService__pb2.SetProjectShortName.SerializeToString,
@@ -359,13 +354,6 @@ class ProjectServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def setProjectVisibility(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def setProjectShortName(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -551,11 +539,6 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           servicer.getProjectReadme,
           request_deserializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.Response.SerializeToString,
-      ),
-      'setProjectVisibility': grpc.unary_unary_rpc_method_handler(
-          servicer.setProjectVisibility,
-          request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibility.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibility.Response.SerializeToString,
       ),
       'setProjectShortName': grpc.unary_unary_rpc_method_handler(
           servicer.setProjectShortName,

@@ -951,38 +951,6 @@
         ]
       }
     },
-    "/project/setProjectVisibility": {
-      "post": {
-        "operationId": "ProjectService_setProjectVisibility",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetProjectVisibilityResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetProjectVisibility"
-            }
-          }
-        ],
-        "tags": [
-          "ProjectService"
-        ]
-      }
-    },
     "/project/setProjectWorkspace": {
       "post": {
         "operationId": "ProjectService_setProjectWorkspace",
@@ -1945,25 +1913,6 @@
       }
     },
     "modeldbSetProjectShortNameResponse": {
-      "type": "object",
-      "properties": {
-        "project": {
-          "$ref": "#/definitions/modeldbProject"
-        }
-      }
-    },
-    "modeldbSetProjectVisibility": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "visibility": {
-          "$ref": "#/definitions/VisibilityEnumVisibility"
-        }
-      }
-    },
-    "modeldbSetProjectVisibilityResponse": {
       "type": "object",
       "properties": {
         "project": {
