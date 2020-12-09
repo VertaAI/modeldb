@@ -2,10 +2,10 @@ package ai.verta.modeldb.project;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.VisibilityEnum;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.Project;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -117,7 +117,7 @@ public interface ProjectDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      ProjectVisibility projectVisibility)
+      VisibilityEnum.Visibility projectVisibility)
       throws InvalidProtocolBufferException;
 
   /**
@@ -252,7 +252,7 @@ public interface ProjectDAO {
    * @return updated project
    * @throws InvalidProtocolBufferException
    */
-  Project setProjectVisibility(String projectId, ProjectVisibility projectVisibility)
+  Project setVisibility(String projectId, VisibilityEnum.Visibility projectVisibility)
       throws InvalidProtocolBufferException;
 
   /**
@@ -278,7 +278,7 @@ public interface ProjectDAO {
       FindProjects queryParameters,
       CollaboratorBase host,
       UserInfo currentLoginUserInfo,
-      ProjectVisibility projectVisibility)
+      VisibilityEnum.Visibility projectVisibility)
       throws InvalidProtocolBufferException;
 
   /**

@@ -111,7 +111,7 @@ public interface ModelDBConstants {
   String PROJECT_COLLABORATORS = "project_collaborators";
   String PROJECT_ID = "project_id";
   String PROJECT_IDS = "project_ids";
-  String PROJECT_VISIBILITY = "project_visibility";
+  String PROJECT_VISIBILITY = "visibility";
   String QUERY_DATSET_VERSION_INFO = "query_dataset_version_info";
   String RAW_DATSET_VERSION_INFO = "raw_dataset_version_info";
   String SHORT_NAME = "short_name";

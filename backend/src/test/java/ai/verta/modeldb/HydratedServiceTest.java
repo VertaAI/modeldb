@@ -4,10 +4,7 @@ import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProject;
 import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInterceptor;
 import static org.junit.Assert.*;
 
-import ai.verta.common.CollaboratorTypeEnum;
-import ai.verta.common.KeyValue;
-import ai.verta.common.KeyValueQuery;
-import ai.verta.common.OperatorEnum;
+import ai.verta.common.*;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
@@ -319,7 +316,7 @@ public class HydratedServiceTest {
             .addTags("Tag_5")
             .addTags("Tag_7")
             .addTags("Tag_8")
-            .setProjectVisibility(ProjectVisibility.PUBLIC)
+            .setVisibility(VisibilityEnum.Visibility.PUBLIC)
             .build();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project4 = createProjectResponse.getProject();
@@ -2870,34 +2867,6 @@ public class HydratedServiceTest {
 
     keyValueQuery =
         KeyValueQuery.newBuilder()
-            .setKey(ModelDBConstants.PROJECT_VISIBILITY)
-            .setValue(Value.newBuilder().setStringValue("PUBLIC").build())
-            .setOperator(Operator.EQ)
-            .build();
-    findProjects =
-        FindProjects.newBuilder()
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("name")
-            .build();
-
-    response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        response.getTotalRecords());
-    assertEquals(
-        "HydratedProject count not match with expected HydratedProject count",
-        1,
-        response.getHydratedProjectsCount());
-    assertEquals(
-        "HydratedProject Id not match with expected HydratedProject Id",
-        project4.getId(),
-        response.getHydratedProjects(0).getProject().getId());
-
-    keyValueQuery =
-        KeyValueQuery.newBuilder()
             .setKey("tags")
             .setValue(Value.newBuilder().setStringValue("_8").build())
             .setOperator(Operator.CONTAIN)
@@ -2958,40 +2927,6 @@ public class HydratedServiceTest {
         "HydratedProject Id not match with expected HydratedProject Id",
         project3.getId(),
         response.getHydratedProjects(0).getProject().getId());
-
-    keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey(ModelDBConstants.PROJECT_VISIBILITY)
-            .setValue(Value.newBuilder().setStringValue("PUBLIC").build())
-            .setOperator(OperatorEnum.Operator.EQ)
-            .build();
-    findProjects =
-        FindProjects.newBuilder()
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("name")
-            .build();
-
-    response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        response.getTotalRecords());
-
-    keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey(ModelDBConstants.PROJECT_VISIBILITY)
-            .setValue(Value.newBuilder().setStringValue("PUBLIC").build())
-            .setOperator(OperatorEnum.Operator.NE)
-            .build();
-    findProjects = FindProjects.newBuilder().addPredicates(keyValueQuery).build();
-
-    response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
 
     keyValueQuery =
         KeyValueQuery.newBuilder()
@@ -3161,7 +3096,7 @@ public class HydratedServiceTest {
               .addTags("Tag_5")
               .addTags("Tag_7")
               .addTags("Tag_8")
-              .setProjectVisibility(ProjectVisibility.PUBLIC)
+              .setVisibility(VisibilityEnum.Visibility.PUBLIC)
               .build();
       createProjectResponse = projectServiceStub.createProject(createProjectRequest);
       Project project4 = createProjectResponse.getProject();

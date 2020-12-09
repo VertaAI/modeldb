@@ -1,8 +1,8 @@
 package ai.verta.modeldb.entities;
 
+import ai.verta.common.VisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class ProjectEntity {
     setDate_created(project.getDateCreated());
     setDate_updated(project.getDateUpdated());
     setDescription(project.getDescription());
-    setProjectVisibility(project.getProjectVisibility());
+    setProjectVisibility(project.getVisibility());
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, project.getAttributesList()));
@@ -74,7 +74,7 @@ public class ProjectEntity {
   @Column(name = "date_updated")
   private Long date_updated;
 
-  private ProjectVisibility projectVisibility;
+  @Transient private VisibilityEnum.Visibility projectVisibility = VisibilityEnum.Visibility.PRIVATE;
 
   @OneToMany(
       targetEntity = KeyValueEntity.class,
@@ -183,11 +183,11 @@ public class ProjectEntity {
     this.date_updated = dateUpdated;
   }
 
-  public ProjectVisibility getProjectVisibility() {
+  public VisibilityEnum.Visibility getProjectVisibility() {
     return projectVisibility;
   }
 
-  public void setProjectVisibility(ProjectVisibility project_visibility) {
+  public void setProjectVisibility(VisibilityEnum.Visibility project_visibility) {
     this.projectVisibility = project_visibility;
   }
 
@@ -324,7 +324,7 @@ public class ProjectEntity {
             .setDescription(getDescription())
             .setDateCreated(getDate_created())
             .setDateUpdated(getDate_updated())
-            .setProjectVisibility(getProjectVisibility())
+            .setVisibility(getProjectVisibility())
             .addAllAttributes(
                 RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))
             .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))

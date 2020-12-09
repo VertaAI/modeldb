@@ -1089,6 +1089,16 @@
       ],
       "default": "STRING"
     },
+    "VisibilityEnumVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE",
+      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Uses access setup by organization"
+    },
     "WorkspaceTypeEnumWorkspaceType": {
       "type": "string",
       "enum": [
@@ -2169,8 +2179,8 @@
         "readme_text": {
           "type": "string"
         },
-        "project_visibility": {
-          "$ref": "#/definitions/modeldbProjectVisibility"
+        "visibility": {
+          "$ref": "#/definitions/VisibilityEnumVisibility"
         },
         "workspace_id": {
           "type": "string"
@@ -2207,15 +2217,6 @@
           }
         }
       }
-    },
-    "modeldbProjectVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE"
     },
     "modeldbQueryDatasetVersionInfo": {
       "type": "object",

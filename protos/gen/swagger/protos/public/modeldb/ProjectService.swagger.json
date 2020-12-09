@@ -958,7 +958,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/modeldbSetProjectVisibiltyResponse"
+              "$ref": "#/definitions/modeldbSetProjectVisibilityResponse"
             }
           },
           "default": {
@@ -974,7 +974,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/modeldbSetProjectVisibilty"
+              "$ref": "#/definitions/modeldbSetProjectVisibility"
             }
           }
         ],
@@ -1183,6 +1183,16 @@
       ],
       "default": "STRING"
     },
+    "VisibilityEnumVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE",
+      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Uses access setup by organization"
+    },
     "WorkspaceTypeEnumWorkspaceType": {
       "type": "string",
       "enum": [
@@ -1351,8 +1361,8 @@
         "readme_text": {
           "type": "string"
         },
-        "project_visibility": {
-          "$ref": "#/definitions/modeldbProjectVisibility"
+        "visibility": {
+          "$ref": "#/definitions/VisibilityEnumVisibility"
         },
         "artifacts": {
           "type": "array",
@@ -1865,8 +1875,8 @@
         "readme_text": {
           "type": "string"
         },
-        "project_visibility": {
-          "$ref": "#/definitions/modeldbProjectVisibility"
+        "visibility": {
+          "$ref": "#/definitions/VisibilityEnumVisibility"
         },
         "workspace_id": {
           "type": "string"
@@ -1903,15 +1913,6 @@
           }
         }
       }
-    },
-    "modeldbProjectVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE"
     },
     "modeldbSetProjectReadme": {
       "type": "object",
@@ -1951,18 +1952,18 @@
         }
       }
     },
-    "modeldbSetProjectVisibilty": {
+    "modeldbSetProjectVisibility": {
       "type": "object",
       "properties": {
         "id": {
           "type": "string"
         },
-        "project_visibility": {
-          "$ref": "#/definitions/modeldbProjectVisibility"
+        "visibility": {
+          "$ref": "#/definitions/VisibilityEnumVisibility"
         }
       }
     },
-    "modeldbSetProjectVisibiltyResponse": {
+    "modeldbSetProjectVisibilityResponse": {
       "type": "object",
       "properties": {
         "project": {

@@ -3,25 +3,19 @@ package ai.verta.modeldb.authservice;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
-import ai.verta.uac.Actions;
-import ai.verta.uac.GetCollaboratorResponseItem;
-import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.Organization;
-import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.UserInfo;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
 import io.grpc.Metadata;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface RoleService {
 
@@ -143,16 +137,25 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
-  boolean createWorkspaceRoleBinding(
-      Long workspaceId,
-      WorkspaceType workspaceType,
+  boolean createWorkspacePermissions(
+      String workspaceName,
+      Optional<WorkspaceType> workspaceType,
       String resourceId,
-      Long ownerId,
+      Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      ProjectVisibility projectVisibility);
+      VisibilityEnum.Visibility projectVisibility);
 
-  void createWorkspaceRoleBinding(
+  boolean createWorkspacePermissions(
+      Long workspaceId,
+      Optional<WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      VisibilityEnum.Visibility projectVisibility);
+
+  void createWorkspacePermissions(
       String workspace_id,
       WorkspaceType forNumber,
       String valueOf,

@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
+import ai.verta.common.VisibilityEnum;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
@@ -272,7 +273,7 @@ public class FindProjectEntitiesTest {
             .addTags("Tag_5")
             .addTags("Tag_7")
             .addTags("Tag_8")
-            .setProjectVisibility(ProjectVisibility.PUBLIC)
+            .setVisibility(VisibilityEnum.Visibility.PUBLIC)
             .build();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project4 = createProjectResponse.getProject();
@@ -1164,70 +1165,6 @@ public class FindProjectEntitiesTest {
     }
 
     LOGGER.info("Find and sort Projects by attributes test stop................................");
-  }
-
-  /** Find public projects sort by name */
-  @Test
-  public void findPublicProjectsSortingByNameTest() {
-    LOGGER.info("Find Projects with sorting by name test start................................");
-
-    KeyValueQuery keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey(ModelDBConstants.PROJECT_VISIBILITY)
-            .setValue(Value.newBuilder().setStringValue("PUBLIC").build())
-            .setOperator(OperatorEnum.Operator.EQ)
-            .build();
-    FindProjects findProjects =
-        FindProjects.newBuilder()
-            .addAllProjectIds(projectMap.keySet())
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("name")
-            .build();
-
-    FindProjects.Response response = projectServiceStub.findProjects(findProjects);
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        response.getTotalRecords());
-    assertEquals(
-        "Project count not match with expected project count", 1, response.getProjectsCount());
-    assertEquals(
-        "Project Id not match with expected project Id",
-        project4.getId(),
-        response.getProjects(0).getId());
-
-    keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey(ModelDBConstants.PROJECT_VISIBILITY)
-            .setValue(Value.newBuilder().setStringValue("PUBLIC").build())
-            .setOperator(OperatorEnum.Operator.NE)
-            .build();
-    findProjects =
-        FindProjects.newBuilder().addPredicates(keyValueQuery).setSortKey("name").build();
-
-    response = projectServiceStub.findProjects(findProjects);
-    List<Project> expectedProjects = new ArrayList<>();
-    List<Project> staleProjects = new ArrayList<>();
-    for (Project project : response.getProjectsList()) {
-      if (projectMap.containsKey(project.getId())) {
-        expectedProjects.add(project);
-      } else {
-        staleProjects.add(project);
-      }
-    }
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords() - staleProjects.size());
-    assertEquals("Project count not match with expected project count", 3, expectedProjects.size());
-    assertEquals(
-        "Project Id not match with expected project Id",
-        project3.getId(),
-        expectedProjects.get(0).getId());
-
-    LOGGER.info("Find Projects with sorting by name test stop................................");
   }
 
   /** Find projects by name key */

@@ -1,57 +1,11 @@
 package ai.verta.modeldb.project;
 
-import ai.verta.common.Artifact;
+import ai.verta.common.*;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
-import ai.verta.common.KeyValue;
-import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.OperatorEnum;
-import ai.verta.common.ValueTypeEnum;
-import ai.verta.modeldb.AddProjectAttributes;
-import ai.verta.modeldb.AddProjectTag;
-import ai.verta.modeldb.AddProjectTags;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.CreateProject;
-import ai.verta.modeldb.DeepCopyProject;
-import ai.verta.modeldb.DeleteProject;
-import ai.verta.modeldb.DeleteProjectArtifact;
-import ai.verta.modeldb.DeleteProjectAttributes;
-import ai.verta.modeldb.DeleteProjectTag;
-import ai.verta.modeldb.DeleteProjectTags;
-import ai.verta.modeldb.DeleteProjects;
-import ai.verta.modeldb.Empty;
-import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.FindProjects;
-import ai.verta.modeldb.GetArtifacts;
-import ai.verta.modeldb.GetAttributes;
-import ai.verta.modeldb.GetProjectById;
-import ai.verta.modeldb.GetProjectByName;
-import ai.verta.modeldb.GetProjectCodeVersion;
-import ai.verta.modeldb.GetProjectReadme;
-import ai.verta.modeldb.GetProjectShortName;
-import ai.verta.modeldb.GetProjects;
-import ai.verta.modeldb.GetPublicProjects;
-import ai.verta.modeldb.GetSummary;
-import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.LastModifiedExperimentRunSummary;
-import ai.verta.modeldb.LogProjectArtifacts;
-import ai.verta.modeldb.LogProjectCodeVersion;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.LogProjectCodeVersion.Response;
-import ai.verta.modeldb.MetricsSummary;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
-import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.SetProjectReadme;
-import ai.verta.modeldb.SetProjectShortName;
-import ai.verta.modeldb.SetProjectVisibilty;
-import ai.verta.modeldb.SetProjectWorkspace;
-import ai.verta.modeldb.UpdateProjectAttributes;
-import ai.verta.modeldb.UpdateProjectDescription;
-import ai.verta.modeldb.UpdateProjectName;
-import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.AuthService;
@@ -74,16 +28,7 @@ import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -164,7 +109,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
             .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
-            .setProjectVisibility(request.getProjectVisibility())
+            .setVisibility(request.getVisibility())
             .addAllArtifacts(request.getArtifactsList())
             .setReadmeText(request.getReadmeText());
     App app = App.getInstance();
@@ -216,7 +161,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       ModelDBUtils.checkPersonalWorkspace(
           userInfo, project.getWorkspaceType(), project.getWorkspaceId(), "project");
       if (App.getInstance().getPublicSharingEnabled()) {
-        project = project.toBuilder().setProjectVisibility(ProjectVisibility.PUBLIC).build();
+        project = project.toBuilder().setVisibility(VisibilityEnum.Visibility.PUBLIC).build();
       }
       project = projectDAO.insertProject(project, userInfo);
 
@@ -829,7 +774,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               .setWorkspaceName(request.getWorkspaceName());
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(findProjects.build(), null, userInfo, ProjectVisibility.PRIVATE);
+          projectDAO.findProjects(
+              findProjects.build(), null, userInfo, VisibilityEnum.Visibility.PRIVATE);
 
       responseObserver.onNext(
           GetProjects.Response.newBuilder()
@@ -943,7 +889,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       : request.getWorkspaceName());
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(findProjects.build(), null, userInfo, ProjectVisibility.PRIVATE);
+          projectDAO.findProjects(
+              findProjects.build(), null, userInfo, VisibilityEnum.Visibility.PRIVATE);
 
       if (projectPaginationDTO.getTotalRecords() == 0) {
         Status status =
@@ -1332,17 +1279,18 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
   @Override
   public void setProjectVisibility(
-      SetProjectVisibilty request, StreamObserver<SetProjectVisibilty.Response> responseObserver) {
+      SetProjectVisibility request,
+      StreamObserver<SetProjectVisibility.Response> responseObserver) {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in SetProjectVisibilty request";
+        String errorMessage = "Project ID not found in SetVisibility request";
         LOGGER.info(errorMessage);
         Status status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
                 .setMessage(errorMessage)
-                .addDetails(Any.pack(SetProjectVisibilty.getDefaultInstance()))
+                .addDetails(Any.pack(SetProjectVisibility.getDefaultInstance()))
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
@@ -1351,8 +1299,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project project =
-          projectDAO.setProjectVisibility(request.getId(), request.getProjectVisibility());
+      Project project = projectDAO.setVisibility(request.getId(), request.getVisibility());
       saveAuditLogs(
           null,
           ModelDBConstants.UPDATE,
@@ -1361,13 +1308,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               ModelDBConstants.METADATA_JSON_TEMPLATE,
               "update",
               "visibility",
-              project.getProjectVisibility().name()));
+              project.getVisibility().name()));
       responseObserver.onNext(
-          SetProjectVisibilty.Response.newBuilder().setProject(project).build());
+          SetProjectVisibility.Response.newBuilder().setProject(project).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
-          responseObserver, e, SetProjectVisibilty.Response.getDefaultInstance());
+          responseObserver, e, SetProjectVisibility.Response.getDefaultInstance());
     }
   }
 
@@ -1484,7 +1431,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(request, null, userInfo, ProjectVisibility.PRIVATE);
+          projectDAO.findProjects(request, null, userInfo, VisibilityEnum.Visibility.PRIVATE);
 
       responseObserver.onNext(
           FindProjects.Response.newBuilder()

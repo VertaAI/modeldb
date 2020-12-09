@@ -850,7 +850,7 @@ func local_request_ProjectService_GetProjectReadme_0(ctx context.Context, marsha
 }
 
 func request_ProjectService_SetProjectVisibility_0(ctx context.Context, marshaler runtime.Marshaler, client ProjectServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq SetProjectVisibilty
+	var protoReq SetProjectVisibility
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -867,7 +867,7 @@ func request_ProjectService_SetProjectVisibility_0(ctx context.Context, marshale
 }
 
 func local_request_ProjectService_SetProjectVisibility_0(ctx context.Context, marshaler runtime.Marshaler, server ProjectServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq SetProjectVisibilty
+	var protoReq SetProjectVisibility
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)

@@ -137,8 +137,8 @@ class ProjectServiceStub(object):
         )
     self.setProjectVisibility = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/setProjectVisibility',
-        request_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.Response.FromString,
+        request_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibility.SerializeToString,
+        response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibility.Response.FromString,
         )
     self.setProjectShortName = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/setProjectShortName',
@@ -554,8 +554,8 @@ def add_ProjectServiceServicer_to_server(servicer, server):
       ),
       'setProjectVisibility': grpc.unary_unary_rpc_method_handler(
           servicer.setProjectVisibility,
-          request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.Response.SerializeToString,
+          request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibility.FromString,
+          response_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibility.Response.SerializeToString,
       ),
       'setProjectShortName': grpc.unary_unary_rpc_method_handler(
           servicer.setProjectShortName,

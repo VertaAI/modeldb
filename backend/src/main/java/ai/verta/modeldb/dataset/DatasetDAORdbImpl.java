@@ -187,7 +187,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       String datasetId,
       DatasetVisibility datasetVisibility) {
     if (workspaceId != null && !workspaceId.isEmpty()) {
-      roleService.createWorkspaceRoleBinding(
+      roleService.createWorkspacePermissions(
           workspaceId,
           workspaceType,
           datasetId,
