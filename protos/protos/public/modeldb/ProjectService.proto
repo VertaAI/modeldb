@@ -265,15 +265,6 @@ message GetProjectReadme {
     }
 }
 
-message SetProjectVisibility {
-    string id = 1;
-    common.VisibilityEnum.Visibility visibility = 2;
-
-    message Response {
-        Project project = 1;
-    }
-}
-
 message SetProjectShortName {
     string id = 1;
     string short_name = 2;
@@ -504,13 +495,6 @@ service ProjectService {
     rpc getProjectReadme(GetProjectReadme) returns (GetProjectReadme.Response) {
         option (google.api.http) = {
             get: "/v1/project/getProjectReadme"
-        };
-    };
-
-    rpc setProjectVisibility(SetProjectVisibility) returns (SetProjectVisibility.Response) {
-        option (google.api.http) = {
-            post: "/v1/project/setProjectVisibility"
-            body: "*"
         };
     };
 
