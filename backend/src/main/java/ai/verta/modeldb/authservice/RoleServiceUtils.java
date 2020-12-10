@@ -1182,6 +1182,7 @@ public class RoleServiceUtils implements RoleService {
         Resources.newBuilder()
             .setResourceType(resourceType)
             .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .addResourceIds(projectId)
             .build();
     List<GetResourcesResponseItem> responseItems =
         getAllResourceItems(workspaceName, Optional.of(resources));
@@ -1281,15 +1282,17 @@ public class RoleServiceUtils implements RoleService {
               .build();
       ResourceVisibility resourceVisibility = getResourceVisibility(workspaceType, visibility);
       SetResources.Builder setResourcesBuilder =
-          SetResources.newBuilder()
-              .setResources(resources)
-              .setVisibility(resourceVisibility)
-              .setCollaboratorType(collaboratorType);
+          SetResources.newBuilder().setResources(resources).setVisibility(resourceVisibility);
+
+      if (resourceVisibility.equals(ResourceVisibility.ORG_SCOPED_PUBLIC)) {
+        setResourcesBuilder.setCollaboratorType(collaboratorType);
+      }
+
       if (ownerId.isPresent()) {
-        setResourcesBuilder = setResourcesBuilder.setOwnerId(ownerId.get());
+        setResourcesBuilder.setOwnerId(ownerId.get());
       }
       if (workspaceId.isPresent()) {
-        setResourcesBuilder = setResourcesBuilder.setWorkspaceId(workspaceId.get());
+        setResourcesBuilder.setWorkspaceId(workspaceId.get());
       } else if (workspaceName.isPresent()) {
         setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
       } else {
