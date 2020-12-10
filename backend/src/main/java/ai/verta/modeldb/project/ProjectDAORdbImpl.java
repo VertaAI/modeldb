@@ -3,19 +3,10 @@ package ai.verta.modeldb.project;
 import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CloneExperimentRun;
-import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.Experiment;
-import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.FindProjects;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.Project;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
-import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -30,7 +21,6 @@ import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.UserInfo;
@@ -39,14 +29,6 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -54,6 +36,10 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import javax.persistence.criteria.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ProjectDAORdbImpl implements ProjectDAO {
 
@@ -711,21 +697,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return newProject;
   }
 
-  private List<String> getWorkspaceRoleBindings(
-      String workspaceId,
-      WorkspaceType workspaceType,
-      String projectId,
-      VisibilityEnum.Visibility visibility) {
-    return roleService.getWorkspaceRoleBindings(
-        workspaceId,
-        workspaceType,
-        projectId,
-        ModelDBConstants.ROLE_PROJECT_ADMIN,
-        ModelDBServiceResourceTypes.PROJECT,
-        visibility.equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
-        "_GLOBAL_SHARING");
-  }
-
   @Override
   public List<String> deleteProjects(List<String> projectIds) {
     // Get self allowed resources id where user has delete permission
@@ -885,63 +856,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     } else {
       LOGGER.debug("Projects size is empty");
       return Collections.emptyList();
-    }
-  }
-
-  private void createNewVisibilityBasedBinding(
-      VisibilityEnum.Visibility newVisibility,
-      String projectId,
-      Integer projectWorkspaceType,
-      String workspaceId) {
-    switch (newVisibility) {
-      case ORG_SCOPED_PUBLIC:
-        if (projectWorkspaceType == WorkspaceType.ORGANIZATION_VALUE) {
-          Role projRead = roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_READ_ONLY, null);
-          roleService.createRoleBinding(
-              projRead,
-              new CollaboratorOrg(workspaceId),
-              projectId,
-              ModelDBServiceResourceTypes.PROJECT);
-        }
-        break;
-      case PUBLIC:
-        roleService.createPublicRoleBinding(projectId, ModelDBServiceResourceTypes.PROJECT);
-
-        break;
-      case PRIVATE:
-      case UNRECOGNIZED:
-        break;
-    }
-  }
-
-  private void deleteOldVisibilityBasedBinding(
-      VisibilityEnum.Visibility oldVisibility,
-      String projectId,
-      int projectWorkspaceType,
-      String workspaceId) {
-    switch (oldVisibility) {
-      case ORG_SCOPED_PUBLIC:
-        if (projectWorkspaceType == WorkspaceType.ORGANIZATION_VALUE) {
-          String roleBindingName =
-              roleService.buildReadOnlyRoleBindingName(
-                  projectId, new CollaboratorOrg(workspaceId), ModelDBServiceResourceTypes.PROJECT);
-          RoleBinding roleBinding = roleService.getRoleBindingByName(roleBindingName);
-          if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(roleBinding.getId());
-          }
-        }
-        break;
-      case PUBLIC:
-        String roleBindingName =
-            roleService.buildPublicRoleBindingName(projectId, ModelDBServiceResourceTypes.PROJECT);
-        RoleBinding publicReadRoleBinding = roleService.getRoleBindingByName(roleBindingName);
-        if (publicReadRoleBinding != null && !publicReadRoleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(publicReadRoleBinding.getId());
-        }
-        break;
-      case PRIVATE:
-      case UNRECOGNIZED:
-        break;
     }
   }
 
