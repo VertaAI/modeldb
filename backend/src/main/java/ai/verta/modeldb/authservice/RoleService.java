@@ -146,6 +146,12 @@ public interface RoleService {
   List<GetResourcesResponseItem> getAllResourceItems(
       Long workspaceServiceId, Optional<Resources> filterTo);
 
+  boolean deleteResources(Resources resources);
+
+  boolean deleteProjectResources(String projectId);
+
+  boolean deleteProjectResources(List<String> projectIds);
+
   boolean createWorkspacePermissions(
       String workspaceName,
       Optional<WorkspaceType> workspaceType,

@@ -278,6 +278,21 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
+  public boolean deleteResources(Resources resources) {
+    return true;
+  }
+
+  @Override
+  public boolean deleteProjectResources(String projectId) {
+    return true;
+  }
+
+  @Override
+  public boolean deleteProjectResources(List<String> projectIds) {
+    return true;
+  }
+
+  @Override
   public boolean createWorkspacePermissions(
       String workspaceName,
       Optional<WorkspaceType> workspaceType,

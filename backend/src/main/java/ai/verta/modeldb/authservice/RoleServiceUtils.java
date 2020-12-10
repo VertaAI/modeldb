@@ -1260,6 +1260,39 @@ public class RoleServiceUtils implements RoleService {
     return getResourceItems(Optional.of(workspaceServiceId), Optional.empty(), filterTo);
   }
 
+  @Override
+  public boolean deleteResources(Resources resources) {
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      LOGGER.info("Calling CollaboratorService to delete resources");
+      DeleteResources deleteResources = DeleteResources.newBuilder().setResources(resources).build();
+      DeleteResources.Response response = authServiceChannel.getCollaboratorServiceBlockingStub().deleteResources(deleteResources);
+      LOGGER.info("DeleteResources message sent.  Response: " + response);
+      return true;
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
+    }
+    return false;
+  }
+
+  @Override
+  public boolean deleteProjectResources(String projectId) {
+    return deleteProjectResources(Collections.singletonList(projectId));
+  }
+
+  @Override
+  public boolean deleteProjectResources(List<String> projectIds) {
+    ResourceType modeldbServiceResourceType =
+            ResourceType.newBuilder().setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT).build();
+    Resources resources =
+            Resources.newBuilder()
+                    .setResourceType(modeldbServiceResourceType)
+                    .setService(Service.MODELDB_SERVICE)
+                    .addAllResourceIds(projectIds)
+                    .build();
+    return deleteResources(resources);
+  }
+
   private boolean createWorkspacePermissions(
       Optional<Long> workspaceId,
       Optional<String> workspaceName,
