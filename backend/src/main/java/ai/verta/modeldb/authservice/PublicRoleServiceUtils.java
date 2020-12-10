@@ -260,6 +260,16 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
+  public List<GetResourcesResponseItem> getAllResourceItems(String workspaceName, Optional<Resources> filterTo) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<GetResourcesResponseItem> getAllResourceItems(Long workspaceServiceId, Optional<Resources> filterTo) {
+    return Collections.emptyList();
+  }
+
+  @Override
   public boolean createWorkspacePermissions(
       String workspaceName,
       Optional<WorkspaceType> workspaceType,
