@@ -2035,67 +2035,6 @@ public class ProjectTest {
   }
 
   @Test
-  public void p_SetProjectVisibility() {
-    LOGGER.info("Set Project visibility test start................................");
-
-    Project project = null;
-    try {
-      // Create public project
-      // Public project 1
-      CreateProject createProjectRequest =
-          getCreateProjectRequest("project-" + new Date().getTime());
-      createProjectRequest =
-          createProjectRequest.toBuilder().setVisibility(VisibilityEnum.Visibility.PUBLIC).build();
-      CreateProject.Response createProjectResponse =
-          projectServiceStub.createProject(createProjectRequest);
-      project = createProjectResponse.getProject();
-      assertEquals(
-          "Project name not match with expected project name",
-          createProjectRequest.getName(),
-          project.getName());
-      assertEquals(
-          "Project visibility not match with expected project visibility",
-          VisibilityEnum.Visibility.PUBLIC,
-          project.getVisibility());
-      LOGGER.info("Project created successfully");
-
-      SetProjectVisibility setProjectVisibilty =
-          SetProjectVisibility.newBuilder()
-              .setId(project.getId())
-              .setVisibility(VisibilityEnum.Visibility.PRIVATE)
-              .build();
-      SetProjectVisibility.Response response =
-          projectServiceStub.setProjectVisibility(setProjectVisibilty);
-      Project visibilityProject = response.getProject();
-      assertEquals(
-          "Project name not match with expected project name",
-          project.getName(),
-          visibilityProject.getName());
-      assertEquals(
-          "Project visibility not match with updated project visibility",
-          VisibilityEnum.Visibility.PRIVATE,
-          visibilityProject.getVisibility());
-      LOGGER.info("Set project visibility successfully");
-      assertEquals(
-          "Project date_updated field was updated in the database",
-          project.getDateUpdated(),
-          response.getProject().getDateUpdated());
-      project = response.getProject();
-    } finally {
-      if (project != null) {
-        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-        DeleteProject.Response deleteProjectResponse =
-            projectServiceStub.deleteProject(deleteProject);
-        LOGGER.info("Project deleted successfully");
-        LOGGER.info(deleteProjectResponse.toString());
-        assertTrue(deleteProjectResponse.getStatus());
-      }
-    }
-
-    LOGGER.info("Set Project visibility test stop................................");
-  }
-
-  @Test
   public void q_setProjectShortNameTest() {
     LOGGER.info("Set Project short name test start................................");
     try {

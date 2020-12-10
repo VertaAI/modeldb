@@ -805,20 +805,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
   }
 
-  private VisibilityEnum.Visibility fromResourceVisibility(ResourceVisibility resourceVisibility) {
-    switch(resourceVisibility) {
-      case PRIVATE:
-        return VisibilityEnum.Visibility.PRIVATE;
-      case ORG_DEFAULT:
-        // TODO: This needs to be fixed
-        return VisibilityEnum.Visibility.UNRECOGNIZED;
-      case ORG_SCOPED_PUBLIC:
-        return VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC;
-      default:
-        return VisibilityEnum.Visibility.UNRECOGNIZED;
-    }
-  }
-
   @Override
   public Project getProjectByID(String id) throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -833,20 +819,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
-      ResourceType resourceType = ResourceType.newBuilder().setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT).build();
-      Resources resources = Resources.newBuilder().setResourceType(resourceType).setService(ServiceEnum.Service.MODELDB_SERVICE).build();
-      List<GetResourcesResponseItem> responseItems = roleService.getAllResourceItems(projectEntity.getWorkspace(), Optional.of(resources));
-      if (responseItems.size() > 1) {
-        LOGGER.warn("Role service returned " + responseItems.size() + " resource response items fetching project visibility, but only expected 1.");
-      }
-      final Optional<GetResourcesResponseItem> responseItem = responseItems.stream()
-              .filter(item -> item.getResourceType().getModeldbServiceResourceType() == ModelDBServiceResourceTypes.PROJECT &&
-                item.getService() == ServiceEnum.Service.MODELDB_SERVICE)
-              .findFirst();
-      if(responseItem.isPresent()) {
-        final VisibilityEnum.Visibility projectVisibility = fromResourceVisibility(responseItem.get().getVisibility());
-        projectEntity.setProjectVisibility(projectVisibility);
-      }
+      projectEntity.setProjectVisibility(roleService.getProjectVisibility(projectEntity.getId(), projectEntity.getWorkspace()));
       return projectEntity.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {

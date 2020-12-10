@@ -260,6 +260,11 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
+  public VisibilityEnum.Visibility getProjectVisibility(String projectId, String workspaceName) {
+    return VisibilityEnum.Visibility.PRIVATE;
+  }
+
+  @Override
   public List<GetResourcesResponseItem> getAllResourceItems(String workspaceName, Optional<Resources> filterTo) {
     return Collections.emptyList();
   }

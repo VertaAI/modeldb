@@ -1150,6 +1150,38 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
+  private VisibilityEnum.Visibility fromResourceVisibility(ResourceVisibility resourceVisibility) {
+    switch(resourceVisibility) {
+      case PRIVATE:
+        return VisibilityEnum.Visibility.PRIVATE;
+      case ORG_DEFAULT:
+        // TODO: This needs to be fixed
+        return VisibilityEnum.Visibility.UNRECOGNIZED;
+      case ORG_SCOPED_PUBLIC:
+        return VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC;
+      default:
+        return VisibilityEnum.Visibility.UNRECOGNIZED;
+    }
+  }
+
+  @Override
+  public VisibilityEnum.Visibility getProjectVisibility(String projectId, String workspaceName) {
+    ResourceType resourceType = ResourceType.newBuilder().setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT).build();
+    Resources resources = Resources.newBuilder().setResourceType(resourceType).setService(ServiceEnum.Service.MODELDB_SERVICE).build();
+    List<GetResourcesResponseItem> responseItems = getAllResourceItems(workspaceName, Optional.of(resources));
+    if (responseItems.size() > 1) {
+      LOGGER.warn("Role service returned " + responseItems.size() + " resource response items fetching project visibility, but only expected 1.");
+    }
+    final Optional<GetResourcesResponseItem> responseItem = responseItems.stream()
+            .filter(item -> item.getResourceType().getModeldbServiceResourceType() == ModelDBServiceResourceTypes.PROJECT &&
+                    item.getService() == ServiceEnum.Service.MODELDB_SERVICE)
+            .findFirst();
+    if(responseItem.isPresent()) {
+      return fromResourceVisibility(responseItem.get().getVisibility());
+    }
+    return VisibilityEnum.Visibility.PRIVATE;
+  }
+
   private ResourceVisibility getResourceVisibility(
       Optional<WorkspaceType> workspaceType, VisibilityEnum.Visibility projectVisibility) {
     if (!workspaceType.isPresent()) {
@@ -1166,7 +1198,7 @@ public class RoleServiceUtils implements RoleService {
     return ResourceVisibility.PRIVATE;
   }
 
-  private List<GetResourcesResponseItem>  getResource(Optional<Long> workspaceServiceId, Optional<String> workspaceName, Optional<Resources> filterTo) {
+  private List<GetResourcesResponseItem> getResourceItems(Optional<Long> workspaceServiceId, Optional<String> workspaceName, Optional<Resources> filterTo) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       final GetResources.Builder getResourcesBuilder = GetResources.newBuilder();
       if (workspaceName.isPresent()) {
@@ -1189,12 +1221,12 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public List<GetResourcesResponseItem> getAllResourceItems(String workspaceName, Optional<Resources> filterTo) {
-    return getResource(Optional.empty(), Optional.of(workspaceName), filterTo);
+    return getResourceItems(Optional.empty(), Optional.of(workspaceName), filterTo);
   }
 
   @Override
   public List<GetResourcesResponseItem> getAllResourceItems(Long workspaceServiceId, Optional<Resources> filterTo) {
-    return getResource(Optional.of(workspaceServiceId), Optional.empty(), filterTo);
+    return getResourceItems(Optional.of(workspaceServiceId), Optional.empty(), filterTo);
   }
 
   private boolean createWorkspacePermissions(
