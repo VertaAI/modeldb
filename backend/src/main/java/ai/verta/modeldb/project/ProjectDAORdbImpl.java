@@ -222,22 +222,11 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   }
 
   private void createRoleBindingsForProject(Project project, UserInfo userInfo) {
-    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_PROJECT_OWNER, null);
-    roleService.createRoleBinding(
-        ownerRole,
-        new CollaboratorUser(authService, userInfo),
-        project.getId(),
-        ModelDBServiceResourceTypes.PROJECT);
-
-    if (project.getVisibility().equals(VisibilityEnum.Visibility.PUBLIC)) {
-      roleService.createPublicRoleBinding(project.getId(), ModelDBServiceResourceTypes.PROJECT);
-    }
-
     final Optional<Long> ownerId =
         userInfo != null ? Optional.of(Long.parseLong(userInfo.getUserId())) : Optional.empty();
     roleService.createWorkspacePermissions(
         project.getWorkspaceServiceId(),
-        Optional.ofNullable(project.getWorkspaceType()),
+        Optional.of(project.getWorkspaceType()),
         project.getId(),
         ownerId,
         ModelDBServiceResourceTypes.PROJECT,

@@ -74,6 +74,9 @@ public class ProjectEntity {
   @Column(name = "date_updated")
   private Long date_updated;
 
+  @Column(name = "project_visibility")
+  private Integer project_visibility;
+
   @Transient
   private VisibilityEnum.Visibility projectVisibility = VisibilityEnum.Visibility.PRIVATE;
 
@@ -182,6 +185,10 @@ public class ProjectEntity {
 
   public void setDate_updated(Long dateUpdated) {
     this.date_updated = dateUpdated;
+  }
+
+  public Integer getProject_visibility() {
+    return project_visibility;
   }
 
   public VisibilityEnum.Visibility getProjectVisibility() {
