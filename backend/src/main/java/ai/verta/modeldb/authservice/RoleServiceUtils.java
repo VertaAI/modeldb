@@ -1150,9 +1150,10 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  private VisibilityEnum.Visibility fromResourceVisibility(Integer workspaceType, ResourceVisibility resourceVisibility) {
+  private VisibilityEnum.Visibility fromResourceVisibility(
+      Integer workspaceType, ResourceVisibility resourceVisibility) {
     if (workspaceType == WorkspaceType.ORGANIZATION.getNumber()) {
-      switch(resourceVisibility) {
+      switch (resourceVisibility) {
         case PRIVATE:
           return VisibilityEnum.Visibility.PRIVATE;
         case ORG_DEFAULT:
@@ -1168,18 +1169,34 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public VisibilityEnum.Visibility getProjectVisibility(String projectId, String workspaceName, Integer workspaceType) {
-    ResourceType resourceType = ResourceType.newBuilder().setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT).build();
-    Resources resources = Resources.newBuilder().setResourceType(resourceType).setService(ServiceEnum.Service.MODELDB_SERVICE).build();
-    List<GetResourcesResponseItem> responseItems = getAllResourceItems(workspaceName, Optional.of(resources));
+  public VisibilityEnum.Visibility getProjectVisibility(
+      String projectId, String workspaceName, Integer workspaceType) {
+    ResourceType resourceType =
+        ResourceType.newBuilder()
+            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
+            .build();
+    Resources resources =
+        Resources.newBuilder()
+            .setResourceType(resourceType)
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .build();
+    List<GetResourcesResponseItem> responseItems =
+        getAllResourceItems(workspaceName, Optional.of(resources));
     if (responseItems.size() > 1) {
-      LOGGER.warn("Role service returned " + responseItems.size() + " resource response items fetching project visibility, but only expected 1.");
+      LOGGER.warn(
+          "Role service returned "
+              + responseItems.size()
+              + " resource response items fetching project visibility, but only expected 1.");
     }
-    final Optional<GetResourcesResponseItem> responseItem = responseItems.stream()
-            .filter(item -> item.getResourceType().getModeldbServiceResourceType() == ModelDBServiceResourceTypes.PROJECT &&
-                    item.getService() == ServiceEnum.Service.MODELDB_SERVICE)
+    final Optional<GetResourcesResponseItem> responseItem =
+        responseItems.stream()
+            .filter(
+                item ->
+                    item.getResourceType().getModeldbServiceResourceType()
+                            == ModelDBServiceResourceTypes.PROJECT
+                        && item.getService() == ServiceEnum.Service.MODELDB_SERVICE)
             .findFirst();
-    if(responseItem.isPresent()) {
+    if (responseItem.isPresent()) {
       return fromResourceVisibility(workspaceType, responseItem.get().getVisibility());
     }
     return VisibilityEnum.Visibility.PRIVATE;
@@ -1201,7 +1218,10 @@ public class RoleServiceUtils implements RoleService {
     return ResourceVisibility.PRIVATE;
   }
 
-  private List<GetResourcesResponseItem> getResourceItems(Optional<Long> workspaceServiceId, Optional<String> workspaceName, Optional<Resources> filterTo) {
+  private List<GetResourcesResponseItem> getResourceItems(
+      Optional<Long> workspaceServiceId,
+      Optional<String> workspaceName,
+      Optional<Resources> filterTo) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       final GetResources.Builder getResourcesBuilder = GetResources.newBuilder();
       if (workspaceName.isPresent()) {
@@ -1214,7 +1234,10 @@ public class RoleServiceUtils implements RoleService {
         getResourcesBuilder.setResources(filterTo.get());
       }
 
-      final GetResources.Response response = authServiceChannel.getCollaboratorServiceBlockingStub().getResources(getResourcesBuilder.build());
+      final GetResources.Response response =
+          authServiceChannel
+              .getCollaboratorServiceBlockingStub()
+              .getResources(getResourcesBuilder.build());
       return response.getItemList();
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
@@ -1223,12 +1246,14 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<GetResourcesResponseItem> getAllResourceItems(String workspaceName, Optional<Resources> filterTo) {
+  public List<GetResourcesResponseItem> getAllResourceItems(
+      String workspaceName, Optional<Resources> filterTo) {
     return getResourceItems(Optional.empty(), Optional.of(workspaceName), filterTo);
   }
 
   @Override
-  public List<GetResourcesResponseItem> getAllResourceItems(Long workspaceServiceId, Optional<Resources> filterTo) {
+  public List<GetResourcesResponseItem> getAllResourceItems(
+      Long workspaceServiceId, Optional<Resources> filterTo) {
     return getResourceItems(Optional.of(workspaceServiceId), Optional.empty(), filterTo);
   }
 

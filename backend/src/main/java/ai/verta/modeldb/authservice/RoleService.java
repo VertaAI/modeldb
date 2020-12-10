@@ -137,11 +137,14 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
-  VisibilityEnum.Visibility getProjectVisibility(String projectId, String workspaceName, Integer workspaceType);
+  VisibilityEnum.Visibility getProjectVisibility(
+      String projectId, String workspaceName, Integer workspaceType);
 
-  List<GetResourcesResponseItem> getAllResourceItems(String workspaceName, Optional<Resources> filterTo);
+  List<GetResourcesResponseItem> getAllResourceItems(
+      String workspaceName, Optional<Resources> filterTo);
 
-  List<GetResourcesResponseItem> getAllResourceItems(Long workspaceServiceId, Optional<Resources> filterTo);
+  List<GetResourcesResponseItem> getAllResourceItems(
+      Long workspaceServiceId, Optional<Resources> filterTo);
 
   boolean createWorkspacePermissions(
       String workspaceName,

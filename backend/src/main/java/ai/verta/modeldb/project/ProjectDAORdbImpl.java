@@ -819,7 +819,11 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
-      projectEntity.setProjectVisibility(roleService.getProjectVisibility(projectEntity.getId(), projectEntity.getWorkspace(), projectEntity.getWorkspace_type()));
+      projectEntity.setProjectVisibility(
+          roleService.getProjectVisibility(
+              projectEntity.getId(),
+              projectEntity.getWorkspace(),
+              projectEntity.getWorkspace_type()));
       return projectEntity.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
