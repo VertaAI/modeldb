@@ -2,6 +2,7 @@ package ai.verta.modeldb.batchProcess;
 
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.authservice.AuthService;
@@ -128,7 +129,7 @@ public class CollaboratorResourceMigration {
                   Optional.of(Long.parseLong(project.getOwner())),
                   ModelDBServiceResourceTypes.PROJECT,
                   CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-                  project.getProjectVisibility());
+                  VisibilityEnum.Visibility.forNumber(project.getProject_visibility()));
             } catch (Exception ex) {
               LOGGER.warn("CollaboratorResourceMigration Exception: {}", ex.getMessage());
             }
