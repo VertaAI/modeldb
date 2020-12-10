@@ -12,6 +12,8 @@ if (process.env.DISABLE_LOGS) {
   console.info = function() {};
 }
 
+const basePath = process.env.BACKEND_API_BASE_PATH || '/'
+
 const disableCache = (req, res, next) => {
   res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.header('Pragma', 'no-cache');
@@ -58,13 +60,13 @@ if (process.env.DEPLOYED === 'yes') {
   // MDB starts with /v1, while /api is used by the API gateway
   const mdb_proxy = proxy({
     target: process.env.MDB_ADDRESS,
-    pathRewrite: {'^/api/v1/modeldb' : '/v1'},
+    pathRewrite: {'^${basePath}api/v1/modeldb' : '/v1'},
     // logLevel: "debug",
     changeOrigin: process.env.MDB_CHANGE_ORIGIN || false,
     ws: true,
   })
   app.use(
-    '/api/v1/modeldb/*',
+    `${basePath}/api/v1/modeldb/*`,
     [disableCache, hostnameApiSwitch, printer],
     (req, res, next) => {
       return mdb_proxy(req, res, next);
@@ -73,6 +75,9 @@ if (process.env.DEPLOYED === 'yes') {
 
   const artifactory_proxy = proxy({
     target: process.env.ARTIFACTORY_ADDRESS,
+    pathRewrite: {
+      '^${basePath}': '/', // rewrite path
+    },
     // pathRewrite: {'^/api/v1/artifact' : '/v1'},
     // logLevel: "debug",
     changeOrigin: process.env.ARTIFACTORY_CHANGE_ORIGIN || false,
@@ -88,13 +93,15 @@ if (process.env.DEPLOYED === 'yes') {
 
   const graphql_proxy = proxy({
     target: process.env.GQL_ADDRESS,
-    pathRewrite: {'^/api/v1/graphql/' : '/'},
+    pathRewrite: {
+      '^${basePath}api/v1/graphql/': '/', // rewrite path
+    },
     // logLevel: "debug",
     changeOrigin: process.env.GRAPHQL_CHANGE_ORIGIN || false,
     ws: true,
   })
   app.use(
-    '/api/v1/graphql/*',
+    `${basePath}api/v1/graphql/*`,
     [disableCache, hostnameApiSwitch, printer],
     (req, res, next) => {
       return graphql_proxy(req, res, next);
@@ -118,14 +125,14 @@ if (process.env.DEPLOYED === 'yes') {
   });
 
   app.use(
-    '/api/v1/*',
+    `${basePath}api/v1/*`,
     [disableCache, hostnameApiSwitch, printer],
     (req, res, next) => {
       return aws_proxy(req, res, next);
     }
   );
   app.use(
-    '/api/auth/*',
+    `${basePath}api/auth/*`,
     [disableCache, hostnameApiSwitch, printer],
     (req, res, next) => {
       return aws_proxy(req, res, next);

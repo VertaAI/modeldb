@@ -27,7 +27,7 @@ axiosRetry(axios, {
 export class BaseDataService {
   public constructor() {
     // we have to use absolute baseURL when we use axios-retry. https://github.com/JustinBeckwith/retry-axios/issues/4
-    axios.defaults.baseURL = `${window.location.origin}/api`;
+    axios.defaults.baseURL = `${process.env.PUBLIC_URL}/api`;
     axios.defaults.responseType = 'json';
     axios.defaults.validateStatus = status =>
       (status >= 200 && status < 300) || status === 302;
