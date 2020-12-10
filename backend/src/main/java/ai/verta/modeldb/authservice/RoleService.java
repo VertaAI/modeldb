@@ -137,9 +137,9 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
-  Resources getResources(String workspaceName);
+  List<GetResourcesResponseItem> getAllResourceItems(String workspaceName, Optional<Resources> filterTo);
 
-  Resources getResources(Long workspaceServiceId);
+  List<GetResourcesResponseItem> getAllResourceItems(Long workspaceServiceId, Optional<Resources> filterTo);
 
   boolean createWorkspacePermissions(
       String workspaceName,

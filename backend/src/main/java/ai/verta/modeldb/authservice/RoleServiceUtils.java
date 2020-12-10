@@ -1166,6 +1166,37 @@ public class RoleServiceUtils implements RoleService {
     return ResourceVisibility.PRIVATE;
   }
 
+  private List<GetResourcesResponseItem>  getResource(Optional<Long> workspaceServiceId, Optional<String> workspaceName, Optional<Resources> filterTo) {
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      final GetResources.Builder getResourcesBuilder = GetResources.newBuilder();
+      if (workspaceName.isPresent()) {
+        getResourcesBuilder.setWorkspaceName(workspaceName.get());
+      }
+      if (workspaceServiceId.isPresent()) {
+        getResourcesBuilder.setWorkspaceId(workspaceServiceId.get());
+      }
+      if (filterTo.isPresent()) {
+        getResourcesBuilder.setResources(filterTo.get());
+      }
+
+      final GetResources.Response response = authServiceChannel.getCollaboratorServiceBlockingStub().getResources(getResourcesBuilder.build());
+      return response.getItemList();
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      throw ex;
+    }
+  }
+
+  @Override
+  public List<GetResourcesResponseItem> getAllResourceItems(String workspaceName, Optional<Resources> filterTo) {
+    return getResource(Optional.empty(), Optional.of(workspaceName), filterTo);
+  }
+
+  @Override
+  public List<GetResourcesResponseItem> getAllResourceItems(Long workspaceServiceId, Optional<Resources> filterTo) {
+    return getResource(Optional.of(workspaceServiceId), Optional.empty(), filterTo);
+  }
+
   private boolean createWorkspacePermissions(
       Optional<Long> workspaceId,
       Optional<String> workspaceName,
