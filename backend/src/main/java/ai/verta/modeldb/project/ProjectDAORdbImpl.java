@@ -15,7 +15,6 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
-import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -32,6 +31,8 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.Organization;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
@@ -1108,7 +1109,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         query.setMaxResults(queryParameters.getPageLimit());
       }
 
-      // List<Project> projectList = new ArrayList<>();
       List<ProjectEntity> projectEntities = query.list();
 
       Set<String> projectIdsSet = new HashSet<>();
@@ -1282,23 +1282,11 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
-      List<String> roleBindingNames =
-          getWorkspaceRoleBindings(
-              projectEntity.getWorkspace(),
-              WorkspaceType.forNumber(projectEntity.getWorkspace_type()),
-              projectId,
-              projectEntity.getProjectVisibility());
-      roleService.deleteRoleBindings(roleBindingNames);
-
-      final Optional<Long> ownerId =
-          projectEntity.getOwner() != null
-              ? Optional.of(Long.parseLong(projectEntity.getOwner()))
-              : Optional.empty();
       roleService.createWorkspacePermissions(
-          workspaceDTO.getWorkspaceServiceId(),
-          Optional.ofNullable(workspaceDTO.getWorkspaceType()),
+          workspaceDTO.getWorkspaceName(),
+          Optional.of(WorkspaceType.forNumber(projectEntity.getWorkspace_type())),
           projectEntity.getId(),
-          ownerId,
+          Optional.of(Long.parseLong(projectEntity.getOwner())),
           ModelDBServiceResourceTypes.PROJECT,
           CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
           projectEntity.getProjectVisibility());
