@@ -1160,8 +1160,7 @@ public class RoleServiceUtils implements RoleService {
         case PRIVATE:
           return VisibilityEnum.Visibility.PRIVATE;
         case ORG_DEFAULT:
-          // TODO: This needs to be fixed, what should this be?
-          return VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC;
+          return VisibilityEnum.Visibility.ORG_DEFAULT;
         case ORG_SCOPED_PUBLIC:
           return VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC;
         default:
