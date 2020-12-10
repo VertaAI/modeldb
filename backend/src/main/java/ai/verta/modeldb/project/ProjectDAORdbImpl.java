@@ -810,6 +810,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
+
       return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -961,7 +962,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   private List<ProjectEntity> getProjectEntityByBatchIds(Session session, List<String> projectIds) {
     Query query = session.createQuery(GET_PROJECT_BY_IDS_HQL);
     query.setParameterList("ids", projectIds);
-    return query.list();
+    final List<ProjectEntity> projectEntities = query.list();
+    return projectEntities.stream()
+            .map(projectEntity -> {
+              VisibilityEnum.Visibility projectVisibility = roleService.getProjectVisibility(projectEntity.getId(), projectEntity.getWorkspace(), projectEntity.getWorkspace_type());
+              projectEntity.setProjectVisibility(projectVisibility);
+              return projectEntity;
+            })
+            .collect(Collectors.toList());
   }
 
   @Override
