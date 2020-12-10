@@ -1094,10 +1094,11 @@
       "enum": [
         "PRIVATE",
         "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
+        "ORG_SCOPED_PUBLIC",
+        "ORG_DEFAULT"
       ],
       "default": "PRIVATE",
-      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Uses access setup by organization"
+      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Public to organization\n - ORG_DEFAULT: Default access for organization"
     },
     "WorkspaceTypeEnumWorkspaceType": {
       "type": "string",
