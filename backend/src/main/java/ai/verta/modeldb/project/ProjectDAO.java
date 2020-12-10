@@ -245,17 +245,6 @@ public interface ProjectDAO {
       throws InvalidProtocolBufferException;
 
   /**
-   * Set/Update project visibility
-   *
-   * @param projectId
-   * @param projectVisibility
-   * @return updated project
-   * @throws InvalidProtocolBufferException
-   */
-  Project setVisibility(String projectId, VisibilityEnum.Visibility projectVisibility)
-      throws InvalidProtocolBufferException;
-
-  /**
    * @param projectIds : list of project ids
    * @return : project list
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
