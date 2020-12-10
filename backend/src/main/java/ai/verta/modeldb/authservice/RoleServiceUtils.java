@@ -28,6 +28,8 @@ import io.grpc.protobuf.StatusProto;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -1221,6 +1223,10 @@ public class RoleServiceUtils implements RoleService {
     return ResourceVisibility.PRIVATE;
   }
 
+  private List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo) {
+    return getResourceItems(Optional.empty(), Optional.empty(), filterTo);
+  }
+
   private List<GetResourcesResponseItem> getResourceItems(
       Optional<Long> workspaceServiceId,
       Optional<String> workspaceName,
@@ -1258,6 +1264,52 @@ public class RoleServiceUtils implements RoleService {
   public List<GetResourcesResponseItem> getAllResourceItems(
       Long workspaceServiceId, Optional<Resources> filterTo) {
     return getResourceItems(Optional.of(workspaceServiceId), Optional.empty(), filterTo);
+  }
+
+  private boolean setResources(SetResources setResources) {
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      SetResources.Response setResourcesResponse =
+              authServiceChannel.getCollaboratorServiceBlockingStub().setResources(setResources);
+      LOGGER.info("SetResources message sent.  Response: " + setResourcesResponse);
+      return true;
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
+    }
+    return false;
+  }
+
+  @Override
+  public boolean updateResources(Resources resources, Optional<String> workspaceName, Optional<ResourceVisibility> resourceVisibility) {
+    LOGGER.info("Calling CollaboratorService to update resources - checking for permissions");
+    final List<GetResourcesResponseItem> resourceResponseItems = getResourceItems(Optional.of(resources));
+    if (resourceResponseItems.isEmpty()) {
+      LOGGER.info("Failed CollaboratorService to update resources - no allowed resources returned.");
+      return false;
+    }
+    final List<String> allowedResources = resourceResponseItems.stream().map(responseItem -> responseItem.getResourceId()).collect(Collectors.toList());
+    LOGGER.info("Calling CollaboratorService to update resources - updating resources");
+    SetResources.Builder builder = SetResources.newBuilder().setResources(resources.toBuilder().clearResourceIds().addAllResourceIds(allowedResources));
+    if (workspaceName.isPresent()) {
+      builder.setWorkspaceName(workspaceName.get());
+    }
+    if (resourceVisibility.isPresent()) {
+      builder.setVisibility(resourceVisibility.get());
+    }
+    return setResources(builder.build());
+  }
+
+  @Override
+  public boolean updateProjectResources(String projectId, Optional<String> workspaceName, Optional<WorkspaceType> workspaceType, VisibilityEnum.Visibility projectVisibility) {
+    final ResourceType modeldbServiceResourceType =
+            ResourceType.newBuilder().setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT).build();
+    final Resources.Builder resourcesBuilder =
+            Resources.newBuilder()
+                    .setResourceType(modeldbServiceResourceType)
+                    .setService(Service.MODELDB_SERVICE)
+                    .addResourceIds(projectId);
+    final ResourceVisibility resourceVisibility = getResourceVisibility(workspaceType, projectVisibility);
+    return updateResources(resourcesBuilder.build(), workspaceName, Optional.of(resourceVisibility));
   }
 
   @Override
@@ -1332,10 +1384,7 @@ public class RoleServiceUtils implements RoleService {
             "workspaceId and workspaceName are both empty.  One must be provided.");
       }
       SetResources setResources = setResourcesBuilder.build();
-      SetResources.Response setResourcesResponse =
-          authServiceChannel.getCollaboratorServiceBlockingStub().setResources(setResources);
-
-      LOGGER.info("SetResources message sent.  Response: " + setResourcesResponse);
+      setResources(setResources);
       return true;
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);

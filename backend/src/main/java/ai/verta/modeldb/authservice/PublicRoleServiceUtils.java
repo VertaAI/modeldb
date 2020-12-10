@@ -278,6 +278,16 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
+  public boolean updateResources(Resources resources, Optional<String> workspaceName, Optional<ResourceVisibility> resourceVisibility) {
+    return true;
+  }
+
+  @Override
+  public boolean updateProjectResources(String projectId, Optional<String> workspaceName, Optional<WorkspaceType> workspaceType, VisibilityEnum.Visibility projectVisibility) {
+    return true;
+  }
+
+  @Override
   public boolean deleteResources(Resources resources) {
     return true;
   }

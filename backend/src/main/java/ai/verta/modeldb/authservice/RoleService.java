@@ -146,6 +146,10 @@ public interface RoleService {
   List<GetResourcesResponseItem> getAllResourceItems(
       Long workspaceServiceId, Optional<Resources> filterTo);
 
+  boolean updateResources(Resources resources, Optional<String> workspaceName, Optional<ResourceVisibility> resourceVisibility);
+
+  boolean updateProjectResources(String projectId, Optional<String> workspaceName, Optional<WorkspaceType> workspaceType, VisibilityEnum.Visibility projectVisibility);
+
   boolean deleteResources(Resources resources);
 
   boolean deleteProjectResources(String projectId);
