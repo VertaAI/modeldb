@@ -277,6 +277,8 @@ ignore-on-opaque-inference=yes
 ignored-classes=optparse.Values,
                 thread._local,
                 _thread._local,
+                # pylint mistakes Paths for PurePaths, which client doesn't use
+                PurePath,
 
 # List of module names for which member attributes should not be checked
 # (useful for modules/projects where namespaces are manipulated during runtime
