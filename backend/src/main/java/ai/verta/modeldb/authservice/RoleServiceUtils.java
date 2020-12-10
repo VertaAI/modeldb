@@ -1150,22 +1150,25 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  private VisibilityEnum.Visibility fromResourceVisibility(ResourceVisibility resourceVisibility) {
-    switch(resourceVisibility) {
-      case PRIVATE:
-        return VisibilityEnum.Visibility.PRIVATE;
-      case ORG_DEFAULT:
-        // TODO: This needs to be fixed
-        return VisibilityEnum.Visibility.UNRECOGNIZED;
-      case ORG_SCOPED_PUBLIC:
-        return VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC;
-      default:
-        return VisibilityEnum.Visibility.UNRECOGNIZED;
+  private VisibilityEnum.Visibility fromResourceVisibility(Integer workspaceType, ResourceVisibility resourceVisibility) {
+    if (workspaceType == WorkspaceType.ORGANIZATION.getNumber()) {
+      switch(resourceVisibility) {
+        case PRIVATE:
+          return VisibilityEnum.Visibility.PRIVATE;
+        case ORG_DEFAULT:
+          // TODO: This needs to be fixed, what should this be?
+          return VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC;
+        case ORG_SCOPED_PUBLIC:
+          return VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC;
+        default:
+          return VisibilityEnum.Visibility.UNRECOGNIZED;
+      }
     }
+    return VisibilityEnum.Visibility.PRIVATE;
   }
 
   @Override
-  public VisibilityEnum.Visibility getProjectVisibility(String projectId, String workspaceName) {
+  public VisibilityEnum.Visibility getProjectVisibility(String projectId, String workspaceName, Integer workspaceType) {
     ResourceType resourceType = ResourceType.newBuilder().setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT).build();
     Resources resources = Resources.newBuilder().setResourceType(resourceType).setService(ServiceEnum.Service.MODELDB_SERVICE).build();
     List<GetResourcesResponseItem> responseItems = getAllResourceItems(workspaceName, Optional.of(resources));
@@ -1177,7 +1180,7 @@ public class RoleServiceUtils implements RoleService {
                     item.getService() == ServiceEnum.Service.MODELDB_SERVICE)
             .findFirst();
     if(responseItem.isPresent()) {
-      return fromResourceVisibility(responseItem.get().getVisibility());
+      return fromResourceVisibility(workspaceType, responseItem.get().getVisibility());
     }
     return VisibilityEnum.Visibility.PRIVATE;
   }
