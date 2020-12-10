@@ -3,6 +3,8 @@ package ai.verta.modeldb.entities;
 import ai.verta.common.VisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
@@ -316,7 +318,7 @@ public class ProjectEntity {
     this.created = created;
   }
 
-  public Project getProtoObject() throws InvalidProtocolBufferException {
+  public Project getProtoObject(RoleService roleService) throws InvalidProtocolBufferException {
     Project.Builder projectBuilder =
         Project.newBuilder()
             .setId(getId())
@@ -325,7 +327,6 @@ public class ProjectEntity {
             .setDescription(getDescription())
             .setDateCreated(getDate_created())
             .setDateUpdated(getDate_updated())
-            .setVisibility(getProjectVisibility())
             .addAllAttributes(
                 RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))
             .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))
@@ -340,6 +341,12 @@ public class ProjectEntity {
     if (getCode_version_snapshot() != null) {
       projectBuilder.setCodeVersionSnapshot(getCode_version_snapshot().getProtoObject());
     }
+
+    WorkspaceDTO workspaceDTO =
+        roleService.getWorkspaceDTOByWorkspaceId(null, this.workspace, this.workspace_type);
+    projectBuilder.setVisibility(
+        roleService.getProjectVisibility(
+            this.id, workspaceDTO.getWorkspaceName(), this.workspace_type));
 
     return projectBuilder.build();
   }

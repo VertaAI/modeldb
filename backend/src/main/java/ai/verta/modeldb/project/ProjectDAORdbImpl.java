@@ -208,7 +208,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       transaction.commit();
       LOGGER.debug("Project created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
-      return projectEntity.getProtoObject();
+      return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return insertProject(project, userInfo);
@@ -231,7 +231,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
 
     final Optional<Long> ownerId =
-        userInfo != null ? Optional.of(Long.parseLong(userInfo.getUserId())) : Optional.empty();
+        userInfo != null
+            ? Optional.of(Long.parseLong(authService.getVertaIdFromUserInfo(userInfo)))
+            : Optional.empty();
     roleService.createWorkspacePermissions(
         project.getWorkspaceServiceId(),
         Optional.ofNullable(project.getWorkspaceType()),
@@ -263,7 +265,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.update(projectEntity);
       transaction.commit();
       LOGGER.debug("Project name updated successfully");
-      return projectEntity.getProtoObject();
+      return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateProjectName(projectId, projectName);
@@ -285,7 +287,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.update(projectEntity);
       transaction.commit();
       LOGGER.debug("Project description updated successfully");
-      return projectEntity.getProtoObject();
+      return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateProjectDescription(projectId, projectDescription);
@@ -307,7 +309,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.update(projectEntity);
       transaction.commit();
       LOGGER.debug("Project readme updated successfully");
-      return projectEntity.getProtoObject();
+      return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateProjectReadme(projectId, projectReadme);
@@ -350,7 +352,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.update(projectEntity);
       transaction.commit();
       LOGGER.debug("Project code version snapshot updated successfully");
-      return projectEntity.getProtoObject();
+      return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return logProjectCodeVersion(projectId, updatedCodeVersion);
@@ -399,7 +401,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(projectObj);
       transaction.commit();
-      return projectObj.getProtoObject();
+      return projectObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateProjectAttributes(projectId, attribute);
@@ -423,7 +425,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
           throw StatusProto.toStatusRuntimeException(status);
         }
-        return projectObj.getProtoObject().getAttributesList();
+        return projectObj.getProtoObject(roleService).getAttributesList();
       } else {
         Query query = session.createQuery(GET_PROJECT_ATTR_BY_KEYS_HQL);
         query.setParameterList("keys", attributeKeyList);
@@ -457,7 +459,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
       List<String> newTags = new ArrayList<>();
-      Project existingProtoProjectObj = projectObj.getProtoObject();
+      Project existingProtoProjectObj = projectObj.getProtoObject(roleService);
       for (String tag : tagsList) {
         if (!existingProtoProjectObj.getTagsList().contains(tag)) {
           newTags.add(tag);
@@ -473,7 +475,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         transaction.commit();
       }
       LOGGER.debug("Project tags added successfully");
-      return projectObj.getProtoObject();
+      return projectObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addProjectTags(projectId, tagsList);
@@ -511,7 +513,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.update(projectObj);
       transaction.commit();
       LOGGER.debug("Project tags deleted successfully");
-      return projectObj.getProtoObject();
+      return projectObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteProjectTags(projectId, projectTagList, deleteAll);
@@ -574,7 +576,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.saveOrUpdate(projectObj);
       transaction.commit();
       LOGGER.debug("Project attributes added successfully");
-      return projectObj.getProtoObject();
+      return projectObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addProjectAttributes(projectId, attributesList);
@@ -611,7 +613,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       projectObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
       session.update(projectObj);
       transaction.commit();
-      return projectObj.getProtoObject();
+      return projectObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteProjectAttributes(projectId, attributeKeyList, deleteAll);
@@ -625,7 +627,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public List<String> getProjectTags(String projectId) throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
-      return projectObj.getProtoObject().getTagsList();
+      return projectObj.getProtoObject(roleService).getTagsList();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getProjectTags(projectId);
@@ -819,12 +821,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
-      projectEntity.setProjectVisibility(
-          roleService.getProjectVisibility(
-              projectEntity.getId(),
-              projectEntity.getWorkspace(),
-              projectEntity.getWorkspace_type()));
-      return projectEntity.getProtoObject();
+      return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getProjectByID(id);
@@ -860,7 +857,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.update(projectEntity);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
-      return projectEntity.getProtoObject();
+      return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setProjectShortName(projectId, projectShortName, userInfo);
@@ -961,7 +958,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<ProjectEntity> projectEntities = getProjectEntityByBatchIds(session, projectIds);
       LOGGER.debug("Project by Ids getting successfully");
-      return RdbmsUtils.convertProjectsFromProjectEntityList(projectEntities);
+      return RdbmsUtils.convertProjectsFromProjectEntityList(roleService, projectEntities);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getProjectsByBatchIds(projectIds);
@@ -1018,14 +1015,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
 
       String workspaceName = queryParameters.getWorkspaceName();
-      if (workspaceName != null
-          && !workspaceName.isEmpty()
+      if (!workspaceName.isEmpty()
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         accessibleProjectIds =
             roleService.getSelfDirectlyAllowedResources(
                 ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
-        if (queryParameters.getProjectIdsList() != null
-            && !queryParameters.getProjectIdsList().isEmpty()) {
+        if (!queryParameters.getProjectIdsList().isEmpty()) {
           accessibleProjectIds.retainAll(queryParameters.getProjectIdsList());
         }
         // user is in his workspace and has no projects, return empty
@@ -1115,22 +1110,18 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         query.setMaxResults(queryParameters.getPageLimit());
       }
 
-      List<Project> projectList = new ArrayList<>();
+      // List<Project> projectList = new ArrayList<>();
       List<ProjectEntity> projectEntities = query.list();
-      if (!projectEntities.isEmpty()) {
-        projectList = RdbmsUtils.convertProjectsFromProjectEntityList(projectEntities);
-      }
 
       Set<String> projectIdsSet = new HashSet<>();
-      List<Project> projects = new ArrayList<>();
-      for (Project project : projectList) {
-        if (!projectIdsSet.contains(project.getId())) {
-          projectIdsSet.add(project.getId());
+      List<Project> finalProjects = new ArrayList<>();
+      for (ProjectEntity projectEntity : projectEntities) {
+        if (!projectIdsSet.contains(projectEntity.getId())) {
+          projectIdsSet.add(projectEntity.getId());
           if (queryParameters.getIdsOnly()) {
-            project = Project.newBuilder().setId(project.getId()).build();
-            projects.add(project);
+            finalProjects.add(Project.newBuilder().setId(projectEntity.getId()).build());
           } else {
-            projects.add(project);
+            finalProjects.add(projectEntity.getProtoObject(roleService));
           }
         }
       }
@@ -1138,7 +1129,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       long totalRecords = RdbmsUtils.count(session, projectRoot, criteriaQuery);
 
       ProjectPaginationDTO projectPaginationDTO = new ProjectPaginationDTO();
-      projectPaginationDTO.setProjects(projects);
+      projectPaginationDTO.setProjects(finalProjects);
       projectPaginationDTO.setTotalRecords(totalRecords);
       return projectPaginationDTO;
     } catch (Exception ex) {
@@ -1165,7 +1156,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      List<Artifact> existingArtifacts = projectEntity.getProtoObject().getArtifactsList();
+      List<Artifact> existingArtifacts =
+          projectEntity.getProtoObject(roleService).getArtifactsList();
       for (Artifact existingArtifact : existingArtifacts) {
         for (Artifact newArtifact : newArtifacts) {
           if (existingArtifact.getKey().equals(newArtifact.getKey())) {
@@ -1189,7 +1181,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.update(projectEntity);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
-      return projectEntity.getProtoObject();
+      return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return logArtifacts(projectId, newArtifacts);
@@ -1213,7 +1205,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
         throw StatusProto.toStatusRuntimeException(status);
       }
-      Project project = projectEntity.getProtoObject();
+      Project project = projectEntity.getProtoObject(roleService);
       if (project.getArtifactsList() != null && !project.getArtifactsList().isEmpty()) {
         LOGGER.debug("Project Artifacts getting successfully");
         return project.getArtifactsList();
@@ -1253,7 +1245,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       projectObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
       session.update(projectObj);
       transaction.commit();
-      return projectObj.getProtoObject();
+      return projectObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteArtifacts(projectId, artifactKey);
@@ -1319,7 +1311,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.update(projectEntity);
       transaction.commit();
       LOGGER.debug("Project workspace updated successfully");
-      return projectEntity.getProtoObject();
+      return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setProjectWorkspace(projectId, workspaceDTO);

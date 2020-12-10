@@ -2612,8 +2612,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(
-              projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns.build());
+          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
 
       return ListBlobExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())

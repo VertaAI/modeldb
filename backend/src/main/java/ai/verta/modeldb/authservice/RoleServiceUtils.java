@@ -1114,6 +1114,9 @@ public class RoleServiceUtils implements RoleService {
         return workspaceDTO;
       case WorkspaceType.USER_VALUE:
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
+        if (currentLoginUserInfo == null) {
+          currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+        }
         if (workspaceId.equalsIgnoreCase(
             authService.getVertaIdFromUserInfo(currentLoginUserInfo))) {
           workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
