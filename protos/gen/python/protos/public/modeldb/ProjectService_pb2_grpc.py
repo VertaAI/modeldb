@@ -175,11 +175,6 @@ class ProjectServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.DeleteProjects.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjects.Response.FromString,
         )
-    self.setProjectWorkspace = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/setProjectWorkspace',
-        request_serializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.Response.FromString,
-        )
 
 
 class ProjectServiceServicer(object):
@@ -410,13 +405,6 @@ class ProjectServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def setProjectWorkspace(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
 
 def add_ProjectServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -579,11 +567,6 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           servicer.deleteProjects,
           request_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjects.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.DeleteProjects.Response.SerializeToString,
-      ),
-      'setProjectWorkspace': grpc.unary_unary_rpc_method_handler(
-          servicer.setProjectWorkspace,
-          request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

@@ -2016,61 +2016,6 @@ func (x *DeleteProjects) GetIds() []string {
 	return nil
 }
 
-type SetProjectWorkspace struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id            string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	WorkspaceName string `protobuf:"bytes,2,opt,name=workspace_name,json=workspaceName,proto3" json:"workspace_name,omitempty"`
-}
-
-func (x *SetProjectWorkspace) Reset() {
-	*x = SetProjectWorkspace{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[33]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SetProjectWorkspace) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SetProjectWorkspace) ProtoMessage() {}
-
-func (x *SetProjectWorkspace) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[33]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SetProjectWorkspace.ProtoReflect.Descriptor instead.
-func (*SetProjectWorkspace) Descriptor() ([]byte, []int) {
-	return file_modeldb_ProjectService_proto_rawDescGZIP(), []int{33}
-}
-
-func (x *SetProjectWorkspace) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *SetProjectWorkspace) GetWorkspaceName() string {
-	if x != nil {
-		return x.WorkspaceName
-	}
-	return ""
-}
-
 type CreateProject_Response struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2082,7 +2027,7 @@ type CreateProject_Response struct {
 func (x *CreateProject_Response) Reset() {
 	*x = CreateProject_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[34]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2095,7 +2040,7 @@ func (x *CreateProject_Response) String() string {
 func (*CreateProject_Response) ProtoMessage() {}
 
 func (x *CreateProject_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[34]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2129,7 +2074,7 @@ type DeleteProject_Response struct {
 func (x *DeleteProject_Response) Reset() {
 	*x = DeleteProject_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[35]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2142,7 +2087,7 @@ func (x *DeleteProject_Response) String() string {
 func (*DeleteProject_Response) ProtoMessage() {}
 
 func (x *DeleteProject_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[35]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2176,7 +2121,7 @@ type UpdateProjectName_Response struct {
 func (x *UpdateProjectName_Response) Reset() {
 	*x = UpdateProjectName_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[36]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2189,7 +2134,7 @@ func (x *UpdateProjectName_Response) String() string {
 func (*UpdateProjectName_Response) ProtoMessage() {}
 
 func (x *UpdateProjectName_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[36]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2223,7 +2168,7 @@ type UpdateProjectDescription_Response struct {
 func (x *UpdateProjectDescription_Response) Reset() {
 	*x = UpdateProjectDescription_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[37]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2236,7 +2181,7 @@ func (x *UpdateProjectDescription_Response) String() string {
 func (*UpdateProjectDescription_Response) ProtoMessage() {}
 
 func (x *UpdateProjectDescription_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[37]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2270,7 +2215,7 @@ type AddProjectTags_Response struct {
 func (x *AddProjectTags_Response) Reset() {
 	*x = AddProjectTags_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[38]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2283,7 +2228,7 @@ func (x *AddProjectTags_Response) String() string {
 func (*AddProjectTags_Response) ProtoMessage() {}
 
 func (x *AddProjectTags_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[38]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2317,7 +2262,7 @@ type DeleteProjectTags_Response struct {
 func (x *DeleteProjectTags_Response) Reset() {
 	*x = DeleteProjectTags_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[39]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2330,7 +2275,7 @@ func (x *DeleteProjectTags_Response) String() string {
 func (*DeleteProjectTags_Response) ProtoMessage() {}
 
 func (x *DeleteProjectTags_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[39]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2364,7 +2309,7 @@ type AddProjectTag_Response struct {
 func (x *AddProjectTag_Response) Reset() {
 	*x = AddProjectTag_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[40]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2377,7 +2322,7 @@ func (x *AddProjectTag_Response) String() string {
 func (*AddProjectTag_Response) ProtoMessage() {}
 
 func (x *AddProjectTag_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[40]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2411,7 +2356,7 @@ type DeleteProjectTag_Response struct {
 func (x *DeleteProjectTag_Response) Reset() {
 	*x = DeleteProjectTag_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[41]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2424,7 +2369,7 @@ func (x *DeleteProjectTag_Response) String() string {
 func (*DeleteProjectTag_Response) ProtoMessage() {}
 
 func (x *DeleteProjectTag_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[41]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2458,7 +2403,7 @@ type GetProjectAttributes_Response struct {
 func (x *GetProjectAttributes_Response) Reset() {
 	*x = GetProjectAttributes_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[42]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2471,7 +2416,7 @@ func (x *GetProjectAttributes_Response) String() string {
 func (*GetProjectAttributes_Response) ProtoMessage() {}
 
 func (x *GetProjectAttributes_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[42]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2505,7 +2450,7 @@ type AddProjectAttributes_Response struct {
 func (x *AddProjectAttributes_Response) Reset() {
 	*x = AddProjectAttributes_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[43]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2518,7 +2463,7 @@ func (x *AddProjectAttributes_Response) String() string {
 func (*AddProjectAttributes_Response) ProtoMessage() {}
 
 func (x *AddProjectAttributes_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[43]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2552,7 +2497,7 @@ type UpdateProjectAttributes_Response struct {
 func (x *UpdateProjectAttributes_Response) Reset() {
 	*x = UpdateProjectAttributes_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[44]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2565,7 +2510,7 @@ func (x *UpdateProjectAttributes_Response) String() string {
 func (*UpdateProjectAttributes_Response) ProtoMessage() {}
 
 func (x *UpdateProjectAttributes_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[44]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2599,7 +2544,7 @@ type DeleteProjectAttributes_Response struct {
 func (x *DeleteProjectAttributes_Response) Reset() {
 	*x = DeleteProjectAttributes_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[45]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2612,7 +2557,7 @@ func (x *DeleteProjectAttributes_Response) String() string {
 func (*DeleteProjectAttributes_Response) ProtoMessage() {}
 
 func (x *DeleteProjectAttributes_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[45]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2646,7 +2591,7 @@ type LogProjectCodeVersion_Response struct {
 func (x *LogProjectCodeVersion_Response) Reset() {
 	*x = LogProjectCodeVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[46]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2659,7 +2604,7 @@ func (x *LogProjectCodeVersion_Response) String() string {
 func (*LogProjectCodeVersion_Response) ProtoMessage() {}
 
 func (x *LogProjectCodeVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[46]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2693,7 +2638,7 @@ type GetProjectCodeVersion_Response struct {
 func (x *GetProjectCodeVersion_Response) Reset() {
 	*x = GetProjectCodeVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[47]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2706,7 +2651,7 @@ func (x *GetProjectCodeVersion_Response) String() string {
 func (*GetProjectCodeVersion_Response) ProtoMessage() {}
 
 func (x *GetProjectCodeVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[47]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2741,7 +2686,7 @@ type GetProjects_Response struct {
 func (x *GetProjects_Response) Reset() {
 	*x = GetProjects_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[48]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2754,7 +2699,7 @@ func (x *GetProjects_Response) String() string {
 func (*GetProjects_Response) ProtoMessage() {}
 
 func (x *GetProjects_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[48]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2795,7 +2740,7 @@ type GetPublicProjects_Response struct {
 func (x *GetPublicProjects_Response) Reset() {
 	*x = GetPublicProjects_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[49]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2808,7 +2753,7 @@ func (x *GetPublicProjects_Response) String() string {
 func (*GetPublicProjects_Response) ProtoMessage() {}
 
 func (x *GetPublicProjects_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[49]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2842,7 +2787,7 @@ type GetProjectById_Response struct {
 func (x *GetProjectById_Response) Reset() {
 	*x = GetProjectById_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[50]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2855,7 +2800,7 @@ func (x *GetProjectById_Response) String() string {
 func (*GetProjectById_Response) ProtoMessage() {}
 
 func (x *GetProjectById_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[50]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2890,7 +2835,7 @@ type GetProjectByName_Response struct {
 func (x *GetProjectByName_Response) Reset() {
 	*x = GetProjectByName_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[51]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[50]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2903,7 +2848,7 @@ func (x *GetProjectByName_Response) String() string {
 func (*GetProjectByName_Response) ProtoMessage() {}
 
 func (x *GetProjectByName_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[51]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[50]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2944,7 +2889,7 @@ type DeepCopyProject_Response struct {
 func (x *DeepCopyProject_Response) Reset() {
 	*x = DeepCopyProject_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[52]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[51]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2957,7 +2902,7 @@ func (x *DeepCopyProject_Response) String() string {
 func (*DeepCopyProject_Response) ProtoMessage() {}
 
 func (x *DeepCopyProject_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[52]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[51]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2996,7 +2941,7 @@ type GetSummary_Response struct {
 func (x *GetSummary_Response) Reset() {
 	*x = GetSummary_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[53]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[52]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3009,7 +2954,7 @@ func (x *GetSummary_Response) String() string {
 func (*GetSummary_Response) ProtoMessage() {}
 
 func (x *GetSummary_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[53]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[52]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3078,7 +3023,7 @@ type SetProjectReadme_Response struct {
 func (x *SetProjectReadme_Response) Reset() {
 	*x = SetProjectReadme_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[54]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[53]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3091,7 +3036,7 @@ func (x *SetProjectReadme_Response) String() string {
 func (*SetProjectReadme_Response) ProtoMessage() {}
 
 func (x *SetProjectReadme_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[54]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[53]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3125,7 +3070,7 @@ type GetProjectReadme_Response struct {
 func (x *GetProjectReadme_Response) Reset() {
 	*x = GetProjectReadme_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[55]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[54]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3138,7 +3083,7 @@ func (x *GetProjectReadme_Response) String() string {
 func (*GetProjectReadme_Response) ProtoMessage() {}
 
 func (x *GetProjectReadme_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[55]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[54]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3172,7 +3117,7 @@ type SetProjectShortName_Response struct {
 func (x *SetProjectShortName_Response) Reset() {
 	*x = SetProjectShortName_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[56]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[55]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3185,7 +3130,7 @@ func (x *SetProjectShortName_Response) String() string {
 func (*SetProjectShortName_Response) ProtoMessage() {}
 
 func (x *SetProjectShortName_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[56]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[55]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3219,7 +3164,7 @@ type GetProjectShortName_Response struct {
 func (x *GetProjectShortName_Response) Reset() {
 	*x = GetProjectShortName_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[57]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[56]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3232,7 +3177,7 @@ func (x *GetProjectShortName_Response) String() string {
 func (*GetProjectShortName_Response) ProtoMessage() {}
 
 func (x *GetProjectShortName_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[57]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[56]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3267,7 +3212,7 @@ type FindProjects_Response struct {
 func (x *FindProjects_Response) Reset() {
 	*x = FindProjects_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[58]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[57]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3280,7 +3225,7 @@ func (x *FindProjects_Response) String() string {
 func (*FindProjects_Response) ProtoMessage() {}
 
 func (x *FindProjects_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[58]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[57]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3321,7 +3266,7 @@ type LogProjectArtifacts_Response struct {
 func (x *LogProjectArtifacts_Response) Reset() {
 	*x = LogProjectArtifacts_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[59]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[58]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3334,7 +3279,7 @@ func (x *LogProjectArtifacts_Response) String() string {
 func (*LogProjectArtifacts_Response) ProtoMessage() {}
 
 func (x *LogProjectArtifacts_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[59]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[58]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3368,7 +3313,7 @@ type DeleteProjectArtifact_Response struct {
 func (x *DeleteProjectArtifact_Response) Reset() {
 	*x = DeleteProjectArtifact_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[60]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[59]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3381,7 +3326,7 @@ func (x *DeleteProjectArtifact_Response) String() string {
 func (*DeleteProjectArtifact_Response) ProtoMessage() {}
 
 func (x *DeleteProjectArtifact_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[60]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[59]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3415,7 +3360,7 @@ type DeleteProjects_Response struct {
 func (x *DeleteProjects_Response) Reset() {
 	*x = DeleteProjects_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[61]
+		mi := &file_modeldb_ProjectService_proto_msgTypes[60]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3428,7 +3373,7 @@ func (x *DeleteProjects_Response) String() string {
 func (*DeleteProjects_Response) ProtoMessage() {}
 
 func (x *DeleteProjects_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[61]
+	mi := &file_modeldb_ProjectService_proto_msgTypes[60]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3449,53 +3394,6 @@ func (x *DeleteProjects_Response) GetStatus() bool {
 		return x.Status
 	}
 	return false
-}
-
-type SetProjectWorkspace_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Project *Project `protobuf:"bytes,1,opt,name=project,proto3" json:"project,omitempty"`
-}
-
-func (x *SetProjectWorkspace_Response) Reset() {
-	*x = SetProjectWorkspace_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_ProjectService_proto_msgTypes[62]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SetProjectWorkspace_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SetProjectWorkspace_Response) ProtoMessage() {}
-
-func (x *SetProjectWorkspace_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_ProjectService_proto_msgTypes[62]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SetProjectWorkspace_Response.ProtoReflect.Descriptor instead.
-func (*SetProjectWorkspace_Response) Descriptor() ([]byte, []int) {
-	return file_modeldb_ProjectService_proto_rawDescGZIP(), []int{33, 0}
-}
-
-func (x *SetProjectWorkspace_Response) GetProject() *Project {
-	if x != nil {
-		return x.Project
-	}
-	return nil
 }
 
 var File_modeldb_ProjectService_proto protoreflect.FileDescriptor
@@ -3861,16 +3759,7 @@ var file_modeldb_ProjectService_proto_rawDesc = []byte{
 	0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x12, 0x10, 0x0a, 0x03, 0x69, 0x64, 0x73, 0x18, 0x01,
 	0x20, 0x03, 0x28, 0x09, 0x52, 0x03, 0x69, 0x64, 0x73, 0x1a, 0x22, 0x0a, 0x08, 0x52, 0x65, 0x73,
 	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0x8d, 0x01,
-	0x0a, 0x13, 0x53, 0x65, 0x74, 0x50, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x57, 0x6f, 0x72, 0x6b,
-	0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61,
-	0x63, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x77,
-	0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x1a, 0x3f, 0x0a, 0x08,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a, 0x07, 0x70, 0x72, 0x6f, 0x6a,
-	0x65, 0x63, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x61, 0x69, 0x2e, 0x76,
-	0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2e, 0x50, 0x72, 0x6f,
-	0x6a, 0x65, 0x63, 0x74, 0x52, 0x07, 0x70, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x32, 0xf1, 0x24,
+	0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x32, 0xd6, 0x23,
 	0x0a, 0x0e, 0x50, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
 	0x12, 0x80, 0x01, 0x0a, 0x0d, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x50, 0x72, 0x6f, 0x6a, 0x65,
 	0x63, 0x74, 0x12, 0x1f, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f,
@@ -4156,21 +4045,12 @@ var file_modeldb_ProjectService_proto_rawDesc = []byte{
 	0x6f, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
 	0x25, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x1f, 0x2a, 0x1a, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x72, 0x6f,
 	0x6a, 0x65, 0x63, 0x74, 0x2f, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x50, 0x72, 0x6f, 0x6a, 0x65,
-	0x63, 0x74, 0x73, 0x3a, 0x01, 0x2a, 0x12, 0x98, 0x01, 0x0a, 0x13, 0x73, 0x65, 0x74, 0x50, 0x72,
-	0x6f, 0x6a, 0x65, 0x63, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x25,
-	0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64,
-	0x62, 0x2e, 0x53, 0x65, 0x74, 0x50, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x57, 0x6f, 0x72, 0x6b,
-	0x73, 0x70, 0x61, 0x63, 0x65, 0x1a, 0x2e, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61,
-	0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2e, 0x53, 0x65, 0x74, 0x50, 0x72, 0x6f, 0x6a,
-	0x65, 0x63, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x2e, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x2a, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x24, 0x22, 0x1f, 0x2f,
-	0x76, 0x31, 0x2f, 0x70, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x2f, 0x73, 0x65, 0x74, 0x50, 0x72,
-	0x6f, 0x6a, 0x65, 0x63, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x3a, 0x01,
-	0x2a, 0x42, 0x42, 0x50, 0x01, 0x5a, 0x3e, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64,
-	0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x2f, 0x6d, 0x6f,
-	0x64, 0x65, 0x6c, 0x64, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x63, 0x74, 0x73, 0x3a, 0x01, 0x2a, 0x42, 0x42, 0x50, 0x01, 0x5a, 0x3e, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d,
+	0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65,
+	0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c,
+	0x69, 0x63, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x33,
 }
 
 var (
@@ -4185,7 +4065,7 @@ func file_modeldb_ProjectService_proto_rawDescGZIP() []byte {
 	return file_modeldb_ProjectService_proto_rawDescData
 }
 
-var file_modeldb_ProjectService_proto_msgTypes = make([]protoimpl.MessageInfo, 63)
+var file_modeldb_ProjectService_proto_msgTypes = make([]protoimpl.MessageInfo, 61)
 var file_modeldb_ProjectService_proto_goTypes = []interface{}{
 	(*Project)(nil),                             // 0: ai.verta.modeldb.Project
 	(*CreateProject)(nil),                       // 1: ai.verta.modeldb.CreateProject
@@ -4220,65 +4100,63 @@ var file_modeldb_ProjectService_proto_goTypes = []interface{}{
 	(*LogProjectArtifacts)(nil),                 // 30: ai.verta.modeldb.LogProjectArtifacts
 	(*DeleteProjectArtifact)(nil),               // 31: ai.verta.modeldb.DeleteProjectArtifact
 	(*DeleteProjects)(nil),                      // 32: ai.verta.modeldb.DeleteProjects
-	(*SetProjectWorkspace)(nil),                 // 33: ai.verta.modeldb.SetProjectWorkspace
-	(*CreateProject_Response)(nil),              // 34: ai.verta.modeldb.CreateProject.Response
-	(*DeleteProject_Response)(nil),              // 35: ai.verta.modeldb.DeleteProject.Response
-	(*UpdateProjectName_Response)(nil),          // 36: ai.verta.modeldb.UpdateProjectName.Response
-	(*UpdateProjectDescription_Response)(nil),   // 37: ai.verta.modeldb.UpdateProjectDescription.Response
-	(*AddProjectTags_Response)(nil),             // 38: ai.verta.modeldb.AddProjectTags.Response
-	(*DeleteProjectTags_Response)(nil),          // 39: ai.verta.modeldb.DeleteProjectTags.Response
-	(*AddProjectTag_Response)(nil),              // 40: ai.verta.modeldb.AddProjectTag.Response
-	(*DeleteProjectTag_Response)(nil),           // 41: ai.verta.modeldb.DeleteProjectTag.Response
-	(*GetProjectAttributes_Response)(nil),       // 42: ai.verta.modeldb.GetProjectAttributes.Response
-	(*AddProjectAttributes_Response)(nil),       // 43: ai.verta.modeldb.AddProjectAttributes.Response
-	(*UpdateProjectAttributes_Response)(nil),    // 44: ai.verta.modeldb.UpdateProjectAttributes.Response
-	(*DeleteProjectAttributes_Response)(nil),    // 45: ai.verta.modeldb.DeleteProjectAttributes.Response
-	(*LogProjectCodeVersion_Response)(nil),      // 46: ai.verta.modeldb.LogProjectCodeVersion.Response
-	(*GetProjectCodeVersion_Response)(nil),      // 47: ai.verta.modeldb.GetProjectCodeVersion.Response
-	(*GetProjects_Response)(nil),                // 48: ai.verta.modeldb.GetProjects.Response
-	(*GetPublicProjects_Response)(nil),          // 49: ai.verta.modeldb.GetPublicProjects.Response
-	(*GetProjectById_Response)(nil),             // 50: ai.verta.modeldb.GetProjectById.Response
-	(*GetProjectByName_Response)(nil),           // 51: ai.verta.modeldb.GetProjectByName.Response
-	(*DeepCopyProject_Response)(nil),            // 52: ai.verta.modeldb.DeepCopyProject.Response
-	(*GetSummary_Response)(nil),                 // 53: ai.verta.modeldb.GetSummary.Response
-	(*SetProjectReadme_Response)(nil),           // 54: ai.verta.modeldb.SetProjectReadme.Response
-	(*GetProjectReadme_Response)(nil),           // 55: ai.verta.modeldb.GetProjectReadme.Response
-	(*SetProjectShortName_Response)(nil),        // 56: ai.verta.modeldb.SetProjectShortName.Response
-	(*GetProjectShortName_Response)(nil),        // 57: ai.verta.modeldb.GetProjectShortName.Response
-	(*FindProjects_Response)(nil),               // 58: ai.verta.modeldb.FindProjects.Response
-	(*LogProjectArtifacts_Response)(nil),        // 59: ai.verta.modeldb.LogProjectArtifacts.Response
-	(*DeleteProjectArtifact_Response)(nil),      // 60: ai.verta.modeldb.DeleteProjectArtifact.Response
-	(*DeleteProjects_Response)(nil),             // 61: ai.verta.modeldb.DeleteProjects.Response
-	(*SetProjectWorkspace_Response)(nil),        // 62: ai.verta.modeldb.SetProjectWorkspace.Response
-	(common.VisibilityEnum_Visibility)(0),       // 63: ai.verta.common.VisibilityEnum.Visibility
-	(common.WorkspaceTypeEnum_WorkspaceType)(0), // 64: ai.verta.common.WorkspaceTypeEnum.WorkspaceType
-	(*common.KeyValue)(nil),                     // 65: ai.verta.common.KeyValue
-	(*CodeVersion)(nil),                         // 66: ai.verta.modeldb.CodeVersion
-	(*common.Artifact)(nil),                     // 67: ai.verta.common.Artifact
-	(*common.KeyValueQuery)(nil),                // 68: ai.verta.common.KeyValueQuery
-	(*GetTags)(nil),                             // 69: ai.verta.modeldb.GetTags
-	(*GetAttributes)(nil),                       // 70: ai.verta.modeldb.GetAttributes
-	(*GetUrlForArtifact)(nil),                   // 71: ai.verta.modeldb.GetUrlForArtifact
-	(*GetArtifacts)(nil),                        // 72: ai.verta.modeldb.GetArtifacts
-	(*GetTags_Response)(nil),                    // 73: ai.verta.modeldb.GetTags.Response
-	(*GetAttributes_Response)(nil),              // 74: ai.verta.modeldb.GetAttributes.Response
-	(*GetUrlForArtifact_Response)(nil),          // 75: ai.verta.modeldb.GetUrlForArtifact.Response
-	(*GetArtifacts_Response)(nil),               // 76: ai.verta.modeldb.GetArtifacts.Response
+	(*CreateProject_Response)(nil),              // 33: ai.verta.modeldb.CreateProject.Response
+	(*DeleteProject_Response)(nil),              // 34: ai.verta.modeldb.DeleteProject.Response
+	(*UpdateProjectName_Response)(nil),          // 35: ai.verta.modeldb.UpdateProjectName.Response
+	(*UpdateProjectDescription_Response)(nil),   // 36: ai.verta.modeldb.UpdateProjectDescription.Response
+	(*AddProjectTags_Response)(nil),             // 37: ai.verta.modeldb.AddProjectTags.Response
+	(*DeleteProjectTags_Response)(nil),          // 38: ai.verta.modeldb.DeleteProjectTags.Response
+	(*AddProjectTag_Response)(nil),              // 39: ai.verta.modeldb.AddProjectTag.Response
+	(*DeleteProjectTag_Response)(nil),           // 40: ai.verta.modeldb.DeleteProjectTag.Response
+	(*GetProjectAttributes_Response)(nil),       // 41: ai.verta.modeldb.GetProjectAttributes.Response
+	(*AddProjectAttributes_Response)(nil),       // 42: ai.verta.modeldb.AddProjectAttributes.Response
+	(*UpdateProjectAttributes_Response)(nil),    // 43: ai.verta.modeldb.UpdateProjectAttributes.Response
+	(*DeleteProjectAttributes_Response)(nil),    // 44: ai.verta.modeldb.DeleteProjectAttributes.Response
+	(*LogProjectCodeVersion_Response)(nil),      // 45: ai.verta.modeldb.LogProjectCodeVersion.Response
+	(*GetProjectCodeVersion_Response)(nil),      // 46: ai.verta.modeldb.GetProjectCodeVersion.Response
+	(*GetProjects_Response)(nil),                // 47: ai.verta.modeldb.GetProjects.Response
+	(*GetPublicProjects_Response)(nil),          // 48: ai.verta.modeldb.GetPublicProjects.Response
+	(*GetProjectById_Response)(nil),             // 49: ai.verta.modeldb.GetProjectById.Response
+	(*GetProjectByName_Response)(nil),           // 50: ai.verta.modeldb.GetProjectByName.Response
+	(*DeepCopyProject_Response)(nil),            // 51: ai.verta.modeldb.DeepCopyProject.Response
+	(*GetSummary_Response)(nil),                 // 52: ai.verta.modeldb.GetSummary.Response
+	(*SetProjectReadme_Response)(nil),           // 53: ai.verta.modeldb.SetProjectReadme.Response
+	(*GetProjectReadme_Response)(nil),           // 54: ai.verta.modeldb.GetProjectReadme.Response
+	(*SetProjectShortName_Response)(nil),        // 55: ai.verta.modeldb.SetProjectShortName.Response
+	(*GetProjectShortName_Response)(nil),        // 56: ai.verta.modeldb.GetProjectShortName.Response
+	(*FindProjects_Response)(nil),               // 57: ai.verta.modeldb.FindProjects.Response
+	(*LogProjectArtifacts_Response)(nil),        // 58: ai.verta.modeldb.LogProjectArtifacts.Response
+	(*DeleteProjectArtifact_Response)(nil),      // 59: ai.verta.modeldb.DeleteProjectArtifact.Response
+	(*DeleteProjects_Response)(nil),             // 60: ai.verta.modeldb.DeleteProjects.Response
+	(common.VisibilityEnum_Visibility)(0),       // 61: ai.verta.common.VisibilityEnum.Visibility
+	(common.WorkspaceTypeEnum_WorkspaceType)(0), // 62: ai.verta.common.WorkspaceTypeEnum.WorkspaceType
+	(*common.KeyValue)(nil),                     // 63: ai.verta.common.KeyValue
+	(*CodeVersion)(nil),                         // 64: ai.verta.modeldb.CodeVersion
+	(*common.Artifact)(nil),                     // 65: ai.verta.common.Artifact
+	(*common.KeyValueQuery)(nil),                // 66: ai.verta.common.KeyValueQuery
+	(*GetTags)(nil),                             // 67: ai.verta.modeldb.GetTags
+	(*GetAttributes)(nil),                       // 68: ai.verta.modeldb.GetAttributes
+	(*GetUrlForArtifact)(nil),                   // 69: ai.verta.modeldb.GetUrlForArtifact
+	(*GetArtifacts)(nil),                        // 70: ai.verta.modeldb.GetArtifacts
+	(*GetTags_Response)(nil),                    // 71: ai.verta.modeldb.GetTags.Response
+	(*GetAttributes_Response)(nil),              // 72: ai.verta.modeldb.GetAttributes.Response
+	(*GetUrlForArtifact_Response)(nil),          // 73: ai.verta.modeldb.GetUrlForArtifact.Response
+	(*GetArtifacts_Response)(nil),               // 74: ai.verta.modeldb.GetArtifacts.Response
 }
 var file_modeldb_ProjectService_proto_depIdxs = []int32{
-	63, // 0: ai.verta.modeldb.Project.visibility:type_name -> ai.verta.common.VisibilityEnum.Visibility
-	64, // 1: ai.verta.modeldb.Project.workspace_type:type_name -> ai.verta.common.WorkspaceTypeEnum.WorkspaceType
-	65, // 2: ai.verta.modeldb.Project.attributes:type_name -> ai.verta.common.KeyValue
-	66, // 3: ai.verta.modeldb.Project.code_version_snapshot:type_name -> ai.verta.modeldb.CodeVersion
-	67, // 4: ai.verta.modeldb.Project.artifacts:type_name -> ai.verta.common.Artifact
-	65, // 5: ai.verta.modeldb.CreateProject.attributes:type_name -> ai.verta.common.KeyValue
-	63, // 6: ai.verta.modeldb.CreateProject.visibility:type_name -> ai.verta.common.VisibilityEnum.Visibility
-	67, // 7: ai.verta.modeldb.CreateProject.artifacts:type_name -> ai.verta.common.Artifact
-	65, // 8: ai.verta.modeldb.AddProjectAttributes.attributes:type_name -> ai.verta.common.KeyValue
-	65, // 9: ai.verta.modeldb.UpdateProjectAttributes.attribute:type_name -> ai.verta.common.KeyValue
-	66, // 10: ai.verta.modeldb.LogProjectCodeVersion.code_version:type_name -> ai.verta.modeldb.CodeVersion
-	68, // 11: ai.verta.modeldb.FindProjects.predicates:type_name -> ai.verta.common.KeyValueQuery
-	67, // 12: ai.verta.modeldb.LogProjectArtifacts.artifacts:type_name -> ai.verta.common.Artifact
+	61, // 0: ai.verta.modeldb.Project.visibility:type_name -> ai.verta.common.VisibilityEnum.Visibility
+	62, // 1: ai.verta.modeldb.Project.workspace_type:type_name -> ai.verta.common.WorkspaceTypeEnum.WorkspaceType
+	63, // 2: ai.verta.modeldb.Project.attributes:type_name -> ai.verta.common.KeyValue
+	64, // 3: ai.verta.modeldb.Project.code_version_snapshot:type_name -> ai.verta.modeldb.CodeVersion
+	65, // 4: ai.verta.modeldb.Project.artifacts:type_name -> ai.verta.common.Artifact
+	63, // 5: ai.verta.modeldb.CreateProject.attributes:type_name -> ai.verta.common.KeyValue
+	61, // 6: ai.verta.modeldb.CreateProject.visibility:type_name -> ai.verta.common.VisibilityEnum.Visibility
+	65, // 7: ai.verta.modeldb.CreateProject.artifacts:type_name -> ai.verta.common.Artifact
+	63, // 8: ai.verta.modeldb.AddProjectAttributes.attributes:type_name -> ai.verta.common.KeyValue
+	63, // 9: ai.verta.modeldb.UpdateProjectAttributes.attribute:type_name -> ai.verta.common.KeyValue
+	64, // 10: ai.verta.modeldb.LogProjectCodeVersion.code_version:type_name -> ai.verta.modeldb.CodeVersion
+	66, // 11: ai.verta.modeldb.FindProjects.predicates:type_name -> ai.verta.common.KeyValueQuery
+	65, // 12: ai.verta.modeldb.LogProjectArtifacts.artifacts:type_name -> ai.verta.common.Artifact
 	0,  // 13: ai.verta.modeldb.CreateProject.Response.project:type_name -> ai.verta.modeldb.Project
 	0,  // 14: ai.verta.modeldb.UpdateProjectName.Response.project:type_name -> ai.verta.modeldb.Project
 	0,  // 15: ai.verta.modeldb.UpdateProjectDescription.Response.project:type_name -> ai.verta.modeldb.Project
@@ -4286,12 +4164,12 @@ var file_modeldb_ProjectService_proto_depIdxs = []int32{
 	0,  // 17: ai.verta.modeldb.DeleteProjectTags.Response.project:type_name -> ai.verta.modeldb.Project
 	0,  // 18: ai.verta.modeldb.AddProjectTag.Response.project:type_name -> ai.verta.modeldb.Project
 	0,  // 19: ai.verta.modeldb.DeleteProjectTag.Response.project:type_name -> ai.verta.modeldb.Project
-	65, // 20: ai.verta.modeldb.GetProjectAttributes.Response.attributes:type_name -> ai.verta.common.KeyValue
+	63, // 20: ai.verta.modeldb.GetProjectAttributes.Response.attributes:type_name -> ai.verta.common.KeyValue
 	0,  // 21: ai.verta.modeldb.AddProjectAttributes.Response.project:type_name -> ai.verta.modeldb.Project
 	0,  // 22: ai.verta.modeldb.UpdateProjectAttributes.Response.project:type_name -> ai.verta.modeldb.Project
 	0,  // 23: ai.verta.modeldb.DeleteProjectAttributes.Response.project:type_name -> ai.verta.modeldb.Project
 	0,  // 24: ai.verta.modeldb.LogProjectCodeVersion.Response.project:type_name -> ai.verta.modeldb.Project
-	66, // 25: ai.verta.modeldb.GetProjectCodeVersion.Response.code_version:type_name -> ai.verta.modeldb.CodeVersion
+	64, // 25: ai.verta.modeldb.GetProjectCodeVersion.Response.code_version:type_name -> ai.verta.modeldb.CodeVersion
 	0,  // 26: ai.verta.modeldb.GetProjects.Response.projects:type_name -> ai.verta.modeldb.Project
 	0,  // 27: ai.verta.modeldb.GetPublicProjects.Response.projects:type_name -> ai.verta.modeldb.Project
 	0,  // 28: ai.verta.modeldb.GetProjectById.Response.project:type_name -> ai.verta.modeldb.Project
@@ -4305,78 +4183,75 @@ var file_modeldb_ProjectService_proto_depIdxs = []int32{
 	0,  // 36: ai.verta.modeldb.FindProjects.Response.projects:type_name -> ai.verta.modeldb.Project
 	0,  // 37: ai.verta.modeldb.LogProjectArtifacts.Response.project:type_name -> ai.verta.modeldb.Project
 	0,  // 38: ai.verta.modeldb.DeleteProjectArtifact.Response.project:type_name -> ai.verta.modeldb.Project
-	0,  // 39: ai.verta.modeldb.SetProjectWorkspace.Response.project:type_name -> ai.verta.modeldb.Project
-	1,  // 40: ai.verta.modeldb.ProjectService.createProject:input_type -> ai.verta.modeldb.CreateProject
-	15, // 41: ai.verta.modeldb.ProjectService.getProjects:input_type -> ai.verta.modeldb.GetProjects
-	16, // 42: ai.verta.modeldb.ProjectService.getPublicProjects:input_type -> ai.verta.modeldb.GetPublicProjects
-	17, // 43: ai.verta.modeldb.ProjectService.getProjectById:input_type -> ai.verta.modeldb.GetProjectById
-	18, // 44: ai.verta.modeldb.ProjectService.getProjectByName:input_type -> ai.verta.modeldb.GetProjectByName
-	2,  // 45: ai.verta.modeldb.ProjectService.deleteProject:input_type -> ai.verta.modeldb.DeleteProject
-	3,  // 46: ai.verta.modeldb.ProjectService.updateProjectName:input_type -> ai.verta.modeldb.UpdateProjectName
-	4,  // 47: ai.verta.modeldb.ProjectService.updateProjectDescription:input_type -> ai.verta.modeldb.UpdateProjectDescription
-	5,  // 48: ai.verta.modeldb.ProjectService.addProjectTags:input_type -> ai.verta.modeldb.AddProjectTags
-	69, // 49: ai.verta.modeldb.ProjectService.getProjectTags:input_type -> ai.verta.modeldb.GetTags
-	6,  // 50: ai.verta.modeldb.ProjectService.deleteProjectTags:input_type -> ai.verta.modeldb.DeleteProjectTags
-	7,  // 51: ai.verta.modeldb.ProjectService.addProjectTag:input_type -> ai.verta.modeldb.AddProjectTag
-	8,  // 52: ai.verta.modeldb.ProjectService.deleteProjectTag:input_type -> ai.verta.modeldb.DeleteProjectTag
-	11, // 53: ai.verta.modeldb.ProjectService.updateProjectAttributes:input_type -> ai.verta.modeldb.UpdateProjectAttributes
-	70, // 54: ai.verta.modeldb.ProjectService.getProjectAttributes:input_type -> ai.verta.modeldb.GetAttributes
-	10, // 55: ai.verta.modeldb.ProjectService.addProjectAttributes:input_type -> ai.verta.modeldb.AddProjectAttributes
-	12, // 56: ai.verta.modeldb.ProjectService.deleteProjectAttributes:input_type -> ai.verta.modeldb.DeleteProjectAttributes
-	13, // 57: ai.verta.modeldb.ProjectService.logProjectCodeVersion:input_type -> ai.verta.modeldb.LogProjectCodeVersion
-	14, // 58: ai.verta.modeldb.ProjectService.getProjectCodeVersion:input_type -> ai.verta.modeldb.GetProjectCodeVersion
-	19, // 59: ai.verta.modeldb.ProjectService.verifyConnection:input_type -> ai.verta.modeldb.Empty
-	21, // 60: ai.verta.modeldb.ProjectService.deepCopyProject:input_type -> ai.verta.modeldb.DeepCopyProject
-	24, // 61: ai.verta.modeldb.ProjectService.getSummary:input_type -> ai.verta.modeldb.GetSummary
-	25, // 62: ai.verta.modeldb.ProjectService.setProjectReadme:input_type -> ai.verta.modeldb.SetProjectReadme
-	26, // 63: ai.verta.modeldb.ProjectService.getProjectReadme:input_type -> ai.verta.modeldb.GetProjectReadme
-	27, // 64: ai.verta.modeldb.ProjectService.setProjectShortName:input_type -> ai.verta.modeldb.SetProjectShortName
-	28, // 65: ai.verta.modeldb.ProjectService.getProjectShortName:input_type -> ai.verta.modeldb.GetProjectShortName
-	71, // 66: ai.verta.modeldb.ProjectService.getUrlForArtifact:input_type -> ai.verta.modeldb.GetUrlForArtifact
-	29, // 67: ai.verta.modeldb.ProjectService.findProjects:input_type -> ai.verta.modeldb.FindProjects
-	30, // 68: ai.verta.modeldb.ProjectService.logArtifacts:input_type -> ai.verta.modeldb.LogProjectArtifacts
-	72, // 69: ai.verta.modeldb.ProjectService.getArtifacts:input_type -> ai.verta.modeldb.GetArtifacts
-	31, // 70: ai.verta.modeldb.ProjectService.deleteArtifact:input_type -> ai.verta.modeldb.DeleteProjectArtifact
-	32, // 71: ai.verta.modeldb.ProjectService.deleteProjects:input_type -> ai.verta.modeldb.DeleteProjects
-	33, // 72: ai.verta.modeldb.ProjectService.setProjectWorkspace:input_type -> ai.verta.modeldb.SetProjectWorkspace
-	34, // 73: ai.verta.modeldb.ProjectService.createProject:output_type -> ai.verta.modeldb.CreateProject.Response
-	48, // 74: ai.verta.modeldb.ProjectService.getProjects:output_type -> ai.verta.modeldb.GetProjects.Response
-	49, // 75: ai.verta.modeldb.ProjectService.getPublicProjects:output_type -> ai.verta.modeldb.GetPublicProjects.Response
-	50, // 76: ai.verta.modeldb.ProjectService.getProjectById:output_type -> ai.verta.modeldb.GetProjectById.Response
-	51, // 77: ai.verta.modeldb.ProjectService.getProjectByName:output_type -> ai.verta.modeldb.GetProjectByName.Response
-	35, // 78: ai.verta.modeldb.ProjectService.deleteProject:output_type -> ai.verta.modeldb.DeleteProject.Response
-	36, // 79: ai.verta.modeldb.ProjectService.updateProjectName:output_type -> ai.verta.modeldb.UpdateProjectName.Response
-	37, // 80: ai.verta.modeldb.ProjectService.updateProjectDescription:output_type -> ai.verta.modeldb.UpdateProjectDescription.Response
-	38, // 81: ai.verta.modeldb.ProjectService.addProjectTags:output_type -> ai.verta.modeldb.AddProjectTags.Response
-	73, // 82: ai.verta.modeldb.ProjectService.getProjectTags:output_type -> ai.verta.modeldb.GetTags.Response
-	39, // 83: ai.verta.modeldb.ProjectService.deleteProjectTags:output_type -> ai.verta.modeldb.DeleteProjectTags.Response
-	40, // 84: ai.verta.modeldb.ProjectService.addProjectTag:output_type -> ai.verta.modeldb.AddProjectTag.Response
-	41, // 85: ai.verta.modeldb.ProjectService.deleteProjectTag:output_type -> ai.verta.modeldb.DeleteProjectTag.Response
-	44, // 86: ai.verta.modeldb.ProjectService.updateProjectAttributes:output_type -> ai.verta.modeldb.UpdateProjectAttributes.Response
-	74, // 87: ai.verta.modeldb.ProjectService.getProjectAttributes:output_type -> ai.verta.modeldb.GetAttributes.Response
-	43, // 88: ai.verta.modeldb.ProjectService.addProjectAttributes:output_type -> ai.verta.modeldb.AddProjectAttributes.Response
-	45, // 89: ai.verta.modeldb.ProjectService.deleteProjectAttributes:output_type -> ai.verta.modeldb.DeleteProjectAttributes.Response
-	46, // 90: ai.verta.modeldb.ProjectService.logProjectCodeVersion:output_type -> ai.verta.modeldb.LogProjectCodeVersion.Response
-	47, // 91: ai.verta.modeldb.ProjectService.getProjectCodeVersion:output_type -> ai.verta.modeldb.GetProjectCodeVersion.Response
-	20, // 92: ai.verta.modeldb.ProjectService.verifyConnection:output_type -> ai.verta.modeldb.VerifyConnectionResponse
-	52, // 93: ai.verta.modeldb.ProjectService.deepCopyProject:output_type -> ai.verta.modeldb.DeepCopyProject.Response
-	53, // 94: ai.verta.modeldb.ProjectService.getSummary:output_type -> ai.verta.modeldb.GetSummary.Response
-	54, // 95: ai.verta.modeldb.ProjectService.setProjectReadme:output_type -> ai.verta.modeldb.SetProjectReadme.Response
-	55, // 96: ai.verta.modeldb.ProjectService.getProjectReadme:output_type -> ai.verta.modeldb.GetProjectReadme.Response
-	56, // 97: ai.verta.modeldb.ProjectService.setProjectShortName:output_type -> ai.verta.modeldb.SetProjectShortName.Response
-	57, // 98: ai.verta.modeldb.ProjectService.getProjectShortName:output_type -> ai.verta.modeldb.GetProjectShortName.Response
-	75, // 99: ai.verta.modeldb.ProjectService.getUrlForArtifact:output_type -> ai.verta.modeldb.GetUrlForArtifact.Response
-	58, // 100: ai.verta.modeldb.ProjectService.findProjects:output_type -> ai.verta.modeldb.FindProjects.Response
-	59, // 101: ai.verta.modeldb.ProjectService.logArtifacts:output_type -> ai.verta.modeldb.LogProjectArtifacts.Response
-	76, // 102: ai.verta.modeldb.ProjectService.getArtifacts:output_type -> ai.verta.modeldb.GetArtifacts.Response
-	60, // 103: ai.verta.modeldb.ProjectService.deleteArtifact:output_type -> ai.verta.modeldb.DeleteProjectArtifact.Response
-	61, // 104: ai.verta.modeldb.ProjectService.deleteProjects:output_type -> ai.verta.modeldb.DeleteProjects.Response
-	62, // 105: ai.verta.modeldb.ProjectService.setProjectWorkspace:output_type -> ai.verta.modeldb.SetProjectWorkspace.Response
-	73, // [73:106] is the sub-list for method output_type
-	40, // [40:73] is the sub-list for method input_type
-	40, // [40:40] is the sub-list for extension type_name
-	40, // [40:40] is the sub-list for extension extendee
-	0,  // [0:40] is the sub-list for field type_name
+	1,  // 39: ai.verta.modeldb.ProjectService.createProject:input_type -> ai.verta.modeldb.CreateProject
+	15, // 40: ai.verta.modeldb.ProjectService.getProjects:input_type -> ai.verta.modeldb.GetProjects
+	16, // 41: ai.verta.modeldb.ProjectService.getPublicProjects:input_type -> ai.verta.modeldb.GetPublicProjects
+	17, // 42: ai.verta.modeldb.ProjectService.getProjectById:input_type -> ai.verta.modeldb.GetProjectById
+	18, // 43: ai.verta.modeldb.ProjectService.getProjectByName:input_type -> ai.verta.modeldb.GetProjectByName
+	2,  // 44: ai.verta.modeldb.ProjectService.deleteProject:input_type -> ai.verta.modeldb.DeleteProject
+	3,  // 45: ai.verta.modeldb.ProjectService.updateProjectName:input_type -> ai.verta.modeldb.UpdateProjectName
+	4,  // 46: ai.verta.modeldb.ProjectService.updateProjectDescription:input_type -> ai.verta.modeldb.UpdateProjectDescription
+	5,  // 47: ai.verta.modeldb.ProjectService.addProjectTags:input_type -> ai.verta.modeldb.AddProjectTags
+	67, // 48: ai.verta.modeldb.ProjectService.getProjectTags:input_type -> ai.verta.modeldb.GetTags
+	6,  // 49: ai.verta.modeldb.ProjectService.deleteProjectTags:input_type -> ai.verta.modeldb.DeleteProjectTags
+	7,  // 50: ai.verta.modeldb.ProjectService.addProjectTag:input_type -> ai.verta.modeldb.AddProjectTag
+	8,  // 51: ai.verta.modeldb.ProjectService.deleteProjectTag:input_type -> ai.verta.modeldb.DeleteProjectTag
+	11, // 52: ai.verta.modeldb.ProjectService.updateProjectAttributes:input_type -> ai.verta.modeldb.UpdateProjectAttributes
+	68, // 53: ai.verta.modeldb.ProjectService.getProjectAttributes:input_type -> ai.verta.modeldb.GetAttributes
+	10, // 54: ai.verta.modeldb.ProjectService.addProjectAttributes:input_type -> ai.verta.modeldb.AddProjectAttributes
+	12, // 55: ai.verta.modeldb.ProjectService.deleteProjectAttributes:input_type -> ai.verta.modeldb.DeleteProjectAttributes
+	13, // 56: ai.verta.modeldb.ProjectService.logProjectCodeVersion:input_type -> ai.verta.modeldb.LogProjectCodeVersion
+	14, // 57: ai.verta.modeldb.ProjectService.getProjectCodeVersion:input_type -> ai.verta.modeldb.GetProjectCodeVersion
+	19, // 58: ai.verta.modeldb.ProjectService.verifyConnection:input_type -> ai.verta.modeldb.Empty
+	21, // 59: ai.verta.modeldb.ProjectService.deepCopyProject:input_type -> ai.verta.modeldb.DeepCopyProject
+	24, // 60: ai.verta.modeldb.ProjectService.getSummary:input_type -> ai.verta.modeldb.GetSummary
+	25, // 61: ai.verta.modeldb.ProjectService.setProjectReadme:input_type -> ai.verta.modeldb.SetProjectReadme
+	26, // 62: ai.verta.modeldb.ProjectService.getProjectReadme:input_type -> ai.verta.modeldb.GetProjectReadme
+	27, // 63: ai.verta.modeldb.ProjectService.setProjectShortName:input_type -> ai.verta.modeldb.SetProjectShortName
+	28, // 64: ai.verta.modeldb.ProjectService.getProjectShortName:input_type -> ai.verta.modeldb.GetProjectShortName
+	69, // 65: ai.verta.modeldb.ProjectService.getUrlForArtifact:input_type -> ai.verta.modeldb.GetUrlForArtifact
+	29, // 66: ai.verta.modeldb.ProjectService.findProjects:input_type -> ai.verta.modeldb.FindProjects
+	30, // 67: ai.verta.modeldb.ProjectService.logArtifacts:input_type -> ai.verta.modeldb.LogProjectArtifacts
+	70, // 68: ai.verta.modeldb.ProjectService.getArtifacts:input_type -> ai.verta.modeldb.GetArtifacts
+	31, // 69: ai.verta.modeldb.ProjectService.deleteArtifact:input_type -> ai.verta.modeldb.DeleteProjectArtifact
+	32, // 70: ai.verta.modeldb.ProjectService.deleteProjects:input_type -> ai.verta.modeldb.DeleteProjects
+	33, // 71: ai.verta.modeldb.ProjectService.createProject:output_type -> ai.verta.modeldb.CreateProject.Response
+	47, // 72: ai.verta.modeldb.ProjectService.getProjects:output_type -> ai.verta.modeldb.GetProjects.Response
+	48, // 73: ai.verta.modeldb.ProjectService.getPublicProjects:output_type -> ai.verta.modeldb.GetPublicProjects.Response
+	49, // 74: ai.verta.modeldb.ProjectService.getProjectById:output_type -> ai.verta.modeldb.GetProjectById.Response
+	50, // 75: ai.verta.modeldb.ProjectService.getProjectByName:output_type -> ai.verta.modeldb.GetProjectByName.Response
+	34, // 76: ai.verta.modeldb.ProjectService.deleteProject:output_type -> ai.verta.modeldb.DeleteProject.Response
+	35, // 77: ai.verta.modeldb.ProjectService.updateProjectName:output_type -> ai.verta.modeldb.UpdateProjectName.Response
+	36, // 78: ai.verta.modeldb.ProjectService.updateProjectDescription:output_type -> ai.verta.modeldb.UpdateProjectDescription.Response
+	37, // 79: ai.verta.modeldb.ProjectService.addProjectTags:output_type -> ai.verta.modeldb.AddProjectTags.Response
+	71, // 80: ai.verta.modeldb.ProjectService.getProjectTags:output_type -> ai.verta.modeldb.GetTags.Response
+	38, // 81: ai.verta.modeldb.ProjectService.deleteProjectTags:output_type -> ai.verta.modeldb.DeleteProjectTags.Response
+	39, // 82: ai.verta.modeldb.ProjectService.addProjectTag:output_type -> ai.verta.modeldb.AddProjectTag.Response
+	40, // 83: ai.verta.modeldb.ProjectService.deleteProjectTag:output_type -> ai.verta.modeldb.DeleteProjectTag.Response
+	43, // 84: ai.verta.modeldb.ProjectService.updateProjectAttributes:output_type -> ai.verta.modeldb.UpdateProjectAttributes.Response
+	72, // 85: ai.verta.modeldb.ProjectService.getProjectAttributes:output_type -> ai.verta.modeldb.GetAttributes.Response
+	42, // 86: ai.verta.modeldb.ProjectService.addProjectAttributes:output_type -> ai.verta.modeldb.AddProjectAttributes.Response
+	44, // 87: ai.verta.modeldb.ProjectService.deleteProjectAttributes:output_type -> ai.verta.modeldb.DeleteProjectAttributes.Response
+	45, // 88: ai.verta.modeldb.ProjectService.logProjectCodeVersion:output_type -> ai.verta.modeldb.LogProjectCodeVersion.Response
+	46, // 89: ai.verta.modeldb.ProjectService.getProjectCodeVersion:output_type -> ai.verta.modeldb.GetProjectCodeVersion.Response
+	20, // 90: ai.verta.modeldb.ProjectService.verifyConnection:output_type -> ai.verta.modeldb.VerifyConnectionResponse
+	51, // 91: ai.verta.modeldb.ProjectService.deepCopyProject:output_type -> ai.verta.modeldb.DeepCopyProject.Response
+	52, // 92: ai.verta.modeldb.ProjectService.getSummary:output_type -> ai.verta.modeldb.GetSummary.Response
+	53, // 93: ai.verta.modeldb.ProjectService.setProjectReadme:output_type -> ai.verta.modeldb.SetProjectReadme.Response
+	54, // 94: ai.verta.modeldb.ProjectService.getProjectReadme:output_type -> ai.verta.modeldb.GetProjectReadme.Response
+	55, // 95: ai.verta.modeldb.ProjectService.setProjectShortName:output_type -> ai.verta.modeldb.SetProjectShortName.Response
+	56, // 96: ai.verta.modeldb.ProjectService.getProjectShortName:output_type -> ai.verta.modeldb.GetProjectShortName.Response
+	73, // 97: ai.verta.modeldb.ProjectService.getUrlForArtifact:output_type -> ai.verta.modeldb.GetUrlForArtifact.Response
+	57, // 98: ai.verta.modeldb.ProjectService.findProjects:output_type -> ai.verta.modeldb.FindProjects.Response
+	58, // 99: ai.verta.modeldb.ProjectService.logArtifacts:output_type -> ai.verta.modeldb.LogProjectArtifacts.Response
+	74, // 100: ai.verta.modeldb.ProjectService.getArtifacts:output_type -> ai.verta.modeldb.GetArtifacts.Response
+	59, // 101: ai.verta.modeldb.ProjectService.deleteArtifact:output_type -> ai.verta.modeldb.DeleteProjectArtifact.Response
+	60, // 102: ai.verta.modeldb.ProjectService.deleteProjects:output_type -> ai.verta.modeldb.DeleteProjects.Response
+	71, // [71:103] is the sub-list for method output_type
+	39, // [39:71] is the sub-list for method input_type
+	39, // [39:39] is the sub-list for extension type_name
+	39, // [39:39] is the sub-list for extension extendee
+	0,  // [0:39] is the sub-list for field type_name
 }
 
 func init() { file_modeldb_ProjectService_proto_init() }
@@ -4783,18 +4658,6 @@ func file_modeldb_ProjectService_proto_init() {
 			}
 		}
 		file_modeldb_ProjectService_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetProjectWorkspace); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_modeldb_ProjectService_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateProject_Response); i {
 			case 0:
 				return &v.state
@@ -4806,7 +4669,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteProject_Response); i {
 			case 0:
 				return &v.state
@@ -4818,7 +4681,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateProjectName_Response); i {
 			case 0:
 				return &v.state
@@ -4830,7 +4693,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateProjectDescription_Response); i {
 			case 0:
 				return &v.state
@@ -4842,7 +4705,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AddProjectTags_Response); i {
 			case 0:
 				return &v.state
@@ -4854,7 +4717,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteProjectTags_Response); i {
 			case 0:
 				return &v.state
@@ -4866,7 +4729,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AddProjectTag_Response); i {
 			case 0:
 				return &v.state
@@ -4878,7 +4741,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteProjectTag_Response); i {
 			case 0:
 				return &v.state
@@ -4890,7 +4753,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetProjectAttributes_Response); i {
 			case 0:
 				return &v.state
@@ -4902,7 +4765,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AddProjectAttributes_Response); i {
 			case 0:
 				return &v.state
@@ -4914,7 +4777,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateProjectAttributes_Response); i {
 			case 0:
 				return &v.state
@@ -4926,7 +4789,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteProjectAttributes_Response); i {
 			case 0:
 				return &v.state
@@ -4938,7 +4801,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogProjectCodeVersion_Response); i {
 			case 0:
 				return &v.state
@@ -4950,7 +4813,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetProjectCodeVersion_Response); i {
 			case 0:
 				return &v.state
@@ -4962,7 +4825,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetProjects_Response); i {
 			case 0:
 				return &v.state
@@ -4974,7 +4837,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetPublicProjects_Response); i {
 			case 0:
 				return &v.state
@@ -4986,7 +4849,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetProjectById_Response); i {
 			case 0:
 				return &v.state
@@ -4998,7 +4861,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetProjectByName_Response); i {
 			case 0:
 				return &v.state
@@ -5010,7 +4873,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeepCopyProject_Response); i {
 			case 0:
 				return &v.state
@@ -5022,7 +4885,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetSummary_Response); i {
 			case 0:
 				return &v.state
@@ -5034,7 +4897,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SetProjectReadme_Response); i {
 			case 0:
 				return &v.state
@@ -5046,7 +4909,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetProjectReadme_Response); i {
 			case 0:
 				return &v.state
@@ -5058,7 +4921,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SetProjectShortName_Response); i {
 			case 0:
 				return &v.state
@@ -5070,7 +4933,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetProjectShortName_Response); i {
 			case 0:
 				return &v.state
@@ -5082,7 +4945,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FindProjects_Response); i {
 			case 0:
 				return &v.state
@@ -5094,7 +4957,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogProjectArtifacts_Response); i {
 			case 0:
 				return &v.state
@@ -5106,7 +4969,7 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteProjectArtifact_Response); i {
 			case 0:
 				return &v.state
@@ -5118,20 +4981,8 @@ func file_modeldb_ProjectService_proto_init() {
 				return nil
 			}
 		}
-		file_modeldb_ProjectService_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
+		file_modeldb_ProjectService_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteProjects_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_modeldb_ProjectService_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetProjectWorkspace_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5149,7 +5000,7 @@ func file_modeldb_ProjectService_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_modeldb_ProjectService_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   63,
+			NumMessages:   61,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -5211,7 +5062,6 @@ type ProjectServiceClient interface {
 	GetArtifacts(ctx context.Context, in *GetArtifacts, opts ...grpc.CallOption) (*GetArtifacts_Response, error)
 	DeleteArtifact(ctx context.Context, in *DeleteProjectArtifact, opts ...grpc.CallOption) (*DeleteProjectArtifact_Response, error)
 	DeleteProjects(ctx context.Context, in *DeleteProjects, opts ...grpc.CallOption) (*DeleteProjects_Response, error)
-	SetProjectWorkspace(ctx context.Context, in *SetProjectWorkspace, opts ...grpc.CallOption) (*SetProjectWorkspace_Response, error)
 }
 
 type projectServiceClient struct {
@@ -5510,15 +5360,6 @@ func (c *projectServiceClient) DeleteProjects(ctx context.Context, in *DeletePro
 	return out, nil
 }
 
-func (c *projectServiceClient) SetProjectWorkspace(ctx context.Context, in *SetProjectWorkspace, opts ...grpc.CallOption) (*SetProjectWorkspace_Response, error) {
-	out := new(SetProjectWorkspace_Response)
-	err := c.cc.Invoke(ctx, "/ai.verta.modeldb.ProjectService/setProjectWorkspace", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // ProjectServiceServer is the server API for ProjectService service.
 type ProjectServiceServer interface {
 	CreateProject(context.Context, *CreateProject) (*CreateProject_Response, error)
@@ -5557,7 +5398,6 @@ type ProjectServiceServer interface {
 	GetArtifacts(context.Context, *GetArtifacts) (*GetArtifacts_Response, error)
 	DeleteArtifact(context.Context, *DeleteProjectArtifact) (*DeleteProjectArtifact_Response, error)
 	DeleteProjects(context.Context, *DeleteProjects) (*DeleteProjects_Response, error)
-	SetProjectWorkspace(context.Context, *SetProjectWorkspace) (*SetProjectWorkspace_Response, error)
 }
 
 // UnimplementedProjectServiceServer can be embedded to have forward compatible implementations.
@@ -5659,9 +5499,6 @@ func (*UnimplementedProjectServiceServer) DeleteArtifact(context.Context, *Delet
 }
 func (*UnimplementedProjectServiceServer) DeleteProjects(context.Context, *DeleteProjects) (*DeleteProjects_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteProjects not implemented")
-}
-func (*UnimplementedProjectServiceServer) SetProjectWorkspace(context.Context, *SetProjectWorkspace) (*SetProjectWorkspace_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetProjectWorkspace not implemented")
 }
 
 func RegisterProjectServiceServer(s *grpc.Server, srv ProjectServiceServer) {
@@ -6244,24 +6081,6 @@ func _ProjectService_DeleteProjects_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ProjectService_SetProjectWorkspace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetProjectWorkspace)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ProjectServiceServer).SetProjectWorkspace(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ai.verta.modeldb.ProjectService/SetProjectWorkspace",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProjectServiceServer).SetProjectWorkspace(ctx, req.(*SetProjectWorkspace))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _ProjectService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ai.verta.modeldb.ProjectService",
 	HandlerType: (*ProjectServiceServer)(nil),
@@ -6393,10 +6212,6 @@ var _ProjectService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "deleteProjects",
 			Handler:    _ProjectService_DeleteProjects_Handler,
-		},
-		{
-			MethodName: "setProjectWorkspace",
-			Handler:    _ProjectService_SetProjectWorkspace_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
