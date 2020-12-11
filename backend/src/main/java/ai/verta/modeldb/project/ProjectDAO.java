@@ -116,7 +116,7 @@ public interface ProjectDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      VisibilityEnum.Visibility projectVisibility)
+      ResourceVisibility projectVisibility)
       throws InvalidProtocolBufferException;
 
   /**
