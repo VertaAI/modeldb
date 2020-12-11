@@ -951,70 +951,6 @@
         ]
       }
     },
-    "/project/setProjectVisibility": {
-      "post": {
-        "operationId": "ProjectService_setProjectVisibility",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetProjectVisibiltyResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetProjectVisibilty"
-            }
-          }
-        ],
-        "tags": [
-          "ProjectService"
-        ]
-      }
-    },
-    "/project/setProjectWorkspace": {
-      "post": {
-        "operationId": "ProjectService_setProjectWorkspace",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetProjectWorkspaceResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetProjectWorkspace"
-            }
-          }
-        ],
-        "tags": [
-          "ProjectService"
-        ]
-      }
-    },
     "/project/updateProjectAttributes": {
       "post": {
         "operationId": "ProjectService_updateProjectAttributes",
@@ -1351,8 +1287,8 @@
         "readme_text": {
           "type": "string"
         },
-        "project_visibility": {
-          "$ref": "#/definitions/modeldbProjectVisibility"
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         },
         "artifacts": {
           "type": "array",
@@ -1865,8 +1801,8 @@
         "readme_text": {
           "type": "string"
         },
-        "project_visibility": {
-          "$ref": "#/definitions/modeldbProjectVisibility"
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         },
         "workspace_id": {
           "type": "string"
@@ -1904,15 +1840,6 @@
         }
       }
     },
-    "modeldbProjectVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE"
-    },
     "modeldbSetProjectReadme": {
       "type": "object",
       "properties": {
@@ -1944,44 +1871,6 @@
       }
     },
     "modeldbSetProjectShortNameResponse": {
-      "type": "object",
-      "properties": {
-        "project": {
-          "$ref": "#/definitions/modeldbProject"
-        }
-      }
-    },
-    "modeldbSetProjectVisibilty": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "project_visibility": {
-          "$ref": "#/definitions/modeldbProjectVisibility"
-        }
-      }
-    },
-    "modeldbSetProjectVisibiltyResponse": {
-      "type": "object",
-      "properties": {
-        "project": {
-          "$ref": "#/definitions/modeldbProject"
-        }
-      }
-    },
-    "modeldbSetProjectWorkspace": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "workspace_name": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbSetProjectWorkspaceResponse": {
       "type": "object",
       "properties": {
         "project": {
@@ -2095,6 +1984,15 @@
           }
         }
       }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "ORG_DEFAULT",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
     }
   },
   "basePath": "/v1"

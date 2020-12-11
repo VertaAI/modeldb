@@ -2169,8 +2169,8 @@
         "readme_text": {
           "type": "string"
         },
-        "project_visibility": {
-          "$ref": "#/definitions/modeldbProjectVisibility"
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         },
         "workspace_id": {
           "type": "string"
@@ -2207,15 +2207,6 @@
           }
         }
       }
-    },
-    "modeldbProjectVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE"
     },
     "modeldbQueryDatasetVersionInfo": {
       "type": "object",
@@ -2424,6 +2415,15 @@
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "ORG_DEFAULT",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
     },
     "uacTeam": {
       "type": "object",

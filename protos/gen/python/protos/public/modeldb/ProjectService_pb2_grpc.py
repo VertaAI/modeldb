@@ -135,11 +135,6 @@ class ProjectServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.Response.FromString,
         )
-    self.setProjectVisibility = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/setProjectVisibility',
-        request_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.Response.FromString,
-        )
     self.setProjectShortName = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/setProjectShortName',
         request_serializer=modeldb_dot_ProjectService__pb2.SetProjectShortName.SerializeToString,
@@ -179,11 +174,6 @@ class ProjectServiceStub(object):
         '/ai.verta.modeldb.ProjectService/deleteProjects',
         request_serializer=modeldb_dot_ProjectService__pb2.DeleteProjects.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjects.Response.FromString,
-        )
-    self.setProjectWorkspace = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/setProjectWorkspace',
-        request_serializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.Response.FromString,
         )
 
 
@@ -359,13 +349,6 @@ class ProjectServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def setProjectVisibility(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def setProjectShortName(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -416,13 +399,6 @@ class ProjectServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def deleteProjects(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def setProjectWorkspace(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -552,11 +528,6 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           request_deserializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.Response.SerializeToString,
       ),
-      'setProjectVisibility': grpc.unary_unary_rpc_method_handler(
-          servicer.setProjectVisibility,
-          request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.SetProjectVisibilty.Response.SerializeToString,
-      ),
       'setProjectShortName': grpc.unary_unary_rpc_method_handler(
           servicer.setProjectShortName,
           request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectShortName.FromString,
@@ -596,11 +567,6 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           servicer.deleteProjects,
           request_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjects.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.DeleteProjects.Response.SerializeToString,
-      ),
-      'setProjectWorkspace': grpc.unary_unary_rpc_method_handler(
-          servicer.setProjectWorkspace,
-          request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.SetProjectWorkspace.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
