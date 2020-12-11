@@ -951,38 +951,6 @@
         ]
       }
     },
-    "/project/setProjectWorkspace": {
-      "post": {
-        "operationId": "ProjectService_setProjectWorkspace",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetProjectWorkspaceResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetProjectWorkspace"
-            }
-          }
-        ],
-        "tags": [
-          "ProjectService"
-        ]
-      }
-    },
     "/project/updateProjectAttributes": {
       "post": {
         "operationId": "ProjectService_updateProjectAttributes",
@@ -1914,25 +1882,6 @@
       }
     },
     "modeldbSetProjectShortNameResponse": {
-      "type": "object",
-      "properties": {
-        "project": {
-          "$ref": "#/definitions/modeldbProject"
-        }
-      }
-    },
-    "modeldbSetProjectWorkspace": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "workspace_name": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbSetProjectWorkspaceResponse": {
       "type": "object",
       "properties": {
         "project": {
