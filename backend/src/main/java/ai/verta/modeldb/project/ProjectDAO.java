@@ -8,7 +8,6 @@ import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -309,18 +308,7 @@ public interface ProjectDAO {
    */
   Map<String, String> getOwnersByProjectIds(List<String> projectIds);
 
-  /**
-   * Sets the workspace of an existing project
-   *
-   * @param projectId : projectId
-   * @param workspaceDTO : workspaceDTO
-   * @return {@link Project} : updated project
-   * @throws InvalidProtocolBufferException : InvalidProtocolBufferException
-   */
-  Project setProjectWorkspace(String projectId, WorkspaceDTO workspaceDTO)
-      throws InvalidProtocolBufferException;
-
-  public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
+  List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException;
   /**
    * Checks if project with the id exists with delete flag false

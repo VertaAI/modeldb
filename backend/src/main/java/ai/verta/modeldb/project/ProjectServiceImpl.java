@@ -1602,47 +1602,4 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       ModelDBUtils.observeError(responseObserver, e, DeleteProjects.Response.getDefaultInstance());
     }
   }
-
-  @Override
-  public void setProjectWorkspace(
-      SetProjectWorkspace request, StreamObserver<SetProjectWorkspace.Response> responseObserver) {
-    try {
-      // Request Parameter Validation
-      if (request.getId().isEmpty() && request.getWorkspaceName().isEmpty()) {
-        throw new InvalidArgumentException(
-            "Project ID and Workspace not found in SetProjectWorkspace request");
-      } else if (request.getId().isEmpty()) {
-        throw new InvalidArgumentException("Project ID not found in SetProjectWorkspace request");
-      } else if (request.getWorkspaceName().isEmpty()) {
-        throw new InvalidArgumentException("Workspace not found in SetProjectWorkspace request");
-      }
-
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
-
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      WorkspaceDTO workspaceDTO = null;
-      if (userInfo != null) {
-        workspaceDTO =
-            roleService.getWorkspaceDTOByWorkspaceName(userInfo, request.getWorkspaceName());
-      }
-      Project project = projectDAO.setProjectWorkspace(request.getId(), workspaceDTO);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(project.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "update",
-              "workspace",
-              request.getWorkspaceName()));
-      responseObserver.onNext(
-          SetProjectWorkspace.Response.newBuilder().setProject(project).build());
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, SetProjectWorkspace.Response.getDefaultInstance());
-    }
-  }
 }

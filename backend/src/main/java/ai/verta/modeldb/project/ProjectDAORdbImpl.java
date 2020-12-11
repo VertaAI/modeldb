@@ -1191,37 +1191,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
   }
 
-  @Override
-  public Project setProjectWorkspace(String projectId, WorkspaceDTO workspaceDTO)
-      throws InvalidProtocolBufferException {
-
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
-      roleService.createWorkspacePermissions(
-          workspaceDTO.getWorkspaceName(),
-          Optional.of(WorkspaceType.forNumber(projectEntity.getWorkspace_type())),
-          projectEntity.getId(),
-          Optional.of(Long.parseLong(projectEntity.getOwner())),
-          ModelDBServiceResourceTypes.PROJECT,
-          CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-          projectEntity.getProjectVisibility());
-      projectEntity.setWorkspace(workspaceDTO.getWorkspaceId());
-      projectEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
-      projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
-      Transaction transaction = session.beginTransaction();
-      session.update(projectEntity);
-      transaction.commit();
-      LOGGER.debug("Project workspace updated successfully");
-      return projectEntity.getProtoObject(roleService);
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return setProjectWorkspace(projectId, workspaceDTO);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
   /**
    * returns a list of projectIds accessible to the user passed as an argument within the workspace
    * passed as an argument. For no auth returns the list of non deleted projects
