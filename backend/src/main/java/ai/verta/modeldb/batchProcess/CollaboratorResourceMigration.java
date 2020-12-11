@@ -6,6 +6,7 @@ import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.authservice.AuthService;
+import ai.verta.modeldb.authservice.AuthServiceChannel;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
@@ -13,6 +14,11 @@ import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.ResourceType;
+import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.Resources;
+import ai.verta.uac.ServiceEnum;
+import ai.verta.uac.SetResources;
 import ai.verta.uac.UserInfo;
 import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
@@ -121,8 +127,8 @@ public class CollaboratorResourceMigration {
                       project.getWorkspace_type());
               // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
               // ignore the CollaboratorType
-              roleService.createWorkspacePermissions(
-                  workspaceDTO.getWorkspaceName(),
+              createWorkspacePermissions(
+                  Optional.of(workspaceDTO.getWorkspaceName()),
                   Optional.ofNullable(
                       WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
                   project.getId(),
@@ -163,5 +169,68 @@ public class CollaboratorResourceMigration {
         throw ex;
       }
     }
+  }
+
+  private void createWorkspacePermissions(
+      Optional<String> workspaceName,
+      Optional<WorkspaceTypeEnum.WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      VisibilityEnum.Visibility visibility) {
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      LOGGER.info("Calling CollaboratorService to create resources");
+      ResourceType modeldbServiceResourceType =
+          ResourceType.newBuilder().setModeldbServiceResourceType(resourceType).build();
+      Resources resources =
+          Resources.newBuilder()
+              .setResourceType(modeldbServiceResourceType)
+              .setService(ServiceEnum.Service.MODELDB_SERVICE)
+              .addResourceIds(resourceId)
+              .build();
+      ResourceVisibility resourceVisibility = getResourceVisibility(workspaceType, visibility);
+      SetResources.Builder setResourcesBuilder =
+          SetResources.newBuilder().setResources(resources).setVisibility(resourceVisibility);
+
+      if (resourceVisibility.equals(ResourceVisibility.ORG_DEFAULT)) {
+        setResourcesBuilder.setCollaboratorType(collaboratorType);
+      }
+
+      if (ownerId.isPresent()) {
+        setResourcesBuilder.setOwnerId(ownerId.get());
+      }
+      if (workspaceName.isPresent()) {
+        setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
+      } else {
+        throw new IllegalArgumentException(
+            "workspaceId and workspaceName are both empty.  One must be provided.");
+      }
+      SetResources setResources = setResourcesBuilder.build();
+      SetResources.Response setResourcesResponse =
+          authServiceChannel.getCollaboratorServiceBlockingStub().setResources(setResources);
+
+      LOGGER.info("SetResources message sent.  Response: " + setResourcesResponse);
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
+    }
+  }
+
+  private ResourceVisibility getResourceVisibility(
+      Optional<WorkspaceTypeEnum.WorkspaceType> workspaceType,
+      VisibilityEnum.Visibility projectVisibility) {
+    if (!workspaceType.isPresent()) {
+      return ResourceVisibility.PRIVATE;
+    }
+    if (workspaceType.get() == WorkspaceTypeEnum.WorkspaceType.ORGANIZATION) {
+      if (projectVisibility == VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC) {
+        return ResourceVisibility.ORG_DEFAULT;
+      } else if (projectVisibility == VisibilityEnum.Visibility.PRIVATE) {
+        return ResourceVisibility.PRIVATE;
+      }
+      return ResourceVisibility.ORG_DEFAULT;
+    }
+    return ResourceVisibility.PRIVATE;
   }
 }
