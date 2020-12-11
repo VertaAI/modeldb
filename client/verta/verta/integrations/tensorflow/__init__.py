@@ -5,7 +5,7 @@ from ...external import six
 import numbers
 import os
 
-import tensorflow as tf
+import tensorflow as tf  # pylint: disable=import-error
 from tensorflow.core.framework.summary_pb2 import Summary  # pylint: disable=import-error, no-name-in-module
 from tensorflow.core.util.event_pb2 import Event  # pylint: disable=import-error, no-name-in-module
 from tensorflow.compat.v1 import summary  # pylint: disable=import-error
