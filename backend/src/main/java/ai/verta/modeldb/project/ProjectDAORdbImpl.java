@@ -1212,7 +1212,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.update(projectEntity);
       transaction.commit();
       LOGGER.debug("Project workspace updated successfully");
-      return projectEntity.getProtoObject(roleService);
+      final Project protoObject = projectEntity.getProtoObject(roleService);
+      roleService.updateProjectResources(projectEntity.getId(), Optional.of(projectEntity.getWorkspace()), Optional.empty(), protoObject.getVisibility());
+      return protoObject;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setProjectWorkspace(projectId, workspaceDTO);
