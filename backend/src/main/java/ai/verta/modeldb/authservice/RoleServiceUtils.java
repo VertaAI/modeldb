@@ -959,27 +959,7 @@ public class RoleServiceUtils implements RoleService {
           accessibleResourceIds.size());
     }
 
-    if (resourceVisibility != null
-        && (resourceVisibility.equals(VisibilityEnum.Visibility.PUBLIC)
-            || resourceVisibility.equals(DatasetVisibility.PUBLIC))) {
-      UserInfo unsignedUserInfo = authService.getUnsignedUser();
-      List<String> publicResourceIds =
-          getAllowedResources(
-              modelDBServiceResourceTypes,
-              ModelDBServiceActions.PUBLIC_READ,
-              new CollaboratorUser(authService, unsignedUserInfo));
-      LOGGER.debug(
-          "Public " + modelDBServiceResourceTypes + " Id size is {}", publicResourceIds.size());
-
-      if (resourceIdsSet.size() > 0) {
-        resourceIdsSet.retainAll(publicResourceIds);
-      } else {
-        resourceIdsSet.addAll(publicResourceIds);
-      }
-      return new ArrayList<>(resourceIdsSet);
-    } else {
-      return new ArrayList<>(resourceIdsSet);
-    }
+    return new ArrayList<>(resourceIdsSet);
   }
 
   @Override
