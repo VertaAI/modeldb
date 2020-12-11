@@ -29,6 +29,9 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.persistence.criteria.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -36,10 +39,6 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-
-import javax.persistence.criteria.*;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class ProjectDAORdbImpl implements ProjectDAO {
 
@@ -881,12 +880,17 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     query.setParameterList("ids", projectIds);
     final List<ProjectEntity> projectEntities = query.list();
     return projectEntities.stream()
-            .map(projectEntity -> {
-              VisibilityEnum.Visibility projectVisibility = roleService.getProjectVisibility(projectEntity.getId(), projectEntity.getWorkspace(), projectEntity.getWorkspace_type());
+        .map(
+            projectEntity -> {
+              VisibilityEnum.Visibility projectVisibility =
+                  roleService.getProjectVisibility(
+                      projectEntity.getId(),
+                      projectEntity.getWorkspace(),
+                      projectEntity.getWorkspace_type());
               projectEntity.setProjectVisibility(projectVisibility);
               return projectEntity;
             })
-            .collect(Collectors.toList());
+        .collect(Collectors.toList());
   }
 
   @Override

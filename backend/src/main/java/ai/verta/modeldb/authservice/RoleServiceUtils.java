@@ -1283,13 +1283,15 @@ public class RoleServiceUtils implements RoleService {
   @Override
   public boolean deleteProjectResources(List<String> projectIds) {
     ResourceType modeldbServiceResourceType =
-            ResourceType.newBuilder().setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT).build();
+        ResourceType.newBuilder()
+            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
+            .build();
     Resources resources =
-            Resources.newBuilder()
-                    .setResourceType(modeldbServiceResourceType)
-                    .setService(Service.MODELDB_SERVICE)
-                    .addAllResourceIds(projectIds)
-                    .build();
+        Resources.newBuilder()
+            .setResourceType(modeldbServiceResourceType)
+            .setService(Service.MODELDB_SERVICE)
+            .addAllResourceIds(projectIds)
+            .build();
     return deleteResources(resources);
   }
 
