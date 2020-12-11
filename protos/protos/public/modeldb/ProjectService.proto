@@ -22,7 +22,7 @@ message Project {
     uint64 date_updated = 5;
     string short_name = 6;
     string readme_text = 7;
-    ResourceVisibility visibility = 8;
+    collaborator.ResourceVisibility visibility = 8;
 
     string workspace_id = 9;
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 10;
@@ -41,7 +41,7 @@ message CreateProject {
     repeated common.KeyValue attributes = 3;
     repeated string tags = 4;
     string readme_text = 5;
-    ResourceVisibility visibility = 6;
+    collaborator.ResourceVisibility visibility = 6;
     repeated common.Artifact artifacts = 7;
     string workspace_name = 8;
     int64 date_created = 9;
