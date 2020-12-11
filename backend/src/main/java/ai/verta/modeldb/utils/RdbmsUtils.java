@@ -807,7 +807,7 @@ public class RdbmsUtils {
                 builder,
                 valueExpression,
                 operator,
-                VisibilityEnum.Visibility.valueOf(value.getStringValue()).ordinal());
+                ResourceVisibility.valueOf(value.getStringValue()).ordinal());
           } else {
             return getOperatorPredicate(builder, valueExpression, operator, value.getStringValue());
           }
