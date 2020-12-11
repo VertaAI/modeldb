@@ -327,15 +327,6 @@ message DeleteProjects {
     }
 }
 
-message SetProjectWorkspace {
-    string id = 1;
-    string workspace_name = 2;
-
-    message Response {
-        Project project = 1;
-    }
-}
-
 service ProjectService {
 
     rpc createProject(CreateProject) returns (CreateProject.Response) {
@@ -555,10 +546,4 @@ service ProjectService {
         };
     };
 
-    rpc setProjectWorkspace(SetProjectWorkspace) returns (SetProjectWorkspace.Response) {
-        option (google.api.http) = {
-            post: "/v1/project/setProjectWorkspace"
-            body: "*"
-        };
-    };
 }
