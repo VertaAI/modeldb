@@ -25,7 +25,7 @@ Examples
 
 from ...external import six
 
-from sklearn import (
+from sklearn import (  # pylint: disable=import-error
     linear_model,
     tree,
     svm,

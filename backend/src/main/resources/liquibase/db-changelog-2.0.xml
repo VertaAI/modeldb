@@ -326,17 +326,15 @@
     </changeSet>
 
     <changeSet id="add-created-on-project" author="cory">
+        <validCheckSum>8:f6b98a94c378e38f223e033f81fb2454</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <columnExists tableName="project" columnName="created"/>
             </not>
         </preConditions>
         <addColumn tableName="project">
-            <column name="created" type="boolean" defaultValue="false"/>
+            <column name="created" type="boolean" value="true" defaultValue="false"/>
         </addColumn>
-        <update tableName="project">
-            <column name="created" value="true"/>
-        </update>
         <rollback>
             <dropColumn tableName="project" columnName="created"/>
         </rollback>

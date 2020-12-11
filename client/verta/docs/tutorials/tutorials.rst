@@ -56,5 +56,7 @@ Core Verta functionality
     Deployment <deployment/deployment>
     Organizations <organizations/organizations>
     Web app <webapp>
+    sharing
     Workspaces <workspaces>
+    custom_users
     Client config file <config>

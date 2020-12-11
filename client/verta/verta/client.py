@@ -78,10 +78,10 @@ class Client(object):
     Object for interfacing with the ModelDB backend.
 
     .. deprecated:: 0.12.0
-       The `port` parameter will removed in v0.16.0; please combine `port` with the first parameter,
+       The `port` parameter will removed in v0.17.0; please combine `port` with the first parameter,
        e.g. `Client("localhost:8080")`.
     .. deprecated:: 0.13.3
-       The `expt_runs` attribute will removed in v0.16.0; consider using `proj.expt_runs` and
+       The `expt_runs` attribute will removed in v0.17.0; consider using `proj.expt_runs` and
        `expt.expt_runs` instead.
 
     This class provides functionality for starting/resuming Projects, Experiments, and Experiment Runs.
@@ -1183,7 +1183,7 @@ class Client(object):
         """
         Gets or creates a dataset.
 
-        .. versionchanged:: 0.15.10
+        .. versionchanged:: 0.16.0
             The dataset versioning interface was overhauled.
 
         If an accessible dataset with name `name` does not already exist, it will be created
@@ -1251,7 +1251,7 @@ class Client(object):
         """
         Alias for :meth:`Client.get_or_create_dataset()`.
 
-        .. versionchanged:: 0.15.10
+        .. versionchanged:: 0.16.0
             The dataset versioning interface was overhauled.
 
         """
@@ -1261,7 +1261,7 @@ class Client(object):
         """
         Creates a dataset, initialized with specified metadata parameters.
 
-        .. versionchanged:: 0.15.10
+        .. versionchanged:: 0.16.0
             The dataset versioning interface was overhauled.
 
         Parameters
@@ -1303,7 +1303,7 @@ class Client(object):
         """
         Gets a dataset.
 
-        .. versionchanged:: 0.15.10
+        .. versionchanged:: 0.16.0
             The dataset versioning interface was overhauled.
 
         Parameters
@@ -1349,7 +1349,7 @@ class Client(object):
         """
         Gets a dataset version.
 
-        .. versionchanged:: 0.15.10
+        .. versionchanged:: 0.16.0
             The dataset versioning interface was overhauled.
 
         Parameters
