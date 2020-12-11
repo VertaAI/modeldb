@@ -1387,7 +1387,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(request, null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+          projectDAO.findProjects(request, null, userInfo, ResourceVisibility.PRIVATE);
 
       responseObserver.onNext(
           FindProjects.Response.newBuilder()
