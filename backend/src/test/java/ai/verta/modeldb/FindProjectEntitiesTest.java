@@ -15,6 +15,7 @@ import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetUser;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Struct;
@@ -273,7 +274,7 @@ public class FindProjectEntitiesTest {
             .addTags("Tag_5")
             .addTags("Tag_7")
             .addTags("Tag_8")
-            .setVisibility(VisibilityEnum.Visibility.PUBLIC)
+            .setVisibility(ResourceVisibility.PRIVATE)
             .build();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project4 = createProjectResponse.getProject();

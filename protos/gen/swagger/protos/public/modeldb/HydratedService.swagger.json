@@ -1089,17 +1089,6 @@
       ],
       "default": "STRING"
     },
-    "VisibilityEnumVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC",
-        "ORG_DEFAULT"
-      ],
-      "default": "PRIVATE",
-      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Public to organization\n - ORG_DEFAULT: Default access for organization"
-    },
     "WorkspaceTypeEnumWorkspaceType": {
       "type": "string",
       "enum": [
@@ -2181,7 +2170,7 @@
           "type": "string"
         },
         "visibility": {
-          "$ref": "#/definitions/VisibilityEnumVisibility"
+          "$ref": "#/definitions/uacResourceVisibility"
         },
         "workspace_id": {
           "type": "string"
@@ -2426,6 +2415,15 @@
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "ORG_DEFAULT",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
     },
     "uacTeam": {
       "type": "object",

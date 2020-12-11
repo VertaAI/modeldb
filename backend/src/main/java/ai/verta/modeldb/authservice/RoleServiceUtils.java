@@ -1303,7 +1303,7 @@ public class RoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility visibility) {
+      ResourceVisibility visibility) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info("Calling CollaboratorService to create resources");
       ResourceType modeldbServiceResourceType =
@@ -1314,14 +1314,11 @@ public class RoleServiceUtils implements RoleService {
               .setService(Service.MODELDB_SERVICE)
               .addResourceIds(resourceId)
               .build();
-      ResourceVisibility resourceVisibility = getResourceVisibility(workspaceType, visibility);
       SetResources.Builder setResourcesBuilder =
-          SetResources.newBuilder().setResources(resources).setVisibility(resourceVisibility);
-
-      if (resourceVisibility.equals(ResourceVisibility.ORG_SCOPED_PUBLIC)) {
-        setResourcesBuilder.setCollaboratorType(collaboratorType);
-      }
-
+          SetResources.newBuilder()
+              .setResources(resources)
+              .setVisibility(visibility)
+              .setCollaboratorType(collaboratorType);
       if (ownerId.isPresent()) {
         setResourcesBuilder.setOwnerId(ownerId.get());
       }
@@ -1354,7 +1351,7 @@ public class RoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility visibility) {
+      ResourceVisibility visibility) {
     return createWorkspacePermissions(
         Optional.empty(),
         Optional.of(workspaceName),
@@ -1374,7 +1371,7 @@ public class RoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility visibility) {
+      ResourceVisibility visibility) {
     return createWorkspacePermissions(
         Optional.of(workspaceId),
         Optional.empty(),
