@@ -23,6 +23,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -882,7 +883,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return projectEntities.stream()
         .map(
             projectEntity -> {
-              VisibilityEnum.Visibility projectVisibility =
+              ResourceVisibility projectVisibility =
                   roleService.getProjectVisibility(
                       projectEntity.getId(),
                       projectEntity.getWorkspace(),

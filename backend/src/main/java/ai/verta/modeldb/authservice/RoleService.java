@@ -136,7 +136,7 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
-  VisibilityEnum.Visibility getProjectVisibility(
+  ResourceVisibility getProjectVisibility(
       String projectId, String workspaceName, Integer workspaceType);
 
   List<GetResourcesResponseItem> getAllResourceItems(
