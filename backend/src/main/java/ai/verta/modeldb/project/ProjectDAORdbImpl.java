@@ -231,23 +231,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         project.getVisibility());
   }
 
-  private void createWorkspaceRoleBinding(
-      String workspaceId,
-      WorkspaceType workspaceType,
-      String projectId,
-      VisibilityEnum.Visibility visibility) {
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      roleService.createWorkspacePermissions(
-          workspaceId,
-          workspaceType,
-          projectId,
-          ModelDBConstants.ROLE_PROJECT_ADMIN,
-          ModelDBServiceResourceTypes.PROJECT,
-          visibility.equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
-          "_GLOBAL_SHARING");
-    }
-  }
-
   @Override
   public Project updateProjectName(String projectId, String projectName)
       throws InvalidProtocolBufferException {
@@ -1224,37 +1207,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getOwnersByProjectIds(projectIds);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
-  public Project setProjectWorkspace(String projectId, WorkspaceDTO workspaceDTO)
-      throws InvalidProtocolBufferException {
-
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ProjectEntity projectEntity = session.load(ProjectEntity.class, projectId);
-      roleService.createWorkspacePermissions(
-          workspaceDTO.getWorkspaceName(),
-          Optional.of(WorkspaceType.forNumber(projectEntity.getWorkspace_type())),
-          projectEntity.getId(),
-          Optional.of(Long.parseLong(projectEntity.getOwner())),
-          ModelDBServiceResourceTypes.PROJECT,
-          CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-          projectEntity.getProjectVisibility());
-      projectEntity.setWorkspace(workspaceDTO.getWorkspaceId());
-      projectEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
-      projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
-      Transaction transaction = session.beginTransaction();
-      session.update(projectEntity);
-      transaction.commit();
-      LOGGER.debug("Project workspace updated successfully");
-      return projectEntity.getProtoObject();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return setProjectWorkspace(projectId, workspaceDTO);
       } else {
         throw ex;
       }
