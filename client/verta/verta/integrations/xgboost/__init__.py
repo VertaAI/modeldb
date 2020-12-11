@@ -2,7 +2,7 @@
 
 from ...external import six
 
-import xgboost as xgb
+import xgboost as xgb  # pylint: disable=import-error
 
 from ..._internal_utils import _utils
 
