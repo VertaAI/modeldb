@@ -16,20 +16,8 @@ import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.CollaboratorServiceGrpc;
+import ai.verta.uac.*;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
-import ai.verta.uac.DeleteOrganization;
-import ai.verta.uac.GetCollaborator;
-import ai.verta.uac.GetRoleByName;
-import ai.verta.uac.GetUser;
-import ai.verta.uac.Organization;
-import ai.verta.uac.OrganizationServiceGrpc;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.RoleServiceGrpc;
-import ai.verta.uac.SetOrganization;
-import ai.verta.uac.UACServiceGrpc;
-import ai.verta.uac.UserInfo;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
@@ -3030,7 +3018,7 @@ public class ProjectTest {
           createProjectRequest
               .toBuilder()
               .setWorkspaceName(organization.getName())
-              .setVisibility(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC)
+              .setVisibility(ResourceVisibility.ORG_SCOPED_PUBLIC)
               .build();
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
