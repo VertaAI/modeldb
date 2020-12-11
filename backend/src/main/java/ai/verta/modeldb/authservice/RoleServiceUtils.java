@@ -1264,8 +1264,10 @@ public class RoleServiceUtils implements RoleService {
   public boolean deleteResources(Resources resources) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info("Calling CollaboratorService to delete resources");
-      DeleteResources deleteResources = DeleteResources.newBuilder().setResources(resources).build();
-      DeleteResources.Response response = authServiceChannel.getCollaboratorServiceBlockingStub().deleteResources(deleteResources);
+      DeleteResources deleteResources =
+          DeleteResources.newBuilder().setResources(resources).build();
+      DeleteResources.Response response =
+          authServiceChannel.getCollaboratorServiceBlockingStub().deleteResources(deleteResources);
       LOGGER.info("DeleteResources message sent.  Response: " + response);
       return true;
     } catch (StatusRuntimeException ex) {
