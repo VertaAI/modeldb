@@ -1200,9 +1200,9 @@ public class RoleServiceUtils implements RoleService {
                         && item.getService() == ServiceEnum.Service.MODELDB_SERVICE)
             .findFirst();
     if (responseItem.isPresent()) {
-      return fromResourceVisibility(workspaceType, responseItem.get().getVisibility());
+      return responseItem.get().getVisibility();
     }
-    return VisibilityEnum.Visibility.PRIVATE;
+    return ResourceVisibility.PRIVATE;
   }
 
   private ResourceVisibility getResourceVisibility(

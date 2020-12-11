@@ -261,7 +261,7 @@ public class PublicRoleServiceUtils implements RoleService {
   @Override
   public ResourceVisibility getProjectVisibility(
       String projectId, String workspaceName, Integer workspaceType) {
-    return VisibilityEnum.Visibility.PRIVATE;
+    return ResourceVisibility.PRIVATE;
   }
 
   @Override
