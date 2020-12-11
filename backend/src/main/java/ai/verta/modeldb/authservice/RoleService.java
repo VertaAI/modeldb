@@ -3,7 +3,6 @@ package ai.verta.modeldb.authservice;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -144,7 +143,7 @@ public interface RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility projectVisibility);
+      ResourceVisibility projectVisibility);
 
   boolean createWorkspacePermissions(
       Long workspaceId,
@@ -153,7 +152,7 @@ public interface RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility projectVisibility);
+      ResourceVisibility projectVisibility);
 
   void createWorkspacePermissions(
       String workspace_id,

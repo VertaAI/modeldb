@@ -1150,22 +1150,6 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  private ResourceVisibility getResourceVisibility(
-      Optional<WorkspaceType> workspaceType, VisibilityEnum.Visibility projectVisibility) {
-    if (!workspaceType.isPresent()) {
-      return ResourceVisibility.PRIVATE;
-    }
-    if (workspaceType.get() == WorkspaceType.ORGANIZATION) {
-      if (projectVisibility == VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC) {
-        return ResourceVisibility.ORG_SCOPED_PUBLIC;
-      } else if (projectVisibility == VisibilityEnum.Visibility.PRIVATE) {
-        return ResourceVisibility.PRIVATE;
-      }
-      return ResourceVisibility.ORG_DEFAULT;
-    }
-    return ResourceVisibility.PRIVATE;
-  }
-
   private boolean createWorkspacePermissions(
       Optional<Long> workspaceId,
       Optional<String> workspaceName,
@@ -1174,7 +1158,7 @@ public class RoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility visibility) {
+      ResourceVisibility visibility) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info("Calling CollaboratorService to create resources");
       ResourceType modeldbServiceResourceType =
@@ -1185,11 +1169,10 @@ public class RoleServiceUtils implements RoleService {
               .setService(Service.MODELDB_SERVICE)
               .addResourceIds(resourceId)
               .build();
-      ResourceVisibility resourceVisibility = getResourceVisibility(workspaceType, visibility);
       SetResources.Builder setResourcesBuilder =
           SetResources.newBuilder()
               .setResources(resources)
-              .setVisibility(resourceVisibility)
+              .setVisibility(visibility)
               .setCollaboratorType(collaboratorType);
       if (ownerId.isPresent()) {
         setResourcesBuilder = setResourcesBuilder.setOwnerId(ownerId.get());
@@ -1223,7 +1206,7 @@ public class RoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility visibility) {
+      ResourceVisibility visibility) {
     return createWorkspacePermissions(
         Optional.empty(),
         Optional.of(workspaceName),
@@ -1243,7 +1226,7 @@ public class RoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility visibility) {
+      ResourceVisibility visibility) {
     return createWorkspacePermissions(
         Optional.of(workspaceId),
         Optional.empty(),

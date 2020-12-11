@@ -160,9 +160,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       ModelDBUtils.checkPersonalWorkspace(
           userInfo, project.getWorkspaceType(), project.getWorkspaceId(), "project");
-      if (App.getInstance().getPublicSharingEnabled()) {
-        project = project.toBuilder().setVisibility(VisibilityEnum.Visibility.PUBLIC).build();
-      }
       project = projectDAO.insertProject(project, userInfo);
 
       saveAuditLogs(

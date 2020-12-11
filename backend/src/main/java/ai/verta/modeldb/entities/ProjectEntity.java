@@ -1,9 +1,9 @@
 package ai.verta.modeldb.entities;
 
-import ai.verta.common.VisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,8 +77,7 @@ public class ProjectEntity {
   @Column(name = "project_visibility")
   private Integer project_visibility;
 
-  @Transient
-  private VisibilityEnum.Visibility projectVisibility = VisibilityEnum.Visibility.PRIVATE;
+  @Transient private ResourceVisibility projectVisibility = ResourceVisibility.PRIVATE;
 
   @OneToMany(
       targetEntity = KeyValueEntity.class,
@@ -191,12 +190,12 @@ public class ProjectEntity {
     return project_visibility;
   }
 
-  public VisibilityEnum.Visibility getProjectVisibility() {
+  public ResourceVisibility getProjectVisibility() {
     return projectVisibility;
   }
 
-  public void setProjectVisibility(VisibilityEnum.Visibility project_visibility) {
-    this.projectVisibility = project_visibility;
+  public void setProjectVisibility(ResourceVisibility projectVisibility) {
+    this.projectVisibility = projectVisibility;
   }
 
   public List<TagsMapping> getTags() {

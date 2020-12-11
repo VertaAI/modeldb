@@ -2,7 +2,6 @@ package ai.verta.modeldb.authservice;
 
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -267,7 +266,7 @@ public class PublicRoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility projectVisibility) {
+      ResourceVisibility projectVisibility) {
     return true;
   }
 
@@ -279,7 +278,7 @@ public class PublicRoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility visibility) {
+      ResourceVisibility visibility) {
     return true;
   }
 

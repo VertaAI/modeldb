@@ -204,14 +204,6 @@ public class DeleteEntitiesCron extends TimerTask {
         roleBindingNames.add(ownerRoleBindingName);
       }
 
-      if (project.getProjectVisibility() == VisibilityEnum.Visibility.PUBLIC) {
-        String publicReadRoleBindingName =
-            roleService.buildPublicRoleBindingName(projectId, ModelDBServiceResourceTypes.PROJECT);
-        if (publicReadRoleBindingName != null) {
-          roleBindingNames.add(publicReadRoleBindingName);
-        }
-      }
-
       // Delete workspace based roleBindings
       List<String> workspaceRoleBindingNames =
           roleService.getWorkspaceRoleBindings(
