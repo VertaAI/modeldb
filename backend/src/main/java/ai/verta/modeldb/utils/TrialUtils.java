@@ -9,7 +9,6 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3SignatureUtil;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -56,10 +55,6 @@ public class TrialUtils {
     if (app.getTrialEnabled()) {
       Project project = projectDAO.getProjectByID(projectId);
       if (project.getWorkspaceId() != null && !project.getWorkspaceId().isEmpty()) {
-        WorkspaceDTO workspaceDTO =
-            roleService.getWorkspaceDTOByWorkspaceId(
-                userInfo, project.getWorkspaceId(), project.getWorkspaceTypeValue());
-
         // TODO: We can be replaced by a count(*) query instead .setIdsOnly(true)
         FindExperimentRuns findExperimentRuns =
             FindExperimentRuns.newBuilder().setIdsOnly(true).setProjectId(projectId).build();

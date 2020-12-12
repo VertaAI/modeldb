@@ -76,16 +76,6 @@ public interface RoleService {
       CollaboratorBase collaborator,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  String buildReadWriteRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  String buildProjectDeployRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
   RoleBinding getRoleBindingByName(String roleBindingName);
 
   List<String> getSelfAllowedResources(
@@ -136,14 +126,13 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
-  boolean createWorkspacePermissions(
-      String workspaceName,
-      Optional<WorkspaceType> workspaceType,
-      String resourceId,
-      Optional<Long> ownerId,
-      ModelDBServiceResourceTypes resourceType,
-      CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      ResourceVisibility projectVisibility);
+  GetResourcesResponseItem getProjectResource(String projectId);
+
+  List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo);
+
+  boolean deleteResources(Resources resources);
+
+  boolean deleteProjectResources(List<String> projectIds);
 
   boolean createWorkspacePermissions(
       Long workspaceId,

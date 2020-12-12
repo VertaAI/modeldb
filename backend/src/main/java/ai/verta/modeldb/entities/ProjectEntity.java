@@ -2,7 +2,10 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
@@ -322,7 +325,7 @@ public class ProjectEntity {
     this.created = created;
   }
 
-  public Project getProtoObject() throws InvalidProtocolBufferException {
+  public Project getProtoObject(RoleService roleService) throws InvalidProtocolBufferException {
     Project.Builder projectBuilder =
         Project.newBuilder()
             .setId(getId())
@@ -346,6 +349,11 @@ public class ProjectEntity {
     if (getCode_version_snapshot() != null) {
       projectBuilder.setCodeVersionSnapshot(getCode_version_snapshot().getProtoObject());
     }
+
+    GetResourcesResponseItem projectResource = roleService.getProjectResource(this.id);
+    projectBuilder.setVisibility(projectResource.getVisibility());
+    projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
+    projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
 
     return projectBuilder.build();
   }

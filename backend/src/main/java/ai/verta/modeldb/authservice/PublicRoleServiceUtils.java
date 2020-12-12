@@ -156,22 +156,6 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public String buildReadWriteRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return null;
-  }
-
-  @Override
-  public String buildProjectDeployRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return null;
-  }
-
-  @Override
   public RoleBinding getRoleBindingByName(String roleBindingName) {
     return null;
   }
@@ -259,15 +243,23 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean createWorkspacePermissions(
-      String workspaceName,
-      Optional<WorkspaceType> workspaceType,
-      String resourceId,
-      Optional<Long> ownerId,
-      ModelDBServiceResourceTypes resourceType,
-      CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      ResourceVisibility projectVisibility) {
+  public GetResourcesResponseItem getProjectResource(String projectId) {
+    return GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build();
+  }
+
+  @Override
+  public boolean deleteResources(Resources resources) {
     return true;
+  }
+
+  @Override
+  public boolean deleteProjectResources(List<String> projectIds) {
+    return true;
+  }
+
+  @Override
+  public List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo) {
+    return Collections.emptyList();
   }
 
   @Override

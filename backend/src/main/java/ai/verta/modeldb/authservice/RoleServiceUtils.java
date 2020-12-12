@@ -12,6 +12,7 @@ import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -592,50 +593,6 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public String buildReadWriteRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_PROJECT_READ_WRITE,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.PROJECT.name());
-    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_DATASET_READ_WRITE,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.DATASET.name());
-    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_REPOSITORY_READ_WRITE,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.REPOSITORY.name());
-    } else {
-      return ModelDBConstants.EMPTY_STRING;
-    }
-  }
-
-  @Override
-  public String buildProjectDeployRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_PROJECT_DEPLOY,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.PROJECT.name());
-    } else {
-      return ModelDBConstants.EMPTY_STRING;
-    }
-  }
-
-  @Override
   public RoleBinding getRoleBindingByName(String roleBindingName) {
     return getRoleBindingByName(true, roleBindingName);
   }
@@ -1092,6 +1049,9 @@ public class RoleServiceUtils implements RoleService {
         return workspaceDTO;
       case WorkspaceType.USER_VALUE:
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
+        if (currentLoginUserInfo == null) {
+          currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+        }
         if (workspaceId.equalsIgnoreCase(
             authService.getVertaIdFromUserInfo(currentLoginUserInfo))) {
           workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
@@ -1177,23 +1137,89 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean createWorkspacePermissions(
-      String workspaceName,
-      Optional<WorkspaceType> workspaceType,
-      String resourceId,
-      Optional<Long> ownerId,
-      ModelDBServiceResourceTypes resourceType,
-      CollaboratorType collaboratorType,
-      ResourceVisibility visibility) {
-    return createWorkspacePermissions(
-        Optional.empty(),
-        Optional.of(workspaceName),
-        workspaceType,
-        resourceId,
-        ownerId,
-        resourceType,
-        collaboratorType,
-        visibility);
+  public GetResourcesResponseItem getProjectResource(String projectId) {
+    ResourceType resourceType =
+        ResourceType.newBuilder()
+            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
+            .build();
+    Resources resources =
+        Resources.newBuilder()
+            .setResourceType(resourceType)
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .addResourceIds(projectId)
+            .build();
+    List<GetResourcesResponseItem> responseItems = getResourceItems(Optional.of(resources));
+    if (responseItems.size() > 1) {
+      LOGGER.warn(
+          "Role service returned "
+              + responseItems.size()
+              + " resource response items fetching project resource, but only expected 1. Project ID: "
+              + projectId);
+    }
+    final Optional<GetResourcesResponseItem> responseItem =
+        responseItems.stream()
+            .filter(
+                item ->
+                    item.getResourceType().getModeldbServiceResourceType()
+                            == ModelDBServiceResourceTypes.PROJECT
+                        && item.getService() == ServiceEnum.Service.MODELDB_SERVICE)
+            .findFirst();
+    if (responseItem.isPresent()) {
+      return responseItem.get();
+    }
+    throw new IllegalArgumentException(
+        "Failed to locate project resources in UAC for project ID " + projectId);
+  }
+
+  @Override
+  public List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo) {
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      final GetResources.Builder getResourcesBuilder = GetResources.newBuilder();
+      if (filterTo.isPresent()) {
+        getResourcesBuilder.setResources(filterTo.get());
+      }
+
+      final GetResources.Response response =
+          authServiceChannel
+              .getCollaboratorServiceBlockingStub()
+              .getResources(getResourcesBuilder.build());
+      return response.getItemList();
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      throw ex;
+    }
+  }
+
+  @Override
+  public boolean deleteResources(Resources resources) {
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      LOGGER.info("Calling CollaboratorService to delete resources");
+      DeleteResources deleteResources =
+          DeleteResources.newBuilder().setResources(resources).build();
+      DeleteResources.Response response =
+          authServiceChannel.getCollaboratorServiceBlockingStub().deleteResources(deleteResources);
+      LOGGER.info("DeleteResources message sent.  Response: " + response);
+      return true;
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
+    }
+    return false;
+  }
+
+  @Override
+  public boolean deleteProjectResources(List<String> projectIds) {
+    ResourceType modeldbServiceResourceType =
+        ResourceType.newBuilder()
+            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
+            .build();
+    Resources resources =
+        Resources.newBuilder()
+            .setResourceType(modeldbServiceResourceType)
+            .setService(Service.MODELDB_SERVICE)
+            .addAllResourceIds(projectIds)
+            .build();
+    return deleteResources(resources);
   }
 
   @Override
