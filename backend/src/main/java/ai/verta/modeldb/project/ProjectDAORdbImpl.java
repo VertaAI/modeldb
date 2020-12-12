@@ -203,13 +203,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       transaction.commit();
       LOGGER.debug("ProjectEntity created successfully");
       roleService.createWorkspacePermissions(
-              project.getWorkspaceServiceId(),
-              Optional.of(project.getWorkspaceType()),
-              project.getId(),
-              Optional.empty(), // UAC will populate the owner ID
-              ModelDBServiceResourceTypes.PROJECT,
-              CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
-              project.getVisibility());
+          project.getWorkspaceServiceId(),
+          Optional.of(project.getWorkspaceType()),
+          project.getId(),
+          Optional.empty(), // UAC will populate the owner ID
+          ModelDBServiceResourceTypes.PROJECT,
+          CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+          project.getVisibility());
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
       projectEntity.setCreated(true);
