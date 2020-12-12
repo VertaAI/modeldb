@@ -1131,23 +1131,6 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  private VisibilityEnum.Visibility fromResourceVisibility(
-      Integer workspaceType, ResourceVisibility resourceVisibility) {
-    if (workspaceType == WorkspaceType.ORGANIZATION.getNumber()) {
-      switch (resourceVisibility) {
-        case PRIVATE:
-          return VisibilityEnum.Visibility.PRIVATE;
-        case ORG_DEFAULT:
-          return VisibilityEnum.Visibility.ORG_DEFAULT;
-        case ORG_SCOPED_PUBLIC:
-          return VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC;
-        default:
-          return VisibilityEnum.Visibility.UNRECOGNIZED;
-      }
-    }
-    return VisibilityEnum.Visibility.PRIVATE;
-  }
-
   @Override
   public ResourceVisibility getProjectVisibility(
       String projectId, String workspaceName, Integer workspaceType) {
@@ -1179,22 +1162,6 @@ public class RoleServiceUtils implements RoleService {
             .findFirst();
     if (responseItem.isPresent()) {
       return responseItem.get().getVisibility();
-    }
-    return ResourceVisibility.PRIVATE;
-  }
-
-  private ResourceVisibility getResourceVisibility(
-      Optional<WorkspaceType> workspaceType, VisibilityEnum.Visibility projectVisibility) {
-    if (!workspaceType.isPresent()) {
-      return ResourceVisibility.PRIVATE;
-    }
-    if (workspaceType.get() == WorkspaceType.ORGANIZATION) {
-      if (projectVisibility == VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC) {
-        return ResourceVisibility.ORG_SCOPED_PUBLIC;
-      } else if (projectVisibility == VisibilityEnum.Visibility.PRIVATE) {
-        return ResourceVisibility.PRIVATE;
-      }
-      return ResourceVisibility.ORG_DEFAULT;
     }
     return ResourceVisibility.PRIVATE;
   }
