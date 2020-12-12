@@ -908,10 +908,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
   @Override
   public ProjectPaginationDTO findProjects(
-          FindProjects queryParameters,
-          CollaboratorBase host,
-          UserInfo currentLoginUserInfo,
-          ResourceVisibility visibility)
+      FindProjects queryParameters,
+      CollaboratorBase host,
+      UserInfo currentLoginUserInfo,
+      ResourceVisibility visibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 

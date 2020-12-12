@@ -772,8 +772,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               .setWorkspaceName(request.getWorkspaceName());
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(
-              findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
+          projectDAO.findProjects(findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
 
       responseObserver.onNext(
           GetProjects.Response.newBuilder()
@@ -887,8 +886,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       : request.getWorkspaceName());
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(
-              findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
+          projectDAO.findProjects(findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
 
       if (projectPaginationDTO.getTotalRecords() == 0) {
         Status status =

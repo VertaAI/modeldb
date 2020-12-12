@@ -255,7 +255,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getPageLimit(),
               request.getAscending(),
               request.getSortKey(),
-                  ResourceVisibility.PRIVATE);
+              ResourceVisibility.PRIVATE);
       List<Project> projects = projectPaginationDTO.getProjects();
 
       List<HydratedProject> hydratedProjects = new ArrayList<>();
@@ -1263,7 +1263,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getFindProjects(),
               authService.getCurrentLoginUserInfo(),
               hostCollaboratorBase,
-                  ResourceVisibility.PRIVATE));
+              ResourceVisibility.PRIVATE));
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1304,7 +1304,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getFindProjects(),
               null,
               new CollaboratorOrg(hostOrgInfo),
-                  ResourceVisibility.PRIVATE));
+              ResourceVisibility.PRIVATE));
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1346,7 +1346,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getFindProjects(),
               null,
               new CollaboratorTeam(hostTeamInfo),
-                  ResourceVisibility.PRIVATE));
+              ResourceVisibility.PRIVATE));
       responseObserver.onCompleted();
 
     } catch (Exception e) {
