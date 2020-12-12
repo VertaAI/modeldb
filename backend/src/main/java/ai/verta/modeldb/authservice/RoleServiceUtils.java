@@ -1105,7 +1105,8 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.warn(
           "Role service returned "
               + responseItems.size()
-              + " resource response items fetching project resource, but only expected 1. Project ID: " + projectId);
+              + " resource response items fetching project resource, but only expected 1. Project ID: "
+              + projectId);
     }
     final Optional<GetResourcesResponseItem> responseItem =
         responseItems.stream()
@@ -1118,7 +1119,8 @@ public class RoleServiceUtils implements RoleService {
     if (responseItem.isPresent()) {
       return responseItem.get();
     }
-    throw new IllegalArgumentException("Failed to locate project resources in UAC for project ID " + projectId);
+    throw new IllegalArgumentException(
+        "Failed to locate project resources in UAC for project ID " + projectId);
   }
 
   @Override
