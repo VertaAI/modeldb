@@ -1134,7 +1134,9 @@ public class RoleServiceUtils implements RoleService {
       ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
     }
     return false;
-  }@Override
+  }
+
+  @Override
   public GetResourcesResponseItem getProjectResource(String projectId) {
     ResourceType resourceType =
         ResourceType.newBuilder()
@@ -1219,7 +1221,6 @@ public class RoleServiceUtils implements RoleService {
             .build();
     return deleteResources(resources);
   }
-
 
   @Override
   public boolean createWorkspacePermissions(
