@@ -202,7 +202,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.save(projectEntity);
       transaction.commit();
       LOGGER.debug("ProjectEntity created successfully");
-      createRoleBindingsForProject(project, userInfo);
+      roleService.createWorkspacePermissions(
+              project.getWorkspaceServiceId(),
+              Optional.of(project.getWorkspaceType()),
+              project.getId(),
+              Optional.empty(), // UAC will populate the owner ID
+              ModelDBServiceResourceTypes.PROJECT,
+              CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+              project.getVisibility());
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
       projectEntity.setCreated(true);
@@ -217,19 +224,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         throw ex;
       }
     }
-  }
-
-  private void createRoleBindingsForProject(Project project, UserInfo userInfo) {
-    final Optional<Long> ownerId =
-        userInfo != null ? Optional.of(Long.parseLong(userInfo.getUserId())) : Optional.empty();
-    roleService.createWorkspacePermissions(
-        project.getWorkspaceServiceId(),
-        Optional.of(project.getWorkspaceType()),
-        project.getId(),
-        ownerId,
-        ModelDBServiceResourceTypes.PROJECT,
-        CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-        project.getVisibility());
   }
 
   @Override
