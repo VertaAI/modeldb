@@ -5,6 +5,7 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
@@ -348,11 +349,10 @@ public class ProjectEntity {
       projectBuilder.setCodeVersionSnapshot(getCode_version_snapshot().getProtoObject());
     }
 
-    WorkspaceDTO workspaceDTO =
-        roleService.getWorkspaceDTOByWorkspaceId(null, this.workspace, this.workspace_type);
-    projectBuilder.setVisibility(
-        roleService.getProjectVisibility(
-            this.id, workspaceDTO.getWorkspaceName(), this.workspace_type));
+    GetResourcesResponseItem projectResource = roleService.getProjectResource(this.id);
+    projectBuilder.setVisibility(projectResource.getVisibility());
+    projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
+    projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
 
     return projectBuilder.build();
   }

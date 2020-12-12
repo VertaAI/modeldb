@@ -21,10 +21,8 @@ import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.Organization;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
@@ -874,12 +872,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return projectEntities.stream()
         .map(
             projectEntity -> {
-              ResourceVisibility projectVisibility =
-                  roleService.getProjectVisibility(
-                      projectEntity.getId(),
-                      projectEntity.getWorkspace(),
-                      projectEntity.getWorkspace_type());
-              projectEntity.setProjectVisibility(projectVisibility);
+              GetResourcesResponseItem resourceItem = roleService.getProjectResource(projectEntity.getId());
+              projectEntity.setProjectVisibility(resourceItem.getVisibility());
+              projectEntity.setWorkspaceServiceId(resourceItem.getWorkspaceId());
+              projectEntity.setOwner(String.valueOf(resourceItem.getOwnerId()));
               return projectEntity;
             })
         .collect(Collectors.toList());

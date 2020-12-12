@@ -12,6 +12,7 @@ import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -592,50 +593,6 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public String buildReadWriteRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_PROJECT_READ_WRITE,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.PROJECT.name());
-    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_DATASET_READ_WRITE,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.DATASET.name());
-    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_REPOSITORY_READ_WRITE,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.REPOSITORY.name());
-    } else {
-      return ModelDBConstants.EMPTY_STRING;
-    }
-  }
-
-  @Override
-  public String buildProjectDeployRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_PROJECT_DEPLOY,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.PROJECT.name());
-    } else {
-      return ModelDBConstants.EMPTY_STRING;
-    }
-  }
-
-  @Override
   public RoleBinding getRoleBindingByName(String roleBindingName) {
     return getRoleBindingByName(true, roleBindingName);
   }
@@ -1132,8 +1089,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public ResourceVisibility getProjectVisibility(
-      String projectId, String workspaceName, Integer workspaceType) {
+  public GetResourcesResponseItem getProjectResource(String projectId) {
     ResourceType resourceType =
         ResourceType.newBuilder()
             .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
@@ -1144,13 +1100,12 @@ public class RoleServiceUtils implements RoleService {
             .setService(ServiceEnum.Service.MODELDB_SERVICE)
             .addResourceIds(projectId)
             .build();
-    List<GetResourcesResponseItem> responseItems =
-        getAllResourceItems(workspaceName, Optional.of(resources));
+    List<GetResourcesResponseItem> responseItems = getResourceItems(Optional.of(resources));
     if (responseItems.size() > 1) {
       LOGGER.warn(
           "Role service returned "
               + responseItems.size()
-              + " resource response items fetching project visibility, but only expected 1.");
+              + " resource response items fetching project resource, but only expected 1. Project ID: " + projectId);
     }
     final Optional<GetResourcesResponseItem> responseItem =
         responseItems.stream()
@@ -1161,23 +1116,15 @@ public class RoleServiceUtils implements RoleService {
                         && item.getService() == ServiceEnum.Service.MODELDB_SERVICE)
             .findFirst();
     if (responseItem.isPresent()) {
-      return responseItem.get().getVisibility();
+      return responseItem.get();
     }
-    return ResourceVisibility.PRIVATE;
+    throw new IllegalArgumentException("Failed to locate project resources in UAC for project ID " + projectId);
   }
 
-  private List<GetResourcesResponseItem> getResourceItems(
-      Optional<Long> workspaceServiceId,
-      Optional<String> workspaceName,
-      Optional<Resources> filterTo) {
+  @Override
+  public List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       final GetResources.Builder getResourcesBuilder = GetResources.newBuilder();
-      if (workspaceName.isPresent()) {
-        getResourcesBuilder.setWorkspaceName(workspaceName.get());
-      }
-      if (workspaceServiceId.isPresent()) {
-        getResourcesBuilder.setWorkspaceId(workspaceServiceId.get());
-      }
       if (filterTo.isPresent()) {
         getResourcesBuilder.setResources(filterTo.get());
       }
@@ -1191,18 +1138,6 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.error(ex);
       throw ex;
     }
-  }
-
-  @Override
-  public List<GetResourcesResponseItem> getAllResourceItems(
-      String workspaceName, Optional<Resources> filterTo) {
-    return getResourceItems(Optional.empty(), Optional.of(workspaceName), filterTo);
-  }
-
-  @Override
-  public List<GetResourcesResponseItem> getAllResourceItems(
-      Long workspaceServiceId, Optional<Resources> filterTo) {
-    return getResourceItems(Optional.of(workspaceServiceId), Optional.empty(), filterTo);
   }
 
   @Override
@@ -1220,11 +1155,6 @@ public class RoleServiceUtils implements RoleService {
       ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
     }
     return false;
-  }
-
-  @Override
-  public boolean deleteProjectResources(String projectId) {
-    return deleteProjectResources(Collections.singletonList(projectId));
   }
 
   @Override
@@ -1288,26 +1218,6 @@ public class RoleServiceUtils implements RoleService {
       ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
     }
     return false;
-  }
-
-  @Override
-  public boolean createWorkspacePermissions(
-      String workspaceName,
-      Optional<WorkspaceType> workspaceType,
-      String resourceId,
-      Optional<Long> ownerId,
-      ModelDBServiceResourceTypes resourceType,
-      CollaboratorType collaboratorType,
-      ResourceVisibility visibility) {
-    return createWorkspacePermissions(
-        Optional.empty(),
-        Optional.of(workspaceName),
-        workspaceType,
-        resourceId,
-        ownerId,
-        resourceType,
-        collaboratorType,
-        visibility);
   }
 
   @Override
