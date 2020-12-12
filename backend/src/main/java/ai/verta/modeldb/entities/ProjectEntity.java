@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +35,7 @@ public class ProjectEntity {
     setDate_created(project.getDateCreated());
     setDate_updated(project.getDateUpdated());
     setDescription(project.getDescription());
-    setProject_visibility(project.getProjectVisibilityValue());
+    setProjectVisibility(project.getVisibility());
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, project.getAttributesList()));
@@ -75,6 +76,8 @@ public class ProjectEntity {
 
   @Column(name = "project_visibility")
   private Integer project_visibility;
+
+  @Transient private ResourceVisibility projectVisibility = ResourceVisibility.PRIVATE;
 
   @OneToMany(
       targetEntity = KeyValueEntity.class,
@@ -187,8 +190,12 @@ public class ProjectEntity {
     return project_visibility;
   }
 
-  public void setProject_visibility(Integer project_visibility) {
-    this.project_visibility = project_visibility;
+  public ResourceVisibility getProjectVisibility() {
+    return projectVisibility;
+  }
+
+  public void setProjectVisibility(ResourceVisibility projectVisibility) {
+    this.projectVisibility = projectVisibility;
   }
 
   public List<TagsMapping> getTags() {
@@ -324,7 +331,7 @@ public class ProjectEntity {
             .setDescription(getDescription())
             .setDateCreated(getDate_created())
             .setDateUpdated(getDate_updated())
-            .setProjectVisibilityValue(getProject_visibility())
+            .setVisibility(getProjectVisibility())
             .addAllAttributes(
                 RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))
             .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))

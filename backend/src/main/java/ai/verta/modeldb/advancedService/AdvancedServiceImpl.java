@@ -1,10 +1,7 @@
 package ai.verta.modeldb.advancedService;
 
-import ai.verta.common.Artifact;
-import ai.verta.common.KeyValueQuery;
+import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.OperatorEnum;
-import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AdvancedQueryDatasetVersionsResponse;
 import ai.verta.modeldb.AdvancedQueryDatasetsResponse;
 import ai.verta.modeldb.AdvancedQueryExperimentRunsResponse;
@@ -45,7 +42,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBConstants.UserIdentifier;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
@@ -69,12 +65,9 @@ import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.Action;
-import ai.verta.uac.Actions;
-import ai.verta.uac.GetCollaboratorResponseItem;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
-import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -230,7 +223,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               .setWorkspaceName(request.getWorkspaceName())
               .build();
       projectPaginationDTO =
-          projectDAO.findProjects(findProjects, null, userInfo, ProjectVisibility.PRIVATE);
+          projectDAO.findProjects(findProjects, null, userInfo, ResourceVisibility.PRIVATE);
       List<Project> projects = projectPaginationDTO.getProjects();
 
       List<HydratedProject> hydratedProjects = new ArrayList<>();
@@ -262,7 +255,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getPageLimit(),
               request.getAscending(),
               request.getSortKey(),
-              ProjectVisibility.PUBLIC);
+              ResourceVisibility.PRIVATE);
       List<Project> projects = projectPaginationDTO.getProjects();
 
       List<HydratedProject> hydratedProjects = new ArrayList<>();
@@ -831,7 +824,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(request, null, userInfo, ProjectVisibility.PRIVATE);
+          projectDAO.findProjects(request, null, userInfo, ResourceVisibility.PRIVATE);
       LOGGER.debug(
           ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectPaginationDTO.getTotalRecords());
 
@@ -1180,7 +1173,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       FindProjects request, StreamObserver<AdvancedQueryProjectsResponse> responseObserver) {
     try {
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(request, null, null, ProjectVisibility.PUBLIC);
+          projectDAO.findProjects(request, null, null, ResourceVisibility.PRIVATE);
       LOGGER.debug(
           ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectPaginationDTO.getTotalRecords());
 
@@ -1210,7 +1203,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       FindProjects findProjectsRequest,
       UserInfo currentLoginUserInfo,
       CollaboratorBase host,
-      ProjectVisibility visibility)
+      ResourceVisibility visibility)
       throws InvalidProtocolBufferException {
 
     ProjectPaginationDTO projectPaginationDTO =
@@ -1270,7 +1263,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getFindProjects(),
               authService.getCurrentLoginUserInfo(),
               hostCollaboratorBase,
-              ProjectVisibility.PUBLIC));
+              ResourceVisibility.PRIVATE));
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1311,7 +1304,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getFindProjects(),
               null,
               new CollaboratorOrg(hostOrgInfo),
-              ProjectVisibility.PRIVATE));
+              ResourceVisibility.PRIVATE));
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1353,7 +1346,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getFindProjects(),
               null,
               new CollaboratorTeam(hostTeamInfo),
-              ProjectVisibility.PRIVATE));
+              ResourceVisibility.PRIVATE));
       responseObserver.onCompleted();
 
     } catch (Exception e) {

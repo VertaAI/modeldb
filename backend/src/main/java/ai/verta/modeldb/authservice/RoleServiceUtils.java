@@ -5,10 +5,8 @@ import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
@@ -25,7 +23,6 @@ import com.google.rpc.Status;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -960,27 +957,7 @@ public class RoleServiceUtils implements RoleService {
           accessibleResourceIds.size());
     }
 
-    if (resourceVisibility != null
-        && (resourceVisibility.equals(ProjectVisibility.PUBLIC)
-            || resourceVisibility.equals(DatasetVisibility.PUBLIC))) {
-      UserInfo unsignedUserInfo = authService.getUnsignedUser();
-      List<String> publicResourceIds =
-          getAllowedResources(
-              modelDBServiceResourceTypes,
-              ModelDBServiceActions.PUBLIC_READ,
-              new CollaboratorUser(authService, unsignedUserInfo));
-      LOGGER.debug(
-          "Public " + modelDBServiceResourceTypes + " Id size is {}", publicResourceIds.size());
-
-      if (resourceIdsSet.size() > 0) {
-        resourceIdsSet.retainAll(publicResourceIds);
-      } else {
-        resourceIdsSet.addAll(publicResourceIds);
-      }
-      return new ArrayList<>(resourceIdsSet);
-    } else {
-      return new ArrayList<>(resourceIdsSet);
-    }
+    return new ArrayList<>(resourceIdsSet);
   }
 
   @Override
@@ -1151,8 +1128,96 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
+  private boolean createWorkspacePermissions(
+      Optional<Long> workspaceId,
+      Optional<String> workspaceName,
+      Optional<WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorType collaboratorType,
+      ResourceVisibility visibility) {
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      LOGGER.info("Calling CollaboratorService to create resources");
+      ResourceType modeldbServiceResourceType =
+          ResourceType.newBuilder().setModeldbServiceResourceType(resourceType).build();
+      Resources resources =
+          Resources.newBuilder()
+              .setResourceType(modeldbServiceResourceType)
+              .setService(Service.MODELDB_SERVICE)
+              .addResourceIds(resourceId)
+              .build();
+      SetResources.Builder setResourcesBuilder =
+          SetResources.newBuilder()
+              .setResources(resources)
+              .setVisibility(visibility)
+              .setCollaboratorType(collaboratorType);
+      if (ownerId.isPresent()) {
+        setResourcesBuilder = setResourcesBuilder.setOwnerId(ownerId.get());
+      }
+      if (workspaceId.isPresent()) {
+        setResourcesBuilder = setResourcesBuilder.setWorkspaceId(workspaceId.get());
+      } else if (workspaceName.isPresent()) {
+        setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
+      } else {
+        throw new IllegalArgumentException(
+            "workspaceId and workspaceName are both empty.  One must be provided.");
+      }
+      SetResources setResources = setResourcesBuilder.build();
+      SetResources.Response setResourcesResponse =
+          authServiceChannel.getCollaboratorServiceBlockingStub().setResources(setResources);
+
+      LOGGER.info("SetResources message sent.  Response: " + setResourcesResponse);
+      return true;
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
+    }
+    return false;
+  }
+
   @Override
-  public void createWorkspaceRoleBinding(
+  public boolean createWorkspacePermissions(
+      String workspaceName,
+      Optional<WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorType collaboratorType,
+      ResourceVisibility visibility) {
+    return createWorkspacePermissions(
+        Optional.empty(),
+        Optional.of(workspaceName),
+        workspaceType,
+        resourceId,
+        ownerId,
+        resourceType,
+        collaboratorType,
+        visibility);
+  }
+
+  @Override
+  public boolean createWorkspacePermissions(
+      Long workspaceId,
+      Optional<WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorType collaboratorType,
+      ResourceVisibility visibility) {
+    return createWorkspacePermissions(
+        Optional.of(workspaceId),
+        Optional.empty(),
+        workspaceType,
+        resourceId,
+        ownerId,
+        resourceType,
+        collaboratorType,
+        visibility);
+  }
+
+  @Override
+  public void createWorkspacePermissions(
       String workspaceId,
       WorkspaceType workspaceType,
       String resourceId,

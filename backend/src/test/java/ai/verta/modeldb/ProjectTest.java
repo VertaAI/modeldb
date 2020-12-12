@@ -15,20 +15,8 @@ import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.CollaboratorServiceGrpc;
+import ai.verta.uac.*;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
-import ai.verta.uac.DeleteOrganization;
-import ai.verta.uac.GetCollaborator;
-import ai.verta.uac.GetRoleByName;
-import ai.verta.uac.GetUser;
-import ai.verta.uac.Organization;
-import ai.verta.uac.OrganizationServiceGrpc;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.RoleServiceGrpc;
-import ai.verta.uac.SetOrganization;
-import ai.verta.uac.UACServiceGrpc;
-import ai.verta.uac.UserInfo;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
@@ -2034,67 +2022,6 @@ public class ProjectTest {
   }
 
   @Test
-  public void p_SetProjectVisibility() {
-    LOGGER.info("Set Project visibility test start................................");
-
-    Project project = null;
-    try {
-      // Create public project
-      // Public project 1
-      CreateProject createProjectRequest =
-          getCreateProjectRequest("project-" + new Date().getTime());
-      createProjectRequest =
-          createProjectRequest.toBuilder().setProjectVisibility(ProjectVisibility.PUBLIC).build();
-      CreateProject.Response createProjectResponse =
-          projectServiceStub.createProject(createProjectRequest);
-      project = createProjectResponse.getProject();
-      assertEquals(
-          "Project name not match with expected project name",
-          createProjectRequest.getName(),
-          project.getName());
-      assertEquals(
-          "Project visibility not match with expected project visibility",
-          ProjectVisibility.PUBLIC,
-          project.getProjectVisibility());
-      LOGGER.info("Project created successfully");
-
-      SetProjectVisibilty setProjectVisibilty =
-          SetProjectVisibilty.newBuilder()
-              .setId(project.getId())
-              .setProjectVisibility(ProjectVisibility.PRIVATE)
-              .build();
-      SetProjectVisibilty.Response response =
-          projectServiceStub.setProjectVisibility(setProjectVisibilty);
-      Project visibilityProject = response.getProject();
-      assertEquals(
-          "Project name not match with expected project name",
-          project.getName(),
-          visibilityProject.getName());
-      assertEquals(
-          "Project visibility not match with updated project visibility",
-          ProjectVisibility.PRIVATE,
-          visibilityProject.getProjectVisibility());
-      LOGGER.info("Set project visibility successfully");
-      assertNotEquals(
-          "Project date_updated field not update on database",
-          project.getDateUpdated(),
-          response.getProject().getDateUpdated());
-      project = response.getProject();
-    } finally {
-      if (project != null) {
-        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-        DeleteProject.Response deleteProjectResponse =
-            projectServiceStub.deleteProject(deleteProject);
-        LOGGER.info("Project deleted successfully");
-        LOGGER.info(deleteProjectResponse.toString());
-        assertTrue(deleteProjectResponse.getStatus());
-      }
-    }
-
-    LOGGER.info("Set Project visibility test stop................................");
-  }
-
-  @Test
   public void q_setProjectShortNameTest() {
     LOGGER.info("Set Project short name test start................................");
     try {
@@ -3090,7 +3017,7 @@ public class ProjectTest {
           createProjectRequest
               .toBuilder()
               .setWorkspaceName(organization.getName())
-              .setProjectVisibility(ProjectVisibility.ORG_SCOPED_PUBLIC)
+              .setVisibility(ResourceVisibility.ORG_SCOPED_PUBLIC)
               .build();
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
