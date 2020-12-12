@@ -189,7 +189,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.save(projectEntity);
       transaction.commit();
       LOGGER.debug("ProjectEntity created successfully");
-      createRoleBindingsForProject(project, userInfo);
+      roleService.createWorkspacePermissions(
+          project.getWorkspaceServiceId(),
+          Optional.of(project.getWorkspaceType()),
+          project.getId(),
+          Optional.empty(), // UAC will populate the owner ID
+          ModelDBServiceResourceTypes.PROJECT,
+          CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+          project.getVisibility());
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
       projectEntity.setCreated(true);
@@ -204,21 +211,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         throw ex;
       }
     }
-  }
-
-  private void createRoleBindingsForProject(Project project, UserInfo userInfo) {
-    final Optional<Long> ownerId =
-        userInfo != null
-            ? Optional.of(Long.parseLong(authService.getVertaIdFromUserInfo(userInfo)))
-            : Optional.empty();
-    roleService.createWorkspacePermissions(
-        project.getWorkspaceServiceId(),
-        Optional.of(project.getWorkspaceType()),
-        project.getId(),
-        ownerId,
-        ModelDBServiceResourceTypes.PROJECT,
-        CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-        project.getVisibility());
   }
 
   @Override
@@ -507,7 +499,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      VisibilityEnum.Visibility projectVisibility)
+      ResourceVisibility projectVisibility)
       throws InvalidProtocolBufferException {
 
     FindProjects findProjects =
@@ -534,7 +526,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                     .build())
             .build();
     ProjectPaginationDTO projectPaginationDTO =
-        findProjects(findProjects, null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+        findProjects(findProjects, null, userInfo, ResourceVisibility.PRIVATE);
     LOGGER.debug("Projects size is {}", projectPaginationDTO.getProjects().size());
     return projectPaginationDTO.getProjects();
   }
@@ -848,7 +840,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             findProjects.build(),
             hostCollaboratorBase,
             currentLoginUserInfo,
-            VisibilityEnum.Visibility.PUBLIC);
+            ResourceVisibility.PRIVATE);
     List<Project> projects = projectPaginationDTO.getProjects();
     if (projects != null) {
       LOGGER.debug("Projects size is {}", projects.size());
@@ -899,7 +891,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       FindProjects queryParameters,
       CollaboratorBase host,
       UserInfo currentLoginUserInfo,
-      VisibilityEnum.Visibility visibility)
+      ResourceVisibility visibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 

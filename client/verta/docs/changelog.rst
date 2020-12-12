@@ -37,6 +37,20 @@ Release Notes
      <>`__
 
 
+v0.16.0 (2020-12-09)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `overhaul dataset versioning API
+  <https://github.com/VertaAI/modeldb/pull/1699>`__
+
+New Features
+^^^^^^^^^^^^
+- `add HDFS dataset blob type
+  <https://github.com/VertaAI/modeldb/pull/1691>`__
+
+
 v0.15.9 (2020-11-21)
 --------------------
 

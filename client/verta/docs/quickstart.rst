@@ -31,10 +31,15 @@ The Verta client supports Python 2.7 & 3.5–3.8!
 3. Obtain your Verta Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* On Verta Core or Verta Enterprise, log into the Verta Web App (e.g., `https://app.verta.ai <https://app.verta.ai>`__) and visit the Profile page to find your developer key.
+* On Verta Enterprise, log into the Verta Web App (e.g., https://app.verta.ai) and visit the Profile page to find your developer key.
 
-    .. image:: /_static/images/web-app-profile.png
-        :width: 50%
+    |profile dropdown| |profile page|
+
+    .. |profile dropdown| image:: /_static/images/web-app-profile-access.png
+        :width: 45%
+
+    .. |profile page| image:: /_static/images/web-app-profile.png
+        :width: 45%
 
     Note that your developer key is unique to you. As with a password, don't share it with others!
 

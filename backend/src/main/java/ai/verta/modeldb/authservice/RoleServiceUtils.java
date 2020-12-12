@@ -4,9 +4,7 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
-import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -959,27 +957,7 @@ public class RoleServiceUtils implements RoleService {
           accessibleResourceIds.size());
     }
 
-    if (resourceVisibility != null
-        && (resourceVisibility.equals(VisibilityEnum.Visibility.PUBLIC)
-            || resourceVisibility.equals(DatasetVisibility.PUBLIC))) {
-      UserInfo unsignedUserInfo = authService.getUnsignedUser();
-      List<String> publicResourceIds =
-          getAllowedResources(
-              modelDBServiceResourceTypes,
-              ModelDBServiceActions.PUBLIC_READ,
-              new CollaboratorUser(authService, unsignedUserInfo));
-      LOGGER.debug(
-          "Public " + modelDBServiceResourceTypes + " Id size is {}", publicResourceIds.size());
-
-      if (resourceIdsSet.size() > 0) {
-        resourceIdsSet.retainAll(publicResourceIds);
-      } else {
-        resourceIdsSet.addAll(publicResourceIds);
-      }
-      return new ArrayList<>(resourceIdsSet);
-    } else {
-      return new ArrayList<>(resourceIdsSet);
-    }
+    return new ArrayList<>(resourceIdsSet);
   }
 
   @Override

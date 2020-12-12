@@ -9,8 +9,8 @@ Verta supports fetching the whole context necessary for Docker and building loca
 Fetching the Docker context
 ---------------------------
 
-Any class within the Verta platform that has a ``download_docker_context`` method, such as an
-:class:`ExperimentRun <verta._tracking.experimentrun.ExperimentRun>`, automatically supports fetching the Docker
+Any class within the Verta platform that has a ``download_docker_context()`` method, such as an
+:class:`~verta._tracking.experimentrun.ExperimentRun`, automatically supports fetching the Docker
 context that can be used to build an image.
 
 For example, you can run
@@ -20,6 +20,12 @@ For example, you can run
     run.download_docker_context('context.tgz')
 
 and our client will save a file named ``context.tgz`` in your folder with all the contents for the build.
+
+The Docker context can also be downloaded from a :class:`~verta._registry.modelversion.RegisteredModelVersion`:
+
+.. code-block:: python
+
+    model_version.download_docker_context('context.tgz')
 
 Building the Docker image
 -------------------------
