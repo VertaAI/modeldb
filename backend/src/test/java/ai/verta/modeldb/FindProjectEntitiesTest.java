@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
-import ai.verta.common.VisibilityEnum;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;

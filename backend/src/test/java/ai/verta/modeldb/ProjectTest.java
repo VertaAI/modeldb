@@ -7,7 +7,6 @@ import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.common.VisibilityEnum;
 import ai.verta.modeldb.CommentServiceGrpc.CommentServiceBlockingStub;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
