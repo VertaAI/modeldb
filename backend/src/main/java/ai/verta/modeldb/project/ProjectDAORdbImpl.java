@@ -872,6 +872,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     Query query = session.createQuery(GET_PROJECT_BY_IDS_HQL);
     query.setParameterList("ids", projectIds);
     final List<ProjectEntity> projectEntities = query.list();
+    // TODO: remove UAC fields from the MDB protobuf representation?
     return projectEntities.stream()
         .map(
             projectEntity -> {
