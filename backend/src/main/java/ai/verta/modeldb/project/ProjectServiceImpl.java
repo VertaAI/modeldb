@@ -18,6 +18,7 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
@@ -772,7 +773,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       ProjectPaginationDTO projectPaginationDTO =
           projectDAO.findProjects(
-              findProjects.build(), null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+              findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
 
       responseObserver.onNext(
           GetProjects.Response.newBuilder()
@@ -887,7 +888,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       ProjectPaginationDTO projectPaginationDTO =
           projectDAO.findProjects(
-              findProjects.build(), null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+              findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
 
       if (projectPaginationDTO.getTotalRecords() == 0) {
         Status status =

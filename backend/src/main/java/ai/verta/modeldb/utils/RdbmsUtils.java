@@ -55,6 +55,7 @@ import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;

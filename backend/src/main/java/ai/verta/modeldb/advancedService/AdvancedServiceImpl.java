@@ -65,12 +65,9 @@ import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.Action;
-import ai.verta.uac.Actions;
-import ai.verta.uac.GetCollaboratorResponseItem;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
-import ai.verta.uac.UserInfo;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -226,7 +223,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               .setWorkspaceName(request.getWorkspaceName())
               .build();
       projectPaginationDTO =
-          projectDAO.findProjects(findProjects, null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+          projectDAO.findProjects(findProjects, null, userInfo, ResourceVisibility.PRIVATE);
       List<Project> projects = projectPaginationDTO.getProjects();
 
       List<HydratedProject> hydratedProjects = new ArrayList<>();
@@ -258,7 +255,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getPageLimit(),
               request.getAscending(),
               request.getSortKey(),
-              VisibilityEnum.Visibility.PUBLIC);
+                  ResourceVisibility.PRIVATE);
       List<Project> projects = projectPaginationDTO.getProjects();
 
       List<HydratedProject> hydratedProjects = new ArrayList<>();
@@ -827,7 +824,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(request, null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+          projectDAO.findProjects(request, null, userInfo, ResourceVisibility.PRIVATE);
       LOGGER.debug(
           ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectPaginationDTO.getTotalRecords());
 
@@ -1176,7 +1173,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       FindProjects request, StreamObserver<AdvancedQueryProjectsResponse> responseObserver) {
     try {
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(request, null, null, VisibilityEnum.Visibility.PUBLIC);
+          projectDAO.findProjects(request, null, null, ResourceVisibility.PRIVATE);
       LOGGER.debug(
           ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectPaginationDTO.getTotalRecords());
 
@@ -1206,7 +1203,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       FindProjects findProjectsRequest,
       UserInfo currentLoginUserInfo,
       CollaboratorBase host,
-      VisibilityEnum.Visibility visibility)
+      ResourceVisibility visibility)
       throws InvalidProtocolBufferException {
 
     ProjectPaginationDTO projectPaginationDTO =
@@ -1266,7 +1263,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getFindProjects(),
               authService.getCurrentLoginUserInfo(),
               hostCollaboratorBase,
-              VisibilityEnum.Visibility.PUBLIC));
+                  ResourceVisibility.PRIVATE));
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1307,7 +1304,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getFindProjects(),
               null,
               new CollaboratorOrg(hostOrgInfo),
-              VisibilityEnum.Visibility.PRIVATE));
+                  ResourceVisibility.PRIVATE));
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1349,7 +1346,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               request.getFindProjects(),
               null,
               new CollaboratorTeam(hostTeamInfo),
-              VisibilityEnum.Visibility.PRIVATE));
+                  ResourceVisibility.PRIVATE));
       responseObserver.onCompleted();
 
     } catch (Exception e) {

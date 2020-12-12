@@ -31,6 +31,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -517,7 +518,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      VisibilityEnum.Visibility visibility)
+      ResourceVisibility visibility)
       throws InvalidProtocolBufferException {
 
     FindProjects findProjects =
@@ -544,7 +545,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                     .build())
             .build();
     ProjectPaginationDTO projectPaginationDTO =
-        findProjects(findProjects, null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+        findProjects(findProjects, null, userInfo, ResourceVisibility.PRIVATE);
     LOGGER.debug("Projects size is {}", projectPaginationDTO.getProjects().size());
     return projectPaginationDTO.getProjects();
   }
@@ -871,7 +872,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             findProjects.build(),
             hostCollaboratorBase,
             currentLoginUserInfo,
-            VisibilityEnum.Visibility.PUBLIC);
+            ResourceVisibility.PRIVATE);
     List<Project> projects = projectPaginationDTO.getProjects();
     if (projects != null) {
       LOGGER.debug("Projects size is {}", projects.size());
@@ -907,10 +908,10 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
   @Override
   public ProjectPaginationDTO findProjects(
-      FindProjects queryParameters,
-      CollaboratorBase host,
-      UserInfo currentLoginUserInfo,
-      VisibilityEnum.Visibility visibility)
+          FindProjects queryParameters,
+          CollaboratorBase host,
+          UserInfo currentLoginUserInfo,
+          ResourceVisibility visibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
