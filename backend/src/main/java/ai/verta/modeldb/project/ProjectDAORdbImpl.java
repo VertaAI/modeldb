@@ -23,6 +23,9 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.Organization;
+import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
@@ -685,6 +688,21 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
 
     return newProject;
+  }
+
+  private List<String> getWorkspaceRoleBindings(
+      String workspaceId,
+      WorkspaceType workspaceType,
+      String projectId,
+      VisibilityEnum.Visibility visibility) {
+    return roleService.getWorkspaceRoleBindings(
+        workspaceId,
+        workspaceType,
+        projectId,
+        ModelDBConstants.ROLE_PROJECT_ADMIN,
+        ModelDBServiceResourceTypes.PROJECT,
+        visibility.equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
+        "_GLOBAL_SHARING");
   }
 
   @Override

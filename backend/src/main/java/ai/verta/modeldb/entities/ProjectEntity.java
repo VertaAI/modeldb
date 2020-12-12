@@ -334,6 +334,7 @@ public class ProjectEntity {
             .setDescription(getDescription())
             .setDateCreated(getDate_created())
             .setDateUpdated(getDate_updated())
+            .setVisibility(getProjectVisibility())
             .addAllAttributes(
                 RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))
             .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))

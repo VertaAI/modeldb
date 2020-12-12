@@ -1088,7 +1088,53 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  @Override
+  private boolean createWorkspacePermissions(
+      Optional<Long> workspaceId,
+      Optional<String> workspaceName,
+      Optional<WorkspaceType> workspaceType,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorType collaboratorType,
+      ResourceVisibility visibility) {
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      LOGGER.info("Calling CollaboratorService to create resources");
+      ResourceType modeldbServiceResourceType =
+          ResourceType.newBuilder().setModeldbServiceResourceType(resourceType).build();
+      Resources resources =
+          Resources.newBuilder()
+              .setResourceType(modeldbServiceResourceType)
+              .setService(Service.MODELDB_SERVICE)
+              .addResourceIds(resourceId)
+              .build();
+      SetResources.Builder setResourcesBuilder =
+          SetResources.newBuilder()
+              .setResources(resources)
+              .setVisibility(visibility)
+              .setCollaboratorType(collaboratorType);
+      if (ownerId.isPresent()) {
+        setResourcesBuilder = setResourcesBuilder.setOwnerId(ownerId.get());
+      }
+      if (workspaceId.isPresent()) {
+        setResourcesBuilder = setResourcesBuilder.setWorkspaceId(workspaceId.get());
+      } else if (workspaceName.isPresent()) {
+        setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
+      } else {
+        throw new IllegalArgumentException(
+            "workspaceId and workspaceName are both empty.  One must be provided.");
+      }
+      SetResources setResources = setResourcesBuilder.build();
+      SetResources.Response setResourcesResponse =
+          authServiceChannel.getCollaboratorServiceBlockingStub().setResources(setResources);
+
+      LOGGER.info("SetResources message sent.  Response: " + setResourcesResponse);
+      return true;
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
+    }
+    return false;
+  }@Override
   public GetResourcesResponseItem getProjectResource(String projectId) {
     ResourceType resourceType =
         ResourceType.newBuilder()
@@ -1172,53 +1218,6 @@ public class RoleServiceUtils implements RoleService {
     return deleteResources(resources);
   }
 
-  private boolean createWorkspacePermissions(
-      Optional<Long> workspaceId,
-      Optional<String> workspaceName,
-      Optional<WorkspaceType> workspaceType,
-      String resourceId,
-      Optional<Long> ownerId,
-      ModelDBServiceResourceTypes resourceType,
-      CollaboratorType collaboratorType,
-      ResourceVisibility visibility) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info("Calling CollaboratorService to create resources");
-      ResourceType modeldbServiceResourceType =
-          ResourceType.newBuilder().setModeldbServiceResourceType(resourceType).build();
-      Resources resources =
-          Resources.newBuilder()
-              .setResourceType(modeldbServiceResourceType)
-              .setService(Service.MODELDB_SERVICE)
-              .addResourceIds(resourceId)
-              .build();
-      SetResources.Builder setResourcesBuilder =
-          SetResources.newBuilder()
-              .setResources(resources)
-              .setVisibility(visibility)
-              .setCollaboratorType(collaboratorType);
-      if (ownerId.isPresent()) {
-        setResourcesBuilder.setOwnerId(ownerId.get());
-      }
-      if (workspaceId.isPresent()) {
-        setResourcesBuilder.setWorkspaceId(workspaceId.get());
-      } else if (workspaceName.isPresent()) {
-        setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
-      } else {
-        throw new IllegalArgumentException(
-            "workspaceId and workspaceName are both empty.  One must be provided.");
-      }
-      SetResources setResources = setResourcesBuilder.build();
-      SetResources.Response setResourcesResponse =
-          authServiceChannel.getCollaboratorServiceBlockingStub().setResources(setResources);
-
-      LOGGER.info("SetResources message sent.  Response: " + setResourcesResponse);
-      return true;
-    } catch (StatusRuntimeException ex) {
-      LOGGER.error(ex);
-      ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
-    }
-    return false;
-  }
 
   @Override
   public boolean createWorkspacePermissions(
