@@ -2172,6 +2172,10 @@
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
         "workspace_id": {
           "type": "string"
         },
@@ -2354,6 +2358,17 @@
         }
       },
       "title": "An action describes a specific operation that can be performed on a service"
+    },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
     },
     "uacFlagEnum": {
       "type": "string",
