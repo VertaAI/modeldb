@@ -6518,15 +6518,17 @@ public class ExperimentRunTest {
       }
 
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-        AddCollaboratorRequest addCollaboratorRequest =
+        AddCollaboratorRequest.Builder addCollaboratorRequest =
             AddCollaboratorRequest.newBuilder()
                 .setShareWith(authClientInterceptor.getClient2Email())
-                .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
                 .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
-                .addEntityIds(project.getId())
-                .build();
+                .addEntityIds(project.getId());
+        addCollaboratorRequest
+            .getPermissionBuilder()
+            .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY);
         AddCollaboratorRequest.Response addCollaboratorResponse =
-            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(
+                addCollaboratorRequest.build());
         LOGGER.info(
             "Project Collaborator added in server : " + addCollaboratorResponse.getStatus());
         assertTrue(addCollaboratorResponse.getStatus());
@@ -6563,13 +6565,14 @@ public class ExperimentRunTest {
         addCollaboratorRequest =
             AddCollaboratorRequest.newBuilder()
                 .setShareWith(authClientInterceptor.getClient2Email())
-                .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
                 .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
-                .addEntityIds(String.valueOf(repoId))
-                .build();
+                .addEntityIds(String.valueOf(repoId));
+        addCollaboratorRequest
+            .getPermissionBuilder()
+            .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY);
         addCollaboratorResponse =
             collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(
-                addCollaboratorRequest);
+                addCollaboratorRequest.build());
         LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
         assertTrue(addCollaboratorResponse.getStatus());
 
