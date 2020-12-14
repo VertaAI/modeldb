@@ -6,6 +6,7 @@ from setuptools import setup, find_packages
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 
+
 about = {}
 with open(os.path.join(HERE, 'verta', '__about__.py'), 'r') as f:
     exec(f.read(), about)
