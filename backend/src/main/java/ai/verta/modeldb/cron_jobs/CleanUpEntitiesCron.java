@@ -76,7 +76,7 @@ public class CleanUpEntitiesCron extends TimerTask {
 
     // Time less then a minute because possible to have create project request running when cron job
     // running
-    long time = Calendar.getInstance().getTimeInMillis() - 60000; // 1 minute lesser time
+    long time = Calendar.getInstance().getTimeInMillis() - 300000; // 5 minute lesser time
     Query projectDeleteQuery = session.createQuery(deleteProjectsQueryString);
     projectDeleteQuery.setParameter("created", false);
     projectDeleteQuery.setParameter("created_date", time);
