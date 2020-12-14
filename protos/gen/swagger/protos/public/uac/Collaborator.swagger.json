@@ -902,14 +902,14 @@
         "user_id": {
           "type": "string"
         },
-        "collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
-        },
         "share_via_type": {
           "$ref": "#/definitions/uacShareViaEnum"
         },
         "verta_id": {
           "type": "string"
+        },
+        "authz_entity_type": {
+          "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
         },
         "permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions"
@@ -1048,11 +1048,7 @@
       "enum": [
         "WORKSPACE_DEFAULT",
         "ORG_DEFAULT",
-<<<<<<< HEAD
         "ORG_CUSTOM",
-=======
-        "ORG_SCOPED_PUBLIC",
->>>>>>> cb6065c47900bc0380d73596d9edba3f7e111706
         "PRIVATE"
       ],
       "default": "WORKSPACE_DEFAULT"

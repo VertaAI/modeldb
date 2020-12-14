@@ -2017,11 +2017,7 @@
       "enum": [
         "WORKSPACE_DEFAULT",
         "ORG_DEFAULT",
-<<<<<<< HEAD
         "ORG_CUSTOM",
-=======
-        "ORG_SCOPED_PUBLIC",
->>>>>>> cb6065c47900bc0380d73596d9edba3f7e111706
         "PRIVATE"
       ],
       "default": "WORKSPACE_DEFAULT"
