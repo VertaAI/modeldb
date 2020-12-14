@@ -602,38 +602,6 @@
         ]
       }
     },
-    "/dataset-version/setDatasetVersionVisibility": {
-      "post": {
-        "operationId": "DatasetVersionService_setDatasetVersionVisibility",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetVersionVisibiltyResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetVersionVisibilty"
-            }
-          }
-        ],
-        "tags": [
-          "DatasetVersionService"
-        ]
-      }
-    },
     "/dataset-version/updateDatasetVersionAttributes": {
       "post": {
         "operationId": "DatasetVersionService_updateDatasetVersionAttributes",
@@ -750,6 +718,14 @@
     }
   },
   "definitions": {
+    "CollaboratorTypeEnumCollaboratorType": {
+      "type": "string",
+      "enum": [
+        "READ_ONLY",
+        "READ_WRITE"
+      ],
+      "default": "READ_ONLY"
+    },
     "DatasetTypeEnumDatasetType": {
       "type": "string",
       "enum": [
@@ -758,15 +734,6 @@
         "QUERY"
       ],
       "default": "RAW"
-    },
-    "DatasetVisibilityEnumDatasetVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE"
     },
     "OperatorEnumOperator": {
       "type": "string",
@@ -792,6 +759,15 @@
         "S3_FILE_SYSTEM"
       ],
       "default": "LOCAL_FILE_SYSTEM"
+    },
+    "TernaryEnumTernary": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "TRUE",
+        "FALSE"
+      ],
+      "default": "UNKNOWN"
     },
     "ValueTypeEnumValueType": {
       "type": "string",
@@ -952,8 +928,12 @@
             "type": "string"
           }
         },
-        "dataset_version_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
@@ -1038,8 +1018,12 @@
             "type": "string"
           }
         },
-        "dataset_version_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
@@ -1399,25 +1383,6 @@
         }
       }
     },
-    "modeldbSetDatasetVersionVisibilty": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "dataset_version_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
-        }
-      }
-    },
-    "modeldbSetDatasetVersionVisibiltyResponse": {
-      "type": "object",
-      "properties": {
-        "dataset_version": {
-          "$ref": "#/definitions/modeldbDatasetVersion"
-        }
-      }
-    },
     "modeldbUpdateDatasetVersionAttributes": {
       "type": "object",
       "properties": {
@@ -1502,6 +1467,27 @@
           }
         }
       }
+    },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "WORKSPACE_DEFAULT",
+        "ORG_DEFAULT",
+        "ORG_CUSTOM",
+        "PRIVATE"
+      ],
+      "default": "WORKSPACE_DEFAULT"
     },
     "versioningDatasetBlob": {
       "type": "object",
