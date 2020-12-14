@@ -469,7 +469,7 @@ class DatasetVersion(entity._ModelDBEntity):
             part_number=part_num,
         )
         data = _utils.proto_to_json(msg)
-        endpoint = "{}://{}/api/v1/dataset-version/dataset/{}/datasetVersion/{}/getUrlForDatasetBlobVersioned".format(
+        endpoint = "{}://{}/api/v1/modeldb/dataset-version/dataset/{}/datasetVersion/{}/getUrlForDatasetBlobVersioned".format(
             self._conn.scheme,
             self._conn.socket,
             self.dataset_id,
@@ -536,7 +536,7 @@ class DatasetVersion(entity._ModelDBEntity):
                 _utils.raise_for_http_error(response)
 
                 # commit part
-                url = "{}://{}/api/v1/dataset-version/commitVersionedDatasetBlobArtifactPart".format(
+                url = "{}://{}/api/v1/modeldb/dataset-version/commitVersionedDatasetBlobArtifactPart".format(
                     self._conn.scheme,
                     self._conn.socket,
                 )
@@ -552,7 +552,7 @@ class DatasetVersion(entity._ModelDBEntity):
             print()
 
             # complete upload
-            url = "{}://{}/api/v1/dataset-version/commitMultipartVersionedDatasetBlobArtifact".format(
+            url = "{}://{}/api/v1/modeldb/dataset-version/commitMultipartVersionedDatasetBlobArtifact".format(
                 self._conn.scheme,
                 self._conn.socket,
             )
