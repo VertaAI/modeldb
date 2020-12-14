@@ -12,7 +12,6 @@ import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
-import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -511,12 +510,18 @@ public class RoleServiceUtils implements RoleService {
           GetCollaboratorResponseItem.Builder getCollaboratorResponseBuilder =
               GetCollaboratorResponseItem.newBuilder()
                   .setAuthzEntityType(collaborator.getAuthzEntityType())
-                  .setVertaId(collaborator.getId())
-                  .setCollaboratorType(CollaboratorType.READ_ONLY);
+                  .setVertaId(collaborator.getId());
+          getCollaboratorResponseBuilder
+              .getPermissionBuilder()
+              .setCollaboratorType(CollaboratorType.READ_ONLY);
           if (deployCollaborators.contains(collaborator)) {
-            getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
+            getCollaboratorResponseBuilder
+                .getPermissionBuilder()
+                .setCanDeploy(TernaryEnum.Ternary.TRUE);
           } else {
-            getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.FALSE);
+            getCollaboratorResponseBuilder
+                .getPermissionBuilder()
+                .setCanDeploy(TernaryEnum.Ternary.FALSE);
           }
 
           getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
@@ -529,12 +534,18 @@ public class RoleServiceUtils implements RoleService {
           GetCollaboratorResponseItem.Builder getCollaboratorResponseBuilder =
               GetCollaboratorResponseItem.newBuilder()
                   .setAuthzEntityType(collaborator.getAuthzEntityType())
-                  .setVertaId(collaborator.getId())
-                  .setCollaboratorType(CollaboratorType.READ_WRITE);
+                  .setVertaId(collaborator.getId());
+          getCollaboratorResponseBuilder
+              .getPermissionBuilder()
+              .setCollaboratorType(CollaboratorType.READ_WRITE);
           if (deployCollaborators.contains(collaborator)) {
-            getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
+            getCollaboratorResponseBuilder
+                .getPermissionBuilder()
+                .setCanDeploy(TernaryEnum.Ternary.TRUE);
           } else {
-            getCollaboratorResponseBuilder.setCanDeploy(TernaryEnum.Ternary.FALSE);
+            getCollaboratorResponseBuilder
+                .getPermissionBuilder()
+                .setCanDeploy(TernaryEnum.Ternary.FALSE);
           }
           getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
         }
