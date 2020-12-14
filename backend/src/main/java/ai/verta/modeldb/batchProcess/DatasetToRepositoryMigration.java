@@ -286,7 +286,7 @@ public class DatasetToRepositoryMigration {
       Session session, DatasetEntity datasetEntity, UserInfo userInfoValue)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     String datasetId = datasetEntity.getId();
-    Dataset newDataset = datasetEntity.getProtoObject().toBuilder().setId("").build();
+    Dataset newDataset = datasetEntity.getProtoObject(roleService).toBuilder().setId("").build();
     Repository repository;
     try {
       LOGGER.debug("Creating repository for dataset {}", datasetEntity.getId());

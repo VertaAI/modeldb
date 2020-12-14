@@ -5,7 +5,6 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
@@ -735,30 +734,6 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteDatasetVersionAttributes(datasetVersionId, attributeKeyList, deleteAll);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
-  public DatasetVersion setDatasetVersionVisibility(
-      String datasetVersionId, DatasetVisibilityEnum.DatasetVisibility datasetVersionVisibility)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetVersionEntity datasetVersionObj =
-          session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
-      datasetVersionObj.setDataset_version_visibility(datasetVersionVisibility.ordinal());
-      long currentTimestamp = Calendar.getInstance().getTimeInMillis();
-      datasetVersionObj.setTime_updated(currentTimestamp);
-      Transaction transaction = session.beginTransaction();
-      session.update(datasetVersionObj);
-      transaction.commit();
-      LOGGER.debug("DatasetVersion updated successfully");
-      return datasetVersionObj.getProtoObject();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return setDatasetVersionVisibility(datasetVersionId, datasetVersionVisibility);
       } else {
         throw ex;
       }

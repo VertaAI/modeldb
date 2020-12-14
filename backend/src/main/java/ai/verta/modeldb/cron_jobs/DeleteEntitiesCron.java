@@ -3,11 +3,9 @@ package ai.verta.modeldb.cron_jobs;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
-import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
@@ -434,15 +432,10 @@ public class DeleteEntitiesCron extends TimerTask {
         datasetIds.add(datasetEntity.getId());
       }
       try {
-        deleteRoleBindingsForDatasets(datasetEntities);
-      } catch (OptimisticLockException ex) {
-        LOGGER.info(
-            "DeleteEntitiesCron : deleteDatasets : deleteRoleBindingsForDatasets : Exception: {}",
-            ex.getMessage());
+        roleService.deleteEntityResources(datasetIds, ModelDBServiceResourceTypes.DATASET);
       } catch (Exception ex) {
         LOGGER.warn(
-            "DeleteEntitiesCron : deleteDatasets : deleteRoleBindingsForDatasets : Exception: ",
-            ex);
+            "DeleteEntitiesCron : deleteDatasets : deleteEntityResources : Exception: ", ex);
       }
 
       try {
@@ -483,103 +476,6 @@ public class DeleteEntitiesCron extends TimerTask {
     LOGGER.debug("Dataset Deleted successfully : Deleted datasets count {}", datasetIds.isEmpty());
   }
 
-  private void deleteRoleBindingsForDatasets(List<DatasetEntity> datasetEntities) {
-    // Remove roleBindings by accessible datasets
-    List<String> roleBindingNames = new LinkedList<>();
-    setRoleBindingsNameOfAccessibleDatasetsInRoleBindingsList(datasetEntities, roleBindingNames);
-    LOGGER.debug("num bindings after Datasets {}", roleBindingNames.size());
-
-    // Remove all datasetEntity collaborators
-    roleService.deleteAllResources(
-        datasetEntities.stream().map(DatasetEntity::getId).collect(Collectors.toList()),
-        ModelDBServiceResourceTypes.DATASET);
-
-    // Remove all role bindings
-    if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
-    }
-  }
-
-  private void setRoleBindingsNameOfAccessibleDatasetsInRoleBindingsList(
-      List<DatasetEntity> allowedDatasets, List<String> roleBindingNames) {
-    for (DatasetEntity datasetEntity : allowedDatasets) {
-      String datasetId = datasetEntity.getId();
-
-      String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_DATASET_OWNER,
-              datasetEntity.getId(),
-              datasetEntity.getOwner(),
-              ModelDBServiceResourceTypes.DATASET.name());
-      if (ownerRoleBindingName != null) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
-
-      if (datasetEntity.getDataset_visibility()
-          == DatasetVisibilityEnum.DatasetVisibility.PUBLIC.getNumber()) {
-        String publicReadRoleBindingName =
-            roleService.buildPublicRoleBindingName(datasetId, ModelDBServiceResourceTypes.DATASET);
-        if (publicReadRoleBindingName != null && !publicReadRoleBindingName.isEmpty()) {
-          roleBindingNames.add(publicReadRoleBindingName);
-        }
-      }
-
-      // Delete workspace based roleBindings
-      List<String> workspaceRoleBindingNames =
-          getWorkspaceRoleBindingsForDataset(
-              datasetEntity.getWorkspace(),
-              WorkspaceTypeEnum.WorkspaceType.forNumber(datasetEntity.getWorkspace_type()),
-              datasetEntity.getId(),
-              DatasetVisibilityEnum.DatasetVisibility.forNumber(
-                  datasetEntity.getDataset_visibility()));
-      if (!workspaceRoleBindingNames.isEmpty()) {
-        roleBindingNames.addAll(workspaceRoleBindingNames);
-      }
-    }
-  }
-
-  private List<String> getWorkspaceRoleBindingsForDataset(
-      String workspaceId,
-      WorkspaceTypeEnum.WorkspaceType workspaceType,
-      String datasetId,
-      DatasetVisibilityEnum.DatasetVisibility datasetVisibility) {
-    List<String> workspaceRoleBindings = new ArrayList<>();
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      switch (workspaceType) {
-        case ORGANIZATION:
-          if (datasetVisibility.equals(DatasetVisibilityEnum.DatasetVisibility.ORG_SCOPED_PUBLIC)) {
-            String orgDatasetReadRoleBindingName =
-                roleService.buildRoleBindingName(
-                    ModelDBConstants.ROLE_DATASET_READ_ONLY,
-                    datasetId,
-                    new CollaboratorOrg(workspaceId),
-                    ModelDBServiceResourceTypes.DATASET.name());
-            if (orgDatasetReadRoleBindingName != null && !orgDatasetReadRoleBindingName.isEmpty()) {
-              workspaceRoleBindings.add(orgDatasetReadRoleBindingName);
-            }
-          }
-          break;
-        case USER:
-        default:
-          break;
-      }
-    }
-    List<String> orgWorkspaceRoleBindings =
-        roleService.getWorkspaceRoleBindings(
-            workspaceId,
-            workspaceType,
-            datasetId,
-            ModelDBConstants.ROLE_DATASET_ADMIN,
-            ModelDBServiceResourceTypes.DATASET,
-            datasetVisibility.equals(DatasetVisibilityEnum.DatasetVisibility.ORG_SCOPED_PUBLIC),
-            DATASET_GLOBAL_SHARING);
-
-    if (orgWorkspaceRoleBindings != null && !orgWorkspaceRoleBindings.isEmpty()) {
-      workspaceRoleBindings.addAll(orgWorkspaceRoleBindings);
-    }
-    return workspaceRoleBindings;
-  }
-
   private void deleteDatasetVersions(Session session) {
     LOGGER.trace("DatasetVersion deleting");
     String alias = "dv";
@@ -600,15 +496,18 @@ public class DeleteEntitiesCron extends TimerTask {
 
     try {
       // Remove all role bindings
-      deleteRoleBindingsForDatasetVersions(datasetVersionEntities);
+      roleService.deleteEntityResources(
+          datasetVersionEntities.stream()
+              .map(DatasetVersionEntity::getId)
+              .collect(Collectors.toList()),
+          ModelDBServiceResourceTypes.DATASET_VERSION);
     } catch (StatusRuntimeException ex) {
       LOGGER.info(
-          "DeleteEntitiesCron : deleteDatasetVersions : deleteRoleBindingsForDatasetVersions : Exception: {}",
+          "DeleteEntitiesCron : deleteDatasetVersions : deleteEntityResources : Exception: {}",
           ex.getMessage());
     } catch (Exception ex) {
       LOGGER.warn(
-          "DeleteEntitiesCron : deleteDatasetVersions : deleteRoleBindingsForDatasetVersions : Exception: ",
-          ex);
+          "DeleteEntitiesCron : deleteDatasetVersions : deleteEntityResources : Exception: ", ex);
     }
 
     try {
@@ -632,27 +531,6 @@ public class DeleteEntitiesCron extends TimerTask {
         datasetVersionEntities.size());
   }
 
-  private void deleteRoleBindingsForDatasetVersions(
-      List<DatasetVersionEntity> datasetVersionEntities) {
-    // Remove roleBindings by accessible datasetVersions
-    List<String> roleBindingNames = new LinkedList<>();
-    for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
-      String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_DATASET_VERSION_OWNER,
-              datasetVersionEntity.getId(),
-              datasetVersionEntity.getOwner(),
-              ModelDBServiceResourceTypes.DATASET_VERSION.name());
-      if (ownerRoleBindingName != null && !ownerRoleBindingName.isEmpty()) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
-    }
-    // Remove all role bindings
-    if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
-    }
-  }
-
   private void deleteRepositories(Session session) {
     LOGGER.trace("Repository deleting");
     String alias = "rp";
@@ -674,15 +552,15 @@ public class DeleteEntitiesCron extends TimerTask {
     if (!repositoryEntities.isEmpty()) {
       for (RepositoryEntity repository : repositoryEntities) {
         try {
-          deleteRoleBindingsOfRepositories(Collections.singletonList(repository));
-        } catch (OptimisticLockException ex) {
-          LOGGER.info(
-              "DeleteEntitiesCron : deleteRepositories : deleteRoleBindingsOfRepositories : Exception: {}",
-              ex.getMessage());
+          // Remove all role bindings
+          roleService.deleteEntityResources(
+              Collections.singletonList(String.valueOf(repository.getId())),
+              repository.isDataset()
+                  ? ModelDBServiceResourceTypes.DATASET
+                  : ModelDBServiceResourceTypes.REPOSITORY);
         } catch (Exception ex) {
           LOGGER.warn(
-              "DeleteEntitiesCron : deleteRepositories : deleteRoleBindingsOfRepositories : Exception: ",
-              ex);
+              "DeleteEntitiesCron : deleteRepositories : deleteEntityResources : Exception: ", ex);
         }
 
         Transaction transaction = session.beginTransaction();
@@ -826,47 +704,5 @@ public class DeleteEntitiesCron extends TimerTask {
     getTagsQuery.setParameter("commitHash", commitHash);
     List<TagsEntity> tagsEntities = getTagsQuery.list();
     tagsEntities.forEach(session::delete);
-  }
-
-  private void deleteRoleBindingsOfRepositories(List<RepositoryEntity> allowedResources) {
-    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
-    for (RepositoryEntity repositoryEntity : allowedResources) {
-      String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_REPOSITORY_OWNER,
-              String.valueOf(repositoryEntity.getId()),
-              repositoryEntity.getOwner(),
-              ModelDBServiceResourceTypes.REPOSITORY.name());
-      if (ownerRoleBindingName != null) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
-
-      // Delete workspace based roleBindings
-      List<String> repoOrgWorkspaceRoleBindings =
-          roleService.getWorkspaceRoleBindings(
-              repositoryEntity.getWorkspace_id(),
-              WorkspaceTypeEnum.WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
-              String.valueOf(repositoryEntity.getId()),
-              ModelDBConstants.ROLE_REPOSITORY_ADMIN,
-              ModelDBServiceResourceTypes.REPOSITORY,
-              repositoryEntity
-                  .getRepository_visibility()
-                  .equals(DatasetVisibilityEnum.DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
-              REPOSITORY_GLOBAL_SHARING);
-      if (!repoOrgWorkspaceRoleBindings.isEmpty()) {
-        roleBindingNames.addAll(repoOrgWorkspaceRoleBindings);
-      }
-    }
-    // Remove all repositoryEntity collaborators
-    roleService.deleteAllResources(
-        allowedResources.stream()
-            .map(repositoryEntity -> String.valueOf(repositoryEntity.getId()))
-            .collect(Collectors.toList()),
-        ModelDBServiceResourceTypes.REPOSITORY);
-
-    // Remove all role bindings
-    if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
-    }
   }
 }

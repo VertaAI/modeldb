@@ -386,11 +386,12 @@ public class RdbmsUtils {
   }
 
   public static List<Dataset> convertDatasetsFromDatasetEntityList(
-      List<DatasetEntity> datasetEntityList) throws InvalidProtocolBufferException {
+      RoleService roleService, List<DatasetEntity> datasetEntityList)
+      throws InvalidProtocolBufferException {
     List<Dataset> datasets = new ArrayList<>();
     if (datasetEntityList != null) {
       for (DatasetEntity datasetEntity : datasetEntityList) {
-        datasets.add(datasetEntity.getProtoObject());
+        datasets.add(datasetEntity.getProtoObject(roleService));
       }
     }
     return datasets;
@@ -802,9 +803,7 @@ public class RdbmsUtils {
               && !(operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
             return getOperatorPredicate(
                 builder, valueExpression, operator, ModelDBUtils.getStringFromProtoObject(value));
-          } else if (keyValueQuery.getKey().equals(ModelDBConstants.PROJECT_VISIBILITY)
-              || keyValueQuery.getKey().equals(ModelDBConstants.DATASET_VISIBILITY)
-              || keyValueQuery.getKey().equals(ModelDBConstants.DATASET_VERSION_VISIBILITY)) {
+          } else if (keyValueQuery.getKey().equals(ModelDBConstants.VISIBILITY)) {
             return getOperatorPredicate(
                 builder,
                 valueExpression,

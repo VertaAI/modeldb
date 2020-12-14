@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -31,7 +33,7 @@ public class DatasetVersionEntity {
     setTime_logged(datasetVersion.getTimeLogged());
     setDescription(datasetVersion.getDescription());
     setTags(RdbmsUtils.convertTagListFromTagMappingList(this, datasetVersion.getTagsList()));
-    setDataset_version_visibility(datasetVersion.getDatasetVersionVisibilityValue());
+    setDatasetVersionVisibility(datasetVersion.getVisibility());
     setDataset_type(datasetVersion.getDatasetTypeValue());
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
@@ -86,6 +88,8 @@ public class DatasetVersionEntity {
 
   @Column(name = "dataset_version_visibility")
   private Integer dataset_version_visibility;
+
+  @Transient private ResourceVisibility datasetVersionVisibility = ResourceVisibility.PRIVATE;
 
   @Column(name = "dataset_type")
   // this acts as a quick check on which type of DataSetInfo to look at for more
@@ -190,8 +194,12 @@ public class DatasetVersionEntity {
     return dataset_version_visibility;
   }
 
-  public void setDataset_version_visibility(Integer dataset_version_visibility) {
-    this.dataset_version_visibility = dataset_version_visibility;
+  public void setDatasetVersionVisibility(ResourceVisibility datasetVersionVisibility) {
+    this.datasetVersionVisibility = datasetVersionVisibility;
+  }
+
+  public ResourceVisibility getDatasetVersionVisibility() {
+    return datasetVersionVisibility;
   }
 
   public Integer getDataset_type() {
@@ -272,7 +280,7 @@ public class DatasetVersionEntity {
             .setTimeUpdated(getTime_updated())
             .setDescription(getDescription() != null ? getDescription() : "")
             .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))
-            .setDatasetVersionVisibilityValue(getDataset_version_visibility())
+            .setVisibility(getDatasetVersionVisibility())
             .setDatasetTypeValue(getDataset_type())
             .addAllAttributes(
                 RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))

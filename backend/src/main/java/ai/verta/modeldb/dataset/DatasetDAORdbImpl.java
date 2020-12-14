@@ -1,5 +1,6 @@
 package ai.verta.modeldb.dataset;
 
+import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
@@ -7,13 +8,11 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.Dataset;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -28,8 +27,7 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
-import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -44,6 +42,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -143,7 +142,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       throws InvalidProtocolBufferException {
     // Check entity already exists
     checkDatasetAlreadyExist(dataset);
-    createRoleBindingsForDataset(dataset, userInfo);
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetEntity = RdbmsUtils.generateDatasetEntity(dataset);
@@ -151,65 +149,27 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.save(datasetEntity);
       transaction.commit();
       LOGGER.debug("Dataset created successfully");
+
+      roleService.createWorkspacePermissions(
+          dataset.getWorkspaceServiceId(),
+          Optional.of(dataset.getWorkspaceType()),
+          dataset.getId(),
+          Optional.empty(), // UAC will populate the owner ID
+          ModelDBServiceResourceTypes.DATASET,
+          CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+          dataset.getVisibility());
+      LOGGER.debug("Project role bindings created successfully");
+      transaction = session.beginTransaction();
+      datasetEntity.setCreated(true);
+      transaction.commit();
+
       TelemetryUtils.insertModelDBDeploymentInfo();
-      return datasetEntity.getProtoObject();
+      return datasetEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return createDataset(dataset, userInfo);
       } else {
         throw ex;
-      }
-    }
-  }
-
-  private void createRoleBindingsForDataset(Dataset dataset, UserInfo userInfo) {
-    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_OWNER, null);
-    roleService.createRoleBinding(
-        ownerRole,
-        new CollaboratorUser(authService, userInfo),
-        dataset.getId(),
-        ModelDBServiceResourceTypes.DATASET);
-
-    if (dataset.getDatasetVisibility().equals(DatasetVisibility.PUBLIC)) {
-      roleService.createPublicRoleBinding(dataset.getId(), ModelDBServiceResourceTypes.DATASET);
-    }
-
-    createWorkspaceRoleBinding(
-        dataset.getWorkspaceId(),
-        dataset.getWorkspaceType(),
-        dataset.getId(),
-        dataset.getDatasetVisibility());
-  }
-
-  private void createWorkspaceRoleBinding(
-      String workspaceId,
-      WorkspaceType workspaceType,
-      String datasetId,
-      DatasetVisibility datasetVisibility) {
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      roleService.createWorkspacePermissions(
-          workspaceId,
-          workspaceType,
-          datasetId,
-          ModelDBConstants.ROLE_DATASET_ADMIN,
-          ModelDBServiceResourceTypes.DATASET,
-          datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC),
-          GLOBAL_SHARING);
-      switch (workspaceType) {
-        case ORGANIZATION:
-          if (datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC)) {
-            Role datasetRead =
-                roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_READ_ONLY, null);
-            roleService.createRoleBinding(
-                datasetRead,
-                new CollaboratorOrg(workspaceId),
-                datasetId,
-                ModelDBServiceResourceTypes.DATASET);
-          }
-          break;
-        case USER:
-        default:
-          break;
       }
     }
   }
@@ -220,7 +180,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       List<DatasetEntity> datasetEntities = getDatasetEntityList(session, sharedDatasetIds);
       LOGGER.debug("Got Dataset by Ids successfully");
-      return RdbmsUtils.convertDatasetsFromDatasetEntityList(datasetEntities);
+      return RdbmsUtils.convertDatasetsFromDatasetEntityList(roleService, datasetEntities);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getDatasetByIds(sharedDatasetIds);
@@ -244,7 +204,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      DatasetVisibility datasetVisibility)
+      ResourceVisibility datasetVisibility)
       throws InvalidProtocolBufferException {
     FindDatasets findDatasets =
         FindDatasets.newBuilder()
@@ -254,48 +214,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             .setSortKey(sortKey)
             .build();
     return findDatasets(findDatasets, userInfo, datasetVisibility);
-  }
-
-  private List<String> getWorkspaceRoleBindings(
-      String workspaceId,
-      WorkspaceType workspaceType,
-      String datasetId,
-      DatasetVisibility datasetVisibility) {
-    List<String> workspaceRoleBindings = new ArrayList<>();
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      switch (workspaceType) {
-        case ORGANIZATION:
-          if (datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC)) {
-            String orgDatasetReadRoleBindingName =
-                roleService.buildRoleBindingName(
-                    ModelDBConstants.ROLE_DATASET_READ_ONLY,
-                    datasetId,
-                    new CollaboratorOrg(workspaceId),
-                    ModelDBServiceResourceTypes.DATASET.name());
-            if (orgDatasetReadRoleBindingName != null && !orgDatasetReadRoleBindingName.isEmpty()) {
-              workspaceRoleBindings.add(orgDatasetReadRoleBindingName);
-            }
-          }
-          break;
-        case USER:
-        default:
-          break;
-      }
-    }
-    List<String> orgWorkspaceRoleBindings =
-        roleService.getWorkspaceRoleBindings(
-            workspaceId,
-            workspaceType,
-            datasetId,
-            ModelDBConstants.ROLE_DATASET_ADMIN,
-            ModelDBServiceResourceTypes.DATASET,
-            datasetVisibility.equals(DatasetVisibility.ORG_SCOPED_PUBLIC),
-            GLOBAL_SHARING);
-
-    if (orgWorkspaceRoleBindings != null && !orgWorkspaceRoleBindings.isEmpty()) {
-      workspaceRoleBindings.addAll(orgWorkspaceRoleBindings);
-    }
-    return workspaceRoleBindings;
   }
 
   @Override
@@ -341,7 +259,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset getDatasetById(String datasetId) throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj = getDatasetEntity(session, datasetId);
-      return datasetObj.getProtoObject();
+      return datasetObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getDatasetById(datasetId);
@@ -370,7 +288,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public DatasetPaginationDTO findDatasets(
       FindDatasets queryParameters,
       UserInfo currentLoginUserInfo,
-      DatasetVisibility datasetVisibility)
+      ResourceVisibility datasetVisibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
@@ -438,7 +356,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
                           WorkspaceType.ORGANIZATION_VALUE))));
         }
       } else {
-        if (datasetVisibility.equals(DatasetVisibility.PRIVATE)) {
+        if (datasetVisibility.equals(ResourceVisibility.PRIVATE)) {
           List<KeyValueQuery> workspacePredicates =
               ModelDBUtils.getKeyValueQueriesByWorkspace(
                   roleService, currentLoginUserInfo, workspaceName);
@@ -518,7 +436,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       List<DatasetEntity> datasetEntities = query.list();
       LOGGER.debug("Datasets result count : {}", datasetEntities.size());
       if (!datasetEntities.isEmpty()) {
-        datasetList = RdbmsUtils.convertDatasetsFromDatasetEntityList(datasetEntities);
+        datasetList = RdbmsUtils.convertDatasetsFromDatasetEntityList(roleService, datasetEntities);
       }
 
       Set<String> datasetIdsSet = new HashSet<>();
@@ -565,7 +483,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
                     .build())
             .build();
     DatasetPaginationDTO datasetPaginationDTO =
-        findDatasets(findDatasets, userInfo, DatasetVisibility.PRIVATE);
+        findDatasets(findDatasets, userInfo, ResourceVisibility.PRIVATE);
     LOGGER.debug("Datasets size is {}", datasetPaginationDTO.getDatasets().size());
     return datasetPaginationDTO.getDatasets();
   }
@@ -592,7 +510,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.update(datasetObj);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
-      return datasetObj.getProtoObject();
+      return datasetObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateDatasetName(datasetId, datasetName);
@@ -614,7 +532,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.update(datasetObj);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
-      return datasetObj.getProtoObject();
+      return datasetObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateDatasetDescription(datasetId, datasetDescription);
@@ -638,7 +556,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
       List<String> newTags = new ArrayList<>();
-      Dataset existingProtoDatasetObj = datasetObj.getProtoObject();
+      Dataset existingProtoDatasetObj = datasetObj.getProtoObject(roleService);
       for (String tag : tagsList) {
         if (!existingProtoDatasetObj.getTagsList().contains(tag)) {
           newTags.add(tag);
@@ -654,7 +572,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         transaction.commit();
       }
       LOGGER.debug("Dataset tags added successfully");
-      return datasetObj.getProtoObject();
+      return datasetObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addDatasetTags(datasetId, tagsList);
@@ -669,7 +587,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       LOGGER.debug("Got Dataset");
-      return datasetObj.getProtoObject().getTagsList();
+      return datasetObj.getProtoObject(roleService).getTagsList();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getDatasetTags(datasetId);
@@ -710,7 +628,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.update(datasetObj);
       transaction.commit();
       LOGGER.debug("Dataset tags deleted successfully");
-      return datasetObj.getProtoObject();
+      return datasetObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteDatasetTags(datasetId, datasetTagList, deleteAll);
@@ -734,7 +652,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.saveOrUpdate(datasetObj);
       transaction.commit();
       LOGGER.debug("Dataset attributes added successfully");
-      return datasetObj.getProtoObject();
+      return datasetObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addDatasetAttributes(datasetId, attributesList);
@@ -783,7 +701,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(datasetObj);
       transaction.commit();
-      return datasetObj.getProtoObject();
+      return datasetObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateDatasetAttributes(datasetId, attribute);
@@ -800,7 +718,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       if (getAll) {
         DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
-        return datasetObj.getProtoObject().getAttributesList();
+        return datasetObj.getProtoObject(roleService).getAttributesList();
       } else {
         Query query = session.createQuery(GET_DATASET_ATTRIBUTES_QUERY);
         query.setParameterList("keys", attributeKeyList);
@@ -853,112 +771,13 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
       session.update(datasetObj);
       transaction.commit();
-      return datasetObj.getProtoObject();
+      return datasetObj.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteDatasetAttributes(datasetId, attributeKeyList, deleteAll);
       } else {
         throw ex;
       }
-    }
-  }
-
-  @Override
-  public Dataset setDatasetVisibility(String datasetId, DatasetVisibility datasetVisibility)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetEntity =
-          session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
-
-      Integer oldVisibilityInt = datasetEntity.getDataset_visibility();
-      DatasetVisibility oldVisibility = DatasetVisibility.PRIVATE;
-      if (oldVisibilityInt != null) {
-        oldVisibility = DatasetVisibility.forNumber(oldVisibilityInt);
-      }
-      if (!oldVisibility.equals(datasetVisibility)) {
-        datasetEntity.setDataset_visibility(datasetVisibility.ordinal());
-        datasetEntity.setTime_updated(Calendar.getInstance().getTimeInMillis());
-        Transaction transaction = session.beginTransaction();
-        session.update(datasetEntity);
-        transaction.commit();
-        // FIXME: RoleBinding modification is outside Transaction and can lead to consistency
-        deleteOldVisibilityBasedBinding(
-            oldVisibility,
-            datasetId,
-            datasetEntity.getWorkspace_type(),
-            datasetEntity.getWorkspace());
-        createNewVisibilityBasedBinding(
-            datasetVisibility,
-            datasetId,
-            datasetEntity.getWorkspace_type(),
-            datasetEntity.getWorkspace());
-      }
-
-      LOGGER.debug("Dataset by Id getting successfully");
-      return datasetEntity.getProtoObject();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return setDatasetVisibility(datasetId, datasetVisibility);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  private void createNewVisibilityBasedBinding(
-      DatasetVisibility newVisibility,
-      String datasetId,
-      int datasetWorkspaceType,
-      String workspaceId) {
-    switch (newVisibility) {
-      case ORG_SCOPED_PUBLIC:
-        if (datasetWorkspaceType == WorkspaceType.ORGANIZATION_VALUE) {
-          Role datasetRead =
-              roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_READ_ONLY, null);
-          roleService.createRoleBinding(
-              datasetRead,
-              new CollaboratorOrg(workspaceId),
-              datasetId,
-              ModelDBServiceResourceTypes.DATASET);
-        }
-        break;
-      case PUBLIC:
-        roleService.createPublicRoleBinding(datasetId, ModelDBServiceResourceTypes.DATASET);
-        break;
-      case PRIVATE:
-      case UNRECOGNIZED:
-        break;
-    }
-  }
-
-  private void deleteOldVisibilityBasedBinding(
-      DatasetVisibility oldVisibility,
-      String datasetId,
-      int datasetWorkspaceType,
-      String workspaceId) {
-    switch (oldVisibility) {
-      case ORG_SCOPED_PUBLIC:
-        if (datasetWorkspaceType == WorkspaceType.ORGANIZATION_VALUE) {
-          String roleBindingName =
-              roleService.buildReadOnlyRoleBindingName(
-                  datasetId, new CollaboratorOrg(workspaceId), ModelDBServiceResourceTypes.DATASET);
-          RoleBinding roleBinding = roleService.getRoleBindingByName(roleBindingName);
-          if (roleBinding != null && !roleBinding.getId().isEmpty()) {
-            roleService.deleteRoleBinding(roleBinding.getId());
-          }
-        }
-        break;
-      case PUBLIC:
-        String roleBindingName =
-            roleService.buildPublicRoleBindingName(datasetId, ModelDBServiceResourceTypes.DATASET);
-        RoleBinding publicReadRoleBinding = roleService.getRoleBindingByName(roleBindingName);
-        if (publicReadRoleBinding != null && !publicReadRoleBinding.getId().isEmpty()) {
-          roleService.deleteRoleBinding(publicReadRoleBinding.getId());
-        }
-        break;
-      case PRIVATE:
-      case UNRECOGNIZED:
-        break;
     }
   }
 
@@ -986,40 +805,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public Dataset setDatasetWorkspace(String datasetId, WorkspaceDTO workspaceDTO)
-      throws InvalidProtocolBufferException {
-
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetEntity =
-          session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
-      getWorkspaceRoleBindings(
-          datasetEntity.getWorkspace(),
-          WorkspaceType.forNumber(datasetEntity.getWorkspace_type()),
-          datasetId,
-          DatasetVisibility.forNumber(datasetEntity.getDataset_visibility()));
-      createWorkspaceRoleBinding(
-          workspaceDTO.getWorkspaceId(),
-          workspaceDTO.getWorkspaceType(),
-          datasetId,
-          DatasetVisibility.forNumber(datasetEntity.getDataset_visibility()));
-      datasetEntity.setWorkspace(workspaceDTO.getWorkspaceId());
-      datasetEntity.setWorkspace_type(workspaceDTO.getWorkspaceType().getNumber());
-      datasetEntity.setTime_updated(Calendar.getInstance().getTimeInMillis());
-      Transaction transaction = session.beginTransaction();
-      session.update(datasetEntity);
-      transaction.commit();
-      LOGGER.debug("Dataset workspace updated successfully");
-      return datasetEntity.getProtoObject();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return setDatasetWorkspace(datasetId, workspaceDTO);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
   public List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException {
     if (!roleService.IsImplemented()) {
@@ -1034,7 +819,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              DatasetVisibility.PRIVATE,
+              ResourceVisibility.PRIVATE,
               ModelDBServiceResourceTypes.DATASET,
               Collections.EMPTY_LIST);
 
