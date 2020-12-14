@@ -1245,15 +1245,14 @@ public class RepositoryTest {
     // Get the user info by vertaId form the AuthService
     UserInfo testUser2 = uacServiceStub.getUser(getUserRequest);
 
-    AddCollaboratorRequest addCollaboratorRequest =
+    AddCollaboratorRequest.Builder addCollaboratorRequestBuilder =
         AddCollaboratorRequest.newBuilder()
             .setShareWith(testUser2.getEmail())
-            .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)
             .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
-            .addEntityIds(String.valueOf(repository.getId()))
-            .build();
+            .addEntityIds(String.valueOf(repository.getId()));
+    addCollaboratorRequestBuilder.getPermissionBuilder().setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
     AddCollaboratorRequest.Response collaboratorResponse =
-        collaboratorServiceBlockingStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+        collaboratorServiceBlockingStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequestBuilder.build());
     assertTrue(collaboratorResponse.getStatus());
 
     FindRepositories findRepositoriesRequest =
