@@ -156,7 +156,12 @@ class DatasetVersion(entity._ModelDBEntity):
         # create wrapper blob msg so we can reuse the repository system's proto-to-obj
         blob = _VersioningService.Blob()
         blob.dataset.CopyFrom(self._msg.dataset_blob)
-        return commit.blob_msg_to_object(blob)
+        content = commit.blob_msg_to_object(blob)
+
+        # for _Dataset.download()
+        content._set_dataset_version(self)
+
+        return content
 
     def list_components(self):  # from legacy DatasetVersion
         """
