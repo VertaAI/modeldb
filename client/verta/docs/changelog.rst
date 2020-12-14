@@ -37,6 +37,15 @@ Release Notes
      <>`__
 
 
+v0.16.1 (2020-12-14)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `enable managed versioning for dataset versions
+  <https://github.com/VertaAI/modeldb/pull/1766>`__
+
+
 v0.16.0 (2020-12-09)
 --------------------
 
