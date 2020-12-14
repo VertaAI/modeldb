@@ -230,7 +230,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         project.getId(),
         ownerId,
         ModelDBServiceResourceTypes.PROJECT,
-        CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
+        CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
         project.getVisibility());
   }
 

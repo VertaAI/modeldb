@@ -139,12 +139,11 @@ public interface RoleService {
 
   boolean createWorkspacePermissions(
       String workspaceName,
-      Optional<WorkspaceType> workspaceType,
       String resourceId,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility projectVisibility);
+      ResourceVisibility resourceVisibility);
 
   boolean createWorkspacePermissions(
       Long workspaceId,

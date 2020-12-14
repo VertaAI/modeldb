@@ -1169,12 +1169,11 @@ public class RoleServiceUtils implements RoleService {
   private boolean createWorkspacePermissions(
       Optional<Long> workspaceId,
       Optional<String> workspaceName,
-      Optional<WorkspaceType> workspaceType,
       String resourceId,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility visibility) {
+      ResourceVisibility resourceVisibility) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info("Calling CollaboratorService to create resources");
       ResourceType modeldbServiceResourceType =
@@ -1185,7 +1184,6 @@ public class RoleServiceUtils implements RoleService {
               .setService(Service.MODELDB_SERVICE)
               .addResourceIds(resourceId)
               .build();
-      ResourceVisibility resourceVisibility = getResourceVisibility(workspaceType, visibility);
       SetResources.Builder setResourcesBuilder =
           SetResources.newBuilder().setResources(resources).setVisibility(resourceVisibility);
 
@@ -1220,16 +1218,14 @@ public class RoleServiceUtils implements RoleService {
   @Override
   public boolean createWorkspacePermissions(
       String workspaceName,
-      Optional<WorkspaceType> workspaceType,
       String resourceId,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility visibility) {
+      ResourceVisibility visibility) {
     return createWorkspacePermissions(
         Optional.empty(),
         Optional.of(workspaceName),
-        workspaceType,
         resourceId,
         ownerId,
         resourceType,
@@ -1249,12 +1245,11 @@ public class RoleServiceUtils implements RoleService {
     return createWorkspacePermissions(
         Optional.of(workspaceId),
         Optional.empty(),
-        workspaceType,
         resourceId,
         ownerId,
         resourceType,
         collaboratorType,
-        visibility);
+        getResourceVisibility(workspaceType, visibility));
   }
 
   @Override
