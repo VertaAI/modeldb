@@ -21,7 +21,7 @@ class DatasetVersion(entity._ModelDBEntity):
     """
     Object representing a ModelDB dataset version.
 
-    .. versionchanged:: 0.15.10
+    .. versionchanged:: 0.16.0
         The dataset versioning interface was updated for flexibility,
         robustness, and consistency with other ModelDB entities.
 

@@ -2,14 +2,13 @@ package ai.verta.modeldb.project;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
-import ai.verta.common.VisibilityEnum;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
@@ -117,7 +116,7 @@ public interface ProjectDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      VisibilityEnum.Visibility projectVisibility)
+      ResourceVisibility projectVisibility)
       throws InvalidProtocolBufferException;
 
   /**
@@ -245,17 +244,6 @@ public interface ProjectDAO {
       throws InvalidProtocolBufferException;
 
   /**
-   * Set/Update project visibility
-   *
-   * @param projectId
-   * @param projectVisibility
-   * @return updated project
-   * @throws InvalidProtocolBufferException
-   */
-  Project setVisibility(String projectId, VisibilityEnum.Visibility projectVisibility)
-      throws InvalidProtocolBufferException;
-
-  /**
    * @param projectIds : list of project ids
    * @return : project list
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
@@ -278,7 +266,7 @@ public interface ProjectDAO {
       FindProjects queryParameters,
       CollaboratorBase host,
       UserInfo currentLoginUserInfo,
-      VisibilityEnum.Visibility projectVisibility)
+      ResourceVisibility projectVisibility)
       throws InvalidProtocolBufferException;
 
   /**
@@ -320,18 +308,7 @@ public interface ProjectDAO {
    */
   Map<String, String> getOwnersByProjectIds(List<String> projectIds);
 
-  /**
-   * Sets the workspace of an existing project
-   *
-   * @param projectId : projectId
-   * @param workspaceDTO : workspaceDTO
-   * @return {@link Project} : updated project
-   * @throws InvalidProtocolBufferException : InvalidProtocolBufferException
-   */
-  Project setProjectWorkspace(String projectId, WorkspaceDTO workspaceDTO)
-      throws InvalidProtocolBufferException;
-
-  public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
+  List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException;
   /**
    * Checks if project with the id exists with delete flag false

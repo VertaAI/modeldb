@@ -140,7 +140,9 @@ message VisibilityEnum {
         PRIVATE = 0;
         //Not supported
         PUBLIC = 1;
-        //Uses access setup by organization
+        //Public to organization
         ORG_SCOPED_PUBLIC = 2;
+        //Default access for organization
+        ORG_DEFAULT = 3;
     }
 }

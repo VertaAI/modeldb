@@ -55,6 +55,7 @@ import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
@@ -111,11 +112,12 @@ public class RdbmsUtils {
   }
 
   public static List<Project> convertProjectsFromProjectEntityList(
-      List<ProjectEntity> projectEntityList) throws InvalidProtocolBufferException {
+      RoleService roleService, List<ProjectEntity> projectEntityList)
+      throws InvalidProtocolBufferException {
     List<Project> projects = new ArrayList<>();
     if (projectEntityList != null) {
       for (ProjectEntity projectEntity : projectEntityList) {
-        projects.add(projectEntity.getProtoObject());
+        projects.add(projectEntity.getProtoObject(roleService));
       }
     }
     return projects;
@@ -807,7 +809,7 @@ public class RdbmsUtils {
                 builder,
                 valueExpression,
                 operator,
-                VisibilityEnum.Visibility.valueOf(value.getStringValue()).ordinal());
+                ResourceVisibility.valueOf(value.getStringValue()).ordinal());
           } else {
             return getOperatorPredicate(builder, valueExpression, operator, value.getStringValue());
           }

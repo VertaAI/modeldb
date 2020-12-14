@@ -18,6 +18,7 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
@@ -160,9 +161,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       ModelDBUtils.checkPersonalWorkspace(
           userInfo, project.getWorkspaceType(), project.getWorkspaceId(), "project");
-      if (App.getInstance().getPublicSharingEnabled()) {
-        project = project.toBuilder().setVisibility(VisibilityEnum.Visibility.PUBLIC).build();
-      }
       project = projectDAO.insertProject(project, userInfo);
 
       saveAuditLogs(
@@ -774,8 +772,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               .setWorkspaceName(request.getWorkspaceName());
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(
-              findProjects.build(), null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+          projectDAO.findProjects(findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
 
       responseObserver.onNext(
           GetProjects.Response.newBuilder()
@@ -889,8 +886,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       : request.getWorkspaceName());
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(
-              findProjects.build(), null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+          projectDAO.findProjects(findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
 
       if (projectPaginationDTO.getTotalRecords() == 0) {
         Status status =
@@ -1390,7 +1386,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
       ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(request, null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+          projectDAO.findProjects(request, null, userInfo, ResourceVisibility.PRIVATE);
 
       responseObserver.onNext(
           FindProjects.Response.newBuilder()
@@ -1600,49 +1596,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, DeleteProjects.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
-  public void setProjectWorkspace(
-      SetProjectWorkspace request, StreamObserver<SetProjectWorkspace.Response> responseObserver) {
-    try {
-      // Request Parameter Validation
-      if (request.getId().isEmpty() && request.getWorkspaceName().isEmpty()) {
-        throw new InvalidArgumentException(
-            "Project ID and Workspace not found in SetProjectWorkspace request");
-      } else if (request.getId().isEmpty()) {
-        throw new InvalidArgumentException("Project ID not found in SetProjectWorkspace request");
-      } else if (request.getWorkspaceName().isEmpty()) {
-        throw new InvalidArgumentException("Workspace not found in SetProjectWorkspace request");
-      }
-
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
-
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      WorkspaceDTO workspaceDTO = null;
-      if (userInfo != null) {
-        workspaceDTO =
-            roleService.getWorkspaceDTOByWorkspaceName(userInfo, request.getWorkspaceName());
-      }
-      Project project = projectDAO.setProjectWorkspace(request.getId(), workspaceDTO);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(project.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "update",
-              "workspace",
-              request.getWorkspaceName()));
-      responseObserver.onNext(
-          SetProjectWorkspace.Response.newBuilder().setProject(project).build());
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, SetProjectWorkspace.Response.getDefaultInstance());
     }
   }
 }

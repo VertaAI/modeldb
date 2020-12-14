@@ -8,6 +8,7 @@ allows you to:
 * `Manage members <manage_members.html>`_ to control visibility;
 * `Manage teams <manage_teams.html>`_ to facilitate collaboration and handle access control;
 * `Manage default permissions <manage_permissions.html>`_ of resources that belong to the organization.
+* `Create and retrieve <access_through_client.html>`_ resources within the organization.
 
 .. note::
 
@@ -23,3 +24,4 @@ allows you to:
     Manage members <manage_members>
     Manage teams <manage_teams>
     Manage default permissions <manage_permissions>
+    access_through_client

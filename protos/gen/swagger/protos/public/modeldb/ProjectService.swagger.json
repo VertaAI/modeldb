@@ -951,38 +951,6 @@
         ]
       }
     },
-    "/project/setProjectWorkspace": {
-      "post": {
-        "operationId": "ProjectService_setProjectWorkspace",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetProjectWorkspaceResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetProjectWorkspace"
-            }
-          }
-        ],
-        "tags": [
-          "ProjectService"
-        ]
-      }
-    },
     "/project/updateProjectAttributes": {
       "post": {
         "operationId": "ProjectService_updateProjectAttributes",
@@ -1117,6 +1085,14 @@
       ],
       "default": "IMAGE"
     },
+    "CollaboratorTypeEnumCollaboratorType": {
+      "type": "string",
+      "enum": [
+        "READ_ONLY",
+        "READ_WRITE"
+      ],
+      "default": "READ_ONLY"
+    },
     "OperatorEnumOperator": {
       "type": "string",
       "enum": [
@@ -1150,16 +1126,6 @@
         "BLOB"
       ],
       "default": "STRING"
-    },
-    "VisibilityEnumVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE",
-      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Uses access setup by organization"
     },
     "WorkspaceTypeEnumWorkspaceType": {
       "type": "string",
@@ -1330,7 +1296,11 @@
           "type": "string"
         },
         "visibility": {
-          "$ref": "#/definitions/VisibilityEnumVisibility"
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "artifacts": {
           "type": "array",
@@ -1844,7 +1814,11 @@
           "type": "string"
         },
         "visibility": {
-          "$ref": "#/definitions/VisibilityEnumVisibility"
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "workspace_id": {
           "type": "string"
@@ -1913,25 +1887,6 @@
       }
     },
     "modeldbSetProjectShortNameResponse": {
-      "type": "object",
-      "properties": {
-        "project": {
-          "$ref": "#/definitions/modeldbProject"
-        }
-      }
-    },
-    "modeldbSetProjectWorkspace": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "workspace_name": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbSetProjectWorkspaceResponse": {
       "type": "object",
       "properties": {
         "project": {
@@ -2045,6 +2000,27 @@
           }
         }
       }
+    },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "WORKSPACE_DEFAULT",
+        "ORG_DEFAULT",
+        "ORG_CUSTOM",
+        "PRIVATE"
+      ],
+      "default": "WORKSPACE_DEFAULT"
     }
   },
   "basePath": "/v1"

@@ -1089,16 +1089,6 @@
       ],
       "default": "STRING"
     },
-    "VisibilityEnumVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE",
-      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Uses access setup by organization"
-    },
     "WorkspaceTypeEnumWorkspaceType": {
       "type": "string",
       "enum": [
@@ -2180,7 +2170,11 @@
           "type": "string"
         },
         "visibility": {
-          "$ref": "#/definitions/VisibilityEnumVisibility"
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "workspace_id": {
           "type": "string"
@@ -2365,6 +2359,17 @@
       },
       "title": "An action describes a specific operation that can be performed on a service"
     },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
     "uacFlagEnum": {
       "type": "string",
       "enum": [
@@ -2425,6 +2430,16 @@
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "WORKSPACE_DEFAULT",
+        "ORG_DEFAULT",
+        "ORG_CUSTOM",
+        "PRIVATE"
+      ],
+      "default": "WORKSPACE_DEFAULT"
     },
     "uacTeam": {
       "type": "object",

@@ -14,17 +14,8 @@ import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.Action;
-import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.CollaboratorServiceGrpc;
+import ai.verta.uac.*;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
-import ai.verta.uac.GetUser;
-import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.OrganizationServiceGrpc;
-import ai.verta.uac.RoleServiceGrpc;
-import ai.verta.uac.ServiceEnum;
-import ai.verta.uac.UACServiceGrpc;
-import ai.verta.uac.UserInfo;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.grpc.ManagedChannel;
@@ -316,7 +307,7 @@ public class HydratedServiceTest {
             .addTags("Tag_5")
             .addTags("Tag_7")
             .addTags("Tag_8")
-            .setVisibility(VisibilityEnum.Visibility.PUBLIC)
+            .setVisibility(ResourceVisibility.PRIVATE)
             .build();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project4 = createProjectResponse.getProject();
@@ -3096,7 +3087,7 @@ public class HydratedServiceTest {
               .addTags("Tag_5")
               .addTags("Tag_7")
               .addTags("Tag_8")
-              .setVisibility(VisibilityEnum.Visibility.PUBLIC)
+              .setVisibility(ResourceVisibility.PRIVATE)
               .build();
       createProjectResponse = projectServiceStub.createProject(createProjectRequest);
       Project project4 = createProjectResponse.getProject();

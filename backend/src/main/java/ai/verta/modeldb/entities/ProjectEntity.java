@@ -1,9 +1,11 @@
 package ai.verta.modeldb.entities;
 
-import ai.verta.common.VisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
+import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,8 +79,7 @@ public class ProjectEntity {
   @Column(name = "project_visibility")
   private Integer project_visibility;
 
-  @Transient
-  private VisibilityEnum.Visibility projectVisibility = VisibilityEnum.Visibility.PRIVATE;
+  @Transient private ResourceVisibility projectVisibility = ResourceVisibility.PRIVATE;
 
   @OneToMany(
       targetEntity = KeyValueEntity.class,
@@ -191,12 +192,12 @@ public class ProjectEntity {
     return project_visibility;
   }
 
-  public VisibilityEnum.Visibility getProjectVisibility() {
+  public ResourceVisibility getProjectVisibility() {
     return projectVisibility;
   }
 
-  public void setProjectVisibility(VisibilityEnum.Visibility project_visibility) {
-    this.projectVisibility = project_visibility;
+  public void setProjectVisibility(ResourceVisibility projectVisibility) {
+    this.projectVisibility = projectVisibility;
   }
 
   public List<TagsMapping> getTags() {
@@ -323,7 +324,7 @@ public class ProjectEntity {
     this.created = created;
   }
 
-  public Project getProtoObject() throws InvalidProtocolBufferException {
+  public Project getProtoObject(RoleService roleService) throws InvalidProtocolBufferException {
     Project.Builder projectBuilder =
         Project.newBuilder()
             .setId(getId())
@@ -347,6 +348,11 @@ public class ProjectEntity {
     if (getCode_version_snapshot() != null) {
       projectBuilder.setCodeVersionSnapshot(getCode_version_snapshot().getProtoObject());
     }
+
+    GetResourcesResponseItem projectResource = roleService.getProjectResource(this.id);
+    projectBuilder.setVisibility(projectResource.getVisibility());
+    projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
+    projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
 
     return projectBuilder.build();
   }

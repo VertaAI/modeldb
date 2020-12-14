@@ -3,7 +3,6 @@ package ai.verta.modeldb.authservice;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -77,16 +76,6 @@ public interface RoleService {
       CollaboratorBase collaborator,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  String buildReadWriteRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  String buildProjectDeployRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
   RoleBinding getRoleBindingByName(String roleBindingName);
 
   List<String> getSelfAllowedResources(
@@ -137,13 +126,13 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
-  boolean createWorkspacePermissions(
-      String workspaceName,
-      String resourceId,
-      Optional<Long> ownerId,
-      ModelDBServiceResourceTypes resourceType,
-      CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      ResourceVisibility resourceVisibility);
+  GetResourcesResponseItem getProjectResource(String projectId);
+
+  List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo);
+
+  boolean deleteResources(Resources resources);
+
+  boolean deleteProjectResources(List<String> projectIds);
 
   boolean createWorkspacePermissions(
       Long workspaceId,
@@ -152,7 +141,7 @@ public interface RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorTypeEnum.CollaboratorType collaboratorType,
-      VisibilityEnum.Visibility projectVisibility);
+      ResourceVisibility projectVisibility);
 
   void createWorkspacePermissions(
       String workspace_id,

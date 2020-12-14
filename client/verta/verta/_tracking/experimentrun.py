@@ -1788,7 +1788,7 @@ class ExperimentRun(_DeployableEntity):
            The behavior of this function has been merged into :meth:`log_model` as its
            ``custom_modules`` parameter; consider using that instead.
         .. deprecated:: 0.12.4
-           The `search_path` parameter is no longer necessary and will removed in v0.16.0; consider
+           The `search_path` parameter is no longer necessary and will removed in v0.17.0; consider
            removing it from the function call.
 
         Parameters

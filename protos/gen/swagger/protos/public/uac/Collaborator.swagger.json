@@ -819,9 +819,6 @@
         "share_with": {
           "type": "string"
         },
-        "collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
-        },
         "message": {
           "type": "string"
         },
@@ -833,11 +830,11 @@
           "type": "string",
           "format": "uint64"
         },
-        "can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
+        },
+        "permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions"
         }
       }
     },
@@ -862,6 +859,17 @@
         },
         "collaborator_team": {
           "$ref": "#/definitions/uacTeam"
+        }
+      }
+    },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -894,20 +902,17 @@
         "user_id": {
           "type": "string"
         },
-        "collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
-        },
         "share_via_type": {
           "$ref": "#/definitions/uacShareViaEnum"
         },
         "verta_id": {
           "type": "string"
         },
-        "can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
+        },
+        "permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions"
         }
       }
     },
@@ -947,12 +952,9 @@
           "$ref": "#/definitions/uacResourceVisibility",
           "title": "Type of the visibility"
         },
-        "collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType",
-          "title": "The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC\nThey will be empty otherwise"
-        },
-        "can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         }
       }
     },
@@ -1044,11 +1046,12 @@
     "uacResourceVisibility": {
       "type": "string",
       "enum": [
-        "PRIVATE",
+        "WORKSPACE_DEFAULT",
         "ORG_DEFAULT",
-        "ORG_SCOPED_PUBLIC"
+        "ORG_CUSTOM",
+        "PRIVATE"
       ],
-      "default": "PRIVATE"
+      "default": "WORKSPACE_DEFAULT"
     },
     "uacResources": {
       "type": "object",
