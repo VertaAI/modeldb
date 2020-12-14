@@ -884,7 +884,8 @@
         "BLOB",
         "STRING",
         "CODE",
-        "CONTAINER"
+        "CONTAINER",
+        "DISTRIBUTION"
       ],
       "default": "IMAGE"
     },
