@@ -12,16 +12,21 @@ import "uac/Team.proto";
 import "uac/RoleService.proto";
 import "common/CommonService.proto";
 
+message CollaboratorPermissions {
+    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 1;
+    common.TernaryEnum.Ternary can_deploy = 2;
+}
+
 message AddCollaboratorRequest {
     repeated string entity_ids = 1; // List of project.id, experiment.id etc.
     string share_with = 2; // Collaborator user Id
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 3;
     string message = 4; // Shared message for reference
     uint64 date_created = 5; // shared on
     uint64 date_updated = 6; // CollaboratorType updated on
 
-    common.TernaryEnum.Ternary can_deploy = 7;
     common.EntitiesEnum.EntitiesTypes authz_entity_type = 8; //user, team, org
+
+    CollaboratorPermissions permission = 9;
 
     message Response {
         repeated Action self_allowed_actions = 5;
@@ -54,11 +59,10 @@ message RemoveCollaborator {
 
 message GetCollaboratorResponseItem {
     string user_id = 1 [deprecated=true];
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 2;
     ShareViaEnum share_via_type = 3;
     string verta_id = 4; //user_verta_id, team_id, org_id
-    common.TernaryEnum.Ternary can_deploy = 5;
     common.EntitiesEnum.EntitiesTypes authz_entity_type = 6;
+    CollaboratorPermissions permission = 7;
 }
 
 message GetCollaborator {
@@ -70,9 +74,10 @@ message GetCollaborator {
 }
 
 enum ResourceVisibility {
-    PRIVATE = 0;// default
+    WORKSPACE_DEFAULT = 0;
     ORG_DEFAULT = 1;
-    ORG_SCOPED_PUBLIC = 2;
+    ORG_CUSTOM = 2;
+    PRIVATE = 3;
 }
 
 message GetResources {
@@ -100,10 +105,9 @@ message GetResourcesResponseItem {
     // Type of the visibility
     ResourceVisibility visibility = 4;
 
-    // The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC
+    // The next field only makes sense when visibility == ORG_CUSTOM
     // They will be empty otherwise
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 5;
-    common.TernaryEnum.Ternary can_deploy = 6;
+    CollaboratorPermissions custom_permission = 9;
 }
 
 message SetResources {

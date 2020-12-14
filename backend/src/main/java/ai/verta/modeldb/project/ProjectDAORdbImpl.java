@@ -21,8 +21,10 @@ import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -188,7 +190,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.save(projectEntity);
       transaction.commit();
       LOGGER.debug("ProjectEntity created successfully");
-      createRoleBindingsForProject(project, userInfo);
+      roleService.createWorkspacePermissions(
+          project.getWorkspaceServiceId(),
+          Optional.of(project.getWorkspaceType()),
+          project.getId(),
+          Optional.empty(), // UAC will populate the owner ID
+          ModelDBServiceResourceTypes.PROJECT,
+          CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+          project.getVisibility());
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
       projectEntity.setCreated(true);
@@ -203,21 +212,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         throw ex;
       }
     }
-  }
-
-  private void createRoleBindingsForProject(Project project, UserInfo userInfo) {
-    final Optional<Long> ownerId =
-        userInfo != null
-            ? Optional.of(Long.parseLong(authService.getVertaIdFromUserInfo(userInfo)))
-            : Optional.empty();
-    roleService.createWorkspacePermissions(
-        project.getWorkspaceServiceId(),
-        Optional.of(project.getWorkspaceType()),
-        project.getId(),
-        ownerId,
-        ModelDBServiceResourceTypes.PROJECT,
-        CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-        project.getVisibility());
   }
 
   @Override
@@ -506,7 +500,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      VisibilityEnum.Visibility projectVisibility)
+      ResourceVisibility projectVisibility)
       throws InvalidProtocolBufferException {
 
     FindProjects findProjects =
@@ -533,7 +527,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                     .build())
             .build();
     ProjectPaginationDTO projectPaginationDTO =
-        findProjects(findProjects, null, userInfo, VisibilityEnum.Visibility.PRIVATE);
+        findProjects(findProjects, null, userInfo, ResourceVisibility.PRIVATE);
     LOGGER.debug("Projects size is {}", projectPaginationDTO.getProjects().size());
     return projectPaginationDTO.getProjects();
   }
@@ -696,6 +690,21 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return newProject;
   }
 
+  private List<String> getWorkspaceRoleBindings(
+      String workspaceId,
+      WorkspaceType workspaceType,
+      String projectId,
+      VisibilityEnum.Visibility visibility) {
+    return roleService.getWorkspaceRoleBindings(
+        workspaceId,
+        workspaceType,
+        projectId,
+        ModelDBConstants.ROLE_PROJECT_ADMIN,
+        ModelDBServiceResourceTypes.PROJECT,
+        visibility.equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
+        "_GLOBAL_SHARING");
+  }
+
   @Override
   public List<String> deleteProjects(List<String> projectIds) {
     // Get self allowed resources id where user has delete permission
@@ -847,7 +856,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             findProjects.build(),
             hostCollaboratorBase,
             currentLoginUserInfo,
-            VisibilityEnum.Visibility.PUBLIC);
+            ResourceVisibility.PRIVATE);
     List<Project> projects = projectPaginationDTO.getProjects();
     if (projects != null) {
       LOGGER.debug("Projects size is {}", projects.size());
@@ -879,15 +888,15 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     Query query = session.createQuery(GET_PROJECT_BY_IDS_HQL);
     query.setParameterList("ids", projectIds);
     final List<ProjectEntity> projectEntities = query.list();
+    // TODO: remove UAC fields from the MDB protobuf representation?
     return projectEntities.stream()
         .map(
             projectEntity -> {
-              VisibilityEnum.Visibility projectVisibility =
-                  roleService.getProjectVisibility(
-                      projectEntity.getId(),
-                      projectEntity.getWorkspace(),
-                      projectEntity.getWorkspace_type());
-              projectEntity.setProjectVisibility(projectVisibility);
+              GetResourcesResponseItem resourceItem =
+                  roleService.getProjectResource(projectEntity.getId());
+              projectEntity.setProjectVisibility(resourceItem.getVisibility());
+              projectEntity.setWorkspaceServiceId(resourceItem.getWorkspaceId());
+              projectEntity.setOwner(String.valueOf(resourceItem.getOwnerId()));
               return projectEntity;
             })
         .collect(Collectors.toList());
@@ -898,7 +907,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       FindProjects queryParameters,
       CollaboratorBase host,
       UserInfo currentLoginUserInfo,
-      VisibilityEnum.Visibility visibility)
+      ResourceVisibility visibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
@@ -962,7 +971,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                           WorkspaceType.ORGANIZATION_VALUE))));
         }
       } else {
-        if (visibility.equals(VisibilityEnum.Visibility.PRIVATE)) {
+        if (visibility.equals(ResourceVisibility.PRIVATE)) {
           RdbmsUtils.getWorkspacePredicates(
               host,
               currentLoginUserInfo,
