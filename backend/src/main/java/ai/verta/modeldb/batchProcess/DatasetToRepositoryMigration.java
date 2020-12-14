@@ -342,6 +342,7 @@ public class DatasetToRepositoryMigration {
           collaboratorBase = new CollaboratorUser(authService, collaboratorResponse.getVertaId());
         }
         if (collaboratorResponse
+            .getPermission()
             .getCollaboratorType()
             .equals(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)) {
           roleService.createRoleBinding(
