@@ -105,27 +105,40 @@ class DatasetVersion(entity._ModelDBEntity):
         raise NotImplementedError("cannot get DatasetVersion by name")
 
     @classmethod
-    def _create_proto_internal(cls, conn, dataset, dataset_blob, desc=None, tags=None, attrs=None, time_logged=None, time_updated=None):
-        Message = _DatasetVersionService.CreateDatasetVersion
-        msg = Message(dataset_id=dataset.id, description=desc, tags=tags, attributes=attrs, time_created=time_updated,
-                      dataset_blob=dataset_blob._as_proto().dataset)
+    def _create(cls, conn, conf, *args, **kwargs):
+        """
+        This override exists solely to enable managed versioning:
+        The artifact upload methods require an object (`self`).
+
+        """
+        dataset_blob = kwargs['dataset_blob']  # definitely exists: required in Dataset.create_version()
 
         # prepare ModelDB-versionend components for upload (after Dataset Version creation)
         if dataset_blob._mdb_versioned:
             dataset_blob._prepare_components_to_upload()
 
-        endpoint = "/api/v1/modeldb/dataset-version/createDatasetVersion"
-        response = conn.make_proto_request("POST", endpoint, body=msg)
-        dataset_version = conn.must_proto_response(response, Message.Response).dataset_version
-        print("created new Dataset Version: {} for {}".format(dataset_version.version, dataset.name))
+        obj = super(DatasetVersion, cls)._create(conn, conf, *args, **kwargs)
 
         # upload ModelDB-versioned components
         if dataset_blob._mdb_versioned:
             for component in dataset_blob._components_map.values():
                 if component._internal_versioned_path:
                     with open(component._local_path, 'rb') as f:
-                        self._upload_artifact(component.path, f)
+                        obj._upload_artifact(component.path, f)  # pylint: disable=no-member
 
+        return obj
+
+    @classmethod
+    def _create_proto_internal(cls, conn, dataset, dataset_blob, desc=None, tags=None, attrs=None, time_logged=None, time_updated=None):
+        Message = _DatasetVersionService.CreateDatasetVersion
+        msg = Message(dataset_id=dataset.id, description=desc, tags=tags, attributes=attrs, time_created=time_updated,
+                      dataset_blob=dataset_blob._as_proto().dataset)
+
+        endpoint = "/api/v1/modeldb/dataset-version/createDatasetVersion"
+        response = conn.make_proto_request("POST", endpoint, body=msg)
+        dataset_version = conn.must_proto_response(response, Message.Response).dataset_version
+
+        print("created new Dataset Version: {} for {}".format(dataset_version.version, dataset.name))
         return dataset_version
 
     def get_content(self):
