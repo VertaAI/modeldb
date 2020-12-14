@@ -285,8 +285,8 @@ public class ModelDBUtils {
             collaborator1.addToResponse(builder);
             CollaboratorUserInfo collaboratorUserInfo =
                 builder
-                    .setCanDeploy(collaborator.getCanDeploy())
-                    .setCollaboratorType(collaborator.getCollaboratorType())
+                    .setCanDeploy(collaborator.getPermission().getCanDeploy())
+                    .setCollaboratorType(collaborator.getPermission().getCollaboratorType())
                     .build();
             collaboratorUserInfos.add(collaboratorUserInfo);
           }
