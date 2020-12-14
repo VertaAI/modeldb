@@ -26,6 +26,13 @@ class _Dataset(blob.Blob):
     Base class for dataset versioning. Not for human consumption.
 
     """
+    _CANNOT_DOWNLOAD_ERROR = RuntimeError(
+        "this dataset cannot be used for downloads;"
+        " consider using `commit.get()` or `dataset_version.get_content()"
+        " to obtain a download-capable dataset"
+        " if ModelDB-managed versioning was enabled"
+    )
+
     def __init__(self, paths=None, enable_mdb_versioning=False):
         super(_Dataset, self).__init__()
 
@@ -33,9 +40,12 @@ class _Dataset(blob.Blob):
 
         self._mdb_versioned = enable_mdb_versioning
 
-        # to be set during commit.get() to enable download() with ModelDB-managed versioning
+        # to enable download() with ModelDB-managed versioning
+        # using commit.get()
         self._commit = None
         self._blob_path = None
+        # using dataset_version.get_content()
+        self._dataset_version = None
 
     def __repr__(self):
         lines = ["{} Version".format(self.__class__.__name__)]
@@ -90,8 +100,56 @@ class _Dataset(blob.Blob):
             Location of this blob within its Repository.
 
         """
+        # TODO: raise error if _dataset_version already set
         self._commit = commit
         self._blob_path = blob_path
+
+    def _set_dataset_version(self, dataset_version):
+        """
+        Associate this blob with a dataset version to enable downloads.
+
+        Parameters
+        ----------
+        dataset_version : :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+            Dataset version this blob was gotten from.
+
+        """
+        # TODO: raise error if _commit already set
+        self._dataset_version = dataset_version
+
+    @property
+    def _is_downloadable(self):
+        """
+        Whether this has a linked commit or dataset version to download from.
+
+        """
+        if self._commit and self._blob_path:
+            return True
+        elif self._dataset_version:
+            return True
+        else:
+            return False
+
+    @property
+    def _conn(self):
+        """
+        Co-opts the ``_conn`` from associated commit or dataset version.
+
+        """
+        if self._commit:
+            return self._commit._conn
+        elif self._dataset_version:
+            return self._dataset_version._conn
+        else:
+            raise self._CANNOT_DOWNLOAD_ERROR
+
+    def _get_url_for_artifact(self, path, method):
+        if self._commit and self._blob_path:
+            return self._commit._get_url_for_artifact(self._blob_path, path, method)
+        elif self._dataset_version:
+            return self._dataset_version._get_url_for_artifact(path, method)
+        else:
+            raise self._CANNOT_DOWNLOAD_ERROR
 
     # TODO: there is too much happening in this method's body
     def _get_components_to_download(self, component_path=None, download_to_path=None):
@@ -217,12 +275,9 @@ class _Dataset(blob.Blob):
             provided as an argument.
 
         """
-        if self._commit is None or self._blob_path is None:
-            raise RuntimeError(
-                "this dataset cannot be used for downloads;"
-                " consider using `commit.get()` to obtain a download-capable dataset"
-                " if ModelDB-managed versioning was enabled"
-            )
+        if not self._is_downloadable:
+            raise self._CANNOT_DOWNLOAD_ERROR
+
         implicit_download_to_path = download_to_path is None
 
         components_to_download, downloaded_to_path = self._get_components_to_download(
@@ -236,10 +291,10 @@ class _Dataset(blob.Blob):
             pathlib2.Path(local_path).parent.mkdir(parents=True, exist_ok=True)
             # TODO: clean up empty parent dirs if something later fails
 
-            url = self._commit._get_url_for_artifact(self._blob_path, path, "GET").url
+            url = self._get_url_for_artifact(path, "GET").url
 
             # stream download to avoid overwhelming memory
-            with _utils.make_request("GET", url, self._commit._conn, stream=True) as response:
+            with _utils.make_request("GET", url, self._conn, stream=True) as response:
                 _utils.raise_for_http_error(response)
 
                 print("downloading {} from ModelDB".format(path))
