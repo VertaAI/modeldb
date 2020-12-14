@@ -13,8 +13,8 @@ import "uac/RoleService.proto";
 import "common/CommonService.proto";
 
 message CollaboratorPermissions {
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 6;
-    common.TernaryEnum.Ternary can_deploy = 7;
+    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 1;
+    common.TernaryEnum.Ternary can_deploy = 2;
 }
 
 message AddCollaboratorRequest {
@@ -59,9 +59,9 @@ message RemoveCollaborator {
 
 message GetCollaboratorResponseItem {
     string user_id = 1 [deprecated=true];
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 2;
     ShareViaEnum share_via_type = 3;
     string verta_id = 4; //user_verta_id, team_id, org_id
+    common.EntitiesEnum.EntitiesTypes authz_entity_type = 6;
     CollaboratorPermissions permission = 7;
 }
 
@@ -76,7 +76,7 @@ message GetCollaborator {
 enum ResourceVisibility {
     WORKSPACE_DEFAULT = 0;
     ORG_DEFAULT = 1;
-    ORG_SCOPED_PUBLIC = 2;
+    ORG_CUSTOM = 2;
     PRIVATE = 3;
 }
 

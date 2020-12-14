@@ -144,6 +144,8 @@ func (x *Project) GetVisibility() uac.ResourceVisibility {
 		return x.Visibility
 	}
 	return uac.ResourceVisibility_WORKSPACE_DEFAULT
+<<<<<<< HEAD
+=======
 }
 
 func (x *Project) GetCustomPermission() *uac.CollaboratorPermissions {
@@ -151,6 +153,7 @@ func (x *Project) GetCustomPermission() *uac.CollaboratorPermissions {
 		return x.CustomPermission
 	}
 	return nil
+>>>>>>> cb6065c47900bc0380d73596d9edba3f7e111706
 }
 
 func (x *Project) GetWorkspaceId() string {
@@ -300,6 +303,8 @@ func (x *CreateProject) GetVisibility() uac.ResourceVisibility {
 		return x.Visibility
 	}
 	return uac.ResourceVisibility_WORKSPACE_DEFAULT
+<<<<<<< HEAD
+=======
 }
 
 func (x *CreateProject) GetCustomPermission() *uac.CollaboratorPermissions {
@@ -307,6 +312,7 @@ func (x *CreateProject) GetCustomPermission() *uac.CollaboratorPermissions {
 		return x.CustomPermission
 	}
 	return nil
+>>>>>>> cb6065c47900bc0380d73596d9edba3f7e111706
 }
 
 func (x *CreateProject) GetArtifacts() []*common.Artifact {
