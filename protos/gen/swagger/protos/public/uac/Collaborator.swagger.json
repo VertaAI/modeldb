@@ -1044,11 +1044,12 @@
     "uacResourceVisibility": {
       "type": "string",
       "enum": [
-        "PRIVATE",
+        "WORKSPACE_DEFAULT",
         "ORG_DEFAULT",
-        "ORG_SCOPED_PUBLIC"
+        "ORG_CUSTOM",
+        "PRIVATE"
       ],
-      "default": "PRIVATE"
+      "default": "WORKSPACE_DEFAULT"
     },
     "uacResources": {
       "type": "object",

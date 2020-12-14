@@ -140,7 +140,7 @@ func (x *Project) GetVisibility() uac.ResourceVisibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return uac.ResourceVisibility_PRIVATE
+	return uac.ResourceVisibility_WORKSPACE_DEFAULT
 }
 
 func (x *Project) GetWorkspaceId() string {
@@ -286,7 +286,7 @@ func (x *CreateProject) GetVisibility() uac.ResourceVisibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return uac.ResourceVisibility_PRIVATE
+	return uac.ResourceVisibility_WORKSPACE_DEFAULT
 }
 
 func (x *CreateProject) GetArtifacts() []*common.Artifact {
