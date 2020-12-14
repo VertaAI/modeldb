@@ -6523,9 +6523,12 @@ public class ExperimentRunTest {
                 .setShareWith(authClientInterceptor.getClient2Email())
                 .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
                 .addEntityIds(project.getId());
-        addCollaboratorRequest.getPermissionBuilder().setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY);
+        addCollaboratorRequest
+            .getPermissionBuilder()
+            .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY);
         AddCollaboratorRequest.Response addCollaboratorResponse =
-            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest.build());
+            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(
+                addCollaboratorRequest.build());
         LOGGER.info(
             "Project Collaborator added in server : " + addCollaboratorResponse.getStatus());
         assertTrue(addCollaboratorResponse.getStatus());
@@ -6564,7 +6567,9 @@ public class ExperimentRunTest {
                 .setShareWith(authClientInterceptor.getClient2Email())
                 .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
                 .addEntityIds(String.valueOf(repoId));
-        addCollaboratorRequest.getPermissionBuilder().setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY);
+        addCollaboratorRequest
+            .getPermissionBuilder()
+            .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY);
         addCollaboratorResponse =
             collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(
                 addCollaboratorRequest.build());

@@ -38,21 +38,22 @@ public class ModelDBUtilsTest {
     final CollaboratorType readWrite = CollaboratorType.READ_WRITE;
 
     final Ternary aTrue = Ternary.TRUE;
-    GetCollaboratorResponseItem.Builder builder1 = GetCollaboratorResponseItem.newBuilder()
+    GetCollaboratorResponseItem.Builder builder1 =
+        GetCollaboratorResponseItem.newBuilder()
             .setAuthzEntityType(EntitiesTypes.USER)
             .setVertaId(USER_ID);
     builder1.getPermissionBuilder().setCollaboratorType(readWrite);
-    GetCollaboratorResponseItem.Builder builder2 = GetCollaboratorResponseItem.newBuilder()
+    GetCollaboratorResponseItem.Builder builder2 =
+        GetCollaboratorResponseItem.newBuilder()
             .setAuthzEntityType(EntitiesTypes.ORGANIZATION)
             .setVertaId(ORG_ID);
-    GetCollaboratorResponseItem.Builder builder3 = GetCollaboratorResponseItem.newBuilder()
+    GetCollaboratorResponseItem.Builder builder3 =
+        GetCollaboratorResponseItem.newBuilder()
             .setAuthzEntityType(EntitiesTypes.TEAM)
             .setVertaId(TEAM_ID);
     builder3.getPermissionBuilder().setCanDeploy(aTrue);
     List<GetCollaboratorResponseItem> collaboratorList =
-        Arrays.asList(builder1.build(),
-            builder2.build(),
-            builder3.build());
+        Arrays.asList(builder1.build(), builder2.build(), builder3.build());
     Map<String, UserInfo> userInfoMap = new HashMap<>();
     final UserInfo userInfo =
         UserInfo.newBuilder()

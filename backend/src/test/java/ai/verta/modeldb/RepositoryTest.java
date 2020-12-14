@@ -1250,9 +1250,12 @@ public class RepositoryTest {
             .setShareWith(testUser2.getEmail())
             .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
             .addEntityIds(String.valueOf(repository.getId()));
-    addCollaboratorRequestBuilder.getPermissionBuilder().setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
+    addCollaboratorRequestBuilder
+        .getPermissionBuilder()
+        .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
     AddCollaboratorRequest.Response collaboratorResponse =
-        collaboratorServiceBlockingStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequestBuilder.build());
+        collaboratorServiceBlockingStub.addOrUpdateRepositoryCollaborator(
+            addCollaboratorRequestBuilder.build());
     assertTrue(collaboratorResponse.getStatus());
 
     FindRepositories findRepositoriesRequest =
