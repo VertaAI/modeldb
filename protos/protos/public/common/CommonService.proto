@@ -96,6 +96,7 @@ message ArtifactTypeEnum{
         STRING = 5;
         CODE = 6;
         CONTAINER = 7;
+        DISTRIBUTION = 8;
     }
 }
 

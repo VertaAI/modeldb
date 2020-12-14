@@ -12,16 +12,6 @@ import "modeldb/versioning/Environment.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 
-message DistributionNGram {
-    repeated string elements = 1;
-    int64 count = 2;
-}
-
-message Distribution {
-    int64 population_size = 1;
-    repeated DistributionNGram ngrams = 2;
-}
-
 /*
 * ExperimentRun Entity
 */
@@ -56,8 +46,6 @@ message ExperimentRun {
     string owner = 29;
     VersioningEntry versioned_inputs = 30;
     map<string, CodeVersion> code_version_from_blob = 31;
-
-    Distribution distribution = 32;
 }
 
 message VersioningEntry {
