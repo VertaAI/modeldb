@@ -722,42 +722,6 @@
         ]
       }
     },
-    "/project/getPublicProjects": {
-      "get": {
-        "operationId": "ProjectService_getPublicProjects",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetPublicProjectsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "user_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "workspace_name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "ProjectService"
-        ]
-      }
-    },
     "/project/getSummary": {
       "get": {
         "operationId": "ProjectService_getSummary",
@@ -1603,17 +1567,6 @@
         "total_records": {
           "type": "string",
           "format": "int64"
-        }
-      }
-    },
-    "modeldbGetPublicProjectsResponse": {
-      "type": "object",
-      "properties": {
-        "projects": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/modeldbProject"
-          }
         }
       }
     },
