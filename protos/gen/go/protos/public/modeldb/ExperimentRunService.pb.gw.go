@@ -1071,6 +1071,40 @@ func local_request_ExperimentRunService_DeleteExperimentRunAttributes_0(ctx cont
 
 }
 
+func request_ExperimentRunService_LogEnvironment_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq LogEnvironment
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.LogEnvironment(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_ExperimentRunService_LogEnvironment_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentRunServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq LogEnvironment
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.LogEnvironment(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 func request_ExperimentRunService_LogExperimentRunCodeVersion_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq LogExperimentRunCodeVersion
 	var metadata runtime.ServerMetadata
@@ -2966,6 +3000,26 @@ func RegisterExperimentRunServiceHandlerServer(ctx context.Context, mux *runtime
 
 	})
 
+	mux.Handle("POST", pattern_ExperimentRunService_LogEnvironment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_ExperimentRunService_LogEnvironment_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_ExperimentRunService_LogEnvironment_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("POST", pattern_ExperimentRunService_LogExperimentRunCodeVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -4187,6 +4241,26 @@ func RegisterExperimentRunServiceHandlerClient(ctx context.Context, mux *runtime
 
 	})
 
+	mux.Handle("POST", pattern_ExperimentRunService_LogEnvironment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_ExperimentRunService_LogEnvironment_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_ExperimentRunService_LogEnvironment_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("POST", pattern_ExperimentRunService_LogExperimentRunCodeVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -4831,6 +4905,8 @@ var (
 
 	pattern_ExperimentRunService_DeleteExperimentRunAttributes_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "deleteExperimentRunAttributes"}, "", runtime.AssumeColonVerbOpt(true)))
 
+	pattern_ExperimentRunService_LogEnvironment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "logEnvironment"}, "", runtime.AssumeColonVerbOpt(true)))
+
 	pattern_ExperimentRunService_LogExperimentRunCodeVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "logExperimentRunCodeVersion"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_ExperimentRunService_GetExperimentRunCodeVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "experiment-run", "getExperimentRunCodeVersion"}, "", runtime.AssumeColonVerbOpt(true)))
@@ -4950,6 +5026,8 @@ var (
 	forward_ExperimentRunService_AddExperimentRunAttributes_0 = runtime.ForwardResponseMessage
 
 	forward_ExperimentRunService_DeleteExperimentRunAttributes_0 = runtime.ForwardResponseMessage
+
+	forward_ExperimentRunService_LogEnvironment_0 = runtime.ForwardResponseMessage
 
 	forward_ExperimentRunService_LogExperimentRunCodeVersion_0 = runtime.ForwardResponseMessage
 
