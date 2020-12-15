@@ -164,6 +164,9 @@ public class App implements ApplicationContextAware {
   private Integer maxArtifactPerRun;
   private Integer maxExperimentRunPerWorkspace;
 
+  // Hackathon
+  private String modelDataStoragePath;
+
   // metric for prometheus monitoring
   private static final Gauge up =
       Gauge.build()
@@ -286,6 +289,12 @@ public class App implements ApplicationContextAware {
         authService = new AuthServiceUtils();
         app.roleService = new RoleServiceUtils(authService);
       }
+
+      String modelDataStoragePath = (String) propertiesMap.get("modelDataStoragePath");
+      if (modelDataStoragePath == null || modelDataStoragePath.isEmpty()) {
+        throw new ModelDBException("modelDataStoragePath configuration not found in properties.");
+      }
+      app.setModelDataStoragePath(modelDataStoragePath);
 
       HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
       serverBuilder.addService(healthStatusManager.getHealthService());
@@ -646,7 +655,7 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("Versioning serviceImpl initialized");
     wrapService(serverBuilder, new MetadataServiceImpl(metadataDAO));
     LOGGER.trace("Metadata serviceImpl initialized");
-    wrapService(serverBuilder, new ModelDataServiceImpl());
+    wrapService(serverBuilder, new ModelDataServiceImpl(app.getModelDataStoragePath()));
     LOGGER.trace("ModelData serviceImpl initialized");
     LOGGER.info("All services initialized and resolved dependency before server start");
   }
@@ -952,5 +961,13 @@ public class App implements ApplicationContextAware {
 
   public Integer getMaxExperimentRunPerWorkspace() {
     return maxExperimentRunPerWorkspace;
+  }
+
+  public String getModelDataStoragePath() {
+    return modelDataStoragePath;
+  }
+
+  public void setModelDataStoragePath(String modelDataStoragePath) {
+    this.modelDataStoragePath = modelDataStoragePath;
   }
 }
