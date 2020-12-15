@@ -9,6 +9,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/field_mask.proto";
 import "common/CommonService.proto";
 import "modeldb/versioning/Environment.proto";
+import "uac/Collaborator.proto";
 
 message RegisteredModel {
     // internal id
