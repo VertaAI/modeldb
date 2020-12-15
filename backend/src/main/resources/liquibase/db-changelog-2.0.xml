@@ -355,4 +355,33 @@
         <tagDatabase tag="db_version_2.17"/>
     </changeSet>
 
+    <changeSet id="add-created-on-repository" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="repository" columnName="created"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="repository">
+            <column name="created" type="boolean" value="true" defaultValue="false"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="repository" columnName="created"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.18" author="anandJ">
+        <tagDatabase tag="db_version_2.18"/>
+    </changeSet>
+
+    <changeSet id="set-created-true-on-repository-for-existing-repositories" author="anandJ">
+        <update tableName="repository">
+            <column name="created" valueBoolean="true"/>
+            <where>created=false AND deleted=false</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="db_version_2.19" author="anandJ">
+        <tagDatabase tag="db_version_2.19"/>
+    </changeSet>
+
 </databaseChangeLog>

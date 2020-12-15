@@ -126,7 +126,8 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
-  GetResourcesResponseItem getProjectResource(String projectId);
+  GetResourcesResponseItem getEntityResource(
+      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo);
 
