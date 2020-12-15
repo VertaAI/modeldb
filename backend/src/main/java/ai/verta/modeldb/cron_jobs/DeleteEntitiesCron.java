@@ -119,19 +119,9 @@ public class DeleteEntitiesCron extends TimerTask {
       for (ProjectEntity projectEntity : projectEntities) {
         projectIds.add(projectEntity.getId());
       }
-      try {
-        roleService.deleteProjectResources(projectIds);
-      } catch (StatusRuntimeException ex) {
-        LOGGER.debug(
-            "DeleteEntitiesCron : deleteProjects : deleteRoleBindingsForProjects : Exception: {}",
-            ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn(
-            "DeleteEntitiesCron : deleteProjects : deleteRoleBindingsForProjects : Exception: ",
-            ex);
-      }
 
       try {
+        roleService.deleteProjectResources(projectIds);
         Transaction transaction = session.beginTransaction();
         String updateDeletedStatusExperimentQueryString =
             new StringBuilder("UPDATE ")

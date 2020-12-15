@@ -88,18 +88,9 @@ public class CleanUpEntitiesCron extends TimerTask {
       for (ProjectEntity projectEntity : projectEntities) {
         projectIds.add(projectEntity.getId());
       }
-      try {
-        roleService.deleteProjectResources(projectIds);
-      } catch (StatusRuntimeException ex) {
-        LOGGER.debug(
-            "CleanUpEntitiesCron : cleanProjects : deleteProjectResources : Exception: {}",
-            ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn(
-            "CleanUpEntitiesCron : cleanProjects : deleteProjectResources : Exception: ", ex);
-      }
 
       try {
+        roleService.deleteProjectResources(projectIds);
         for (ProjectEntity projectEntity : projectEntities) {
           try {
             Transaction transaction = session.beginTransaction();
