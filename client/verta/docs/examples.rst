@@ -51,6 +51,8 @@ scikit-learn
   <https://github.com/VertaAI/modeldb/blob/master/client/workflows/demos/census-end-to-end-s3-example.ipynb>`__
 - `Logistic Regression with Verta Deployment and Local Data Versioning
   <https://github.com/VertaAI/modeldb/blob/master/client/workflows/demos/census-end-to-end-local-data-example.ipynb>`__
+- `Logistic Regression with Managed Versioning
+  <https://github.com/VertaAI/modeldb/blob/master/client/workflows/demos/census-with-managed-versioning.ipynb>`__
 - `Spam Detection with NLTK and Verta Class Model Deployment
   <https://github.com/VertaAI/modeldb/blob/master/client/workflows/demos/Spam-Detection.ipynb>`__
 - `Client Integration
