@@ -3017,7 +3017,7 @@ public class ProjectTest {
           createProjectRequest
               .toBuilder()
               .setWorkspaceName(organization.getName())
-              .setVisibility(ResourceVisibility.ORG_SCOPED_PUBLIC)
+              .setVisibility(ResourceVisibility.ORG_DEFAULT)
               .build();
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
