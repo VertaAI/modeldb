@@ -1,0 +1,216 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "modeldb/data/ModelData.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/data/getModelData": {
+      "get": {
+        "operationId": "ModelDataService_GetModelData",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dataGetModelDataRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "start_time_millis",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "end_time_millis",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "model_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ModelDataService"
+        ]
+      }
+    },
+    "/data/getModelDataDiff": {
+      "get": {
+        "operationId": "ModelDataService_GetModelDataDiff",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dataGetModelDataRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "start_time_millis",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "end_time_millis",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "model_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ModelDataService"
+        ]
+      }
+    },
+    "/data/storeModelData": {
+      "put": {
+        "operationId": "ModelDataService_StoreModelData",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dataStoreModelDataRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dataStoreModelDataRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ModelDataService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "dataGetModelDataRequestResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string"
+        }
+      }
+    },
+    "dataModelData": {
+      "type": "object",
+      "properties": {
+        "metadata": {
+          "$ref": "#/definitions/dataModelDataMetadata"
+        },
+        "data": {
+          "type": "string"
+        }
+      }
+    },
+    "dataModelDataMetadata": {
+      "type": "object",
+      "properties": {
+        "timestamp_millis": {
+          "type": "string",
+          "format": "int64"
+        },
+        "model_id": {
+          "type": "string"
+        },
+        "endpoint": {
+          "type": "string"
+        }
+      }
+    },
+    "dataStoreModelDataRequest": {
+      "type": "object",
+      "properties": {
+        "modelData": {
+          "$ref": "#/definitions/dataModelData"
+        }
+      }
+    },
+    "dataStoreModelDataRequestResponse": {
+      "type": "object"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

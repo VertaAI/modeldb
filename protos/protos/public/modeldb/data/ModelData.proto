@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package ai.verta.modeldb.data;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/data";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+
+message ModelDataMetadata {
+  int64 timestamp_millis = 1;
+  string model_id = 2;
+  string endpoint = 3;
+}
+
+message ModelData {
+  ModelDataMetadata metadata = 1;
+  string data = 2; // json
+}
+
+message StoreModelDataRequest {
+  ModelData modelData = 1;
+
+  message Response {
+  }
+}
+
+message GetModelDataRequest {
+  int64 start_time_millis = 1;
+  int64 end_time_millis = 2;
+  string model_id = 3;
+
+  message Response {
+    string data = 1; // json
+  }
+}
+
+service ModelDataService {
+  rpc StoreModelData(StoreModelDataRequest) returns (StoreModelDataRequest.Response) {
+    option (google.api.http) = {
+      put: "/v1/data/storeModelData"
+      body: "*"
+    };
+  };
+
+  rpc GetModelData(GetModelDataRequest) returns (GetModelDataRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/data/getModelData"
+    };
+  };
+
+  rpc GetModelDataDiff(GetModelDataRequest) returns (GetModelDataRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/data/getModelDataDiff"
+    };
+  };
+}
