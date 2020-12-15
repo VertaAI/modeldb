@@ -30,10 +30,10 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private String buildFileName(ModelDataMetadata metadata) {
-      final String modelId = metadata.getModelId();
-      final Long timestampMillis = metadata.getTimestampMillis();
-      final String endpoint = metadata.getEndpoint();
-      return buildFileName(modelId, timestampMillis, endpoint);
+    final String modelId = metadata.getModelId();
+    final Long timestampMillis = metadata.getTimestampMillis();
+    final String endpoint = metadata.getEndpoint();
+    return buildFileName(modelId, timestampMillis, endpoint);
   }
 
   @Override
@@ -59,16 +59,18 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
     final File fileRoot = new File(modelDataStoragePath);
 
-    final File[] filteredToModel = fileRoot.listFiles((dir, name) -> name.startsWith(request.getModelId() + "-"));
-    final List<File> filteredToTimespan = Arrays.stream(filteredToModel)
-      .filter(file -> {
-        final Instant fileTimestamp = Instant.ofEpochMilli(file.lastModified());
-        return startAt.isAfter(fileTimestamp) && endAt.isBefore(fileTimestamp);
-      })
-      .collect(Collectors.toList());
+    final File[] filteredToModel =
+        fileRoot.listFiles((dir, name) -> name.startsWith(request.getModelId() + "-"));
+    final List<File> filteredToTimespan =
+        Arrays.stream(filteredToModel)
+            .filter(
+                file -> {
+                  final Instant fileTimestamp = Instant.ofEpochMilli(file.lastModified());
+                  return startAt.isAfter(fileTimestamp) && endAt.isBefore(fileTimestamp);
+                })
+            .collect(Collectors.toList());
     String json = new Gson().toJson(filteredToTimespan);
-    responseObserver.onNext(
-      GetModelDataRequest.Response.newBuilder().setData(json).build());
+    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
     responseObserver.onCompleted();
   }
 
