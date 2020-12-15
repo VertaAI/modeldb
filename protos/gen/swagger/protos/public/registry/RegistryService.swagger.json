@@ -1573,17 +1573,6 @@
       ],
       "default": "STRING"
     },
-    "VisibilityEnumVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC",
-        "ORG_DEFAULT"
-      ],
-      "default": "PRIVATE",
-      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Public to organization\n - ORG_DEFAULT: Default access for organization"
-    },
     "commonArtifact": {
       "type": "object",
       "properties": {
@@ -1651,20 +1640,6 @@
           "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
-    },
-    "commonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
     },
     "protobufAny": {
       "type": "object",
@@ -1758,7 +1733,7 @@
           "title": "Filtering supported on\n1. version\n2. labels\n3. description\n4. model_source\n5. experiment_run_id\n6. status\n7. archived status"
         },
         "pagination": {
-          "$ref": "#/definitions/commonPagination",
+          "$ref": "#/definitions/vertacommonPagination",
           "title": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
@@ -1800,7 +1775,7 @@
           "title": "Filtering supported on\n1. name\n2. labels\n3. description"
         },
         "pagination": {
-          "$ref": "#/definitions/commonPagination",
+          "$ref": "#/definitions/vertacommonPagination",
           "title": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
@@ -2033,7 +2008,7 @@
           "title": "Labels added to the registered models"
         },
         "visibility": {
-          "$ref": "#/definitions/VisibilityEnumVisibility",
+          "$ref": "#/definitions/uacResourceVisibility",
           "title": "Visibility of Registered Models"
         },
         "workspace_id": {
@@ -2154,6 +2129,16 @@
         }
       }
     },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "WORKSPACE_DEFAULT",
+        "ORG_DEFAULT",
+        "ORG_CUSTOM",
+        "PRIVATE"
+      ],
+      "default": "WORKSPACE_DEFAULT"
+    },
     "versioningDockerEnvironmentBlob": {
       "type": "object",
       "properties": {
@@ -2255,6 +2240,20 @@
           "type": "string"
         }
       }
+    },
+    "vertacommonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     }
   },
   "basePath": "/v1"
