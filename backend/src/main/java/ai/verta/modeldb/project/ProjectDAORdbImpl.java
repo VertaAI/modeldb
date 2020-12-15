@@ -891,7 +891,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         .map(
             projectEntity -> {
               GetResourcesResponseItem resourceItem =
-                  roleService.getProjectResource(projectEntity.getId());
+                  roleService.getEntityResource(
+                      projectEntity.getId(), ModelDBServiceResourceTypes.PROJECT);
               projectEntity.setProjectVisibility(resourceItem.getVisibility());
               projectEntity.setWorkspaceServiceId(resourceItem.getWorkspaceId());
               projectEntity.setOwner(String.valueOf(resourceItem.getOwnerId()));
