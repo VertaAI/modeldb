@@ -16,6 +16,7 @@ import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.data.ModelDataServiceImpl;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -645,6 +646,8 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("Versioning serviceImpl initialized");
     wrapService(serverBuilder, new MetadataServiceImpl(metadataDAO));
     LOGGER.trace("Metadata serviceImpl initialized");
+    wrapService(serverBuilder, new ModelDataServiceImpl());
+    LOGGER.trace("ModelData serviceImpl initialized");
     LOGGER.info("All services initialized and resolved dependency before server start");
   }
 
