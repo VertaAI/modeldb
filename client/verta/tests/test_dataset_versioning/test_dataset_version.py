@@ -1,4 +1,5 @@
 import collections
+import os
 
 import pytest
 
@@ -178,3 +179,46 @@ class TestLogging:
             retrieved_components = sorted(retrieved_version.get_content().list_components(), key=lambda component: component.path)
             components          = sorted(version.get_content().list_components(),           key=lambda component: component.path)
             assert retrieved_components == components
+
+
+@pytest.mark.usefixtures("in_tempdir")
+class TestManagedVersioning:
+    def test_path(self, client, created_datasets):
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+
+        dataset = client.create_dataset()
+        created_datasets.append(dataset)
+
+        content = Path(filename, enable_mdb_versioning=True)
+        version = dataset.create_version(content)
+
+        downloaded_filename = version.get_content().download(filename)
+        with open(downloaded_filename, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
+
+    def test_s3(self, client, created_datasets):
+        s3 = pytest.importorskip("boto3").client('s3')
+
+        filename = "tiny1.bin"
+        bucket = "verta-versioned-bucket"
+        key = "tiny-files/{}".format(filename)
+        s3_key = "s3://{}/{}".format(bucket, key)
+
+        # get file contents directly from S3 for reference
+        s3.download_file(bucket, key, filename)
+        with open(filename, 'rb') as f:
+            FILE_CONTENTS = f.read()
+        os.remove(filename)
+
+        dataset = client.create_dataset()
+        created_datasets.append(dataset)
+
+        content = S3(s3_key, enable_mdb_versioning=True)
+        version = dataset.create_version(content)
+
+        downloaded_filename = version.get_content().download(s3_key)
+        with open(downloaded_filename, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
