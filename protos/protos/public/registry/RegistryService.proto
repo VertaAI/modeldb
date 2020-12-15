@@ -30,7 +30,7 @@ message RegisteredModel {
     repeated string labels = 6;
 
     // Visibility of Registered Models
-    common.VisibilityEnum.Visibility visibility = 7;
+    uac.ResourceVisibility visibility = 7;
 
     // id of the workspace this belongs to
     //not storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files
