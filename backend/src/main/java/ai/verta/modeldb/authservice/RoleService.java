@@ -121,7 +121,8 @@ public interface RoleService {
    */
   WorkspaceDTO getWorkspaceDTOByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
 
-  WorkspaceDTO getWorkspaceDTOByWorkspaceId(String workspaceId);
+  WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
 
   List<Organization> listMyOrganizations();
 

@@ -229,10 +229,11 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(String workspaceId) {
+  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(workspaceId);
-    workspaceDTO.setWorkspaceType(WorkspaceType.USER);
+    workspaceDTO.setWorkspaceType(WorkspaceType.forNumber(workspaceType));
     return workspaceDTO;
   }
 
