@@ -718,14 +718,6 @@
     }
   },
   "definitions": {
-    "CollaboratorTypeEnumCollaboratorType": {
-      "type": "string",
-      "enum": [
-        "READ_ONLY",
-        "READ_WRITE"
-      ],
-      "default": "READ_ONLY"
-    },
     "DatasetTypeEnumDatasetType": {
       "type": "string",
       "enum": [
@@ -759,15 +751,6 @@
         "S3_FILE_SYSTEM"
       ],
       "default": "LOCAL_FILE_SYSTEM"
-    },
-    "TernaryEnumTernary": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "TRUE",
-        "FALSE"
-      ],
-      "default": "UNKNOWN"
     },
     "ValueTypeEnumValueType": {
       "type": "string",
@@ -928,13 +911,6 @@
             "type": "string"
           }
         },
-        "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
-        },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
         },
@@ -1017,13 +993,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
@@ -1467,27 +1436,6 @@
           }
         }
       }
-    },
-    "uacCollaboratorPermissions": {
-      "type": "object",
-      "properties": {
-        "collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
-        },
-        "can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        }
-      }
-    },
-    "uacResourceVisibility": {
-      "type": "string",
-      "enum": [
-        "WORKSPACE_DEFAULT",
-        "ORG_DEFAULT",
-        "ORG_CUSTOM",
-        "PRIVATE"
-      ],
-      "default": "WORKSPACE_DEFAULT"
     },
     "versioningDatasetBlob": {
       "type": "object",
