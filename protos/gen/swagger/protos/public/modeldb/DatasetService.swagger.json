@@ -484,70 +484,6 @@
         ]
       }
     },
-    "/dataset/setDatasetVisibility": {
-      "post": {
-        "operationId": "DatasetService_setDatasetVisibility",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetVisibiltyResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetVisibilty"
-            }
-          }
-        ],
-        "tags": [
-          "DatasetService"
-        ]
-      }
-    },
-    "/dataset/setDatasetWorkspace": {
-      "post": {
-        "operationId": "DatasetService_setDatasetWorkspace",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetWorkspaceResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetWorkspace"
-            }
-          }
-        ],
-        "tags": [
-          "DatasetService"
-        ]
-      }
-    },
     "/dataset/updateDatasetAttributes": {
       "post": {
         "operationId": "DatasetService_updateDatasetAttributes",
@@ -660,6 +596,14 @@
       ],
       "default": "IMAGE"
     },
+    "CollaboratorTypeEnumCollaboratorType": {
+      "type": "string",
+      "enum": [
+        "READ_ONLY",
+        "READ_WRITE"
+      ],
+      "default": "READ_ONLY"
+    },
     "DatasetTypeEnumDatasetType": {
       "type": "string",
       "enum": [
@@ -668,15 +612,6 @@
         "QUERY"
       ],
       "default": "RAW"
-    },
-    "DatasetVisibilityEnumDatasetVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE"
     },
     "OperatorEnumOperator": {
       "type": "string",
@@ -858,8 +793,12 @@
             "$ref": "#/definitions/commonKeyValue"
           }
         },
-        "dataset_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
@@ -902,8 +841,12 @@
             "type": "string"
           }
         },
-        "dataset_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
@@ -1362,44 +1305,6 @@
       },
       "title": "observations with the same key are not overwritten, the are appended to a list"
     },
-    "modeldbSetDatasetVisibilty": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "dataset_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
-        }
-      }
-    },
-    "modeldbSetDatasetVisibiltyResponse": {
-      "type": "object",
-      "properties": {
-        "dataset": {
-          "$ref": "#/definitions/modeldbDataset"
-        }
-      }
-    },
-    "modeldbSetDatasetWorkspace": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "workspace_name": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbSetDatasetWorkspaceResponse": {
-      "type": "object",
-      "properties": {
-        "dataset": {
-          "$ref": "#/definitions/modeldbDataset"
-        }
-      }
-    },
     "modeldbUpdateDatasetAttributes": {
       "type": "object",
       "properties": {
@@ -1515,6 +1420,27 @@
           }
         }
       }
+    },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "WORKSPACE_DEFAULT",
+        "ORG_DEFAULT",
+        "ORG_CUSTOM",
+        "PRIVATE"
+      ],
+      "default": "WORKSPACE_DEFAULT"
     },
     "versioningDockerEnvironmentBlob": {
       "type": "object",

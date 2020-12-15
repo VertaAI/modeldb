@@ -602,38 +602,6 @@
         ]
       }
     },
-    "/dataset-version/setDatasetVersionVisibility": {
-      "post": {
-        "operationId": "DatasetVersionService_setDatasetVersionVisibility",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetVersionVisibiltyResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbSetDatasetVersionVisibilty"
-            }
-          }
-        ],
-        "tags": [
-          "DatasetVersionService"
-        ]
-      }
-    },
     "/dataset-version/updateDatasetVersionAttributes": {
       "post": {
         "operationId": "DatasetVersionService_updateDatasetVersionAttributes",
@@ -758,15 +726,6 @@
         "QUERY"
       ],
       "default": "RAW"
-    },
-    "DatasetVisibilityEnumDatasetVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE"
     },
     "OperatorEnumOperator": {
       "type": "string",
@@ -952,9 +911,6 @@
             "type": "string"
           }
         },
-        "dataset_version_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
-        },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
         },
@@ -1037,9 +993,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "dataset_version_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
@@ -1396,25 +1349,6 @@
         },
         "checksum": {
           "type": "string"
-        }
-      }
-    },
-    "modeldbSetDatasetVersionVisibilty": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "dataset_version_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
-        }
-      }
-    },
-    "modeldbSetDatasetVersionVisibiltyResponse": {
-      "type": "object",
-      "properties": {
-        "dataset_version": {
-          "$ref": "#/definitions/modeldbDatasetVersion"
         }
       }
     },
