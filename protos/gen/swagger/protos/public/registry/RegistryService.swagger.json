@@ -1539,6 +1539,14 @@
       ],
       "default": "IMAGE"
     },
+    "CollaboratorTypeEnumCollaboratorType": {
+      "type": "string",
+      "enum": [
+        "READ_ONLY",
+        "READ_WRITE"
+      ],
+      "default": "READ_ONLY"
+    },
     "OperatorEnumOperator": {
       "type": "string",
       "enum": [
@@ -2011,6 +2019,10 @@
           "$ref": "#/definitions/uacResourceVisibility",
           "title": "Visibility of Registered Models"
         },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
         "workspace_id": {
           "type": "string",
           "title": "id of the workspace this belongs to\nnot storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files"
@@ -2126,6 +2138,17 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
