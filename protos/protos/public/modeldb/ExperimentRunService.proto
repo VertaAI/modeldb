@@ -435,6 +435,14 @@ message LogAttributes {
     }
 }
 
+message LogEnvironment {
+    string id = 1;
+    versioning.EnvironmentBlob environment = 2;
+
+    message Response {
+    }
+}
+
 message FindExperimentRuns {
     oneof entity_id_oneof {
         string project_id = 1;
@@ -797,6 +805,13 @@ service ExperimentRunService {
         };
     };
 
+    rpc logEnvironment(LogEnvironment) returns (LogEnvironment.Response) {
+        option (google.api.http) = {
+            post: "/v1/experiment-run/logEnvironment"
+            body: "*"
+        };
+    };
+
     // code version
     rpc logExperimentRunCodeVersion(LogExperimentRunCodeVersion) returns (
         LogExperimentRunCodeVersion.Response) {
@@ -940,7 +955,7 @@ service ExperimentRunService {
             get: "/v1/experiment-run/getVersionedInput"
         };
     };
-    
+
     // Getting ExperimentRuns linked to a commit
     rpc ListCommitExperimentRuns(ListCommitExperimentRunsRequest) returns (ListCommitExperimentRunsRequest.Response) {
         option (google.api.http) = {
