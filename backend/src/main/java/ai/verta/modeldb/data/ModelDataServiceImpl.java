@@ -4,6 +4,10 @@ import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceImplBase {
     private static final Logger LOGGER = LogManager.getLogger(ModelDataServiceImpl.class);
 
@@ -13,10 +17,24 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
         this.modelDataStoragePath = modelDataStoragePath;
     }
 
+    private String buildFileName(ModelDataMetadata metadata) {
+        final String modelId = metadata.getModelId();
+        final Long timestampMillis = metadata.getTimestampMillis();
+        final String endpoint = metadata.getEndpoint();
+        return modelDataStoragePath + "/" + modelId + "-" + endpoint + "-" + timestampMillis;
+    }
+
     @Override
     public void storeModelData(StoreModelDataRequest request, StreamObserver<StoreModelDataRequest.Response> responseObserver) {
         LOGGER.info("StoreModelData: " + request);
-        super.storeModelData(request, responseObserver);
+        final ModelDataMetadata metadata = request.getModelData().getMetadata();
+        final String data = request.getModelData().getData();
+        final String fileName = buildFileName(metadata);
+        try (FileWriter writer = new FileWriter(fileName)) {
+            writer.write(data);
+        } catch (IOException ex) {
+            LOGGER.error(ex);
+        }
     }
 
     @Override
