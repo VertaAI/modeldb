@@ -12,6 +12,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
@@ -158,13 +159,12 @@ public class VersioningUtils {
         LOGGER.debug("Called switch case : string_value");
         if (!value.getStringValue().isEmpty()) {
           LOGGER.debug("Called switch case : string value exist");
-          if (keyValueQuery.getKey().equals(ModelDBConstants.REPOSITORY_VISIBILITY)) {
+          if (keyValueQuery.getKey().equals(ModelDBConstants.VISIBILITY)) {
             RdbmsUtils.setValueWithOperatorInQuery(
                 index,
                 queryBuilder,
                 operator,
-                RepositoryVisibilityEnum.RepositoryVisibility.valueOf(value.getStringValue())
-                    .ordinal(),
+                ResourceVisibility.valueOf(value.getStringValue()).ordinal(),
                 parametersMap);
           } else {
             RdbmsUtils.setValueWithOperatorInQuery(
