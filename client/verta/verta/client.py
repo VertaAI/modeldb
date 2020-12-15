@@ -1327,7 +1327,7 @@ class Client(object):
         if id is not None:
             dataset = Dataset._get_by_id(self._conn, self._conf, id)
         else:
-            dataset = Dataset._get_by_name(self._conn, self._conf, name, workspace_name)
+            dataset = Dataset._get_by_name(self._conn, self._conf, name, workspace)
 
         if dataset is None:
             raise ValueError("Dataset not found")
