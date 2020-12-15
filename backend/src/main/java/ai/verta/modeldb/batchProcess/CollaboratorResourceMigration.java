@@ -14,14 +14,10 @@ import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.UserInfo;
 import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -104,22 +100,10 @@ public class CollaboratorResourceMigration {
         List<ProjectEntity> projectEntities = typedQuery.getResultList();
 
         if (projectEntities.size() > 0) {
-          Set<String> userIds = new HashSet<>();
-          for (ProjectEntity projectEntity : projectEntities) {
-            userIds.add(projectEntity.getOwner());
-          }
-          LOGGER.debug("Project userId list : " + userIds);
-
-          // Fetch the experiment owners userInfo
-          Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
           for (ProjectEntity project : projectEntities) {
             try {
               WorkspaceDTO workspaceDTO =
-                  roleService.getWorkspaceDTOByWorkspaceId(
-                      userInfoMap.get(project.getOwner()),
-                      project.getWorkspace(),
-                      project.getWorkspace_type());
+                  roleService.getWorkspaceDTOByWorkspaceId(project.getWorkspace());
               // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
               // ignore the CollaboratorType
               roleService.createWorkspacePermissions(

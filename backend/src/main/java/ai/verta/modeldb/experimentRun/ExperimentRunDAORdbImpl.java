@@ -2520,22 +2520,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setSortKey(ModelDBConstants.DATE_UPDATED)
               .addPredicates(repositoryIdPredicate)
               .addPredicates(commitHashPredicate);
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       if (request.getRepositoryId().hasNamedId()) {
         findExperimentRuns.setWorkspaceName(
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
         WorkspaceDTO workspaceDTO =
-            roleService.getWorkspaceDTOByWorkspaceId(
-                currentLoginUserInfo,
-                repositoryEntity.getWorkspace_id(),
-                repositoryEntity.getWorkspace_type());
+            roleService.getWorkspaceDTOByWorkspaceId(repositoryEntity.getWorkspace_id());
         if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
           findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());
         }
       }
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
+          findExperimentRuns(
+              projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns.build());
       return ListCommitExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
@@ -2596,23 +2593,20 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .addPredicates(repositoryIdPredicate)
               .addPredicates(commitHashPredicate)
               .addPredicates(locationPredicate);
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       if (request.getRepositoryId().hasNamedId()) {
         findExperimentRuns.setWorkspaceName(
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
         WorkspaceDTO workspaceDTO =
-            roleService.getWorkspaceDTOByWorkspaceId(
-                currentLoginUserInfo,
-                repositoryEntity.getWorkspace_id(),
-                repositoryEntity.getWorkspace_type());
+            roleService.getWorkspaceDTOByWorkspaceId(repositoryEntity.getWorkspace_id());
         if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
           findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());
         }
       }
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
+          findExperimentRuns(
+              projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns.build());
 
       return ListBlobExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())

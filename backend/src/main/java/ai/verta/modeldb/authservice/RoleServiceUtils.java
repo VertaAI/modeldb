@@ -4,6 +4,7 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
+import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
@@ -1039,34 +1040,21 @@ public class RoleServiceUtils implements RoleService {
    * workspace.
    */
   @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
-      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
+  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(String workspaceId) {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(workspaceId);
-
-    switch (workspaceType) {
-      case WorkspaceType.ORGANIZATION_VALUE:
-        Organization organization = (Organization) getOrgById(workspaceId);
-        workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
-        workspaceDTO.setWorkspaceName(organization.getName());
-        return workspaceDTO;
-      case WorkspaceType.USER_VALUE:
-        workspaceDTO.setWorkspaceType(WorkspaceType.USER);
-        if (currentLoginUserInfo == null) {
-          currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-        }
-        if (workspaceId.equalsIgnoreCase(
-            authService.getVertaIdFromUserInfo(currentLoginUserInfo))) {
-          workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
-        } else {
-          UserInfo userInfo =
-              authService.getUserInfo(workspaceId, ModelDBConstants.UserIdentifier.VERTA_ID);
-          workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(userInfo));
-        }
-        return workspaceDTO;
-      default:
-        return null;
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      final Workspace workspace =
+          authServiceChannel
+              .getWorkspaceServiceBlockingStub()
+              .getWorkspaceById(
+                  GetWorkspaceById.newBuilder().setId(Long.parseLong(workspaceId)).build());
+      workspaceDTO.setWorkspaceType(
+          workspace.getUserId().isEmpty()
+              ? WorkspaceTypeEnum.WorkspaceType.ORGANIZATION
+              : WorkspaceTypeEnum.WorkspaceType.USER);
     }
+    return workspaceDTO;
   }
 
   @Override
