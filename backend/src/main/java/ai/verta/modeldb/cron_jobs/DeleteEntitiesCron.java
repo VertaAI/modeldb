@@ -624,13 +624,16 @@ public class DeleteEntitiesCron extends TimerTask {
                 }
               });
           session.delete(repository);
+          transaction.commit();
         } catch (OptimisticLockException ex) {
           LOGGER.info("DeleteEntitiesCron : deleteRepositories : Exception: {}", ex.getMessage());
+          if (transaction != null && transaction.getStatus().canRollback()) {
+            transaction.rollback();
+          }
         } catch (Exception ex) {
           LOGGER.warn("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
-        } finally {
-          if (transaction != null) {
-            transaction.commit();
+          if (transaction != null && transaction.getStatus().canRollback()) {
+            transaction.rollback();
           }
         }
       }
