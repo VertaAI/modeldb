@@ -36,6 +36,15 @@ Release Notes
    - `
      <>`__
 
+v0.16.2 (2020-12-16)
+--------------------
+
+Bug Fixes
+^^^^^^^^^
+- `fix bug where set_registered_model() and set_dataset() unset the client's
+  active project
+  <https://github.com/VertaAI/modeldb/pull/1780>`__
+
 
 v0.16.1 (2020-12-14)
 --------------------
