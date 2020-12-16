@@ -66,31 +66,39 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
 
-    final List<Map<String, Object>> filteredToTimespan = fetchModelDataMaps(request, startAt, endAt);
+    final List<Map<String, Object>> filteredToTimespan =
+        fetchModelDataMaps(request, startAt, endAt);
     String json = new Gson().toJson(filteredToTimespan);
     responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
     responseObserver.onCompleted();
   }
 
-  private List<Map<String, Object>> fetchModelDataMaps(GetModelDataRequest request, Instant startAt, Instant endAt) {
+  private List<Map<String, Object>> fetchModelDataMaps(
+      GetModelDataRequest request, Instant startAt, Instant endAt) {
     final File fileRoot = new File(modelDataStoragePath);
-    final File[] filteredToModel = fileRoot.listFiles((dir, name) -> name.startsWith(request.getModelId() + "-"));
-    final List<Map<String,Object>> filteredToTimespan = Arrays.stream(filteredToModel)
-      .filter(file -> {
-        final Instant fileTimestamp = Instant.ofEpochMilli(file.lastModified());
-        return fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
-      })
-      .map(file -> {
-        try {
-          final String fileContents = Files.lines(Paths.get(file.getAbsolutePath())).collect(Collectors.joining());
-          return buildModelDataMap(request.getModelId(), file, fileContents);
-        } catch (IOException e) {
-          LOGGER.error(e);
-        }
-        return null;
-      })
-      .filter(Objects::nonNull)
-      .collect(Collectors.toList());
+    final File[] filteredToModel =
+        fileRoot.listFiles((dir, name) -> name.startsWith(request.getModelId() + "-"));
+    final List<Map<String, Object>> filteredToTimespan =
+        Arrays.stream(filteredToModel)
+            .filter(
+                file -> {
+                  final Instant fileTimestamp = Instant.ofEpochMilli(file.lastModified());
+                  return fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
+                })
+            .map(
+                file -> {
+                  try {
+                    final String fileContents =
+                        Files.lines(Paths.get(file.getAbsolutePath()))
+                            .collect(Collectors.joining());
+                    return buildModelDataMap(request.getModelId(), file, fileContents);
+                  } catch (IOException e) {
+                    LOGGER.error(e);
+                  }
+                  return null;
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     return filteredToTimespan;
   }
 
@@ -112,7 +120,8 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
 
-    final List<Map<String, Object>> filteredToTimespan = fetchModelDataMaps(request, startAt, endAt);
+    final List<Map<String, Object>> filteredToTimespan =
+        fetchModelDataMaps(request, startAt, endAt);
 
     filteredToTimespan.stream();
 
