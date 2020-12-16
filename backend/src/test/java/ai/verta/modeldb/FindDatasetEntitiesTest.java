@@ -7,7 +7,6 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
@@ -17,6 +16,7 @@ import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.GetUser;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Struct;
@@ -256,7 +256,7 @@ public class FindDatasetEntitiesTest {
             .addTags("A5")
             .addTags("A7")
             .addTags("A8")
-            .setDatasetVisibility(DatasetVisibility.PUBLIC)
+            .setVisibility(ResourceVisibility.ORG_DEFAULT)
             .build();
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
     dataset4 = createDatasetResponse.getDataset();
@@ -371,7 +371,6 @@ public class FindDatasetEntitiesTest {
             .addTags("A5")
             .addTags("A7")
             .addTags("A8")
-            .setDatasetVersionVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
@@ -952,7 +951,7 @@ public class FindDatasetEntitiesTest {
 
     KeyValueQuery keyValueQuery =
         KeyValueQuery.newBuilder()
-            .setKey(ModelDBConstants.DATASET_VISIBILITY)
+            .setKey(ModelDBConstants.VISIBILITY)
             .setValue(Value.newBuilder().setStringValue("PUBLIC").build())
             .setOperator(OperatorEnum.Operator.EQ)
             .build();
@@ -978,7 +977,7 @@ public class FindDatasetEntitiesTest {
 
     keyValueQuery =
         KeyValueQuery.newBuilder()
-            .setKey(ModelDBConstants.DATASET_VISIBILITY)
+            .setKey(ModelDBConstants.VISIBILITY)
             .setValue(Value.newBuilder().setStringValue("PUBLIC").build())
             .setOperator(OperatorEnum.Operator.NE)
             .build();
