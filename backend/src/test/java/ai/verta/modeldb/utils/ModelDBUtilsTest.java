@@ -40,16 +40,16 @@ public class ModelDBUtilsTest {
     final Ternary aTrue = Ternary.TRUE;
     List<GetCollaboratorResponseItem> collaboratorList =
         Arrays.asList(
-              GetCollaboratorResponseItem.newBuilder()
+            GetCollaboratorResponseItem.newBuilder()
                 .setAuthzEntityType(EntitiesTypes.USER)
                 .setVertaId(USER_ID)
                 .setCollaboratorType(readWrite)
                 .build(),
-              GetCollaboratorResponseItem.newBuilder()
+            GetCollaboratorResponseItem.newBuilder()
                 .setAuthzEntityType(EntitiesTypes.ORGANIZATION)
                 .setVertaId(ORG_ID)
                 .build(),
-              GetCollaboratorResponseItem.newBuilder()
+            GetCollaboratorResponseItem.newBuilder()
                 .setAuthzEntityType(EntitiesTypes.TEAM)
                 .setCanDeploy(aTrue)
                 .setVertaId(TEAM_ID)

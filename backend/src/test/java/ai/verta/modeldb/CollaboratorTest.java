@@ -544,7 +544,8 @@ public class CollaboratorTest {
       GetCollaborator.Response getCollaboratorResponse =
           collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
 
-      List<GetCollaboratorResponseItem> sharedUserList = getCollaboratorResponse.getSharedUsersList();
+      List<GetCollaboratorResponseItem> sharedUserList =
+          getCollaboratorResponse.getSharedUsersList();
       LOGGER.info(
           "Founded collaborator users count : " + getCollaboratorResponse.getSharedUsersCount());
       assertEquals(
@@ -829,7 +830,8 @@ public class CollaboratorTest {
       GetCollaborator.Response getCollaboratorResponse =
           collaboratorServiceStub.getRepositoryCollaborators(getCollaboratorRequest);
 
-      List<GetCollaboratorResponseItem> sharedUserList = getCollaboratorResponse.getSharedUsersList();
+      List<GetCollaboratorResponseItem> sharedUserList =
+          getCollaboratorResponse.getSharedUsersList();
       LOGGER.info(
           "Found collaborator users count : " + getCollaboratorResponse.getSharedUsersCount());
       assertEquals(
