@@ -6,13 +6,11 @@ import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -49,6 +47,14 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     } catch (IOException ex) {
       LOGGER.error(ex);
     }
+    responseObserver.onNext(
+      StoreModelDataRequest.Response.newBuilder().build());
+    responseObserver.onCompleted();
+  }
+
+  private String extractEndpoint(String fileName) {
+    String[] tokens = fileName.split("-");
+    return tokens[1];
   }
 
   @Override
@@ -60,11 +66,28 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final File fileRoot = new File(modelDataStoragePath);
 
     final File[] filteredToModel = fileRoot.listFiles((dir, name) -> name.startsWith(request.getModelId() + "-"));
-    final List<File> filteredToTimespan = Arrays.stream(filteredToModel)
+    final List<Map<String,Object>> filteredToTimespan = Arrays.stream(filteredToModel)
       .filter(file -> {
         final Instant fileTimestamp = Instant.ofEpochMilli(file.lastModified());
         return startAt.isAfter(fileTimestamp) && endAt.isBefore(fileTimestamp);
       })
+      .map(file -> {
+        try {
+          String fileContents = Files.lines(Paths.get(file.getAbsolutePath())).collect(Collectors.joining());
+          Map<String,Object> metadata = new HashMap<>();
+          metadata.put("model_id", request.getModelId());
+          metadata.put("timestamp", file.lastModified());
+          metadata.put("endpoint", extractEndpoint(file.getName()));
+          Map<String,Object> result = new HashMap<>();
+          result.put("metadata", metadata);
+          result.put("data", fileContents);
+          return result;
+        } catch (IOException e) {
+          LOGGER.error(e);
+        }
+        return null;
+      })
+      .filter(Objects::nonNull)
       .collect(Collectors.toList());
     String json = new Gson().toJson(filteredToTimespan);
     responseObserver.onNext(
