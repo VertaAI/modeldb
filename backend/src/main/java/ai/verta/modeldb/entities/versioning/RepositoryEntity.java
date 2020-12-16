@@ -231,6 +231,9 @@ public class RepositoryEntity {
         roleService.getEntityResource(
             String.valueOf(this.id), ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
     builder.setVisibility(repositoryResource.getVisibility());
+    builder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
+    builder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
+    builder.setCustomPermission(repositoryResource.getCustomPermission());
 
     if (owner != null) {
       builder.setOwner(owner);
