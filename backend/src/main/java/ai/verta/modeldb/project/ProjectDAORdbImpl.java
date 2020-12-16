@@ -732,8 +732,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Mark Projects as deleted : {}, count : {}", allowedProjectIds, updatedCount);
       transaction.commit();
       LOGGER.debug("Project deleted successfully");
-
-      roleService.deleteProjectResources(allowedProjectIds);
       return allowedProjectIds;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
