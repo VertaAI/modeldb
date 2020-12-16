@@ -12,7 +12,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,9 +61,60 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("GetModelData: " + request);
     final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
+    final List<NGramData> filteredToTimespan = fetchNGramData(request.getModelId(), startAt, endAt);
+    Map<String, Object> aggregate = aggregateTimespan(filteredToTimespan);
+    Map<String, Object> payload =
+        buildPayload(startAt, endAt, request.getModelId(), request.getEndpoint(), aggregate);
+    String json = new Gson().toJson(payload);
+    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
+    responseObserver.onCompleted();
+  }
 
-    final List<NGramData> filteredToTimespan = fetchNGramData(request, startAt, endAt);
+  private Map<String, Object> buildPayload(
+      Instant start, Instant end, String modelId, String endpoint, Map<String, Object> aggregate) {
+    Map<String, Object> metadata = new HashMap<>();
+    metadata.put("start_time_millis", start.toEpochMilli());
+    metadata.put("end_time_millis", end.toEpochMilli());
+    metadata.put("model_id", modelId);
+    metadata.put("endpoint", endpoint);
 
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("metadata", metadata);
+    payload.put("data", aggregate);
+    return payload;
+  }
+
+  @Override
+  public void getModelDataDiff(
+      GetModelDataDiffRequest request,
+      StreamObserver<GetModelDataDiffRequest.Response> responseObserver) {
+    LOGGER.info("GetModelDataDiff: " + request);
+    final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
+    final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
+
+    final List<NGramData> aFilteredToTimespan =
+        fetchNGramData(request.getModelIdA(), startAt, endAt);
+    final List<NGramData> bFilteredToTimespan =
+        fetchNGramData(request.getModelIdB(), startAt, endAt);
+
+    final Map<String, Object> aggregateA = aggregateTimespan(aFilteredToTimespan);
+    final Map<String, Object> aggregateB = aggregateTimespan(bFilteredToTimespan);
+
+    Map<String, Object> leftPayload =
+        buildPayload(startAt, endAt, request.getModelIdA(), request.getEndpoint(), aggregateA);
+    Map<String, Object> rightPayload =
+        buildPayload(startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateA);
+
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("left", leftPayload);
+    payload.put("right", rightPayload);
+
+    String json = new Gson().toJson(payload);
+    responseObserver.onNext(GetModelDataDiffRequest.Response.newBuilder().setData(json).build());
+    responseObserver.onCompleted();
+  }
+
+  private Map<String, Object> aggregateTimespan(List<NGramData> filteredToTimespan) {
     AtomicLong totalPopulation = new AtomicLong(0L);
     Map<List<String>, AtomicLong> allNgrams = new HashMap<>();
     filteredToTimespan.stream()
@@ -87,20 +137,18 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                 })
             .collect(Collectors.toList())
             .subList(0, 100);
-
     Map<String, Object> result = new HashMap<>();
+    result.put("metadata", "");
     result.put("population", totalPopulation);
+    result.put("predictionCount", filteredToTimespan.size());
     result.put("ngrams", topNGrams);
-    String json = new Gson().toJson(filteredToTimespan);
-    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
-    responseObserver.onCompleted();
+    return result;
   }
 
-  private List<NGramData> fetchNGramData(
-      GetModelDataRequest request, Instant startAt, Instant endAt) {
+  private List<NGramData> fetchNGramData(String modelId, Instant startAt, Instant endAt) {
     final File fileRoot = new File(modelDataStoragePath);
     final File[] filteredToModel =
-        fileRoot.listFiles((dir, name) -> name.startsWith(request.getModelId() + "-"));
+        fileRoot.listFiles((dir, name) -> name.startsWith(modelId + "-"));
     return IntStream.range(0, filteredToModel.length)
         .mapToObj(i -> Pair.of(i, filteredToModel[i]))
         .filter(
@@ -138,20 +186,6 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
             })
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
-  }
-
-  @Override
-  public void getModelDataDiff(
-      GetModelDataRequest request, StreamObserver<GetModelDataRequest.Response> responseObserver) {
-    LOGGER.info("GetModelDataDiff: " + request);
-    final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
-    final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
-
-    final List<NGramData> filteredToTimespan = fetchNGramData(request, startAt, endAt);
-
-    String json = new Gson().toJson(filteredToTimespan);
-    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
-    responseObserver.onCompleted();
   }
 
   private Instant extractTimestamp(String fileName) {
