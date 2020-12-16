@@ -92,7 +92,8 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
         buildPayload(startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateB);
 
     Map<String, Object> diffPayload =
-      buildDiffPayload(startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateA, aggregateB);
+        buildDiffPayload(
+            startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateA, aggregateB);
 
     Map<String, Object> payload = new HashMap<>();
     payload.put("left", leftPayload);
@@ -104,7 +105,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private Map<String, Object> buildPayload(
-    Instant start, Instant end, String modelId, String endpoint, Map<String, Object> aggregate) {
+      Instant start, Instant end, String modelId, String endpoint, Map<String, Object> aggregate) {
     Map<String, Object> metadata = new HashMap<>();
     metadata.put("start_time_millis", start.toEpochMilli());
     metadata.put("end_time_millis", end.toEpochMilli());
@@ -118,15 +119,20 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private Map<String, Object> buildDiffPayload(
-    Instant start, Instant end, String modelId, String endpoint, Map<String, Object> aggregateA, Map<String, Object> aggregateB) {
+      Instant start,
+      Instant end,
+      String modelId,
+      String endpoint,
+      Map<String, Object> aggregateA,
+      Map<String, Object> aggregateB) {
     Map<String, Object> metadata = new HashMap<>();
     metadata.put("start_time_millis", start.toEpochMilli());
     metadata.put("end_time_millis", end.toEpochMilli());
     metadata.put("model_id", modelId);
     metadata.put("endpoint", endpoint);
 
-    final Map<String, Object> dataA = (Map<String,Object>)aggregateA.get("data");
-    final Map<String, Object> dataB = (Map<String,Object>)aggregateB.get("data");
+    final Map<String, Object> dataA = (Map<String, Object>) aggregateA.get("data");
+    final Map<String, Object> dataB = (Map<String, Object>) aggregateB.get("data");
 
     final long predictionCountA = (Long) dataA.get("prediction_count");
     final long predictionCountB = (Long) dataB.get("prediction_count");
@@ -141,32 +147,47 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final List<NGram> nGramsB = (List<NGram>) dataB.get("ngrams");
 
     final List<NGram> diffedNGrams = new ArrayList<>();
-    for(NGram left : nGramsA) {
-      Optional<NGram> rightOptional = nGramsB.stream().filter(nGram -> nGram.getGrams().size() == left.getGrams().size() && nGram.getGrams().containsAll(left.getGrams())).findFirst();
-      if(!rightOptional.isPresent()) {
+    for (NGram left : nGramsA) {
+      Optional<NGram> rightOptional =
+          nGramsB.stream()
+              .filter(
+                  nGram ->
+                      nGram.getGrams().size() == left.getGrams().size()
+                          && nGram.getGrams().containsAll(left.getGrams()))
+              .findFirst();
+      if (!rightOptional.isPresent()) {
         diffedNGrams.add(new NGram(left.getGrams(), 0L, 0L));
-      }
-      else {
+      } else {
         NGram right = rightOptional.get();
-        diffedNGrams.add(new NGram(left.getGrams(), right.getCount() - left.getCount(), right.getRank() - left.getRank()));
+        diffedNGrams.add(
+            new NGram(
+                left.getGrams(),
+                right.getCount() - left.getCount(),
+                right.getRank() - left.getRank()));
       }
     }
-    for(NGram right : nGramsB) {
-      Optional<NGram> leftOptional = nGramsB.stream().filter(nGram -> nGram.getGrams().size() == right.getGrams().size() && nGram.getGrams().containsAll(right.getGrams())).findFirst();
-      if(!leftOptional.isPresent()) {
+    for (NGram right : nGramsB) {
+      Optional<NGram> leftOptional =
+          nGramsB.stream()
+              .filter(
+                  nGram ->
+                      nGram.getGrams().size() == right.getGrams().size()
+                          && nGram.getGrams().containsAll(right.getGrams()))
+              .findFirst();
+      if (!leftOptional.isPresent()) {
         diffedNGrams.add(new NGram(right.getGrams(), 0L, 0L));
       }
     }
-    final List<NGram> sortedDiff = diffedNGrams.stream()
-      .sorted((o1, o2) -> (int)(o2.getRank() - o1.getRank()))
-      .collect(Collectors.toList())
-      .subList(0, 100);
+    final List<NGram> sortedDiff =
+        diffedNGrams.stream()
+            .sorted((o1, o2) -> (int) (o2.getRank() - o1.getRank()))
+            .collect(Collectors.toList())
+            .subList(0, 100);
 
     final Map<String, Object> data = new HashMap<>();
     data.put("prediction_count", predictionCountB - predictionCountA);
     data.put("population_size", populationB - populationA);
     data.put("n", nB - nA);
-
 
     Map<String, Object> payload = new HashMap<>();
     payload.put("metadata", metadata);
