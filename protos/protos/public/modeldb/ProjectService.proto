@@ -466,7 +466,7 @@ service ProjectService {
         };
     };
 
-    rpc verifyConnection(Empty) returns (VerifyConnectionResponse) {
+    rpc verifyConnection(VerifyConnectionRequest) returns (VerifyConnectionResponse) {
         option (google.api.http) = {
             get: "/v1/project/verifyConnection"
         };
