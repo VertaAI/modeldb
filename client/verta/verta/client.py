@@ -723,7 +723,7 @@ class Client(object):
         if workspace is None:
             workspace = self._get_personal_workspace()
 
-        ctx = copy.copy(self._ctx)
+        ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
 
         resource_name = "Registered Model"
@@ -1070,7 +1070,7 @@ class Client(object):
         if workspace is None:
             workspace = self._get_personal_workspace()
 
-        ctx = copy.copy(self._ctx)
+        ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
 
         return RegisteredModel._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org)
@@ -1221,7 +1221,7 @@ class Client(object):
         name = self._set_from_config_if_none(name, "dataset")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        ctx = copy.copy(self._ctx)
+        ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
 
         resource_name = "Dataset"
@@ -1289,7 +1289,7 @@ class Client(object):
         name = self._set_from_config_if_none(name, "dataset")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        ctx = copy.copy(self._ctx)
+        ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
         return Dataset._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=tags, attrs=attrs,
                                time_created=time_created, public_within_org=public_within_org)
