@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceImplBase {
@@ -21,6 +22,8 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
 
   public ModelDataServiceImpl(String modelDataStoragePath) {
     this.modelDataStoragePath = modelDataStoragePath;
+    // ensure it exists
+    new File(modelDataStoragePath).mkdirs();
   }
 
   private String buildFileName(String modelId, Long timestampMillis, String endpoint) {
@@ -63,13 +66,20 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("GetModelData: " + request);
     final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
-    final File fileRoot = new File(modelDataStoragePath);
 
+    final List<Map<String, Object>> filteredToTimespan = fetchModelDataMaps(request, startAt, endAt);
+    String json = new Gson().toJson(filteredToTimespan);
+    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
+    responseObserver.onCompleted();
+  }
+
+  private List<Map<String, Object>> fetchModelDataMaps(GetModelDataRequest request, Instant startAt, Instant endAt) {
+    final File fileRoot = new File(modelDataStoragePath);
     final File[] filteredToModel = fileRoot.listFiles((dir, name) -> name.startsWith(request.getModelId() + "-"));
     final List<Map<String,Object>> filteredToTimespan = Arrays.stream(filteredToModel)
       .filter(file -> {
         final Instant fileTimestamp = Instant.ofEpochMilli(file.lastModified());
-        return startAt.isAfter(fileTimestamp) && endAt.isBefore(fileTimestamp);
+        return fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
       })
       .map(file -> {
         try {
@@ -82,9 +92,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
       })
       .filter(Objects::nonNull)
       .collect(Collectors.toList());
-    String json = new Gson().toJson(filteredToTimespan);
-    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
-    responseObserver.onCompleted();
+    return filteredToTimespan;
   }
 
   private Map<String, Object> buildModelDataMap(String modelId, File file, String fileContents) {
@@ -102,6 +110,15 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   public void getModelDataDiff(
       GetModelDataRequest request, StreamObserver<GetModelDataRequest.Response> responseObserver) {
     LOGGER.info("GetModelDataDiff: " + request);
-    super.getModelDataDiff(request, responseObserver);
+    final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
+    final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
+
+    final List<Map<String, Object>> filteredToTimespan = fetchModelDataMaps(request, startAt, endAt);
+    
+    filteredToTimespan.stream();
+
+    String json = new Gson().toJson(filteredToTimespan);
+    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
+    responseObserver.onCompleted();
   }
 }
