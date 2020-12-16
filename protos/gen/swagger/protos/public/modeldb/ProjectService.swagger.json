@@ -544,8 +544,6 @@
         ]
       }
     },
-<<<<<<< HEAD
-=======
     "/project/logArtifacts": {
       "post": {
         "summary": "artifacts",
@@ -611,7 +609,6 @@
         ]
       }
     },
->>>>>>> d4d74fb913eec3df98a6ae8dd7b520e9b151a5a6
     "/project/updateProjectAttributes": {
       "post": {
         "operationId": "ProjectService_updateProjectAttributes",
@@ -1373,28 +1370,6 @@
         }
       }
     },
-<<<<<<< HEAD
-    "modeldbSetProjectShortName": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "short_name": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbSetProjectShortNameResponse": {
-      "type": "object",
-      "properties": {
-        "project": {
-          "$ref": "#/definitions/modeldbProject"
-        }
-      }
-    },
-=======
->>>>>>> d4d74fb913eec3df98a6ae8dd7b520e9b151a5a6
     "modeldbUpdateProjectAttributes": {
       "type": "object",
       "properties": {

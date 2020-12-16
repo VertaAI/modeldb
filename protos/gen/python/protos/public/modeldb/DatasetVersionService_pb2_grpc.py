@@ -209,14 +209,8 @@ class DatasetVersionServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def getUrlForDatasetBlobVersioned(self, request, context):
-    """rpc setDatasetVersionVisibility(SetDatasetVersionVisibilty) returns (SetDatasetVersionVisibilty.Response) {
-    option (google.api.http) = {
-    post: "/v1/dataset-version/setDatasetVersionVisibility"
-    body: "*"
-    };
-    };
-
-    """
+    # missing associated documentation comment in .proto file
+    pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')

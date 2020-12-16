@@ -100,24 +100,6 @@ class ProjectServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.SetProjectReadme.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectReadme.Response.FromString,
         )
-<<<<<<< HEAD
-    self.getProjectReadme = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/getProjectReadme',
-        request_serializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.Response.FromString,
-        )
-    self.setProjectShortName = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/setProjectShortName',
-        request_serializer=modeldb_dot_ProjectService__pb2.SetProjectShortName.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.SetProjectShortName.Response.FromString,
-        )
-    self.getProjectShortName = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/getProjectShortName',
-        request_serializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.Response.FromString,
-        )
-=======
->>>>>>> d4d74fb913eec3df98a6ae8dd7b520e9b151a5a6
     self.getUrlForArtifact = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/getUrlForArtifact',
         request_serializer=modeldb_dot_CommonService__pb2.GetUrlForArtifact.SerializeToString,
@@ -143,14 +125,6 @@ class ProjectServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.DeleteProjectArtifact.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjectArtifact.Response.FromString,
         )
-<<<<<<< HEAD
-    self.deleteProjects = channel.unary_unary(
-        '/ai.verta.modeldb.ProjectService/deleteProjects',
-        request_serializer=modeldb_dot_ProjectService__pb2.DeleteProjects.SerializeToString,
-        response_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjects.Response.FromString,
-        )
-=======
->>>>>>> d4d74fb913eec3df98a6ae8dd7b520e9b151a5a6
 
 
 class ProjectServiceServicer(object):
@@ -307,27 +281,7 @@ class ProjectServiceServicer(object):
     };
     };
 
-<<<<<<< HEAD
-  def getProjectReadme(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def setProjectShortName(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getProjectShortName(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-=======
     """
->>>>>>> d4d74fb913eec3df98a6ae8dd7b520e9b151a5a6
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -336,13 +290,6 @@ class ProjectServiceServicer(object):
     """rpc getProjectReadme(GetProjectReadme) returns (GetProjectReadme.Response) {
     option (google.api.http) = {
     get: "/v1/project/getProjectReadme"
-    };
-    };
-
-    rpc setProjectVisibility(SetProjectVisibilty) returns (SetProjectVisibilty.Response) {
-    option (google.api.http) = {
-    post: "/v1/project/setProjectVisibility"
-    body: "*"
     };
     };
 
@@ -393,16 +340,6 @@ class ProjectServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-<<<<<<< HEAD
-  def deleteProjects(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-=======
->>>>>>> d4d74fb913eec3df98a6ae8dd7b520e9b151a5a6
 
 def add_ProjectServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -491,24 +428,6 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectReadme.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.SetProjectReadme.Response.SerializeToString,
       ),
-<<<<<<< HEAD
-      'getProjectReadme': grpc.unary_unary_rpc_method_handler(
-          servicer.getProjectReadme,
-          request_deserializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.GetProjectReadme.Response.SerializeToString,
-      ),
-      'setProjectShortName': grpc.unary_unary_rpc_method_handler(
-          servicer.setProjectShortName,
-          request_deserializer=modeldb_dot_ProjectService__pb2.SetProjectShortName.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.SetProjectShortName.Response.SerializeToString,
-      ),
-      'getProjectShortName': grpc.unary_unary_rpc_method_handler(
-          servicer.getProjectShortName,
-          request_deserializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.Response.SerializeToString,
-      ),
-=======
->>>>>>> d4d74fb913eec3df98a6ae8dd7b520e9b151a5a6
       'getUrlForArtifact': grpc.unary_unary_rpc_method_handler(
           servicer.getUrlForArtifact,
           request_deserializer=modeldb_dot_CommonService__pb2.GetUrlForArtifact.FromString,
@@ -534,14 +453,6 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           request_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjectArtifact.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.DeleteProjectArtifact.Response.SerializeToString,
       ),
-<<<<<<< HEAD
-      'deleteProjects': grpc.unary_unary_rpc_method_handler(
-          servicer.deleteProjects,
-          request_deserializer=modeldb_dot_ProjectService__pb2.DeleteProjects.FromString,
-          response_serializer=modeldb_dot_ProjectService__pb2.DeleteProjects.Response.SerializeToString,
-      ),
-=======
->>>>>>> d4d74fb913eec3df98a6ae8dd7b520e9b151a5a6
   }
   generic_handler = grpc.method_handlers_generic_handler(
       'ai.verta.modeldb.ProjectService', rpc_method_handlers)

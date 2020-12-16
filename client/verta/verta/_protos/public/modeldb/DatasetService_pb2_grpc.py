@@ -200,20 +200,12 @@ class DatasetServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def getLastExperimentByDatasetId(self, request, context):
-    """rpc setDatasetVisibility(SetDatasetVisibilty) returns (SetDatasetVisibilty.Response) {
-    option (google.api.http) = {
-    post: "/v1/dataset/setDatasetVisibility"
-    body: "*"
-    };
-    };
-
-    """
+    # missing associated documentation comment in .proto file
+    pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-<<<<<<< HEAD
-=======
   def getExperimentRunByDataset(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -221,7 +213,6 @@ class DatasetServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
->>>>>>> d4d74fb913eec3df98a6ae8dd7b520e9b151a5a6
 
 def add_DatasetServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
