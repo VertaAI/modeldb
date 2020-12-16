@@ -50,8 +50,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     } catch (IOException ex) {
       LOGGER.error(ex);
     }
-    responseObserver.onNext(
-      StoreModelDataRequest.Response.newBuilder().build());
+    responseObserver.onNext(StoreModelDataRequest.Response.newBuilder().build());
     responseObserver.onCompleted();
   }
 
@@ -96,11 +95,11 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private Map<String, Object> buildModelDataMap(String modelId, File file, String fileContents) {
-    Map<String,Object> metadata = new HashMap<>();
+    Map<String, Object> metadata = new HashMap<>();
     metadata.put("model_id", modelId);
     metadata.put("timestamp", file.lastModified());
     metadata.put("endpoint", extractEndpoint(file.getName()));
-    Map<String,Object> result = new HashMap<>();
+    Map<String, Object> result = new HashMap<>();
     result.put("metadata", metadata);
     result.put("data", fileContents);
     return result;
@@ -114,7 +113,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
 
     final List<Map<String, Object>> filteredToTimespan = fetchModelDataMaps(request, startAt, endAt);
-    
+
     filteredToTimespan.stream();
 
     String json = new Gson().toJson(filteredToTimespan);
