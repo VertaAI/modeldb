@@ -70,20 +70,6 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     responseObserver.onCompleted();
   }
 
-  private Map<String, Object> buildPayload(
-      Instant start, Instant end, String modelId, String endpoint, Map<String, Object> aggregate) {
-    Map<String, Object> metadata = new HashMap<>();
-    metadata.put("start_time_millis", start.toEpochMilli());
-    metadata.put("end_time_millis", end.toEpochMilli());
-    metadata.put("model_id", modelId);
-    metadata.put("endpoint", endpoint);
-
-    Map<String, Object> payload = new HashMap<>();
-    payload.put("metadata", metadata);
-    payload.put("data", aggregate);
-    return payload;
-  }
-
   @Override
   public void getModelDataDiff(
       GetModelDataDiffRequest request,
@@ -105,13 +91,87 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     Map<String, Object> rightPayload =
         buildPayload(startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateB);
 
+    Map<String, Object> diffPayload =
+      buildDiffPayload(startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateA, aggregateB);
+
     Map<String, Object> payload = new HashMap<>();
     payload.put("left", leftPayload);
     payload.put("right", rightPayload);
-
+    payload.put("diff", diffPayload);
     String json = new Gson().toJson(payload);
     responseObserver.onNext(GetModelDataDiffRequest.Response.newBuilder().setData(json).build());
     responseObserver.onCompleted();
+  }
+
+  private Map<String, Object> buildPayload(
+    Instant start, Instant end, String modelId, String endpoint, Map<String, Object> aggregate) {
+    Map<String, Object> metadata = new HashMap<>();
+    metadata.put("start_time_millis", start.toEpochMilli());
+    metadata.put("end_time_millis", end.toEpochMilli());
+    metadata.put("model_id", modelId);
+    metadata.put("endpoint", endpoint);
+
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("metadata", metadata);
+    payload.put("data", aggregate);
+    return payload;
+  }
+
+  private Map<String, Object> buildDiffPayload(
+    Instant start, Instant end, String modelId, String endpoint, Map<String, Object> aggregateA, Map<String, Object> aggregateB) {
+    Map<String, Object> metadata = new HashMap<>();
+    metadata.put("start_time_millis", start.toEpochMilli());
+    metadata.put("end_time_millis", end.toEpochMilli());
+    metadata.put("model_id", modelId);
+    metadata.put("endpoint", endpoint);
+
+    final Map<String, Object> dataA = (Map<String,Object>)aggregateA.get("data");
+    final Map<String, Object> dataB = (Map<String,Object>)aggregateB.get("data");
+
+    final long predictionCountA = (Long) dataA.get("prediction_count");
+    final long predictionCountB = (Long) dataB.get("prediction_count");
+
+    final long populationA = (Long) dataA.get("population_size");
+    final long populationB = (Long) dataB.get("population_size");
+
+    final long nA = (Long) dataA.get("n");
+    final long nB = (Long) dataB.get("n");
+
+    final List<NGram> nGramsA = (List<NGram>) dataA.get("ngrams");
+    final List<NGram> nGramsB = (List<NGram>) dataB.get("ngrams");
+
+    final List<NGram> diffedNGrams = new ArrayList<>();
+    for(NGram left : nGramsA) {
+      Optional<NGram> rightOptional = nGramsB.stream().filter(nGram -> nGram.getGrams().size() == left.getGrams().size() && nGram.getGrams().containsAll(left.getGrams())).findFirst();
+      if(!rightOptional.isPresent()) {
+        diffedNGrams.add(new NGram(left.getGrams(), 0L, 0L));
+      }
+      else {
+        NGram right = rightOptional.get();
+        diffedNGrams.add(new NGram(left.getGrams(), right.getCount() - left.getCount(), right.getRank() - left.getRank()));
+      }
+    }
+    for(NGram right : nGramsB) {
+      Optional<NGram> leftOptional = nGramsB.stream().filter(nGram -> nGram.getGrams().size() == right.getGrams().size() && nGram.getGrams().containsAll(right.getGrams())).findFirst();
+      if(!leftOptional.isPresent()) {
+        diffedNGrams.add(new NGram(right.getGrams(), 0L, 0L));
+      }
+    }
+    final List<NGram> sortedDiff = diffedNGrams.stream()
+      .sorted((o1, o2) -> (int)(o2.getRank() - o1.getRank()))
+      .collect(Collectors.toList())
+      .subList(0, 100);
+
+    final Map<String, Object> data = new HashMap<>();
+    data.put("prediction_count", predictionCountB - predictionCountA);
+    data.put("population_size", populationB - populationA);
+    data.put("n", nB - nA);
+
+
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("metadata", metadata);
+    payload.put("data", sortedDiff);
+    return payload;
   }
 
   private Map<String, Object> aggregateTimespan(List<NGramData> filteredToTimespan) {
@@ -131,10 +191,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     List<NGram> topNGrams =
         allNgrams.entrySet().stream()
             .sorted((o1, o2) -> (int) (o1.getValue().get() - o2.getValue().get()))
-            .map(
-                entry -> {
-                  return new NGram(entry.getKey(), entry.getValue().get(), rank.getAndIncrement());
-                })
+            .map(entry -> new NGram(entry.getKey(), entry.getValue().get(), rank.getAndIncrement()))
             .collect(Collectors.toList())
             .subList(0, 100);
     Map<String, Object> result = new HashMap<>();
@@ -190,14 +247,9 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
 
   private Instant extractTimestamp(String fileName) {
     final String[] tokens = fileName.split("-");
-    final String timestampStr = tokens[1];
+    final String timestampStr = tokens[tokens.length - 1];
     final Long timestamp = Long.parseLong(timestampStr);
     return Instant.ofEpochMilli(timestamp);
-  }
-
-  private String extractEndpoint(String fileName) {
-    final String[] tokens = fileName.split("-");
-    return tokens[1];
   }
 
   class NGramData {
