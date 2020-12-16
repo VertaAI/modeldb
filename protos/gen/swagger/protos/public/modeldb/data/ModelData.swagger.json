@@ -48,6 +48,12 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "endpoint",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [

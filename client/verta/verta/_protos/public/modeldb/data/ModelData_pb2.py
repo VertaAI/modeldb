@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb.data',
   syntax='proto3',
   serialized_options=b'P\001ZCgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/data',
-  serialized_pb=b'\n\x1cmodeldb/data/ModelData.proto\x12\x15\x61i.verta.modeldb.data\x1a\x1cgoogle/api/annotations.proto\"Q\n\x11ModelDataMetadata\x12\x18\n\x10timestamp_millis\x18\x01 \x01(\x03\x12\x10\n\x08model_id\x18\x02 \x01(\t\x12\x10\n\x08\x65ndpoint\x18\x03 \x01(\t\"U\n\tModelData\x12:\n\x08metadata\x18\x01 \x01(\x0b\x32(.ai.verta.modeldb.data.ModelDataMetadata\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\t\"X\n\x15StoreModelDataRequest\x12\x33\n\tmodelData\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.data.ModelData\x1a\n\n\x08Response\"u\n\x13GetModelDataRequest\x12\x19\n\x11start_time_millis\x18\x01 \x01(\x03\x12\x17\n\x0f\x65nd_time_millis\x18\x02 \x01(\x03\x12\x10\n\x08model_id\x18\x03 \x01(\t\x1a\x18\n\x08Response\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\t\"\x85\x01\n\x15ModelDataDiffMetadata\x12\x19\n\x11start_time_millis\x18\x01 \x01(\x03\x12\x17\n\x0f\x65nd_time_millis\x18\x02 \x01(\x03\x12\x12\n\nmodel_id_a\x18\x03 \x01(\t\x12\x12\n\nmodel_id_b\x18\x04 \x01(\t\x12\x10\n\x08\x65ndpoint\x18\x05 \x01(\t\"\x8f\x01\n\x17GetModelDataDiffRequest\x12\x19\n\x11start_time_millis\x18\x01 \x01(\x03\x12\x17\n\x0f\x65nd_time_millis\x18\x02 \x01(\x03\x12\x12\n\nmodel_id_a\x18\x03 \x01(\t\x12\x12\n\nmodel_id_b\x18\x04 \x01(\t\x1a\x18\n\x08Response\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\t2\xe0\x03\n\x10ModelDataService\x12\x99\x01\n\x0eStoreModelData\x12,.ai.verta.modeldb.data.StoreModelDataRequest\x1a\x35.ai.verta.modeldb.data.StoreModelDataRequest.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x1a\x17/v1/data/storeModelData:\x01*\x12\x8e\x01\n\x0cGetModelData\x12*.ai.verta.modeldb.data.GetModelDataRequest\x1a\x33.ai.verta.modeldb.data.GetModelDataRequest.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/data/getModelData\x12\x9e\x01\n\x10GetModelDataDiff\x12..ai.verta.modeldb.data.GetModelDataDiffRequest\x1a\x37.ai.verta.modeldb.data.GetModelDataDiffRequest.Response\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/data/getModelDataDiffBGP\x01ZCgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/datab\x06proto3'
+  serialized_pb=b'\n\x1cmodeldb/data/ModelData.proto\x12\x15\x61i.verta.modeldb.data\x1a\x1cgoogle/api/annotations.proto\"Q\n\x11ModelDataMetadata\x12\x18\n\x10timestamp_millis\x18\x01 \x01(\x03\x12\x10\n\x08model_id\x18\x02 \x01(\t\x12\x10\n\x08\x65ndpoint\x18\x03 \x01(\t\"U\n\tModelData\x12:\n\x08metadata\x18\x01 \x01(\x0b\x32(.ai.verta.modeldb.data.ModelDataMetadata\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\t\"X\n\x15StoreModelDataRequest\x12\x33\n\tmodelData\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.data.ModelData\x1a\n\n\x08Response\"\x87\x01\n\x13GetModelDataRequest\x12\x19\n\x11start_time_millis\x18\x01 \x01(\x03\x12\x17\n\x0f\x65nd_time_millis\x18\x02 \x01(\x03\x12\x10\n\x08model_id\x18\x03 \x01(\t\x12\x10\n\x08\x65ndpoint\x18\x04 \x01(\t\x1a\x18\n\x08Response\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\t\"\x85\x01\n\x15ModelDataDiffMetadata\x12\x19\n\x11start_time_millis\x18\x01 \x01(\x03\x12\x17\n\x0f\x65nd_time_millis\x18\x02 \x01(\x03\x12\x12\n\nmodel_id_a\x18\x03 \x01(\t\x12\x12\n\nmodel_id_b\x18\x04 \x01(\t\x12\x10\n\x08\x65ndpoint\x18\x05 \x01(\t\"\x8f\x01\n\x17GetModelDataDiffRequest\x12\x19\n\x11start_time_millis\x18\x01 \x01(\x03\x12\x17\n\x0f\x65nd_time_millis\x18\x02 \x01(\x03\x12\x12\n\nmodel_id_a\x18\x03 \x01(\t\x12\x12\n\nmodel_id_b\x18\x04 \x01(\t\x1a\x18\n\x08Response\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\t2\xe0\x03\n\x10ModelDataService\x12\x99\x01\n\x0eStoreModelData\x12,.ai.verta.modeldb.data.StoreModelDataRequest\x1a\x35.ai.verta.modeldb.data.StoreModelDataRequest.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x1a\x17/v1/data/storeModelData:\x01*\x12\x8e\x01\n\x0cGetModelData\x12*.ai.verta.modeldb.data.GetModelDataRequest\x1a\x33.ai.verta.modeldb.data.GetModelDataRequest.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/data/getModelData\x12\x9e\x01\n\x10GetModelDataDiff\x12..ai.verta.modeldb.data.GetModelDataDiffRequest\x1a\x37.ai.verta.modeldb.data.GetModelDataDiffRequest.Response\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/data/getModelDataDiffBGP\x01ZCgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/datab\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,])
 
@@ -189,8 +189,8 @@ _GETMODELDATAREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=438,
-  serialized_end=462,
+  serialized_start=457,
+  serialized_end=481,
 )
 
 _GETMODELDATAREQUEST = _descriptor.Descriptor(
@@ -221,6 +221,13 @@ _GETMODELDATAREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='endpoint', full_name='ai.verta.modeldb.data.GetModelDataRequest.endpoint', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -233,8 +240,8 @@ _GETMODELDATAREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=345,
-  serialized_end=462,
+  serialized_start=346,
+  serialized_end=481,
 )
 
 
@@ -292,8 +299,8 @@ _MODELDATADIFFMETADATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=465,
-  serialized_end=598,
+  serialized_start=484,
+  serialized_end=617,
 )
 
 
@@ -323,8 +330,8 @@ _GETMODELDATADIFFREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=438,
-  serialized_end=462,
+  serialized_start=457,
+  serialized_end=481,
 )
 
 _GETMODELDATADIFFREQUEST = _descriptor.Descriptor(
@@ -374,8 +381,8 @@ _GETMODELDATADIFFREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=601,
-  serialized_end=744,
+  serialized_start=620,
+  serialized_end=763,
 )
 
 _MODELDATA.fields_by_name['metadata'].message_type = _MODELDATAMETADATA
@@ -466,8 +473,8 @@ _MODELDATASERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=747,
-  serialized_end=1227,
+  serialized_start=766,
+  serialized_end=1246,
   methods=[
   _descriptor.MethodDescriptor(
     name='StoreModelData',
