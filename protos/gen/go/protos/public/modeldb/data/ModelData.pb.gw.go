@@ -106,7 +106,7 @@ var (
 )
 
 func request_ModelDataService_GetModelDataDiff_0(ctx context.Context, marshaler runtime.Marshaler, client ModelDataServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetModelDataRequest
+	var protoReq GetModelDataDiffRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -122,7 +122,7 @@ func request_ModelDataService_GetModelDataDiff_0(ctx context.Context, marshaler 
 }
 
 func local_request_ModelDataService_GetModelDataDiff_0(ctx context.Context, marshaler runtime.Marshaler, server ModelDataServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetModelDataRequest
+	var protoReq GetModelDataDiffRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {

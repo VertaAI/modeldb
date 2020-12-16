@@ -26,8 +26,8 @@ class ModelDataServiceStub(object):
         )
     self.GetModelDataDiff = channel.unary_unary(
         '/ai.verta.modeldb.data.ModelDataService/GetModelDataDiff',
-        request_serializer=modeldb_dot_data_dot_ModelData__pb2.GetModelDataRequest.SerializeToString,
-        response_deserializer=modeldb_dot_data_dot_ModelData__pb2.GetModelDataRequest.Response.FromString,
+        request_serializer=modeldb_dot_data_dot_ModelData__pb2.GetModelDataDiffRequest.SerializeToString,
+        response_deserializer=modeldb_dot_data_dot_ModelData__pb2.GetModelDataDiffRequest.Response.FromString,
         )
 
 
@@ -71,8 +71,8 @@ def add_ModelDataServiceServicer_to_server(servicer, server):
       ),
       'GetModelDataDiff': grpc.unary_unary_rpc_method_handler(
           servicer.GetModelDataDiff,
-          request_deserializer=modeldb_dot_data_dot_ModelData__pb2.GetModelDataRequest.FromString,
-          response_serializer=modeldb_dot_data_dot_ModelData__pb2.GetModelDataRequest.Response.SerializeToString,
+          request_deserializer=modeldb_dot_data_dot_ModelData__pb2.GetModelDataDiffRequest.FromString,
+          response_serializer=modeldb_dot_data_dot_ModelData__pb2.GetModelDataDiffRequest.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

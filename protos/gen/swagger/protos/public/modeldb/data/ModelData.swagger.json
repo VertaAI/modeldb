@@ -62,7 +62,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/dataGetModelDataRequestResponse"
+              "$ref": "#/definitions/dataGetModelDataDiffRequestResponse"
             }
           },
           "default": {
@@ -88,7 +88,13 @@
             "format": "int64"
           },
           {
-            "name": "model_id",
+            "name": "model_id_a",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "model_id_b",
             "in": "query",
             "required": false,
             "type": "string"
@@ -133,6 +139,14 @@
     }
   },
   "definitions": {
+    "dataGetModelDataDiffRequestResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string"
+        }
+      }
+    },
     "dataGetModelDataRequestResponse": {
       "type": "object",
       "properties": {
