@@ -190,30 +190,25 @@ public class CollaboratorResourceMigration {
           Map<String, UserInfo> userInfoMap =
               authService.getUserInfoFromAuthServer(userIds, null, null);
           for (RepositoryEntity repository : repositoryEntities) {
-            try {
-              WorkspaceDTO workspaceDTO =
-                  roleService.getWorkspaceDTOByWorkspaceId(
-                      userInfoMap.get(repository.getOwner()),
-                      repository.getWorkspace_id(),
-                      repository.getWorkspace_type());
-              // if repositoryVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
-              // ignore the CollaboratorType
-              roleService.createWorkspacePermissions(
-                  workspaceDTO.getWorkspaceName(),
-                  String.valueOf(repository.getId()),
-                  Optional.of(Long.parseLong(repository.getOwner())),
-                  repository.isDataset()
-                      ? ModelDBServiceResourceTypes.DATASET
-                      : ModelDBServiceResourceTypes.REPOSITORY,
-                  CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
-                  getResourceVisibility(
-                      Optional.ofNullable(
-                          WorkspaceTypeEnum.WorkspaceType.forNumber(
-                              repository.getWorkspace_type())),
-                      VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())));
-            } catch (Exception ex) {
-              LOGGER.warn("CollaboratorResourceMigration Exception: {}", ex.getMessage());
-            }
+            WorkspaceDTO workspaceDTO =
+                roleService.getWorkspaceDTOByWorkspaceId(
+                    userInfoMap.get(repository.getOwner()),
+                    repository.getWorkspace_id(),
+                    repository.getWorkspace_type());
+            // if repositoryVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
+            // ignore the CollaboratorType
+            roleService.createWorkspacePermissions(
+                workspaceDTO.getWorkspaceName(),
+                String.valueOf(repository.getId()),
+                Optional.of(Long.parseLong(repository.getOwner())),
+                repository.isDataset()
+                    ? ModelDBServiceResourceTypes.DATASET
+                    : ModelDBServiceResourceTypes.REPOSITORY,
+                CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+                getResourceVisibility(
+                    Optional.ofNullable(
+                        WorkspaceTypeEnum.WorkspaceType.forNumber(repository.getWorkspace_type())),
+                    VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())));
           }
         } else {
           LOGGER.debug("Total repositories count 0");
