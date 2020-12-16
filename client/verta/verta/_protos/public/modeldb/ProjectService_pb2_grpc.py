@@ -112,7 +112,7 @@ class ProjectServiceStub(object):
         )
     self.verifyConnection = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/verifyConnection',
-        request_serializer=modeldb_dot_ProjectService__pb2.Empty.SerializeToString,
+        request_serializer=modeldb_dot_ProjectService__pb2.VerifyConnectionRequest.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.VerifyConnectionResponse.FromString,
         )
     self.deepCopyProject = channel.unary_unary(
@@ -505,7 +505,7 @@ def add_ProjectServiceServicer_to_server(servicer, server):
       ),
       'verifyConnection': grpc.unary_unary_rpc_method_handler(
           servicer.verifyConnection,
-          request_deserializer=modeldb_dot_ProjectService__pb2.Empty.FromString,
+          request_deserializer=modeldb_dot_ProjectService__pb2.VerifyConnectionRequest.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.VerifyConnectionResponse.SerializeToString,
       ),
       'deepCopyProject': grpc.unary_unary_rpc_method_handler(
