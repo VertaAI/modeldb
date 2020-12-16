@@ -220,6 +220,31 @@ class TestEntities:
             finally:
                 shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
+    def test_context(self, client, strs):
+        strs = iter(strs)
+        def assert_new_run_in_proj():
+            assert client.get_or_create_experiment_run()._msg.project_id == proj.id
+            assert client.create_experiment_run()._msg.project_id == proj.id
+
+        proj = client.create_project()
+        assert_new_run_in_proj()
+
+        client.get_or_create_repository(next(strs)).delete()
+        # client.create_repository(next(strs)).delete()  # method DNE
+        assert_new_run_in_proj()
+
+        client.get_or_create_registered_model().delete()
+        client.create_registered_model().delete()
+        assert_new_run_in_proj()
+
+        client.get_or_create_dataset().delete()
+        client.create_dataset().delete()
+        assert_new_run_in_proj()
+
+        assert client.get_or_create_experiment()._msg.project_id == proj.id
+        assert client.create_experiment()._msg.project_id == proj.id
+        assert_new_run_in_proj()
+
 
 class TestProject:
     def test_create(self, client):
