@@ -2,7 +2,6 @@ package ai.verta.modeldb.versioning;
 
 import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
 
-import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
@@ -473,7 +472,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             repositoryEntity.isDataset()
                 ? ModelDBServiceResourceTypes.DATASET
                 : ModelDBServiceResourceTypes.REPOSITORY,
-            CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+            repository.getCustomPermission().getCollaboratorType(),
             repository.getVisibility());
         LOGGER.debug("Project role bindings created successfully");
         Transaction transaction = session.beginTransaction();

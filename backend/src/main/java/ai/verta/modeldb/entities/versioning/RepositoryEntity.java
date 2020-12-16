@@ -233,6 +233,7 @@ public class RepositoryEntity {
     builder.setVisibility(repositoryResource.getVisibility());
     builder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     builder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
+    builder.setCustomPermission(repositoryResource.getCustomPermission());
 
     if (owner != null) {
       builder.setOwner(owner);

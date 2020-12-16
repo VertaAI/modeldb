@@ -1,6 +1,5 @@
 package ai.verta.modeldb.dataset;
 
-import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
@@ -156,7 +155,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           dataset.getId(),
           Optional.empty(), // UAC will populate the owner ID
           ModelDBServiceResourceTypes.DATASET,
-          CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+          dataset.getCustomPermission().getCollaboratorType(),
           dataset.getVisibility());
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
