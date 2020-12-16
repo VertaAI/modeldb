@@ -28,10 +28,10 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private String buildFileName(ModelDataMetadata metadata) {
-      final String modelId = metadata.getModelId();
-      final Long timestampMillis = metadata.getTimestampMillis();
-      final String endpoint = metadata.getEndpoint();
-      return buildFileName(modelId, timestampMillis, endpoint);
+    final String modelId = metadata.getModelId();
+    final Long timestampMillis = metadata.getTimestampMillis();
+    final String endpoint = metadata.getEndpoint();
+    return buildFileName(modelId, timestampMillis, endpoint);
   }
 
   @Override
@@ -90,8 +90,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
       .filter(Objects::nonNull)
       .collect(Collectors.toList());
     String json = new Gson().toJson(filteredToTimespan);
-    responseObserver.onNext(
-      GetModelDataRequest.Response.newBuilder().setData(json).build());
+    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
     responseObserver.onCompleted();
   }
 
