@@ -35,6 +35,26 @@ message GetModelDataRequest {
   }
 }
 
+message ModelDataDiffMetadata {
+  int64 start_time_millis = 1;
+  int64 end_time_millis = 2;
+  string model_id_a = 3;
+  string model_id_b = 4;
+  string endpoint = 5;
+}
+
+message GetModelDataDiffRequest {
+  int64 start_time_millis = 1;
+  int64 end_time_millis = 2;
+  string model_id_a = 3;
+  string model_id_b = 4;
+
+  message Response {
+    string data = 1; // json
+  }
+}
+
+
 service ModelDataService {
   rpc StoreModelData(StoreModelDataRequest) returns (StoreModelDataRequest.Response) {
     option (google.api.http) = {
@@ -49,9 +69,10 @@ service ModelDataService {
     };
   };
 
-  rpc GetModelDataDiff(GetModelDataRequest) returns (GetModelDataRequest.Response) {
+  rpc GetModelDataDiff(GetModelDataDiffRequest) returns (GetModelDataDiffRequest.Response) {
     option (google.api.http) = {
       get: "/v1/data/getModelDataDiff"
     };
   };
 }
+
