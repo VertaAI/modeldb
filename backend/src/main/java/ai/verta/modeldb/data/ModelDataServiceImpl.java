@@ -103,7 +103,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     Map<String, Object> leftPayload =
         buildPayload(startAt, endAt, request.getModelIdA(), request.getEndpoint(), aggregateA);
     Map<String, Object> rightPayload =
-        buildPayload(startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateA);
+        buildPayload(startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateB);
 
     Map<String, Object> payload = new HashMap<>();
     payload.put("left", leftPayload);
