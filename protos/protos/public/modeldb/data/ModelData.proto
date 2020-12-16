@@ -29,6 +29,7 @@ message GetModelDataRequest {
   int64 start_time_millis = 1;
   int64 end_time_millis = 2;
   string model_id = 3;
+  string endpoint = 4;
 
   message Response {
     string data = 1; // json
