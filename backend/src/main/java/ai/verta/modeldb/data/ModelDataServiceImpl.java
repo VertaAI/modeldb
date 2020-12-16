@@ -63,27 +63,30 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
 
-    final List<NGramData> filteredToTimespan =
-        fetchNGramData(request, startAt, endAt);
+    final List<NGramData> filteredToTimespan = fetchNGramData(request, startAt, endAt);
 
     AtomicLong totalPopulation = new AtomicLong(0L);
     Map<List<String>, AtomicLong> allNgrams = new HashMap<>();
-    filteredToTimespan.stream().forEach(nGramData -> {
-      totalPopulation.addAndGet(nGramData.getPopulation());
-      for (NGram nGram : nGramData.getNgrams()) {
-        AtomicLong count = allNgrams.computeIfAbsent(nGram.getGrams(),
-          strings -> new AtomicLong(0L));
-        count.addAndGet(nGram.getCount());
-      }
-    });
+    filteredToTimespan.stream()
+        .forEach(
+            nGramData -> {
+              totalPopulation.addAndGet(nGramData.getPopulation());
+              for (NGram nGram : nGramData.getNgrams()) {
+                AtomicLong count =
+                    allNgrams.computeIfAbsent(nGram.getGrams(), strings -> new AtomicLong(0L));
+                count.addAndGet(nGram.getCount());
+              }
+            });
     AtomicLong rank = new AtomicLong(1);
-    List<NGram> topNGrams = allNgrams.entrySet().stream()
-      .sorted((o1, o2) -> (int) (o1.getValue().get() - o2.getValue().get()))
-      .map(entry -> {
-        return new NGram(entry.getKey(), entry.getValue().get(), rank.getAndIncrement());
-      })
-      .collect(Collectors.toList())
-      .subList(0, 100);
+    List<NGram> topNGrams =
+        allNgrams.entrySet().stream()
+            .sorted((o1, o2) -> (int) (o1.getValue().get() - o2.getValue().get()))
+            .map(
+                entry -> {
+                  return new NGram(entry.getKey(), entry.getValue().get(), rank.getAndIncrement());
+                })
+            .collect(Collectors.toList())
+            .subList(0, 100);
 
     Map<String, Object> result = new HashMap<>();
     result.put("population", totalPopulation);
@@ -99,39 +102,42 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final File[] filteredToModel =
         fileRoot.listFiles((dir, name) -> name.startsWith(request.getModelId() + "-"));
     return IntStream.range(0, filteredToModel.length)
-            .mapToObj(i -> Pair.of(i, filteredToModel[i]))
-            .filter(
-                pair -> {
-                  final Instant fileTimestamp = extractTimestamp(pair.getValue().getName());
-                  return fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
-                })
-            .map(
-              pair -> {
-                  final long rank = pair.getKey();
-                  final File file = pair.getValue();
-                  try {
-                    final String fileContents =
-                        Files.lines(Paths.get(file.getAbsolutePath()))
-                            .collect(Collectors.joining());
-                    Map<String, Object> rootObject = new Gson().fromJson(fileContents, Map.class);
-                    final Long populationSize = Long.parseLong((String)rootObject.get("populationSize"));
-                    final Long n = Long.parseLong((String)rootObject.get("n"));
-                    final List<Map<String,Object>> ngramMaps = (List<Map<String,Object>>) rootObject.get("data");
-                    final List<NGram> ngrams = ngramMaps.stream()
-                      .map(ngramMap -> {
-                        List<String> gram = (List<String>) ngramMap.get("ngram");
-                        Long count = Long.parseLong((String)ngramMap.get("count"));
-                        return new NGram(gram, count, rank);
-                      })
-                      .collect(Collectors.toList());
-                    return new NGramData(populationSize, n, ngrams);
-                  } catch (IOException e) {
-                    LOGGER.error(e);
-                  }
-                  return null;
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        .mapToObj(i -> Pair.of(i, filteredToModel[i]))
+        .filter(
+            pair -> {
+              final Instant fileTimestamp = extractTimestamp(pair.getValue().getName());
+              return fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
+            })
+        .map(
+            pair -> {
+              final long rank = pair.getKey();
+              final File file = pair.getValue();
+              try {
+                final String fileContents =
+                    Files.lines(Paths.get(file.getAbsolutePath())).collect(Collectors.joining());
+                Map<String, Object> rootObject = new Gson().fromJson(fileContents, Map.class);
+                final Long populationSize =
+                    Long.parseLong((String) rootObject.get("populationSize"));
+                final Long n = Long.parseLong((String) rootObject.get("n"));
+                final List<Map<String, Object>> ngramMaps =
+                    (List<Map<String, Object>>) rootObject.get("data");
+                final List<NGram> ngrams =
+                    ngramMaps.stream()
+                        .map(
+                            ngramMap -> {
+                              List<String> gram = (List<String>) ngramMap.get("ngram");
+                              Long count = Long.parseLong((String) ngramMap.get("count"));
+                              return new NGram(gram, count, rank);
+                            })
+                        .collect(Collectors.toList());
+                return new NGramData(populationSize, n, ngrams);
+              } catch (IOException e) {
+                LOGGER.error(e);
+              }
+              return null;
+            })
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -141,8 +147,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
 
-    final List<NGramData> filteredToTimespan =
-        fetchNGramData(request, startAt, endAt);
+    final List<NGramData> filteredToTimespan = fetchNGramData(request, startAt, endAt);
 
     String json = new Gson().toJson(filteredToTimespan);
     responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
