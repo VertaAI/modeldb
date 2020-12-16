@@ -375,7 +375,7 @@
 
     <changeSet id="set-created-true-on-repository-for-existing-repositories" author="anandJ">
         <update tableName="repository">
-            <column name="created" valueBoolean="true"/>
+            <column name="created" valueBoolean="true" value="true"/>
             <where>created=false AND deleted=false</where>
         </update>
     </changeSet>
