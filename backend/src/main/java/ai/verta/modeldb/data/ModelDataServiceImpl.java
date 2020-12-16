@@ -9,7 +9,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -52,6 +56,99 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     responseObserver.onCompleted();
   }
 
+  @Override
+  public void getModelData(
+      GetModelDataRequest request, StreamObserver<GetModelDataRequest.Response> responseObserver) {
+    LOGGER.info("GetModelData: " + request);
+    final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
+    final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
+
+    final List<NGramData> filteredToTimespan =
+        fetchNGramData(request, startAt, endAt);
+
+    AtomicLong totalPopulation = new AtomicLong(0L);
+    Map<List<String>, AtomicLong> allNgrams = new HashMap<>();
+    filteredToTimespan.stream().forEach(nGramData -> {
+      totalPopulation.addAndGet(nGramData.getPopulation());
+      for (NGram nGram : nGramData.getNgrams()) {
+        AtomicLong count = allNgrams.computeIfAbsent(nGram.getGrams(),
+          strings -> new AtomicLong(0L));
+        count.addAndGet(nGram.getCount());
+      }
+    });
+    AtomicLong rank = new AtomicLong(1);
+    List<NGram> topNGrams = allNgrams.entrySet().stream()
+      .sorted((o1, o2) -> (int) (o1.getValue().get() - o2.getValue().get()))
+      .map(entry -> {
+        return new NGram(entry.getKey(), entry.getValue().get(), rank.getAndIncrement());
+      })
+      .collect(Collectors.toList())
+      .subList(0, 100);
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("population", totalPopulation);
+    result.put("ngrams", topNGrams);
+    String json = new Gson().toJson(filteredToTimespan);
+    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
+    responseObserver.onCompleted();
+  }
+
+  private List<NGramData> fetchNGramData(
+      GetModelDataRequest request, Instant startAt, Instant endAt) {
+    final File fileRoot = new File(modelDataStoragePath);
+    final File[] filteredToModel =
+        fileRoot.listFiles((dir, name) -> name.startsWith(request.getModelId() + "-"));
+    return IntStream.range(0, filteredToModel.length)
+            .mapToObj(i -> Pair.of(i, filteredToModel[i]))
+            .filter(
+                pair -> {
+                  final Instant fileTimestamp = extractTimestamp(pair.getValue().getName());
+                  return fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
+                })
+            .map(
+              pair -> {
+                  final long rank = pair.getKey();
+                  final File file = pair.getValue();
+                  try {
+                    final String fileContents =
+                        Files.lines(Paths.get(file.getAbsolutePath()))
+                            .collect(Collectors.joining());
+                    Map<String, Object> rootObject = new Gson().fromJson(fileContents, Map.class);
+                    final Long populationSize = Long.parseLong((String)rootObject.get("populationSize"));
+                    final Long n = Long.parseLong((String)rootObject.get("n"));
+                    final List<Map<String,Object>> ngramMaps = (List<Map<String,Object>>) rootObject.get("data");
+                    final List<NGram> ngrams = ngramMaps.stream()
+                      .map(ngramMap -> {
+                        List<String> gram = (List<String>) ngramMap.get("ngram");
+                        Long count = Long.parseLong((String)ngramMap.get("count"));
+                        return new NGram(gram, count, rank);
+                      })
+                      .collect(Collectors.toList());
+                    return new NGramData(populationSize, n, ngrams);
+                  } catch (IOException e) {
+                    LOGGER.error(e);
+                  }
+                  return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+  }
+
+  @Override
+  public void getModelDataDiff(
+      GetModelDataRequest request, StreamObserver<GetModelDataRequest.Response> responseObserver) {
+    LOGGER.info("GetModelDataDiff: " + request);
+    final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
+    final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
+
+    final List<NGramData> filteredToTimespan =
+        fetchNGramData(request, startAt, endAt);
+
+    String json = new Gson().toJson(filteredToTimespan);
+    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
+    responseObserver.onCompleted();
+  }
+
   private Instant extractTimestamp(String fileName) {
     final String[] tokens = fileName.split("-");
     final String timestampStr = tokens[1];
@@ -64,74 +161,51 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     return tokens[1];
   }
 
-  @Override
-  public void getModelData(
-      GetModelDataRequest request, StreamObserver<GetModelDataRequest.Response> responseObserver) {
-    LOGGER.info("GetModelData: " + request);
-    final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
-    final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
+  class NGramData {
+    final Long population;
+    final Long n;
+    final List<NGram> ngrams;
 
-    final List<Map<String, Object>> filteredToTimespan =
-        fetchModelDataMaps(request, startAt, endAt);
-    String json = new Gson().toJson(filteredToTimespan);
-    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
-    responseObserver.onCompleted();
+    public NGramData(Long population, Long n, List<NGram> ngrams) {
+      this.population = population;
+      this.n = n;
+      this.ngrams = ngrams;
+    }
+
+    public Long getPopulation() {
+      return population;
+    }
+
+    public Long getN() {
+      return n;
+    }
+
+    public List<NGram> getNgrams() {
+      return ngrams;
+    }
   }
 
-  private List<Map<String, Object>> fetchModelDataMaps(
-      GetModelDataRequest request, Instant startAt, Instant endAt) {
-    final File fileRoot = new File(modelDataStoragePath);
-    final File[] filteredToModel =
-        fileRoot.listFiles((dir, name) -> name.startsWith(request.getModelId() + "-"));
-    final List<Map<String, Object>> filteredToTimespan =
-        Arrays.stream(filteredToModel)
-            .filter(
-                file -> {
-                  final Instant fileTimestamp = extractTimestamp(file.getName());
-                  return fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
-                })
-            .map(
-                file -> {
-                  try {
-                    final String fileContents =
-                        Files.lines(Paths.get(file.getAbsolutePath()))
-                            .collect(Collectors.joining());
-                    return buildModelDataMap(request.getModelId(), file, fileContents);
-                  } catch (IOException e) {
-                    LOGGER.error(e);
-                  }
-                  return null;
-                })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-    return filteredToTimespan;
-  }
+  class NGram {
+    final List<String> grams;
+    final Long count;
+    final Long rank;
 
-  private Map<String, Object> buildModelDataMap(String modelId, File file, String fileContents) {
-    Map<String, Object> metadata = new HashMap<>();
-    metadata.put("model_id", modelId);
-    metadata.put("timestamp", file.lastModified());
-    metadata.put("endpoint", extractEndpoint(file.getName()));
-    Map<String, Object> result = new HashMap<>();
-    result.put("metadata", metadata);
-    result.put("data", fileContents);
-    return result;
-  }
+    public NGram(List<String> grams, Long count, Long rank) {
+      this.grams = grams;
+      this.count = count;
+      this.rank = rank;
+    }
 
-  @Override
-  public void getModelDataDiff(
-      GetModelDataRequest request, StreamObserver<GetModelDataRequest.Response> responseObserver) {
-    LOGGER.info("GetModelDataDiff: " + request);
-    final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
-    final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
+    public List<String> getGrams() {
+      return grams;
+    }
 
-    final List<Map<String, Object>> filteredToTimespan =
-        fetchModelDataMaps(request, startAt, endAt);
+    public Long getCount() {
+      return count;
+    }
 
-    filteredToTimespan.stream();
-
-    String json = new Gson().toJson(filteredToTimespan);
-    responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
-    responseObserver.onCompleted();
+    public Long getRank() {
+      return rank;
+    }
   }
 }
