@@ -214,8 +214,10 @@ message GetProjectByName {
     }
 }
 
-message Empty {
-
+// The backend will compare this version with the minimally compatible version configured in the backend
+// and will return status = false if not compatible.
+message VerifyConnectionRequest {
+    string python_client_version = 1;
 }
 
 message VerifyConnectionResponse {
