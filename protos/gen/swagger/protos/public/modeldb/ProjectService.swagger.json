@@ -544,6 +544,8 @@
         ]
       }
     },
+<<<<<<< HEAD
+=======
     "/project/logArtifacts": {
       "post": {
         "summary": "artifacts",
@@ -609,6 +611,7 @@
         ]
       }
     },
+>>>>>>> d4d74fb913eec3df98a6ae8dd7b520e9b151a5a6
     "/project/updateProjectAttributes": {
       "post": {
         "operationId": "ProjectService_updateProjectAttributes",
@@ -742,6 +745,14 @@
         "CONTAINER"
       ],
       "default": "IMAGE"
+    },
+    "CollaboratorTypeEnumCollaboratorType": {
+      "type": "string",
+      "enum": [
+        "READ_ONLY",
+        "READ_WRITE"
+      ],
+      "default": "READ_ONLY"
     },
     "OperatorEnumOperator": {
       "type": "string",
@@ -945,8 +956,12 @@
         "readme_text": {
           "type": "string"
         },
-        "project_visibility": {
-          "$ref": "#/definitions/modeldbProjectVisibility"
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "artifacts": {
           "type": "array",
@@ -1296,8 +1311,12 @@
         "readme_text": {
           "type": "string"
         },
-        "project_visibility": {
-          "$ref": "#/definitions/modeldbProjectVisibility"
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "workspace_id": {
           "type": "string"
@@ -1335,15 +1354,6 @@
         }
       }
     },
-    "modeldbProjectVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE"
-    },
     "modeldbSetProjectReadme": {
       "type": "object",
       "properties": {
@@ -1363,6 +1373,28 @@
         }
       }
     },
+<<<<<<< HEAD
+    "modeldbSetProjectShortName": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "short_name": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbSetProjectShortNameResponse": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "$ref": "#/definitions/modeldbProject"
+        }
+      }
+    },
+=======
+>>>>>>> d4d74fb913eec3df98a6ae8dd7b520e9b151a5a6
     "modeldbUpdateProjectAttributes": {
       "type": "object",
       "properties": {
@@ -1469,6 +1501,27 @@
           }
         }
       }
+    },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "WORKSPACE_DEFAULT",
+        "ORG_DEFAULT",
+        "ORG_CUSTOM",
+        "PRIVATE"
+      ],
+      "default": "WORKSPACE_DEFAULT"
     }
   },
   "basePath": "/v1"

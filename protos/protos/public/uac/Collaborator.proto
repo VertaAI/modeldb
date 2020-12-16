@@ -12,16 +12,21 @@ import "uac/Team.proto";
 import "uac/RoleService.proto";
 import "common/CommonService.proto";
 
+message CollaboratorPermissions {
+    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 1;
+    common.TernaryEnum.Ternary can_deploy = 2;
+}
+
 message AddCollaboratorRequest {
     repeated string entity_ids = 1; // List of project.id, experiment.id etc.
     string share_with = 2; // Collaborator user Id
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 3;
     string message = 4; // Shared message for reference
     uint64 date_created = 5; // shared on
     uint64 date_updated = 6; // CollaboratorType updated on
 
-    common.TernaryEnum.Ternary can_deploy = 7;
     common.EntitiesEnum.EntitiesTypes authz_entity_type = 8; //user, team, org
+
+    CollaboratorPermissions permission = 9;
 
     message Response {
         repeated Action self_allowed_actions = 5;
@@ -54,11 +59,10 @@ message RemoveCollaborator {
 
 message GetCollaboratorResponseItem {
     string user_id = 1 [deprecated=true];
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 2;
     ShareViaEnum share_via_type = 3;
     string verta_id = 4; //user_verta_id, team_id, org_id
-    common.TernaryEnum.Ternary can_deploy = 5;
     common.EntitiesEnum.EntitiesTypes authz_entity_type = 6;
+    CollaboratorPermissions permission = 7;
 }
 
 message GetCollaborator {
@@ -69,7 +73,85 @@ message GetCollaborator {
     }
 }
 
+enum ResourceVisibility {
+    WORKSPACE_DEFAULT = 0;
+    ORG_DEFAULT = 1;
+    ORG_CUSTOM = 2;
+    PRIVATE = 3;
+}
+
+message GetResources {
+    // Optional. If empty, will assume we want to get all resources
+    Resources resources = 1;
+    // Optional. If empty, will assume we want to get across all workspaces
+    oneof workspace {
+        uint64 workspace_id = 2;
+        string workspace_name = 3;
+    }
+
+    message Response {
+        repeated GetResourcesResponseItem item = 1;
+    }
+}
+
+message GetResourcesResponseItem {
+    ServiceEnum.Service service = 10;
+    string resource_id = 11;
+    ResourceType resource_type = 12;
+
+    uint64 workspace_id = 2;
+    // Owner of the resource
+    uint64 owner_id = 3;
+    // Type of the visibility
+    ResourceVisibility visibility = 4;
+
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    CollaboratorPermissions custom_permission = 9;
+}
+
+message SetResources {
+    // Specification of the resources. IDs are globally unique, so changes in the fields above cause
+    // update on pre-exising resources
+    Resources resources = 1;
+    // Workspace where the resources belong
+    oneof workspace {
+        uint64 workspace_id = 2;
+        string workspace_name = 3;
+    }
+    // Owner of the resource
+    uint64 owner_id = 4;
+    // Type of the visibility
+    ResourceVisibility visibility = 5;
+
+    // The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC. We should error
+    // otherwise
+    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 6;
+    common.TernaryEnum.Ternary can_deploy = 7;
+
+    message Response{}
+}
+
+message DeleteResources {
+    // Specification of the resources
+    Resources resources = 1;
+
+    message Response{}
+}
+
 service CollaboratorService {
+    // The caller must have permission to GET the resource accordingly
+    rpc getResources (GetResources) returns (GetResources.Response) {
+    };
+
+    // The caller must have permission to CREATE or UPDATE the resource accordingly
+    rpc setResources (SetResources) returns (SetResources.Response) {
+    };
+
+    // The caller must have permission to DELETE the resource accordingly
+    rpc deleteResources (DeleteResources) returns (DeleteResources.Response) {
+    };
+
     rpc addOrUpdateProjectCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
         option (google.api.http) = {
             post: "/v1/collaborator/addOrUpdateProjectCollaborator"

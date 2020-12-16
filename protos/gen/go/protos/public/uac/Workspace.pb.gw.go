@@ -139,6 +139,24 @@ func local_request_WorkspaceService_GetWorkspaceByLegacyId_0(ctx context.Context
 
 }
 
+func request_WorkspaceService_GetVisibleWorkspaces_0(ctx context.Context, marshaler runtime.Marshaler, client WorkspaceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetVisibleWorkspaces
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.GetVisibleWorkspaces(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_WorkspaceService_GetVisibleWorkspaces_0(ctx context.Context, marshaler runtime.Marshaler, server WorkspaceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetVisibleWorkspaces
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.GetVisibleWorkspaces(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 // RegisterWorkspaceServiceHandlerServer registers the http handlers for service WorkspaceService to "mux".
 // UnaryRPC     :call WorkspaceServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -201,6 +219,26 @@ func RegisterWorkspaceServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		}
 
 		forward_WorkspaceService_GetWorkspaceByLegacyId_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_WorkspaceService_GetVisibleWorkspaces_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_WorkspaceService_GetVisibleWorkspaces_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_WorkspaceService_GetVisibleWorkspaces_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -305,6 +343,26 @@ func RegisterWorkspaceServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 
 	})
 
+	mux.Handle("GET", pattern_WorkspaceService_GetVisibleWorkspaces_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_WorkspaceService_GetVisibleWorkspaces_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_WorkspaceService_GetVisibleWorkspaces_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -314,6 +372,8 @@ var (
 	pattern_WorkspaceService_GetWorkspaceByName_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "workspace", "getWorkspaceByName"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_WorkspaceService_GetWorkspaceByLegacyId_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "workspace", "getWorkspaceByLegacyId"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_WorkspaceService_GetVisibleWorkspaces_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "workspace", "getVisibleWorkspaces"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
@@ -322,4 +382,6 @@ var (
 	forward_WorkspaceService_GetWorkspaceByName_0 = runtime.ForwardResponseMessage
 
 	forward_WorkspaceService_GetWorkspaceByLegacyId_0 = runtime.ForwardResponseMessage
+
+	forward_WorkspaceService_GetVisibleWorkspaces_0 = runtime.ForwardResponseMessage
 )

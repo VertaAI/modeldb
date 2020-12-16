@@ -617,6 +617,16 @@
       ],
       "default": "UNKNOWN"
     },
+    "AuthzResourceEnumAuthzServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ORGANIZATION",
+        "TEAM"
+      ],
+      "default": "UNKNOWN"
+    },
     "CollaboratorTypeEnumCollaboratorType": {
       "type": "string",
       "enum": [
@@ -634,6 +644,15 @@
         "READ",
         "UPDATE",
         "DELETE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "DeploymentResourceEnumDeploymentServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ENDPOINT"
       ],
       "default": "UNKNOWN"
     },
@@ -673,6 +692,22 @@
       ],
       "default": "UNKNOWN"
     },
+    "ModelDBResourceEnumModelDBServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "PROJECT",
+        "EXPERIMENT",
+        "EXPERIMENT_RUN",
+        "DATASET",
+        "DATASET_VERSION",
+        "DASHBOARD",
+        "REPOSITORY",
+        "REGISTERED_MODEL"
+      ],
+      "default": "UNKNOWN"
+    },
     "RoleActionEnumRoleServiceActions": {
       "type": "string",
       "enum": [
@@ -684,6 +719,16 @@
         "UPDATE",
         "LIST",
         "DELETE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "RoleResourceEnumRoleServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ROLE",
+        "ROLE_BINDING"
       ],
       "default": "UNKNOWN"
     },
@@ -774,9 +819,6 @@
         "share_with": {
           "type": "string"
         },
-        "collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
-        },
         "message": {
           "type": "string"
         },
@@ -788,11 +830,11 @@
           "type": "string",
           "format": "uint64"
         },
-        "can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
+        },
+        "permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions"
         }
       }
     },
@@ -820,6 +862,20 @@
         }
       }
     },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
+    "uacDeleteResourcesResponse": {
+      "type": "object"
+    },
     "uacFlagEnum": {
       "type": "string",
       "enum": [
@@ -846,20 +902,59 @@
         "user_id": {
           "type": "string"
         },
-        "collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
-        },
         "share_via_type": {
           "$ref": "#/definitions/uacShareViaEnum"
         },
         "verta_id": {
           "type": "string"
         },
-        "can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
+        },
+        "permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions"
+        }
+      }
+    },
+    "uacGetResourcesResponse": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacGetResourcesResponseItem"
+          }
+        }
+      }
+    },
+    "uacGetResourcesResponseItem": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
+        },
+        "resource_id": {
+          "type": "string"
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "owner_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Owner of the resource"
+        },
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility",
+          "title": "Type of the visibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         }
       }
     },
@@ -929,6 +1024,56 @@
           }
         }
       }
+    },
+    "uacResourceType": {
+      "type": "object",
+      "properties": {
+        "role_service_resource_type": {
+          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
+          "title": "Separate based on the service itself"
+        },
+        "authz_service_resource_type": {
+          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
+        },
+        "modeldb_service_resource_type": {
+          "$ref": "#/definitions/ModelDBResourceEnumModelDBServiceResourceTypes"
+        },
+        "deployment_service_resource_type": {
+          "$ref": "#/definitions/DeploymentResourceEnumDeploymentServiceResourceTypes"
+        }
+      }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "WORKSPACE_DEFAULT",
+        "ORG_DEFAULT",
+        "ORG_CUSTOM",
+        "PRIVATE"
+      ],
+      "default": "WORKSPACE_DEFAULT"
+    },
+    "uacResources": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
+        },
+        "resource_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
+        }
+      },
+      "title": "A resource describes a specific object in a service that can receive an action"
+    },
+    "uacSetResourcesResponse": {
+      "type": "object"
     },
     "uacShareViaEnum": {
       "type": "string",

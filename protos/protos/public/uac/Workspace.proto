@@ -32,6 +32,13 @@ message Workspace {
     }
 }
 
+message GetVisibleWorkspaces {
+}
+
+message Workspaces {
+    repeated Workspace workspace = 1;
+}
+
 service WorkspaceService {
     rpc getWorkspaceById (GetWorkspaceById) returns (Workspace){
         option (google.api.http) = {
@@ -48,6 +55,12 @@ service WorkspaceService {
     rpc getWorkspaceByLegacyId (GetWorkspaceByLegacyId) returns (Workspace){
         option (google.api.http) = {
             get: "/v1/workspace/getWorkspaceByLegacyId"
+        };
+    };
+
+    rpc getVisibleWorkspaces (GetVisibleWorkspaces) returns (Workspaces){
+        option (google.api.http) = {
+            get: "/v1/workspace/getVisibleWorkspaces"
         };
     };
 }

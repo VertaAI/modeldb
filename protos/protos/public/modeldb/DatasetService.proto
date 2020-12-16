@@ -10,6 +10,7 @@ import "modeldb/CommonService.proto";
 import "google/api/annotations.proto";
 import "modeldb/ExperimentService.proto";
 import "modeldb/ExperimentRunService.proto";
+import "uac/Collaborator.proto";
 
 message Dataset {
     string id = 1;//For backend reference
@@ -17,7 +18,10 @@ message Dataset {
     string owner = 3;
     string description = 4;
     repeated string tags = 5;
-    DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 6;
+    uac.ResourceVisibility visibility = 6;
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    uac.CollaboratorPermissions custom_permission = 14;
     DatasetTypeEnum.DatasetType dataset_type = 7;
     repeated common.KeyValue attributes = 8;
     uint64 time_created = 9;
@@ -36,20 +40,15 @@ message DatasetTypeEnum {
     }
 }
 
-message DatasetVisibilityEnum {
-    enum DatasetVisibility {
-        PRIVATE = 0;// default
-        PUBLIC = 1;
-        ORG_SCOPED_PUBLIC = 2;
-    }
-}
-
 message CreateDataset {
     string name = 1;
     string description = 2;
     repeated string tags = 3;
     repeated common.KeyValue attributes = 4;
-    DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 5;
+    uac.ResourceVisibility visibility = 5;
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    uac.CollaboratorPermissions custom_permission = 9;
     DatasetTypeEnum.DatasetType dataset_type = 6;
     string workspace_name = 7;
     uint64 time_created = 8;
@@ -191,15 +190,6 @@ message DeleteDatasetAttributes {
     }
 }
 
-message SetDatasetVisibilty {
-    string id = 1;
-    DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 2;
-
-    message Response {
-        Dataset dataset = 1;
-    }
-}
-
 message LastExperimentByDatasetId{
     string dataset_id = 1;
 
@@ -213,16 +203,6 @@ message GetExperimentRunByDataset {
 
     message Response {
         repeated ExperimentRun experiment_runs = 1;
-    }
-}
-
-message SetDatasetWorkspace {
-    string id = 1;
-    string workspace_name = 2;
-
-
-    message Response {
-        Dataset dataset = 1;
     }
 }
 
@@ -329,13 +309,6 @@ service DatasetService {
         };
     };
 
-    // rpc setDatasetVisibility(SetDatasetVisibilty) returns (SetDatasetVisibilty.Response) {
-    //     option (google.api.http) = {
-    //         post: "/v1/dataset/setDatasetVisibility"
-    //         body: "*"
-    //     };
-    // };
-
     rpc getLastExperimentByDatasetId(LastExperimentByDatasetId) returns (LastExperimentByDatasetId.Response){
         option (google.api.http) = {
             get: "/v1/dataset/getLastExperimentByDatasetId"
@@ -348,10 +321,4 @@ service DatasetService {
             body: "*"
         };
     };
-    // rpc setDatasetWorkspace(SetDatasetWorkspace) returns (SetDatasetWorkspace.Response) {
-    //     option (google.api.http) = {
-    //         post: "/v1/dataset/setDatasetWorkspace"
-    //         body: "*"
-    //     };
-    // };
 }

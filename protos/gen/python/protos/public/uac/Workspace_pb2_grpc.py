@@ -29,6 +29,11 @@ class WorkspaceServiceStub(object):
         request_serializer=uac_dot_Workspace__pb2.GetWorkspaceByLegacyId.SerializeToString,
         response_deserializer=uac_dot_Workspace__pb2.Workspace.FromString,
         )
+    self.getVisibleWorkspaces = channel.unary_unary(
+        '/ai.verta.uac.WorkspaceService/getVisibleWorkspaces',
+        request_serializer=uac_dot_Workspace__pb2.GetVisibleWorkspaces.SerializeToString,
+        response_deserializer=uac_dot_Workspace__pb2.Workspaces.FromString,
+        )
 
 
 class WorkspaceServiceServicer(object):
@@ -56,6 +61,13 @@ class WorkspaceServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def getVisibleWorkspaces(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_WorkspaceServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -73,6 +85,11 @@ def add_WorkspaceServiceServicer_to_server(servicer, server):
           servicer.getWorkspaceByLegacyId,
           request_deserializer=uac_dot_Workspace__pb2.GetWorkspaceByLegacyId.FromString,
           response_serializer=uac_dot_Workspace__pb2.Workspace.SerializeToString,
+      ),
+      'getVisibleWorkspaces': grpc.unary_unary_rpc_method_handler(
+          servicer.getVisibleWorkspaces,
+          request_deserializer=uac_dot_Workspace__pb2.GetVisibleWorkspaces.FromString,
+          response_serializer=uac_dot_Workspace__pb2.Workspaces.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

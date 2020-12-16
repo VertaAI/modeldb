@@ -727,15 +727,6 @@
       ],
       "default": "RAW"
     },
-    "DatasetVisibilityEnumDatasetVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE"
-    },
     "OperatorEnumOperator": {
       "type": "string",
       "enum": [
@@ -920,9 +911,6 @@
             "type": "string"
           }
         },
-        "dataset_version_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
-        },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
         },
@@ -1005,9 +993,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "dataset_version_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
