@@ -1,18 +1,17 @@
 package ai.verta.modeldb.data;
 
-import ai.verta.modeldb.CreateDataset;
 import com.google.gson.Gson;
 import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceImplBase {
@@ -54,8 +53,15 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     responseObserver.onCompleted();
   }
 
+  private Instant extractTimestamp(String fileName) {
+    final String[] tokens = fileName.split("-");
+    final String timestampStr = tokens[1];
+    final Long timestamp = Long.parseLong(timestampStr);
+    return Instant.ofEpochMilli(timestamp);
+  }
+
   private String extractEndpoint(String fileName) {
-    String[] tokens = fileName.split("-");
+    final String[] tokens = fileName.split("-");
     return tokens[1];
   }
 
@@ -86,7 +92,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
           return buildModelDataMap(request.getModelId(), file, fileContents);
         } catch (IOException e) {
           LOGGER.error(e);
-        }
+      }
         return null;
       })
       .filter(Objects::nonNull)
