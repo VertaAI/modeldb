@@ -2,9 +2,6 @@ package ai.verta.modeldb.data;
 
 import com.google.gson.Gson;
 import io.grpc.stub.StreamObserver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,6 +10,8 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceImplBase {
   private static final Logger LOGGER = LogManager.getLogger(ModelDataServiceImpl.class);
@@ -88,7 +87,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
         Arrays.stream(filteredToModel)
             .filter(
                 file -> {
-                  final Instant fileTimestamp = Instant.ofEpochMilli(file.lastModified());
+                  final Instant fileTimestamp = extractTimestamp(file.getName());
                   return fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
                 })
             .map(
