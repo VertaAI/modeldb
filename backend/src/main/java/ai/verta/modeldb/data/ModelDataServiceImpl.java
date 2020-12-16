@@ -73,15 +73,8 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
       })
       .map(file -> {
         try {
-          String fileContents = Files.lines(Paths.get(file.getAbsolutePath())).collect(Collectors.joining());
-          Map<String,Object> metadata = new HashMap<>();
-          metadata.put("model_id", request.getModelId());
-          metadata.put("timestamp", file.lastModified());
-          metadata.put("endpoint", extractEndpoint(file.getName()));
-          Map<String,Object> result = new HashMap<>();
-          result.put("metadata", metadata);
-          result.put("data", fileContents);
-          return result;
+          final String fileContents = Files.lines(Paths.get(file.getAbsolutePath())).collect(Collectors.joining());
+          return buildModelDataMap(request.getModelId(), file, fileContents);
         } catch (IOException e) {
           LOGGER.error(e);
         }
@@ -92,6 +85,17 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     String json = new Gson().toJson(filteredToTimespan);
     responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
     responseObserver.onCompleted();
+  }
+
+  private Map<String, Object> buildModelDataMap(String modelId, File file, String fileContents) {
+    Map<String,Object> metadata = new HashMap<>();
+    metadata.put("model_id", modelId);
+    metadata.put("timestamp", file.lastModified());
+    metadata.put("endpoint", extractEndpoint(file.getName()));
+    Map<String,Object> result = new HashMap<>();
+    result.put("metadata", metadata);
+    result.put("data", fileContents);
+    return result;
   }
 
   @Override
