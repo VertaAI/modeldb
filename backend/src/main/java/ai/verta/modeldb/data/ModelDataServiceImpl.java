@@ -292,9 +292,23 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
         .filter(
             pair -> {
               final Instant fileTimestamp = extractTimestamp(pair.getValue().getName());
-              LOGGER.info("File timestamp is " + fileTimestamp + ", comparing to " + startAt + " and " + endAt);
-              LOGGER.info("File timestamp " + fileTimestamp + (fileTimestamp.isAfter(startAt) ? " is after " : " is NOT after ") + startAt);
-              LOGGER.info("File timestamp " + fileTimestamp + (fileTimestamp.isBefore(endAt) ? " is before " : " is NOT before ") + endAt);
+              LOGGER.info(
+                  "File timestamp is "
+                      + fileTimestamp
+                      + ", comparing to "
+                      + startAt
+                      + " and "
+                      + endAt);
+              LOGGER.info(
+                  "File timestamp "
+                      + fileTimestamp
+                      + (fileTimestamp.isAfter(startAt) ? " is after " : " is NOT after ")
+                      + startAt);
+              LOGGER.info(
+                  "File timestamp "
+                      + fileTimestamp
+                      + (fileTimestamp.isBefore(endAt) ? " is before " : " is NOT before ")
+                      + endAt);
               final boolean inTimeWindow =
                   fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
               final String fileEndpoint = extractEndpoint(pair.getValue().getName());
