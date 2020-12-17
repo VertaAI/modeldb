@@ -99,7 +99,6 @@ migration:
 
 feature-flag:
   disabled-authz: true
-  public_sharing_enabled: false
   disabled-artifact-store: false
 
 cron_job:

@@ -19,6 +19,7 @@ import ai.verta.uac.GetCollaborator;
 import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.RemoveCollaborator;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import io.grpc.ManagedChannel;
@@ -729,7 +730,7 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("Dataset-" + new Date().getTime())
-            .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
+            .setVisibility(ResourceVisibility.PRIVATE)
             .build();
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
@@ -773,7 +774,7 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("Dataset-" + new Date().getTime())
-            .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
+            .setVisibility(ResourceVisibility.PRIVATE)
             .build();
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
@@ -864,7 +865,7 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("Dataset-" + new Date().getTime())
-            .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
+            .setVisibility(ResourceVisibility.PRIVATE)
             .build();
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
@@ -932,7 +933,7 @@ public class CollaboratorTest {
         CreateDataset createDatasetRequest =
             CreateDataset.newBuilder()
                 .setName("Dataset-" + new Date().getTime() + ".csv")
-                .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
+                .setVisibility(ResourceVisibility.PRIVATE)
                 .build();
         CreateDataset.Response createDatasetResponse =
             datasetServiceStub.createDataset(createDatasetRequest);

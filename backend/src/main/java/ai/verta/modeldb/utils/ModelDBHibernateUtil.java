@@ -759,6 +759,22 @@ public class ModelDBHibernateUtil {
                         completableFutures[index] = futureTask;
                         index = index + 1;
                       }
+                      if (migrationName.equals(ModelDBConstants.COLLABORATOR_RESOURCE_MIGRATION)) {
+                        // Manually migration to create CollaboratorResource for all resources with
+                        // a visibility parameter
+                        CompletableFuture<Boolean> futureTask =
+                            CompletableFuture.supplyAsync(
+                                () -> {
+                                  int recordUpdateLimit =
+                                      (int)
+                                          migrationDetailMap.getOrDefault(
+                                              ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+                                  new CollaboratorResourceMigration().execute(recordUpdateLimit);
+                                  return true;
+                                });
+                        completableFutures[index] = futureTask;
+                        index = index + 1;
+                      }
                       // add if here for the new migration type
                     }
                   }

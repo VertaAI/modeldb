@@ -32,6 +32,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolStringList;
@@ -954,7 +955,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              RepositoryVisibilityEnum.RepositoryVisibility.PRIVATE,
+              ResourceVisibility.PRIVATE,
               ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
               request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
 

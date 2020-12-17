@@ -1141,38 +1141,45 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public GetResourcesResponseItem getProjectResource(String projectId) {
+  public GetResourcesResponseItem getEntityResource(
+      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     ResourceType resourceType =
         ResourceType.newBuilder()
-            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
+            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
             .build();
     Resources resources =
         Resources.newBuilder()
             .setResourceType(resourceType)
             .setService(ServiceEnum.Service.MODELDB_SERVICE)
-            .addResourceIds(projectId)
+            .addResourceIds(entityId)
             .build();
     List<GetResourcesResponseItem> responseItems = getResourceItems(Optional.of(resources));
     if (responseItems.size() > 1) {
       LOGGER.warn(
-          "Role service returned "
-              + responseItems.size()
-              + " resource response items fetching project resource, but only expected 1. Project ID: "
-              + projectId);
+          "Role service returned {}"
+              + " resource response items fetching {} resource, but only expected 1. ID: {}",
+          responseItems.size(),
+          modelDBServiceResourceTypes.name(),
+          entityId);
     }
     final Optional<GetResourcesResponseItem> responseItem =
         responseItems.stream()
             .filter(
                 item ->
                     item.getResourceType().getModeldbServiceResourceType()
-                            == ModelDBServiceResourceTypes.PROJECT
+                            == modelDBServiceResourceTypes
                         && item.getService() == ServiceEnum.Service.MODELDB_SERVICE)
             .findFirst();
     if (responseItem.isPresent()) {
       return responseItem.get();
     }
     throw new IllegalArgumentException(
-        "Failed to locate project resources in UAC for project ID " + projectId);
+        "Failed to locate "
+            + modelDBServiceResourceTypes.name()
+            + " resources in UAC for "
+            + modelDBServiceResourceTypes.name()
+            + " ID "
+            + entityId);
   }
 
   @Override
@@ -1212,16 +1219,17 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean deleteProjectResources(List<String> projectIds) {
+  public boolean deleteEntityResources(
+      List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     ResourceType modeldbServiceResourceType =
         ResourceType.newBuilder()
-            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
+            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
             .build();
     Resources resources =
         Resources.newBuilder()
             .setResourceType(modeldbServiceResourceType)
             .setService(Service.MODELDB_SERVICE)
-            .addAllResourceIds(projectIds)
+            .addAllResourceIds(entityIds)
             .build();
     return deleteResources(resources);
   }

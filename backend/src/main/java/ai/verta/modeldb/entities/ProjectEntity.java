@@ -1,5 +1,6 @@
 package ai.verta.modeldb.entities;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.authservice.RoleService;
@@ -349,7 +350,8 @@ public class ProjectEntity {
       projectBuilder.setCodeVersionSnapshot(getCode_version_snapshot().getProtoObject());
     }
 
-    GetResourcesResponseItem projectResource = roleService.getProjectResource(this.id);
+    GetResourcesResponseItem projectResource =
+        roleService.getEntityResource(this.id, ModelDBServiceResourceTypes.PROJECT);
     projectBuilder.setVisibility(projectResource.getVisibility());
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
     projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
