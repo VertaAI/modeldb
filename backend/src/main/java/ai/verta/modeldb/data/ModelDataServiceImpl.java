@@ -342,7 +342,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                   }
                 }
                 final List<Map<String, Object>> ngramMaps =
-                    (List<Map<String, Object>>) rootObject.get("data");
+                    (List<Map<String, Object>>) rootObject.get("ngrams");
                 final List<NGram> ngrams =
                     ngramMaps.stream()
                         .map(
