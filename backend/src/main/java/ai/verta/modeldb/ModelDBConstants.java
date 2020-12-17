@@ -177,6 +177,7 @@ public interface ModelDBConstants {
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
   String HEALTH_CHECK_SERVICE_FIELD = "service";
   String DELETED = "deleted";
+  String CREATED = "created";
   String DEV_KEY = "devKey";
   String REQUEST_TIMEOUT = "requestTimeout";
 
@@ -291,6 +292,7 @@ public interface ModelDBConstants {
   String EXPIRED_TOKEN = "ExpiredToken";
   String UPDATE_RUN_ENVIRONMENTS = "update_run_environments";
   String DELETE_AUDIT_LOGS = "delete_audit_logs";
+  String CLEAN_UP_ENTITIES = "clean_up_entities";
 
   // Audit log constants
   String CREATE = "CREATE";

@@ -117,6 +117,10 @@ cron_job:
     initial_delay: 300 #delay timestamp in second, default 300second = 5min
     frequency: 60 #frequency to delete entities in second, default 60
     record_update_limit: 100
+  clean_up_entities:
+    initial_delay: 300 #delay timestamp in second, default 300second = 5min
+    frequency: 60 #frequency to delete entities in second, default 60
+    record_update_limit: 100
 
 populateConnectionsBasedOnPrivileges: false
 
