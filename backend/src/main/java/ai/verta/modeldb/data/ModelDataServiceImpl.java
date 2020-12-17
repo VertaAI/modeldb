@@ -274,6 +274,14 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
       Optional<Long> nNess,
       Instant startAt,
       Instant endAt) {
+    LOGGER.info("Fetching nGrams for model " + modelId);
+    if (endpoint.isPresent()) {
+      LOGGER.info("Filtering predictions to endpoint " + endpoint.get());
+    }
+    if (nNess.isPresent()) {
+      LOGGER.info("Filtering predictions to n-ness " + nNess.get());
+    }
+    LOGGER.info("Filtering predictions to time range " + startAt + " until " + endAt);
     final File fileRoot = new File(modelDataStoragePath);
     final File[] filteredToModel =
         fileRoot.listFiles((dir, name) -> name.startsWith(modelId + "-"));
