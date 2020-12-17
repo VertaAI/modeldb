@@ -41,8 +41,7 @@ public class CleanUpEntitiesCron extends TimerTask {
       cleanProjects(session);
 
       // Clean up repositories
-      // TODO: Remove below comment after merge all the dataset, repository PRs
-      // cleanRepositories(session);
+      cleanRepositories(session);
     } catch (Exception ex) {
       if (ex instanceof StatusRuntimeException) {
         StatusRuntimeException exception = (StatusRuntimeException) ex;
@@ -153,12 +152,12 @@ public class CleanUpEntitiesCron extends TimerTask {
       }
 
       try {
-        // TODO: Remove below comment after merge all the dataset, repository PRs
-        // roleService.deleteEntityResources(repositoryIds);
-        for (RepositoryEntity projectEntity : repositoryEntities) {
+        roleService.deleteEntityResources(
+            repositoryIds, ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+        for (RepositoryEntity repositoryEntity : repositoryEntities) {
           try {
             Transaction transaction = session.beginTransaction();
-            session.delete(projectEntity);
+            session.delete(repositoryEntity);
             transaction.commit();
           } catch (OptimisticLockException ex) {
             LOGGER.info("CleanUpEntitiesCron : cleanRepositories : Exception: {}", ex.getMessage());
