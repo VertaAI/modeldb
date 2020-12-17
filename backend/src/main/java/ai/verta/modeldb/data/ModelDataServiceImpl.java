@@ -346,7 +346,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                         .map(
                             ngramMap -> {
                               List<String> gram = (List<String>) ngramMap.get("ngram");
-                              Long count = Long.parseLong((String) ngramMap.get("count"));
+                              Long count = ((Double) ngramMap.get("count")).longValue();
                               return new NGram(gram, count, rank);
                             })
                         .collect(Collectors.toList());
