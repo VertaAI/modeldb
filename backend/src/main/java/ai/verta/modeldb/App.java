@@ -656,7 +656,7 @@ public class App implements ApplicationContextAware {
     wrapService(serverBuilder, new MetadataServiceImpl(metadataDAO));
     LOGGER.trace("Metadata serviceImpl initialized");
     wrapService(serverBuilder, new ModelDataServiceImpl(app.getModelDataStoragePath()));
-    LOGGER.trace("ModelData serviceImpl initialized");
+    LOGGER.info("ModelData serviceImpl initialized");
     LOGGER.info("All services initialized and resolved dependency before server start");
   }
 
