@@ -327,8 +327,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                     Files.lines(Paths.get(file.getAbsolutePath())).collect(Collectors.joining());
                 Map<String, Object> rootObject = new Gson().fromJson(fileContents, Map.class);
                 LOGGER.info("Root object: " + rootObject);
-                final String populationSizeString = (String) rootObject.get("population_size");
-                final Double populationSizeDouble = Double.parseDouble(populationSizeString);
+                final Double populationSizeDouble = (Double) rootObject.get("population_size");
                 final Long populationSize = populationSizeDouble.longValue();
 //                final Long predictionCount =
 //                    Long.parseLong((String) rootObject.get("prediction_count"));
