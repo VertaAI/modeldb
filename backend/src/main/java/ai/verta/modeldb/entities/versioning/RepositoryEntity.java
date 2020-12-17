@@ -262,6 +262,10 @@ public class RepositoryEntity {
     return owner;
   }
 
+  public Integer getRepository_visibility() {
+    return repository_visibility;
+  }
+
   private void updateAttribute(List<KeyValue> attributes) throws InvalidProtocolBufferException {
     if (attributes != null && !attributes.isEmpty()) {
       for (KeyValue attribute : attributes) {
