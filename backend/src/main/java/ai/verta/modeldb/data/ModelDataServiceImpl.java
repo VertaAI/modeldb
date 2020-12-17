@@ -42,7 +42,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   private String buildFileName(ModelDataMetadata metadata) {
     final String modelId = metadata.getModelId();
     final Long timestampMillis = metadata.getTimestampMillis();
-    final String endpoint = metadata.getEndpoint().replace("/", "");
+    final String endpoint = trimEndpoint(metadata.getEndpoint());
     return buildFileName(modelId, timestampMillis, endpoint);
   }
 
@@ -75,10 +75,11 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("Time window start at: " + startAt);
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
     LOGGER.info("Time window end at: " + endAt);
+    final Optional<String> endpoint = resolveEndpoint(request.getEndpoint());
     final List<NGramData> filteredToTimespan =
         fetchNGramData(
             request.getModelId(),
-            Optional.ofNullable(request.getEndpoint()),
+            endpoint,
             Optional.ofNullable(request.getNNess()),
             startAt,
             endAt);
@@ -102,11 +103,11 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("Time window start at: " + startAt);
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
     LOGGER.info("Time window end at: " + endAt);
-
+    final Optional<String> endpoint = resolveEndpoint(request.getEndpoint());
     final List<NGramData> aFilteredToTimespan =
         fetchNGramData(
             request.getModelIdA(),
-            Optional.ofNullable(request.getEndpoint()),
+            endpoint,
             Optional.ofNullable(request.getNNess()),
             startAt,
             endAt);
@@ -297,7 +298,9 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
               LOGGER.info("File timestamp " + fileTimestamp + (fileTimestamp.isBefore(endAt) ? " is before " : " is NOT before ") + endAt);
               final boolean inTimeWindow =
                   fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
+              LOGGER.info("File " + pair.getValue().getName() + " is in the time window.");
               final String fileEndpoint = extractEndpoint(pair.getValue().getName());
+              LOGGER.info("Comparing file endpoint " + fileEndpoint + " to request endpoint " + endpoint.get());
               boolean endpointMatches =
                   endpoint.isPresent() ? endpoint.get().equals(fileEndpoint) : true;
               if (inTimeWindow && endpointMatches) {
@@ -343,6 +346,17 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
             })
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+  }
+
+  private String trimEndpoint(String endpoint) {
+    return endpoint.replace("/", "");
+  }
+
+  private Optional<String> resolveEndpoint(String endpoint) {
+    if(endpoint == null || endpoint.isEmpty()) {
+      return Optional.empty();
+    }
+    return Optional.of(trimEndpoint(endpoint));
   }
 
   private String extractEndpoint(String fileName) {
