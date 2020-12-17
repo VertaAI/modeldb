@@ -30,6 +30,7 @@ message GetModelDataRequest {
   int64 end_time_millis = 2;
   string model_id = 3;
   string endpoint = 4;
+  int64 n_ness = 5;
 
   message Response {
     string data = 1; // json
@@ -42,6 +43,7 @@ message GetModelDataDiffRequest {
   string model_id_a = 3;
   string model_id_b = 4;
   string endpoint = 5;
+  int64 n_ness = 6;
 
   message Response {
     string data = 1; // json
