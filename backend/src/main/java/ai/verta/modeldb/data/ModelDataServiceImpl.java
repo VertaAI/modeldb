@@ -76,14 +76,10 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
     LOGGER.info("Time window end at: " + endAt);
     final Optional<String> endpoint = resolveEndpoint(request.getEndpoint());
-    final Optional<Long> nNess = request.getNNess() > 0 ? Optional.of(request.getNNess()) : Optional.empty();
+    final Optional<Long> nNess =
+        request.getNNess() > 0 ? Optional.of(request.getNNess()) : Optional.empty();
     final List<NGramData> filteredToTimespan =
-        fetchNGramData(
-            request.getModelId(),
-            endpoint,
-            nNess,
-            startAt,
-            endAt);
+        fetchNGramData(request.getModelId(), endpoint, nNess, startAt, endAt);
     LOGGER.info("Found " + filteredToTimespan.size() + " predictions in the time window.");
     LOGGER.info("Aggregating predictions.");
     Map<String, Object> aggregate = aggregateTimespan(filteredToTimespan);
@@ -105,25 +101,16 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
     LOGGER.info("Time window end at: " + endAt);
     final Optional<String> endpoint = resolveEndpoint(request.getEndpoint());
-    final Optional<Long> nNess = request.getNNess() > 0 ? Optional.of(request.getNNess()) : Optional.empty();
+    final Optional<Long> nNess =
+        request.getNNess() > 0 ? Optional.of(request.getNNess()) : Optional.empty();
     final List<NGramData> aFilteredToTimespan =
-        fetchNGramData(
-            request.getModelIdA(),
-            endpoint,
-            nNess,
-            startAt,
-            endAt);
+        fetchNGramData(request.getModelIdA(), endpoint, nNess, startAt, endAt);
     LOGGER.info(
         "Found "
             + aFilteredToTimespan.size()
             + " predictions in the time window for model data A.");
     final List<NGramData> bFilteredToTimespan =
-        fetchNGramData(
-            request.getModelIdB(),
-            endpoint,
-            nNess,
-            startAt,
-            endAt);
+        fetchNGramData(request.getModelIdB(), endpoint, nNess, startAt, endAt);
     LOGGER.info(
         "Found "
             + bFilteredToTimespan.size()
@@ -339,6 +326,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                 final String fileContents =
                     Files.lines(Paths.get(file.getAbsolutePath())).collect(Collectors.joining());
                 Map<String, Object> rootObject = new Gson().fromJson(fileContents, Map.class);
+                LOGGER.info("Root object: " + rootObject);
                 final Long populationSize =
                     Long.parseLong((String) rootObject.get("populationSize"));
                 final String nString = (String) rootObject.get("n");
