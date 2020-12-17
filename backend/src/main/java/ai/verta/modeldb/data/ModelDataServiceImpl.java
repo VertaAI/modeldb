@@ -35,7 +35,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   private String buildFileName(ModelDataMetadata metadata) {
     final String modelId = metadata.getModelId();
     final Long timestampMillis = metadata.getTimestampMillis();
-    final String endpoint = metadata.getEndpoint();
+    final String endpoint = metadata.getEndpoint().replace("/", "");
     return buildFileName(modelId, timestampMillis, endpoint);
   }
 
