@@ -298,7 +298,10 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
               boolean endpointMatches =
                   endpoint.isPresent() ? endpoint.get().equals(fileEndpoint) : true;
               if (inTimeWindow && endpointMatches) {
-                LOGGER.info("File " + pair.getValue().getName() + " is in the time window and matches the endpoint filter.");
+                LOGGER.info(
+                    "File "
+                        + pair.getValue().getName()
+                        + " is in the time window and matches the endpoint filter.");
               }
               return inTimeWindow && endpointMatches;
             })
