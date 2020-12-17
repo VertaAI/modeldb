@@ -12,6 +12,7 @@ import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetCollaborator;
@@ -1102,7 +1103,8 @@ public class CollaboratorTest {
         .addAllEntityIds(ids)
         .setShareWith(email)
         .setAuthzEntityType(EntitiesTypes.USER)
-        .setCollaboratorType(collaboratorType)
+        .setPermission(
+            CollaboratorPermissions.newBuilder().setCollaboratorType(collaboratorType).build())
         .setDateCreated(Calendar.getInstance().getTimeInMillis())
         .setMessage(message)
         .build();

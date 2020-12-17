@@ -11,8 +11,6 @@ import "modeldb/DatasetService.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 
-
-
 message DatasetVersion {
     string id = 1;//For backend reference
     string parent_id = 2;
@@ -20,7 +18,6 @@ message DatasetVersion {
     uint64 time_logged = 4;
     string description = 5;
     repeated string tags = 6;
-    DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 7;
     DatasetTypeEnum.DatasetType dataset_type = 8;// this acts as a quick check on which type of DataSetInfo to look at for more details.
     repeated common.KeyValue attributes = 9;
     string owner = 10;
@@ -85,7 +82,6 @@ message CreateDatasetVersion {
     string parent_id = 2;
     string description = 4;
     repeated string tags = 5;
-    DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 6;
     DatasetTypeEnum.DatasetType dataset_type = 7;// this acts as a quick check on which type of DataSetInfo to look at for more details.
     repeated common.KeyValue attributes = 8;
     uint64 version = 9;
@@ -226,15 +222,6 @@ message DeleteDatasetVersionAttributes {
     repeated string attribute_keys = 2;
     bool delete_all = 3;
     string dataset_id = 4;
-
-    message Response {
-        DatasetVersion dataset_version = 1;
-    }
-}
-
-message SetDatasetVersionVisibilty {
-    string id = 1;
-    DatasetVisibilityEnum.DatasetVisibility dataset_version_visibility = 2;
 
     message Response {
         DatasetVersion dataset_version = 1;
@@ -385,13 +372,6 @@ service DatasetVersionService {
     rpc deleteDatasetVersionAttributes(DeleteDatasetVersionAttributes) returns (DeleteDatasetVersionAttributes.Response) {
         option (google.api.http) = {
             delete: "/v1/dataset-version/deleteDatasetVersionAttributes"
-            body: "*"
-        };
-    };
-
-    rpc setDatasetVersionVisibility(SetDatasetVersionVisibilty) returns (SetDatasetVersionVisibilty.Response) {
-        option (google.api.http) = {
-            post: "/v1/dataset-version/setDatasetVersionVisibility"
             body: "*"
         };
     };

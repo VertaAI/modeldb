@@ -15,8 +15,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
-import com.google.rpc.Code;
-import io.grpc.StatusRuntimeException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +32,12 @@ public class CollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
   private static AuthService authService;
   private static RoleService roleService;
-  private int paginationSize;
+  private static int paginationSize;
 
   public CollaboratorResourceMigration() {}
 
-  public void execute(int recordUpdateLimit) {
-    this.paginationSize = recordUpdateLimit;
+  public static void execute(int recordUpdateLimit) {
+    CollaboratorResourceMigration.paginationSize = recordUpdateLimit;
     App app = App.getInstance();
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       app.setAuthServerHost(app.getAuthServerHost());
@@ -59,17 +57,6 @@ public class CollaboratorResourceMigration {
       LOGGER.info("Projects done migration");
       // migrateRepositories();
       // LOGGER.info("Repositories done migration");
-    } catch (Exception ex) {
-      if (ex instanceof StatusRuntimeException) {
-        StatusRuntimeException exception = (StatusRuntimeException) ex;
-        if (exception.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-          LOGGER.warn("CollaboratorResourceMigration Exception: {}", ex.getMessage());
-        } else {
-          LOGGER.warn("CollaboratorResourceMigration Exception: ", ex);
-        }
-      } else {
-        LOGGER.warn("CollaboratorResourceMigration Exception: ", ex);
-      }
     } finally {
       ModelDBUtils.unregisteredBackgroundUtilsCount();
     }
@@ -77,12 +64,12 @@ public class CollaboratorResourceMigration {
     LOGGER.info("Migration End");
   }
 
-  private void migrateProjects() {
+  private static void migrateProjects() {
     LOGGER.debug("Projects migration started");
     Long count = getEntityCount(ProjectEntity.class);
 
     int lowerBound = 0;
-    final int pagesize = this.paginationSize;
+    final int pagesize = CollaboratorResourceMigration.paginationSize;
     LOGGER.debug("Total Projects {}", count);
 
     while (lowerBound < count) {
@@ -114,27 +101,23 @@ public class CollaboratorResourceMigration {
           Map<String, UserInfo> userInfoMap =
               authService.getUserInfoFromAuthServer(userIds, null, null);
           for (ProjectEntity project : projectEntities) {
-            try {
-              WorkspaceDTO workspaceDTO =
-                  roleService.getWorkspaceDTOByWorkspaceId(
-                      userInfoMap.get(project.getOwner()),
-                      project.getWorkspace(),
-                      project.getWorkspace_type());
-              // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
-              // ignore the CollaboratorType
-              roleService.createWorkspacePermissions(
-                  workspaceDTO.getWorkspaceName(),
-                  project.getId(),
-                  Optional.of(Long.parseLong(project.getOwner())),
-                  ModelDBServiceResourceTypes.PROJECT,
-                  CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
-                  getResourceVisibility(
-                      Optional.ofNullable(
-                          WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
-                      VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
-            } catch (Exception ex) {
-              LOGGER.warn("CollaboratorResourceMigration Exception: {}", ex.getMessage());
-            }
+            WorkspaceDTO workspaceDTO =
+                roleService.getWorkspaceDTOByWorkspaceId(
+                    userInfoMap.get(project.getOwner()),
+                    project.getWorkspace(),
+                    project.getWorkspace_type());
+            // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
+            // ignore the CollaboratorType
+            roleService.createWorkspacePermissions(
+                workspaceDTO.getWorkspaceName(),
+                project.getId(),
+                Optional.of(Long.parseLong(project.getOwner())),
+                ModelDBServiceResourceTypes.PROJECT,
+                CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+                getResourceVisibility(
+                    Optional.ofNullable(
+                        WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
+                    VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
           }
         } else {
           LOGGER.debug("Total projects count 0");
@@ -167,7 +150,7 @@ public class CollaboratorResourceMigration {
     }
   }
 
-  private ResourceVisibility getResourceVisibility(
+  private static ResourceVisibility getResourceVisibility(
       Optional<WorkspaceTypeEnum.WorkspaceType> workspaceType,
       VisibilityEnum.Visibility projectVisibility) {
     if (!workspaceType.isPresent()) {
