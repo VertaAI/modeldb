@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceImplBase {
   private static final Logger LOGGER = LogManager.getLogger(ModelDataServiceImpl.class);
   public static final String SEPARATOR = "_-_";
+  public static final int TOP_N = 100;
 
   private final String modelDataStoragePath;
 
@@ -227,7 +228,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
         diffedNGrams.stream()
             .sorted((o1, o2) -> (int) (o2.getRank() - o1.getRank()))
             .collect(Collectors.toList())
-            .subList(0, 100);
+            .subList(0, TOP_N);
 
     final Map<String, Object> data = new HashMap<>();
     data.put("prediction_count", predictionCountB - predictionCountA);
@@ -254,12 +255,13 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
               }
             });
     AtomicLong rank = new AtomicLong(1);
-    List<NGram> topNGrams =
+    List<NGram> sortedNGrams =
         allNgrams.entrySet().stream()
             .sorted((o1, o2) -> (int) (o1.getValue().get() - o2.getValue().get()))
             .map(entry -> new NGram(entry.getKey(), entry.getValue().get(), rank.getAndIncrement()))
-            .collect(Collectors.toList())
-            .subList(0, 100);
+            .collect(Collectors.toList());
+    int topFilter = sortedNGrams.size() > TOP_N ? TOP_N : sortedNGrams.size();
+    final List<NGram> topNGrams = sortedNGrams.subList(0, topFilter);
     Map<String, Object> result = new HashMap<>();
     result.put("metadata", "");
     result.put("population", totalPopulation);
@@ -295,6 +297,9 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
               final String fileEndpoint = extractEndpoint(pair.getValue().getName());
               boolean endpointMatches =
                   endpoint.isPresent() ? endpoint.get().equals(fileEndpoint) : true;
+              if (inTimeWindow && endpointMatches) {
+                LOGGER.info("File " + pair.getValue().getName() + " is in the time window and matches the endpoint filter.");
+              }
               return inTimeWindow && endpointMatches;
             })
         .map(
