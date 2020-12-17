@@ -335,8 +335,10 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                     Files.lines(Paths.get(file.getAbsolutePath())).collect(Collectors.joining());
                 Map<String, Object> rootObject = new Gson().fromJson(fileContents, Map.class);
                 LOGGER.info("Root object: " + rootObject);
-                final Long populationSize = ((Double) rootObject.get("population_size")).longValue();
-                final Long predictionCount = ((Double) rootObject.get("prediction_count")).longValue();
+                final Long populationSize =
+                    ((Double) rootObject.get("population_size")).longValue();
+                final Long predictionCount =
+                    ((Double) rootObject.get("prediction_count")).longValue();
                 final Double nDouble = (Double) rootObject.get("n");
                 final Optional<Long> n =
                     nDouble != null ? Optional.of(nDouble.longValue()) : Optional.empty();
