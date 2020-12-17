@@ -94,11 +94,17 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final List<NGramData> aFilteredToTimespan =
         fetchNGramData(
             request.getModelIdA(), Optional.ofNullable(request.getEndpoint()), startAt, endAt);
-    LOGGER.info("Found " + aFilteredToTimespan.size() + " predictions in the time window for model data A.");
+    LOGGER.info(
+        "Found "
+            + aFilteredToTimespan.size()
+            + " predictions in the time window for model data A.");
     final List<NGramData> bFilteredToTimespan =
         fetchNGramData(
             request.getModelIdB(), Optional.ofNullable(request.getEndpoint()), startAt, endAt);
-    LOGGER.info("Found " + bFilteredToTimespan.size() + " predictions in the time window for model data B.");
+    LOGGER.info(
+        "Found "
+            + bFilteredToTimespan.size()
+            + " predictions in the time window for model data B.");
 
     LOGGER.info("Aggregating predictions.");
     final Map<String, Object> aggregateA = aggregateTimespan(aFilteredToTimespan);
@@ -110,7 +116,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
         buildPayload(startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateB);
 
     LOGGER.info("Building diff.");
-        Map<String, Object> diffPayload =
+    Map<String, Object> diffPayload =
         buildDiffPayload(
             startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateA, aggregateB);
 
