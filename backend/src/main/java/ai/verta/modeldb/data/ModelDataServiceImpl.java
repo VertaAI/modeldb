@@ -176,8 +176,8 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("predictionCountA: " + predictionCountA);
     LOGGER.info("predictionCountB: " + predictionCountB);
 
-    final long populationA = (Long) aggregateA.get("population");
-    final long populationB = (Long) aggregateB.get("population");
+    final long populationA = ((AtomicLong) aggregateA.get("population")).get();
+    final long populationB = ((AtomicLong) aggregateB.get("population")).get();
 
     LOGGER.info("populationA: " + populationA);
     LOGGER.info("populationB: " + populationB);
