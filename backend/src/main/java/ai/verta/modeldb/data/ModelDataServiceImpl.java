@@ -335,9 +335,10 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                 Map<String, Object> rootObject = new Gson().fromJson(fileContents, Map.class);
                 final Long populationSize =
                     Long.parseLong((String) rootObject.get("populationSize"));
-                final Long n = Long.parseLong((String) rootObject.get("n"));
-                if (nNess.isPresent()) {
-                  if (n != nNess.get()) {
+                final String nString = (String) rootObject.get("n");
+                final Optional<Long> n = nString != null && !nString.isEmpty() ? Optional.of(Long.parseLong(nString)) : Optional.empty();
+                if (nNess.isPresent() && n.isPresent()) {
+                  if (n.get() != nNess.get()) {
                     return null;
                   }
                 }
@@ -352,7 +353,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                               return new NGram(gram, count, rank);
                             })
                         .collect(Collectors.toList());
-                return new NGramData(populationSize, n, ngrams);
+                return new NGramData(populationSize, n.get(), ngrams);
               } catch (IOException e) {
                 LOGGER.error(e);
               }
