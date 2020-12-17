@@ -16,6 +16,7 @@ from ..modeldb import CommonService_pb2 as modeldb_dot_CommonService__pb2
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from ..modeldb import ExperimentService_pb2 as modeldb_dot_ExperimentService__pb2
 from ..modeldb import ExperimentRunService_pb2 as modeldb_dot_ExperimentRunService__pb2
+from ..uac import Collaborator_pb2 as uac_dot_Collaborator__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -23,9 +24,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb',
   syntax='proto3',
   serialized_options=b'P\001Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb',
-  serialized_pb=b'\n\x1cmodeldb/DatasetService.proto\x12\x10\x61i.verta.modeldb\x1a\x1a\x63ommon/CommonService.proto\x1a\x1bmodeldb/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fmodeldb/ExperimentService.proto\x1a\"modeldb/ExperimentRunService.proto\"\xca\x03\n\x07\x44\x61taset\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\r\n\x05owner\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x0c\n\x04tags\x18\x05 \x03(\t\x12U\n\x12\x64\x61taset_visibility\x18\x06 \x01(\x0e\x32\x39.ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility\x12\x43\n\x0c\x64\x61taset_type\x18\x07 \x01(\x0e\x32-.ai.verta.modeldb.DatasetTypeEnum.DatasetType\x12-\n\nattributes\x18\x08 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x14\n\x0ctime_created\x18\t \x01(\x04\x12\x14\n\x0ctime_updated\x18\n \x01(\x04\x12\x14\n\x0cworkspace_id\x18\x0b \x01(\t\x12H\n\x0eworkspace_type\x18\x0c \x01(\x0e\x32\x30.ai.verta.common.WorkspaceTypeEnum.WorkspaceType\x12\x1c\n\x14workspace_service_id\x18\r \x01(\x04\">\n\x0f\x44\x61tasetTypeEnum\"+\n\x0b\x44\x61tasetType\x12\x07\n\x03RAW\x10\x00\x12\x08\n\x04PATH\x10\x01\x12\t\n\x05QUERY\x10\x02\"\\\n\x15\x44\x61tasetVisibilityEnum\"C\n\x11\x44\x61tasetVisibility\x12\x0b\n\x07PRIVATE\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x15\n\x11ORG_SCOPED_PUBLIC\x10\x02\"\xf1\x02\n\rCreateDataset\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x0c\n\x04tags\x18\x03 \x03(\t\x12-\n\nattributes\x18\x04 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12U\n\x12\x64\x61taset_visibility\x18\x05 \x01(\x0e\x32\x39.ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility\x12\x43\n\x0c\x64\x61taset_type\x18\x06 \x01(\x0e\x32-.ai.verta.modeldb.DatasetTypeEnum.DatasetType\x12\x16\n\x0eworkspace_name\x18\x07 \x01(\t\x12\x14\n\x0ctime_created\x18\x08 \x01(\x04\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"\xc6\x01\n\x0eGetAllDatasets\x12\x13\n\x0bpage_number\x18\x01 \x01(\x05\x12\x12\n\npage_limit\x18\x02 \x01(\x05\x12\x11\n\tascending\x18\x03 \x01(\x08\x12\x10\n\x08sort_key\x18\x04 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x07 \x01(\t\x1aN\n\x08Response\x12+\n\x08\x64\x61tasets\x18\x01 \x03(\x0b\x32\x19.ai.verta.modeldb.Dataset\x12\x15\n\rtotal_records\x18\x02 \x01(\x04\"T\n\x0eGetDatasetById\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"\xac\x01\n\x10GetDatasetByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\x1ar\n\x08Response\x12\x32\n\x0f\x64\x61taset_by_user\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\x12\x32\n\x0fshared_datasets\x18\x02 \x03(\x0b\x32\x19.ai.verta.modeldb.Dataset\"7\n\rDeleteDataset\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"9\n\x0e\x44\x65leteDatasets\x12\x0b\n\x03ids\x18\x01 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x9f\x02\n\x0c\x46indDatasets\x12\x13\n\x0b\x64\x61taset_ids\x18\x01 \x03(\t\x12\x32\n\npredicates\x18\x02 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12\x10\n\x08ids_only\x18\x03 \x01(\x08\x12\x16\n\x0eworkspace_name\x18\x08 \x01(\t\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x12\x11\n\tascending\x18\x06 \x01(\x08\x12\x10\n\x08sort_key\x18\x07 \x01(\t\x1aN\n\x08Response\x12+\n\x08\x64\x61tasets\x18\x01 \x03(\x0b\x32\x19.ai.verta.modeldb.Dataset\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"e\n\x11UpdateDatasetName\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"s\n\x18UpdateDatasetDescription\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"b\n\x0e\x41\x64\x64\x44\x61tasetTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"y\n\x11\x44\x65leteDatasetTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"\x89\x01\n\x14\x41\x64\x64\x44\x61tasetAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"\x8b\x01\n\x17UpdateDatasetAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tattribute\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"\x89\x01\n\x17\x44\x65leteDatasetAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"\xb0\x01\n\x13SetDatasetVisibilty\x12\n\n\x02id\x18\x01 \x01(\t\x12U\n\x12\x64\x61taset_visibility\x18\x02 \x01(\x0e\x32\x39.ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"m\n\x19LastExperimentByDatasetId\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x1a<\n\x08Response\x12\x30\n\nexperiment\x18\x01 \x01(\x0b\x32\x1c.ai.verta.modeldb.Experiment\"u\n\x19GetExperimentRunByDataset\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x1a\x44\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\"q\n\x13SetDatasetWorkspace\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset2\x96\x16\n\x0e\x44\x61tasetService\x12\x80\x01\n\rcreateDataset\x12\x1f.ai.verta.modeldb.CreateDataset\x1a(.ai.verta.modeldb.CreateDataset.Response\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/dataset/createDataset:\x01*\x12\x81\x01\n\x0egetAllDatasets\x12 .ai.verta.modeldb.GetAllDatasets\x1a).ai.verta.modeldb.GetAllDatasets.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/dataset/getAllDatasets\x12\x81\x01\n\x0egetDatasetById\x12 .ai.verta.modeldb.GetDatasetById\x1a).ai.verta.modeldb.GetDatasetById.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/dataset/getDatasetById\x12\x89\x01\n\x10getDatasetByName\x12\".ai.verta.modeldb.GetDatasetByName\x1a+.ai.verta.modeldb.GetDatasetByName.Response\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/dataset/getDatasetByName\x12\x80\x01\n\rdeleteDataset\x12\x1f.ai.verta.modeldb.DeleteDataset\x1a(.ai.verta.modeldb.DeleteDataset.Response\"$\x82\xd3\xe4\x93\x02\x1e*\x19/v1/dataset/deleteDataset:\x01*\x12\x84\x01\n\x0e\x64\x65leteDatasets\x12 .ai.verta.modeldb.DeleteDatasets\x1a).ai.verta.modeldb.DeleteDatasets.Response\"%\x82\xd3\xe4\x93\x02\x1f*\x1a/v1/dataset/deleteDatasets:\x01*\x12|\n\x0c\x66indDatasets\x12\x1e.ai.verta.modeldb.FindDatasets\x1a\'.ai.verta.modeldb.FindDatasets.Response\"#\x82\xd3\xe4\x93\x02\x1d\"\x18/v1/dataset/findDatasets:\x01*\x12\x90\x01\n\x11updateDatasetName\x12#.ai.verta.modeldb.UpdateDatasetName\x1a,.ai.verta.modeldb.UpdateDatasetName.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/dataset/updateDatasetName:\x01*\x12\xac\x01\n\x18updateDatasetDescription\x12*.ai.verta.modeldb.UpdateDatasetDescription\x1a\x33.ai.verta.modeldb.UpdateDatasetDescription.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/dataset/updateDatasetDescription:\x01*\x12\x84\x01\n\x0e\x61\x64\x64\x44\x61tasetTags\x12 .ai.verta.modeldb.AddDatasetTags\x1a).ai.verta.modeldb.AddDatasetTags.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/dataset/addDatasetTags:\x01*\x12s\n\x0egetDatasetTags\x12\x19.ai.verta.modeldb.GetTags\x1a\".ai.verta.modeldb.GetTags.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/dataset/getDatasetTags\x12\x90\x01\n\x11\x64\x65leteDatasetTags\x12#.ai.verta.modeldb.DeleteDatasetTags\x1a,.ai.verta.modeldb.DeleteDatasetTags.Response\"(\x82\xd3\xe4\x93\x02\"*\x1d/v1/dataset/deleteDatasetTags:\x01*\x12\x9c\x01\n\x14\x61\x64\x64\x44\x61tasetAttributes\x12&.ai.verta.modeldb.AddDatasetAttributes\x1a/.ai.verta.modeldb.AddDatasetAttributes.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/dataset/addDatasetAttributes:\x01*\x12\xa8\x01\n\x17updateDatasetAttributes\x12).ai.verta.modeldb.UpdateDatasetAttributes\x1a\x32.ai.verta.modeldb.UpdateDatasetAttributes.Response\".\x82\xd3\xe4\x93\x02(\"#/v1/dataset/updateDatasetAttributes:\x01*\x12\xa8\x01\n\x17\x64\x65leteDatasetAttributes\x12).ai.verta.modeldb.DeleteDatasetAttributes\x1a\x32.ai.verta.modeldb.DeleteDatasetAttributes.Response\".\x82\xd3\xe4\x93\x02(*#/v1/dataset/deleteDatasetAttributes:\x01*\x12\x9a\x01\n\x14setDatasetVisibility\x12%.ai.verta.modeldb.SetDatasetVisibilty\x1a..ai.verta.modeldb.SetDatasetVisibilty.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/dataset/setDatasetVisibility:\x01*\x12\xb3\x01\n\x1cgetLastExperimentByDatasetId\x12+.ai.verta.modeldb.LastExperimentByDatasetId\x1a\x34.ai.verta.modeldb.LastExperimentByDatasetId.Response\"0\x82\xd3\xe4\x93\x02*\x12(/v1/dataset/getLastExperimentByDatasetId\x12\xb0\x01\n\x19getExperimentRunByDataset\x12+.ai.verta.modeldb.GetExperimentRunByDataset\x1a\x34.ai.verta.modeldb.GetExperimentRunByDataset.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/dataset/getExperimentRunByDataset:\x01*\x12\x98\x01\n\x13setDatasetWorkspace\x12%.ai.verta.modeldb.SetDatasetWorkspace\x1a..ai.verta.modeldb.SetDatasetWorkspace.Response\"*\x82\xd3\xe4\x93\x02$\"\x1f/v1/dataset/setDatasetWorkspace:\x01*BBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
+  serialized_pb=b'\n\x1cmodeldb/DatasetService.proto\x12\x10\x61i.verta.modeldb\x1a\x1a\x63ommon/CommonService.proto\x1a\x1bmodeldb/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fmodeldb/ExperimentService.proto\x1a\"modeldb/ExperimentRunService.proto\x1a\x16uac/Collaborator.proto\"\xeb\x03\n\x07\x44\x61taset\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\r\n\x05owner\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x0c\n\x04tags\x18\x05 \x03(\t\x12\x34\n\nvisibility\x18\x06 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12@\n\x11\x63ustom_permission\x18\x0e \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x12\x43\n\x0c\x64\x61taset_type\x18\x07 \x01(\x0e\x32-.ai.verta.modeldb.DatasetTypeEnum.DatasetType\x12-\n\nattributes\x18\x08 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x14\n\x0ctime_created\x18\t \x01(\x04\x12\x14\n\x0ctime_updated\x18\n \x01(\x04\x12\x14\n\x0cworkspace_id\x18\x0b \x01(\t\x12H\n\x0eworkspace_type\x18\x0c \x01(\x0e\x32\x30.ai.verta.common.WorkspaceTypeEnum.WorkspaceType\x12\x1c\n\x14workspace_service_id\x18\r \x01(\x04\">\n\x0f\x44\x61tasetTypeEnum\"+\n\x0b\x44\x61tasetType\x12\x07\n\x03RAW\x10\x00\x12\x08\n\x04PATH\x10\x01\x12\t\n\x05QUERY\x10\x02\"\x92\x03\n\rCreateDataset\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x0c\n\x04tags\x18\x03 \x03(\t\x12-\n\nattributes\x18\x04 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x34\n\nvisibility\x18\x05 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12@\n\x11\x63ustom_permission\x18\t \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x12\x43\n\x0c\x64\x61taset_type\x18\x06 \x01(\x0e\x32-.ai.verta.modeldb.DatasetTypeEnum.DatasetType\x12\x16\n\x0eworkspace_name\x18\x07 \x01(\t\x12\x14\n\x0ctime_created\x18\x08 \x01(\x04\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"\xc6\x01\n\x0eGetAllDatasets\x12\x13\n\x0bpage_number\x18\x01 \x01(\x05\x12\x12\n\npage_limit\x18\x02 \x01(\x05\x12\x11\n\tascending\x18\x03 \x01(\x08\x12\x10\n\x08sort_key\x18\x04 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x07 \x01(\t\x1aN\n\x08Response\x12+\n\x08\x64\x61tasets\x18\x01 \x03(\x0b\x32\x19.ai.verta.modeldb.Dataset\x12\x15\n\rtotal_records\x18\x02 \x01(\x04\"T\n\x0eGetDatasetById\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"\xac\x01\n\x10GetDatasetByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\x1ar\n\x08Response\x12\x32\n\x0f\x64\x61taset_by_user\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\x12\x32\n\x0fshared_datasets\x18\x02 \x03(\x0b\x32\x19.ai.verta.modeldb.Dataset\"7\n\rDeleteDataset\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"9\n\x0e\x44\x65leteDatasets\x12\x0b\n\x03ids\x18\x01 \x03(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x9f\x02\n\x0c\x46indDatasets\x12\x13\n\x0b\x64\x61taset_ids\x18\x01 \x03(\t\x12\x32\n\npredicates\x18\x02 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12\x10\n\x08ids_only\x18\x03 \x01(\x08\x12\x16\n\x0eworkspace_name\x18\x08 \x01(\t\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x12\x11\n\tascending\x18\x06 \x01(\x08\x12\x10\n\x08sort_key\x18\x07 \x01(\t\x1aN\n\x08Response\x12+\n\x08\x64\x61tasets\x18\x01 \x03(\x0b\x32\x19.ai.verta.modeldb.Dataset\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"e\n\x11UpdateDatasetName\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"s\n\x18UpdateDatasetDescription\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"b\n\x0e\x41\x64\x64\x44\x61tasetTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"y\n\x11\x44\x65leteDatasetTags\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04tags\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"\x89\x01\n\x14\x41\x64\x64\x44\x61tasetAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"\x8b\x01\n\x17UpdateDatasetAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12,\n\tattribute\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"\x89\x01\n\x17\x44\x65leteDatasetAttributes\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0e\x61ttribute_keys\x18\x02 \x03(\t\x12\x12\n\ndelete_all\x18\x03 \x01(\x08\x1a\x36\n\x08Response\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\"m\n\x19LastExperimentByDatasetId\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x1a<\n\x08Response\x12\x30\n\nexperiment\x18\x01 \x01(\x0b\x32\x1c.ai.verta.modeldb.Experiment\"u\n\x19GetExperimentRunByDataset\x12\x12\n\ndataset_id\x18\x01 \x01(\t\x1a\x44\n\x08Response\x12\x38\n\x0f\x65xperiment_runs\x18\x01 \x03(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun2\xde\x13\n\x0e\x44\x61tasetService\x12\x80\x01\n\rcreateDataset\x12\x1f.ai.verta.modeldb.CreateDataset\x1a(.ai.verta.modeldb.CreateDataset.Response\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/dataset/createDataset:\x01*\x12\x81\x01\n\x0egetAllDatasets\x12 .ai.verta.modeldb.GetAllDatasets\x1a).ai.verta.modeldb.GetAllDatasets.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/dataset/getAllDatasets\x12\x81\x01\n\x0egetDatasetById\x12 .ai.verta.modeldb.GetDatasetById\x1a).ai.verta.modeldb.GetDatasetById.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/dataset/getDatasetById\x12\x89\x01\n\x10getDatasetByName\x12\".ai.verta.modeldb.GetDatasetByName\x1a+.ai.verta.modeldb.GetDatasetByName.Response\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/dataset/getDatasetByName\x12\x80\x01\n\rdeleteDataset\x12\x1f.ai.verta.modeldb.DeleteDataset\x1a(.ai.verta.modeldb.DeleteDataset.Response\"$\x82\xd3\xe4\x93\x02\x1e*\x19/v1/dataset/deleteDataset:\x01*\x12\x84\x01\n\x0e\x64\x65leteDatasets\x12 .ai.verta.modeldb.DeleteDatasets\x1a).ai.verta.modeldb.DeleteDatasets.Response\"%\x82\xd3\xe4\x93\x02\x1f*\x1a/v1/dataset/deleteDatasets:\x01*\x12|\n\x0c\x66indDatasets\x12\x1e.ai.verta.modeldb.FindDatasets\x1a\'.ai.verta.modeldb.FindDatasets.Response\"#\x82\xd3\xe4\x93\x02\x1d\"\x18/v1/dataset/findDatasets:\x01*\x12\x90\x01\n\x11updateDatasetName\x12#.ai.verta.modeldb.UpdateDatasetName\x1a,.ai.verta.modeldb.UpdateDatasetName.Response\"(\x82\xd3\xe4\x93\x02\"\"\x1d/v1/dataset/updateDatasetName:\x01*\x12\xac\x01\n\x18updateDatasetDescription\x12*.ai.verta.modeldb.UpdateDatasetDescription\x1a\x33.ai.verta.modeldb.UpdateDatasetDescription.Response\"/\x82\xd3\xe4\x93\x02)\"$/v1/dataset/updateDatasetDescription:\x01*\x12\x84\x01\n\x0e\x61\x64\x64\x44\x61tasetTags\x12 .ai.verta.modeldb.AddDatasetTags\x1a).ai.verta.modeldb.AddDatasetTags.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/dataset/addDatasetTags:\x01*\x12s\n\x0egetDatasetTags\x12\x19.ai.verta.modeldb.GetTags\x1a\".ai.verta.modeldb.GetTags.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/dataset/getDatasetTags\x12\x90\x01\n\x11\x64\x65leteDatasetTags\x12#.ai.verta.modeldb.DeleteDatasetTags\x1a,.ai.verta.modeldb.DeleteDatasetTags.Response\"(\x82\xd3\xe4\x93\x02\"*\x1d/v1/dataset/deleteDatasetTags:\x01*\x12\x9c\x01\n\x14\x61\x64\x64\x44\x61tasetAttributes\x12&.ai.verta.modeldb.AddDatasetAttributes\x1a/.ai.verta.modeldb.AddDatasetAttributes.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/dataset/addDatasetAttributes:\x01*\x12\xa8\x01\n\x17updateDatasetAttributes\x12).ai.verta.modeldb.UpdateDatasetAttributes\x1a\x32.ai.verta.modeldb.UpdateDatasetAttributes.Response\".\x82\xd3\xe4\x93\x02(\"#/v1/dataset/updateDatasetAttributes:\x01*\x12\xa8\x01\n\x17\x64\x65leteDatasetAttributes\x12).ai.verta.modeldb.DeleteDatasetAttributes\x1a\x32.ai.verta.modeldb.DeleteDatasetAttributes.Response\".\x82\xd3\xe4\x93\x02(*#/v1/dataset/deleteDatasetAttributes:\x01*\x12\xb3\x01\n\x1cgetLastExperimentByDatasetId\x12+.ai.verta.modeldb.LastExperimentByDatasetId\x1a\x34.ai.verta.modeldb.LastExperimentByDatasetId.Response\"0\x82\xd3\xe4\x93\x02*\x12(/v1/dataset/getLastExperimentByDatasetId\x12\xb0\x01\n\x19getExperimentRunByDataset\x12+.ai.verta.modeldb.GetExperimentRunByDataset\x1a\x34.ai.verta.modeldb.GetExperimentRunByDataset.Response\"0\x82\xd3\xe4\x93\x02*\"%/v1/dataset/getExperimentRunByDataset:\x01*BBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
   ,
-  dependencies=[common_dot_CommonService__pb2.DESCRIPTOR,modeldb_dot_CommonService__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,modeldb_dot_ExperimentService__pb2.DESCRIPTOR,modeldb_dot_ExperimentRunService__pb2.DESCRIPTOR,])
+  dependencies=[common_dot_CommonService__pb2.DESCRIPTOR,modeldb_dot_CommonService__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,modeldb_dot_ExperimentService__pb2.DESCRIPTOR,modeldb_dot_ExperimentRunService__pb2.DESCRIPTOR,uac_dot_Collaborator__pb2.DESCRIPTOR,])
 
 
 
@@ -50,36 +51,10 @@ _DATASETTYPEENUM_DATASETTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=686,
-  serialized_end=729,
+  serialized_start=743,
+  serialized_end=786,
 )
 _sym_db.RegisterEnumDescriptor(_DATASETTYPEENUM_DATASETTYPE)
-
-_DATASETVISIBILITYENUM_DATASETVISIBILITY = _descriptor.EnumDescriptor(
-  name='DatasetVisibility',
-  full_name='ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='PRIVATE', index=0, number=0,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='PUBLIC', index=1, number=1,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='ORG_SCOPED_PUBLIC', index=2, number=2,
-      serialized_options=None,
-      type=None),
-  ],
-  containing_type=None,
-  serialized_options=None,
-  serialized_start=756,
-  serialized_end=823,
-)
-_sym_db.RegisterEnumDescriptor(_DATASETVISIBILITYENUM_DATASETVISIBILITY)
 
 
 _DATASET = _descriptor.Descriptor(
@@ -125,56 +100,63 @@ _DATASET = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='dataset_visibility', full_name='ai.verta.modeldb.Dataset.dataset_visibility', index=5,
+      name='visibility', full_name='ai.verta.modeldb.Dataset.visibility', index=5,
       number=6, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='dataset_type', full_name='ai.verta.modeldb.Dataset.dataset_type', index=6,
+      name='custom_permission', full_name='ai.verta.modeldb.Dataset.custom_permission', index=6,
+      number=14, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='dataset_type', full_name='ai.verta.modeldb.Dataset.dataset_type', index=7,
       number=7, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='attributes', full_name='ai.verta.modeldb.Dataset.attributes', index=7,
+      name='attributes', full_name='ai.verta.modeldb.Dataset.attributes', index=8,
       number=8, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='time_created', full_name='ai.verta.modeldb.Dataset.time_created', index=8,
+      name='time_created', full_name='ai.verta.modeldb.Dataset.time_created', index=9,
       number=9, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='time_updated', full_name='ai.verta.modeldb.Dataset.time_updated', index=9,
+      name='time_updated', full_name='ai.verta.modeldb.Dataset.time_updated', index=10,
       number=10, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='workspace_id', full_name='ai.verta.modeldb.Dataset.workspace_id', index=10,
+      name='workspace_id', full_name='ai.verta.modeldb.Dataset.workspace_id', index=11,
       number=11, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='workspace_type', full_name='ai.verta.modeldb.Dataset.workspace_type', index=11,
+      name='workspace_type', full_name='ai.verta.modeldb.Dataset.workspace_type', index=12,
       number=12, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='workspace_service_id', full_name='ai.verta.modeldb.Dataset.workspace_service_id', index=12,
+      name='workspace_service_id', full_name='ai.verta.modeldb.Dataset.workspace_service_id', index=13,
       number=13, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -192,8 +174,8 @@ _DATASET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=207,
-  serialized_end=665,
+  serialized_start=231,
+  serialized_end=722,
 )
 
 
@@ -217,33 +199,8 @@ _DATASETTYPEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=667,
-  serialized_end=729,
-)
-
-
-_DATASETVISIBILITYENUM = _descriptor.Descriptor(
-  name='DatasetVisibilityEnum',
-  full_name='ai.verta.modeldb.DatasetVisibilityEnum',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-    _DATASETVISIBILITYENUM_DATASETVISIBILITY,
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=731,
-  serialized_end=823,
+  serialized_start=724,
+  serialized_end=786,
 )
 
 
@@ -273,8 +230,8 @@ _CREATEDATASET_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1141,
-  serialized_end=1195,
+  serialized_start=1137,
+  serialized_end=1191,
 )
 
 _CREATEDATASET = _descriptor.Descriptor(
@@ -313,28 +270,35 @@ _CREATEDATASET = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='dataset_visibility', full_name='ai.verta.modeldb.CreateDataset.dataset_visibility', index=4,
+      name='visibility', full_name='ai.verta.modeldb.CreateDataset.visibility', index=4,
       number=5, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='dataset_type', full_name='ai.verta.modeldb.CreateDataset.dataset_type', index=5,
+      name='custom_permission', full_name='ai.verta.modeldb.CreateDataset.custom_permission', index=5,
+      number=9, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='dataset_type', full_name='ai.verta.modeldb.CreateDataset.dataset_type', index=6,
       number=6, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='workspace_name', full_name='ai.verta.modeldb.CreateDataset.workspace_name', index=6,
+      name='workspace_name', full_name='ai.verta.modeldb.CreateDataset.workspace_name', index=7,
       number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='time_created', full_name='ai.verta.modeldb.CreateDataset.time_created', index=7,
+      name='time_created', full_name='ai.verta.modeldb.CreateDataset.time_created', index=8,
       number=8, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -352,8 +316,8 @@ _CREATEDATASET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=826,
-  serialized_end=1195,
+  serialized_start=789,
+  serialized_end=1191,
 )
 
 
@@ -390,8 +354,8 @@ _GETALLDATASETS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1318,
-  serialized_end=1396,
+  serialized_start=1314,
+  serialized_end=1392,
 )
 
 _GETALLDATASETS = _descriptor.Descriptor(
@@ -448,8 +412,8 @@ _GETALLDATASETS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1198,
-  serialized_end=1396,
+  serialized_start=1194,
+  serialized_end=1392,
 )
 
 
@@ -479,8 +443,8 @@ _GETDATASETBYID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1141,
-  serialized_end=1195,
+  serialized_start=1137,
+  serialized_end=1191,
 )
 
 _GETDATASETBYID = _descriptor.Descriptor(
@@ -509,8 +473,8 @@ _GETDATASETBYID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1398,
-  serialized_end=1482,
+  serialized_start=1394,
+  serialized_end=1478,
 )
 
 
@@ -547,8 +511,8 @@ _GETDATASETBYNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1543,
-  serialized_end=1657,
+  serialized_start=1539,
+  serialized_end=1653,
 )
 
 _GETDATASETBYNAME = _descriptor.Descriptor(
@@ -584,8 +548,8 @@ _GETDATASETBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1485,
-  serialized_end=1657,
+  serialized_start=1481,
+  serialized_end=1653,
 )
 
 
@@ -615,8 +579,8 @@ _DELETEDATASET_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1688,
-  serialized_end=1714,
+  serialized_start=1684,
+  serialized_end=1710,
 )
 
 _DELETEDATASET = _descriptor.Descriptor(
@@ -645,8 +609,8 @@ _DELETEDATASET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1659,
-  serialized_end=1714,
+  serialized_start=1655,
+  serialized_end=1710,
 )
 
 
@@ -676,8 +640,8 @@ _DELETEDATASETS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1688,
-  serialized_end=1714,
+  serialized_start=1684,
+  serialized_end=1710,
 )
 
 _DELETEDATASETS = _descriptor.Descriptor(
@@ -706,8 +670,8 @@ _DELETEDATASETS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1716,
-  serialized_end=1773,
+  serialized_start=1712,
+  serialized_end=1769,
 )
 
 
@@ -744,8 +708,8 @@ _FINDDATASETS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1985,
-  serialized_end=2063,
+  serialized_start=1981,
+  serialized_end=2059,
 )
 
 _FINDDATASETS = _descriptor.Descriptor(
@@ -823,8 +787,8 @@ _FINDDATASETS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1776,
-  serialized_end=2063,
+  serialized_start=1772,
+  serialized_end=2059,
 )
 
 
@@ -854,8 +818,8 @@ _UPDATEDATASETNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1141,
-  serialized_end=1195,
+  serialized_start=1137,
+  serialized_end=1191,
 )
 
 _UPDATEDATASETNAME = _descriptor.Descriptor(
@@ -891,8 +855,8 @@ _UPDATEDATASETNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2065,
-  serialized_end=2166,
+  serialized_start=2061,
+  serialized_end=2162,
 )
 
 
@@ -922,8 +886,8 @@ _UPDATEDATASETDESCRIPTION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1141,
-  serialized_end=1195,
+  serialized_start=1137,
+  serialized_end=1191,
 )
 
 _UPDATEDATASETDESCRIPTION = _descriptor.Descriptor(
@@ -959,8 +923,8 @@ _UPDATEDATASETDESCRIPTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2168,
-  serialized_end=2283,
+  serialized_start=2164,
+  serialized_end=2279,
 )
 
 
@@ -990,8 +954,8 @@ _ADDDATASETTAGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1141,
-  serialized_end=1195,
+  serialized_start=1137,
+  serialized_end=1191,
 )
 
 _ADDDATASETTAGS = _descriptor.Descriptor(
@@ -1027,8 +991,8 @@ _ADDDATASETTAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2285,
-  serialized_end=2383,
+  serialized_start=2281,
+  serialized_end=2379,
 )
 
 
@@ -1058,8 +1022,8 @@ _DELETEDATASETTAGS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1141,
-  serialized_end=1195,
+  serialized_start=1137,
+  serialized_end=1191,
 )
 
 _DELETEDATASETTAGS = _descriptor.Descriptor(
@@ -1102,8 +1066,8 @@ _DELETEDATASETTAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2385,
-  serialized_end=2506,
+  serialized_start=2381,
+  serialized_end=2502,
 )
 
 
@@ -1133,8 +1097,8 @@ _ADDDATASETATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1141,
-  serialized_end=1195,
+  serialized_start=1137,
+  serialized_end=1191,
 )
 
 _ADDDATASETATTRIBUTES = _descriptor.Descriptor(
@@ -1170,8 +1134,8 @@ _ADDDATASETATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2509,
-  serialized_end=2646,
+  serialized_start=2505,
+  serialized_end=2642,
 )
 
 
@@ -1201,8 +1165,8 @@ _UPDATEDATASETATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1141,
-  serialized_end=1195,
+  serialized_start=1137,
+  serialized_end=1191,
 )
 
 _UPDATEDATASETATTRIBUTES = _descriptor.Descriptor(
@@ -1238,8 +1202,8 @@ _UPDATEDATASETATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2649,
-  serialized_end=2788,
+  serialized_start=2645,
+  serialized_end=2784,
 )
 
 
@@ -1269,8 +1233,8 @@ _DELETEDATASETATTRIBUTES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1141,
-  serialized_end=1195,
+  serialized_start=1137,
+  serialized_end=1191,
 )
 
 _DELETEDATASETATTRIBUTES = _descriptor.Descriptor(
@@ -1313,76 +1277,8 @@ _DELETEDATASETATTRIBUTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2791,
-  serialized_end=2928,
-)
-
-
-_SETDATASETVISIBILTY_RESPONSE = _descriptor.Descriptor(
-  name='Response',
-  full_name='ai.verta.modeldb.SetDatasetVisibilty.Response',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='dataset', full_name='ai.verta.modeldb.SetDatasetVisibilty.Response.dataset', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1141,
-  serialized_end=1195,
-)
-
-_SETDATASETVISIBILTY = _descriptor.Descriptor(
-  name='SetDatasetVisibilty',
-  full_name='ai.verta.modeldb.SetDatasetVisibilty',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='ai.verta.modeldb.SetDatasetVisibilty.id', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='dataset_visibility', full_name='ai.verta.modeldb.SetDatasetVisibilty.dataset_visibility', index=1,
-      number=2, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[_SETDATASETVISIBILTY_RESPONSE, ],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=2931,
-  serialized_end=3107,
+  serialized_start=2787,
+  serialized_end=2924,
 )
 
 
@@ -1412,8 +1308,8 @@ _LASTEXPERIMENTBYDATASETID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3158,
-  serialized_end=3218,
+  serialized_start=2975,
+  serialized_end=3035,
 )
 
 _LASTEXPERIMENTBYDATASETID = _descriptor.Descriptor(
@@ -1442,8 +1338,8 @@ _LASTEXPERIMENTBYDATASETID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3109,
-  serialized_end=3218,
+  serialized_start=2926,
+  serialized_end=3035,
 )
 
 
@@ -1473,8 +1369,8 @@ _GETEXPERIMENTRUNBYDATASET_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3269,
-  serialized_end=3337,
+  serialized_start=3086,
+  serialized_end=3154,
 )
 
 _GETEXPERIMENTRUNBYDATASET = _descriptor.Descriptor(
@@ -1503,88 +1399,21 @@ _GETEXPERIMENTRUNBYDATASET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3220,
-  serialized_end=3337,
+  serialized_start=3037,
+  serialized_end=3154,
 )
 
-
-_SETDATASETWORKSPACE_RESPONSE = _descriptor.Descriptor(
-  name='Response',
-  full_name='ai.verta.modeldb.SetDatasetWorkspace.Response',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='dataset', full_name='ai.verta.modeldb.SetDatasetWorkspace.Response.dataset', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1141,
-  serialized_end=1195,
-)
-
-_SETDATASETWORKSPACE = _descriptor.Descriptor(
-  name='SetDatasetWorkspace',
-  full_name='ai.verta.modeldb.SetDatasetWorkspace',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='ai.verta.modeldb.SetDatasetWorkspace.id', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='workspace_name', full_name='ai.verta.modeldb.SetDatasetWorkspace.workspace_name', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[_SETDATASETWORKSPACE_RESPONSE, ],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=3339,
-  serialized_end=3452,
-)
-
-_DATASET.fields_by_name['dataset_visibility'].enum_type = _DATASETVISIBILITYENUM_DATASETVISIBILITY
+_DATASET.fields_by_name['visibility'].enum_type = uac_dot_Collaborator__pb2._RESOURCEVISIBILITY
+_DATASET.fields_by_name['custom_permission'].message_type = uac_dot_Collaborator__pb2._COLLABORATORPERMISSIONS
 _DATASET.fields_by_name['dataset_type'].enum_type = _DATASETTYPEENUM_DATASETTYPE
 _DATASET.fields_by_name['attributes'].message_type = common_dot_CommonService__pb2._KEYVALUE
 _DATASET.fields_by_name['workspace_type'].enum_type = common_dot_CommonService__pb2._WORKSPACETYPEENUM_WORKSPACETYPE
 _DATASETTYPEENUM_DATASETTYPE.containing_type = _DATASETTYPEENUM
-_DATASETVISIBILITYENUM_DATASETVISIBILITY.containing_type = _DATASETVISIBILITYENUM
 _CREATEDATASET_RESPONSE.fields_by_name['dataset'].message_type = _DATASET
 _CREATEDATASET_RESPONSE.containing_type = _CREATEDATASET
 _CREATEDATASET.fields_by_name['attributes'].message_type = common_dot_CommonService__pb2._KEYVALUE
-_CREATEDATASET.fields_by_name['dataset_visibility'].enum_type = _DATASETVISIBILITYENUM_DATASETVISIBILITY
+_CREATEDATASET.fields_by_name['visibility'].enum_type = uac_dot_Collaborator__pb2._RESOURCEVISIBILITY
+_CREATEDATASET.fields_by_name['custom_permission'].message_type = uac_dot_Collaborator__pb2._COLLABORATORPERMISSIONS
 _CREATEDATASET.fields_by_name['dataset_type'].enum_type = _DATASETTYPEENUM_DATASETTYPE
 _GETALLDATASETS_RESPONSE.fields_by_name['datasets'].message_type = _DATASET
 _GETALLDATASETS_RESPONSE.containing_type = _GETALLDATASETS
@@ -1614,18 +1443,12 @@ _UPDATEDATASETATTRIBUTES_RESPONSE.containing_type = _UPDATEDATASETATTRIBUTES
 _UPDATEDATASETATTRIBUTES.fields_by_name['attribute'].message_type = common_dot_CommonService__pb2._KEYVALUE
 _DELETEDATASETATTRIBUTES_RESPONSE.fields_by_name['dataset'].message_type = _DATASET
 _DELETEDATASETATTRIBUTES_RESPONSE.containing_type = _DELETEDATASETATTRIBUTES
-_SETDATASETVISIBILTY_RESPONSE.fields_by_name['dataset'].message_type = _DATASET
-_SETDATASETVISIBILTY_RESPONSE.containing_type = _SETDATASETVISIBILTY
-_SETDATASETVISIBILTY.fields_by_name['dataset_visibility'].enum_type = _DATASETVISIBILITYENUM_DATASETVISIBILITY
 _LASTEXPERIMENTBYDATASETID_RESPONSE.fields_by_name['experiment'].message_type = modeldb_dot_ExperimentService__pb2._EXPERIMENT
 _LASTEXPERIMENTBYDATASETID_RESPONSE.containing_type = _LASTEXPERIMENTBYDATASETID
 _GETEXPERIMENTRUNBYDATASET_RESPONSE.fields_by_name['experiment_runs'].message_type = modeldb_dot_ExperimentRunService__pb2._EXPERIMENTRUN
 _GETEXPERIMENTRUNBYDATASET_RESPONSE.containing_type = _GETEXPERIMENTRUNBYDATASET
-_SETDATASETWORKSPACE_RESPONSE.fields_by_name['dataset'].message_type = _DATASET
-_SETDATASETWORKSPACE_RESPONSE.containing_type = _SETDATASETWORKSPACE
 DESCRIPTOR.message_types_by_name['Dataset'] = _DATASET
 DESCRIPTOR.message_types_by_name['DatasetTypeEnum'] = _DATASETTYPEENUM
-DESCRIPTOR.message_types_by_name['DatasetVisibilityEnum'] = _DATASETVISIBILITYENUM
 DESCRIPTOR.message_types_by_name['CreateDataset'] = _CREATEDATASET
 DESCRIPTOR.message_types_by_name['GetAllDatasets'] = _GETALLDATASETS
 DESCRIPTOR.message_types_by_name['GetDatasetById'] = _GETDATASETBYID
@@ -1640,10 +1463,8 @@ DESCRIPTOR.message_types_by_name['DeleteDatasetTags'] = _DELETEDATASETTAGS
 DESCRIPTOR.message_types_by_name['AddDatasetAttributes'] = _ADDDATASETATTRIBUTES
 DESCRIPTOR.message_types_by_name['UpdateDatasetAttributes'] = _UPDATEDATASETATTRIBUTES
 DESCRIPTOR.message_types_by_name['DeleteDatasetAttributes'] = _DELETEDATASETATTRIBUTES
-DESCRIPTOR.message_types_by_name['SetDatasetVisibilty'] = _SETDATASETVISIBILTY
 DESCRIPTOR.message_types_by_name['LastExperimentByDatasetId'] = _LASTEXPERIMENTBYDATASETID
 DESCRIPTOR.message_types_by_name['GetExperimentRunByDataset'] = _GETEXPERIMENTRUNBYDATASET
-DESCRIPTOR.message_types_by_name['SetDatasetWorkspace'] = _SETDATASETWORKSPACE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Dataset = _reflection.GeneratedProtocolMessageType('Dataset', (_message.Message,), {
@@ -1659,13 +1480,6 @@ DatasetTypeEnum = _reflection.GeneratedProtocolMessageType('DatasetTypeEnum', (_
   # @@protoc_insertion_point(class_scope:ai.verta.modeldb.DatasetTypeEnum)
   })
 _sym_db.RegisterMessage(DatasetTypeEnum)
-
-DatasetVisibilityEnum = _reflection.GeneratedProtocolMessageType('DatasetVisibilityEnum', (_message.Message,), {
-  'DESCRIPTOR' : _DATASETVISIBILITYENUM,
-  '__module__' : 'modeldb.DatasetService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.DatasetVisibilityEnum)
-  })
-_sym_db.RegisterMessage(DatasetVisibilityEnum)
 
 CreateDataset = _reflection.GeneratedProtocolMessageType('CreateDataset', (_message.Message,), {
 
@@ -1877,21 +1691,6 @@ DeleteDatasetAttributes = _reflection.GeneratedProtocolMessageType('DeleteDatase
 _sym_db.RegisterMessage(DeleteDatasetAttributes)
 _sym_db.RegisterMessage(DeleteDatasetAttributes.Response)
 
-SetDatasetVisibilty = _reflection.GeneratedProtocolMessageType('SetDatasetVisibilty', (_message.Message,), {
-
-  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
-    'DESCRIPTOR' : _SETDATASETVISIBILTY_RESPONSE,
-    '__module__' : 'modeldb.DatasetService_pb2'
-    # @@protoc_insertion_point(class_scope:ai.verta.modeldb.SetDatasetVisibilty.Response)
-    })
-  ,
-  'DESCRIPTOR' : _SETDATASETVISIBILTY,
-  '__module__' : 'modeldb.DatasetService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.SetDatasetVisibilty)
-  })
-_sym_db.RegisterMessage(SetDatasetVisibilty)
-_sym_db.RegisterMessage(SetDatasetVisibilty.Response)
-
 LastExperimentByDatasetId = _reflection.GeneratedProtocolMessageType('LastExperimentByDatasetId', (_message.Message,), {
 
   'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
@@ -1922,21 +1721,6 @@ GetExperimentRunByDataset = _reflection.GeneratedProtocolMessageType('GetExperim
 _sym_db.RegisterMessage(GetExperimentRunByDataset)
 _sym_db.RegisterMessage(GetExperimentRunByDataset.Response)
 
-SetDatasetWorkspace = _reflection.GeneratedProtocolMessageType('SetDatasetWorkspace', (_message.Message,), {
-
-  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
-    'DESCRIPTOR' : _SETDATASETWORKSPACE_RESPONSE,
-    '__module__' : 'modeldb.DatasetService_pb2'
-    # @@protoc_insertion_point(class_scope:ai.verta.modeldb.SetDatasetWorkspace.Response)
-    })
-  ,
-  'DESCRIPTOR' : _SETDATASETWORKSPACE,
-  '__module__' : 'modeldb.DatasetService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.modeldb.SetDatasetWorkspace)
-  })
-_sym_db.RegisterMessage(SetDatasetWorkspace)
-_sym_db.RegisterMessage(SetDatasetWorkspace.Response)
-
 
 DESCRIPTOR._options = None
 
@@ -1946,8 +1730,8 @@ _DATASETSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=3455,
-  serialized_end=6293,
+  serialized_start=3157,
+  serialized_end=5683,
   methods=[
   _descriptor.MethodDescriptor(
     name='createDataset',
@@ -2085,18 +1869,9 @@ _DATASETSERVICE = _descriptor.ServiceDescriptor(
     serialized_options=b'\202\323\344\223\002(*#/v1/dataset/deleteDatasetAttributes:\001*',
   ),
   _descriptor.MethodDescriptor(
-    name='setDatasetVisibility',
-    full_name='ai.verta.modeldb.DatasetService.setDatasetVisibility',
-    index=15,
-    containing_service=None,
-    input_type=_SETDATASETVISIBILTY,
-    output_type=_SETDATASETVISIBILTY_RESPONSE,
-    serialized_options=b'\202\323\344\223\002%\" /v1/dataset/setDatasetVisibility:\001*',
-  ),
-  _descriptor.MethodDescriptor(
     name='getLastExperimentByDatasetId',
     full_name='ai.verta.modeldb.DatasetService.getLastExperimentByDatasetId',
-    index=16,
+    index=15,
     containing_service=None,
     input_type=_LASTEXPERIMENTBYDATASETID,
     output_type=_LASTEXPERIMENTBYDATASETID_RESPONSE,
@@ -2105,20 +1880,11 @@ _DATASETSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getExperimentRunByDataset',
     full_name='ai.verta.modeldb.DatasetService.getExperimentRunByDataset',
-    index=17,
+    index=16,
     containing_service=None,
     input_type=_GETEXPERIMENTRUNBYDATASET,
     output_type=_GETEXPERIMENTRUNBYDATASET_RESPONSE,
     serialized_options=b'\202\323\344\223\002*\"%/v1/dataset/getExperimentRunByDataset:\001*',
-  ),
-  _descriptor.MethodDescriptor(
-    name='setDatasetWorkspace',
-    full_name='ai.verta.modeldb.DatasetService.setDatasetWorkspace',
-    index=18,
-    containing_service=None,
-    input_type=_SETDATASETWORKSPACE,
-    output_type=_SETDATASETWORKSPACE_RESPONSE,
-    serialized_options=b'\202\323\344\223\002$\"\037/v1/dataset/setDatasetWorkspace:\001*',
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_DATASETSERVICE)

@@ -12,6 +12,7 @@ import "modeldb/versioning/Config.proto";
 import "modeldb/versioning/Dataset.proto";
 import "modeldb/versioning/Enums.proto";
 import "modeldb/versioning/Environment.proto";
+import "uac/Collaborator.proto";
 
 // Base commit for the versioning system
 // DO NOT USE TO COMPUTE SHA
@@ -89,14 +90,6 @@ message BlobDiff {
     }
 }
 
-message RepositoryVisibilityEnum {
-    enum RepositoryVisibility {
-        PRIVATE = 0;// default
-        PUBLIC = 1;
-        ORG_SCOPED_PUBLIC = 2;
-    }
-}
-
 message Repository {
     uint64 id = 1;
     string name = 2; // Name that can be used in URL, like in GitHub
@@ -107,7 +100,10 @@ message Repository {
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
     uint64 workspace_service_id = 8;
 
-    RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
+    uac.ResourceVisibility visibility = 7;
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    uac.CollaboratorPermissions custom_permission = 13;
 
     string owner = 10;
     string description = 11;

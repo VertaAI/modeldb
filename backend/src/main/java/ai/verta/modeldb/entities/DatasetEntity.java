@@ -108,9 +108,6 @@ public class DatasetEntity {
   @Column(name = "deleted")
   private Boolean deleted = false;
 
-  @Column(name = "created")
-  private Boolean created = false;
-
   public String getId() {
     return id;
   }
@@ -224,10 +221,6 @@ public class DatasetEntity {
 
   public void setDeleted(Boolean deleted) {
     this.deleted = deleted;
-  }
-
-  public void setCreated(Boolean created) {
-    this.created = created;
   }
 
   public Dataset getProtoObject(RoleService roleService) throws InvalidProtocolBufferException {

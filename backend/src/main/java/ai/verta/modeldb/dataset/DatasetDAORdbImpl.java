@@ -157,11 +157,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           ModelDBServiceResourceTypes.DATASET,
           dataset.getCustomPermission().getCollaboratorType(),
           dataset.getVisibility());
-      LOGGER.debug("Project role bindings created successfully");
-      transaction = session.beginTransaction();
-      datasetEntity.setCreated(true);
-      transaction.commit();
-
+      LOGGER.debug("Dataset role bindings created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
       return datasetEntity.getProtoObject(roleService);
     } catch (Exception ex) {
