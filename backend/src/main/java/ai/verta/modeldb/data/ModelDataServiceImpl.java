@@ -314,7 +314,11 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                   fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
               LOGGER.info("File " + pair.getValue().getName() + " is in the time window.");
               final String fileEndpoint = extractEndpoint(pair.getValue().getName());
-              LOGGER.info("Comparing file endpoint " + fileEndpoint + " to request endpoint " + endpoint.get());
+              LOGGER.info(
+                  "Comparing file endpoint "
+                      + fileEndpoint
+                      + " to request endpoint "
+                      + endpoint.get());
               boolean endpointMatches =
                   endpoint.isPresent() ? endpoint.get().equals(fileEndpoint) : true;
               if (inTimeWindow && endpointMatches) {
@@ -367,7 +371,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private Optional<String> resolveEndpoint(String endpoint) {
-    if(endpoint == null || endpoint.isEmpty()) {
+    if (endpoint == null || endpoint.isEmpty()) {
       return Optional.empty();
     }
     return Optional.of(trimEndpoint(endpoint));
