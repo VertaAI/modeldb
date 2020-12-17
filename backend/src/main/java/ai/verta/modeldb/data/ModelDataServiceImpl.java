@@ -330,8 +330,8 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                 final String populationSizeString = (String) rootObject.get("population_size");
                 final Double populationSizeDouble = Double.parseDouble(populationSizeString);
                 final Long populationSize = populationSizeDouble.longValue();
-//                final Long predictionCount =
-//                    Long.parseLong((String) rootObject.get("prediction_count"));
+                //                final Long predictionCount =
+                //                    Long.parseLong((String) rootObject.get("prediction_count"));
                 final String nString = (String) rootObject.get("n");
                 final Optional<Long> n =
                     nString != null && !nString.isEmpty()
