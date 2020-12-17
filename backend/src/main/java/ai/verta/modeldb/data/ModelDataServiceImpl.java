@@ -170,11 +170,17 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("aggregateA: " + aggregateA);
     LOGGER.info("aggregateB: " + aggregateB);
 
-    final long predictionCountA = (Long) aggregateA.get("predictionCount");
-    final long predictionCountB = (Long) aggregateB.get("predictionCount");
+    final int predictionCountA = (Integer) aggregateA.get("predictionCount");
+    final int predictionCountB = (Integer) aggregateB.get("predictionCount");
+
+    LOGGER.info("predictionCountA: " + predictionCountA);
+    LOGGER.info("predictionCountB: " + predictionCountB);
 
     final long populationA = (Long) aggregateA.get("population");
     final long populationB = (Long) aggregateB.get("population");
+
+    LOGGER.info("populationA: " + populationA);
+    LOGGER.info("populationB: " + populationB);
 
     final long nA = aggregateA.containsKey("n") ? (Long) aggregateA.get("n") : 0L;
     final long nB = aggregateB.containsKey("N") ? (Long) aggregateB.get("n") : 0L;
