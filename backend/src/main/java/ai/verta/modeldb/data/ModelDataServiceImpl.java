@@ -69,7 +69,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("Time window end at: " + endAt);
     final List<NGramData> filteredToTimespan =
         fetchNGramData(
-            request.getModelId(), Optional.ofNullable(request.getEndpoint()), startAt, endAt);
+            request.getModelId(), Optional.ofNullable(request.getEndpoint()), Optional.ofNullable(request.getNNess()), startAt, endAt);
     LOGGER.info("Found " + filteredToTimespan.size() + " predictions in the time window.");
     LOGGER.info("Aggregating predictions.");
     Map<String, Object> aggregate = aggregateTimespan(filteredToTimespan);
@@ -93,14 +93,14 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
 
     final List<NGramData> aFilteredToTimespan =
         fetchNGramData(
-            request.getModelIdA(), Optional.ofNullable(request.getEndpoint()), startAt, endAt);
+            request.getModelIdA(), Optional.ofNullable(request.getEndpoint()), Optional.ofNullable(request.getNNess()), startAt, endAt);
     LOGGER.info(
         "Found "
             + aFilteredToTimespan.size()
             + " predictions in the time window for model data A.");
     final List<NGramData> bFilteredToTimespan =
         fetchNGramData(
-            request.getModelIdB(), Optional.ofNullable(request.getEndpoint()), startAt, endAt);
+            request.getModelIdB(), Optional.ofNullable(request.getEndpoint()), Optional.ofNullable(request.getNNess()), startAt, endAt);
     LOGGER.info(
         "Found "
             + bFilteredToTimespan.size()
@@ -250,7 +250,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private List<NGramData> fetchNGramData(
-      String modelId, Optional<String> endpoint, Instant startAt, Instant endAt) {
+    String modelId, Optional<String> endpoint, Optional<Long> nNess, Instant startAt, Instant endAt) {
     final File fileRoot = new File(modelDataStoragePath);
     final File[] filteredToModel =
         fileRoot.listFiles((dir, name) -> name.startsWith(modelId + "-"));
@@ -277,6 +277,11 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                 final Long populationSize =
                     Long.parseLong((String) rootObject.get("populationSize"));
                 final Long n = Long.parseLong((String) rootObject.get("n"));
+                if (nNess.isPresent()) {
+                  if (n != nNess.get()) {
+                    return null;
+                  }
+                }
                 final List<Map<String, Object>> ngramMaps =
                     (List<Map<String, Object>>) rootObject.get("data");
                 final List<NGram> ngrams =
