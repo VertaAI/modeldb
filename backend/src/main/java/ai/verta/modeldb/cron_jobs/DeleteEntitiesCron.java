@@ -1,7 +1,6 @@
 package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -119,7 +118,7 @@ public class DeleteEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteProjectResources(projectIds);
+        roleService.deleteEntityResources(projectIds, ModelDBServiceResourceTypes.PROJECT);
         Transaction transaction = session.beginTransaction();
         String updateDeletedStatusExperimentQueryString =
             new StringBuilder("UPDATE ")
