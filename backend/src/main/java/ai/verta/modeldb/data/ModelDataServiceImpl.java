@@ -61,7 +61,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("GetModelData: " + request);
     final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
-    final List<NGramData> filteredToTimespan = fetchNGramData(request.getModelId(), startAt, endAt);
+    final List<NGramData> filteredToTimespan = fetchNGramData(request.getModelId(), Optional.ofNullable(request.getEndpoint()), startAt, endAt);
     Map<String, Object> aggregate = aggregateTimespan(filteredToTimespan);
     Map<String, Object> payload =
         buildPayload(startAt, endAt, request.getModelId(), request.getEndpoint(), aggregate);
@@ -79,9 +79,9 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
 
     final List<NGramData> aFilteredToTimespan =
-        fetchNGramData(request.getModelIdA(), startAt, endAt);
+        fetchNGramData(request.getModelIdA(), Optional.ofNullable(request.getEndpoint()), startAt, endAt);
     final List<NGramData> bFilteredToTimespan =
-        fetchNGramData(request.getModelIdB(), startAt, endAt);
+        fetchNGramData(request.getModelIdB(), Optional.ofNullable(request.getEndpoint()), startAt, endAt);
 
     final Map<String, Object> aggregateA = aggregateTimespan(aFilteredToTimespan);
     final Map<String, Object> aggregateB = aggregateTimespan(bFilteredToTimespan);
@@ -223,7 +223,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     return result;
   }
 
-  private List<NGramData> fetchNGramData(String modelId, Instant startAt, Instant endAt) {
+  private List<NGramData> fetchNGramData(String modelId, Optional<String> endpoint, Instant startAt, Instant endAt) {
     final File fileRoot = new File(modelDataStoragePath);
     final File[] filteredToModel =
         fileRoot.listFiles((dir, name) -> name.startsWith(modelId + "-"));
@@ -232,7 +232,10 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
         .filter(
             pair -> {
               final Instant fileTimestamp = extractTimestamp(pair.getValue().getName());
-              return fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
+              final boolean inTimeWindow = fileTimestamp.isAfter(startAt) && fileTimestamp.isBefore(endAt);
+              final String fileEndpoint = extractEndpoint(pair.getValue().getName());
+              boolean endpointMatches = endpoint.isPresent() ? endpoint.get().equals(fileEndpoint) : true;
+              return inTimeWindow && endpointMatches;
             })
         .map(
             pair -> {
@@ -264,6 +267,11 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
             })
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+  }
+
+  private String extractEndpoint(String fileName) {
+    final String[] tokens = fileName.split("-");
+    return tokens[1];
   }
 
   private Instant extractTimestamp(String fileName) {
