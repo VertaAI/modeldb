@@ -759,22 +759,6 @@ public class ModelDBHibernateUtil {
                         completableFutures[index] = futureTask;
                         index = index + 1;
                       }
-                      if (migrationName.equals(ModelDBConstants.COLLABORATOR_RESOURCE_MIGRATION)) {
-                        // Manually migration to create CollaboratorResource for all resources with
-                        // a visibility parameter
-                        CompletableFuture<Boolean> futureTask =
-                            CompletableFuture.supplyAsync(
-                                () -> {
-                                  int recordUpdateLimit =
-                                      (int)
-                                          migrationDetailMap.getOrDefault(
-                                              ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-                                  new CollaboratorResourceMigration().execute(recordUpdateLimit);
-                                  return true;
-                                });
-                        completableFutures[index] = futureTask;
-                        index = index + 1;
-                      }
                       // add if here for the new migration type
                     }
                   }
@@ -838,9 +822,9 @@ public class ModelDBHibernateUtil {
               CollaboratorResourceMigration.execute(recordUpdateLimit);
             } else {
               LOGGER.debug("Migration already locked");
-              throw new ModelDBException(
-                  migrationName
-                      + " Migration already running, You would not start service till finish the Migration it");
+              /*throw new ModelDBException(
+              migrationName
+                  + " Migration already running, You would not start service till finish the Migration it");*/
             }
           } catch (SQLException | DatabaseException e) {
             LOGGER.error("Error on migration: {}", e.getMessage());

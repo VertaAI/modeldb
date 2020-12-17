@@ -153,7 +153,7 @@ public class ProjectTest {
     serverBuilder.build().start();
     ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 100);
+    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 1000);
 
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
@@ -2492,8 +2492,11 @@ public class ProjectTest {
         try {
           GetExperimentRunsInProject getExperimentRuns =
               GetExperimentRunsInProject.newBuilder().setProjectId(project.getId()).build();
-          experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
-          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          GetExperimentRunsInProject.Response getResponse =
+              experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
+          if (app.getAuthServerHost() != null
+              && app.getAuthServerPort() != null
+              && getResponse.getExperimentRunsCount() > 0) {
             fail();
           }
         } catch (StatusRuntimeException e) {

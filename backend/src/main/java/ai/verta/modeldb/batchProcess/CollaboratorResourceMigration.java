@@ -184,9 +184,7 @@ public class CollaboratorResourceMigration {
                 workspaceDTO.getWorkspaceName(),
                 String.valueOf(repository.getId()),
                 Optional.of(Long.parseLong(repository.getOwner())),
-                repository.isDataset()
-                    ? ModelDBServiceResourceTypes.DATASET
-                    : ModelDBServiceResourceTypes.REPOSITORY,
+                ModelDBServiceResourceTypes.REPOSITORY,
                 CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
                 getResourceVisibility(
                     Optional.ofNullable(

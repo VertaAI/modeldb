@@ -465,15 +465,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     if (create) {
       try {
         roleService.createWorkspacePermissions(
-            repository.getWorkspaceServiceId(),
-            Optional.of(repository.getWorkspaceType()),
-            String.valueOf(repository.getId()),
+            repositoryEntity.getWorkspaceServiceId(),
+            Optional.of(WorkspaceType.forNumber(repositoryEntity.getWorkspace_type())),
+            String.valueOf(repositoryEntity.getId()),
             Optional.empty(), // UAC will populate the owner ID
-            repositoryEntity.isDataset()
-                ? ModelDBServiceResourceTypes.DATASET
-                : ModelDBServiceResourceTypes.REPOSITORY,
+            ModelDBServiceResourceTypes.REPOSITORY,
             repository.getCustomPermission().getCollaboratorType(),
-            repository.getVisibility());
+            repositoryEntity.getRepositoryVisibility());
         LOGGER.debug("Project role bindings created successfully");
         Transaction transaction = session.beginTransaction();
         repositoryEntity.setCreated(true);
@@ -483,7 +481,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         LOGGER.info("Deleting the created repository {}", repository.getId());
         // delete the repo created
         session.beginTransaction();
-        session.delete(repositoryEntity);
+        repositoryEntity.setDeleted(true);
+        session.update(repositoryEntity);
         session.getTransaction().commit();
         throw e;
       }
@@ -607,6 +606,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(dataset.getWorkspaceId());
     workspaceDTO.setWorkspaceType(dataset.getWorkspaceType());
+    workspaceDTO.setWorkspaceServiceId(dataset.getWorkspaceServiceId());
     RepositoryIdentification.Builder repositoryId = RepositoryIdentification.newBuilder();
     if (dataset.getId().isEmpty()) {
       repositoryId.setNamedId(
@@ -627,6 +627,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 .setVisibility(dataset.getVisibility())
                 .setWorkspaceType(dataset.getWorkspaceType())
                 .setWorkspaceId(dataset.getWorkspaceId())
+                .setWorkspaceServiceId(dataset.getWorkspaceServiceId())
                 .setDateCreated(dataset.getTimeCreated())
                 .setDateUpdated(dataset.getTimeUpdated())
                 .setName(dataset.getName())
@@ -656,6 +657,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         .setVisibility(repository.getVisibility())
         .setWorkspaceType(repository.getWorkspaceType())
         .setWorkspaceId(repository.getWorkspaceId())
+        .setWorkspaceServiceId(repository.getWorkspaceServiceId())
         .setTimeCreated(repository.getDateCreated())
         .setTimeUpdated(repository.getDateUpdated())
         .setName(repository.getName())
