@@ -723,8 +723,8 @@ class Client(object):
         if workspace is None:
             workspace = self._get_personal_workspace()
 
-        self._ctx = _Context(self._conn, self._conf)
-        self._ctx.workspace_name = workspace
+        ctx = _Context(self._conn, self._conf)
+        ctx.workspace_name = workspace
 
         resource_name = "Registered Model"
         param_names = "`desc`, `labels`, or `public_within_org`"
@@ -735,8 +735,8 @@ class Client(object):
                                                   param_names, params)
         else:
             registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
-                                                                  lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                                  lambda name: RegisteredModel._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org),
+                                                                  lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, ctx.workspace_name),
+                                                                  lambda name: RegisteredModel._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org),
                                                                   lambda: check_unnecessary_params_warning(
                                                                       resource_name,
                                                                       "name {}".format(name),
@@ -769,13 +769,10 @@ class Client(object):
         if workspace is None:
             workspace = self._get_personal_workspace()
 
-        self._ctx = _Context(self._conn, self._conf)
-        self._ctx.workspace_name = workspace
-
         if id is not None:
             registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
         else:
-            registered_model =  RegisteredModel._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+            registered_model =  RegisteredModel._get_by_name(self._conn, self._conf, name, workspace)
 
         if registered_model is None:
             raise ValueError("Registered model not found")
@@ -1073,12 +1070,10 @@ class Client(object):
         if workspace is None:
             workspace = self._get_personal_workspace()
 
-        self._ctx = _Context(self._conn, self._conf)
-        self._ctx.workspace_name = workspace
+        ctx = _Context(self._conn, self._conf)
+        ctx.workspace_name = workspace
 
-        self._ctx.registered_model = RegisteredModel._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org)
-
-        return self._ctx.registered_model
+        return RegisteredModel._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org)
 
 
     def create_endpoint(self, path, description=None, workspace=None, public_within_org=False):
@@ -1226,8 +1221,8 @@ class Client(object):
         name = self._set_from_config_if_none(name, "dataset")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        self._ctx = _Context(self._conn, self._conf)
-        self._ctx.workspace_name = workspace
+        ctx = _Context(self._conn, self._conf)
+        ctx.workspace_name = workspace
 
         resource_name = "Dataset"
         param_names = "`desc`, `tags`, `attrs`, `time_created`, or `public_within_org`"
@@ -1238,8 +1233,8 @@ class Client(object):
                                                   param_names, params)
         else:
             dataset = Dataset._get_or_create_by_name(self._conn, name,
-                                                        lambda name: Dataset._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                        lambda name: Dataset._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org),
+                                                        lambda name: Dataset._get_by_name(self._conn, self._conf, name, ctx.workspace_name),
+                                                        lambda name: Dataset._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org),
                                                         lambda: check_unnecessary_params_warning(
                                                          resource_name,
                                                          "name {}".format(name),
@@ -1294,9 +1289,9 @@ class Client(object):
         name = self._set_from_config_if_none(name, "dataset")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        self._ctx = _Context(self._conn, self._conf)
-        self._ctx.workspace_name = workspace
-        return Dataset._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs,
+        ctx = _Context(self._conn, self._conf)
+        ctx.workspace_name = workspace
+        return Dataset._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=tags, attrs=attrs,
                                time_created=time_created, public_within_org=public_within_org)
 
     def get_dataset(self, name=None, workspace=None, id=None):
@@ -1329,13 +1324,10 @@ class Client(object):
             raise ValueError("must specify either `name` or `id`")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
-        self._ctx = _Context(self._conn, self._conf)
-        self._ctx.workspace_name = workspace
-
         if id is not None:
             dataset = Dataset._get_by_id(self._conn, self._conf, id)
         else:
-            dataset = Dataset._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+            dataset = Dataset._get_by_name(self._conn, self._conf, name, workspace)
 
         if dataset is None:
             raise ValueError("Dataset not found")
@@ -1362,8 +1354,6 @@ class Client(object):
         :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
 
         """
-        self._ctx = _Context(self._conn, self._conf)
-
         dataset_version = DatasetVersion._get_by_id(self._conn, self._conf, id)
 
         if dataset_version is None:

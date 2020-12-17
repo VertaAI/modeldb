@@ -962,15 +962,6 @@
       ],
       "default": "RAW"
     },
-    "DatasetVisibilityEnumDatasetVisibility": {
-      "type": "string",
-      "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
-      ],
-      "default": "PRIVATE"
-    },
     "DeploymentActionEnumDeploymentServiceActions": {
       "type": "string",
       "enum": [
@@ -1313,8 +1304,12 @@
             "type": "string"
           }
         },
-        "dataset_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
@@ -1388,9 +1383,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "dataset_version_visibility": {
-          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"

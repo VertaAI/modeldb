@@ -135,6 +135,14 @@ public interface RoleService {
   boolean deleteProjectResources(List<String> projectIds);
 
   boolean createWorkspacePermissions(
+      String workspaceName,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      ResourceVisibility visibility);
+
+  boolean createWorkspacePermissions(
       Long workspaceId,
       Optional<WorkspaceType> workspaceType,
       String resourceId,

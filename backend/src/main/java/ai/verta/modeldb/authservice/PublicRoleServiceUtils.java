@@ -264,6 +264,17 @@ public class PublicRoleServiceUtils implements RoleService {
 
   @Override
   public boolean createWorkspacePermissions(
+      String workspaceName,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      ResourceVisibility visibility) {
+    return true;
+  }
+
+  @Override
+  public boolean createWorkspacePermissions(
       Long workspaceId,
       Optional<WorkspaceType> workspaceType,
       String resourceId,

@@ -2649,6 +2649,14 @@
     }
   },
   "definitions": {
+    "CollaboratorTypeEnumCollaboratorType": {
+      "type": "string",
+      "enum": [
+        "READ_ONLY",
+        "READ_WRITE"
+      ],
+      "default": "READ_ONLY"
+    },
     "DiffStatusEnumDiffStatus": {
       "type": "string",
       "enum": [
@@ -2675,14 +2683,14 @@
       ],
       "default": "EQ"
     },
-    "RepositoryVisibilityEnumRepositoryVisibility": {
+    "TernaryEnumTernary": {
       "type": "string",
       "enum": [
-        "PRIVATE",
-        "PUBLIC",
-        "ORG_SCOPED_PUBLIC"
+        "UNKNOWN",
+        "TRUE",
+        "FALSE"
       ],
-      "default": "PRIVATE"
+      "default": "UNKNOWN"
     },
     "ValueTypeEnumValueType": {
       "type": "string",
@@ -2747,20 +2755,6 @@
         }
       }
     },
-    "commonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -2801,6 +2795,27 @@
           }
         }
       }
+    },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "WORKSPACE_DEFAULT",
+        "ORG_DEFAULT",
+        "ORG_CUSTOM",
+        "PRIVATE"
+      ],
+      "default": "WORKSPACE_DEFAULT"
     },
     "versioningBlob": {
       "type": "object",
@@ -3998,8 +4013,12 @@
           "type": "string",
           "format": "uint64"
         },
-        "repository_visibility": {
-          "$ref": "#/definitions/RepositoryVisibilityEnumRepositoryVisibility"
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "owner": {
           "type": "string"
@@ -4165,6 +4184,20 @@
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         }
       }
+    },
+    "vertacommonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     }
   },
   "basePath": "/v1"

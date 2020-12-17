@@ -1094,12 +1094,11 @@ public class RoleServiceUtils implements RoleService {
   private boolean createWorkspacePermissions(
       Optional<Long> workspaceId,
       Optional<String> workspaceName,
-      Optional<WorkspaceType> workspaceType,
       String resourceId,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorType collaboratorType,
-      ResourceVisibility visibility) {
+      ResourceVisibility resourceVisibility) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info("Calling CollaboratorService to create resources");
       ResourceType modeldbServiceResourceType =
@@ -1111,15 +1110,17 @@ public class RoleServiceUtils implements RoleService {
               .addResourceIds(resourceId)
               .build();
       SetResources.Builder setResourcesBuilder =
-          SetResources.newBuilder()
-              .setResources(resources)
-              .setVisibility(visibility)
-              .setCollaboratorType(collaboratorType);
+          SetResources.newBuilder().setResources(resources).setVisibility(resourceVisibility);
+
+      if (resourceVisibility.equals(ResourceVisibility.ORG_CUSTOM)) {
+        setResourcesBuilder.setCollaboratorType(collaboratorType);
+      }
+
       if (ownerId.isPresent()) {
-        setResourcesBuilder = setResourcesBuilder.setOwnerId(ownerId.get());
+        setResourcesBuilder.setOwnerId(ownerId.get());
       }
       if (workspaceId.isPresent()) {
-        setResourcesBuilder = setResourcesBuilder.setWorkspaceId(workspaceId.get());
+        setResourcesBuilder.setWorkspaceId(workspaceId.get());
       } else if (workspaceName.isPresent()) {
         setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
       } else {
@@ -1227,6 +1228,24 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public boolean createWorkspacePermissions(
+      String workspaceName,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorType collaboratorType,
+      ResourceVisibility visibility) {
+    return createWorkspacePermissions(
+        Optional.empty(),
+        Optional.of(workspaceName),
+        resourceId,
+        ownerId,
+        resourceType,
+        collaboratorType,
+        visibility);
+  }
+
+  @Override
+  public boolean createWorkspacePermissions(
       Long workspaceId,
       Optional<WorkspaceType> workspaceType,
       String resourceId,
@@ -1237,7 +1256,6 @@ public class RoleServiceUtils implements RoleService {
     return createWorkspacePermissions(
         Optional.of(workspaceId),
         Optional.empty(),
-        workspaceType,
         resourceId,
         ownerId,
         resourceType,
