@@ -54,6 +54,13 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "n_ness",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
           }
         ],
         "tags": [
@@ -110,6 +117,13 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "n_ness",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
           }
         ],
         "tags": [
