@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceImplBase {
   private static final Logger LOGGER = LogManager.getLogger(ModelDataServiceImpl.class);
+  public static final String SEPARATOR = "_-_";
 
   private final String modelDataStoragePath;
 
@@ -28,7 +29,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private String buildFileName(String modelId, Long timestampMillis, String endpoint) {
-    return modelDataStoragePath + "/" + modelId + "-" + endpoint + "-" + timestampMillis;
+    return modelDataStoragePath + "/" + modelId + SEPARATOR + endpoint + SEPARATOR + timestampMillis;
   }
 
   private String buildFileName(ModelDataMetadata metadata) {
@@ -320,12 +321,12 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private String extractEndpoint(String fileName) {
-    final String[] tokens = fileName.split("-");
+    final String[] tokens = fileName.split(SEPARATOR);
     return tokens[1];
   }
 
   private Instant extractTimestamp(String fileName) {
-    final String[] tokens = fileName.split("-");
+    final String[] tokens = fileName.split(SEPARATOR);
     final String timestampStr = tokens[tokens.length - 1];
     final Long timestamp = Long.parseLong(timestampStr);
     return Instant.ofEpochMilli(timestamp);
