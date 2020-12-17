@@ -1,7 +1,6 @@
 package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
@@ -120,19 +119,9 @@ public class DeleteEntitiesCron extends TimerTask {
       for (ProjectEntity projectEntity : projectEntities) {
         projectIds.add(projectEntity.getId());
       }
-      try {
-        deleteRoleBindingsForProjects(projectEntities);
-      } catch (StatusRuntimeException ex) {
-        LOGGER.debug(
-            "DeleteEntitiesCron : deleteProjects : deleteRoleBindingsForProjects : Exception: {}",
-            ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn(
-            "DeleteEntitiesCron : deleteProjects : deleteRoleBindingsForProjects : Exception: ",
-            ex);
-      }
 
       try {
+        roleService.deleteProjectResources(projectIds);
         Transaction transaction = session.beginTransaction();
         String updateDeletedStatusExperimentQueryString =
             new StringBuilder("UPDATE ")
@@ -169,53 +158,6 @@ public class DeleteEntitiesCron extends TimerTask {
     }
 
     LOGGER.debug("Project Deleted successfully : Deleted projects count {}", projectIds.size());
-  }
-
-  private void deleteRoleBindingsForProjects(List<ProjectEntity> projectEntities) {
-    // set roleBindings name by accessible projects
-    List<String> roleBindingNames = new LinkedList<>();
-    setRoleBindingsNameOfAccessibleProjectsInRoleBindingNamesList(
-        projectEntities, roleBindingNames);
-    LOGGER.debug("num bindings after Projects {}", roleBindingNames.size());
-
-    // Delete all resources
-    roleService.deleteAllResources(
-        projectEntities.stream().map(ProjectEntity::getId).collect(Collectors.toList()),
-        ModelDBServiceResourceTypes.PROJECT);
-
-    // Remove all role bindings
-    if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
-    }
-  }
-
-  private void setRoleBindingsNameOfAccessibleProjectsInRoleBindingNamesList(
-      List<ProjectEntity> allowedProjects, List<String> roleBindingNames) {
-    for (ProjectEntity project : allowedProjects) {
-      String projectId = project.getId();
-
-      String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
-              ModelDBConstants.ROLE_PROJECT_OWNER,
-              project.getId(),
-              project.getOwner(),
-              ModelDBServiceResourceTypes.PROJECT.name());
-      if (ownerRoleBindingName != null) {
-        roleBindingNames.add(ownerRoleBindingName);
-      }
-
-      // Delete workspace based roleBindings
-      List<String> workspaceRoleBindingNames =
-          roleService.getWorkspaceRoleBindings(
-              project.getWorkspace(),
-              WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type()),
-              projectId,
-              ModelDBConstants.ROLE_PROJECT_ADMIN,
-              ModelDBServiceResourceTypes.PROJECT,
-              project.getProjectVisibility().equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
-              "_GLOBAL_SHARING");
-      roleBindingNames.addAll(workspaceRoleBindingNames);
-    }
   }
 
   private void deleteExperiments(Session session) {

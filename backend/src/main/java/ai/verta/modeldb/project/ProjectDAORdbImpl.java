@@ -969,7 +969,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                           WorkspaceType.ORGANIZATION_VALUE))));
         }
       } else {
-        if (visibility.equals(VisibilityEnum.Visibility.PRIVATE)) {
+        if (visibility.equals(ResourceVisibility.PRIVATE)) {
           RdbmsUtils.getWorkspacePredicates(
               host,
               currentLoginUserInfo,
