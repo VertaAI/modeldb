@@ -170,23 +170,17 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("aggregateA: " + aggregateA);
     LOGGER.info("aggregateB: " + aggregateB);
 
-    final Map<String, Object> dataA = (Map<String, Object>) aggregateA.get("data");
-    final Map<String, Object> dataB = (Map<String, Object>) aggregateB.get("data");
+    final long predictionCountA = (Long) aggregateA.get("predictionCount");
+    final long predictionCountB = (Long) aggregateB.get("predictionCount");
 
-    LOGGER.info("dataA: " + dataA);
-    LOGGER.info("dataB: " + dataB);
+    final long populationA = (Long) aggregateA.get("population");
+    final long populationB = (Long) aggregateB.get("population");
 
-    final long predictionCountA = (Long) dataA.get("prediction_count");
-    final long predictionCountB = (Long) dataB.get("prediction_count");
+    final long nA = aggregateA.containsKey("n") ? (Long) aggregateA.get("n") : 0L;
+    final long nB = aggregateB.containsKey("N") ? (Long) aggregateB.get("n") : 0L;
 
-    final long populationA = (Long) dataA.get("population_size");
-    final long populationB = (Long) dataB.get("population_size");
-
-    final long nA = (Long) dataA.get("n");
-    final long nB = (Long) dataB.get("n");
-
-    final List<NGram> nGramsA = (List<NGram>) dataA.get("ngrams");
-    final List<NGram> nGramsB = (List<NGram>) dataB.get("ngrams");
+    final List<NGram> nGramsA = (List<NGram>) aggregateA.get("ngrams");
+    final List<NGram> nGramsB = (List<NGram>) aggregateB.get("ngrams");
 
     final List<NGram> diffedNGrams = new ArrayList<>();
     for (NGram left : nGramsA) {
