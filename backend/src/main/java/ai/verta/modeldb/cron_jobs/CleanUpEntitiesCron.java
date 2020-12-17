@@ -1,5 +1,6 @@
 package ai.verta.modeldb.cron_jobs;
 
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.entities.ProjectEntity;
@@ -90,7 +91,8 @@ public class CleanUpEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteProjectResources(projectIds);
+        roleService.deleteEntityResources(
+            projectIds, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
         for (ProjectEntity projectEntity : projectEntities) {
           try {
             Transaction transaction = session.beginTransaction();

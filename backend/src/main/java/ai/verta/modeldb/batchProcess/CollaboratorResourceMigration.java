@@ -11,6 +11,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ProjectEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ResourceVisibility;
@@ -55,8 +56,8 @@ public class CollaboratorResourceMigration {
     try {
       migrateProjects();
       LOGGER.info("Projects done migration");
-      // migrateRepositories();
-      // LOGGER.info("Repositories done migration");
+      migrateRepositories();
+      LOGGER.info("Repositories done migration");
     } finally {
       ModelDBUtils.unregisteredBackgroundUtilsCount();
     }
@@ -97,7 +98,7 @@ public class CollaboratorResourceMigration {
           }
           LOGGER.debug("Project userId list : " + userIds);
 
-          // Fetch the experiment owners userInfo
+          // Fetch the project owners userInfo
           Map<String, UserInfo> userInfoMap =
               authService.getUserInfoFromAuthServer(userIds, null, null);
           for (ProjectEntity project : projectEntities) {
@@ -135,6 +136,79 @@ public class CollaboratorResourceMigration {
     LOGGER.debug("Projects migration finished");
   }
 
+  private static void migrateRepositories() {
+    LOGGER.debug("Repositories migration started");
+    Long count = getEntityCount(RepositoryEntity.class);
+
+    int lowerBound = 0;
+    final int pagesize = CollaboratorResourceMigration.paginationSize;
+    LOGGER.debug("Total Repositories {}", count);
+
+    while (lowerBound < count) {
+
+      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+
+        CriteriaQuery<RepositoryEntity> criteriaQuery =
+            criteriaBuilder.createQuery(RepositoryEntity.class);
+        Root<RepositoryEntity> root = criteriaQuery.from(RepositoryEntity.class);
+
+        CriteriaQuery<RepositoryEntity> selectQuery =
+            criteriaQuery.select(root).orderBy(criteriaBuilder.asc(root.get("id")));
+
+        TypedQuery<RepositoryEntity> typedQuery = session.createQuery(selectQuery);
+
+        typedQuery.setFirstResult(lowerBound);
+        typedQuery.setMaxResults(pagesize);
+        List<RepositoryEntity> repositoryEntities = typedQuery.getResultList();
+
+        if (repositoryEntities.size() > 0) {
+          Set<String> userIds = new HashSet<>();
+          for (RepositoryEntity repositoryEntity : repositoryEntities) {
+            userIds.add(repositoryEntity.getOwner());
+          }
+          LOGGER.debug("Repository userId list : " + userIds);
+
+          // Fetch the repository owners userInfo
+          Map<String, UserInfo> userInfoMap =
+              authService.getUserInfoFromAuthServer(userIds, null, null);
+          for (RepositoryEntity repository : repositoryEntities) {
+            WorkspaceDTO workspaceDTO =
+                roleService.getWorkspaceDTOByWorkspaceId(
+                    userInfoMap.get(repository.getOwner()),
+                    repository.getWorkspace_id(),
+                    repository.getWorkspace_type());
+            // if repositoryVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
+            // ignore the CollaboratorType
+            roleService.createWorkspacePermissions(
+                workspaceDTO.getWorkspaceName(),
+                String.valueOf(repository.getId()),
+                Optional.of(Long.parseLong(repository.getOwner())),
+                repository.isDataset()
+                    ? ModelDBServiceResourceTypes.DATASET
+                    : ModelDBServiceResourceTypes.REPOSITORY,
+                CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+                getResourceVisibility(
+                    Optional.ofNullable(
+                        WorkspaceTypeEnum.WorkspaceType.forNumber(repository.getWorkspace_type())),
+                    VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())));
+          }
+        } else {
+          LOGGER.debug("Total repositories count 0");
+        }
+        lowerBound += pagesize;
+      } catch (Exception ex) {
+        if (ModelDBUtils.needToRetry(ex)) {
+          migrateRepositories();
+        } else {
+          throw ex;
+        }
+      }
+    }
+
+    LOGGER.debug("Repositories migration finished");
+  }
+
   private static Long getEntityCount(Class<?> klass) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
@@ -152,14 +226,14 @@ public class CollaboratorResourceMigration {
 
   private static ResourceVisibility getResourceVisibility(
       Optional<WorkspaceTypeEnum.WorkspaceType> workspaceType,
-      VisibilityEnum.Visibility projectVisibility) {
+      VisibilityEnum.Visibility visibility) {
     if (!workspaceType.isPresent()) {
       return ResourceVisibility.PRIVATE;
     }
     if (workspaceType.get() == WorkspaceTypeEnum.WorkspaceType.ORGANIZATION) {
-      if (projectVisibility == VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC) {
+      if (visibility == VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC) {
         return ResourceVisibility.ORG_DEFAULT;
-      } else if (projectVisibility == VisibilityEnum.Visibility.PRIVATE) {
+      } else if (visibility == VisibilityEnum.Visibility.PRIVATE) {
         return ResourceVisibility.PRIVATE;
       }
       return ResourceVisibility.ORG_DEFAULT;
