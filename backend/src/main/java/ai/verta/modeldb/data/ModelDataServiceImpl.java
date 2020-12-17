@@ -340,7 +340,10 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                 final Long populationSize =
                     Long.parseLong((String) rootObject.get("populationSize"));
                 final String nString = (String) rootObject.get("n");
-                final Optional<Long> n = nString != null && !nString.isEmpty() ? Optional.of(Long.parseLong(nString)) : Optional.empty();
+                final Optional<Long> n =
+                    nString != null && !nString.isEmpty()
+                        ? Optional.of(Long.parseLong(nString))
+                        : Optional.empty();
                 if (nNess.isPresent() && n.isPresent()) {
                   if (n.get() != nNess.get()) {
                     return null;
