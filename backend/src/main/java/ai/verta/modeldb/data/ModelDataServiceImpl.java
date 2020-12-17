@@ -286,7 +286,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("Filtering predictions to time range " + startAt + " until " + endAt);
     final File fileRoot = new File(modelDataStoragePath);
     final File[] filteredToModel =
-        fileRoot.listFiles((dir, name) -> name.startsWith(modelId + "-"));
+        fileRoot.listFiles((dir, name) -> name.startsWith(modelId + SEPARATOR));
     return IntStream.range(0, filteredToModel.length)
         .mapToObj(i -> Pair.of(i, filteredToModel[i]))
         .filter(
