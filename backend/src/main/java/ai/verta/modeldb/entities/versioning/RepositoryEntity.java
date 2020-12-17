@@ -233,6 +233,7 @@ public class RepositoryEntity {
     builder.setVisibility(repositoryResource.getVisibility());
     builder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     builder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
+    builder.setCustomPermission(repositoryResource.getCustomPermission());
 
     if (owner != null) {
       builder.setOwner(owner);
@@ -259,6 +260,10 @@ public class RepositoryEntity {
 
   public String getOwner() {
     return owner;
+  }
+
+  public Integer getRepository_visibility() {
+    return repository_visibility;
   }
 
   private void updateAttribute(List<KeyValue> attributes) throws InvalidProtocolBufferException {

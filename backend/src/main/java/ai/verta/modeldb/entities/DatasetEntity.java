@@ -245,6 +245,7 @@ public class DatasetEntity {
     datasetBuilder.setVisibility(repositoryResource.getVisibility());
     datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
+    datasetBuilder.setCustomPermission(repositoryResource.getCustomPermission());
     return datasetBuilder.build();
   }
 }

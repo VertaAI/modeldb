@@ -254,7 +254,8 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean deleteProjectResources(List<String> projectIds) {
+  public boolean deleteEntityResources(
+      List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return true;
   }
 

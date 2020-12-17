@@ -40,6 +40,7 @@ import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetUser;
@@ -6518,17 +6519,18 @@ public class ExperimentRunTest {
       }
 
       if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-        AddCollaboratorRequest.Builder addCollaboratorRequest =
+        AddCollaboratorRequest addCollaboratorRequest =
             AddCollaboratorRequest.newBuilder()
                 .setShareWith(authClientInterceptor.getClient2Email())
+                .setPermission(
+                    CollaboratorPermissions.newBuilder()
+                        .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                        .build())
                 .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
-                .addEntityIds(project.getId());
-        addCollaboratorRequest
-            .getPermissionBuilder()
-            .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY);
+                .addEntityIds(project.getId())
+                .build();
         AddCollaboratorRequest.Response addCollaboratorResponse =
-            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(
-                addCollaboratorRequest.build());
+            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         LOGGER.info(
             "Project Collaborator added in server : " + addCollaboratorResponse.getStatus());
         assertTrue(addCollaboratorResponse.getStatus());
@@ -6565,14 +6567,16 @@ public class ExperimentRunTest {
         addCollaboratorRequest =
             AddCollaboratorRequest.newBuilder()
                 .setShareWith(authClientInterceptor.getClient2Email())
+                .setPermission(
+                    CollaboratorPermissions.newBuilder()
+                        .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                        .build())
                 .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
-                .addEntityIds(String.valueOf(repoId));
-        addCollaboratorRequest
-            .getPermissionBuilder()
-            .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY);
+                .addEntityIds(String.valueOf(repoId))
+                .build();
         addCollaboratorResponse =
             collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(
-                addCollaboratorRequest.build());
+                addCollaboratorRequest);
         LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
         assertTrue(addCollaboratorResponse.getStatus());
 

@@ -133,7 +133,8 @@ public interface RoleService {
 
   boolean deleteResources(Resources resources);
 
-  boolean deleteProjectResources(List<String> projectIds);
+  boolean deleteEntityResources(
+      List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   boolean createWorkspacePermissions(
       String workspaceName,
