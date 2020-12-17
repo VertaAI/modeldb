@@ -167,8 +167,14 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     metadata.put("model_id", modelId);
     metadata.put("endpoint", endpoint);
 
+    LOGGER.info("aggregateA: " + aggregateA);
+    LOGGER.info("aggregateB: " + aggregateB);
+
     final Map<String, Object> dataA = (Map<String, Object>) aggregateA.get("data");
     final Map<String, Object> dataB = (Map<String, Object>) aggregateB.get("data");
+
+    LOGGER.info("dataA: " + dataA);
+    LOGGER.info("dataB: " + dataB);
 
     final long predictionCountA = (Long) dataA.get("prediction_count");
     final long predictionCountB = (Long) dataB.get("prediction_count");
