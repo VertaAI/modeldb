@@ -45,10 +45,14 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("StoreModelData: " + request);
     final ModelDataMetadata metadata = request.getModelData().getMetadata();
     final String data = request.getModelData().getData();
+    LOGGER.info("Data is " + data.length() + " characters.");
     final String fileName = buildFileName(metadata);
+    LOGGER.info("Storing to file: " + fileName);
     try (FileWriter writer = new FileWriter(fileName)) {
       writer.write(data);
+      LOGGER.info("Write completed successfully.");
     } catch (IOException ex) {
+      LOGGER.error("Write failed:");
       LOGGER.error(ex);
     }
     responseObserver.onNext(StoreModelDataRequest.Response.newBuilder().build());
@@ -60,14 +64,19 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
       GetModelDataRequest request, StreamObserver<GetModelDataRequest.Response> responseObserver) {
     LOGGER.info("GetModelData: " + request);
     final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
+    LOGGER.info("Time window start at: " + startAt);
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
+    LOGGER.info("Time window end at: " + endAt);
     final List<NGramData> filteredToTimespan =
         fetchNGramData(
             request.getModelId(), Optional.ofNullable(request.getEndpoint()), startAt, endAt);
+    LOGGER.info("Found " + filteredToTimespan.size() + " predictions in the time window.");
+    LOGGER.info("Aggregating predictions.");
     Map<String, Object> aggregate = aggregateTimespan(filteredToTimespan);
     Map<String, Object> payload =
         buildPayload(startAt, endAt, request.getModelId(), request.getEndpoint(), aggregate);
     String json = new Gson().toJson(payload);
+    LOGGER.info("Complete, returning response.");
     responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
     responseObserver.onCompleted();
   }
@@ -78,15 +87,20 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
       StreamObserver<GetModelDataDiffRequest.Response> responseObserver) {
     LOGGER.info("GetModelDataDiff: " + request);
     final Instant startAt = Instant.ofEpochMilli(request.getStartTimeMillis());
+    LOGGER.info("Time window start at: " + startAt);
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
+    LOGGER.info("Time window end at: " + endAt);
 
     final List<NGramData> aFilteredToTimespan =
         fetchNGramData(
             request.getModelIdA(), Optional.ofNullable(request.getEndpoint()), startAt, endAt);
+    LOGGER.info("Found " + aFilteredToTimespan.size() + " predictions in the time window for model data A.");
     final List<NGramData> bFilteredToTimespan =
         fetchNGramData(
             request.getModelIdB(), Optional.ofNullable(request.getEndpoint()), startAt, endAt);
+    LOGGER.info("Found " + bFilteredToTimespan.size() + " predictions in the time window for model data B.");
 
+    LOGGER.info("Aggregating predictions.");
     final Map<String, Object> aggregateA = aggregateTimespan(aFilteredToTimespan);
     final Map<String, Object> aggregateB = aggregateTimespan(bFilteredToTimespan);
 
@@ -95,7 +109,8 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     Map<String, Object> rightPayload =
         buildPayload(startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateB);
 
-    Map<String, Object> diffPayload =
+    LOGGER.info("Building diff.");
+        Map<String, Object> diffPayload =
         buildDiffPayload(
             startAt, endAt, request.getModelIdB(), request.getEndpoint(), aggregateA, aggregateB);
 
@@ -104,6 +119,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     payload.put("right", rightPayload);
     payload.put("diff", diffPayload);
     String json = new Gson().toJson(payload);
+    LOGGER.info("Complete, returning response.");
     responseObserver.onNext(GetModelDataDiffRequest.Response.newBuilder().setData(json).build());
     responseObserver.onCompleted();
   }
