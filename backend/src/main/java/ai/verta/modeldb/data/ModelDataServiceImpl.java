@@ -327,13 +327,17 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private String extractEndpoint(String fileName) {
+    LOGGER.info("Extracting endpoint from filename " + fileName);
     final String[] tokens = fileName.split(SEPARATOR);
+    LOGGER.info("Endpoint: " + tokens[1]);
     return tokens[1];
   }
 
   private Instant extractTimestamp(String fileName) {
+    LOGGER.info("Extracting timestamp from filename " + fileName);
     final String[] tokens = fileName.split(SEPARATOR);
     final String timestampStr = tokens[tokens.length - 1];
+    LOGGER.info("Timestamp string: " + timestampStr);
     final Long timestamp = Long.parseLong(timestampStr);
     return Instant.ofEpochMilli(timestamp);
   }
