@@ -76,11 +76,12 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
     LOGGER.info("Time window end at: " + endAt);
     final Optional<String> endpoint = resolveEndpoint(request.getEndpoint());
+    final Optional<Long> nNess = request.getNNess() > 0 ? Optional.of(request.getNNess()) : Optional.empty();
     final List<NGramData> filteredToTimespan =
         fetchNGramData(
             request.getModelId(),
             endpoint,
-            Optional.ofNullable(request.getNNess()),
+            nNess,
             startAt,
             endAt);
     LOGGER.info("Found " + filteredToTimespan.size() + " predictions in the time window.");
@@ -104,11 +105,12 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Instant endAt = Instant.ofEpochMilli(request.getEndTimeMillis());
     LOGGER.info("Time window end at: " + endAt);
     final Optional<String> endpoint = resolveEndpoint(request.getEndpoint());
+    final Optional<Long> nNess = request.getNNess() > 0 ? Optional.of(request.getNNess()) : Optional.empty();
     final List<NGramData> aFilteredToTimespan =
         fetchNGramData(
             request.getModelIdA(),
             endpoint,
-            Optional.ofNullable(request.getNNess()),
+            nNess,
             startAt,
             endAt);
     LOGGER.info(
@@ -118,8 +120,8 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final List<NGramData> bFilteredToTimespan =
         fetchNGramData(
             request.getModelIdB(),
-            Optional.ofNullable(request.getEndpoint()),
-            Optional.ofNullable(request.getNNess()),
+            endpoint,
+            nNess,
             startAt,
             endAt);
     LOGGER.info(
