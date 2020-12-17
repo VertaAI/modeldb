@@ -29,7 +29,13 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private String buildFileName(String modelId, Long timestampMillis, String endpoint) {
-    return modelDataStoragePath + "/" + modelId + SEPARATOR + endpoint + SEPARATOR + timestampMillis;
+    return modelDataStoragePath
+        + "/"
+        + modelId
+        + SEPARATOR
+        + endpoint
+        + SEPARATOR
+        + timestampMillis;
   }
 
   private String buildFileName(ModelDataMetadata metadata) {

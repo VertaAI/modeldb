@@ -7,6 +7,7 @@ import (
 	"os"
 
 	mdb "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb"
+	data "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/data"
 	metadata "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/metadata"
 	versioning "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -28,6 +29,7 @@ func main() {
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	endpoints := []func(context.Context, *runtime.ServeMux, string, []grpc.DialOption) (err error){
+		data.RegisterModelDataServiceHandlerFromEndpoint,
 		mdb.RegisterProjectServiceHandlerFromEndpoint,
 		mdb.RegisterExperimentServiceHandlerFromEndpoint,
 		mdb.RegisterExperimentRunServiceHandlerFromEndpoint,
