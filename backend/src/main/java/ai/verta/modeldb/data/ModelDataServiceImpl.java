@@ -239,11 +239,13 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
 
   private Map<String, Object> aggregateTimespan(List<NGramData> filteredToTimespan) {
     AtomicLong totalPopulation = new AtomicLong(0L);
+    AtomicLong totalPredictionCount = new AtomicLong(0L);
     Map<List<String>, AtomicLong> allNgrams = new HashMap<>();
     filteredToTimespan.stream()
         .forEach(
             nGramData -> {
               totalPopulation.addAndGet(nGramData.getPopulation());
+              totalPredictionCount.addAndGet(nGramData.getPredictionCount());
               for (NGram nGram : nGramData.getNgrams()) {
                 AtomicLong count =
                     allNgrams.computeIfAbsent(nGram.getGrams(), strings -> new AtomicLong(0L));
@@ -261,7 +263,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     Map<String, Object> result = new HashMap<>();
     result.put("metadata", "");
     result.put("population", totalPopulation);
-    result.put("predictionCount", filteredToTimespan.size());
+    result.put("predictionCount", totalPredictionCount);
     result.put("ngrams", topNGrams);
     return result;
   }
@@ -333,10 +335,8 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                     Files.lines(Paths.get(file.getAbsolutePath())).collect(Collectors.joining());
                 Map<String, Object> rootObject = new Gson().fromJson(fileContents, Map.class);
                 LOGGER.info("Root object: " + rootObject);
-                final Double populationSizeDouble = (Double) rootObject.get("population_size");
-                final Long populationSize = populationSizeDouble.longValue();
-                //                final Long predictionCount =
-                //                    Long.parseLong((String) rootObject.get("prediction_count"));
+                final Long populationSize = ((Double) rootObject.get("population_size")).longValue();
+                final Long predictionCount = ((Double) rootObject.get("prediction_count")).longValue();
                 final Double nDouble = (Double) rootObject.get("n");
                 final Optional<Long> n =
                     nDouble != null ? Optional.of(nDouble.longValue()) : Optional.empty();
@@ -356,7 +356,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                               return new NGram(gram, count, rank);
                             })
                         .collect(Collectors.toList());
-                return new NGramData(populationSize, n.get(), ngrams);
+                return new NGramData(populationSize, predictionCount, n.get(), ngrams);
               } catch (IOException e) {
                 LOGGER.error(e);
               }
@@ -395,17 +395,23 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
 
   class NGramData {
     final Long population;
+    final Long predictionCount;
     final Long n;
     final List<NGram> ngrams;
 
-    public NGramData(Long population, Long n, List<NGram> ngrams) {
+    public NGramData(Long population, Long predictionCount, Long n, List<NGram> ngrams) {
       this.population = population;
+      this.predictionCount = predictionCount;
       this.n = n;
       this.ngrams = ngrams;
     }
 
     public Long getPopulation() {
       return population;
+    }
+
+    public Long getPredictionCount() {
+      return predictionCount;
     }
 
     public Long getN() {
