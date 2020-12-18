@@ -31,7 +31,8 @@ message RegisteredModel {
     repeated string labels = 6;
 
     // Visibility of Registered Models
-    uac.ResourceVisibility visibility = 7;
+    common.VisibilityEnum.Visibility visibility = 7;
+    uac.ResourceVisibility visibility = 14;
     // The next field only makes sense when visibility == ORG_CUSTOM
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 13;

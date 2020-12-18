@@ -90,6 +90,14 @@ message BlobDiff {
     }
 }
 
+message RepositoryVisibilityEnum {
+    enum RepositoryVisibility {
+        PRIVATE = 0;// default
+        PUBLIC = 1;
+        ORG_SCOPED_PUBLIC = 2;
+    }
+}
+
 message Repository {
     uint64 id = 1;
     string name = 2; // Name that can be used in URL, like in GitHub
@@ -100,7 +108,8 @@ message Repository {
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 6;
     uint64 workspace_service_id = 8;
 
-    uac.ResourceVisibility visibility = 7;
+    RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
+    uac.ResourceVisibility visibility = 14;
     // The next field only makes sense when visibility == ORG_CUSTOM
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 13;

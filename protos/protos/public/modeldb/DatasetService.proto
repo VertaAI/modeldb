@@ -18,7 +18,8 @@ message Dataset {
     string owner = 3;
     string description = 4;
     repeated string tags = 5;
-    uac.ResourceVisibility visibility = 6;
+    DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 6;
+    uac.ResourceVisibility visibility = 16;
     // The next field only makes sense when visibility == ORG_CUSTOM
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 14;
@@ -40,12 +41,21 @@ message DatasetTypeEnum {
     }
 }
 
+message DatasetVisibilityEnum {
+    enum DatasetVisibility {
+        PRIVATE = 0;// default
+        PUBLIC = 1;
+        ORG_SCOPED_PUBLIC = 2;
+    }
+}
+
 message CreateDataset {
     string name = 1;
     string description = 2;
     repeated string tags = 3;
     repeated common.KeyValue attributes = 4;
-    uac.ResourceVisibility visibility = 5;
+    DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 5;
+    uac.ResourceVisibility visibility = 10;
     // The next field only makes sense when visibility == ORG_CUSTOM
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 9;
