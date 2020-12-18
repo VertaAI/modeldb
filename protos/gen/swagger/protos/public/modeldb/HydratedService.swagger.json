@@ -1316,13 +1316,6 @@
         "dataset_visibility": {
           "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
-        "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
-        },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
         },
@@ -1349,6 +1342,13 @@
         "workspace_service_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },
@@ -2176,13 +2176,6 @@
         "project_visibility": {
           "$ref": "#/definitions/modeldbProjectVisibility"
         },
-        "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
-        },
         "workspace_id": {
           "type": "string"
         },
@@ -2192,6 +2185,13 @@
         "workspace_service_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         },
         "attributes": {
           "type": "array",
@@ -2452,9 +2452,9 @@
       "enum": [
         "UNKNOWN",
         "ORG_DEFAULT",
-        "ORG_SCOPED_PUBLIC",
         "ORG_CUSTOM",
-        "PRIVATE"
+        "PRIVATE",
+        "ORG_SCOPED_PUBLIC"
       ],
       "default": "UNKNOWN"
     },

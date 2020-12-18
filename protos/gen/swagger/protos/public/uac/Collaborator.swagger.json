@@ -1067,9 +1067,9 @@
       "enum": [
         "UNKNOWN",
         "ORG_DEFAULT",
-        "ORG_SCOPED_PUBLIC",
         "ORG_CUSTOM",
-        "PRIVATE"
+        "PRIVATE",
+        "ORG_SCOPED_PUBLIC"
       ],
       "default": "UNKNOWN"
     },

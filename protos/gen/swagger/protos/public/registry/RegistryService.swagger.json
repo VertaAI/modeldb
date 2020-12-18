@@ -2030,13 +2030,6 @@
           "$ref": "#/definitions/VisibilityEnumVisibility",
           "title": "Visibility of Registered Models"
         },
-        "visibility_new": {
-          "$ref": "#/definitions/uacResourceVisibility"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
-        },
         "workspace_id": {
           "type": "string",
           "title": "id of the workspace this belongs to\nnot storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files"
@@ -2059,6 +2052,13 @@
             "$ref": "#/definitions/commonKeyValue"
           },
           "title": "Other attributes"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
+        "resource_visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },
@@ -2171,9 +2171,9 @@
       "enum": [
         "UNKNOWN",
         "ORG_DEFAULT",
-        "ORG_SCOPED_PUBLIC",
         "ORG_CUSTOM",
-        "PRIVATE"
+        "PRIVATE",
+        "ORG_SCOPED_PUBLIC"
       ],
       "default": "UNKNOWN"
     },
