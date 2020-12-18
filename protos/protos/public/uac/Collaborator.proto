@@ -82,7 +82,6 @@ enum ResourceVisibility {
     ORG_DEFAULT = 1;
     ORG_CUSTOM = 2;
     PRIVATE = 3;
-    ORG_SCOPED_PUBLIC = 4;
 }
 
 message GetResources {
