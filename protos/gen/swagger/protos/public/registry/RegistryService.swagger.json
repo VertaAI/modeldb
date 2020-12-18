@@ -2172,8 +2172,7 @@
         "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
-        "PRIVATE",
-        "ORG_SCOPED_PUBLIC"
+        "PRIVATE"
       ],
       "default": "UNKNOWN"
     },
