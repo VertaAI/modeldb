@@ -19,7 +19,7 @@ message Dataset {
     string description = 4;
     repeated string tags = 5;
     DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 6;
-    uac.ResourceVisibility visibility = 16;
+    uac.ResourceVisibility visibility = 15;
     // The next field only makes sense when visibility == ORG_CUSTOM
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 14;

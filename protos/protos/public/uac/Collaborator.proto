@@ -81,7 +81,7 @@ enum ResourceVisibility {
     option allow_alias = true;
     UNKNOWN = 0;
     ORG_DEFAULT = 1;
-    ORG_SCOPED_PUBLIC = 1;
+    ORG_SCOPED_PUBLIC = 4;
     ORG_CUSTOM = 2;
     PRIVATE = 3;
 }
