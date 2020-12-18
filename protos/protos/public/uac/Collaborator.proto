@@ -110,10 +110,6 @@ message GetResourcesResponseItem {
     // Type of the visibility
     ResourceVisibility visibility = 4;
 
-    // The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC
-    // They will be empty otherwise
-    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 5;
-    common.TernaryEnum.Ternary can_deploy = 6;
     // The next field only makes sense when visibility == ORG_CUSTOM
     // They will be empty otherwise
     CollaboratorPermissions custom_permission = 9;
