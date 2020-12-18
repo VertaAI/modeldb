@@ -19,10 +19,6 @@ message Dataset {
     string description = 4;
     repeated string tags = 5;
     DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 6;
-    uac.ResourceVisibility visibility = 15;
-    // The next field only makes sense when visibility == ORG_CUSTOM
-    // They will be empty otherwise
-    uac.CollaboratorPermissions custom_permission = 14;
     DatasetTypeEnum.DatasetType dataset_type = 7;
     repeated common.KeyValue attributes = 8;
     uint64 time_created = 9;
@@ -31,6 +27,10 @@ message Dataset {
     string workspace_id = 11;
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 12;
     uint64 workspace_service_id = 13;
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    uac.CollaboratorPermissions custom_permission = 14;
+    uac.ResourceVisibility visibility = 15;
 }
 
 message DatasetTypeEnum {
@@ -55,13 +55,13 @@ message CreateDataset {
     repeated string tags = 3;
     repeated common.KeyValue attributes = 4;
     DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 5;
-    uac.ResourceVisibility visibility = 10;
-    // The next field only makes sense when visibility == ORG_CUSTOM
-    // They will be empty otherwise
-    uac.CollaboratorPermissions custom_permission = 9;
     DatasetTypeEnum.DatasetType dataset_type = 6;
     string workspace_name = 7;
     uint64 time_created = 8;
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    uac.CollaboratorPermissions custom_permission = 9;
+    uac.ResourceVisibility visibility = 10;
 
     message Response {
         Dataset dataset = 1;

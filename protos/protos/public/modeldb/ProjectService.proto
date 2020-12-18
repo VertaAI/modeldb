@@ -23,14 +23,15 @@ message Project {
     string short_name = 6;
     string readme_text = 7;
     ProjectVisibility project_visibility = 8;
-    uac.ResourceVisibility visibility = 13;
-    // The next field only makes sense when visibility == ORG_CUSTOM
-    // They will be empty otherwise
-    uac.CollaboratorPermissions custom_permission = 12;
 
     string workspace_id = 9;
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 10;
     uint64 workspace_service_id = 11;
+
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    uac.CollaboratorPermissions custom_permission = 12;
+    uac.ResourceVisibility visibility = 13;
 
     repeated common.KeyValue attributes = 20;
     repeated string tags = 21;
@@ -52,13 +53,13 @@ message CreateProject {
     repeated string tags = 4;
     string readme_text = 5;
     ProjectVisibility project_visibility = 6;
-    uac.ResourceVisibility visibility = 11;
-    // The next field only makes sense when visibility == ORG_CUSTOM
-    // They will be empty otherwise
-    uac.CollaboratorPermissions custom_permission = 10;
     repeated common.Artifact artifacts = 7;
     string workspace_name = 8;
     int64 date_created = 9;
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    uac.CollaboratorPermissions custom_permission = 10;
+    uac.ResourceVisibility visibility = 11;
 
     message Response {
         Project project = 1;

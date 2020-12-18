@@ -109,14 +109,14 @@ message Repository {
     uint64 workspace_service_id = 8;
 
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
-    uac.ResourceVisibility visibility = 14;
-    // The next field only makes sense when visibility == ORG_CUSTOM
-    // They will be empty otherwise
-    uac.CollaboratorPermissions custom_permission = 13;
 
     string owner = 10;
     string description = 11;
     repeated common.KeyValue attributes = 12;
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    uac.CollaboratorPermissions custom_permission = 13;
+    uac.ResourceVisibility visibility = 14;
 }
 
 
