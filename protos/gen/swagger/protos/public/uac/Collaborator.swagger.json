@@ -964,13 +964,6 @@
           "$ref": "#/definitions/uacResourceVisibility",
           "title": "Type of the visibility"
         },
-        "collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType",
-          "title": "The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC\nThey will be empty otherwise"
-        },
-        "can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
           "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
