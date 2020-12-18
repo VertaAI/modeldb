@@ -4,6 +4,7 @@ import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.entities.ProjectEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.rpc.Code;
@@ -36,8 +37,11 @@ public class CleanUpEntitiesCron extends TimerTask {
 
     ModelDBUtils.registeredBackgroundUtilsCount();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      // Update project timestamp
+      // Clean up projects
       cleanProjects(session);
+
+      // Clean up repositories
+      cleanRepositories(session);
     } catch (Exception ex) {
       if (ex instanceof StatusRuntimeException) {
         StatusRuntimeException exception = (StatusRuntimeException) ex;
@@ -110,5 +114,63 @@ public class CleanUpEntitiesCron extends TimerTask {
     }
 
     LOGGER.debug("Project cleaned successfully : Cleaned projects count {}", projectIds.size());
+  }
+
+  private void cleanRepositories(Session session) {
+    LOGGER.trace("Repository cleaning");
+    String alias = "r";
+    String deleteRepositoriesQueryString =
+        new StringBuilder("FROM ")
+            .append(RepositoryEntity.class.getSimpleName())
+            .append(" ")
+            .append(alias)
+            .append(" WHERE ")
+            .append(alias)
+            .append(".")
+            .append(ModelDBConstants.CREATED)
+            .append(" = :created ")
+            .append(" AND ")
+            .append(alias)
+            .append(".")
+            .append(ModelDBConstants.DATE_CREATED)
+            .append(" < :created_date ")
+            .toString();
+
+    // Time less then a minute because possible to have create project request running when cron job
+    // running
+    long time = Calendar.getInstance().getTimeInMillis() - 300000; // 5 minute lesser time
+    Query repositoryDeleteQuery = session.createQuery(deleteRepositoriesQueryString);
+    repositoryDeleteQuery.setParameter("created", false);
+    repositoryDeleteQuery.setParameter("created_date", time);
+    repositoryDeleteQuery.setMaxResults(this.recordUpdateLimit);
+    List<RepositoryEntity> repositoryEntities = repositoryDeleteQuery.list();
+
+    List<String> repositoryIds = new ArrayList<>();
+    if (!repositoryEntities.isEmpty()) {
+      for (RepositoryEntity repositoryEntity : repositoryEntities) {
+        repositoryIds.add(String.valueOf(repositoryEntity.getId()));
+      }
+
+      try {
+        roleService.deleteEntityResources(
+            repositoryIds, ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+        for (RepositoryEntity repositoryEntity : repositoryEntities) {
+          try {
+            Transaction transaction = session.beginTransaction();
+            session.delete(repositoryEntity);
+            transaction.commit();
+          } catch (OptimisticLockException ex) {
+            LOGGER.info("CleanUpEntitiesCron : cleanRepositories : Exception: {}", ex.getMessage());
+          }
+        }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("CleanUpEntitiesCron : cleanRepositories : Exception: {}", ex.getMessage());
+      } catch (Exception ex) {
+        LOGGER.warn("CleanUpEntitiesCron : cleanRepositories : Exception: ", ex);
+      }
+    }
+
+    LOGGER.debug(
+        "Repository cleaned successfully : Cleaned repositories count {}", repositoryIds.size());
   }
 }
