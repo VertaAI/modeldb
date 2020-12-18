@@ -183,7 +183,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("populationB: " + populationB);
 
     final long nA = aggregateA.containsKey("n") ? (Long) aggregateA.get("n") : 0L;
-    final long nB = aggregateB.containsKey("N") ? (Long) aggregateB.get("n") : 0L;
+    final long nB = aggregateB.containsKey("n") ? (Long) aggregateB.get("n") : 0L;
 
     final List<NGram> nGramsA = (List<NGram>) aggregateA.get("ngrams");
     final List<NGram> nGramsB = (List<NGram>) aggregateB.get("ngrams");
@@ -223,8 +223,8 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final List<NGram> sortedDiff =
         diffedNGrams.stream()
             .sorted((o1, o2) -> (int) (o2.getRank() - o1.getRank()))
-            .collect(Collectors.toList())
-            .subList(0, TOP_N);
+            .collect(Collectors.toList());
+    final List<NGram> topN = sortedDiff.size() > TOP_N ? sortedDiff.subList(0, TOP_N) : sortedDiff;
 
     final Map<String, Object> data = new HashMap<>();
     data.put("prediction_count", predictionCountB - predictionCountA);
@@ -233,7 +233,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
 
     Map<String, Object> payload = new HashMap<>();
     payload.put("metadata", metadata);
-    payload.put("data", sortedDiff);
+    payload.put("data", topN);
     return payload;
   }
 
