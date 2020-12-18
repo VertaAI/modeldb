@@ -613,6 +613,15 @@
       ],
       "default": "RAW"
     },
+    "DatasetVisibilityEnumDatasetVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
+    },
     "OperatorEnumOperator": {
       "type": "string",
       "enum": [
@@ -793,12 +802,8 @@
             "$ref": "#/definitions/commonKeyValue"
           }
         },
-        "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        "dataset_visibility": {
+          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
@@ -809,6 +814,13 @@
         "time_created": {
           "type": "string",
           "format": "uint64"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },
@@ -841,12 +853,8 @@
             "type": "string"
           }
         },
-        "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        "dataset_visibility": {
+          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
@@ -874,6 +882,13 @@
         "workspace_service_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },
@@ -1435,12 +1450,13 @@
     "uacResourceVisibility": {
       "type": "string",
       "enum": [
-        "WORKSPACE_DEFAULT",
+        "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
-        "PRIVATE"
+        "PRIVATE",
+        "WORKSPACE_DEFAULT"
       ],
-      "default": "WORKSPACE_DEFAULT"
+      "default": "UNKNOWN"
     },
     "versioningDockerEnvironmentBlob": {
       "type": "object",

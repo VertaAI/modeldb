@@ -819,6 +819,9 @@
         "share_with": {
           "type": "string"
         },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
         "message": {
           "type": "string"
         },
@@ -829,6 +832,9 @@
         "date_updated": {
           "type": "string",
           "format": "uint64"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
@@ -902,11 +908,17 @@
         "user_id": {
           "type": "string"
         },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
         "share_via_type": {
           "$ref": "#/definitions/uacShareViaEnum"
         },
         "verta_id": {
           "type": "string"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
@@ -1046,12 +1058,13 @@
     "uacResourceVisibility": {
       "type": "string",
       "enum": [
-        "WORKSPACE_DEFAULT",
+        "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
-        "PRIVATE"
+        "PRIVATE",
+        "WORKSPACE_DEFAULT"
       ],
-      "default": "WORKSPACE_DEFAULT"
+      "default": "UNKNOWN"
     },
     "uacResources": {
       "type": "object",
