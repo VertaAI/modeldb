@@ -232,7 +232,7 @@ func (x *Dataset) GetVisibility() uac.ResourceVisibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return uac.ResourceVisibility_WORKSPACE_DEFAULT
+	return uac.ResourceVisibility_UNKNOWN
 }
 
 func (x *Dataset) GetCustomPermission() *uac.CollaboratorPermissions {
@@ -457,7 +457,7 @@ func (x *CreateDataset) GetVisibility() uac.ResourceVisibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return uac.ResourceVisibility_WORKSPACE_DEFAULT
+	return uac.ResourceVisibility_UNKNOWN
 }
 
 func (x *CreateDataset) GetCustomPermission() *uac.CollaboratorPermissions {

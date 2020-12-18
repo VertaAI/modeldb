@@ -903,7 +903,7 @@ func (x *Repository) GetVisibility() uac.ResourceVisibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return uac.ResourceVisibility_WORKSPACE_DEFAULT
+	return uac.ResourceVisibility_UNKNOWN
 }
 
 func (x *Repository) GetCustomPermission() *uac.CollaboratorPermissions {

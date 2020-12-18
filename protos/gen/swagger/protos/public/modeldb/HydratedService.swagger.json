@@ -2450,13 +2450,13 @@
     "uacResourceVisibility": {
       "type": "string",
       "enum": [
-        "WORKSPACE_DEFAULT",
+        "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_SCOPED_PUBLIC",
         "ORG_CUSTOM",
         "PRIVATE"
       ],
-      "default": "WORKSPACE_DEFAULT"
+      "default": "UNKNOWN"
     },
     "uacTeam": {
       "type": "object",

@@ -154,7 +154,7 @@ func (x *RegisteredModel) GetVisibilityNew() uac.ResourceVisibility {
 	if x != nil {
 		return x.VisibilityNew
 	}
-	return uac.ResourceVisibility_WORKSPACE_DEFAULT
+	return uac.ResourceVisibility_UNKNOWN
 }
 
 func (x *RegisteredModel) GetCustomPermission() *uac.CollaboratorPermissions {

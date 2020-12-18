@@ -200,7 +200,7 @@ func (x *Project) GetVisibility() uac.ResourceVisibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return uac.ResourceVisibility_WORKSPACE_DEFAULT
+	return uac.ResourceVisibility_UNKNOWN
 }
 
 func (x *Project) GetCustomPermission() *uac.CollaboratorPermissions {
@@ -364,7 +364,7 @@ func (x *CreateProject) GetVisibility() uac.ResourceVisibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return uac.ResourceVisibility_WORKSPACE_DEFAULT
+	return uac.ResourceVisibility_UNKNOWN
 }
 
 func (x *CreateProject) GetCustomPermission() *uac.CollaboratorPermissions {
