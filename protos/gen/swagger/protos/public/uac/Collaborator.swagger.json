@@ -819,6 +819,9 @@
         "share_with": {
           "type": "string"
         },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
         "message": {
           "type": "string"
         },
@@ -829,6 +832,9 @@
         "date_updated": {
           "type": "string",
           "format": "uint64"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
@@ -902,11 +908,17 @@
         "user_id": {
           "type": "string"
         },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
         "share_via_type": {
           "$ref": "#/definitions/uacShareViaEnum"
         },
         "verta_id": {
           "type": "string"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
@@ -951,6 +963,13 @@
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility",
           "title": "Type of the visibility"
+        },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType",
+          "title": "The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC\nThey will be empty otherwise"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
@@ -1048,6 +1067,7 @@
       "enum": [
         "WORKSPACE_DEFAULT",
         "ORG_DEFAULT",
+        "ORG_SCOPED_PUBLIC",
         "ORG_CUSTOM",
         "PRIVATE"
       ],

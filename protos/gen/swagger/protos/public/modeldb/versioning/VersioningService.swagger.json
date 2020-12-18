@@ -2683,6 +2683,15 @@
       ],
       "default": "EQ"
     },
+    "RepositoryVisibilityEnumRepositoryVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
+    },
     "TernaryEnumTernary": {
       "type": "string",
       "enum": [
@@ -2812,6 +2821,7 @@
       "enum": [
         "WORKSPACE_DEFAULT",
         "ORG_DEFAULT",
+        "ORG_SCOPED_PUBLIC",
         "ORG_CUSTOM",
         "PRIVATE"
       ],
@@ -4012,6 +4022,9 @@
         "workspace_service_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "repository_visibility": {
+          "$ref": "#/definitions/RepositoryVisibilityEnumRepositoryVisibility"
         },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility"

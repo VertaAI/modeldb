@@ -613,6 +613,15 @@
       ],
       "default": "RAW"
     },
+    "DatasetVisibilityEnumDatasetVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
+    },
     "OperatorEnumOperator": {
       "type": "string",
       "enum": [
@@ -793,6 +802,9 @@
             "$ref": "#/definitions/commonKeyValue"
           }
         },
+        "dataset_visibility": {
+          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
+        },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
@@ -840,6 +852,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "dataset_visibility": {
+          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
@@ -1437,6 +1452,7 @@
       "enum": [
         "WORKSPACE_DEFAULT",
         "ORG_DEFAULT",
+        "ORG_SCOPED_PUBLIC",
         "ORG_CUSTOM",
         "PRIVATE"
       ],

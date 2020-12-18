@@ -962,6 +962,15 @@
       ],
       "default": "RAW"
     },
+    "DatasetVisibilityEnumDatasetVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
+    },
     "DeploymentActionEnumDeploymentServiceActions": {
       "type": "string",
       "enum": [
@@ -1303,6 +1312,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "dataset_visibility": {
+          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
@@ -2161,6 +2173,9 @@
         "readme_text": {
           "type": "string"
         },
+        "project_visibility": {
+          "$ref": "#/definitions/modeldbProjectVisibility"
+        },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
@@ -2203,6 +2218,15 @@
           }
         }
       }
+    },
+    "modeldbProjectVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
     },
     "modeldbQueryDatasetVersionInfo": {
       "type": "object",
@@ -2428,6 +2452,7 @@
       "enum": [
         "WORKSPACE_DEFAULT",
         "ORG_DEFAULT",
+        "ORG_SCOPED_PUBLIC",
         "ORG_CUSTOM",
         "PRIVATE"
       ],

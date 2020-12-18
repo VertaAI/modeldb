@@ -1581,6 +1581,17 @@
       ],
       "default": "STRING"
     },
+    "VisibilityEnumVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC",
+        "ORG_DEFAULT"
+      ],
+      "default": "PRIVATE",
+      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Public to organization\n - ORG_DEFAULT: Default access for organization"
+    },
     "commonArtifact": {
       "type": "object",
       "properties": {
@@ -2016,8 +2027,11 @@
           "title": "Labels added to the registered models"
         },
         "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility",
+          "$ref": "#/definitions/VisibilityEnumVisibility",
           "title": "Visibility of Registered Models"
+        },
+        "visibility_new": {
+          "$ref": "#/definitions/uacResourceVisibility"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
@@ -2157,6 +2171,7 @@
       "enum": [
         "WORKSPACE_DEFAULT",
         "ORG_DEFAULT",
+        "ORG_SCOPED_PUBLIC",
         "ORG_CUSTOM",
         "PRIVATE"
       ],
