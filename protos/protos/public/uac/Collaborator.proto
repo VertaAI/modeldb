@@ -78,10 +78,11 @@ message GetCollaborator {
 }
 
 enum ResourceVisibility {
+    option allow_alias = true;
     WORKSPACE_DEFAULT = 0;
     ORG_DEFAULT = 1;
+    ORG_SCOPED_PUBLIC = 1;
     ORG_CUSTOM = 2;
-    ORG_SCOPED_PUBLIC = 2;
     PRIVATE = 3;
 }
 
