@@ -870,7 +870,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               resourceIds.add(dataset.getId());
               List<GetCollaboratorResponseItem> datasetCollaboratorList =
                   roleService.getResourceCollaborators(
-                      ModelDBServiceResourceTypes.DATASET,
+                      ModelDBServiceResourceTypes.REPOSITORY,
                       dataset.getId(),
                       dataset.getOwner(),
                       requestHeaders);
@@ -893,7 +893,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     LOGGER.trace("Got results from UAC : {}", userInfoMap.size());
 
     Map<String, Actions> selfAllowedActions =
-        roleService.getSelfAllowedActionsBatch(resourceIds, ModelDBServiceResourceTypes.DATASET);
+        roleService.getSelfAllowedActionsBatch(resourceIds, ModelDBServiceResourceTypes.REPOSITORY);
 
     for (Dataset dataset : datasets) {
       // Use the map for vertaId  to UserInfo generated for this batch request to populate the
@@ -1006,7 +1006,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     Map<String, Actions> selfAllowedActions =
         roleService.getSelfAllowedActionsBatch(
             Collections.singletonList(datasetVersion.getDatasetId()),
-            ModelDBServiceResourceTypes.DATASET);
+            ModelDBServiceResourceTypes.REPOSITORY);
 
     HydratedDatasetVersion.Builder hydratedDatasetVersionBuilder =
         HydratedDatasetVersion.newBuilder().setDatasetVersion(datasetVersion);
@@ -1050,7 +1050,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       if (!request.getDatasetId().isEmpty()) {
         // Validate if current user has access to the entity or not
         roleService.validateEntityUserWithUserInfo(
-            ModelDBServiceResourceTypes.DATASET,
+            ModelDBServiceResourceTypes.REPOSITORY,
             request.getDatasetId(),
             ModelDBServiceActions.READ);
       }

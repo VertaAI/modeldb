@@ -1,7 +1,7 @@
 package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.common.KeyValue;
-import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
@@ -67,9 +67,11 @@ public class RepositoryEntity {
     if (workspaceDTO.getWorkspaceId() != null) {
       this.workspace_id = workspaceDTO.getWorkspaceId();
       this.workspace_type = workspaceDTO.getWorkspaceType().getNumber();
+      this.workspaceServiceId = workspaceDTO.getWorkspaceServiceId();
       this.owner = repository.getOwner();
     } else {
       this.workspace_id = "";
+      this.workspaceServiceId = 0L;
       this.workspace_type = 0;
       this.owner = "";
     }
@@ -229,7 +231,7 @@ public class RepositoryEntity {
 
     GetResourcesResponseItem repositoryResource =
         roleService.getEntityResource(
-            String.valueOf(this.id), ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+            String.valueOf(this.id), ModelDBServiceResourceTypes.REPOSITORY);
     builder.setVisibility(repositoryResource.getVisibility());
     builder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     builder.setOwner(String.valueOf(repositoryResource.getOwnerId()));

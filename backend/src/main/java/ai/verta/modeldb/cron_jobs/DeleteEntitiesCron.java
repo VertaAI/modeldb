@@ -40,8 +40,6 @@ public class DeleteEntitiesCron extends TimerTask {
   private final AuthService authService;
   private final RoleService roleService;
   private final Integer recordUpdateLimit;
-  private static final String DATASET_GLOBAL_SHARING = "_DATASET_GLOBAL_SHARING";
-  private static final String REPOSITORY_GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
 
   public DeleteEntitiesCron(
       AuthService authService, RoleService roleService, Integer recordUpdateLimit) {
@@ -374,7 +372,7 @@ public class DeleteEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteEntityResources(datasetIds, ModelDBServiceResourceTypes.DATASET);
+        roleService.deleteEntityResources(datasetIds, ModelDBServiceResourceTypes.REPOSITORY);
         Transaction transaction = session.beginTransaction();
         String updateDeletedStatusDatasetVersionQueryString =
             new StringBuilder("UPDATE ")
@@ -480,9 +478,7 @@ public class DeleteEntitiesCron extends TimerTask {
         try {
           roleService.deleteEntityResources(
               Collections.singletonList(String.valueOf(repository.getId())),
-              repository.isDataset()
-                  ? ModelDBServiceResourceTypes.DATASET
-                  : ModelDBServiceResourceTypes.REPOSITORY);
+              ModelDBServiceResourceTypes.REPOSITORY);
 
           transaction = session.beginTransaction();
 

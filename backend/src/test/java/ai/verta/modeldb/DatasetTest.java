@@ -11,7 +11,6 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -159,8 +158,7 @@ public class DatasetTest {
 
     ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 100);
 
     // Create all service blocking stub
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
@@ -312,7 +310,6 @@ public class DatasetTest {
             .addTags("A5")
             .addTags("A7")
             .addTags("A8")
-            .setVisibility(ResourceVisibility.ORG_DEFAULT)
             .build();
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
     dataset4 = createDatasetResponse.getDataset();

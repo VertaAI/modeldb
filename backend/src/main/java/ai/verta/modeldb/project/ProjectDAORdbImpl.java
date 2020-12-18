@@ -690,21 +690,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return newProject;
   }
 
-  private List<String> getWorkspaceRoleBindings(
-      String workspaceId,
-      WorkspaceType workspaceType,
-      String projectId,
-      VisibilityEnum.Visibility visibility) {
-    return roleService.getWorkspaceRoleBindings(
-        workspaceId,
-        workspaceType,
-        projectId,
-        ModelDBConstants.ROLE_PROJECT_ADMIN,
-        ModelDBServiceResourceTypes.PROJECT,
-        visibility.equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
-        "_GLOBAL_SHARING");
-  }
-
   @Override
   public List<String> deleteProjects(List<String> projectIds) {
     // Get self allowed resources id where user has delete permission
