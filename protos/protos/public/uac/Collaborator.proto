@@ -78,7 +78,6 @@ message GetCollaborator {
 }
 
 enum ResourceVisibility {
-    PRIVATE = 0;// default
     WORKSPACE_DEFAULT = 0;
     ORG_DEFAULT = 1;
     ORG_CUSTOM = 2;
