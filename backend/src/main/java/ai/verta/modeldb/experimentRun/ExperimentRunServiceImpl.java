@@ -53,6 +53,7 @@ import ai.verta.modeldb.LogAttribute;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogDataset;
 import ai.verta.modeldb.LogDatasets;
+import ai.verta.modeldb.LogEnvironment;
 import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.LogHyperparameter;
 import ai.verta.modeldb.LogHyperparameters;
@@ -2789,6 +2790,31 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, CloneExperimentRun.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void logEnvironment(
+      LogEnvironment request, StreamObserver<LogEnvironment.Response> responseObserver) {
+    try {
+      if (request.getId().isEmpty()) {
+        throw new ModelDBException("ExperimentRun Id should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      experimentRunDAO.logEnvironment(request.getId(), request.getEnvironment());
+      saveAuditLogs(
+          null,
+          ModelDBConstants.UPDATE,
+          Collections.singletonList(request.getId()),
+          String.format(
+              ModelDBConstants.METADATA_JSON_TEMPLATE,
+              "log",
+              "environment",
+              ModelDBUtils.getStringFromProtoObject(request.getEnvironment())));
+      responseObserver.onNext(LogEnvironment.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(responseObserver, e, LogEnvironment.Response.getDefaultInstance());
     }
   }
 }

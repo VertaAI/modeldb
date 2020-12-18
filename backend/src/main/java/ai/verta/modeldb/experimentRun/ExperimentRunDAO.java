@@ -23,6 +23,7 @@ import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
+import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryFunction;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -496,4 +497,7 @@ public interface ExperimentRunDAO {
   ExperimentRun cloneExperimentRun(
       ProjectDAO projectDAO, CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException;
+
+  void logEnvironment(String experimentRunId, EnvironmentBlob environmentBlob)
+      throws InvalidProtocolBufferException;
 }
