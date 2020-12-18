@@ -2262,3 +2262,14 @@ class ExperimentRun(_DeployableEntity):
         request_url = "{}://{}/api/v1/modeldb/experiment-run/deleteExperimentRun".format(self._conn.scheme, self._conn.socket)
         response = requests.delete(request_url, json={'id': self.id}, headers=self._conn.auth)
         _utils.raise_for_http_error(response)
+
+    def view_ngrams(self):
+        from IPython.display import display, IFrame  # pylint: disable=import-error
+        url = "{}://{}/hackathon/widgets/{}?email={}&devKey={}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.id,
+            self._conn.auth['Grpc-Metadata-email'],
+            self._conn.auth['Grpc-Metadata-developer_key'],
+        )
+        display(IFrame(src=url, width=1200, height=600))
