@@ -2273,3 +2273,17 @@ class ExperimentRun(_DeployableEntity):
             self._conn.auth['Grpc-Metadata-developer_key'],
         )
         display(IFrame(src=url, width=1200, height=600))
+
+    def view_ngram_diff(self, other_run_id):
+        from IPython.display import display, IFrame  # pylint: disable=import-error
+        self._refresh_cache()
+        url = "{}://{}/hackathon/widgets/{}/compare-exp-runs/{}/{}?email={}&devKey={}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self._msg.project_id,
+            self.id,
+            other_run_id,
+            self._conn.auth['Grpc-Metadata-email'],
+            self._conn.auth['Grpc-Metadata-developer_key'],
+        )
+        display(IFrame(src=url, width=1200, height=600))
