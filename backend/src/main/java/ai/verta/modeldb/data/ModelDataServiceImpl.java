@@ -84,7 +84,13 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     LOGGER.info("Aggregating predictions.");
     Map<String, Object> aggregate = aggregateTimespan(filteredToTimespan);
     Map<String, Object> payload =
-        buildPayload(startAt, endAt, request.getModelId(), request.getEndpoint(), filteredToTimespan, aggregate);
+        buildPayload(
+            startAt,
+            endAt,
+            request.getModelId(),
+            request.getEndpoint(),
+            filteredToTimespan,
+            aggregate);
     String json = new Gson().toJson(payload);
     LOGGER.info("Complete, returning response.");
     responseObserver.onNext(GetModelDataRequest.Response.newBuilder().setData(json).build());
@@ -121,9 +127,21 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Map<String, Object> aggregateB = aggregateTimespan(bFilteredToTimespan);
 
     Map<String, Object> leftPayload =
-        buildPayload(startAt, endAt, request.getModelIdA(), request.getEndpoint(), aFilteredToTimespan, aggregateA);
+        buildPayload(
+            startAt,
+            endAt,
+            request.getModelIdA(),
+            request.getEndpoint(),
+            aFilteredToTimespan,
+            aggregateA);
     Map<String, Object> rightPayload =
-        buildPayload(startAt, endAt, request.getModelIdB(), request.getEndpoint(), bFilteredToTimespan, aggregateB);
+        buildPayload(
+            startAt,
+            endAt,
+            request.getModelIdB(),
+            request.getEndpoint(),
+            bFilteredToTimespan,
+            aggregateB);
 
     LOGGER.info("Building diff.");
     Map<String, Object> diffPayload =
@@ -141,7 +159,12 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
   }
 
   private Map<String, Object> buildPayload(
-      Instant start, Instant end, String modelId, String endpoint, List<NGramData> allNgramData, Map<String, Object> aggregate) {
+      Instant start,
+      Instant end,
+      String modelId,
+      String endpoint,
+      List<NGramData> allNgramData,
+      Map<String, Object> aggregate) {
     Map<String, Object> metadata = new HashMap<>();
     metadata.put("start_time_millis", start.toEpochMilli());
     metadata.put("end_time_millis", end.toEpochMilli());
