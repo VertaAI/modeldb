@@ -594,7 +594,7 @@
           "$ref": "#/definitions/ServiceEnumService"
         }
       },
-      "title": "Same as above, but lists the resources on which actions can be performed by entities"
+      "title": "Same as above, but lists the resources on which actions can be performed by entities\nIf all possible resources combinations are allowed returns:\nResources({Resource(service: service, resource_ids:{}, resource_type:resource_type)})"
     },
     "uacGetAllowedResourcesResponse": {
       "type": "object",
