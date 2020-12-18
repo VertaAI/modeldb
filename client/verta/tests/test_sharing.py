@@ -5,7 +5,7 @@ from verta._internal_utils import _utils
 pytestmark = pytest.mark.not_oss
 
 
-class TestSharing:
+class TestProject:
     def test_share_project_personal_workspace(self, client, client_2, email_2):
         """
         User 1 share a project in personal workspace to user 2.
@@ -58,6 +58,8 @@ class TestSharing:
         assert client_2.get_project(id=project.id)
         assert client_2.get_project(name=project.name, workspace=organization.name)
 
+
+class TestRepository:
     def test_org_public_repository(self, client, organization, client_2, email_2):
         """
         User 2 tries to access a org-public repository created by a user in the same organization.
@@ -90,6 +92,8 @@ class TestSharing:
 
         repository.delete()
 
+
+class TestEndpoint:
     def test_org_endpoint(self, client, organization, client_2, email_2):
         """
         Non-owner access to org-public endpoint and private endpoint within an org.
