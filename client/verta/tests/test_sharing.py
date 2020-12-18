@@ -69,6 +69,8 @@ class TestDataset:
         assert client_2.get_dataset(id=dataset.id)
         assert client_2.get_dataset(name=dataset.name, workspace=organization.name)
 
+        dataset.delete()
+
     def test_non_org_public_dataset_access_error(self, client, organization, client_2, email_2):
         """
         User 2 tries to access a non-org-public dataset created by a user in the same organization.
@@ -81,6 +83,39 @@ class TestDataset:
         # Shouldn't be able to access:
         with pytest.raises(ValueError, match="not found"):
             client_2.get_dataset(id=dataset.id)
+
+        dataset.delete()
+
+
+class TestRegisteredModel:
+    def test_org_public_registered_model(self, client, organization, client_2, email_2):
+        """
+        User 2 tries to access a org-public registered_model created by a user in the same organization.
+        """
+        registered_model_name = _utils.generate_default_name()
+        registered_model = client.create_registered_model(registered_model_name, workspace=organization.name, public_within_org=True)
+
+        organization.add_member(email_2)
+
+        assert client_2.get_registered_model(id=registered_model.id)
+        assert client_2.get_registered_model(name=registered_model.name, workspace=organization.name)
+
+        registered_model.delete()
+
+    def test_non_org_public_registered_model_access_error(self, client, organization, client_2, email_2):
+        """
+        User 2 tries to access a non-org-public registered_model created by a user in the same organization.
+        """
+        registered_model_name = _utils.generate_default_name()
+        registered_model = client.create_registered_model(registered_model_name, workspace=organization.name, public_within_org=False)
+
+        organization.add_member(email_2)
+
+        # Shouldn't be able to access:
+        with pytest.raises(ValueError, match="not found"):
+            client_2.get_registered_model(id=registered_model.id)
+
+        registered_model.delete()
 
 
 class TestRepository:
