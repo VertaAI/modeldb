@@ -359,7 +359,7 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
                               return new NGram(gram, count, rank);
                             })
                         .collect(Collectors.toList());
-                return new NGramData(populationSize, predictionCount, n.get(), ngrams);
+                return new NGramData(populationSize, predictionCount, extractTimestamp(file.getName()).toEpochMilli(), n.get(), ngrams);
               } catch (IOException e) {
                 LOGGER.error(e);
               }
@@ -400,11 +400,13 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
     final Long population;
     final Long predictionCount;
     final Long n;
+    final Long timestampMillis;
     final List<NGram> ngrams;
 
-    public NGramData(Long population, Long predictionCount, Long n, List<NGram> ngrams) {
+    public NGramData(Long population, Long predictionCount, Long timestampMillis, Long n, List<NGram> ngrams) {
       this.population = population;
       this.predictionCount = predictionCount;
+      this.timestampMillis = timestampMillis;
       this.n = n;
       this.ngrams = ngrams;
     }
@@ -423,6 +425,10 @@ public class ModelDataServiceImpl extends ModelDataServiceGrpc.ModelDataServiceI
 
     public List<NGram> getNgrams() {
       return ngrams;
+    }
+
+    public Long getTimestampMillis() {
+      return timestampMillis;
     }
   }
 
