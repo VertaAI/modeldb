@@ -2453,7 +2453,8 @@
         "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
-        "PRIVATE"
+        "PRIVATE",
+        "WORKSPACE_DEFAULT"
       ],
       "default": "UNKNOWN"
     },
