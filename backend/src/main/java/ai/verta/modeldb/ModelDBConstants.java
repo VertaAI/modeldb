@@ -70,7 +70,6 @@ public interface ModelDBConstants {
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
   String STORE_CLIENT_CREATION_TIMESTAMP = "store-client-creation-timestamp";
-  String PUBLIC_SHARING_ENABLED = "public_sharing_enabled";
   String DISABLED_ARTIFACT_STORE = "disabled-artifact-store";
 
   // Threshold Constant
@@ -111,7 +110,6 @@ public interface ModelDBConstants {
   String PROJECT_COLLABORATORS = "project_collaborators";
   String PROJECT_ID = "project_id";
   String PROJECT_IDS = "project_ids";
-  String PROJECT_VISIBILITY = "visibility";
   String QUERY_DATSET_VERSION_INFO = "query_dataset_version_info";
   String RAW_DATSET_VERSION_INFO = "raw_dataset_version_info";
   String SHORT_NAME = "short_name";
@@ -156,9 +154,7 @@ public interface ModelDBConstants {
   String DATE_TIME = "date_time";
   String DATASET_ID_STR = "datasetId";
   String DATASET_VERSION_ID_STR = "datasetVersionId";
-  String DATASET_VISIBILITY = "dataset_visibility";
   String EMAILID = "email_id";
-  String DATASET_VERSION_VISIBILITY = "dataset_version_visibility";
   String EXPERIMENT_ID_STR = "experimentId";
   String EXPERIMENT_RUN_ID_STR = "experimentRunId";
   String FIELD_TYPE_STR = "fieldType";
@@ -181,6 +177,7 @@ public interface ModelDBConstants {
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
   String HEALTH_CHECK_SERVICE_FIELD = "service";
   String DELETED = "deleted";
+  String CREATED = "created";
   String DEV_KEY = "devKey";
   String REQUEST_TIMEOUT = "requestTimeout";
 
@@ -220,6 +217,7 @@ public interface ModelDBConstants {
       "Can't add new versioning entry, because an existing one has different repository or commit";
   String REPOSITORY_ENTITY = "repositoryEntity";
   String POPULATE_VERSION_MIGRATION = "POPULATE_VERSION_MIGRATION";
+  String COLLABORATOR_RESOURCE_MIGRATION = "COLLABORATOR_RESOURCE_MIGRATION";
 
   enum UserIdentifier {
     VERTA_ID,
@@ -272,7 +270,7 @@ public interface ModelDBConstants {
   String MASTER_BRANCH = "master";
   String COMMIT = "commit";
   String VERSIONING_LOCATION = "versioning_location";
-  String REPOSITORY_VISIBILITY = "repository_visibility";
+  String VISIBILITY = "visibility";
   String REPOSITORY = "repository";
   String VERSIONING_REPOSITORY = "versioning_repository";
   String VERSIONING_COMMIT = "versioning_commit";
@@ -294,6 +292,7 @@ public interface ModelDBConstants {
   String EXPIRED_TOKEN = "ExpiredToken";
   String UPDATE_RUN_ENVIRONMENTS = "update_run_environments";
   String DELETE_AUDIT_LOGS = "delete_audit_logs";
+  String CLEAN_UP_ENTITIES = "clean_up_entities";
 
   // Audit log constants
   String CREATE = "CREATE";

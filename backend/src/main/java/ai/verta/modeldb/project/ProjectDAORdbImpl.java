@@ -690,21 +690,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     return newProject;
   }
 
-  private List<String> getWorkspaceRoleBindings(
-      String workspaceId,
-      WorkspaceType workspaceType,
-      String projectId,
-      VisibilityEnum.Visibility visibility) {
-    return roleService.getWorkspaceRoleBindings(
-        workspaceId,
-        workspaceType,
-        projectId,
-        ModelDBConstants.ROLE_PROJECT_ADMIN,
-        ModelDBServiceResourceTypes.PROJECT,
-        visibility.equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
-        "_GLOBAL_SHARING");
-  }
-
   @Override
   public List<String> deleteProjects(List<String> projectIds) {
     // Get self allowed resources id where user has delete permission
@@ -891,7 +876,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         .map(
             projectEntity -> {
               GetResourcesResponseItem resourceItem =
-                  roleService.getProjectResource(projectEntity.getId());
+                  roleService.getEntityResource(
+                      projectEntity.getId(), ModelDBServiceResourceTypes.PROJECT);
               projectEntity.setProjectVisibility(resourceItem.getVisibility());
               projectEntity.setWorkspaceServiceId(resourceItem.getWorkspaceId());
               projectEntity.setOwner(String.valueOf(resourceItem.getOwnerId()));
@@ -969,7 +955,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                           WorkspaceType.ORGANIZATION_VALUE))));
         }
       } else {
-        if (visibility.equals(VisibilityEnum.Visibility.PRIVATE)) {
+        if (visibility.equals(ResourceVisibility.PRIVATE)) {
           RdbmsUtils.getWorkspacePredicates(
               host,
               currentLoginUserInfo,

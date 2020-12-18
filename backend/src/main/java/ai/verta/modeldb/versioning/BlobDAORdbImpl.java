@@ -585,8 +585,6 @@ public class BlobDAORdbImpl implements BlobDAO {
         if (version != null) {
           datasetVersionBuilder.setVersion(Long.parseLong(version));
         }
-        datasetVersionBuilder.setDatasetVersionVisibilityValue(
-            repositoryEntity.getRepository_visibility());
         datasetVersionBuilder.addAllAttributes(getComponentResponse.getAttributesList());
         datasetVersionBuilder.setOwner(commit.getAuthor());
         DatasetBlob dataset = blob.getDataset();

@@ -37,6 +37,7 @@ import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.UACServiceGrpc;
@@ -1245,17 +1246,18 @@ public class RepositoryTest {
     // Get the user info by vertaId form the AuthService
     UserInfo testUser2 = uacServiceStub.getUser(getUserRequest);
 
-    AddCollaboratorRequest.Builder addCollaboratorRequestBuilder =
+    AddCollaboratorRequest addCollaboratorRequest =
         AddCollaboratorRequest.newBuilder()
             .setShareWith(testUser2.getEmail())
+            .setPermission(
+                CollaboratorPermissions.newBuilder()
+                    .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)
+                    .build())
             .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
-            .addEntityIds(String.valueOf(repository.getId()));
-    addCollaboratorRequestBuilder
-        .getPermissionBuilder()
-        .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
+            .addEntityIds(String.valueOf(repository.getId()))
+            .build();
     AddCollaboratorRequest.Response collaboratorResponse =
-        collaboratorServiceBlockingStub.addOrUpdateRepositoryCollaborator(
-            addCollaboratorRequestBuilder.build());
+        collaboratorServiceBlockingStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
     assertTrue(collaboratorResponse.getStatus());
 
     FindRepositories findRepositoriesRequest =

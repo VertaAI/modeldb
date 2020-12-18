@@ -1,8 +1,12 @@
 package ai.verta.modeldb.entities;
 
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -28,7 +33,7 @@ public class DatasetEntity {
     setName(dataset.getName());
     setDescription(dataset.getDescription());
     setTags(RdbmsUtils.convertTagListFromTagMappingList(this, dataset.getTagsList()));
-    setDataset_visibility(dataset.getDatasetVisibilityValue());
+    setDatasetVisibility(dataset.getVisibility());
     setDataset_type(dataset.getDatasetTypeValue());
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
@@ -63,6 +68,8 @@ public class DatasetEntity {
 
   @Column(name = "dataset_visibility")
   private Integer dataset_visibility;
+
+  @Transient private ResourceVisibility datasetVisibility = ResourceVisibility.PRIVATE;
 
   @Column(name = "dataset_type")
   private Integer dataset_type;
@@ -141,12 +148,12 @@ public class DatasetEntity {
     this.tags = tags;
   }
 
-  public Integer getDataset_visibility() {
-    return dataset_visibility;
+  public ResourceVisibility getDatasetVisibility() {
+    return datasetVisibility;
   }
 
-  public void setDataset_visibility(Integer dataset_visibility) {
-    this.dataset_visibility = dataset_visibility;
+  public void setDatasetVisibility(ResourceVisibility datasetVisibility) {
+    this.datasetVisibility = datasetVisibility;
   }
 
   public Integer getDataset_type() {
@@ -216,21 +223,29 @@ public class DatasetEntity {
     this.deleted = deleted;
   }
 
-  public Dataset getProtoObject() throws InvalidProtocolBufferException {
-    return Dataset.newBuilder()
-        .setId(getId())
-        .setName(getName())
-        .setOwner(getOwner())
-        .setDescription(getDescription())
-        .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))
-        .setDatasetVisibilityValue(getDataset_visibility())
-        .setDatasetTypeValue(getDataset_type())
-        .addAllAttributes(
-            RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))
-        .setTimeCreated(getTime_created())
-        .setTimeUpdated(getTime_updated())
-        .setWorkspaceId(getWorkspace())
-        .setWorkspaceTypeValue(getWorkspace_type())
-        .build();
+  public Dataset getProtoObject(RoleService roleService) throws InvalidProtocolBufferException {
+    Dataset.Builder datasetBuilder =
+        Dataset.newBuilder()
+            .setId(getId())
+            .setName(getName())
+            .setOwner(getOwner())
+            .setDescription(getDescription())
+            .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))
+            .setDatasetTypeValue(getDataset_type())
+            .addAllAttributes(
+                RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))
+            .setTimeCreated(getTime_created())
+            .setTimeUpdated(getTime_updated())
+            .setWorkspaceId(getWorkspace())
+            .setWorkspaceTypeValue(getWorkspace_type());
+
+    GetResourcesResponseItem repositoryResource =
+        roleService.getEntityResource(
+            String.valueOf(this.id), ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
+    datasetBuilder.setVisibility(repositoryResource.getVisibility());
+    datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
+    datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
+    datasetBuilder.setCustomPermission(repositoryResource.getCustomPermission());
+    return datasetBuilder.build();
   }
 }

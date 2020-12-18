@@ -2,11 +2,10 @@ package ai.verta.modeldb.dataset;
 
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Dataset;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.DatasetEntity;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
@@ -43,7 +42,7 @@ public interface DatasetDAO {
    * @param pageLimit : page limit is per page record count.
    * @param order : this parameter has order like asc OR desc.
    * @param sortKey : Use this field for filter data.
-   * @param datasetVisibility : DatasetVisibility.PRIVATE, DatasetVisibility.PUBLIC
+   * @param datasetVisibility : ResourceVisibility.PRIVATE, ResourceVisibility.PUBLIC
    * @return {@link DatasetPaginationDTO} : datasetPaginationDTO contains the experimentRunList &
    *     total_pages count
    * @throws InvalidProtocolBufferException invalidProtocolBufferException
@@ -54,7 +53,7 @@ public interface DatasetDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      DatasetVisibility datasetVisibility)
+      ResourceVisibility datasetVisibility)
       throws InvalidProtocolBufferException;
 
   /**
@@ -81,13 +80,13 @@ public interface DatasetDAO {
    *
    * @param queryParameters : queryParameters --> query parameters for filtering datasets
    * @param userInfo : userInfo
-   * @param datasetVisibility : DatasetVisibility.PRIVATE, DatasetVisibility.PUBLIC
+   * @param resourceVisibility : ResourceVisibility.PRIVATE, ResourceVisibility.PUBLIC
    * @return {@link DatasetPaginationDTO} : datasetPaginationDTO contains the list of datasets based
    *     on filter queryParameters & total_pages count
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   DatasetPaginationDTO findDatasets(
-      FindDatasets queryParameters, UserInfo userInfo, DatasetVisibility datasetVisibility)
+      FindDatasets queryParameters, UserInfo userInfo, ResourceVisibility resourceVisibility)
       throws InvalidProtocolBufferException;
 
   /**
@@ -208,34 +207,12 @@ public interface DatasetDAO {
       throws InvalidProtocolBufferException;
 
   /**
-   * Set/Update dataset visibility
-   *
-   * @param datasetId : dataset.id
-   * @param datasetVisibility : DatasetVisibility.PUBLIC, DatasetVisibility.PRIVATE
-   * @return {@link Dataset} : updated Dataset
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
-   */
-  Dataset setDatasetVisibility(String datasetId, DatasetVisibility datasetVisibility)
-      throws InvalidProtocolBufferException;
-
-  /**
    * Getting all the owners with respected to dataset ids and returned by this method.
    *
    * @param datasetIds : List<String> list of accessible dataset Id
    * @return {@link Map} : Map<String,String> where key= datasetId, value= dataset owner Id
    */
   Map<String, String> getOwnersByDatasetIds(List<String> datasetIds);
-
-  /**
-   * Sets the workspace of an existing dataset
-   *
-   * @param datasetId : datasetId
-   * @param workspaceDTO : workspaceDTO
-   * @return {@link Dataset} : updated dataset
-   * @throws InvalidProtocolBufferException : InvalidProtocolBufferException
-   */
-  Dataset setDatasetWorkspace(String datasetId, WorkspaceDTO workspaceDTO)
-      throws InvalidProtocolBufferException;
 
   List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException;

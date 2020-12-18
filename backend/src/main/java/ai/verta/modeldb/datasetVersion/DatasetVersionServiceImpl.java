@@ -26,7 +26,6 @@ import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.PathDatasetVersionInfo;
-import ai.verta.modeldb.SetDatasetVersionVisibilty;
 import ai.verta.modeldb.UpdateDatasetVersionAttributes;
 import ai.verta.modeldb.UpdateDatasetVersionDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
@@ -73,8 +72,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private static final Logger LOGGER = LogManager.getLogger(DatasetVersionServiceImpl.class);
   private AuthService authService;
   private RoleService roleService;
-  // private DatasetDAO datasetDAO;
-  // private DatasetVersionDAO datasetVersionDAO;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
@@ -95,8 +92,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       AuditLogLocalDAO auditLogLocalDAO) {
     this.authService = authService;
     this.roleService = roleService;
-    // this.datasetDAO = datasetDAO;
-    // this.datasetVersionDAO = datasetVersionDAO;
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
@@ -135,7 +130,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             .setDatasetId(request.getDatasetId())
             .setDescription(request.getDescription())
             .addAllTags(request.getTagsList())
-            .setDatasetVersionVisibility(request.getDatasetVersionVisibility())
             .addAllAttributes(request.getAttributesList());
 
     if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
@@ -826,48 +820,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       ModelDBUtils.observeError(
           responseObserver, e, DeleteDatasetVersionAttributes.Response.getDefaultInstance());
     }
-  }
-
-  @Override
-  public void setDatasetVersionVisibility(
-      SetDatasetVersionVisibilty request,
-      StreamObserver<SetDatasetVersionVisibilty.Response> responseObserver) {
-    LOGGER.info("setDatasetVersionVisibility not supported");
-    super.setDatasetVersionVisibility(request, responseObserver);
-    /*QPSCountResource.inc();
-    try (RequestLatencyResource latencyResource =
-        new RequestLatencyResource(ModelDBAuthInterceptor.METHOD_NAME.get())) {
-      // Request Parameter Validation
-      if (request.getId().isEmpty()) {
-        LOGGER.info(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST)
-                .addDetails(Any.pack(SetDatasetVersionVisibilty.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
-
-      DatasetVersion datasetVersion = datasetVersionDAO.getDatasetVersion(request.getId());
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.DATASET,
-          datasetVersion.getDatasetId(),
-          ModelDBServiceActions.READ);
-
-      datasetVersion =
-          datasetVersionDAO.setDatasetVersionVisibility(
-              request.getId(), request.getDatasetVersionVisibility());
-      responseObserver.onNext(
-          SetDatasetVersionVisibilty.Response.newBuilder()
-              .setDatasetVersion(datasetVersion)
-              .build());
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, SetDatasetVersionVisibilty.Response.getDefaultInstance());
-    }*/
   }
 
   @Override

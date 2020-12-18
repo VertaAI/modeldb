@@ -126,13 +126,23 @@ public interface RoleService {
 
   List<Organization> listMyOrganizations();
 
-  GetResourcesResponseItem getProjectResource(String projectId);
+  GetResourcesResponseItem getEntityResource(
+      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo);
 
   boolean deleteResources(Resources resources);
 
-  boolean deleteProjectResources(List<String> projectIds);
+  boolean deleteEntityResources(
+      List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  boolean createWorkspacePermissions(
+      String workspaceName,
+      String resourceId,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      ResourceVisibility visibility);
 
   boolean createWorkspacePermissions(
       Long workspaceId,

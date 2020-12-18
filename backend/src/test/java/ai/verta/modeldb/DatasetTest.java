@@ -10,9 +10,7 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -28,6 +26,7 @@ import ai.verta.uac.GetRoleByName;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.Organization;
 import ai.verta.uac.OrganizationServiceGrpc;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.RoleScope;
 import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.SetOrganization;
@@ -159,8 +158,7 @@ public class DatasetTest {
 
     ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 100);
 
     // Create all service blocking stub
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
@@ -312,7 +310,6 @@ public class DatasetTest {
             .addTags("A5")
             .addTags("A7")
             .addTags("A8")
-            .setDatasetVisibility(DatasetVisibility.PUBLIC)
             .build();
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
     dataset4 = createDatasetResponse.getDataset();
@@ -378,7 +375,7 @@ public class DatasetTest {
 
     return CreateDataset.newBuilder()
         .setName(datasetName)
-        .setDatasetVisibility(DatasetVisibility.PRIVATE)
+        .setVisibility(ResourceVisibility.PRIVATE)
         .addTags("A")
         .addTags("A0")
         .addAllAttributes(attributeList)
@@ -1361,62 +1358,6 @@ public class DatasetTest {
   }
 
   @Test
-  public void setDatasetVisibility() {
-    LOGGER.info("Set Dataset visibility test start................................");
-
-    // Create public dataset
-    // Public dataset 1
-    CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
-    createDatasetRequest =
-        createDatasetRequest.toBuilder().setDatasetVisibility(DatasetVisibility.PUBLIC).build();
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    Dataset dataset = createDatasetResponse.getDataset();
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
-    assertEquals(
-        "Dataset visibility not match with expected dataset visibility",
-        DatasetVisibility.PUBLIC,
-        dataset.getDatasetVisibility());
-    LOGGER.info("Dataset created successfully");
-
-    try {
-      SetDatasetVisibilty setDatasetVisibilty =
-          SetDatasetVisibilty.newBuilder()
-              .setId(dataset.getId())
-              .setDatasetVisibility(DatasetVisibility.PRIVATE)
-              .build();
-      SetDatasetVisibilty.Response response =
-          datasetServiceStub.setDatasetVisibility(setDatasetVisibilty);
-      Dataset visibilityDataset = response.getDataset();
-      assertEquals(
-          "Dataset name not match with expected dataset name",
-          dataset.getName(),
-          visibilityDataset.getName());
-      assertEquals(
-          "Dataset visibility not match with updated dataset visibility",
-          DatasetVisibility.PRIVATE,
-          visibilityDataset.getDatasetVisibility());
-      LOGGER.info("Set dataset visibility successfully");
-      assertNotEquals(
-          "Dataset date_updated field not update on database",
-          dataset.getTimeUpdated(),
-          response.getDataset().getTimeUpdated());
-    } finally {
-      DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-      DeleteDataset.Response deleteDatasetResponse =
-          datasetServiceStub.deleteDataset(deleteDataset);
-      LOGGER.info("Dataset deleted successfully");
-      LOGGER.info(deleteDatasetResponse.toString());
-      assertTrue(deleteDatasetResponse.getStatus());
-    }
-
-    LOGGER.info("Set Dataset visibility test stop................................");
-  }
-
-  @Test
   public void batchDeleteDatasetsTest() {
     LOGGER.info("batch delete Dataset test start................................");
 
@@ -1904,7 +1845,7 @@ public class DatasetTest {
     createDatasetRequest =
         createDatasetRequest
             .toBuilder()
-            .setDatasetVisibility(DatasetVisibility.ORG_SCOPED_PUBLIC)
+            .setVisibility(ResourceVisibility.ORG_CUSTOM)
             .setWorkspaceName(organization.getName())
             .build();
     CreateDataset.Response createDatasetResponse =

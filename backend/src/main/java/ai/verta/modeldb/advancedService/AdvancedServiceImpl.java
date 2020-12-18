@@ -11,7 +11,6 @@ import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.Comment;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindDatasetVersions;
@@ -871,7 +870,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               resourceIds.add(dataset.getId());
               List<GetCollaboratorResponseItem> datasetCollaboratorList =
                   roleService.getResourceCollaborators(
-                      ModelDBServiceResourceTypes.DATASET,
+                      ModelDBServiceResourceTypes.REPOSITORY,
                       dataset.getId(),
                       dataset.getOwner(),
                       requestHeaders);
@@ -894,7 +893,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     LOGGER.trace("Got results from UAC : {}", userInfoMap.size());
 
     Map<String, Actions> selfAllowedActions =
-        roleService.getSelfAllowedActionsBatch(resourceIds, ModelDBServiceResourceTypes.DATASET);
+        roleService.getSelfAllowedActionsBatch(resourceIds, ModelDBServiceResourceTypes.REPOSITORY);
 
     for (Dataset dataset : datasets) {
       // Use the map for vertaId  to UserInfo generated for this batch request to populate the
@@ -948,7 +947,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(request, userInfo, DatasetVisibility.PRIVATE);
+          datasetDAO.findDatasets(request, userInfo, ResourceVisibility.PRIVATE);
       LOGGER.debug(
           ModelDBMessages.DATASET_RECORD_COUNT_MSG, datasetPaginationDTO.getTotalRecords());
       List<HydratedDataset> hydratedDatasets =
@@ -974,7 +973,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(request, userInfo, DatasetVisibility.PUBLIC);
+          datasetDAO.findDatasets(request, userInfo, ResourceVisibility.ORG_DEFAULT);
       LOGGER.debug(
           ModelDBMessages.DATASET_RECORD_COUNT_MSG, datasetPaginationDTO.getTotalRecords());
 
@@ -1007,7 +1006,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     Map<String, Actions> selfAllowedActions =
         roleService.getSelfAllowedActionsBatch(
             Collections.singletonList(datasetVersion.getDatasetId()),
-            ModelDBServiceResourceTypes.DATASET);
+            ModelDBServiceResourceTypes.REPOSITORY);
 
     HydratedDatasetVersion.Builder hydratedDatasetVersionBuilder =
         HydratedDatasetVersion.newBuilder().setDatasetVersion(datasetVersion);
@@ -1051,7 +1050,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       if (!request.getDatasetId().isEmpty()) {
         // Validate if current user has access to the entity or not
         roleService.validateEntityUserWithUserInfo(
-            ModelDBServiceResourceTypes.DATASET,
+            ModelDBServiceResourceTypes.REPOSITORY,
             request.getDatasetId(),
             ModelDBServiceActions.READ);
       }
@@ -1122,7 +1121,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                       : request.getWorkspaceName());
 
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
+          datasetDAO.findDatasets(findDatasets.build(), userInfo, ResourceVisibility.PRIVATE);
 
       if (datasetPaginationDTO.getTotalRecords() == 0) {
         Status status =
@@ -1435,7 +1434,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           // Get the user info from the Context
           UserInfo userInfo = authService.getCurrentLoginUserInfo();
           DatasetPaginationDTO datasetPaginationDTO =
-              datasetDAO.findDatasets(findDatasetsRequest, userInfo, DatasetVisibility.PRIVATE);
+              datasetDAO.findDatasets(findDatasetsRequest, userInfo, ResourceVisibility.PRIVATE);
           LOGGER.debug(
               ModelDBMessages.DATASET_RECORD_COUNT_MSG, datasetPaginationDTO.getTotalRecords());
           hydratedDatasets = findHydratedDatasets(datasetPaginationDTO, false);

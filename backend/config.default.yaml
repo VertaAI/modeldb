@@ -91,12 +91,14 @@ migration:
   POPULATE_VERSION_MIGRATION:
     enable: true
     record_update_limit: 100
+  COLLABORATOR_RESOURCE_MIGRATION:
+    enable: true
+    record_update_limit: 100
   #xyz :
   #  enable: true
 
 feature-flag:
   disabled-authz: true
-  public_sharing_enabled: false
   disabled-artifact-store: false
 
 cron_job:
@@ -112,6 +114,10 @@ cron_job:
     frequency: 60 #frequency to delete entities in second, default 60
     record_update_limit: 100
   delete_audit_logs:
+    initial_delay: 300 #delay timestamp in second, default 300second = 5min
+    frequency: 60 #frequency to delete entities in second, default 60
+    record_update_limit: 100
+  clean_up_entities:
     initial_delay: 300 #delay timestamp in second, default 300second = 5min
     frequency: 60 #frequency to delete entities in second, default 60
     record_update_limit: 100
