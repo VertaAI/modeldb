@@ -59,6 +59,60 @@ class TestProject:
         assert client_2.get_project(name=project.name, workspace=organization.name)
 
 
+class TestDataset:
+    def test_share_dataset_personal_workspace(self, client, client_2, email_2):
+        """
+        User 1 share a dataset in personal workspace to user 2.
+        """
+        dataset_name = _utils.generate_default_name()
+        dataset = client.create_dataset(dataset_name)
+        dataset._add_collaborator(email=email_2)
+
+        assert client_2.get_dataset(id=dataset.id)
+        assert client_2.get_dataset(name=dataset.name)
+
+    def test_org_public_dataset(self, client, organization, client_2, email_2):
+        """
+        User 2 tries to access a org-public dataset created by a user in the same organization.
+        """
+        dataset_name = _utils.generate_default_name()
+        dataset = client.create_dataset(dataset_name, workspace=organization.name, public_within_org=True)
+
+        organization.add_member(email_2)
+
+        assert client_2.get_dataset(id=dataset.id)
+        assert client_2.get_dataset(name=dataset.name, workspace=organization.name)
+
+    def test_non_org_public_dataset_access_error(self, client, organization, client_2, email_2):
+        """
+        User 2 tries to access a non-org-public dataset created by a user in the same organization.
+        """
+        dataset_name = _utils.generate_default_name()
+        dataset = client.create_dataset(dataset_name, workspace=organization.name, public_within_org=False)
+
+        organization.add_member(email_2)
+
+        # Shouldn't be able to access:
+        with pytest.raises(ValueError) as excinfo:
+            client_2.get_dataset(id=dataset.id)
+
+        excinfo_value = str(excinfo.value).strip()
+        assert "not found" in excinfo_value
+
+    def test_share_org_dataset(self, client, organization, client_2, email_2):
+        """
+        User 2 tries to access a non-org-public dataset created by another user, but has been shared to user 2.
+        """
+        dataset_name = _utils.generate_default_name()
+        dataset = client.create_dataset(dataset_name, workspace=organization.name, public_within_org=False)
+
+        organization.add_member(email_2)
+        dataset._add_collaborator(email=email_2)
+
+        assert client_2.get_dataset(id=dataset.id)
+        assert client_2.get_dataset(name=dataset.name, workspace=organization.name)
+
+
 class TestRepository:
     def test_org_public_repository(self, client, organization, client_2, email_2):
         """
