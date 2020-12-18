@@ -39,11 +39,8 @@ class TestProject:
         organization.add_member(email_2)
 
         # Shouldn't be able to access:
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(ValueError, match="not found"):
             client_2.get_project(id=project.id)
-
-        excinfo_value = str(excinfo.value).strip()
-        assert "not found" in excinfo_value
 
     def test_share_org_project(self, client, organization, client_2, email_2):
         """
@@ -82,11 +79,8 @@ class TestDataset:
         organization.add_member(email_2)
 
         # Shouldn't be able to access:
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(ValueError, match="not found"):
             client_2.get_dataset(id=dataset.id)
-
-        excinfo_value = str(excinfo.value).strip()
-        assert "not found" in excinfo_value
 
 
 class TestRepository:
@@ -114,11 +108,8 @@ class TestRepository:
         organization.add_member(email_2)
 
         # Shouldn't be able to access:
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(ValueError, match="no Repository found"):
             client_2.get_or_create_repository(id=repository.id)
-
-        excinfo_value = str(excinfo.value).strip()
-        assert "no Repository found" in excinfo_value
 
         repository.delete()
 
