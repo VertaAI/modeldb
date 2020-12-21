@@ -9,9 +9,11 @@ import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryModifierEnum;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
+import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import com.google.api.client.util.Objects;
@@ -236,6 +238,12 @@ public class RepositoryEntity {
     builder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     builder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
     builder.setCustomPermission(repositoryResource.getCustomPermission());
+
+    RepositoryVisibility visibility =
+        (RepositoryVisibility)
+            ModelDBUtils.getOldVisibility(
+                ModelDBServiceResourceTypes.REPOSITORY, repositoryResource.getVisibility());
+    builder.setRepositoryVisibility(visibility);
 
     if (owner != null) {
       builder.setOwner(owner);

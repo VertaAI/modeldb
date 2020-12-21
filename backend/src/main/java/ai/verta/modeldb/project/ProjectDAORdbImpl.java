@@ -190,6 +190,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       session.save(projectEntity);
       transaction.commit();
       LOGGER.debug("ProjectEntity created successfully");
+
+      ResourceVisibility resourceVisibility = project.getVisibility();
+      if (project.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
+        resourceVisibility =
+            ModelDBUtils.getResourceVisibility(
+                Optional.of(project.getWorkspaceType()), project.getProjectVisibility());
+      }
+
       roleService.createWorkspacePermissions(
           project.getWorkspaceServiceId(),
           Optional.of(project.getWorkspaceType()),
@@ -197,7 +205,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           Optional.empty(), // UAC will populate the owner ID
           ModelDBServiceResourceTypes.PROJECT,
           project.getCustomPermission(),
-          project.getVisibility());
+          resourceVisibility);
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
       projectEntity.setCreated(true);

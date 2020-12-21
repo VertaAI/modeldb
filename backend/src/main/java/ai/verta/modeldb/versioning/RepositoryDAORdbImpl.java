@@ -464,6 +464,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     session.getTransaction().commit();
     if (create) {
       try {
+        ResourceVisibility resourceVisibility = repository.getVisibility();
+        if (repository.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
+          resourceVisibility =
+              ModelDBUtils.getResourceVisibility(
+                  Optional.of(repository.getWorkspaceType()), repository.getRepositoryVisibility());
+        }
         roleService.createWorkspacePermissions(
             repositoryEntity.getWorkspaceServiceId(),
             Optional.of(WorkspaceType.forNumber(repositoryEntity.getWorkspace_type())),
@@ -471,7 +477,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             Optional.empty(), // UAC will populate the owner ID
             ModelDBServiceResourceTypes.REPOSITORY,
             repository.getCustomPermission(),
-            repositoryEntity.getRepositoryVisibility());
+            resourceVisibility);
         LOGGER.debug("Project role bindings created successfully");
         Transaction transaction = session.beginTransaction();
         repositoryEntity.setCreated(true);
@@ -624,6 +630,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             commitDAO,
             metadataDAO,
             Repository.newBuilder()
+                .setRepositoryVisibility(
+                    RepositoryVisibilityEnum.RepositoryVisibility.forNumber(
+                        dataset.getDatasetVisibilityValue()))
                 .setVisibility(dataset.getVisibility())
                 .setWorkspaceType(dataset.getWorkspaceType())
                 .setWorkspaceId(dataset.getWorkspaceId())

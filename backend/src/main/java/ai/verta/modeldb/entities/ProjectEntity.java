@@ -3,7 +3,9 @@ package ai.verta.modeldb.entities;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
+import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
@@ -356,6 +358,12 @@ public class ProjectEntity {
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
     projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
     projectBuilder.setCustomPermission(projectResource.getCustomPermission());
+
+    ProjectVisibility visibility =
+        (ProjectVisibility)
+            ModelDBUtils.getOldVisibility(
+                ModelDBServiceResourceTypes.PROJECT, projectResource.getVisibility());
+    projectBuilder.setProjectVisibility(visibility);
 
     return projectBuilder.build();
   }

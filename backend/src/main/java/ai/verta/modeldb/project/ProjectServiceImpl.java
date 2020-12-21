@@ -110,6 +110,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
             .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
+            .setProjectVisibility(request.getProjectVisibility())
             .setVisibility(request.getVisibility())
             .addAllArtifacts(request.getArtifactsList())
             .setReadmeText(request.getReadmeText());

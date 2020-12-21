@@ -1,10 +1,14 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.Dataset;
+import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -246,6 +250,14 @@ public class DatasetEntity {
     datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
     datasetBuilder.setCustomPermission(repositoryResource.getCustomPermission());
+
+    RepositoryVisibility visibility =
+        (RepositoryVisibility)
+            ModelDBUtils.getOldVisibility(
+                ModelDBServiceResourceTypes.REPOSITORY, repositoryResource.getVisibility());
+    datasetBuilder.setDatasetVisibility(
+        DatasetVisibilityEnum.DatasetVisibility.forNumber(visibility.getNumber()));
+
     return datasetBuilder.build();
   }
 }
