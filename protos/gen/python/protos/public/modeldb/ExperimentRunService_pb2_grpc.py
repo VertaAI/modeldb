@@ -165,6 +165,11 @@ class ExperimentRunServiceStub(object):
         request_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteExperimentRunAttributes.SerializeToString,
         response_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteExperimentRunAttributes.Response.FromString,
         )
+    self.logEnvironment = channel.unary_unary(
+        '/ai.verta.modeldb.ExperimentRunService/logEnvironment',
+        request_serializer=modeldb_dot_ExperimentRunService__pb2.LogEnvironment.SerializeToString,
+        response_deserializer=modeldb_dot_ExperimentRunService__pb2.LogEnvironment.Response.FromString,
+        )
     self.logExperimentRunCodeVersion = channel.unary_unary(
         '/ai.verta.modeldb.ExperimentRunService/logExperimentRunCodeVersion',
         request_serializer=modeldb_dot_ExperimentRunService__pb2.LogExperimentRunCodeVersion.SerializeToString,
@@ -516,6 +521,13 @@ class ExperimentRunServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def logEnvironment(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def logExperimentRunCodeVersion(self, request, context):
     """code version
     """
@@ -857,6 +869,11 @@ def add_ExperimentRunServiceServicer_to_server(servicer, server):
           servicer.deleteExperimentRunAttributes,
           request_deserializer=modeldb_dot_ExperimentRunService__pb2.DeleteExperimentRunAttributes.FromString,
           response_serializer=modeldb_dot_ExperimentRunService__pb2.DeleteExperimentRunAttributes.Response.SerializeToString,
+      ),
+      'logEnvironment': grpc.unary_unary_rpc_method_handler(
+          servicer.logEnvironment,
+          request_deserializer=modeldb_dot_ExperimentRunService__pb2.LogEnvironment.FromString,
+          response_serializer=modeldb_dot_ExperimentRunService__pb2.LogEnvironment.Response.SerializeToString,
       ),
       'logExperimentRunCodeVersion': grpc.unary_unary_rpc_method_handler(
           servicer.logExperimentRunCodeVersion,
