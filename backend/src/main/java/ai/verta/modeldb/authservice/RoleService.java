@@ -1,6 +1,5 @@
 package ai.verta.modeldb.authservice;
 
-import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
@@ -141,7 +140,7 @@ public interface RoleService {
       String resourceId,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
-      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      CollaboratorPermissions permissions,
       ResourceVisibility visibility);
 
   boolean createWorkspacePermissions(
@@ -150,7 +149,7 @@ public interface RoleService {
       String resourceId,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
-      CollaboratorTypeEnum.CollaboratorType collaboratorType,
+      CollaboratorPermissions permissions,
       ResourceVisibility projectVisibility);
 
   void createWorkspacePermissions(

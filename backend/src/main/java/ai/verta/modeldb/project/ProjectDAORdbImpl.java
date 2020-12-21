@@ -196,7 +196,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           project.getId(),
           Optional.empty(), // UAC will populate the owner ID
           ModelDBServiceResourceTypes.PROJECT,
-          CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+          project.getCustomPermission(),
           project.getVisibility());
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
