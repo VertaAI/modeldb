@@ -263,6 +263,8 @@ func (x *GetAllowedEntitiesWithActionsResponseItem) GetActions() *Action {
 }
 
 // Same as above, but lists the resources on which actions can be performed by entities
+// If all possible resources combinations are allowed returns:
+// Resources({Resource(service: service, resource_ids:{}, resource_type:resource_type)})
 type GetAllowedResources struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
