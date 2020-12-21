@@ -43,7 +43,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -143,7 +142,6 @@ public class CollaboratorTest {
             .build();
   }
 
-  @Ignore
   @Test
   public void a_collaboratorCreateTest() {
     LOGGER.info("Create Collaborator test start................................");
