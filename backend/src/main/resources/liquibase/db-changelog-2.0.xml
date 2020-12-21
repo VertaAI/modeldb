@@ -384,4 +384,36 @@
         <tagDatabase tag="db_version_2.19"/>
     </changeSet>
 
+    <changeSet id="add-visibility-migration-project" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="visibility_migration"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="visibility_migration" type="boolean" defaultValue="false"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="project" columnName="visibility_migration"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="add-visibility-migration-repository" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="repository" columnName="visibility_migration"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="repository">
+            <column name="visibility_migration" type="boolean" defaultValue="false"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="repository" columnName="visibility_migration"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.20" author="anandJ">
+        <tagDatabase tag="db_version_2.20"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -147,6 +147,9 @@ public class RepositoryEntity {
   @Column(name = "created")
   private Boolean created = false;
 
+  @Column(name = "visibility_migration")
+  private Boolean visibility_migration = false;
+
   public Long getId() {
     return id;
   }
@@ -216,6 +219,10 @@ public class RepositoryEntity {
 
   public ResourceVisibility getRepositoryVisibility() {
     return repositoryVisibility;
+  }
+
+  public void setVisibility_migration(Boolean visibility_migration) {
+    this.visibility_migration = visibility_migration;
   }
 
   public Repository toProto(RoleService roleService) throws InvalidProtocolBufferException {

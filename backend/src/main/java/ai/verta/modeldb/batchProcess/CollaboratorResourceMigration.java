@@ -28,6 +28,7 @@ import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 public class CollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
@@ -83,7 +84,10 @@ public class CollaboratorResourceMigration {
         Root<ProjectEntity> root = criteriaQuery.from(ProjectEntity.class);
 
         CriteriaQuery<ProjectEntity> selectQuery =
-            criteriaQuery.select(root).orderBy(criteriaBuilder.asc(root.get("id")));
+            criteriaQuery
+                .select(root)
+                .where(criteriaBuilder.equal(root.get("visibility_migration"), false))
+                .orderBy(criteriaBuilder.asc(root.get("date_created")));
 
         TypedQuery<ProjectEntity> typedQuery = session.createQuery(selectQuery);
 
@@ -119,6 +123,17 @@ public class CollaboratorResourceMigration {
                     Optional.ofNullable(
                         WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
                     VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
+            Transaction transaction = null;
+            try {
+              transaction = session.beginTransaction();
+              project.setVisibility_migration(true);
+              session.update(project);
+              transaction.commit();
+            } catch (Exception ex) {
+              if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
+              }
+            }
           }
         } else {
           LOGGER.debug("Total projects count 0");
@@ -154,7 +169,10 @@ public class CollaboratorResourceMigration {
         Root<RepositoryEntity> root = criteriaQuery.from(RepositoryEntity.class);
 
         CriteriaQuery<RepositoryEntity> selectQuery =
-            criteriaQuery.select(root).orderBy(criteriaBuilder.asc(root.get("id")));
+            criteriaQuery
+                .select(root)
+                .where(criteriaBuilder.equal(root.get("visibility_migration"), false))
+                .orderBy(criteriaBuilder.asc(root.get("date_created")));
 
         TypedQuery<RepositoryEntity> typedQuery = session.createQuery(selectQuery);
 
@@ -190,6 +208,17 @@ public class CollaboratorResourceMigration {
                     Optional.ofNullable(
                         WorkspaceTypeEnum.WorkspaceType.forNumber(repository.getWorkspace_type())),
                     VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())));
+            Transaction transaction = null;
+            try {
+              transaction = session.beginTransaction();
+              repository.setVisibility_migration(true);
+              session.update(repository);
+              transaction.commit();
+            } catch (Exception ex) {
+              if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
+              }
+            }
           }
         } else {
           LOGGER.debug("Total repositories count 0");

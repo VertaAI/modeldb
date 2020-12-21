@@ -141,6 +141,9 @@ public class ProjectEntity {
   @Column(name = "created")
   private Boolean created = false;
 
+  @Column(name = "visibility_migration")
+  private Boolean visibility_migration = false;
+
   public String getId() {
     return id;
   }
@@ -323,6 +326,10 @@ public class ProjectEntity {
 
   public void setCreated(Boolean created) {
     this.created = created;
+  }
+
+  public void setVisibility_migration(Boolean visibility_migration) {
+    this.visibility_migration = visibility_migration;
   }
 
   public Project getProtoObject(RoleService roleService) throws InvalidProtocolBufferException {
