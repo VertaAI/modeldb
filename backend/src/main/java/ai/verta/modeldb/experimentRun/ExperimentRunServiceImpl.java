@@ -2801,6 +2801,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw new ModelDBException("ExperimentRun Id should not be empty", Code.INVALID_ARGUMENT);
       }
 
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
+
       experimentRunDAO.logEnvironment(request.getId(), request.getEnvironment());
       saveAuditLogs(
           null,
