@@ -737,7 +737,7 @@ public class ModelDBUtils {
       if (visibility == ProjectVisibility.ORG_SCOPED_PUBLIC
           || visibility == RepositoryVisibility.ORG_SCOPED_PUBLIC
           || visibility == DatasetVisibility.ORG_SCOPED_PUBLIC) {
-        return ResourceVisibility.ORG_CUSTOM;
+        return ResourceVisibility.ORG_DEFAULT;
       } else if (visibility == ProjectVisibility.PRIVATE
           || visibility == RepositoryVisibility.PRIVATE
           || visibility == DatasetVisibility.PRIVATE) {
