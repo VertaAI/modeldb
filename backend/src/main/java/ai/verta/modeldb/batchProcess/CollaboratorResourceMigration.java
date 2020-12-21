@@ -14,6 +14,7 @@ import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import java.util.HashSet;
@@ -114,7 +115,9 @@ public class CollaboratorResourceMigration {
                 project.getId(),
                 Optional.of(Long.parseLong(project.getOwner())),
                 ModelDBServiceResourceTypes.PROJECT,
-                CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+                CollaboratorPermissions.newBuilder()
+                    .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                    .build(),
                 getResourceVisibility(
                     Optional.ofNullable(
                         WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
@@ -185,7 +188,9 @@ public class CollaboratorResourceMigration {
                 String.valueOf(repository.getId()),
                 Optional.of(Long.parseLong(repository.getOwner())),
                 ModelDBServiceResourceTypes.REPOSITORY,
-                CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+                CollaboratorPermissions.newBuilder()
+                    .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                    .build(),
                 getResourceVisibility(
                     Optional.ofNullable(
                         WorkspaceTypeEnum.WorkspaceType.forNumber(repository.getWorkspace_type())),

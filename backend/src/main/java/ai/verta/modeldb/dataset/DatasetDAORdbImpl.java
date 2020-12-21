@@ -155,7 +155,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           dataset.getId(),
           Optional.empty(), // UAC will populate the owner ID
           ModelDBServiceResourceTypes.DATASET,
-          dataset.getCustomPermission().getCollaboratorType(),
+          dataset.getCustomPermission(),
           dataset.getVisibility());
       LOGGER.debug("Dataset role bindings created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();

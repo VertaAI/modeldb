@@ -470,7 +470,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             String.valueOf(repositoryEntity.getId()),
             Optional.empty(), // UAC will populate the owner ID
             ModelDBServiceResourceTypes.REPOSITORY,
-            repository.getCustomPermission().getCollaboratorType(),
+            repository.getCustomPermission(),
             repositoryEntity.getRepositoryVisibility());
         LOGGER.debug("Project role bindings created successfully");
         Transaction transaction = session.beginTransaction();

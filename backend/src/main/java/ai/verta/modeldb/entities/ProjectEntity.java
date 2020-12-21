@@ -355,6 +355,7 @@ public class ProjectEntity {
     projectBuilder.setVisibility(projectResource.getVisibility());
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
     projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+    projectBuilder.setCustomPermission(projectResource.getCustomPermission());
 
     return projectBuilder.build();
   }

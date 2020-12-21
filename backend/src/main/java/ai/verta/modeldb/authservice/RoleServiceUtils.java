@@ -1097,7 +1097,7 @@ public class RoleServiceUtils implements RoleService {
       String resourceId,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
-      CollaboratorType collaboratorType,
+      CollaboratorPermissions permissions,
       ResourceVisibility resourceVisibility) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       LOGGER.info("Calling CollaboratorService to create resources");
@@ -1113,8 +1113,9 @@ public class RoleServiceUtils implements RoleService {
           SetResources.newBuilder().setResources(resources).setVisibility(resourceVisibility);
 
       if (resourceVisibility.equals(ResourceVisibility.ORG_CUSTOM)) {
-        setResourcesBuilder.setCollaboratorType(collaboratorType);
+        setResourcesBuilder.setCollaboratorType(permissions.getCollaboratorType());
       }
+      setResourcesBuilder.setCanDeploy(permissions.getCanDeploy());
 
       if (ownerId.isPresent()) {
         setResourcesBuilder.setOwnerId(ownerId.get());
@@ -1240,7 +1241,7 @@ public class RoleServiceUtils implements RoleService {
       String resourceId,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
-      CollaboratorType collaboratorType,
+      CollaboratorPermissions permissions,
       ResourceVisibility visibility) {
     return createWorkspacePermissions(
         Optional.empty(),
@@ -1248,7 +1249,7 @@ public class RoleServiceUtils implements RoleService {
         resourceId,
         ownerId,
         resourceType,
-        collaboratorType,
+        permissions,
         visibility);
   }
 
@@ -1259,7 +1260,7 @@ public class RoleServiceUtils implements RoleService {
       String resourceId,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
-      CollaboratorType collaboratorType,
+      CollaboratorPermissions permissions,
       ResourceVisibility visibility) {
     return createWorkspacePermissions(
         Optional.of(workspaceId),
@@ -1267,7 +1268,7 @@ public class RoleServiceUtils implements RoleService {
         resourceId,
         ownerId,
         resourceType,
-        collaboratorType,
+        permissions,
         visibility);
   }
 
