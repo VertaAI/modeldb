@@ -412,6 +412,36 @@
         </rollback>
     </changeSet>
 
+    <changeSet author="anandJ" id="index_visibility_migration_project">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_visibility_migration_project"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_visibility_migration_project"
+                     tableName="project">
+            <column name="visibility_migration"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="project" indexName="index_visibility_migration_project"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_visibility_migration_repository">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_visibility_migration_repository"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_visibility_migration_repository"
+                     tableName="repository">
+            <column name="visibility_migration"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="repository" indexName="index_visibility_migration_repository"/>
+        </rollback>
+    </changeSet>
+
     <changeSet id="db_version_2.20" author="anandJ">
         <tagDatabase tag="db_version_2.20"/>
     </changeSet>
