@@ -640,6 +640,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 .setWorkspaceServiceId(dataset.getWorkspaceServiceId())
                 .setDateCreated(dataset.getTimeCreated())
                 .setDateUpdated(dataset.getTimeUpdated())
+                .setCustomPermission(dataset.getCustomPermission())
                 .setName(dataset.getName())
                 .setDescription(dataset.getDescription())
                 .setOwner(dataset.getOwner())
