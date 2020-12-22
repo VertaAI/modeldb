@@ -1,6 +1,5 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
 import static org.junit.Assert.*;
 
 import ai.verta.common.CollaboratorTypeEnum;
@@ -426,7 +425,11 @@ public class RepositoryTest {
         repository.getName(),
         getByNameResult.getRepository().getName());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      Assert.assertEquals(RESOURCE_OWNER_ID, getByNameResult.getRepository().getOwner());
+      UserInfo userInfo =
+          uacServiceStub.getUser(
+              GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
+      Assert.assertEquals(
+          userInfo.getVertaInfo().getUserId(), getByNameResult.getRepository().getOwner());
     }
 
     LOGGER.info("Update repository by name test end................................");
@@ -529,7 +532,11 @@ public class RepositoryTest {
         repository.getName(),
         getByNameResult.getRepository().getName());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      Assert.assertEquals(RESOURCE_OWNER_ID, getByNameResult.getRepository().getOwner());
+      UserInfo userInfo =
+          uacServiceStub.getUser(
+              GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
+      Assert.assertEquals(
+          userInfo.getVertaInfo().getUserId(), getByNameResult.getRepository().getOwner());
     }
 
     LOGGER.info("Get repository by name test end................................");
