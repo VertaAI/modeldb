@@ -465,14 +465,15 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     if (create) {
       try {
         ResourceVisibility resourceVisibility = repository.getVisibility();
+        WorkspaceType workspaceType = WorkspaceType.forNumber(repositoryEntity.getWorkspace_type());
         if (repository.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
           resourceVisibility =
               ModelDBUtils.getResourceVisibility(
-                  Optional.of(repository.getWorkspaceType()), repository.getRepositoryVisibility());
+                  Optional.of(workspaceType), repository.getRepositoryVisibility());
         }
         roleService.createWorkspacePermissions(
             repositoryEntity.getWorkspaceServiceId(),
-            Optional.of(WorkspaceType.forNumber(repositoryEntity.getWorkspace_type())),
+            Optional.of(workspaceType),
             String.valueOf(repositoryEntity.getId()),
             Optional.empty(), // UAC will populate the owner ID
             ModelDBServiceResourceTypes.REPOSITORY,
@@ -644,6 +645,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 .setDescription(dataset.getDescription())
                 .setOwner(dataset.getOwner())
                 .addAllAttributes(dataset.getAttributesList())
+                .setCustomPermission(dataset.getCustomPermission())
                 .build(),
             repositoryId.build(),
             dataset.getTagsList(),
