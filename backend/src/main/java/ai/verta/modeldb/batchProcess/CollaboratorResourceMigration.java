@@ -86,8 +86,7 @@ public class CollaboratorResourceMigration {
         CriteriaQuery<ProjectEntity> selectQuery =
             criteriaQuery
                 .select(root)
-                .where(criteriaBuilder.equal(root.get("visibility_migration"), false))
-                .orderBy(criteriaBuilder.asc(root.get("date_created")));
+                .where(criteriaBuilder.equal(root.get("visibility_migration"), false));
 
         TypedQuery<ProjectEntity> typedQuery = session.createQuery(selectQuery);
 
@@ -171,8 +170,7 @@ public class CollaboratorResourceMigration {
         CriteriaQuery<RepositoryEntity> selectQuery =
             criteriaQuery
                 .select(root)
-                .where(criteriaBuilder.equal(root.get("visibility_migration"), false))
-                .orderBy(criteriaBuilder.asc(root.get("date_created")));
+                .where(criteriaBuilder.equal(root.get("visibility_migration"), false));
 
         TypedQuery<RepositoryEntity> typedQuery = session.createQuery(selectQuery);
 
