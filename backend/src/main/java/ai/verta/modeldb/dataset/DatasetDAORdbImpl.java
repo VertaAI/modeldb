@@ -149,6 +149,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       transaction.commit();
       LOGGER.debug("Dataset created successfully");
 
+      ResourceVisibility resourceVisibility = dataset.getVisibility();
+      if (dataset.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
+        resourceVisibility =
+            ModelDBUtils.getResourceVisibility(
+                Optional.of(dataset.getWorkspaceType()), dataset.getDatasetVisibility());
+      }
       roleService.createWorkspacePermissions(
           dataset.getWorkspaceServiceId(),
           Optional.of(dataset.getWorkspaceType()),
@@ -156,7 +162,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           Optional.empty(), // UAC will populate the owner ID
           ModelDBServiceResourceTypes.DATASET,
           dataset.getCustomPermission(),
-          dataset.getVisibility());
+          resourceVisibility);
       LOGGER.debug("Dataset role bindings created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
       return datasetEntity.getProtoObject(roleService);

@@ -189,6 +189,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
             .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
+            .setDatasetVisibility(request.getDatasetVisibility())
             .setVisibility(request.getVisibility())
             .setDatasetType(request.getDatasetType());
 
