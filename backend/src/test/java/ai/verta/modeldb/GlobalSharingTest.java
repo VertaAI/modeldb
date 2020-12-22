@@ -366,17 +366,29 @@ public class GlobalSharingTest {
           switch (resourceType) {
             case PROJECT:
               client2ProjectServiceStub.addProjectTag(
-                  AddProjectTag.newBuilder().setId(orgResourceId).setTag("new-tag" + new Date().getTime()).build());
+                  AddProjectTag.newBuilder()
+                      .setId(orgResourceId)
+                      .setTag("new-tag" + new Date().getTime())
+                      .build());
               break;
             case DATASET:
               client2DatasetServiceStub.updateDatasetName(
-                  UpdateDatasetName.newBuilder().setId(orgResourceId).setName("new_name" + new Date().getTime()).build());
+                  UpdateDatasetName.newBuilder()
+                      .setId(orgResourceId)
+                      .setName("new_name" + new Date().getTime())
+                      .build());
               break;
             case REPOSITORY:
             default:
               client2RepositoryServiceStub.updateRepository(
-                  SetRepository.newBuilder().setId(RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(orgResourceId)))
-                      .setRepository(repository.toBuilder().setDescription("new_description" + new Date().getTime()))
+                  SetRepository.newBuilder()
+                      .setId(
+                          RepositoryIdentification.newBuilder()
+                              .setRepoId(Long.parseLong(orgResourceId)))
+                      .setRepository(
+                          repository
+                              .toBuilder()
+                              .setDescription("new_description" + new Date().getTime()))
                       .build());
               break;
           }
