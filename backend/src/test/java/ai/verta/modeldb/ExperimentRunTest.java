@@ -33,11 +33,15 @@ import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.DeleteCommitRequest;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
+import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.GetBranchRequest;
 import ai.verta.modeldb.versioning.GitCodeBlob;
+import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
+import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
+import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorPermissions;
@@ -8245,5 +8249,57 @@ public class ExperimentRunTest {
     LOGGER.info("Random name: {}", response.getName());
     assertFalse("Random name should not be empty", response.getName().isEmpty());
     LOGGER.info("Random name generation test stop................................");
+  }
+
+  @Test
+  public void logEnvironmentTest() {
+    LOGGER.info("logEnvironment test start................................");
+    EnvironmentBlob environmentBlob =
+        EnvironmentBlob.newBuilder()
+            .setPython(
+                PythonEnvironmentBlob.newBuilder()
+                    .setVersion(
+                        VersionEnvironmentBlob.newBuilder().setMajor(3).setMinor(7).setPatch(5))
+                    .addRequirements(
+                        PythonRequirementEnvironmentBlob.newBuilder()
+                            .setLibrary("pytest")
+                            .setConstraint("==")
+                            .setVersion(VersionEnvironmentBlob.newBuilder().setMajor(1))
+                            .build())
+                    .addRequirements(
+                        PythonRequirementEnvironmentBlob.newBuilder()
+                            .setLibrary("verta")
+                            .setConstraint("==")
+                            .setVersion(
+                                VersionEnvironmentBlob.newBuilder().setMajor(14).setMinor(9))))
+            .build();
+    LogEnvironment request =
+        LogEnvironment.newBuilder()
+            .setId(experimentRun.getId())
+            .setEnvironment(environmentBlob)
+            .build();
+
+    experimentRunServiceStub.logEnvironment(request);
+
+    GetExperimentRunById getExperimentRunById =
+        GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
+
+    GetExperimentRunById.Response getExperimentRunByIdResponse =
+        experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
+    assertEquals(
+        "environment not match with expected environment",
+        request.getEnvironment(),
+        getExperimentRunByIdResponse.getExperimentRun().getEnvironment());
+
+    try {
+      experimentRunServiceStub.logEnvironment(request.toBuilder().clearId().build());
+      fail();
+    } catch (StatusRuntimeException e) {
+      Status status = Status.fromThrowable(e);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
+
+    LOGGER.info("logEnvironment test stop................................");
   }
 }
