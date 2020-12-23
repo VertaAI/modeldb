@@ -1114,8 +1114,8 @@ public class RoleServiceUtils implements RoleService {
 
       if (resourceVisibility.equals(ResourceVisibility.ORG_CUSTOM)) {
         setResourcesBuilder.setCollaboratorType(permissions.getCollaboratorType());
+        setResourcesBuilder.setCanDeploy(permissions.getCanDeploy());
       }
-      setResourcesBuilder.setCanDeploy(permissions.getCanDeploy());
 
       if (ownerId.isPresent()) {
         setResourcesBuilder.setOwnerId(ownerId.get());

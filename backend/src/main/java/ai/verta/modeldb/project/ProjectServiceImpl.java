@@ -113,8 +113,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
             .setProjectVisibility(request.getProjectVisibility())
             .setVisibility(request.getVisibility())
             .addAllArtifacts(request.getArtifactsList())
-            .setCustomPermission(request.getCustomPermission())
-            .setReadmeText(request.getReadmeText());
+            .setReadmeText(request.getReadmeText())
+            .setCustomPermission(request.getCustomPermission());
+
     App app = App.getInstance();
     if (app.getStoreClientCreationTimestamp() && request.getDateCreated() != 0L) {
       projectBuilder
