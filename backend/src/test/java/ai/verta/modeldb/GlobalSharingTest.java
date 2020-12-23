@@ -180,24 +180,57 @@ public class GlobalSharingTest {
     serverBuilder.build().shutdownNow();
   }
 
-  private static final Collection<Object[]> requestData =
+  static class TestParameters {
+
+    private final ResourceVisibility resourceVisibility;
+    private final CollaboratorPermissions.Builder permissions;
+    private final boolean readCheckResult;
+    private final boolean writeCheckResult;
+
+    public TestParameters(
+        ResourceVisibility resourceVisibility,
+        CollaboratorPermissions.Builder permissions,
+        boolean readCheckResult,
+        boolean writeCheckResult) {
+      this.resourceVisibility = resourceVisibility;
+      this.permissions = permissions;
+      this.readCheckResult = readCheckResult;
+      this.writeCheckResult = writeCheckResult;
+    }
+
+    public ResourceVisibility getResourceVisibility() {
+      return resourceVisibility;
+    }
+
+    public CollaboratorPermissions.Builder getPermissions() {
+      return permissions;
+    }
+
+    public boolean isReadCheckSuccess() {
+      return readCheckResult;
+    }
+
+    public boolean isWriteCheckSuccess() {
+      return writeCheckResult;
+    }
+  }
+
+  private static final Collection<TestParameters> requestData =
       Arrays.asList(
-          new Object[][] {
-            {
+          new TestParameters(
               ResourceVisibility.ORG_CUSTOM,
               CollaboratorPermissions.newBuilder().setCollaboratorType(CollaboratorType.READ_WRITE),
               true,
-              true
-            },
-            {ResourceVisibility.ORG_DEFAULT, CollaboratorPermissions.newBuilder(), true, false},
-            {
+              true),
+          new TestParameters(
+              ResourceVisibility.ORG_DEFAULT, CollaboratorPermissions.newBuilder(), true, false),
+          new TestParameters(
               ResourceVisibility.ORG_CUSTOM,
               CollaboratorPermissions.newBuilder().setCollaboratorType(CollaboratorType.READ_ONLY),
               true,
-              false
-            },
-            {ResourceVisibility.PRIVATE, CollaboratorPermissions.newBuilder(), false, false}
-          });
+              false),
+          new TestParameters(
+              ResourceVisibility.PRIVATE, CollaboratorPermissions.newBuilder(), false, false));
 
   @Test
   public void createProjectWithGlobalSharingOrganization() {
@@ -246,90 +279,29 @@ public class GlobalSharingTest {
     String orgResourceId = null;
     Repository repository = null;
     try {
-      for (Object[] data : requestData) {
-        ResourceVisibility resourceVisibility = (ResourceVisibility) data[0];
-        CollaboratorPermissions.Builder customPermission =
-            (CollaboratorPermissions.Builder) data[1];
-        boolean isReadAllowed = (boolean) data[2];
-        boolean isWriteAllowed = (boolean) data[3];
+      for (TestParameters testParameters : requestData) {
+        ResourceVisibility resourceVisibility = testParameters.getResourceVisibility();
+        CollaboratorPermissions.Builder customPermission = testParameters.getPermissions();
+        boolean isReadAllowed = testParameters.isReadCheckSuccess();
+        boolean isWriteAllowed = testParameters.isWriteCheckSuccess();
         if (orgResourceId == null) {
           switch (resourceType) {
             case PROJECT:
-              // Create project
-              CreateProject createProjectRequest =
-                  ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
-              createProjectRequest =
-                  createProjectRequest
-                      .toBuilder()
-                      .setWorkspaceName(organization.getName())
-                      .setVisibility(resourceVisibility)
-                      .setCustomPermission(customPermission)
-                      .build();
-              CreateProject.Response createProjectResponse =
-                  projectServiceStub.createProject(createProjectRequest);
-              orgResourceId = createProjectResponse.getProject().getId();
+              orgResourceId =
+                  createProject(organization, orgResourceId, resourceVisibility, customPermission);
               break;
             case DATASET:
-              // Create dataset
-              CreateDataset createDatasetRequest =
-                  DatasetTest.getDatasetRequest("dataset-" + new Date().getTime());
-              createDatasetRequest =
-                  createDatasetRequest
-                      .toBuilder()
-                      .setWorkspaceName(organization.getName())
-                      .setVisibility(resourceVisibility)
-                      .setCustomPermission(customPermission)
-                      .build();
-              CreateDataset.Response createDatasetResponse =
-                  datasetServiceStub.createDataset(createDatasetRequest);
-              orgResourceId = createDatasetResponse.getDataset().getId();
+              orgResourceId =
+                  createDataset(organization, orgResourceId, resourceVisibility, customPermission);
               break;
             case REPOSITORY:
             default:
-              // Create repository
-              String repoName = "repository-" + new Date().getTime();
-              SetRepository.Response createRepositoryResponse =
-                  repositoryServiceStub.createRepository(
-                      SetRepository.newBuilder()
-                          .setId(
-                              RepositoryIdentification.newBuilder()
-                                  .setNamedId(
-                                      RepositoryNamedIdentification.newBuilder()
-                                          .setName(repoName)
-                                          .setWorkspaceName(orgName)))
-                          .setRepository(
-                              Repository.newBuilder()
-                                  .setVisibility(resourceVisibility)
-                                  .setName(repoName)
-                                  .setCustomPermission(customPermission))
-                          .build());
-              repository = createRepositoryResponse.getRepository();
+              repository = createRepository(orgName, resourceVisibility, customPermission);
               orgResourceId = String.valueOf(repository.getId());
               break;
           }
         } else {
-          collaboratorServiceStub.setResources(
-              SetResources.newBuilder()
-                  .setWorkspaceName(organization.getName())
-                  .setResources(
-                      Resources.newBuilder()
-                          .addResourceIds(orgResourceId)
-                          .setResourceType(
-                              ResourceType.newBuilder()
-                                  .setModeldbServiceResourceType(
-                                      resourceType
-                                              == ModelDBResourceEnum.ModelDBServiceResourceTypes
-                                                  .DATASET
-                                          ? ModelDBResourceEnum.ModelDBServiceResourceTypes
-                                              .REPOSITORY
-                                          : resourceType)
-                                  .build())
-                          .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                          .build())
-                  .setVisibility(resourceVisibility)
-                  .setCollaboratorType(customPermission.getCollaboratorType())
-                  .setCanDeploy(customPermission.getCanDeploy())
-                  .build());
+          updateResource(organization, orgResourceId, resourceVisibility, customPermission);
         }
         try {
           switch (resourceType) {
@@ -363,19 +335,20 @@ public class GlobalSharingTest {
           }
         }
         try {
+          String description = "new-description" + new Date().getTime();
           switch (resourceType) {
             case PROJECT:
-              client2ProjectServiceStub.addProjectTag(
-                  AddProjectTag.newBuilder()
+              client2ProjectServiceStub.updateProjectDescription(
+                  UpdateProjectDescription.newBuilder()
                       .setId(orgResourceId)
-                      .setTag("new-tag" + new Date().getTime())
+                      .setDescription(description)
                       .build());
               break;
             case DATASET:
-              client2DatasetServiceStub.updateDatasetName(
-                  UpdateDatasetName.newBuilder()
+              client2DatasetServiceStub.updateDatasetDescription(
+                  UpdateDatasetDescription.newBuilder()
                       .setId(orgResourceId)
-                      .setName("new_name" + new Date().getTime())
+                      .setDescription(description)
                       .build());
               break;
             case REPOSITORY:
@@ -385,10 +358,7 @@ public class GlobalSharingTest {
                       .setId(
                           RepositoryIdentification.newBuilder()
                               .setRepoId(Long.parseLong(orgResourceId)))
-                      .setRepository(
-                          repository
-                              .toBuilder()
-                              .setDescription("new_description" + new Date().getTime()))
+                      .setRepository(repository.toBuilder().setDescription(description))
                       .build());
               break;
           }
@@ -407,35 +377,14 @@ public class GlobalSharingTest {
       if (orgResourceId != null) {
         switch (resourceType) {
           case PROJECT:
-            DeleteProject deleteProject = DeleteProject.newBuilder().setId(orgResourceId).build();
-            DeleteProject.Response deleteProjectResponse =
-                projectServiceStub.deleteProject(deleteProject);
-            LOGGER.info("Project deleted successfully");
-            LOGGER.info(deleteProjectResponse.toString());
-            assertTrue(deleteProjectResponse.getStatus());
+            deleteProject(orgResourceId);
             break;
           case DATASET:
-            DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(orgResourceId).build();
-            DeleteDataset.Response deleteDatasetResponse =
-                datasetServiceStub.deleteDataset(deleteDataset);
-            LOGGER.info("Dataset deleted successfully");
-            LOGGER.info(deleteDatasetResponse.toString());
-            assertTrue(deleteDatasetResponse.getStatus());
+            deleteDataset(orgResourceId);
             break;
           case REPOSITORY:
           default:
-            DeleteRepositoryRequest deleteRepository =
-                DeleteRepositoryRequest.newBuilder()
-                    .setRepositoryId(
-                        RepositoryIdentification.newBuilder()
-                            .setRepoId(Long.parseLong(orgResourceId))
-                            .build())
-                    .build();
-            DeleteRepositoryRequest.Response deleteRepositoryResponse =
-                repositoryServiceStub.deleteRepository(deleteRepository);
-            LOGGER.info("Repository deleted successfully");
-            LOGGER.info(deleteRepositoryResponse.toString());
-            assertTrue(deleteRepositoryResponse.getStatus());
+            deleteRepository(orgResourceId);
             break;
         }
       }
@@ -447,5 +396,131 @@ public class GlobalSharingTest {
     }
 
     LOGGER.info("Global organization Project test stop................................");
+  }
+
+  private void updateResource(
+      Organization organization,
+      String orgResourceId,
+      ResourceVisibility resourceVisibility,
+      CollaboratorPermissions.Builder customPermission) {
+    collaboratorServiceStub.setResources(
+        SetResources.newBuilder()
+            .setWorkspaceName(organization.getName())
+            .setResources(
+                Resources.newBuilder()
+                    .addResourceIds(orgResourceId)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(
+                                resourceType
+                                        == ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET
+                                    ? ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY
+                                    : resourceType)
+                            .build())
+                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                    .build())
+            .setVisibility(resourceVisibility)
+            .setCollaboratorType(customPermission.getCollaboratorType())
+            .setCanDeploy(customPermission.getCanDeploy())
+            .build());
+  }
+
+  private void deleteRepository(String orgResourceId) {
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(Long.parseLong(orgResourceId))
+                    .build())
+            .build();
+    DeleteRepositoryRequest.Response deleteRepositoryResponse =
+        repositoryServiceStub.deleteRepository(deleteRepository);
+    LOGGER.info("Repository deleted successfully");
+    LOGGER.info(deleteRepositoryResponse.toString());
+    assertTrue(deleteRepositoryResponse.getStatus());
+  }
+
+  private void deleteDataset(String orgResourceId) {
+    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(orgResourceId).build();
+    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
+    LOGGER.info("Dataset deleted successfully");
+    LOGGER.info(deleteDatasetResponse.toString());
+    assertTrue(deleteDatasetResponse.getStatus());
+  }
+
+  private void deleteProject(String orgResourceId) {
+    DeleteProject deleteProject = DeleteProject.newBuilder().setId(orgResourceId).build();
+    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project deleted successfully");
+    LOGGER.info(deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+  }
+
+  private Repository createRepository(
+      String orgName,
+      ResourceVisibility resourceVisibility,
+      CollaboratorPermissions.Builder customPermission) {
+    Repository repository;
+    // Create repository
+    String repoName = "repository-" + new Date().getTime();
+    SetRepository.Response createRepositoryResponse =
+        repositoryServiceStub.createRepository(
+            SetRepository.newBuilder()
+                .setId(
+                    RepositoryIdentification.newBuilder()
+                        .setNamedId(
+                            RepositoryNamedIdentification.newBuilder()
+                                .setName(repoName)
+                                .setWorkspaceName(orgName)))
+                .setRepository(
+                    Repository.newBuilder()
+                        .setVisibility(resourceVisibility)
+                        .setName(repoName)
+                        .setCustomPermission(customPermission))
+                .build());
+    repository = createRepositoryResponse.getRepository();
+    return repository;
+  }
+
+  private String createDataset(
+      Organization organization,
+      String orgResourceId,
+      ResourceVisibility resourceVisibility,
+      CollaboratorPermissions.Builder customPermission) {
+    // Create dataset
+    CreateDataset createDatasetRequest =
+        DatasetTest.getDatasetRequest("dataset-" + new Date().getTime());
+    createDatasetRequest =
+        createDatasetRequest
+            .toBuilder()
+            .setWorkspaceName(organization.getName())
+            .setVisibility(resourceVisibility)
+            .setCustomPermission(customPermission)
+            .build();
+    CreateDataset.Response createDatasetResponse =
+        datasetServiceStub.createDataset(createDatasetRequest);
+    orgResourceId = createDatasetResponse.getDataset().getId();
+    return orgResourceId;
+  }
+
+  private String createProject(
+      Organization organization,
+      String orgResourceId,
+      ResourceVisibility resourceVisibility,
+      CollaboratorPermissions.Builder customPermission) {
+    // Create project
+    CreateProject createProjectRequest =
+        ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectRequest =
+        createProjectRequest
+            .toBuilder()
+            .setWorkspaceName(organization.getName())
+            .setVisibility(resourceVisibility)
+            .setCustomPermission(customPermission)
+            .build();
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    orgResourceId = createProjectResponse.getProject().getId();
+    return orgResourceId;
   }
 }
