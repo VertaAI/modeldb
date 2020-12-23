@@ -162,9 +162,6 @@ service CollaboratorService {
 
     // The caller must have permission to DELETE the resource accordingly
     rpc deleteResources (DeleteResources) returns (DeleteResources.Response) {
-        option (google.api.http) = {
-            delete: "/v1/collaborator/deleteResources"
-        };
     };
 
     rpc addOrUpdateProjectCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
