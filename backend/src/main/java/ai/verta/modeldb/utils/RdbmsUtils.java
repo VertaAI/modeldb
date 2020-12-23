@@ -24,7 +24,6 @@ import ai.verta.modeldb.RawDatasetVersionInfo;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -2130,38 +2129,6 @@ public class RdbmsUtils {
               .setMessage("Workspace name OR type not supported as predicate")
               .build();
       throw StatusProto.toStatusRuntimeException(statusMessage);
-    }
-  }
-
-  public static void getWorkspacePredicates(
-      CollaboratorBase host,
-      UserInfo currentLoginUserInfo,
-      CriteriaBuilder builder,
-      Root<?> entityRoot,
-      List<Predicate> finalPredicatesList,
-      String workspaceName,
-      RoleService roleService) {
-    UserInfo userInfo =
-        host != null && host.isUser()
-            ? (UserInfo) host.getCollaboratorMessage()
-            : currentLoginUserInfo;
-    if (userInfo != null) {
-      List<KeyValueQuery> workspacePredicates =
-          ModelDBUtils.getKeyValueQueriesByWorkspace(roleService, userInfo, workspaceName);
-      if (workspacePredicates.size() > 0) {
-        Predicate privateWorkspacePredicate =
-            builder.equal(
-                entityRoot.get(ModelDBConstants.WORKSPACE),
-                workspacePredicates.get(0).getValue().getStringValue());
-        Predicate privateWorkspaceTypePredicate =
-            builder.equal(
-                entityRoot.get(ModelDBConstants.WORKSPACE_TYPE),
-                workspacePredicates.get(1).getValue().getNumberValue());
-        Predicate privatePredicate =
-            builder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
-
-        finalPredicatesList.add(privatePredicate);
-      }
     }
   }
 

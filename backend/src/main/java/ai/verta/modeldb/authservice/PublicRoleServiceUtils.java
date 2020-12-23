@@ -228,6 +228,12 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
+  public Workspace getWorkspaceByWorkspaceName(
+      UserInfo currentLoginUserInfo, String workspaceName) {
+    return Workspace.newBuilder().build();
+  }
+
+  @Override
   public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
@@ -259,7 +265,8 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo) {
+  public List<GetResourcesResponseItem> getResourceItems(
+      List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return Collections.emptyList();
   }
 

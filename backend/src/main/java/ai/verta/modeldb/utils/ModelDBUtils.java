@@ -28,9 +28,11 @@ import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponseItem;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ShareViaEnum;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.amazonaws.AmazonServiceException;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
@@ -589,6 +591,46 @@ public class ModelDBUtils {
               .addDetails(Any.pack(UpdateProjectName.Response.getDefaultInstance()))
               .build();
       throw StatusProto.toStatusRuntimeException(status);
+    }
+  }
+
+  public static void checkPersonalWorkspace(
+      UserInfo userInfo, Workspace workspace, String resourceNameString) {
+    if (userInfo != null
+        && workspace.getInternalIdCase() == Workspace.InternalIdCase.USER_ID
+        && !workspace.getUserId().equals(userInfo.getVertaInfo().getUserId())) {
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.PERMISSION_DENIED_VALUE)
+              .setMessage(
+                  "Creation of "
+                      + resourceNameString
+                      + " in other user's workspace is not permitted")
+              .addDetails(Any.pack(UpdateProjectName.Response.getDefaultInstance()))
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+  }
+
+  public static void checkIfEntityAlreadyExists(
+      RoleService roleService,
+      Workspace workspace,
+      String name,
+      List<String> projectEntityIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    List<GetResourcesResponseItem> responseItems =
+        roleService.getResourceItems(projectEntityIds, modelDBServiceResourceTypes);
+    for (GetResourcesResponseItem item : responseItems) {
+      if (workspace.getId() == item.getWorkspaceId()) {
+        // Throw error if it is an insert request and project with same name already exists
+        LOGGER.info("{} with name {} already exists", modelDBServiceResourceTypes, name);
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.ALREADY_EXISTS_VALUE)
+                .setMessage(modelDBServiceResourceTypes + " already exists in database")
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
     }
   }
 

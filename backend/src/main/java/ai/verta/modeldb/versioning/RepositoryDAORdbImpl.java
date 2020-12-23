@@ -482,6 +482,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         LOGGER.debug("Project role bindings created successfully");
         Transaction transaction = session.beginTransaction();
         repositoryEntity.setCreated(true);
+        repositoryEntity.setVisibility_migration(true);
         transaction.commit();
       } catch (Exception e) {
         LOGGER.info("Exception from UAC during Repo role binding creation : {}", e.getMessage());
