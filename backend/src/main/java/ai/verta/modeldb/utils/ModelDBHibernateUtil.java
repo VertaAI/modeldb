@@ -809,27 +809,9 @@ public class ModelDBHibernateUtil {
       if (migrationTypeMap.containsKey(migrationName)) {
         Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
         if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
-          try {
-            boolean isLocked =
-                checkMigrationLockedStatus(
-                    migrationName, rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
-            if (!isLocked) {
-              LOGGER.debug("Obtaining migration lock");
-              lockedMigration(
-                  migrationName, rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
-              int recordUpdateLimit =
-                  (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-              CollaboratorResourceMigration.execute(recordUpdateLimit);
-            } else {
-              LOGGER.debug("Migration already locked");
-              /*throw new ModelDBException(
-              migrationName
-                  + " Migration already running, You would not start service till finish the Migration it");*/
-            }
-          } catch (SQLException | DatabaseException e) {
-            LOGGER.error("Error on migration: {}", e.getMessage());
-            throw new ModelDBException(e.getMessage(), e);
-          }
+          int recordUpdateLimit =
+              (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+          CollaboratorResourceMigration.execute(recordUpdateLimit);
         }
       }
     }
