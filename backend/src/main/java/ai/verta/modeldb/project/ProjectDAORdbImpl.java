@@ -209,6 +209,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
       projectEntity.setCreated(true);
+      projectEntity.setVisibility_migration(true);
       transaction.commit();
       LOGGER.debug("Project created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
@@ -907,7 +908,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           roleService.getAccessibleResourceIds(
               host,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              visibility,
               ModelDBServiceResourceTypes.PROJECT,
               queryParameters.getProjectIdsList());
 
@@ -1215,7 +1215,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              VisibilityEnum.Visibility.PRIVATE,
               ModelDBServiceResourceTypes.PROJECT,
               Collections.EMPTY_LIST);
       LOGGER.debug(
