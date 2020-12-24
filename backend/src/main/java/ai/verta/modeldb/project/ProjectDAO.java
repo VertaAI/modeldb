@@ -231,7 +231,7 @@ public interface ProjectDAO {
    * @throws InvalidProtocolBufferException
    */
   Project setProjectShortName(String projectId, String projectShortName, UserInfo userInfo)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * Return public projects

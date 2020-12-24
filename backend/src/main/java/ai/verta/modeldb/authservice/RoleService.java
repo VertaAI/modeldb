@@ -14,6 +14,7 @@ import io.grpc.Metadata;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface RoleService {
 
@@ -139,7 +140,9 @@ public interface RoleService {
       String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   List<GetResourcesResponseItem> getResourceItems(
-      List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+      Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   boolean deleteResources(Resources resources);
 

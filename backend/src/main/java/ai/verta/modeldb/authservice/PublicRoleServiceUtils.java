@@ -266,7 +266,9 @@ public class PublicRoleServiceUtils implements RoleService {
 
   @Override
   public List<GetResourcesResponseItem> getResourceItems(
-      List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return Collections.emptyList();
   }
 

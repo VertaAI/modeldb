@@ -70,6 +70,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.LockAcquisitionException;
@@ -619,7 +620,8 @@ public class ModelDBUtils {
       List<String> projectEntityIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     List<GetResourcesResponseItem> responseItems =
-        roleService.getResourceItems(projectEntityIds, modelDBServiceResourceTypes);
+        roleService.getResourceItems(
+            workspace, new HashSet<>(projectEntityIds), modelDBServiceResourceTypes);
     for (GetResourcesResponseItem item : responseItems) {
       if (workspace.getId() == item.getWorkspaceId()) {
         // Throw error if it is an insert request and project with same name already exists
@@ -632,6 +634,19 @@ public class ModelDBUtils {
         throw StatusProto.toStatusRuntimeException(status);
       }
     }
+  }
+
+  public static Set<String> filterWorkspaceOnlyAccessibleIds(
+      RoleService roleService,
+      Set<String> accessibleAllWorkspaceProjectIds,
+      String workspaceName,
+      UserInfo userInfo,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+    List<GetResourcesResponseItem> items =
+        roleService.getResourceItems(
+            workspace, accessibleAllWorkspaceProjectIds, modelDBServiceResourceTypes);
+    return items.stream().map(GetResourcesResponseItem::getResourceId).collect(Collectors.toSet());
   }
 
   public static String getLocationWithSlashOperator(List<String> locations) {

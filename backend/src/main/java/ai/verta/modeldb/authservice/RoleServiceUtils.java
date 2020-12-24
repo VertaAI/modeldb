@@ -26,7 +26,6 @@ import io.grpc.protobuf.StatusProto;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -1162,7 +1161,8 @@ public class RoleServiceUtils implements RoleService {
   public GetResourcesResponseItem getEntityResource(
       String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     List<GetResourcesResponseItem> responseItems =
-        getResourceItems(Collections.singletonList(entityId), modelDBServiceResourceTypes);
+        getResourceItems(
+            null, new HashSet<>(Collections.singletonList(entityId)), modelDBServiceResourceTypes);
     if (responseItems.size() > 1) {
       LOGGER.warn(
           "Role service returned {}"
@@ -1193,8 +1193,13 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public List<GetResourcesResponseItem> getResourceItems(
-      List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      if (resourceIds == null || resourceIds.isEmpty()) {
+        return Collections.emptyList();
+      }
       ResourceType resourceType =
           ResourceType.newBuilder()
               .setModeldbServiceResourceType(modelDBServiceResourceTypes)
@@ -1206,17 +1211,13 @@ public class RoleServiceUtils implements RoleService {
               .addAllResourceIds(resourceIds)
               .build();
 
+      GetResources.Builder builder = GetResources.newBuilder().setResources(resources);
+      if (workspace != null) {
+        builder.setWorkspaceId(workspace.getId());
+      }
       final GetResources.Response response =
-          authServiceChannel
-              .getCollaboratorServiceBlockingStub()
-              .getResources(GetResources.newBuilder().setResources(resources).build());
-      return response.getItemList().stream()
-          .filter(
-              item ->
-                  item.getResourceType().getModeldbServiceResourceType()
-                          == modelDBServiceResourceTypes
-                      && item.getService() == ServiceEnum.Service.MODELDB_SERVICE)
-          .collect(Collectors.toList());
+          authServiceChannel.getCollaboratorServiceBlockingStub().getResources(builder.build());
+      return response.getItemList();
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
       throw ex;
@@ -1243,6 +1244,9 @@ public class RoleServiceUtils implements RoleService {
   @Override
   public boolean deleteEntityResources(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    if (entityIds.isEmpty()) {
+      return true;
+    }
     ResourceType modeldbServiceResourceType =
         ResourceType.newBuilder()
             .setModeldbServiceResourceType(modelDBServiceResourceTypes)
