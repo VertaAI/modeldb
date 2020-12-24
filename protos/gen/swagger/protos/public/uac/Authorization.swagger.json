@@ -356,7 +356,8 @@
         "UPDATE",
         "DELETE",
         "DEPLOY",
-        "PUBLIC_READ"
+        "PUBLIC_READ",
+        "UPDATE_PERMISSIONS"
       ],
       "default": "UNKNOWN"
     },
