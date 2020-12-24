@@ -102,6 +102,7 @@ message GetResources {
 message GetResourcesResponseItem {
     ServiceEnum.Service service = 10;
     string resource_id = 11;
+    string resource_name = 13;
     ResourceType resource_type = 12;
 
     uint64 workspace_id = 2;
@@ -115,10 +116,16 @@ message GetResourcesResponseItem {
     CollaboratorPermissions custom_permission = 9;
 }
 
-message SetResources {
+message SetResource {
     // Specification of the resources. IDs are globally unique, so changes in the fields above cause
     // update on pre-exising resources
-    Resources resources = 1;
+    ServiceEnum.Service service = 1;
+    // Internal ID for the resource in the service, whose meaning doesn't matter for other services
+    // This is optional. If empty, means all resources
+    string resource_id = 8;
+    string resource_name = 9;
+    ResourceType resource_type = 10;
+
     // Workspace where the resources belong
     oneof workspace {
         uint64 workspace_id = 2;
@@ -153,9 +160,9 @@ service CollaboratorService {
     };
 
     // The caller must have permission to CREATE or UPDATE the resource accordingly
-    rpc setResources (SetResources) returns (SetResources.Response) {
+    rpc setResource (SetResource) returns (SetResource.Response) {
         option (google.api.http) = {
-            post: "/v1/collaborator/setResources"
+            post: "/v1/collaborator/setResource"
             body: "*"
         };
     };
