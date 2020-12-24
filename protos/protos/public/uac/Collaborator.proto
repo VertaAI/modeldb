@@ -147,10 +147,17 @@ message DeleteResources {
 service CollaboratorService {
     // The caller must have permission to GET the resource accordingly
     rpc getResources (GetResources) returns (GetResources.Response) {
+        option (google.api.http) = {
+            get: "/v1/collaborator/getResources"
+        };
     };
 
     // The caller must have permission to CREATE or UPDATE the resource accordingly
     rpc setResources (SetResources) returns (SetResources.Response) {
+        option (google.api.http) = {
+            post: "/v1/collaborator/setResources"
+            body: "*"
+        };
     };
 
     // The caller must have permission to DELETE the resource accordingly
