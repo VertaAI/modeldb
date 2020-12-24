@@ -116,6 +116,7 @@ public class CollaboratorResourceMigration {
             roleService.createWorkspacePermissions(
                 workspaceDTO.getWorkspaceName(),
                 project.getId(),
+                project.getName(),
                 Optional.of(Long.parseLong(project.getOwner())),
                 ModelDBServiceResourceTypes.PROJECT,
                 CollaboratorPermissions.newBuilder()
@@ -202,6 +203,7 @@ public class CollaboratorResourceMigration {
             roleService.createWorkspacePermissions(
                 workspaceDTO.getWorkspaceName(),
                 String.valueOf(repository.getId()),
+                repository.getName(),
                 Optional.of(Long.parseLong(repository.getOwner())),
                 ModelDBServiceResourceTypes.REPOSITORY,
                 CollaboratorPermissions.newBuilder()

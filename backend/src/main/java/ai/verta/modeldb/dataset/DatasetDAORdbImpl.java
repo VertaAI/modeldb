@@ -159,6 +159,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           dataset.getWorkspaceServiceId(),
           Optional.of(dataset.getWorkspaceType()),
           dataset.getId(),
+          datasetEntity.getName(),
           Optional.empty(), // UAC will populate the owner ID
           ModelDBServiceResourceTypes.DATASET,
           dataset.getCustomPermission(),

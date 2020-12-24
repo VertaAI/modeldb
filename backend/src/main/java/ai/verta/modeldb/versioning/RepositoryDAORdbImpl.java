@@ -475,6 +475,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             repositoryEntity.getWorkspaceServiceId(),
             Optional.of(workspaceType),
             String.valueOf(repositoryEntity.getId()),
+            repositoryEntity.getName(),
             Optional.empty(), // UAC will populate the owner ID
             ModelDBServiceResourceTypes.REPOSITORY,
             repository.getCustomPermission(),
