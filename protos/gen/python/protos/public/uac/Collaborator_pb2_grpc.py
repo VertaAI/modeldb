@@ -19,10 +19,10 @@ class CollaboratorServiceStub(object):
         request_serializer=uac_dot_Collaborator__pb2.GetResources.SerializeToString,
         response_deserializer=uac_dot_Collaborator__pb2.GetResources.Response.FromString,
         )
-    self.setResources = channel.unary_unary(
-        '/ai.verta.uac.CollaboratorService/setResources',
-        request_serializer=uac_dot_Collaborator__pb2.SetResources.SerializeToString,
-        response_deserializer=uac_dot_Collaborator__pb2.SetResources.Response.FromString,
+    self.setResource = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/setResource',
+        request_serializer=uac_dot_Collaborator__pb2.SetResource.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.SetResource.Response.FromString,
         )
     self.deleteResources = channel.unary_unary(
         '/ai.verta.uac.CollaboratorService/deleteResources',
@@ -117,7 +117,7 @@ class CollaboratorServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def setResources(self, request, context):
+  def setResource(self, request, context):
     """The caller must have permission to CREATE or UPDATE the resource accordingly
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -244,10 +244,10 @@ def add_CollaboratorServiceServicer_to_server(servicer, server):
           request_deserializer=uac_dot_Collaborator__pb2.GetResources.FromString,
           response_serializer=uac_dot_Collaborator__pb2.GetResources.Response.SerializeToString,
       ),
-      'setResources': grpc.unary_unary_rpc_method_handler(
-          servicer.setResources,
-          request_deserializer=uac_dot_Collaborator__pb2.SetResources.FromString,
-          response_serializer=uac_dot_Collaborator__pb2.SetResources.Response.SerializeToString,
+      'setResource': grpc.unary_unary_rpc_method_handler(
+          servicer.setResource,
+          request_deserializer=uac_dot_Collaborator__pb2.SetResource.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.SetResource.Response.SerializeToString,
       ),
       'deleteResources': grpc.unary_unary_rpc_method_handler(
           servicer.deleteResources,

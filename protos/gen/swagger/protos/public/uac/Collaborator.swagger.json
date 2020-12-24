@@ -723,15 +723,15 @@
         ]
       }
     },
-    "/collaborator/setResources": {
+    "/collaborator/setResource": {
       "post": {
         "summary": "The caller must have permission to CREATE or UPDATE the resource accordingly",
-        "operationId": "CollaboratorService_setResources",
+        "operationId": "CollaboratorService_setResource",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacSetResourcesResponse"
+              "$ref": "#/definitions/uacSetResourceResponse"
             }
           },
           "default": {
@@ -747,7 +747,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/uacSetResources"
+              "$ref": "#/definitions/uacSetResource"
             }
           }
         ],
@@ -1103,6 +1103,9 @@
         "resource_id": {
           "type": "string"
         },
+        "resource_name": {
+          "type": "string"
+        },
         "resource_type": {
           "$ref": "#/definitions/uacResourceType"
         },
@@ -1240,12 +1243,22 @@
       },
       "title": "A resource describes a specific object in a service that can receive an action"
     },
-    "uacSetResources": {
+    "uacSetResource": {
       "type": "object",
       "properties": {
-        "resources": {
-          "$ref": "#/definitions/uacResources",
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService",
           "title": "Specification of the resources. IDs are globally unique, so changes in the fields above cause\nupdate on pre-exising resources"
+        },
+        "resource_id": {
+          "type": "string",
+          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
+        },
+        "resource_name": {
+          "type": "string"
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
         },
         "workspace_id": {
           "type": "string",
@@ -1272,7 +1285,7 @@
         }
       }
     },
-    "uacSetResourcesResponse": {
+    "uacSetResourceResponse": {
       "type": "object"
     },
     "uacShareViaEnum": {
