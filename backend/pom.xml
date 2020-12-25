@@ -9,11 +9,15 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>ai.verta.modeldb</groupId>
-	<artifactId>modeldb</artifactId>
-	<packaging>jar</packaging>
+	<artifactId>root</artifactId>
+	<packaging>pom</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<name>modeldb</name>
+	<name>root</name>
 	<url>http://maven.apache.org</url>
+	<modules>
+		<module>common</module>
+		<module>core</module>
+	</modules>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -232,36 +236,7 @@
 
 	<build>
 		<finalName>modeldb-${project.version}-client-build</finalName>
-		<!-- follow gRPC git repo URL link for plugin (kr.motd.maven, protobuf-maven-plugin)
-			https://github.com/grpc/grpc-java At the maven build time this plugin converted
-			.proto implementation of service to java code. -->
-		<extensions>
-			<extension>
-				<groupId>kr.motd.maven</groupId>
-				<artifactId>os-maven-plugin</artifactId>
-				<version>1.5.0.Final</version>
-			</extension>
-		</extensions>
 		<plugins>
-			<plugin>
-				<groupId>org.xolstice.maven.plugins</groupId>
-				<artifactId>protobuf-maven-plugin</artifactId>
-				<version>0.6.1</version>
-				<configuration>
-					<protocArtifact>com.google.protobuf:protoc:3.8.0:exe:${os.detected.classifier}</protocArtifact>
-					<pluginId>grpc-java</pluginId>
-					<pluginArtifact>io.grpc:protoc-gen-grpc-java:1.16.1:exe:${os.detected.classifier}</pluginArtifact>
-					<protoSourceRoot>src/main/proto/protos/public</protoSourceRoot>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>compile-custom</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
