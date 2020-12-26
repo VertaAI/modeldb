@@ -488,9 +488,9 @@ public class ModelDBHibernateUtil {
 
       // Initialize Liquibase and run the update
       Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
-      String rootPath = System.getProperty(ModelDBConstants.userDir);
-      rootPath = rootPath + "\\src\\main\\resources\\liquibase\\db-changelog-master.xml";
-      Liquibase liquibase = new Liquibase(rootPath, new FileSystemResourceAccessor(), database);
+      String basePath = System.getProperty(ModelDBConstants.userDir) + "/core";
+      String rootPath = System.getProperty(ModelDBConstants.userDir) + "\\core\\src\\main\\resources\\liquibase\\db-changelog-master.xml";
+      Liquibase liquibase = new Liquibase(rootPath, new FileSystemResourceAccessor(basePath), database);
 
       boolean liquibaseExecuted = false;
       while (!liquibaseExecuted) {
