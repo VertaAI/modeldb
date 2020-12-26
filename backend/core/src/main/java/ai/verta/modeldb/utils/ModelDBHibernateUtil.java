@@ -381,7 +381,7 @@ public class ModelDBHibernateUtil {
 
   private static void exportSchema(Metadata buildMetadata) {
     String rootPath = System.getProperty(ModelDBConstants.userDir);
-    rootPath = rootPath + "\\src\\main\\resources\\liquibase\\hibernate-base-db-schema.sql";
+    rootPath = rootPath + "\\core\\src\\main\\resources\\liquibase\\hibernate-base-db-schema.sql";
     new SchemaExport()
         .setDelimiter(";")
         .setOutputFile(rootPath)
