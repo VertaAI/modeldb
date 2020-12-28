@@ -150,6 +150,7 @@ public interface RoleService {
   boolean createWorkspacePermissions(
       String workspaceName,
       String resourceId,
+      String resourceName,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
@@ -159,6 +160,7 @@ public interface RoleService {
       Long workspaceId,
       Optional<WorkspaceType> workspaceType,
       String resourceId,
+      String resourceName,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,

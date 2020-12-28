@@ -274,6 +274,7 @@ public class PublicRoleServiceUtils implements RoleService {
   public boolean createWorkspacePermissions(
       String workspaceName,
       String resourceId,
+      String resourceName,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
@@ -286,6 +287,7 @@ public class PublicRoleServiceUtils implements RoleService {
       Long workspaceId,
       Optional<WorkspaceType> workspaceType,
       String resourceId,
+      String resourceName,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
