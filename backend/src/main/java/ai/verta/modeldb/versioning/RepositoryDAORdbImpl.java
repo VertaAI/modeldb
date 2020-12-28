@@ -482,6 +482,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         LOGGER.debug("Project role bindings created successfully");
         Transaction transaction = session.beginTransaction();
         repositoryEntity.setCreated(true);
+        repositoryEntity.setVisibility_migration(true);
         transaction.commit();
       } catch (Exception e) {
         LOGGER.info("Exception from UAC during Repo role binding creation : {}", e.getMessage());
@@ -696,7 +697,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              ResourceVisibility.PRIVATE,
               ModelDBServiceResourceTypes.REPOSITORY,
               Collections.emptyList());
 
@@ -1155,7 +1155,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             roleService.getAccessibleResourceIds(
                 null,
                 new CollaboratorUser(authService, currentLoginUserInfo),
-                ResourceVisibility.PRIVATE,
                 ModelDBServiceResourceTypes.REPOSITORY,
                 request.getRepoIdsList().stream()
                     .map(String::valueOf)
@@ -1330,7 +1329,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              resourceVisibility,
               ModelDBServiceResourceTypes.REPOSITORY,
               queryParameters.getDatasetIdsList());
 

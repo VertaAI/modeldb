@@ -17,7 +17,6 @@ import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.ProtocolMessageEnum;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.Metadata;
@@ -898,7 +897,6 @@ public class RoleServiceUtils implements RoleService {
   private List<String> getReadOnlyAccessibleResourceIds(
       boolean isHostUser,
       CollaboratorBase userInfo,
-      ProtocolMessageEnum resourceVisibility,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
 
     Set<String> resourceIdsSet = new HashSet<>();
@@ -924,18 +922,16 @@ public class RoleServiceUtils implements RoleService {
   public List<String> getAccessibleResourceIds(
       CollaboratorBase hostUserInfo,
       CollaboratorBase currentLoginUserInfo,
-      ProtocolMessageEnum resourceVisibility,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       List<String> requestedResourceIds) {
     List<String> accessibleResourceIds;
     if (hostUserInfo != null) {
       accessibleResourceIds =
-          getReadOnlyAccessibleResourceIds(
-              true, hostUserInfo, resourceVisibility, modelDBServiceResourceTypes);
+          getReadOnlyAccessibleResourceIds(true, hostUserInfo, modelDBServiceResourceTypes);
     } else {
       accessibleResourceIds =
           getReadOnlyAccessibleResourceIds(
-              false, currentLoginUserInfo, resourceVisibility, modelDBServiceResourceTypes);
+              false, currentLoginUserInfo, modelDBServiceResourceTypes);
     }
 
     if (requestedResourceIds != null && !requestedResourceIds.isEmpty()) {
