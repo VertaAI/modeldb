@@ -1191,21 +1191,20 @@ public class RoleServiceUtils implements RoleService {
       Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      if (resourceIds == null || resourceIds.isEmpty()) {
-        return Collections.emptyList();
-      }
       ResourceType resourceType =
           ResourceType.newBuilder()
               .setModeldbServiceResourceType(modelDBServiceResourceTypes)
               .build();
-      Resources resources =
+      Resources.Builder resources =
           Resources.newBuilder()
               .setResourceType(resourceType)
-              .setService(ServiceEnum.Service.MODELDB_SERVICE)
-              .addAllResourceIds(resourceIds)
-              .build();
+              .setService(ServiceEnum.Service.MODELDB_SERVICE);
 
-      GetResources.Builder builder = GetResources.newBuilder().setResources(resources);
+      if (resourceIds != null && !resourceIds.isEmpty()) {
+        resources.addAllResourceIds(resourceIds);
+      }
+
+      GetResources.Builder builder = GetResources.newBuilder().setResources(resources.build());
       if (workspace != null) {
         builder.setWorkspaceId(workspace.getId());
       }
