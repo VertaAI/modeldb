@@ -52,7 +52,6 @@ import ai.verta.uac.SetRoleBinding;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.ProtocolMessageEnum;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.Metadata;
@@ -943,7 +942,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   private List<String> getReadOnlyAccessibleResourceIds(
       boolean isHostUser,
       CollaboratorBase userInfo,
-      ProtocolMessageEnum resourceVisibility,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
 
     Set<String> resourceIdsSet = new HashSet<>();
@@ -969,18 +967,16 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   public List<String> getAccessibleResourceIds(
       CollaboratorBase hostUserInfo,
       CollaboratorBase currentLoginUserInfo,
-      ProtocolMessageEnum resourceVisibility,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       List<String> requestedResourceIds) {
     List<String> accessibleResourceIds;
     if (hostUserInfo != null) {
       accessibleResourceIds =
-          getReadOnlyAccessibleResourceIds(
-              true, hostUserInfo, resourceVisibility, modelDBServiceResourceTypes);
+          getReadOnlyAccessibleResourceIds(true, hostUserInfo, modelDBServiceResourceTypes);
     } else {
       accessibleResourceIds =
           getReadOnlyAccessibleResourceIds(
-              false, currentLoginUserInfo, resourceVisibility, modelDBServiceResourceTypes);
+              false, currentLoginUserInfo, modelDBServiceResourceTypes);
     }
 
     if (requestedResourceIds != null && !requestedResourceIds.isEmpty()) {

@@ -298,7 +298,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              datasetVisibility,
               ModelDBServiceResourceTypes.DATASET,
               queryParameters.getDatasetIdsList());
 
@@ -821,7 +820,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              ResourceVisibility.PRIVATE,
               ModelDBServiceResourceTypes.DATASET,
               Collections.EMPTY_LIST);
 
