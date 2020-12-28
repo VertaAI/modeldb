@@ -26,7 +26,6 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
 import ai.verta.uac.RoleScope;
@@ -279,11 +278,6 @@ public class PublicRoleServiceUtils implements RoleService {
   public boolean deleteEntityResources(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return true;
-  }
-
-  @Override
-  public List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo) {
-    return Collections.emptyList();
   }
 
   @Override

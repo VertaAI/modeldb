@@ -2,10 +2,9 @@ package ai.verta.modeldb.common.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.GetCollaboratorResponseItem;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.GeneratedMessageV3;
-import io.grpc.Metadata;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,11 +23,8 @@ public interface RoleService {
   boolean deleteEntityResources(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  List<GetCollaboratorResponseItem> getResourceCollaborators(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      String resourceId,
-      String resourceOwnerId,
-      Metadata requestHeaders);
+  GetResourcesResponseItem getEntityResource(
+      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   GeneratedMessageV3 getOrgById(String orgId);
 

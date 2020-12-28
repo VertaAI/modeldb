@@ -6,11 +6,10 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.Actions;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
 import ai.verta.uac.RoleScope;
@@ -18,6 +17,7 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
+import io.grpc.Metadata;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -122,11 +122,6 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
 
   List<Organization> listMyOrganizations();
 
-  GetResourcesResponseItem getEntityResource(
-      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo);
-
   boolean createWorkspacePermissions(
       String workspaceName,
       String resourceId,
@@ -171,4 +166,10 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
       ModelDBServiceResourceTypes serviceResourceTypes,
       ModelDBServiceActions serviceActions,
       String resourceId);
+
+  List<GetCollaboratorResponseItem> getResourceCollaborators(
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      String resourceId,
+      String resourceOwnerId,
+      Metadata requestHeaders);
 }

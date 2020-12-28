@@ -1,16 +1,20 @@
 package ai.verta.modeldb.authservice;
 
+import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.TernaryEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
+import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -20,10 +24,10 @@ import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteRoleBinding;
 import ai.verta.uac.DeleteRoleBindings;
 import ai.verta.uac.Entities;
+import ai.verta.uac.GetAllowedEntities;
 import ai.verta.uac.GetAllowedResources;
+import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.GetOrganizationByName;
-import ai.verta.uac.GetResources;
-import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetRoleBindingByName;
 import ai.verta.uac.GetRoleByName;
 import ai.verta.uac.GetSelfAllowedActionsBatch;
@@ -32,6 +36,7 @@ import ai.verta.uac.GetTeamByName;
 import ai.verta.uac.GetWorkspaceByLegacyId;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ListMyOrganizations;
+import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.RemoveResources;
@@ -59,6 +64,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -863,67 +870,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   }
 
   @Override
-  public GetResourcesResponseItem getEntityResource(
-      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    ResourceType resourceType =
-        ResourceType.newBuilder()
-            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
-            .build();
-    Resources resources =
-        Resources.newBuilder()
-            .setResourceType(resourceType)
-            .setService(Service.MODELDB_SERVICE)
-            .addResourceIds(entityId)
-            .build();
-    List<GetResourcesResponseItem> responseItems = getResourceItems(Optional.of(resources));
-    if (responseItems.size() > 1) {
-      LOGGER.warn(
-          "Role service returned {}"
-              + " resource response items fetching {} resource, but only expected 1. ID: {}",
-          responseItems.size(),
-          modelDBServiceResourceTypes.name(),
-          entityId);
-    }
-    final Optional<GetResourcesResponseItem> responseItem =
-        responseItems.stream()
-            .filter(
-                item ->
-                    item.getResourceType().getModeldbServiceResourceType()
-                            == modelDBServiceResourceTypes
-                        && item.getService() == Service.MODELDB_SERVICE)
-            .findFirst();
-    if (responseItem.isPresent()) {
-      return responseItem.get();
-    }
-    throw new IllegalArgumentException(
-        "Failed to locate "
-            + modelDBServiceResourceTypes.name()
-            + " resources in UAC for "
-            + modelDBServiceResourceTypes.name()
-            + " ID "
-            + entityId);
-  }
-
-  @Override
-  public List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      final GetResources.Builder getResourcesBuilder = GetResources.newBuilder();
-      if (filterTo.isPresent()) {
-        getResourcesBuilder.setResources(filterTo.get());
-      }
-
-      final GetResources.Response response =
-          authServiceChannel
-              .getCollaboratorServiceBlockingStub()
-              .getResources(getResourcesBuilder.build());
-      return response.getItemList();
-    } catch (StatusRuntimeException ex) {
-      LOGGER.error(ex);
-      throw ex;
-    }
-  }
-
-  @Override
   public boolean createWorkspacePermissions(
       String workspaceName,
       String resourceId,
@@ -1112,5 +1058,227 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       LOGGER.debug(ex.getMessage());
       return false;
     }
+  }
+
+  @Override
+  public List<GetCollaboratorResponseItem> getResourceCollaborators(
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      String resourceId,
+      String resourceOwnerId,
+      Metadata requestHeaders) {
+    return getResourceCollaborators(
+        true, modelDBServiceResourceTypes, resourceId, resourceOwnerId, requestHeaders);
+  }
+
+  private List<GetCollaboratorResponseItem> getResourceCollaborators(
+      boolean retry,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      String resourceId,
+      String resourceOwnerId,
+      Metadata requestHeaders) {
+    try (ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel =
+        new AuthServiceChannel()) {
+      LOGGER.debug("getting Resource collaborator with authChannel {}", authServiceChannel);
+      return getCollaborators(
+          authServiceChannel,
+          resourceOwnerId,
+          resourceId,
+          modelDBServiceResourceTypes,
+          requestHeaders);
+    } catch (StatusRuntimeException ex) {
+      return (List<GetCollaboratorResponseItem>)
+          ModelDBUtils.retryOrThrowException(
+              ex,
+              retry,
+              (CommonUtils.RetryCallInterface<List<GetCollaboratorResponseItem>>)
+                  (retry1) ->
+                      getResourceCollaborators(
+                          retry1,
+                          modelDBServiceResourceTypes,
+                          resourceId,
+                          resourceOwnerId,
+                          requestHeaders));
+    }
+  }
+
+  private List<GetCollaboratorResponseItem> getCollaborators(
+      ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel,
+      String resourceOwnerId,
+      String resourceId,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      Metadata requestHeaders) {
+    List<GetCollaboratorResponseItem> getCollaboratorResponseList = new ArrayList<>();
+
+    try {
+      // Run a task specified by a Supplier object asynchronously
+      CompletableFuture<Set<CollaboratorBase>> deployCollaboratorsFuture =
+          CompletableFuture.supplyAsync(
+              () ->
+                  getCollaborators(
+                      authServiceChannel,
+                      resourceOwnerId,
+                      resourceId,
+                      modelDBServiceResourceTypes,
+                      ModelDBActionEnum.ModelDBServiceActions.DEPLOY,
+                      requestHeaders));
+
+      CompletableFuture<Set<CollaboratorBase>> readOnlyCollaboratorsFuture =
+          CompletableFuture.supplyAsync(
+              () ->
+                  getCollaborators(
+                      authServiceChannel,
+                      resourceOwnerId,
+                      resourceId,
+                      modelDBServiceResourceTypes,
+                      ModelDBActionEnum.ModelDBServiceActions.READ,
+                      requestHeaders));
+
+      CompletableFuture<Set<CollaboratorBase>> readWriteCollaboratorsFuture =
+          CompletableFuture.supplyAsync(
+              () ->
+                  getCollaborators(
+                      authServiceChannel,
+                      resourceOwnerId,
+                      resourceId,
+                      modelDBServiceResourceTypes,
+                      ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                      requestHeaders));
+
+      CompletableFuture<Void> collaboratorCombineFuture =
+          CompletableFuture.allOf(
+              deployCollaboratorsFuture, readOnlyCollaboratorsFuture, readWriteCollaboratorsFuture);
+
+      // Wait for all task complete
+      collaboratorCombineFuture.get();
+
+      Set<CollaboratorBase> deployCollaborators = deployCollaboratorsFuture.get();
+      Set<CollaboratorBase> readOnlyCollaborators = readOnlyCollaboratorsFuture.get();
+      Set<CollaboratorBase> readWriteCollaborators = readWriteCollaboratorsFuture.get();
+
+      readOnlyCollaborators.removeAll(readWriteCollaborators);
+      if (readOnlyCollaborators.size() > 0) {
+        LOGGER.debug("ReadOnly Collaborators count: " + readOnlyCollaborators.size());
+        for (CollaboratorBase collaborator : readOnlyCollaborators) {
+          GetCollaboratorResponseItem.Builder getCollaboratorResponseBuilder =
+              GetCollaboratorResponseItem.newBuilder()
+                  .setAuthzEntityType(collaborator.getAuthzEntityType())
+                  .setVertaId(collaborator.getId());
+          CollaboratorPermissions.Builder collPermBuilder = CollaboratorPermissions.newBuilder();
+          collPermBuilder.setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY);
+          if (deployCollaborators.contains(collaborator)) {
+            collPermBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
+          } else {
+            collPermBuilder.setCanDeploy(TernaryEnum.Ternary.FALSE);
+          }
+          getCollaboratorResponseBuilder.setPermission(collPermBuilder.build());
+
+          getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
+        }
+      }
+
+      if (readWriteCollaborators.size() > 0) {
+        LOGGER.debug("ReadWrite Collaborators count: " + readWriteCollaborators.size());
+        for (CollaboratorBase collaborator : readWriteCollaborators) {
+          GetCollaboratorResponseItem.Builder getCollaboratorResponseBuilder =
+              GetCollaboratorResponseItem.newBuilder()
+                  .setAuthzEntityType(collaborator.getAuthzEntityType())
+                  .setVertaId(collaborator.getId());
+          CollaboratorPermissions.Builder collPermBuilder = CollaboratorPermissions.newBuilder();
+          collPermBuilder.setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
+          if (deployCollaborators.contains(collaborator)) {
+            collPermBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
+          } else {
+            collPermBuilder.setCanDeploy(TernaryEnum.Ternary.FALSE);
+          }
+          getCollaboratorResponseBuilder.setPermission(collPermBuilder.build());
+          getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
+        }
+      }
+    } catch (InterruptedException | ExecutionException ex) {
+      Status status =
+          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(ex.getMessage()).build();
+      throw StatusProto.toStatusRuntimeException(status);
+    }
+    LOGGER.debug("Total Collaborators count: " + getCollaboratorResponseList.size());
+    return getCollaboratorResponseList;
+  }
+
+  private Set<CollaboratorBase> getCollaborators(
+      ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel,
+      String resourceOwnerId,
+      String resourceId,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      Metadata requestHeaders) {
+    GetAllowedEntities getAllowedEntitiesRequest =
+        GetAllowedEntities.newBuilder()
+            .addActions(
+                Action.newBuilder()
+                    .setModeldbServiceAction(modelDBServiceActions)
+                    .setService(Service.MODELDB_SERVICE)
+                    .build())
+            .addResources(
+                Resources.newBuilder()
+                    .addResourceIds(resourceId)
+                    .setService(Service.MODELDB_SERVICE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                    .build())
+            .build();
+    LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+    GetAllowedEntities.Response getAllowedEntitiesResponse =
+        authServiceChannel
+            .getAuthzServiceBlockingStub(requestHeaders)
+            .getAllowedEntities(getAllowedEntitiesRequest);
+    LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+    LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedEntitiesResponse);
+
+    Set<CollaboratorBase> collaborators = new HashSet<>();
+    if (getAllowedEntitiesResponse.getEntitiesCount() != 0) {
+      for (Entities entities : getAllowedEntitiesResponse.getEntitiesList()) {
+        entities.getUserIdsList().stream()
+            .filter(id -> !id.equals(resourceOwnerId))
+            .forEach(id -> collaborators.add(new CollaboratorUser(authService, id)));
+        entities
+            .getTeamIdsList()
+            .forEach(
+                teamId -> {
+                  try {
+                    CollaboratorTeam collaboratorTeam = new CollaboratorTeam(teamId);
+                    collaborators.add(collaboratorTeam);
+                  } catch (StatusRuntimeException ex) {
+                    if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
+                      LOGGER.info(
+                          "Current user is not a member of the team : "
+                              + teamId
+                              + ", "
+                              + ex.getMessage(),
+                          ex);
+                    }
+                  }
+                });
+        entities
+            .getOrgIdsList()
+            .forEach(
+                orgId -> {
+                  try {
+                    CollaboratorOrg collaboratorOrg = new CollaboratorOrg(orgId);
+                    collaborators.add(collaboratorOrg);
+                  } catch (StatusRuntimeException ex) {
+                    if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
+                      LOGGER.info(
+                          "Current user is not a member of the organization : "
+                              + orgId
+                              + ", "
+                              + ex.getMessage(),
+                          ex);
+                    }
+                  }
+                });
+      }
+    }
+
+    return collaborators;
   }
 }
