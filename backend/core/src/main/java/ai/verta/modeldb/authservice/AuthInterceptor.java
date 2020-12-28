@@ -1,4 +1,4 @@
-package ai.verta.modeldb.common.authservice;
+package ai.verta.modeldb.authservice;
 
 import io.grpc.Context;
 import io.grpc.Contexts;

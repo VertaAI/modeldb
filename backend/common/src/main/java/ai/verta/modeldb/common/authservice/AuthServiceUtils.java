@@ -12,6 +12,8 @@ import ai.verta.uac.GetUsersFuzzy;
 import ai.verta.uac.UserInfo;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import io.grpc.Context;
+import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.util.Collections;
@@ -27,6 +29,7 @@ public class AuthServiceUtils implements AuthService {
   private final Integer port;
   private final String serviceUserEmail;
   private final String serviceUserDevKey;
+  private final Context.Key<Metadata> metadataInfo;
   private Integer timeout;
 
   public AuthServiceUtils(
@@ -34,12 +37,14 @@ public class AuthServiceUtils implements AuthService {
       Integer port,
       String serviceUserEmail,
       String serviceUserDevKey,
-      Integer timeout) {
+      Integer timeout,
+      Context.Key<Metadata> metadataInfo) {
     this.host = host;
     this.port = port;
     this.serviceUserEmail = serviceUserEmail;
     this.serviceUserDevKey = serviceUserDevKey;
     this.timeout = timeout;
+    this.metadataInfo = metadataInfo;
   }
 
   private static final Logger LOGGER = LogManager.getLogger(AuthServiceUtils.class);
@@ -273,6 +278,6 @@ public class AuthServiceUtils implements AuthService {
   }
 
   private AuthServiceChannel getAuthServiceChannel() {
-    return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey);
+    return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey, metadataInfo);
   }
 }

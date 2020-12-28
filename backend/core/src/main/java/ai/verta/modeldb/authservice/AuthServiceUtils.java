@@ -13,6 +13,7 @@ public class AuthServiceUtils extends ai.verta.modeldb.common.authservice.AuthSe
         app.getAuthServerPort(),
         app.getServiceUserEmail(),
         app.getServiceUserDevKey(),
-        app.getRequestTimeout());
+        app.getRequestTimeout(),
+        AuthInterceptor.METADATA_INFO);
   }
 }

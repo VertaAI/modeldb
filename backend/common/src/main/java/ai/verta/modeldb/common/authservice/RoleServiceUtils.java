@@ -14,6 +14,8 @@ import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.SetResource;
 import com.google.protobuf.GeneratedMessageV3;
+import io.grpc.Context;
+import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,7 @@ public class RoleServiceUtils implements RoleService {
   private final Integer port;
   private final String serviceUserEmail;
   private final String serviceUserDevKey;
+  private final Context.Key<Metadata> metadataInfo;
   private Integer timeout;
 
   public RoleServiceUtils(
@@ -35,13 +38,15 @@ public class RoleServiceUtils implements RoleService {
       Integer port,
       String serviceUserEmail,
       String serviceUserDevKey,
-      Integer timeout) {
+      Integer timeout,
+      Context.Key<Metadata> metadataInfo) {
     this.authService = authService;
     this.host = host;
     this.port = port;
     this.serviceUserEmail = serviceUserEmail;
     this.serviceUserDevKey = serviceUserDevKey;
     this.timeout = timeout;
+    this.metadataInfo = metadataInfo;
   }
 
   @Override
@@ -97,7 +102,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private AuthServiceChannel getAuthServiceChannel() {
-    return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey);
+    return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey, metadataInfo);
   }
 
   public boolean deleteResources(Resources resources) {

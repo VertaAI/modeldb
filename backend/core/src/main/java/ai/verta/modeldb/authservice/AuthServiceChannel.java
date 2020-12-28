@@ -12,6 +12,7 @@ public class AuthServiceChannel extends ai.verta.modeldb.common.authservice.Auth
         app.getAuthServerHost(),
         app.getAuthServerPort(),
         app.getServiceUserEmail(),
-        app.getServiceUserDevKey());
+        app.getServiceUserDevKey(),
+        AuthInterceptor.METADATA_INFO);
   }
 }

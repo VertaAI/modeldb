@@ -14,6 +14,7 @@ import ai.verta.uac.versioning.AuditLogServiceGrpc;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.ClientInterceptor;
+import io.grpc.Context;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
@@ -39,9 +40,14 @@ public class AuthServiceChannel implements AutoCloseable {
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
   private String serviceUserEmail;
   private String serviceUserDevKey;
+  public final Context.Key<Metadata> metadataInfo;
 
   public AuthServiceChannel(
-      String host, Integer port, String serviceUserEmail, String serviceUserDevKey) {
+      String host,
+      Integer port,
+      String serviceUserEmail,
+      String serviceUserDevKey,
+      Context.Key<Metadata> metadataInfo) {
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
     if (host != null && port != null) { // AuthService not available.
       authServiceChannel =
@@ -59,13 +65,14 @@ public class AuthServiceChannel implements AutoCloseable {
               .build();
       throw StatusProto.toStatusRuntimeException(status);
     }
+    this.metadataInfo = metadataInfo;
   }
 
   private Metadata getMetadataHeaders() {
     int backgroundUtilsCount = CommonUtils.getRegisteredBackgroundUtilsCount();
     LOGGER.trace("Header attaching with stub : backgroundUtilsCount : {}", backgroundUtilsCount);
     Metadata requestHeaders;
-    if (backgroundUtilsCount > 0 && AuthInterceptor.METADATA_INFO.get() == null) {
+    if (backgroundUtilsCount > 0 && metadataInfo.get() == null) {
       requestHeaders = new Metadata();
       Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> dev_key =
@@ -76,7 +83,7 @@ public class AuthServiceChannel implements AutoCloseable {
       requestHeaders.put(dev_key, this.serviceUserDevKey);
       requestHeaders.put(source_key, "PythonClient");
     } else {
-      requestHeaders = AuthInterceptor.METADATA_INFO.get();
+      requestHeaders = metadataInfo.get();
     }
     return requestHeaders;
   }
