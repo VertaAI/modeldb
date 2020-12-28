@@ -428,26 +428,28 @@ public class DeleteEntitiesCron extends TimerTask {
     datasetVersionDeleteQuery.setParameter("deleted", true);
     List<DatasetVersionEntity> datasetVersionEntities = datasetVersionDeleteQuery.list();
 
-    try {
-      roleService.deleteEntityResources(
-          datasetVersionEntities.stream()
-              .map(DatasetVersionEntity::getId)
-              .collect(Collectors.toList()),
-          ModelDBServiceResourceTypes.DATASET_VERSION);
-      for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
-        try {
-          Transaction transaction = session.beginTransaction();
-          session.delete(datasetVersionEntity);
-          transaction.commit();
-        } catch (OptimisticLockException ex) {
-          LOGGER.info(
-              "DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
+    if (!datasetVersionEntities.isEmpty()) {
+      try {
+        roleService.deleteEntityResources(
+            datasetVersionEntities.stream()
+                .map(DatasetVersionEntity::getId)
+                .collect(Collectors.toList()),
+            ModelDBServiceResourceTypes.DATASET_VERSION);
+        for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
+          try {
+            Transaction transaction = session.beginTransaction();
+            session.delete(datasetVersionEntity);
+            transaction.commit();
+          } catch (OptimisticLockException ex) {
+            LOGGER.info(
+                "DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
+          }
         }
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
+      } catch (Exception ex) {
+        LOGGER.warn("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
       }
-    } catch (OptimisticLockException ex) {
-      LOGGER.info("DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
-    } catch (Exception ex) {
-      LOGGER.warn("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
     }
     LOGGER.debug(
         "DatasetVersion Deleted successfully : Deleted datasetVersions count {}",

@@ -6,7 +6,6 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
-import ai.verta.common.VisibilityEnum;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CloneExperimentRun;
 import ai.verta.modeldb.CodeVersion;
@@ -290,6 +289,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
       projectEntity.setCreated(true);
+      projectEntity.setVisibility_migration(true);
       transaction.commit();
       LOGGER.debug("Project created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
@@ -1260,7 +1260,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             roleService.getAccessibleResourceIds(
                 null,
                 new CollaboratorUser(authService, currentLoginUserInfo),
-                VisibilityEnum.Visibility.PRIVATE,
                 ModelDBServiceResourceTypes.PROJECT,
                 Collections.EMPTY_LIST);
         accessibleAllWorkspaceProjectIds.addAll(accessibleAllProjectIds);

@@ -9,7 +9,6 @@ import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.ProtocolMessageEnum;
 import io.grpc.Metadata;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +101,6 @@ public interface RoleService {
   List<String> getAccessibleResourceIds(
       CollaboratorBase hostUserInfo,
       CollaboratorBase currentLoginUserInfo,
-      ProtocolMessageEnum resourceVisibility,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       List<String> requestedResourceIds);
 
