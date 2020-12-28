@@ -1,4 +1,4 @@
-package ai.verta.modeldb.collaborator;
+package ai.verta.modeldb.common.collaborator;
 
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.modeldb.CollaboratorUserInfo;

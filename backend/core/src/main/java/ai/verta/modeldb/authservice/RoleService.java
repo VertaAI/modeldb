@@ -2,11 +2,10 @@ package ai.verta.modeldb.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.Actions;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
@@ -19,12 +18,11 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolMessageEnum;
-import io.grpc.Metadata;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface RoleService {
+public interface RoleService extends ai.verta.modeldb.common.authservice.RoleService {
 
   boolean IsImplemented();
 
@@ -60,12 +58,6 @@ public interface RoleService {
 
   boolean deleteRoleBindings(List<String> roleBindingNames);
 
-  List<GetCollaboratorResponseItem> getResourceCollaborators(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      String resourceId,
-      String resourceOwnerId,
-      Metadata requestHeaders);
-
   /**
    * Checks permissions of the user wrt the Entity
    *
@@ -99,11 +91,7 @@ public interface RoleService {
       ModelDBServiceActions modelDBServiceActions,
       CollaboratorBase collaboratorBase);
 
-  GeneratedMessageV3 getTeamById(String teamId);
-
   GeneratedMessageV3 getTeamByName(String orgId, String teamName);
-
-  GeneratedMessageV3 getOrgById(String orgId);
 
   GeneratedMessageV3 getOrgByName(String name);
 
@@ -138,11 +126,6 @@ public interface RoleService {
       String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo);
-
-  boolean deleteResources(Resources resources);
-
-  boolean deleteEntityResources(
-      List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   boolean createWorkspacePermissions(
       String workspaceName,

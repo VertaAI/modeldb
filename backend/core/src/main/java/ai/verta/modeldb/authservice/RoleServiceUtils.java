@@ -1,31 +1,26 @@
 package ai.verta.modeldb.authservice;
 
-import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.TernaryEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
-import ai.verta.modeldb.collaborator.CollaboratorOrg;
-import ai.verta.modeldb.collaborator.CollaboratorTeam;
-import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
+import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.DeleteResources;
 import ai.verta.uac.DeleteRoleBinding;
 import ai.verta.uac.DeleteRoleBindings;
 import ai.verta.uac.Entities;
-import ai.verta.uac.GetAllowedEntities;
 import ai.verta.uac.GetAllowedResources;
-import ai.verta.uac.GetCollaboratorResponseItem;
-import ai.verta.uac.GetOrganizationById;
 import ai.verta.uac.GetOrganizationByName;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
@@ -33,7 +28,6 @@ import ai.verta.uac.GetRoleBindingByName;
 import ai.verta.uac.GetRoleByName;
 import ai.verta.uac.GetSelfAllowedActionsBatch;
 import ai.verta.uac.GetSelfAllowedResources;
-import ai.verta.uac.GetTeamById;
 import ai.verta.uac.GetTeamByName;
 import ai.verta.uac.GetWorkspaceByLegacyId;
 import ai.verta.uac.IsSelfAllowed;
@@ -65,15 +59,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleServiceUtils
     implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
-  private AuthService authService;
 
   public RoleServiceUtils(AuthService authService) {
     this(App.getInstance(), authService);
@@ -81,12 +72,12 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
 
   private RoleServiceUtils(App app, AuthService authService) {
     super(
+        authService,
         app.getAuthServerHost(),
         app.getAuthServerPort(),
         app.getServiceUserEmail(),
         app.getServiceUserDevKey(),
         app.getRequestTimeout());
-    this.authService = authService;
   }
 
   @Override
@@ -183,7 +174,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       ModelDBServiceActions modelDBServiceActions,
       String resourceId) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       Resources.Builder resourceBuilder =
           Resources.newBuilder()
               .setService(Service.MODELDB_SERVICE)
@@ -208,8 +199,8 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
           authServiceChannel
               .getAuthzServiceBlockingStub(requestHeaders)
               .isSelfAllowed(isSelfAllowedRequest);
-      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, isSelfAllowedResponse);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, isSelfAllowedResponse);
 
       if (!isSelfAllowedResponse.getAllowed()) {
         Status status =
@@ -241,7 +232,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   private Map<String, Actions> getSelfAllowedActionsBatch(
       boolean retry, List<String> resourceIds, ModelDBServiceResourceTypes type) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       GetSelfAllowedActionsBatch getSelfAllowedActionsBatch =
           GetSelfAllowedActionsBatch.newBuilder()
               .setResources(
@@ -258,9 +249,9 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
           authServiceChannel
               .getAuthzServiceBlockingStub(requestHeaders)
               .getSelfAllowedActionsBatch(getSelfAllowedActionsBatch);
-      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(
-          ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getSelfAllowedActionsBatchResponse);
+          CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getSelfAllowedActionsBatchResponse);
       return getSelfAllowedActionsBatchResponse.getActionsMap();
 
     } catch (StatusRuntimeException ex) {
@@ -280,7 +271,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
 
   private Role getRoleByName(boolean retry, String roleName, RoleScope roleScope) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       GetRoleByName.Builder getRoleByNameRequest = GetRoleByName.newBuilder().setName(roleName);
       if (roleScope != null) {
         getRoleByNameRequest.setScope(roleScope);
@@ -289,8 +280,8 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
           authServiceChannel
               .getRoleServiceBlockingStub()
               .getRoleByName(getRoleByNameRequest.build());
-      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getRoleByNameResponse);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getRoleByNameResponse);
 
       return getRoleByNameResponse.getRole();
     } catch (StatusRuntimeException ex) {
@@ -311,13 +302,13 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
     DeleteRoleBinding deleteRoleBindingRequest =
         DeleteRoleBinding.newBuilder().setId(roleBindingId).build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       DeleteRoleBinding.Response deleteRoleBindingResponse =
           authServiceChannel
               .getRoleServiceBlockingStub()
               .deleteRoleBinding(deleteRoleBindingRequest);
-      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, deleteRoleBindingResponse);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, deleteRoleBindingResponse);
 
       return deleteRoleBindingResponse.getStatus();
     } catch (StatusRuntimeException ex) {
@@ -338,15 +329,15 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
     DeleteRoleBindings deleteRoleBindingRequest =
         DeleteRoleBindings.newBuilder().addAllRoleBindingNames(roleBindingNames).build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
 
       // TODO: try using futur stub than blocking stub
       DeleteRoleBindings.Response deleteRoleBindingResponse =
           authServiceChannel
               .getRoleServiceBlockingStub()
               .deleteRoleBindings(deleteRoleBindingRequest);
-      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, deleteRoleBindingResponse);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, deleteRoleBindingResponse);
 
       return deleteRoleBindingResponse.getStatus();
     } catch (StatusRuntimeException ex) {
@@ -361,13 +352,13 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
 
   private void setRoleBindingOnAuthService(boolean retry, RoleBinding roleBinding) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       SetRoleBinding.Response setRoleBindingResponse =
           authServiceChannel
               .getRoleServiceBlockingStub()
               .setRoleBinding(SetRoleBinding.newBuilder().setRoleBinding(roleBinding).build());
-      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, setRoleBindingResponse);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, setRoleBindingResponse);
     } catch (StatusRuntimeException ex) {
       ModelDBUtils.retryOrThrowException(
           ex,
@@ -378,227 +369,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
                 return null;
               });
     }
-  }
-
-  @Override
-  public List<GetCollaboratorResponseItem> getResourceCollaborators(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      String resourceId,
-      String resourceOwnerId,
-      Metadata requestHeaders) {
-    return getResourceCollaborators(
-        true, modelDBServiceResourceTypes, resourceId, resourceOwnerId, requestHeaders);
-  }
-
-  private List<GetCollaboratorResponseItem> getResourceCollaborators(
-      boolean retry,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      String resourceId,
-      String resourceOwnerId,
-      Metadata requestHeaders) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.debug("getting Resource collaborator with authChannel {}", authServiceChannel);
-      return getCollaborators(
-          authServiceChannel,
-          resourceOwnerId,
-          resourceId,
-          modelDBServiceResourceTypes,
-          requestHeaders);
-    } catch (StatusRuntimeException ex) {
-      return (List<GetCollaboratorResponseItem>)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<List<GetCollaboratorResponseItem>>)
-                  (retry1) ->
-                      getResourceCollaborators(
-                          retry1,
-                          modelDBServiceResourceTypes,
-                          resourceId,
-                          resourceOwnerId,
-                          requestHeaders));
-    }
-  }
-
-  private Set<CollaboratorBase> getCollaborators(
-      AuthServiceChannel authServiceChannel,
-      String resourceOwnerId,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      Metadata requestHeaders) {
-    GetAllowedEntities getAllowedEntitiesRequest =
-        GetAllowedEntities.newBuilder()
-            .addActions(
-                Action.newBuilder()
-                    .setModeldbServiceAction(modelDBServiceActions)
-                    .setService(Service.MODELDB_SERVICE)
-                    .build())
-            .addResources(
-                Resources.newBuilder()
-                    .addResourceIds(resourceId)
-                    .setService(Service.MODELDB_SERVICE)
-                    .setResourceType(
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                    .build())
-            .build();
-    LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
-    GetAllowedEntities.Response getAllowedEntitiesResponse =
-        authServiceChannel
-            .getAuthzServiceBlockingStub(requestHeaders)
-            .getAllowedEntities(getAllowedEntitiesRequest);
-    LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-    LOGGER.trace(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedEntitiesResponse);
-
-    Set<CollaboratorBase> collaborators = new HashSet<>();
-    if (getAllowedEntitiesResponse.getEntitiesCount() != 0) {
-      for (Entities entities : getAllowedEntitiesResponse.getEntitiesList()) {
-        entities.getUserIdsList().stream()
-            .filter(id -> !id.equals(resourceOwnerId))
-            .forEach(id -> collaborators.add(new CollaboratorUser(authService, id)));
-        entities
-            .getTeamIdsList()
-            .forEach(
-                teamId -> {
-                  try {
-                    CollaboratorTeam collaboratorTeam = new CollaboratorTeam(teamId);
-                    collaborators.add(collaboratorTeam);
-                  } catch (StatusRuntimeException ex) {
-                    if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-                      LOGGER.info(
-                          "Current user is not a member of the team : "
-                              + teamId
-                              + ", "
-                              + ex.getMessage(),
-                          ex);
-                    }
-                  }
-                });
-        entities
-            .getOrgIdsList()
-            .forEach(
-                orgId -> {
-                  try {
-                    CollaboratorOrg collaboratorOrg = new CollaboratorOrg(orgId);
-                    collaborators.add(collaboratorOrg);
-                  } catch (StatusRuntimeException ex) {
-                    if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-                      LOGGER.info(
-                          "Current user is not a member of the organization : "
-                              + orgId
-                              + ", "
-                              + ex.getMessage(),
-                          ex);
-                    }
-                  }
-                });
-      }
-    }
-
-    return collaborators;
-  }
-
-  private List<GetCollaboratorResponseItem> getCollaborators(
-      AuthServiceChannel authServiceChannel,
-      String resourceOwnerId,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      Metadata requestHeaders) {
-    List<GetCollaboratorResponseItem> getCollaboratorResponseList = new ArrayList<>();
-
-    try {
-      // Run a task specified by a Supplier object asynchronously
-      CompletableFuture<Set<CollaboratorBase>> deployCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.DEPLOY,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> readOnlyCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.READ,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> readWriteCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.UPDATE,
-                      requestHeaders));
-
-      CompletableFuture<Void> collaboratorCombineFuture =
-          CompletableFuture.allOf(
-              deployCollaboratorsFuture, readOnlyCollaboratorsFuture, readWriteCollaboratorsFuture);
-
-      // Wait for all task complete
-      collaboratorCombineFuture.get();
-
-      Set<CollaboratorBase> deployCollaborators = deployCollaboratorsFuture.get();
-      Set<CollaboratorBase> readOnlyCollaborators = readOnlyCollaboratorsFuture.get();
-      Set<CollaboratorBase> readWriteCollaborators = readWriteCollaboratorsFuture.get();
-
-      readOnlyCollaborators.removeAll(readWriteCollaborators);
-      if (readOnlyCollaborators.size() > 0) {
-        LOGGER.debug("ReadOnly Collaborators count: " + readOnlyCollaborators.size());
-        for (CollaboratorBase collaborator : readOnlyCollaborators) {
-          GetCollaboratorResponseItem.Builder getCollaboratorResponseBuilder =
-              GetCollaboratorResponseItem.newBuilder()
-                  .setAuthzEntityType(collaborator.getAuthzEntityType())
-                  .setVertaId(collaborator.getId());
-          CollaboratorPermissions.Builder collPermBuilder = CollaboratorPermissions.newBuilder();
-          collPermBuilder.setCollaboratorType(CollaboratorType.READ_ONLY);
-          if (deployCollaborators.contains(collaborator)) {
-            collPermBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
-          } else {
-            collPermBuilder.setCanDeploy(TernaryEnum.Ternary.FALSE);
-          }
-          getCollaboratorResponseBuilder.setPermission(collPermBuilder.build());
-
-          getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
-        }
-      }
-
-      if (readWriteCollaborators.size() > 0) {
-        LOGGER.debug("ReadWrite Collaborators count: " + readWriteCollaborators.size());
-        for (CollaboratorBase collaborator : readWriteCollaborators) {
-          GetCollaboratorResponseItem.Builder getCollaboratorResponseBuilder =
-              GetCollaboratorResponseItem.newBuilder()
-                  .setAuthzEntityType(collaborator.getAuthzEntityType())
-                  .setVertaId(collaborator.getId());
-          CollaboratorPermissions.Builder collPermBuilder = CollaboratorPermissions.newBuilder();
-          collPermBuilder.setCollaboratorType(CollaboratorType.READ_WRITE);
-          if (deployCollaborators.contains(collaborator)) {
-            collPermBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
-          } else {
-            collPermBuilder.setCanDeploy(TernaryEnum.Ternary.FALSE);
-          }
-          getCollaboratorResponseBuilder.setPermission(collPermBuilder.build());
-          getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
-        }
-      }
-    } catch (InterruptedException | ExecutionException ex) {
-      Status status =
-          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(ex.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
-    LOGGER.debug("Total Collaborators count: " + getCollaboratorResponseList.size());
-    return getCollaboratorResponseList;
   }
 
   /**
@@ -654,14 +424,14 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
     GetRoleBindingByName getRoleBindingByNameRequest =
         GetRoleBindingByName.newBuilder().setName(roleBindingName).build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       GetRoleBindingByName.Response getRoleBindingByNameResponse =
           authServiceChannel
               .getRoleServiceBlockingStub()
               .getRoleBindingByName(getRoleBindingByNameRequest);
-      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(
-          ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getRoleBindingByNameResponse);
+          CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getRoleBindingByNameResponse);
 
       return getRoleBindingByNameResponse.getRoleBinding();
     } catch (StatusRuntimeException ex) {
@@ -705,15 +475,14 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
             .setService(Service.MODELDB_SERVICE)
             .build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
               .getAuthzServiceBlockingStub(requestHeaders)
               .getSelfAllowedResources(getAllowedResourcesRequest);
-      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(
-          ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
 
       if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
         List<String> resourcesIds = new ArrayList<>();
@@ -762,15 +531,14 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
             .setService(Service.MODELDB_SERVICE)
             .build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
               .getAuthzServiceBlockingStub(requestHeaders)
               .getSelfDirectlyAllowedResources(getAllowedResourcesRequest);
-      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(
-          ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
 
       if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
         List<String> getSelfDirectlyAllowedResourceIds = new ArrayList<>();
@@ -823,15 +591,14 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
             .setService(Service.MODELDB_SERVICE)
             .build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
       GetAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
               .getAuthzServiceBlockingStub(requestHeaders)
               .getAllowedResources(getAllowedResourcesRequest);
-      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(
-          ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
 
       if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
         List<String> resourcesIds = new ArrayList<>();
@@ -858,24 +625,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   }
 
   @Override
-  public GeneratedMessageV3 getTeamById(String teamId) {
-    return getTeamById(true, teamId);
-  }
-
-  public GeneratedMessageV3 getTeamById(boolean retry, String teamId) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      GetTeamById getTeamById = GetTeamById.newBuilder().setTeamId(teamId).build();
-      GetTeamById.Response getTeamByIdResponse =
-          authServiceChannel.getTeamServiceBlockingStub().getTeamById(getTeamById);
-      return getTeamByIdResponse.getTeam();
-    } catch (StatusRuntimeException ex) {
-      return (GeneratedMessageV3)
-          ModelDBUtils.retryOrThrowException(
-              ex, retry, (RetryCallInterface<GeneratedMessageV3>) (retry1) -> getTeamById(teamId));
-    }
-  }
-
-  @Override
   public GeneratedMessageV3 getTeamByName(String orgId, String teamName) {
     return getTeamByName(true, orgId, teamName);
   }
@@ -894,26 +643,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
               retry,
               (RetryCallInterface<GeneratedMessageV3>)
                   (retry1) -> getTeamByName(retry1, orgId, teamName));
-    }
-  }
-
-  @Override
-  public GeneratedMessageV3 getOrgById(String orgId) {
-    return getOrgById(true, orgId);
-  }
-
-  private GeneratedMessageV3 getOrgById(boolean retry, String orgId) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      GetOrganizationById getOrgById = GetOrganizationById.newBuilder().setOrgId(orgId).build();
-      GetOrganizationById.Response getOrgByIdResponse =
-          authServiceChannel.getOrganizationServiceBlockingStub().getOrganizationById(getOrgById);
-      return getOrgByIdResponse.getOrganization();
-    } catch (StatusRuntimeException ex) {
-      return (GeneratedMessageV3)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<GeneratedMessageV3>) (retry1) -> getOrgById(retry1, orgId));
     }
   }
 
@@ -1064,7 +793,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
         CollaboratorUser collaboratorUser =
             new CollaboratorUser(
                 authService,
-                authService.getUserInfo(workspaceName, ModelDBConstants.UserIdentifier.USER_NAME));
+                authService.getUserInfo(workspaceName, CommonConstants.UserIdentifier.USER_NAME));
         workspaceDTO.setWorkspaceId(collaboratorUser.getId());
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
         workspaceDTO.setWorkspaceName(workspaceName);
@@ -1104,7 +833,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
           workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
         } else {
           UserInfo userInfo =
-              authService.getUserInfo(workspaceId, ModelDBConstants.UserIdentifier.VERTA_ID);
+              authService.getUserInfo(workspaceId, CommonConstants.UserIdentifier.VERTA_ID);
           workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(userInfo));
         }
         return workspaceDTO;
@@ -1192,39 +921,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       LOGGER.error(ex);
       throw ex;
     }
-  }
-
-  @Override
-  public boolean deleteResources(Resources resources) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info("Calling CollaboratorService to delete resources");
-      DeleteResources deleteResources =
-          DeleteResources.newBuilder().setResources(resources).build();
-      DeleteResources.Response response =
-          authServiceChannel.getCollaboratorServiceBlockingStub().deleteResources(deleteResources);
-      LOGGER.info("DeleteResources message sent.  Response: " + response);
-      return true;
-    } catch (StatusRuntimeException ex) {
-      LOGGER.error(ex);
-      ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
-    }
-    return false;
-  }
-
-  @Override
-  public boolean deleteEntityResources(
-      List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    ResourceType modeldbServiceResourceType =
-        ResourceType.newBuilder()
-            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
-            .build();
-    Resources resources =
-        Resources.newBuilder()
-            .setResourceType(modeldbServiceResourceType)
-            .setService(Service.MODELDB_SERVICE)
-            .addAllResourceIds(entityIds)
-            .build();
-    return deleteResources(resources);
   }
 
   @Override
@@ -1384,15 +1080,15 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
                     .build())
             .build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
 
       RemoveResources.Response removeAllCollaboratorResponse =
           authServiceChannel
               .getRoleServiceBlockingStub()
               .removeResources(removeAllCollaboratorsRequest);
-      LOGGER.info(ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(
-          ModelDBMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, removeAllCollaboratorResponse);
+          CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, removeAllCollaboratorResponse);
 
       return removeAllCollaboratorResponse.getStatus();
     } catch (StatusRuntimeException ex) {

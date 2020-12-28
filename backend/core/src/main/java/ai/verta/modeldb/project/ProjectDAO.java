@@ -5,7 +5,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.Project;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.uac.ResourceVisibility;

@@ -8,8 +8,9 @@ import ai.verta.modeldb.LogProjectCodeVersion.Response;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
@@ -804,7 +805,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       UserInfo hostUserInfo = null;
       if (!request.getUserId().isEmpty()) {
         hostUserInfo =
-            authService.getUserInfo(request.getUserId(), ModelDBConstants.UserIdentifier.VERTA_ID);
+            authService.getUserInfo(request.getUserId(), CommonConstants.UserIdentifier.VERTA_ID);
       }
 
       List<Project> projectList =
