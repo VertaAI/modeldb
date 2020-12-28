@@ -163,12 +163,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.ID)
           .append(" IN (:projectIds)")
           .toString();
-  private static final String GET_PROJECT_IDS_BY_NAME_HQL =
-      new StringBuilder("SELECT p.id From ProjectEntity p where p.")
-          .append(ModelDBConstants.NAME)
-          .append(" = :projectName ")
-          .append(" AND p." + ModelDBConstants.DELETED + " = false")
-          .toString();
 
   public ProjectDAORdbImpl(
       AuthService authService,
@@ -185,21 +179,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
   private void checkIfEntityAlreadyExists(
       Session session, Workspace workspace, String projectName) {
-    List<String> projectEntityIds = getProjectIdsByName(session, projectName);
-    if (projectEntityIds != null && !projectEntityIds.isEmpty()) {
-      ModelDBUtils.checkIfEntityAlreadyExists(
-          roleService,
-          workspace,
-          projectName,
-          projectEntityIds,
-          ModelDBServiceResourceTypes.PROJECT);
-    }
-  }
-
-  public List<String> getProjectIdsByName(Session session, String name) {
-    Query query = session.createQuery(GET_PROJECT_IDS_BY_NAME_HQL);
-    query.setParameter("projectName", name);
-    return query.list();
+    ModelDBUtils.checkIfEntityAlreadyExists(
+        roleService, workspace, projectName, ModelDBServiceResourceTypes.PROJECT);
   }
 
   /**

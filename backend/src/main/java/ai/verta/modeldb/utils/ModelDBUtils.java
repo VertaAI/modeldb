@@ -617,22 +617,19 @@ public class ModelDBUtils {
       RoleService roleService,
       Workspace workspace,
       String name,
-      List<String> projectEntityIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    List<GetResourcesResponseItem> responseItems =
-        roleService.getResourceItems(
-            workspace, new HashSet<>(projectEntityIds), modelDBServiceResourceTypes);
-    for (GetResourcesResponseItem item : responseItems) {
-      if (workspace.getId() == item.getWorkspaceId()) {
-        // Throw error if it is an insert request and project with same name already exists
-        LOGGER.info("{} with name {} already exists", modelDBServiceResourceTypes, name);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ALREADY_EXISTS_VALUE)
-                .setMessage(modelDBServiceResourceTypes + " already exists in database")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
-      }
+
+    boolean exists =
+        roleService.entityResourceExists(workspace, name, ModelDBServiceResourceTypes.PROJECT);
+    if (exists) {
+      // Throw error if it is an insert request and project with same name already exists
+      LOGGER.info("{} with name {} already exists", modelDBServiceResourceTypes, name);
+      Status status =
+          Status.newBuilder()
+              .setCode(Code.ALREADY_EXISTS_VALUE)
+              .setMessage(modelDBServiceResourceTypes + " already exists in database")
+              .build();
+      throw StatusProto.toStatusRuntimeException(status);
     }
   }
 

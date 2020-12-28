@@ -1186,8 +1186,27 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
+  public boolean entityResourceExists(
+      Workspace workspace,
+      String entityName,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return getResourcesResponseItems(
+                workspace, entityName, Collections.emptySet(), modelDBServiceResourceTypes)
+            .size()
+        > 0;
+  }
+
+  @Override
   public List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return getResourcesResponseItems(workspace, null, resourceIds, modelDBServiceResourceTypes);
+  }
+
+  private List<GetResourcesResponseItem> getResourcesResponseItems(
+      Workspace workspace,
+      String entityName,
       Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
@@ -1202,6 +1221,10 @@ public class RoleServiceUtils implements RoleService {
 
       if (resourceIds != null && !resourceIds.isEmpty()) {
         resources.addAllResourceIds(resourceIds);
+      }
+
+      if (entityName != null) {
+        resources.setResourceName(entityName);
       }
 
       GetResources.Builder builder = GetResources.newBuilder().setResources(resources.build());

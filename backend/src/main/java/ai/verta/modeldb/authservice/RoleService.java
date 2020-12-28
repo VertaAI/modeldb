@@ -137,6 +137,11 @@ public interface RoleService {
   GetResourcesResponseItem getEntityResource(
       String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
+  boolean entityResourceExists(
+      Workspace workspace,
+      String entityName,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
   List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,
       Set<String> resourceIds,

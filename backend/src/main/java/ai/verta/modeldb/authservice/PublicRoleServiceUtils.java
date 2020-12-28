@@ -252,6 +252,14 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
+  public boolean entityResourceExists(
+      Workspace workspace,
+      String entityName,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return false;
+  }
+
+  @Override
   public boolean deleteResources(Resources resources) {
     return true;
   }
