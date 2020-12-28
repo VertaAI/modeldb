@@ -998,7 +998,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 roleService.getAccessibleResourceIds(
                     host,
                     new CollaboratorUser(authService, currentLoginUserInfo),
-                    visibility,
                     ModelDBServiceResourceTypes.PROJECT,
                     queryParameters.getProjectIdsList()));
         if (visibility.equals(ResourceVisibility.PRIVATE)) {
