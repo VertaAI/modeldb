@@ -1091,6 +1091,7 @@ public class RoleServiceUtils implements RoleService {
       Optional<Long> workspaceId,
       Optional<String> workspaceName,
       String resourceId,
+      String resourceName,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
@@ -1099,14 +1100,13 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.info("Calling CollaboratorService to create resources");
       ResourceType modeldbServiceResourceType =
           ResourceType.newBuilder().setModeldbServiceResourceType(resourceType).build();
-      Resources resources =
-          Resources.newBuilder()
-              .setResourceType(modeldbServiceResourceType)
+      SetResource.Builder setResourcesBuilder =
+          SetResource.newBuilder()
               .setService(Service.MODELDB_SERVICE)
-              .addResourceIds(resourceId)
-              .build();
-      SetResources.Builder setResourcesBuilder =
-          SetResources.newBuilder().setResources(resources).setVisibility(resourceVisibility);
+              .setResourceType(modeldbServiceResourceType)
+              .setResourceId(resourceId)
+              .setResourceName(resourceName)
+              .setVisibility(resourceVisibility);
 
       if (resourceVisibility.equals(ResourceVisibility.ORG_CUSTOM)) {
         setResourcesBuilder.setCollaboratorType(permissions.getCollaboratorType());
@@ -1124,9 +1124,10 @@ public class RoleServiceUtils implements RoleService {
         throw new IllegalArgumentException(
             "workspaceId and workspaceName are both empty.  One must be provided.");
       }
-      SetResources setResources = setResourcesBuilder.build();
-      SetResources.Response setResourcesResponse =
-          authServiceChannel.getCollaboratorServiceBlockingStub().setResources(setResources);
+      SetResource.Response setResourcesResponse =
+          authServiceChannel
+              .getCollaboratorServiceBlockingStub()
+              .setResource(setResourcesBuilder.build());
 
       LOGGER.info("SetResources message sent.  Response: " + setResourcesResponse);
       return true;
@@ -1235,6 +1236,7 @@ public class RoleServiceUtils implements RoleService {
   public boolean createWorkspacePermissions(
       String workspaceName,
       String resourceId,
+      String resourceName,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
@@ -1243,6 +1245,7 @@ public class RoleServiceUtils implements RoleService {
         Optional.empty(),
         Optional.of(workspaceName),
         resourceId,
+        resourceName,
         ownerId,
         resourceType,
         permissions,
@@ -1254,6 +1257,7 @@ public class RoleServiceUtils implements RoleService {
       Long workspaceId,
       Optional<WorkspaceType> workspaceType,
       String resourceId,
+      String resourceName,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
@@ -1262,6 +1266,7 @@ public class RoleServiceUtils implements RoleService {
         Optional.of(workspaceId),
         Optional.empty(),
         resourceId,
+        resourceName,
         ownerId,
         resourceType,
         permissions,
