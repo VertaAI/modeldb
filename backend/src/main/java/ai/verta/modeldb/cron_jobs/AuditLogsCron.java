@@ -2,6 +2,7 @@ package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.authservice.AuthServiceChannel;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -161,7 +162,7 @@ public class AuditLogsCron extends TimerTask {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<List<BatchResponseRow>>)
+              (CommonUtils.RetryCallInterface<List<BatchResponseRow>>)
                   (retry1) -> sendAuditLogsToUAC(retry1, auditLogLocalEntities));
     }
   }

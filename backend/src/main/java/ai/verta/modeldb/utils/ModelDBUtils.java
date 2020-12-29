@@ -22,6 +22,9 @@ import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
@@ -643,54 +646,21 @@ public class ModelDBUtils {
     return String.join("#", location);
   }
 
-  public interface RetryCallInterface<T> {
-    T retryCall(boolean retry);
-  }
-
-  public static Object retryOrThrowException(
-      StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
-    String errorMessage = ex.getMessage();
-    LOGGER.debug(errorMessage);
-    if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-      errorMessage = "UAC Service unavailable : " + errorMessage;
-      if (retry && retryCallInterface != null) {
-        try {
-          App app = App.getInstance();
-          Thread.sleep(app.getRequestTimeout() * 1000);
-          retry = false;
-        } catch (InterruptedException e) {
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.INTERNAL_VALUE)
-                  .setMessage("Thread interrupted while UAC retrying call")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
-        }
-        return retryCallInterface.retryCall(retry);
-      }
-
-      Status status =
-          Status.newBuilder().setCode(Code.UNAVAILABLE_VALUE).setMessage(errorMessage).build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
-    throw ex;
-  }
-
   public static void initializeBackgroundUtilsCount() {
     int backgroundUtilsCount = 0;
     try {
-      if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) == null) {
+      if (System.getProperty(CommonConstants.BACKGROUND_UTILS_COUNT) == null) {
         LOGGER.trace("Initialize runningBackgroundUtilsCount : {}", backgroundUtilsCount);
         System.setProperty(
-            ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+            CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
       }
       LOGGER.trace(
           "Found runningBackgroundUtilsCount while initialization: {}",
-          getRegisteredBackgroundUtilsCount());
+          CommonUtils.getRegisteredBackgroundUtilsCount());
     } catch (NullPointerException ex) {
       LOGGER.trace("NullPointerException while initialize runningBackgroundUtilsCount");
       System.setProperty(
-          ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+          CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
     }
   }
 
@@ -700,37 +670,24 @@ public class ModelDBUtils {
    */
   public static void registeredBackgroundUtilsCount() {
     int backgroundUtilsCount = 0;
-    if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) != null) {
-      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
+    if (System.getProperty(CommonConstants.BACKGROUND_UTILS_COUNT) != null) {
+      backgroundUtilsCount = CommonUtils.getRegisteredBackgroundUtilsCount();
     }
     backgroundUtilsCount = backgroundUtilsCount + 1;
     LOGGER.trace("After registered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
     System.setProperty(
-        ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+        CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
   }
 
   public static void unregisteredBackgroundUtilsCount() {
     int backgroundUtilsCount = 0;
-    if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) != null) {
-      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
+    if (System.getProperty(CommonConstants.BACKGROUND_UTILS_COUNT) != null) {
+      backgroundUtilsCount = CommonUtils.getRegisteredBackgroundUtilsCount();
       backgroundUtilsCount = backgroundUtilsCount - 1;
     }
     LOGGER.trace("After unregistered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
     System.setProperty(
-        ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
-  }
-
-  public static Integer getRegisteredBackgroundUtilsCount() {
-    try {
-      Integer backgroundUtilsCount =
-          Integer.parseInt(System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT));
-      LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-      return backgroundUtilsCount;
-    } catch (NullPointerException ex) {
-      LOGGER.trace("NullPointerException while get runningBackgroundUtilsCount");
-      System.setProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(0));
-      return 0;
-    }
+        CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
   }
 
   public static boolean isEnvSet(String envVar) {
@@ -817,5 +774,11 @@ public class ModelDBUtils {
       default:
         return null;
     }
+  }
+
+  public static Object retryOrThrowException(
+      StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
+    return CommonUtils.retryOrThrowException(
+        ex, retry, retryCallInterface, App.getInstance().getRequestTimeout());
   }
 }

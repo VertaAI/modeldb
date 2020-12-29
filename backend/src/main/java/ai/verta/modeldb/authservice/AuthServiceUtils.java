@@ -2,6 +2,7 @@ package ai.verta.modeldb.authservice;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Empty;
@@ -56,7 +57,7 @@ public class AuthServiceUtils implements AuthService {
     } catch (StatusRuntimeException ex) {
       return (UserInfo)
           ModelDBUtils.retryOrThrowException(
-              ex, retry, (ModelDBUtils.RetryCallInterface<UserInfo>) this::getCurrentLoginUserInfo);
+              ex, retry, (RetryCallInterface<UserInfo>) this::getCurrentLoginUserInfo);
     }
   }
 
@@ -88,7 +89,7 @@ public class AuthServiceUtils implements AuthService {
     } catch (StatusRuntimeException ex) {
       return (UserInfo)
           ModelDBUtils.retryOrThrowException(
-              ex, retry, (ModelDBUtils.RetryCallInterface<UserInfo>) this::getUnsignedUser);
+              ex, retry, (RetryCallInterface<UserInfo>) this::getUnsignedUser);
     }
   }
 
@@ -130,7 +131,7 @@ public class AuthServiceUtils implements AuthService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<UserInfo>)
+              (RetryCallInterface<UserInfo>)
                   (retry1) -> getUserInfo(retry1, vertaId, vertaIdentifier));
     }
   }
@@ -176,7 +177,7 @@ public class AuthServiceUtils implements AuthService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<Map<String, UserInfo>>)
+              (RetryCallInterface<Map<String, UserInfo>>)
                   (retry1) ->
                       getUserInfoFromAuthServer(retry1, vertaIdList, emailIdList, usernameList));
     }
@@ -263,7 +264,7 @@ public class AuthServiceUtils implements AuthService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<UserInfoPaginationDTO>)
+              (RetryCallInterface<UserInfoPaginationDTO>)
                   (retry1) -> getFuzzyUserInfoList(retry1, usernameChar));
     }
   }

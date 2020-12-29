@@ -1,38 +1,91 @@
 package ai.verta.modeldb.authservice;
 
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
-import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.*;
+import ai.verta.uac.Action;
+import ai.verta.uac.Actions;
+import ai.verta.uac.CollaboratorPermissions;
+import ai.verta.uac.DeleteResources;
+import ai.verta.uac.DeleteRoleBinding;
+import ai.verta.uac.DeleteRoleBindings;
+import ai.verta.uac.Entities;
+import ai.verta.uac.GetAllowedEntities;
+import ai.verta.uac.GetAllowedResources;
+import ai.verta.uac.GetCollaboratorResponseItem;
+import ai.verta.uac.GetOrganizationById;
+import ai.verta.uac.GetOrganizationByName;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetRoleBindingByName;
+import ai.verta.uac.GetRoleByName;
+import ai.verta.uac.GetSelfAllowedActionsBatch;
+import ai.verta.uac.GetSelfAllowedResources;
+import ai.verta.uac.GetTeamById;
+import ai.verta.uac.GetTeamByName;
+import ai.verta.uac.GetWorkspaceByLegacyId;
+import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ListMyOrganizations;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.Organization;
+import ai.verta.uac.RemoveResources;
+import ai.verta.uac.ResourceType;
+import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.Resources;
+import ai.verta.uac.Role;
+import ai.verta.uac.RoleBinding;
+import ai.verta.uac.RoleScope;
+import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.ServiceEnum.Service;
+import ai.verta.uac.SetRoleBinding;
+import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class RoleServiceUtils implements RoleService {
+public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleServiceUtils
+    implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
   private AuthService authService;
 
   public RoleServiceUtils(AuthService authService) {
+    this(App.getInstance(), authService);
+  }
+
+  private RoleServiceUtils(App app, AuthService authService) {
+    super(
+        app.getAuthServerHost(),
+        app.getAuthServerPort(),
+        app.getServiceUserEmail(),
+        app.getServiceUserDevKey(),
+        app.getRequestTimeout(),
+        AuthInterceptor.METADATA_INFO);
     this.authService = authService;
   }
 
@@ -133,7 +186,7 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.info(ModelDBMessages.CALL_TO_ROLE_SERVICE_MSG);
       Resources.Builder resourceBuilder =
           Resources.newBuilder()
-              .setService(ServiceEnum.Service.MODELDB_SERVICE)
+              .setService(Service.MODELDB_SERVICE)
               .setResourceType(
                   ResourceType.newBuilder()
                       .setModeldbServiceResourceType(modelDBServiceResourceTypes));
@@ -145,7 +198,7 @@ public class RoleServiceUtils implements RoleService {
               .addResources(resourceBuilder.build())
               .addActions(
                   Action.newBuilder()
-                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .setService(Service.MODELDB_SERVICE)
                       .setModeldbServiceAction(modelDBServiceActions)
                       .build())
               .build();
@@ -170,7 +223,7 @@ public class RoleServiceUtils implements RoleService {
       ModelDBUtils.retryOrThrowException(
           ex,
           retry,
-          (ModelDBUtils.RetryCallInterface<Void>)
+          (RetryCallInterface<Void>)
               retry1 -> {
                 isSelfAllowed(
                     retry1, modelDBServiceResourceTypes, modelDBServiceActions, resourceId);
@@ -193,7 +246,7 @@ public class RoleServiceUtils implements RoleService {
           GetSelfAllowedActionsBatch.newBuilder()
               .setResources(
                   Resources.newBuilder()
-                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .setService(Service.MODELDB_SERVICE)
                       .addAllResourceIds(resourceIds)
                       .setResourceType(
                           ResourceType.newBuilder().setModeldbServiceResourceType(type))
@@ -215,7 +268,7 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<Map<String, Actions>>)
+              (RetryCallInterface<Map<String, Actions>>)
                   (retry1) -> getSelfAllowedActionsBatch(retry1, resourceIds, type));
     }
   }
@@ -245,8 +298,7 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<Role>)
-                  (retry1) -> getRoleByName(retry1, roleName, roleScope));
+              (RetryCallInterface<Role>) (retry1) -> getRoleByName(retry1, roleName, roleScope));
     }
   }
 
@@ -273,8 +325,7 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<Boolean>)
-                  (retry1) -> deleteRoleBinding(retry1, roleBindingId));
+              (RetryCallInterface<Boolean>) (retry1) -> deleteRoleBinding(retry1, roleBindingId));
     }
   }
 
@@ -303,7 +354,7 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<Boolean>)
+              (RetryCallInterface<Boolean>)
                   (retry1) -> deleteRoleBindings(retry1, roleBindingNames));
     }
   }
@@ -321,7 +372,7 @@ public class RoleServiceUtils implements RoleService {
       ModelDBUtils.retryOrThrowException(
           ex,
           retry,
-          (ModelDBUtils.RetryCallInterface<Void>)
+          (RetryCallInterface<Void>)
               (retry1) -> {
                 setRoleBindingOnAuthService(retry1, roleBinding);
                 return null;
@@ -358,7 +409,7 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<List<GetCollaboratorResponseItem>>)
+              (RetryCallInterface<List<GetCollaboratorResponseItem>>)
                   (retry1) ->
                       getResourceCollaborators(
                           retry1,
@@ -381,12 +432,12 @@ public class RoleServiceUtils implements RoleService {
             .addActions(
                 Action.newBuilder()
                     .setModeldbServiceAction(modelDBServiceActions)
-                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                    .setService(Service.MODELDB_SERVICE)
                     .build())
             .addResources(
                 Resources.newBuilder()
                     .addResourceIds(resourceId)
-                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                    .setService(Service.MODELDB_SERVICE)
                     .setResourceType(
                         ResourceType.newBuilder()
                             .setModeldbServiceResourceType(modelDBServiceResourceTypes))
@@ -620,7 +671,7 @@ public class RoleServiceUtils implements RoleService {
             ModelDBUtils.retryOrThrowException(
                 ex,
                 retry,
-                (ModelDBUtils.RetryCallInterface<RoleBinding>)
+                (RetryCallInterface<RoleBinding>)
                     (retry1) -> getRoleBindingByName(retry1, roleBindingName));
       } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
         return RoleBinding.newBuilder().build();
@@ -642,7 +693,7 @@ public class RoleServiceUtils implements RoleService {
       ModelDBServiceActions modelDBServiceActions) {
     Action action =
         Action.newBuilder()
-            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .setService(Service.MODELDB_SERVICE)
             .setModeldbServiceAction(modelDBServiceActions)
             .build();
     GetSelfAllowedResources getAllowedResourcesRequest =
@@ -678,7 +729,7 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<List<String>>)
+              (RetryCallInterface<List<String>>)
                   (retry1) ->
                       getSelfAllowedResources(
                           retry1, modelDBServiceResourceTypes, modelDBServiceActions));
@@ -699,7 +750,7 @@ public class RoleServiceUtils implements RoleService {
       ModelDBServiceActions modelDBServiceActions) {
     Action action =
         Action.newBuilder()
-            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .setService(Service.MODELDB_SERVICE)
             .setModeldbServiceAction(modelDBServiceActions)
             .build();
     GetSelfAllowedResources getAllowedResourcesRequest =
@@ -735,7 +786,7 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<List<String>>)
+              (RetryCallInterface<List<String>>)
                   (retry1) ->
                       getSelfDirectlyAllowedResources(
                           retry1, modelDBServiceResourceTypes, modelDBServiceActions));
@@ -758,7 +809,7 @@ public class RoleServiceUtils implements RoleService {
       CollaboratorBase collaboratorBase) {
     Action action =
         Action.newBuilder()
-            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .setService(Service.MODELDB_SERVICE)
             .setModeldbServiceAction(modelDBServiceActions)
             .build();
     Entities entity = collaboratorBase.getEntities();
@@ -796,7 +847,7 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<List<String>>)
+              (RetryCallInterface<List<String>>)
                   (retry1) ->
                       getAllowedResources(
                           retry1,
@@ -820,10 +871,7 @@ public class RoleServiceUtils implements RoleService {
     } catch (StatusRuntimeException ex) {
       return (GeneratedMessageV3)
           ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (ModelDBUtils.RetryCallInterface<GeneratedMessageV3>)
-                  (retry1) -> getTeamById(teamId));
+              ex, retry, (RetryCallInterface<GeneratedMessageV3>) (retry1) -> getTeamById(teamId));
     }
   }
 
@@ -844,7 +892,7 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<GeneratedMessageV3>)
+              (RetryCallInterface<GeneratedMessageV3>)
                   (retry1) -> getTeamByName(retry1, orgId, teamName));
     }
   }
@@ -865,8 +913,7 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<GeneratedMessageV3>)
-                  (retry1) -> getOrgById(retry1, orgId));
+              (RetryCallInterface<GeneratedMessageV3>) (retry1) -> getOrgById(retry1, orgId));
     }
   }
 
@@ -889,8 +936,7 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<GeneratedMessageV3>)
-                  (retry1) -> getOrgByName(retry1, name));
+              (RetryCallInterface<GeneratedMessageV3>) (retry1) -> getOrgByName(retry1, name));
     }
   }
 
@@ -975,8 +1021,7 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.info("Got workspace " + workspace);
       return Optional.of(workspace);
     } catch (StatusRuntimeException ex) {
-      ModelDBUtils.retryOrThrowException(
-          ex, false, (ModelDBUtils.RetryCallInterface<Void>) (retry1) -> null);
+      ModelDBUtils.retryOrThrowException(ex, false, (RetryCallInterface<Void>) (retry1) -> null);
     }
     return Optional.empty();
   }
@@ -1094,61 +1139,8 @@ public class RoleServiceUtils implements RoleService {
     } catch (StatusRuntimeException ex) {
       return (List<Organization>)
           ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (ModelDBUtils.RetryCallInterface<List<Organization>>) this::listMyOrganizations);
+              ex, retry, (RetryCallInterface<List<Organization>>) this::listMyOrganizations);
     }
-  }
-
-  private boolean createWorkspacePermissions(
-      Optional<Long> workspaceId,
-      Optional<String> workspaceName,
-      String resourceId,
-      String resourceName,
-      Optional<Long> ownerId,
-      ModelDBServiceResourceTypes resourceType,
-      CollaboratorPermissions permissions,
-      ResourceVisibility resourceVisibility) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info("Calling CollaboratorService to create resources");
-      ResourceType modeldbServiceResourceType =
-          ResourceType.newBuilder().setModeldbServiceResourceType(resourceType).build();
-      SetResource.Builder setResourcesBuilder =
-          SetResource.newBuilder()
-              .setService(Service.MODELDB_SERVICE)
-              .setResourceType(modeldbServiceResourceType)
-              .setResourceId(resourceId)
-              .setResourceName(resourceName)
-              .setVisibility(resourceVisibility);
-
-      if (resourceVisibility.equals(ResourceVisibility.ORG_CUSTOM)) {
-        setResourcesBuilder.setCollaboratorType(permissions.getCollaboratorType());
-        setResourcesBuilder.setCanDeploy(permissions.getCanDeploy());
-      }
-
-      if (ownerId.isPresent()) {
-        setResourcesBuilder.setOwnerId(ownerId.get());
-      }
-      if (workspaceId.isPresent()) {
-        setResourcesBuilder.setWorkspaceId(workspaceId.get());
-      } else if (workspaceName.isPresent()) {
-        setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
-      } else {
-        throw new IllegalArgumentException(
-            "workspaceId and workspaceName are both empty.  One must be provided.");
-      }
-      SetResource.Response setResourcesResponse =
-          authServiceChannel
-              .getCollaboratorServiceBlockingStub()
-              .setResource(setResourcesBuilder.build());
-
-      LOGGER.info("SetResources message sent.  Response: " + setResourcesResponse);
-      return true;
-    } catch (StatusRuntimeException ex) {
-      LOGGER.error(ex);
-      ModelDBUtils.retryOrThrowException(ex, false, retry -> null);
-    }
-    return false;
   }
 
   @Override
@@ -1171,7 +1163,7 @@ public class RoleServiceUtils implements RoleService {
                 item ->
                     item.getResourceType().getModeldbServiceResourceType()
                             == modelDBServiceResourceTypes
-                        && item.getService() == ServiceEnum.Service.MODELDB_SERVICE)
+                        && item.getService() == Service.MODELDB_SERVICE)
             .findFirst();
     if (responseItem.isPresent()) {
       return responseItem.get();
@@ -1426,14 +1418,14 @@ public class RoleServiceUtils implements RoleService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<Boolean>)
+              (RetryCallInterface<Boolean>)
                   (retry1) -> deleteAllResources(retry1, resourceIds, modelDBServiceResourceTypes));
     }
   }
 
   public boolean checkConnectionsBasedOnPrivileges(
-      ModelDBResourceEnum.ModelDBServiceResourceTypes serviceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions serviceActions,
+      ModelDBServiceResourceTypes serviceResourceTypes,
+      ModelDBServiceActions serviceActions,
       String resourceId) {
     try {
       isSelfAllowed(serviceResourceTypes, serviceActions, resourceId);

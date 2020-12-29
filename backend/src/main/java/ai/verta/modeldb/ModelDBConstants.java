@@ -81,8 +81,6 @@ public interface ModelDBConstants {
   int INITIAL_CRON_DELAY = 300; // 300second = 5min : timeout in second
   String INITIAL_DELAY = "initial_delay";
 
-  // String Constants
-  String STRING_COLON = ":";
   String EMPTY_STRING = "";
 
   // Column/protos field names
@@ -186,7 +184,6 @@ public interface ModelDBConstants {
 
   // Common error messages
   String ACCESS_DENIED_EXPERIMENT_RUN = "User does not have access to the ExperimentRun.";
-  String AUTH_SERVICE_CHANNEL_CLOSE_ERROR = "AuthServiceChannel close() error : ";
   String INTERNAL_ERROR = "Internal server error";
   String NON_EQ_ID_PRED_ERROR_MESSAGE =
       "Only equality predicates supported on ids. Use EQ Operator.";
@@ -288,7 +285,6 @@ public interface ModelDBConstants {
   String CRON_JOB = "cron_job";
   String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
   String DELETE_ENTITIES = "delete_entities";
-  String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
   String EXPIRED_TOKEN = "ExpiredToken";
   String UPDATE_RUN_ENVIRONMENTS = "update_run_environments";
   String DELETE_AUDIT_LOGS = "delete_audit_logs";
