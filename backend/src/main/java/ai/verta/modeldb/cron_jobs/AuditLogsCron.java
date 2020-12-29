@@ -36,7 +36,7 @@ public class AuditLogsCron extends TimerTask {
   public void run() {
     LOGGER.info("AuditLogsCron wakeup");
 
-    ModelDBUtils.registeredBackgroundUtilsCount();
+    CommonUtils.registeredBackgroundUtilsCount();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       String alias = "al";
       String getAuditLogsLocalQueryString =
@@ -77,7 +77,7 @@ public class AuditLogsCron extends TimerTask {
         LOGGER.warn("AuditLogsCron Exception: ", ex);
       }
     } finally {
-      ModelDBUtils.unregisteredBackgroundUtilsCount();
+      CommonUtils.unregisteredBackgroundUtilsCount();
     }
     LOGGER.info("AuditLogsCron finish tasks and reschedule");
   }
