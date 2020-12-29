@@ -2,6 +2,7 @@ package ai.verta.modeldb.authservice;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -288,7 +289,7 @@ public class AuthServiceUtils implements AuthService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<Workspace>)
+              (CommonUtils.RetryCallInterface<Workspace>)
                   (retry1) -> workspaceIdByName(retry1, workspaceName));
     }
   }
@@ -312,7 +313,7 @@ public class AuthServiceUtils implements AuthService {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<Workspace>)
+              (CommonUtils.RetryCallInterface<Workspace>)
                   (retry1) -> workspaceById(retry1, workspaceId));
     }
   }
