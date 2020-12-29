@@ -333,7 +333,8 @@
         "CREATE",
         "READ",
         "UPDATE",
-        "DELETE"
+        "DELETE",
+        "UPDATE_PERMISSIONS"
       ],
       "default": "UNKNOWN"
     },
@@ -356,7 +357,8 @@
         "UPDATE",
         "DELETE",
         "DEPLOY",
-        "PUBLIC_READ"
+        "PUBLIC_READ",
+        "UPDATE_PERMISSIONS"
       ],
       "default": "UNKNOWN"
     },
