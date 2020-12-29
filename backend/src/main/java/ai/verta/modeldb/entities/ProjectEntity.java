@@ -372,9 +372,11 @@ public class ProjectEntity {
       case ORG_ID:
         projectBuilder.setWorkspaceId(workspace.getOrgId());
         projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
+        break;
       case USER_ID:
         projectBuilder.setWorkspaceId(workspace.getUserId());
         projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+        break;
     }
 
     ProjectVisibility visibility =
