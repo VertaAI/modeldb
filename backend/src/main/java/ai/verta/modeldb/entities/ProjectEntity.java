@@ -337,7 +337,8 @@ public class ProjectEntity {
     this.visibility_migration = visibility_migration;
   }
 
-  public Project getProtoObject(RoleService roleService, AuthService authService) throws InvalidProtocolBufferException {
+  public Project getProtoObject(RoleService roleService, AuthService authService)
+      throws InvalidProtocolBufferException {
     Project.Builder projectBuilder =
         Project.newBuilder()
             .setId(getId())
