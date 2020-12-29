@@ -138,7 +138,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       new StringBuilder("From ProjectEntity p where p.deleted = false AND p.")
           .append(ModelDBConstants.SHORT_NAME)
           .append(" = :projectShortName ")
-          .append("AND p.id = :projectId")
+          .append("AND p.id IN (:projectIds)")
           .toString();
   private static final String DELETE_ALL_ARTIFACTS_HQL =
       new StringBuilder("delete from ArtifactEntity ar WHERE ar.projectEntity.")
@@ -261,7 +261,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
-      ModelDBUtils.checkPersonalWorkspace(userInfo, workspace, ModelDBConstants.PROJECT);
       checkIfEntityAlreadyExists(session, workspace, project.getName());
 
       Transaction transaction = session.beginTransaction();
@@ -879,7 +878,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       Query query = session.createQuery(GET_PROJECT_BY_SHORT_NAME_HQL);
       query.setParameter("projectShortName", projectShortName);
-      query.setParameter("projectId", accessibleProjectIds);
+      query.setParameterList("projectIds", accessibleProjectIds);
       List<ProjectEntity> projectEntities = query.list();
       if (!projectEntities.isEmpty()) {
         Status status =
