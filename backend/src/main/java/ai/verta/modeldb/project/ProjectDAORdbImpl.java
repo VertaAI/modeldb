@@ -138,7 +138,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       new StringBuilder("From ProjectEntity p where p.deleted = false AND p.")
           .append(ModelDBConstants.SHORT_NAME)
           .append(" = :projectShortName ")
-          .append("AND p.id = :projectId")
+          .append("AND p.id IN (:projectIds)")
           .toString();
   private static final String DELETE_ALL_ARTIFACTS_HQL =
       new StringBuilder("delete from ArtifactEntity ar WHERE ar.projectEntity.")
@@ -261,7 +261,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
-      ModelDBUtils.checkPersonalWorkspace(userInfo, workspace, ModelDBConstants.PROJECT);
       checkIfEntityAlreadyExists(session, workspace, project.getName());
 
       Transaction transaction = session.beginTransaction();
@@ -873,22 +872,15 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project setProjectShortName(String projectId, String projectShortName, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Set<String> accessibleProjectIds =
-          ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
-              roleService,
-              new HashSet<>(Collections.singletonList(projectId)),
-              null,
-              userInfo,
-              ModelDBServiceResourceTypes.PROJECT);
-      if (accessibleProjectIds.isEmpty()) {
-        throw new ModelDBException("You can not set project short_name in others workspace");
-      }
+      List<String> accessibleProjectIds =
+          roleService.getSelfDirectlyAllowedResources(
+              ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
 
       Query query = session.createQuery(GET_PROJECT_BY_SHORT_NAME_HQL);
       query.setParameter("projectShortName", projectShortName);
-      query.setParameter("projectId", new ArrayList<>(accessibleProjectIds).get(0));
-      ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
-      if (projectEntity != null) {
+      query.setParameterList("projectIds", accessibleProjectIds);
+      List<ProjectEntity> projectEntities = query.list();
+      if (!projectEntities.isEmpty()) {
         Status status =
             Status.newBuilder()
                 .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -899,7 +891,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       query = session.createQuery(GET_PROJECT_BY_ID_HQL);
       query.setParameter("id", projectId);
-      projectEntity = (ProjectEntity) query.uniqueResult();
+      ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       projectEntity.setShort_name(projectShortName);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();
