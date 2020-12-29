@@ -13,6 +13,7 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -27,6 +28,7 @@ public interface RepositoryDAO {
 
   RepositoryEntity getRepositoryById(
       Session session,
+      Workspace workspace,
       RepositoryIdentification id,
       boolean checkWrite,
       boolean canNotOperateOnProtected,
@@ -40,7 +42,7 @@ public interface RepositoryDAO {
       throws ModelDBException;
 
   SetRepository.Response setRepository(
-      CommitDAO commitDAO, SetRepository request, UserInfo userInfo, boolean create)
+      SetRepository request, UserInfo userInfo, boolean create)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException;
 
   DeleteRepositoryRequest.Response deleteRepository(
@@ -57,10 +59,9 @@ public interface RepositoryDAO {
   void deleteRepositories(
       Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds);
 
-  Repository createRepository(
-      CommitDAO commitDAO,
-      MetadataDAO metadataDAO,
+  Dataset createOrUpdateDataset(
       Dataset dataset,
+      String workspaceName,
       boolean create,
       UserInfo userInfo)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException;

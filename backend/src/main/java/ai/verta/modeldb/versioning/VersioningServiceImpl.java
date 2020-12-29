@@ -128,7 +128,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ModelDBUtils.validateEntityNameWithColonAndSlash(requestBuilder.getRepository().getName());
 
       SetRepository.Response response =
-          repositoryDAO.setRepository(commitDAO, requestBuilder.build(), userInfo, true);
+          repositoryDAO.setRepository(requestBuilder.build(), userInfo, true);
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -158,7 +158,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       ModelDBUtils.validateEntityNameWithColonAndSlash(request.getRepository().getName());
       SetRepository.Response response =
-          repositoryDAO.setRepository(commitDAO, request, null, false);
+          repositoryDAO.setRepository(request, authService.getCurrentLoginUserInfo(), false);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {

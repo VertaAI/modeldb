@@ -38,7 +38,6 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
@@ -142,29 +141,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   public void createDataset(
       CreateDataset request, StreamObserver<CreateDataset.Response> responseObserver) {
     try {
-      if (request.getName().isEmpty()) {
-        request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
-      }
-
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
 
-      // Get the user info from the Context
+      Dataset dataset = getDatasetFromRequest(request);
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
-
-      Dataset dataset = getDatasetFromRequest(request, userInfo);
-      ModelDBUtils.checkPersonalWorkspace(
-          userInfo, dataset.getWorkspaceType(), dataset.getWorkspaceId(), "repository");
-
-      Repository repository =
-          repositoryDAO.createRepository(commitDAO, metadataDAO, dataset, true, userInfo);
       Dataset createdDataset =
-          dataset
-              .toBuilder()
-              .setId(String.valueOf(repository.getId()))
-              .setTimeCreated(repository.getDateCreated())
-              .setTimeUpdated(repository.getDateUpdated())
-              .build();
+          repositoryDAO.createOrUpdateDataset(dataset, request.getWorkspaceName(), true, userInfo);
 
       saveAuditLogs(
           userInfo, ModelDBConstants.CREATE, Collections.singletonList(createdDataset.getId()), "");
@@ -177,48 +160,34 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     }
   }
 
-  private Dataset getDatasetFromRequest(CreateDataset request, UserInfo userInfo) {
+  private Dataset getDatasetFromRequest(CreateDataset request) {
     /*
      * Generate a random UUID for id
      * set Name,Description,Attributes, Tags and Visibility from the request
      * set times to current time
      */
+    if (request.getName().isEmpty()) {
+      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
+    }
     Dataset.Builder datasetBuilder =
-        Dataset.newBuilder()
-            .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
-            .setDescription(request.getDescription())
-            .addAllAttributes(request.getAttributesList())
-            .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
-            .setDatasetVisibility(request.getDatasetVisibility())
-            .setVisibility(request.getVisibility())
-            .setDatasetType(request.getDatasetType())
-            .setCustomPermission(request.getCustomPermission());
+            Dataset.newBuilder()
+                    .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
+                    .setDescription(request.getDescription())
+                    .addAllAttributes(request.getAttributesList())
+                    .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
+                    .setDatasetVisibility(request.getDatasetVisibility())
+                    .setVisibility(request.getVisibility())
+                    .setDatasetType(request.getDatasetType())
+                    .setCustomPermission(request.getCustomPermission());
 
     if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
       datasetBuilder
-          .setTimeCreated(request.getTimeCreated())
-          .setTimeUpdated(request.getTimeCreated());
+              .setTimeCreated(request.getTimeCreated())
+              .setTimeUpdated(request.getTimeCreated());
     } else {
       datasetBuilder
-          .setTimeCreated(Calendar.getInstance().getTimeInMillis())
-          .setTimeUpdated(Calendar.getInstance().getTimeInMillis());
-    }
-
-    /*
-     * Set current user as owner.
-     */
-
-    if (userInfo != null) {
-      String vertaId = authService.getVertaIdFromUserInfo(userInfo);
-      datasetBuilder.setOwner(vertaId);
-      String workspaceName = request.getWorkspaceName();
-      WorkspaceDTO workspaceDTO =
-          roleService.getWorkspaceDTOByWorkspaceName(userInfo, workspaceName);
-      if (workspaceDTO.getWorkspaceId() != null) {
-        datasetBuilder.setWorkspaceId(workspaceDTO.getWorkspaceId());
-        datasetBuilder.setWorkspaceServiceId(workspaceDTO.getWorkspaceServiceId());
-        datasetBuilder.setWorkspaceType(workspaceDTO.getWorkspaceType());
-      }
+              .setTimeCreated(Calendar.getInstance().getTimeInMillis())
+              .setTimeUpdated(Calendar.getInstance().getTimeInMillis());
     }
     return datasetBuilder.build();
   }
@@ -449,9 +418,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
           getDatasetResponse.getDataset().toBuilder().setName(request.getName()).build();
-      repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
-      getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
-      updatedDataset = getDatasetResponse.getDataset();
+      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset,null, false, authService.getCurrentLoginUserInfo());
 
       saveAuditLogs(
           null,
@@ -493,9 +460,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .toBuilder()
               .setDescription(request.getDescription())
               .build();
-      repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
-      getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
-      updatedDataset = getDatasetResponse.getDataset();
+      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, authService.getCurrentLoginUserInfo());
       saveAuditLogs(
           null,
           ModelDBConstants.UPDATE,
@@ -667,9 +632,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .toBuilder()
               .addAllAttributes(request.getAttributesList())
               .build();
-      repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
-      getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
-      updatedDataset = getDatasetResponse.getDataset();
+      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, null);
       saveAuditLogs(
           null,
           ModelDBConstants.UPDATE,
@@ -723,9 +686,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
           getDatasetResponse.getDataset().toBuilder().addAttributes(request.getAttribute()).build();
-      repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
-      getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
-      updatedDataset = getDatasetResponse.getDataset();
+      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null,false, authService.getCurrentLoginUserInfo());
       saveAuditLogs(
           null,
           ModelDBConstants.UPDATE,
@@ -878,6 +839,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               (session ->
                   repositoryDAO.getRepositoryById(
                       session,
+                      null,
                       repositoryIdentification,
                       false,
                       false,
@@ -977,6 +939,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               (session ->
                   repositoryDAO.getRepositoryById(
                       session,
+                      null,
                       repositoryIdentification,
                       false,
                       false,

@@ -46,7 +46,7 @@ public class RepositoryEntity {
   public RepositoryEntity() {}
 
   public RepositoryEntity(
-      Repository repository, WorkspaceDTO workspaceDTO, RepositoryTypeEnum repositoryTypeEnum)
+      Repository repository, RepositoryTypeEnum repositoryTypeEnum)
       throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
@@ -65,7 +65,7 @@ public class RepositoryEntity {
       this.date_created = new Date().getTime();
       this.date_updated = new Date().getTime();
     }
-    this.repositoryVisibility = repository.getVisibility();
+    /*this.repositoryVisibility = repository.getVisibility();
     if (workspaceDTO.getWorkspaceId() != null) {
       this.workspace_id = workspaceDTO.getWorkspaceId();
       this.workspace_type = workspaceDTO.getWorkspaceType().getNumber();
@@ -76,7 +76,7 @@ public class RepositoryEntity {
       this.workspaceServiceId = 0L;
       this.workspace_type = 0;
       this.owner = "";
-    }
+    }*/
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, repository.getAttributesList()));
@@ -108,26 +108,26 @@ public class RepositoryEntity {
   @Column(name = "date_updated")
   private Long date_updated;
 
-  @Column(name = "workspace_service_id")
+  /*@Column(name = "workspace_service_id")
   private Long workspaceServiceId;
 
   @Column(name = "workspace_id")
   private String workspace_id;
 
   @Column(name = "workspace_type", columnDefinition = "varchar")
-  private Integer workspace_type;
+  private Integer workspace_type;*/
 
   @OrderBy("date_created")
   @ManyToMany(mappedBy = "repository")
   private Set<CommitEntity> commits = new HashSet<>();
 
-  @Column(name = "owner")
+  /*@Column(name = "owner")
   private String owner;
 
   @Column(name = "repository_visibility")
   private Integer repository_visibility = null;
 
-  @Transient private ResourceVisibility repositoryVisibility = ResourceVisibility.PRIVATE;
+  @Transient private ResourceVisibility repositoryVisibility = ResourceVisibility.PRIVATE;*/
 
   @Column(name = "repository_access_modifier")
   private Integer repositoryAccessModifier = null;
@@ -176,7 +176,7 @@ public class RepositoryEntity {
     this.date_updated = date_updated;
   }
 
-  public Long getWorkspaceServiceId() {
+  /*public Long getWorkspaceServiceId() {
     return workspaceServiceId;
   }
 
@@ -186,15 +186,15 @@ public class RepositoryEntity {
 
   public String getWorkspace_id() {
     return workspace_id;
-  }
+  }*/
 
   public Set<CommitEntity> getCommits() {
     return commits;
   }
 
-  public Integer getWorkspace_type() {
+  /*public Integer getWorkspace_type() {
     return workspace_type;
-  }
+  }*/
 
   public Boolean getDeleted() {
     return deleted;
@@ -219,9 +219,9 @@ public class RepositoryEntity {
     this.created = created;
   }
 
-  public ResourceVisibility getRepositoryVisibility() {
+  /*public ResourceVisibility getRepositoryVisibility() {
     return repositoryVisibility;
-  }
+  }*/
 
   public void setVisibility_migration(Boolean visibility_migration) {
     this.visibility_migration = visibility_migration;
@@ -233,8 +233,6 @@ public class RepositoryEntity {
         .setName(this.name)
         .setDateCreated(this.date_created)
         .setDateUpdated(this.date_updated)
-        .setWorkspaceId(this.workspace_id)
-        .setWorkspaceTypeValue(this.workspace_type)
         .addAllAttributes(
             RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
 
@@ -252,9 +250,6 @@ public class RepositoryEntity {
                 ModelDBServiceResourceTypes.REPOSITORY, repositoryResource.getVisibility());
     builder.setRepositoryVisibility(visibility);
 
-    if (owner != null) {
-      builder.setOwner(owner);
-    }
     if (description != null) {
       builder.setDescription(description);
     }
@@ -264,9 +259,6 @@ public class RepositoryEntity {
   public void update(Repository repository) throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
-    this.repositoryVisibility = repository.getVisibility();
-    this.workspace_id = repository.getWorkspaceId();
-    this.workspace_type = repository.getWorkspaceTypeValue();
     update();
     updateAttribute(repository.getAttributesList());
   }
@@ -275,13 +267,13 @@ public class RepositoryEntity {
     this.date_updated = new Date().getTime();
   }
 
-  public String getOwner() {
+  /*public String getOwner() {
     return owner;
   }
 
   public Integer getRepository_visibility() {
     return repository_visibility;
-  }
+  }*/
 
   private void updateAttribute(List<KeyValue> attributes) throws InvalidProtocolBufferException {
     if (attributes != null && !attributes.isEmpty()) {

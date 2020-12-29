@@ -570,31 +570,6 @@ public class ModelDBUtils {
     return rootCause;
   }
 
-  /**
-   * Throws an error if the workspace type is USER and the workspaceId and userID do not match. Is a
-   * NO-OP if userinfo is null.
-   */
-  public static void checkPersonalWorkspace(
-      UserInfo userInfo,
-      WorkspaceType workspaceType,
-      String workspaceId,
-      String resourceNameString) {
-    if (userInfo != null
-        && workspaceType == WorkspaceType.USER
-        && !workspaceId.equals(userInfo.getVertaInfo().getUserId())) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  "Creation of "
-                      + resourceNameString
-                      + " in other user's workspace is not permitted")
-              .addDetails(Any.pack(UpdateProjectName.Response.getDefaultInstance()))
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
-  }
-
   public static void checkIfEntityAlreadyExists(
       RoleService roleService,
       Workspace workspace,
@@ -768,11 +743,11 @@ public class ModelDBUtils {
   }
 
   public static ResourceVisibility getResourceVisibility(
-      Optional<WorkspaceType> workspaceType, ProtocolMessageEnum visibility) {
-    if (!workspaceType.isPresent()) {
+      Workspace workspace, ProtocolMessageEnum visibility) {
+    if (workspace == null) {
       return ResourceVisibility.PRIVATE;
     }
-    if (workspaceType.get() == WorkspaceTypeEnum.WorkspaceType.ORGANIZATION) {
+    if (workspace.getInternalIdCase() == Workspace.InternalIdCase.ORG_ID) {
       if (visibility == ProjectVisibility.ORG_SCOPED_PUBLIC
           || visibility == RepositoryVisibility.ORG_SCOPED_PUBLIC
           || visibility == DatasetVisibility.ORG_SCOPED_PUBLIC) {

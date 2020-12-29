@@ -89,7 +89,7 @@ public class DatasetToRepositoryMigration {
     }
 
     commitDAO = new CommitDAORdbImpl(authService, roleService);
-    repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
+    repositoryDAO = new RepositoryDAORdbImpl(authService, roleService, commitDAO, metadataDAO);
     blobDAO = new BlobDAORdbImpl(authService, roleService);
     metadataDAO = new MetadataDAORdbImpl();
     experimentRunDAO =
@@ -291,7 +291,8 @@ public class DatasetToRepositoryMigration {
     try {
       LOGGER.debug("Creating repository for dataset {}", datasetEntity.getId());
       repository =
-          repositoryDAO.createRepository(commitDAO, metadataDAO, newDataset, true, userInfoValue);
+          repositoryDAO.createOrUpdateDataset(
+              newDataset, authService.getUsernameFromUserInfo(userInfoValue), true, userInfoValue);
       markStartedDatasetMigration(datasetId, repository.getId(), "started");
       LOGGER.debug("Adding repository collaborattor for dataset {}", datasetEntity.getId());
       migrateDatasetCollaborators(datasetId, repository);
@@ -302,7 +303,8 @@ public class DatasetToRepositoryMigration {
         Status status = Status.fromThrowable(e);
         if (status.getCode().equals(Status.Code.ALREADY_EXISTS)) {
           repository =
-              repositoryDAO.createRepository(commitDAO, metadataDAO, newDataset, false, null);
+              repositoryDAO.createOrUpdateDataset(
+                  newDataset, authService.getUsernameFromUserInfo(userInfoValue), false, null);
           LOGGER.debug(
               "Continuing with repository {} already created for dataset {}",
               repository.getId(),
