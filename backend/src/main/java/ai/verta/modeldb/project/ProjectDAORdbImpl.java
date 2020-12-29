@@ -873,22 +873,15 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project setProjectShortName(String projectId, String projectShortName, UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Set<String> accessibleProjectIds =
-          ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
-              roleService,
-              new HashSet<>(Collections.singletonList(projectId)),
-              null,
-              userInfo,
-              ModelDBServiceResourceTypes.PROJECT);
-      if (accessibleProjectIds.isEmpty()) {
-        throw new ModelDBException("You can not set project short_name in others workspace");
-      }
+      List<String> accessibleProjectIds =
+          roleService.getSelfDirectlyAllowedResources(
+              ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
 
       Query query = session.createQuery(GET_PROJECT_BY_SHORT_NAME_HQL);
       query.setParameter("projectShortName", projectShortName);
-      query.setParameter("projectId", new ArrayList<>(accessibleProjectIds).get(0));
-      ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
-      if (projectEntity != null) {
+      query.setParameter("projectId", accessibleProjectIds);
+      List<ProjectEntity> projectEntities = query.list();
+      if (!projectEntities.isEmpty()) {
         Status status =
             Status.newBuilder()
                 .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -899,7 +892,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       query = session.createQuery(GET_PROJECT_BY_ID_HQL);
       query.setParameter("id", projectId);
-      projectEntity = (ProjectEntity) query.uniqueResult();
+      ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       projectEntity.setShort_name(projectShortName);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();
