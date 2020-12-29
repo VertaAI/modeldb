@@ -41,8 +41,7 @@ public interface RepositoryDAO {
   RepositoryEntity getProtectedRepositoryById(RepositoryIdentification id, boolean checkWrite)
       throws ModelDBException;
 
-  SetRepository.Response setRepository(
-      SetRepository request, UserInfo userInfo, boolean create)
+  SetRepository.Response setRepository(SetRepository request, UserInfo userInfo, boolean create)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException;
 
   DeleteRepositoryRequest.Response deleteRepository(
@@ -60,10 +59,7 @@ public interface RepositoryDAO {
       Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds);
 
   Dataset createOrUpdateDataset(
-      Dataset dataset,
-      String workspaceName,
-      boolean create,
-      UserInfo userInfo)
+      Dataset dataset, String workspaceName, boolean create, UserInfo userInfo)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException;
 
   ListRepositoriesRequest.Response listRepositories(

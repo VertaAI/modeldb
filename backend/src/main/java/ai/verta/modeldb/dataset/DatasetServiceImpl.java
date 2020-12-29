@@ -170,24 +170,24 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
     }
     Dataset.Builder datasetBuilder =
-            Dataset.newBuilder()
-                    .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
-                    .setDescription(request.getDescription())
-                    .addAllAttributes(request.getAttributesList())
-                    .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
-                    .setDatasetVisibility(request.getDatasetVisibility())
-                    .setVisibility(request.getVisibility())
-                    .setDatasetType(request.getDatasetType())
-                    .setCustomPermission(request.getCustomPermission());
+        Dataset.newBuilder()
+            .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
+            .setDescription(request.getDescription())
+            .addAllAttributes(request.getAttributesList())
+            .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
+            .setDatasetVisibility(request.getDatasetVisibility())
+            .setVisibility(request.getVisibility())
+            .setDatasetType(request.getDatasetType())
+            .setCustomPermission(request.getCustomPermission());
 
     if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
       datasetBuilder
-              .setTimeCreated(request.getTimeCreated())
-              .setTimeUpdated(request.getTimeCreated());
+          .setTimeCreated(request.getTimeCreated())
+          .setTimeUpdated(request.getTimeCreated());
     } else {
       datasetBuilder
-              .setTimeCreated(Calendar.getInstance().getTimeInMillis())
-              .setTimeUpdated(Calendar.getInstance().getTimeInMillis());
+          .setTimeCreated(Calendar.getInstance().getTimeInMillis())
+          .setTimeUpdated(Calendar.getInstance().getTimeInMillis());
     }
     return datasetBuilder.build();
   }
@@ -418,7 +418,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
           getDatasetResponse.getDataset().toBuilder().setName(request.getName()).build();
-      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset,null, false, authService.getCurrentLoginUserInfo());
+      updatedDataset =
+          repositoryDAO.createOrUpdateDataset(
+              updatedDataset, null, false, authService.getCurrentLoginUserInfo());
 
       saveAuditLogs(
           null,
@@ -460,7 +462,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .toBuilder()
               .setDescription(request.getDescription())
               .build();
-      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, authService.getCurrentLoginUserInfo());
+      updatedDataset =
+          repositoryDAO.createOrUpdateDataset(
+              updatedDataset, null, false, authService.getCurrentLoginUserInfo());
       saveAuditLogs(
           null,
           ModelDBConstants.UPDATE,
@@ -686,7 +690,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
           getDatasetResponse.getDataset().toBuilder().addAttributes(request.getAttribute()).build();
-      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null,false, authService.getCurrentLoginUserInfo());
+      updatedDataset =
+          repositoryDAO.createOrUpdateDataset(
+              updatedDataset, null, false, authService.getCurrentLoginUserInfo());
       saveAuditLogs(
           null,
           ModelDBConstants.UPDATE,

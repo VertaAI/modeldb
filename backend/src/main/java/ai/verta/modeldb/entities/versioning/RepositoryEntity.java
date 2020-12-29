@@ -45,8 +45,7 @@ public class RepositoryEntity {
 
   public RepositoryEntity() {}
 
-  public RepositoryEntity(
-      Repository repository, RepositoryTypeEnum repositoryTypeEnum)
+  public RepositoryEntity(Repository repository, RepositoryTypeEnum repositoryTypeEnum)
       throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
