@@ -3,7 +3,8 @@ package ai.verta.modeldb.authservice;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -30,6 +31,7 @@ import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
 import ai.verta.uac.RoleScope;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
@@ -41,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class PublicRoleServiceUtils implements RoleService {
 
@@ -268,6 +271,19 @@ public class PublicRoleServiceUtils implements RoleService {
   @Override
   public boolean deleteResources(Resources resources) {
     return true;
+  }
+
+  @Override
+  public boolean createWorkspacePermissions(
+      Optional<Long> workspaceId,
+      Optional<String> workspaceName,
+      String resourceId,
+      String resourceName,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorPermissions permissions,
+      ResourceVisibility resourceVisibility) {
+    return false;
   }
 
   @Override

@@ -1,7 +1,8 @@
 package ai.verta.modeldb.authservice;
 
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.dto.UserInfoPaginationDTO;
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 import java.util.Collections;
@@ -25,7 +26,7 @@ public class PublicAuthServiceUtils implements AuthService {
   }
 
   @Override
-  public UserInfo getUserInfo(String vertaId, ModelDBConstants.UserIdentifier vertaIdentifier) {
+  public UserInfo getUserInfo(String vertaId, CommonConstants.UserIdentifier vertaIdentifier) {
     return null;
   }
 
