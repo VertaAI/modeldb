@@ -595,24 +595,6 @@ public class ModelDBUtils {
     }
   }
 
-  public static void checkPersonalWorkspace(
-      UserInfo userInfo, Workspace workspace, String resourceNameString) {
-    if (userInfo != null
-        && workspace.getInternalIdCase() == Workspace.InternalIdCase.USER_ID
-        && !workspace.getUserId().equals(userInfo.getVertaInfo().getUserId())) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  "Creation of "
-                      + resourceNameString
-                      + " in other user's workspace is not permitted")
-              .addDetails(Any.pack(UpdateProjectName.Response.getDefaultInstance()))
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
-  }
-
   public static void checkIfEntityAlreadyExists(
       RoleService roleService,
       Workspace workspace,
