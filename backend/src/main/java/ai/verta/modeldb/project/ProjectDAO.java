@@ -3,6 +3,7 @@ package ai.verta.modeldb.project;
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CreateProject;
 import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
@@ -12,26 +13,27 @@ import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
-import java.util.Map;
 
 public interface ProjectDAO {
 
   /**
    * Insert Project entity in database.
    *
-   * @param Project project
-   * @param UserInfo userInfo
-   * @return void
+   * @param createProjectRequest : create project request
+   * @param userInfo : current login userInfo
+   * @return Project
    */
-  Project insertProject(Project project, UserInfo userInfo) throws InvalidProtocolBufferException;
+  Project insertProject(CreateProject createProjectRequest, UserInfo userInfo)
+      throws InvalidProtocolBufferException;
 
   /**
+   * @param userInfo : current login userInfo
    * @param projectId : project.id
    * @param projectName : updated project name from client request
    * @return {@link Project} : updated project
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Project updateProjectName(String projectId, String projectName)
+  Project updateProjectName(UserInfo userInfo, String projectId, String projectName)
       throws InvalidProtocolBufferException;
 
   /**
@@ -229,7 +231,7 @@ public interface ProjectDAO {
    * @throws InvalidProtocolBufferException
    */
   Project setProjectShortName(String projectId, String projectShortName, UserInfo userInfo)
-      throws InvalidProtocolBufferException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * Return public projects
@@ -241,14 +243,6 @@ public interface ProjectDAO {
    */
   List<Project> getPublicProjects(
       UserInfo hostUserInfo, UserInfo currentLoginUserInfo, String workspaceName)
-      throws InvalidProtocolBufferException;
-
-  /**
-   * @param projectIds : list of project ids
-   * @return : project list
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
-   */
-  List<Project> getProjectsByBatchIds(List<String> projectIds)
       throws InvalidProtocolBufferException;
 
   /**
@@ -299,14 +293,6 @@ public interface ProjectDAO {
    */
   Project deleteArtifacts(String projectId, String artifactKey)
       throws InvalidProtocolBufferException;
-
-  /**
-   * Getting all the owners with respected to project ids and returned by this method.
-   *
-   * @param projectIds : List<String> list of accessible Project Id
-   * @return {@link Map} : Map<String,String> where key= projectId, value= project owner Id
-   */
-  Map<String, String> getOwnersByProjectIds(List<String> projectIds);
 
   List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
       throws InvalidProtocolBufferException;

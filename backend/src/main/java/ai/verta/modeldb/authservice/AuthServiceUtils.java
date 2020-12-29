@@ -8,7 +8,10 @@ import ai.verta.uac.Empty;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.GetUsers;
 import ai.verta.uac.GetUsersFuzzy;
+import ai.verta.uac.GetWorkspaceById;
+import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -210,6 +213,19 @@ public class AuthServiceUtils implements AuthService {
   }
 
   @Override
+  public Long getWorkspaceIdFromUserInfo(UserInfo userInfo) {
+    if (userInfo != null && !userInfo.getVertaInfo().getWorkspaceId().isEmpty()) {
+      return Long.parseLong(userInfo.getVertaInfo().getWorkspaceId());
+    }
+    Status status =
+        Status.newBuilder()
+            .setCode(Code.NOT_FOUND_VALUE)
+            .setMessage("WorkspaceId not found in userInfo")
+            .build();
+    throw StatusProto.toStatusRuntimeException(status);
+  }
+
+  @Override
   public boolean isCurrentUser(String vertaID) {
     return getVertaIdFromUserInfo(getCurrentLoginUserInfo()).equals(vertaID);
   }
@@ -249,6 +265,54 @@ public class AuthServiceUtils implements AuthService {
               retry,
               (ModelDBUtils.RetryCallInterface<UserInfoPaginationDTO>)
                   (retry1) -> getFuzzyUserInfoList(retry1, usernameChar));
+    }
+  }
+
+  @Override
+  public Workspace workspaceIdByName(boolean retry, String workspaceName) {
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      GetWorkspaceByName.Builder getWorkspaceByName =
+          GetWorkspaceByName.newBuilder().setName(workspaceName);
+
+      LOGGER.trace("workspace : {}", workspaceName);
+      // Get the user info from the Context
+      Workspace workspace =
+          authServiceChannel
+              .getWorkspaceServiceBlockingStub()
+              .getWorkspaceByName(getWorkspaceByName.build());
+      LOGGER.info(ModelDBMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      return workspace;
+    } catch (StatusRuntimeException ex) {
+      return (Workspace)
+          ModelDBUtils.retryOrThrowException(
+              ex,
+              retry,
+              (ModelDBUtils.RetryCallInterface<Workspace>)
+                  (retry1) -> workspaceIdByName(retry1, workspaceName));
+    }
+  }
+
+  @Override
+  public Workspace workspaceById(boolean retry, String workspaceId) {
+    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+      GetWorkspaceById.Builder getWorkspaceById =
+          GetWorkspaceById.newBuilder().setId(Long.parseLong(workspaceId));
+
+      LOGGER.trace("get workspaceById: ID : {}", workspaceId);
+      // Get the user info from the Context
+      Workspace workspace =
+          authServiceChannel
+              .getWorkspaceServiceBlockingStub()
+              .getWorkspaceById(getWorkspaceById.build());
+      LOGGER.info(ModelDBMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      return workspace;
+    } catch (StatusRuntimeException ex) {
+      return (Workspace)
+          ModelDBUtils.retryOrThrowException(
+              ex,
+              retry,
+              (ModelDBUtils.RetryCallInterface<Workspace>)
+                  (retry1) -> workspaceById(retry1, workspaceId));
     }
   }
 }

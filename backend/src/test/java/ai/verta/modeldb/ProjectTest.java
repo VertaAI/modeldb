@@ -1473,12 +1473,14 @@ public class ProjectTest {
       }
 
     } finally {
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          client2ProjectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
+      if (project != null) {
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            client2ProjectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
+      }
     }
 
     LOGGER.info("Get project by name test stop................................");

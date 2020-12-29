@@ -28,9 +28,11 @@ import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponseItem;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ShareViaEnum;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.amazonaws.AmazonServiceException;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
@@ -68,6 +70,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.LockAcquisitionException;
@@ -590,6 +593,42 @@ public class ModelDBUtils {
               .build();
       throw StatusProto.toStatusRuntimeException(status);
     }
+  }
+
+  public static void checkIfEntityAlreadyExists(
+      RoleService roleService,
+      Workspace workspace,
+      String name,
+      List<String> projectEntityIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    List<GetResourcesResponseItem> responseItems =
+        roleService.getResourceItems(
+            workspace, new HashSet<>(projectEntityIds), modelDBServiceResourceTypes);
+    for (GetResourcesResponseItem item : responseItems) {
+      if (workspace.getId() == item.getWorkspaceId()) {
+        // Throw error if it is an insert request and project with same name already exists
+        LOGGER.info("{} with name {} already exists", modelDBServiceResourceTypes, name);
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.ALREADY_EXISTS_VALUE)
+                .setMessage(modelDBServiceResourceTypes + " already exists in database")
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+    }
+  }
+
+  public static Set<String> filterWorkspaceOnlyAccessibleIds(
+      RoleService roleService,
+      Set<String> accessibleAllWorkspaceProjectIds,
+      String workspaceName,
+      UserInfo userInfo,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+    List<GetResourcesResponseItem> items =
+        roleService.getResourceItems(
+            workspace, accessibleAllWorkspaceProjectIds, modelDBServiceResourceTypes);
+    return items.stream().map(GetResourcesResponseItem::getResourceId).collect(Collectors.toSet());
   }
 
   public static String getLocationWithSlashOperator(List<String> locations) {

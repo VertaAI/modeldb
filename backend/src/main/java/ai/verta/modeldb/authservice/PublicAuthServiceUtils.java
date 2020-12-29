@@ -3,6 +3,7 @@ package ai.verta.modeldb.authservice;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +52,11 @@ public class PublicAuthServiceUtils implements AuthService {
   }
 
   @Override
+  public Long getWorkspaceIdFromUserInfo(UserInfo userInfo) {
+    return 0L;
+  }
+
+  @Override
   public boolean isCurrentUser(String vertaID) {
     return true;
   }
@@ -61,5 +67,15 @@ public class PublicAuthServiceUtils implements AuthService {
     paginationDTO.setUserInfoList(Collections.emptyList());
     paginationDTO.setTotalRecords(0L);
     return paginationDTO;
+  }
+
+  @Override
+  public Workspace workspaceIdByName(boolean retry, String workspaceName) {
+    return Workspace.newBuilder().build();
+  }
+
+  @Override
+  public Workspace workspaceById(boolean retry, String workspaceId) {
+    return Workspace.newBuilder().build();
   }
 }

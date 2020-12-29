@@ -1,15 +1,26 @@
 package ai.verta.modeldb.project;
 
-import ai.verta.common.*;
+import ai.verta.common.Artifact;
+import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.*;
+import ai.verta.common.OperatorEnum;
+import ai.verta.common.ValueTypeEnum;
+import ai.verta.modeldb.App;
+import ai.verta.modeldb.CloneExperimentRun;
+import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CreateProject;
+import ai.verta.modeldb.Experiment;
+import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.FindProjects;
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.Project;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.collaborator.CollaboratorBase;
 import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
@@ -17,23 +28,37 @@ import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.uac.*;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -106,27 +131,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   private static final String COUNT_PROJECT_BY_ID_HQL =
       "Select Count(id) From ProjectEntity p where p.deleted = false AND p.id = :projectId";
   private static final String NON_DELETED_PROJECT_IDS =
-      "select id  From ProjectEntity p where p.deleted = false";
+      "select p.id  From ProjectEntity p where p.deleted = false";
   private static final String NON_DELETED_PROJECT_IDS_BY_IDS =
       NON_DELETED_PROJECT_IDS + " AND p.id in (:" + ModelDBConstants.PROJECT_IDS + ")";
-  private static final String IDS_FILTERED_BY_WORKSPACE =
-      NON_DELETED_PROJECT_IDS_BY_IDS
-          + " AND p."
-          + ModelDBConstants.WORKSPACE
-          + " = :"
-          + ModelDBConstants.WORKSPACE
-          + " AND p."
-          + ModelDBConstants.WORKSPACE_TYPE
-          + " = :"
-          + ModelDBConstants.WORKSPACE_TYPE;
-  private static final String GET_PROJECT_BY_IDS_HQL =
-      "From ProjectEntity p where p.id IN (:ids) AND p." + ModelDBConstants.DELETED + " = false";
-  private static final String GET_PROJECT_BY_SHORT_NAME_AND_OWNER_HQL =
-      new StringBuilder("From ProjectEntity p where p.")
+  private static final String GET_PROJECT_BY_SHORT_NAME_HQL =
+      new StringBuilder("From ProjectEntity p where p.deleted = false AND p.")
           .append(ModelDBConstants.SHORT_NAME)
-          .append(" = :projectShortName AND ")
-          .append(ModelDBConstants.OWNER)
-          .append(" =:vertaId")
+          .append(" = :projectShortName ")
+          .append("AND p.id IN (:projectIds)")
           .toString();
   private static final String DELETE_ALL_ARTIFACTS_HQL =
       new StringBuilder("delete from ArtifactEntity ar WHERE ar.projectEntity.")
@@ -151,6 +163,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.ID)
           .append(" IN (:projectIds)")
           .toString();
+  private static final String GET_PROJECT_IDS_BY_NAME_HQL =
+      new StringBuilder("SELECT p.id From ProjectEntity p where p.")
+          .append(ModelDBConstants.NAME)
+          .append(" = :projectName ")
+          .append(" AND p." + ModelDBConstants.DELETED + " = false")
+          .toString();
 
   public ProjectDAORdbImpl(
       AuthService authService,
@@ -165,25 +183,85 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     this.starterProjectID = app.getStarterProjectID();
   }
 
-  private void checkIfEntityAlreadyExists(Session session, Project project) {
-    ModelDBHibernateUtil.checkIfEntityAlreadyExists(
-        session,
-        "p",
-        GET_PROJECT_COUNT_BY_NAME_PREFIX_HQL,
-        "Project",
-        "projectName",
-        project.getName(),
-        ModelDBConstants.WORKSPACE,
-        project.getWorkspaceId(),
-        project.getWorkspaceType(),
-        LOGGER);
+  private void checkIfEntityAlreadyExists(
+      Session session, Workspace workspace, String projectName) {
+    List<String> projectEntityIds = getProjectIdsByName(session, projectName);
+    if (projectEntityIds != null && !projectEntityIds.isEmpty()) {
+      ModelDBUtils.checkIfEntityAlreadyExists(
+          roleService,
+          workspace,
+          projectName,
+          projectEntityIds,
+          ModelDBServiceResourceTypes.PROJECT);
+    }
+  }
+
+  public List<String> getProjectIdsByName(Session session, String name) {
+    Query query = session.createQuery(GET_PROJECT_IDS_BY_NAME_HQL);
+    query.setParameter("projectName", name);
+    return query.list();
+  }
+
+  /**
+   * Method to convert createProject request to Project object. This method generates the project Id
+   * using UUID and puts it in Project object.
+   *
+   * @param request : CreateProject
+   * @param userInfo : UserInfo
+   * @return Project
+   */
+  private Project getProjectFromRequest(CreateProject request, UserInfo userInfo) {
+
+    if (request.getName().isEmpty()) {
+      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
+    }
+
+    String projectShortName = ModelDBUtils.convertToProjectShortName(request.getName());
+
+    /*
+     * Create Project entity from given CreateProject request. generate UUID and put as id in
+     * project for uniqueness. set above created List<KeyValue> attributes in project entity.
+     */
+    Project.Builder projectBuilder =
+        Project.newBuilder()
+            .setId(UUID.randomUUID().toString())
+            .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
+            .setShortName(projectShortName)
+            .setDescription(request.getDescription())
+            .addAllAttributes(request.getAttributesList())
+            .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
+            .setProjectVisibility(request.getProjectVisibility())
+            .setVisibility(request.getVisibility())
+            .addAllArtifacts(request.getArtifactsList())
+            .setReadmeText(request.getReadmeText())
+            .setCustomPermission(request.getCustomPermission());
+
+    App app = App.getInstance();
+    if (app.getStoreClientCreationTimestamp() && request.getDateCreated() != 0L) {
+      projectBuilder
+          .setDateCreated(request.getDateCreated())
+          .setDateUpdated(request.getDateCreated());
+    } else {
+      projectBuilder
+          .setDateCreated(Calendar.getInstance().getTimeInMillis())
+          .setDateUpdated(Calendar.getInstance().getTimeInMillis());
+    }
+
+    return projectBuilder.build();
   }
 
   @Override
-  public Project insertProject(Project project, UserInfo userInfo)
+  public Project insertProject(CreateProject createProjectRequest, UserInfo userInfo)
+      throws InvalidProtocolBufferException {
+    Project project = getProjectFromRequest(createProjectRequest, userInfo);
+    return insertProject(project, createProjectRequest.getWorkspaceName(), userInfo);
+  }
+
+  private Project insertProject(Project project, String workspaceName, UserInfo userInfo)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      checkIfEntityAlreadyExists(session, project);
+      Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+      checkIfEntityAlreadyExists(session, workspace, project.getName());
 
       Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);
@@ -199,8 +277,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
 
       roleService.createWorkspacePermissions(
-          project.getWorkspaceServiceId(),
-          Optional.of(project.getWorkspaceType()),
+          workspace.getId(),
+          Optional.empty(),
           project.getId(),
           project.getName(),
           Optional.empty(), // UAC will populate the owner ID
@@ -217,7 +295,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return insertProject(project, userInfo);
+        return insertProject(project, workspaceName, userInfo);
       } else {
         throw ex;
       }
@@ -225,20 +303,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   }
 
   @Override
-  public Project updateProjectName(String projectId, String projectName)
+  public Project updateProjectName(UserInfo userInfo, String projectId, String projectName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, null);
+      checkIfEntityAlreadyExists(session, workspace, projectName);
+
       ProjectEntity projectEntity =
           session.load(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
-
-      Project project =
-          Project.newBuilder()
-              .setName(projectName)
-              .setWorkspaceId(projectEntity.getWorkspace())
-              .setWorkspaceTypeValue(projectEntity.getWorkspace_type())
-              .build();
-      checkIfEntityAlreadyExists(session, project);
-
       projectEntity.setName(projectName);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();
@@ -248,7 +320,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       return projectEntity.getProtoObject(roleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return updateProjectName(projectId, projectName);
+        return updateProjectName(userInfo, projectId, projectName);
       } else {
         throw ex;
       }
@@ -664,7 +736,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
     // cloned project
     Project newProject = copyProjectAndUpdateDetails(srcProject, newOwner);
-    insertProject(newProject, newOwner);
+    insertProject(newProject, authService.getUsernameFromUserInfo(newOwner), newOwner);
     newProject = getProjectByID(newProject.getId());
 
     // Deep Copy Experiments
@@ -798,13 +870,17 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
   @Override
   public Project setProjectShortName(String projectId, String projectShortName, UserInfo userInfo)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery(GET_PROJECT_BY_SHORT_NAME_AND_OWNER_HQL);
+      List<String> accessibleProjectIds =
+          roleService.getSelfDirectlyAllowedResources(
+              ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
+
+      Query query = session.createQuery(GET_PROJECT_BY_SHORT_NAME_HQL);
       query.setParameter("projectShortName", projectShortName);
-      query.setParameter("vertaId", authService.getVertaIdFromUserInfo(userInfo));
-      ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
-      if (projectEntity != null) {
+      query.setParameterList("projectIds", accessibleProjectIds);
+      List<ProjectEntity> projectEntities = query.list();
+      if (!projectEntities.isEmpty()) {
         Status status =
             Status.newBuilder()
                 .setCode(Code.ALREADY_EXISTS_VALUE)
@@ -815,7 +891,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       query = session.createQuery(GET_PROJECT_BY_ID_HQL);
       query.setParameter("id", projectId);
-      projectEntity = (ProjectEntity) query.uniqueResult();
+      ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       projectEntity.setShort_name(projectShortName);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();
@@ -861,42 +937,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   }
 
   @Override
-  public List<Project> getProjectsByBatchIds(List<String> projectIds)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      List<ProjectEntity> projectEntities = getProjectEntityByBatchIds(session, projectIds);
-      LOGGER.debug("Project by Ids getting successfully");
-      return RdbmsUtils.convertProjectsFromProjectEntityList(roleService, projectEntities);
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return getProjectsByBatchIds(projectIds);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private List<ProjectEntity> getProjectEntityByBatchIds(Session session, List<String> projectIds) {
-    Query query = session.createQuery(GET_PROJECT_BY_IDS_HQL);
-    query.setParameterList("ids", projectIds);
-    final List<ProjectEntity> projectEntities = query.list();
-    // TODO: remove UAC fields from the MDB protobuf representation?
-    return projectEntities.stream()
-        .map(
-            projectEntity -> {
-              GetResourcesResponseItem resourceItem =
-                  roleService.getEntityResource(
-                      projectEntity.getId(), ModelDBServiceResourceTypes.PROJECT);
-              projectEntity.setProjectVisibility(resourceItem.getVisibility());
-              projectEntity.setWorkspaceServiceId(resourceItem.getWorkspaceId());
-              projectEntity.setOwner(String.valueOf(resourceItem.getOwnerId()));
-              return projectEntity;
-            })
-        .collect(Collectors.toList());
-  }
-
-  @Override
   public ProjectPaginationDTO findProjects(
       FindProjects queryParameters,
       CollaboratorBase host,
@@ -905,12 +945,55 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
-      List<String> accessibleProjectIds =
-          roleService.getAccessibleResourceIds(
-              host,
-              new CollaboratorUser(authService, currentLoginUserInfo),
-              ModelDBServiceResourceTypes.PROJECT,
-              queryParameters.getProjectIdsList());
+      CriteriaBuilder builder = session.getCriteriaBuilder();
+      // Using FROM and JOIN
+      CriteriaQuery<ProjectEntity> criteriaQuery = builder.createQuery(ProjectEntity.class);
+      Root<ProjectEntity> projectRoot = criteriaQuery.from(ProjectEntity.class);
+      projectRoot.alias("pr");
+      List<Predicate> finalPredicatesList = new ArrayList<>();
+
+      Set<String> accessibleProjectIds = new HashSet<>();
+      String workspaceName = queryParameters.getWorkspaceName();
+      if (!workspaceName.isEmpty()
+          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+            roleService.getResourceItems(
+                null,
+                !queryParameters.getProjectIdsList().isEmpty()
+                    ? new HashSet<>(queryParameters.getProjectIdsList())
+                    : Collections.emptySet(),
+                ModelDBServiceResourceTypes.PROJECT);
+        accessibleProjectIds =
+            accessibleAllWorkspaceItems.stream()
+                .map(GetResourcesResponseItem::getResourceId)
+                .collect(Collectors.toSet());
+
+        List<String> orgWorkspaceIds =
+            roleService.listMyOrganizations().stream()
+                .map(Organization::getWorkspaceId)
+                .collect(Collectors.toList());
+        for (GetResourcesResponseItem item : accessibleAllWorkspaceItems) {
+          if (orgWorkspaceIds.contains(String.valueOf(item.getWorkspaceId()))) {
+            accessibleProjectIds.remove(item.getResourceId());
+          }
+        }
+      } else {
+        UserInfo userInfo =
+            host != null && host.isUser()
+                ? (UserInfo) host.getCollaboratorMessage()
+                : currentLoginUserInfo;
+        if (userInfo != null) {
+          accessibleProjectIds =
+              ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
+                  roleService,
+                  !queryParameters.getProjectIdsList().isEmpty()
+                      ? new HashSet<>(queryParameters.getProjectIdsList())
+                      : Collections.emptySet(),
+                  workspaceName,
+                  userInfo,
+                  ModelDBServiceResourceTypes.PROJECT);
+        }
+      }
 
       if (accessibleProjectIds.isEmpty() && roleService.IsImplemented()) {
         LOGGER.debug("Accessible Project Ids not found, size 0");
@@ -920,60 +1003,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         return projectPaginationDTO;
       }
 
-      CriteriaBuilder builder = session.getCriteriaBuilder();
-      // Using FROM and JOIN
-      CriteriaQuery<ProjectEntity> criteriaQuery = builder.createQuery(ProjectEntity.class);
-      Root<ProjectEntity> projectRoot = criteriaQuery.from(ProjectEntity.class);
-      projectRoot.alias("pr");
-      List<Predicate> finalPredicatesList = new ArrayList<>();
-
       List<KeyValueQuery> predicates = new ArrayList<>(queryParameters.getPredicatesList());
       for (KeyValueQuery predicate : predicates) {
         // Validate if current user has access to the entity or not where predicate key has an id
         RdbmsUtils.validatePredicates(
-            ModelDBConstants.PROJECTS, accessibleProjectIds, predicate, roleService);
-      }
-
-      String workspaceName = queryParameters.getWorkspaceName();
-      if (!workspaceName.isEmpty()
-          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
-        accessibleProjectIds =
-            roleService.getSelfDirectlyAllowedResources(
-                ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
-        if (!queryParameters.getProjectIdsList().isEmpty()) {
-          accessibleProjectIds.retainAll(queryParameters.getProjectIdsList());
-        }
-        // user is in his workspace and has no projects, return empty
-        if (accessibleProjectIds.isEmpty()) {
-          ProjectPaginationDTO projectPaginationDTO = new ProjectPaginationDTO();
-          projectPaginationDTO.setProjects(Collections.emptyList());
-          projectPaginationDTO.setTotalRecords(0L);
-          return projectPaginationDTO;
-        }
-        List<String> orgIds =
-            roleService.listMyOrganizations().stream()
-                .map(Organization::getId)
-                .collect(Collectors.toList());
-        if (!orgIds.isEmpty()) {
-          finalPredicatesList.add(
-              builder.not(
-                  builder.and(
-                      projectRoot.get(ModelDBConstants.WORKSPACE).in(orgIds),
-                      builder.equal(
-                          projectRoot.get(ModelDBConstants.WORKSPACE_TYPE),
-                          WorkspaceType.ORGANIZATION_VALUE))));
-        }
-      } else {
-        if (visibility.equals(ResourceVisibility.PRIVATE)) {
-          RdbmsUtils.getWorkspacePredicates(
-              host,
-              currentLoginUserInfo,
-              builder,
-              projectRoot,
-              finalPredicatesList,
-              workspaceName,
-              roleService);
-        }
+            ModelDBConstants.PROJECTS,
+            new ArrayList<>(accessibleProjectIds),
+            predicate,
+            roleService);
       }
 
       if (!accessibleProjectIds.isEmpty()) {
@@ -1174,86 +1211,52 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
   }
 
-  @Override
-  public Map<String, String> getOwnersByProjectIds(List<String> projectIds) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery(GET_PROJECT_BY_IDS_HQL);
-      query.setParameterList("ids", projectIds);
-
-      @SuppressWarnings("unchecked")
-      List<ProjectEntity> projectEntities = query.list();
-      LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
-      Map<String, String> projectOwnersMap = new HashMap<>();
-      for (ProjectEntity projectEntity : projectEntities) {
-        projectOwnersMap.put(projectEntity.getId(), projectEntity.getOwner());
-      }
-      return projectOwnersMap;
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return getOwnersByProjectIds(projectIds);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
   /**
    * returns a list of projectIds accessible to the user passed as an argument within the workspace
    * passed as an argument. For no auth returns the list of non deleted projects
    */
   @Override
-  public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
-      throws InvalidProtocolBufferException {
+  public List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo) {
     if (!roleService.IsImplemented()) {
       try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
         return session.createQuery(NON_DELETED_PROJECT_IDS).list();
       }
     } else {
+      Set<String> accessibleProjectIds;
+      // in personal workspace show projects directly shared
+      if (workspaceName != null
+          && !workspaceName.isEmpty()
+          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        LOGGER.debug("Workspace and current login user match");
+        List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+            roleService.getResourceItems(
+                null, Collections.emptySet(), ModelDBServiceResourceTypes.PROJECT);
+        accessibleProjectIds =
+            accessibleAllWorkspaceItems.stream()
+                .map(GetResourcesResponseItem::getResourceId)
+                .collect(Collectors.toSet());
+      } else {
+        // get list of accessible projects
+        accessibleProjectIds =
+            ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
+                roleService,
+                Collections.emptySet(),
+                workspaceName,
+                currentLoginUserInfo,
+                ModelDBServiceResourceTypes.PROJECT);
+      }
 
-      // get list of accessible projects
-      @SuppressWarnings("unchecked")
-      List<String> accessibleProjectIds =
-          roleService.getAccessibleResourceIds(
-              null,
-              new CollaboratorUser(authService, currentLoginUserInfo),
-              ModelDBServiceResourceTypes.PROJECT,
-              Collections.EMPTY_LIST);
-      LOGGER.debug(
-          "accessible Project Ids in function getWorkspaceProjectIDs : {}", accessibleProjectIds);
+      LOGGER.debug("accessibleAllWorkspaceProjectIds : {}", accessibleProjectIds);
 
-      // resolve workspace
-      WorkspaceDTO workspaceDTO =
-          roleService.getWorkspaceDTOByWorkspaceName(currentLoginUserInfo, workspaceName);
-
-      List<String> resultProjects = new LinkedList<String>();
       try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
         @SuppressWarnings("unchecked")
-        Query<String> query = session.createQuery(IDS_FILTERED_BY_WORKSPACE);
+        Query<String> query = session.createQuery(NON_DELETED_PROJECT_IDS_BY_IDS);
         query.setParameterList(ModelDBConstants.PROJECT_IDS, accessibleProjectIds);
-        query.setParameter(ModelDBConstants.WORKSPACE, workspaceDTO.getWorkspaceId());
-        query.setParameter(
-            ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
-        resultProjects = query.list();
-
-        // in personal workspace show projects directly shared
-        if (workspaceDTO
-            .getWorkspaceName()
-            .equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
-          LOGGER.debug("Workspace and current login user match");
-          List<String> directlySharedProjects =
-              roleService.getSelfDirectlyAllowedResources(
-                  ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
-          query = session.createQuery(NON_DELETED_PROJECT_IDS_BY_IDS);
-          query.setParameterList(ModelDBConstants.PROJECT_IDS, directlySharedProjects);
-          resultProjects.addAll(query.list());
-          LOGGER.debug(
-              "accessible directlySharedProjects Ids in function getWorkspaceProjectIDs : {}",
-              directlySharedProjects);
-        }
+        List<String> resultProjects = query.list();
+        LOGGER.debug(
+            "Total accessible project Ids in function getWorkspaceProjectIDs : {}", resultProjects);
+        return resultProjects;
       }
-      LOGGER.debug(
-          "Total accessible project Ids in function getWorkspaceProjectIDs : {}", resultProjects);
-      return resultProjects;
     }
   }
 

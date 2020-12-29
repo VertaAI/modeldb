@@ -13,6 +13,7 @@ import io.grpc.Metadata;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface RoleService {
 
@@ -118,6 +119,16 @@ public interface RoleService {
    */
   WorkspaceDTO getWorkspaceDTOByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
 
+  /**
+   * from the name for workspace, get the workspace id and type. if no workspace is present assume
+   * user's personal workspace
+   *
+   * @param currentLoginUserInfo : current login userInfo
+   * @param workspaceName : orgName or username
+   * @return {@link Workspace} : workspace
+   */
+  Workspace getWorkspaceByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
+
   WorkspaceDTO getWorkspaceDTOByWorkspaceId(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
 
@@ -126,7 +137,10 @@ public interface RoleService {
   GetResourcesResponseItem getEntityResource(
       String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo);
+  List<GetResourcesResponseItem> getResourceItems(
+      Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   boolean deleteResources(Resources resources);
 

@@ -3,6 +3,7 @@ package ai.verta.modeldb.authservice;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.dto.UserInfoPaginationDTO;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +22,8 @@ public interface AuthService {
 
   String getUsernameFromUserInfo(UserInfo userInfo);
 
+  Long getWorkspaceIdFromUserInfo(UserInfo userInfo);
+
   /**
    * returns if the vertaID passed matches the current user
    *
@@ -30,4 +33,8 @@ public interface AuthService {
   boolean isCurrentUser(String vertaID);
 
   UserInfoPaginationDTO getFuzzyUserInfoList(String username_char);
+
+  Workspace workspaceIdByName(boolean retry, String workspaceName);
+
+  Workspace workspaceById(boolean retry, String workspaceId);
 }
