@@ -293,10 +293,10 @@ public class AuthServiceUtils implements AuthService {
   }
 
   @Override
-  public Workspace workspaceById(boolean retry, String workspaceId) {
+  public Workspace workspaceById(boolean retry, Long workspaceId) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
       GetWorkspaceById.Builder getWorkspaceById =
-          GetWorkspaceById.newBuilder().setId(Long.parseLong(workspaceId));
+          GetWorkspaceById.newBuilder().setId(workspaceId);
 
       LOGGER.trace("get workspaceById: ID : {}", workspaceId);
       // Get the user info from the Context
