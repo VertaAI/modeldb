@@ -9,6 +9,7 @@ import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.ArtifactStoreMapping;
@@ -199,7 +200,7 @@ public class ModelDBHibernateUtil {
         setDatabaseProperties(app, databasePropMap);
 
         // Initialize background utils count
-        ModelDBUtils.initializeBackgroundUtilsCount();
+        CommonUtils.initializeBackgroundUtilsCount();
 
         // Hibernate settings equivalent to hibernate.cfg.xml's properties
         Configuration configuration = new Configuration();
@@ -488,12 +489,9 @@ public class ModelDBHibernateUtil {
 
       // Initialize Liquibase and run the update
       Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
-      String basePath = System.getProperty(ModelDBConstants.userDir) + "/core";
-      String rootPath =
-          System.getProperty(ModelDBConstants.userDir)
-              + "\\src\\main\\resources\\liquibase\\db-changelog-master.xml";
-      Liquibase liquibase =
-          new Liquibase(rootPath, new FileSystemResourceAccessor(basePath), database);
+      String rootPath = System.getProperty(ModelDBConstants.userDir);
+      rootPath = rootPath + "\\src\\main\\resources\\liquibase\\db-changelog-master.xml";
+      Liquibase liquibase = new Liquibase(rootPath, new FileSystemResourceAccessor(), database);
 
       boolean liquibaseExecuted = false;
       while (!liquibaseExecuted) {
@@ -713,7 +711,7 @@ public class ModelDBHibernateUtil {
     if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
       new Thread(
               () -> {
-                ModelDBUtils.registeredBackgroundUtilsCount();
+                CommonUtils.registeredBackgroundUtilsCount();
                 int index = 0;
                 try {
                   CompletableFuture<Boolean>[] completableFutures =
@@ -775,7 +773,7 @@ public class ModelDBHibernateUtil {
                   LOGGER.warn(
                       "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
                 } finally {
-                  ModelDBUtils.unregisteredBackgroundUtilsCount();
+                  CommonUtils.unregisteredBackgroundUtilsCount();
                 }
               })
           .start();
@@ -786,7 +784,7 @@ public class ModelDBHibernateUtil {
         Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
         if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
           try {
-            ModelDBUtils.registeredBackgroundUtilsCount();
+            CommonUtils.registeredBackgroundUtilsCount();
             boolean isLocked =
                 checkMigrationLockedStatus(
                     migrationName, rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
@@ -803,7 +801,7 @@ public class ModelDBHibernateUtil {
           } catch (SQLException | DatabaseException e) {
             LOGGER.error("Error on migration: {}", e.getMessage());
           } finally {
-            ModelDBUtils.unregisteredBackgroundUtilsCount();
+            CommonUtils.unregisteredBackgroundUtilsCount();
           }
         }
       }

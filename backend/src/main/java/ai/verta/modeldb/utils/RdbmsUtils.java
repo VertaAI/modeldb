@@ -54,8 +54,10 @@ import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -71,6 +73,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -1429,7 +1432,8 @@ public class RdbmsUtils {
       CriteriaBuilder builder,
       CriteriaQuery<?> criteriaQuery,
       Root<?> entityRootPath,
-      AuthService authService)
+      AuthService authService,
+      RoleService roleService)
       throws InvalidProtocolBufferException, ModelDBException {
     List<Predicate> finalPredicatesList = new ArrayList<>();
     if (!predicates.isEmpty()) {
@@ -1808,7 +1812,8 @@ public class RdbmsUtils {
               if (key.equalsIgnoreCase("owner")
                   && (operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
                 Predicate fuzzySearchPredicate =
-                    getFuzzyUsersQueryPredicate(authService, builder, entityRootPath, predicate);
+                    getFuzzyUsersQueryPredicate(
+                        authService, roleService, builder, entityRootPath, predicate);
                 if (fuzzySearchPredicate != null) {
                   keyValuePredicates.add(fuzzySearchPredicate);
                 } else {
@@ -1865,6 +1870,7 @@ public class RdbmsUtils {
 
   private static Predicate getFuzzyUsersQueryPredicate(
       AuthService authService,
+      RoleService roleService,
       CriteriaBuilder builder,
       Root<?> entityRootPath,
       KeyValueQuery requestedPredicate) {
@@ -1872,15 +1878,26 @@ public class RdbmsUtils {
       Operator operator = requestedPredicate.getOperator();
       List<UserInfo> userInfoList = getFuzzyUserInfos(authService, requestedPredicate);
       if (userInfoList != null && !userInfoList.isEmpty()) {
-        Expression<String> exp = entityRootPath.get(requestedPredicate.getKey());
-        List<String> vertaIds =
-            userInfoList.stream()
-                .map(authService::getVertaIdFromUserInfo)
-                .collect(Collectors.toList());
+        Set<String> projectIdSet = new HashSet<>();
+        for (UserInfo userInfo : userInfoList) {
+          List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+              roleService.getResourceItems(
+                  Workspace.newBuilder()
+                      .setId(authService.getWorkspaceIdFromUserInfo(userInfo))
+                      .build(),
+                  Collections.emptySet(),
+                  ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+          projectIdSet.addAll(
+              accessibleAllWorkspaceItems.stream()
+                  .map(GetResourcesResponseItem::getResourceId)
+                  .collect(Collectors.toSet()));
+        }
+
+        Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
         if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
-          return builder.not(exp.in(vertaIds));
+          return builder.not(exp.in(projectIdSet));
         } else {
-          return exp.in(vertaIds);
+          return exp.in(projectIdSet);
         }
       }
     } else {

@@ -900,7 +900,13 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
-                entityName, predicates, builder, criteriaQuery, experimentRoot, authService);
+                entityName,
+                predicates,
+                builder,
+                criteriaQuery,
+                experimentRoot,
+                authService,
+                roleService);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
