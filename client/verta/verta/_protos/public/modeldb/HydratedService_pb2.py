@@ -30,7 +30,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb',
   syntax='proto3',
   serialized_options=b'P\001Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb',
-  serialized_pb=b'\n\x1dmodeldb/HydratedService.proto\x12\x10\x61i.verta.modeldb\x1a\x1cgoogle/api/annotations.proto\x1a\x14uac/UACService.proto\x1a\x16uac/Organization.proto\x1a\x0euac/Team.proto\x1a\x15modeldb/Comment.proto\x1a\x1cmodeldb/ProjectService.proto\x1a\x1fmodeldb/ExperimentService.proto\x1a\"modeldb/ExperimentRunService.proto\x1a\x1cmodeldb/DatasetService.proto\x1a#modeldb/DatasetVersionService.proto\x1a\x15uac/RoleService.proto\x1a\x1a\x63ommon/CommonService.proto\"\xdc\x01\n\x13GetHydratedProjects\x12\x13\n\x0bpage_number\x18\x01 \x01(\x05\x12\x12\n\npage_limit\x18\x02 \x01(\x05\x12\x11\n\tascending\x18\x03 \x01(\x08\x12\x10\n\x08sort_key\x18\x04 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x05 \x01(\t\x1a_\n\x08Response\x12<\n\x11hydrated_projects\x18\x01 \x03(\x0b\x32!.ai.verta.modeldb.HydratedProject\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xa1\x03\n\x14\x43ollaboratorUserInfo\x12\x38\n\x16\x63ollaborator_user_info\x18\x01 \x01(\x0b\x32\x16.ai.verta.uac.UserInfoH\x00\x12?\n\x19\x63ollaborator_organization\x18\x03 \x01(\x0b\x32\x1a.ai.verta.uac.OrganizationH\x00\x12/\n\x11\x63ollaborator_team\x18\x04 \x01(\x0b\x32\x12.ai.verta.uac.TeamH\x00\x12Q\n\x11\x63ollaborator_type\x18\x02 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x38\n\ncan_deploy\x18\x08 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12@\n\x0b\x65ntity_type\x18\t \x01(\x0e\x32+.ai.verta.common.EntitiesEnum.EntitiesTypesB\x0e\n\x0c\x63ollaborator\"\xe6\x01\n\x0fHydratedProject\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\x12G\n\x17\x63ollaborator_user_infos\x18\x02 \x03(\x0b\x32&.ai.verta.modeldb.CollaboratorUserInfo\x12/\n\x0fowner_user_info\x18\x03 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12-\n\x0f\x61llowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\"m\n\x16GetHydratedProjectById\x12\n\n\x02id\x18\x01 \x01(\t\x1aG\n\x08Response\x12;\n\x10hydrated_project\x18\x01 \x01(\x0b\x32!.ai.verta.modeldb.HydratedProject\"\xa6\x01\n\x12HydratedExperiment\x12\x30\n\nexperiment\x18\x01 \x01(\x0b\x32\x1c.ai.verta.modeldb.Experiment\x12/\n\x0fowner_user_info\x18\x02 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12-\n\x0f\x61llowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\xec\x01\n!GetHydratedExperimentsByProjectId\x12\x12\n\nproject_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a\x65\n\x08Response\x12\x42\n\x14hydrated_experiments\x18\x01 \x03(\x0b\x32$.ai.verta.modeldb.HydratedExperiment\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x8f\x02\n\x15HydratedExperimentRun\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12+\n\x08\x63omments\x18\x02 \x03(\x0b\x32\x19.ai.verta.modeldb.Comment\x12/\n\x0fowner_user_info\x18\x03 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12\x30\n\nexperiment\x18\x04 \x01(\x0b\x32\x1c.ai.verta.modeldb.Experiment\x12-\n\x0f\x61llowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\xf6\x01\n$GetHydratedExperimentRunsByProjectId\x12\x12\n\nproject_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1al\n\x08Response\x12I\n\x18hydrated_experiment_runs\x18\x01 \x03(\x0b\x32\'.ai.verta.modeldb.HydratedExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x80\x01\n\x1cGetHydratedExperimentRunById\x12\n\n\x02id\x18\x01 \x01(\t\x1aT\n\x08Response\x12H\n\x17hydrated_experiment_run\x18\x01 \x01(\x0b\x32\'.ai.verta.modeldb.HydratedExperimentRun\"\x87\x01\n#AdvancedQueryExperimentRunsResponse\x12I\n\x18hydrated_experiment_runs\x18\x01 \x03(\x0b\x32\'.ai.verta.modeldb.HydratedExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"}\n AdvancedQueryExperimentsResponse\x12\x42\n\x14hydrated_experiments\x18\x01 \x03(\x0b\x32$.ai.verta.modeldb.HydratedExperiment\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xa5\x01\n\x1a\x46indHydratedProjectsByUser\x12\x35\n\rfind_projects\x18\x01 \x01(\x0b\x32\x1e.ai.verta.modeldb.FindProjects\x12\x0f\n\x05\x65mail\x18\x02 \x01(\tH\x00\x12\x16\n\x08username\x18\x03 \x01(\tB\x02\x18\x01H\x00\x12\x12\n\x08verta_id\x18\x04 \x01(\tH\x00\x42\x13\n\x11host_user_details\"\x8e\x01\n\"FindHydratedProjectsByOrganization\x12\x35\n\rfind_projects\x18\x01 \x01(\x0b\x32\x1e.ai.verta.modeldb.FindProjects\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x12\x0c\n\x02id\x18\x04 \x01(\tH\x00\x42\x13\n\x11host_organization\"\x8e\x01\n\x1a\x46indHydratedProjectsByTeam\x12\x35\n\rfind_projects\x18\x01 \x01(\x0b\x32\x1e.ai.verta.modeldb.FindProjects\x12\x0e\n\x06org_id\x18\x02 \x01(\t\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x12\x0c\n\x02id\x18\x04 \x01(\tH\x00\x42\x0b\n\thost_team\"\x8e\x01\n\"FindHydratedDatasetsByOrganization\x12\x35\n\rfind_datasets\x18\x01 \x01(\x0b\x32\x1e.ai.verta.modeldb.FindDatasets\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x12\x0c\n\x02id\x18\x04 \x01(\tH\x00\x42\x13\n\x11host_organization\"\x8e\x01\n\x1a\x46indHydratedDatasetsByTeam\x12\x35\n\rfind_datasets\x18\x01 \x01(\x0b\x32\x1e.ai.verta.modeldb.FindDatasets\x12\x0e\n\x06org_id\x18\x02 \x01(\t\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x12\x0c\n\x02id\x18\x04 \x01(\tH\x00\x42\x0b\n\thost_team\"t\n\x1d\x41\x64vancedQueryProjectsResponse\x12<\n\x11hydrated_projects\x18\x01 \x03(\x0b\x32!.ai.verta.modeldb.HydratedProject\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xe6\x01\n\x0fHydratedDataset\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\x12G\n\x17\x63ollaborator_user_infos\x18\x02 \x03(\x0b\x32&.ai.verta.modeldb.CollaboratorUserInfo\x12/\n\x0fowner_user_info\x18\x03 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12-\n\x0f\x61llowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\"t\n\x1d\x41\x64vancedQueryDatasetsResponse\x12<\n\x11hydrated_datasets\x18\x01 \x03(\x0b\x32!.ai.verta.modeldb.HydratedDataset\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xb3\x01\n\x16HydratedDatasetVersion\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\x12/\n\x0fowner_user_info\x18\x03 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12-\n\x0f\x61llowed_actions\x18\x04 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\x8a\x01\n$AdvancedQueryDatasetVersionsResponse\x12K\n\x19hydrated_dataset_versions\x18\x01 \x03(\x0b\x32(.ai.verta.modeldb.HydratedDatasetVersion\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xd7\x01\n\x18GetHydratedDatasetByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\x1a\x94\x01\n\x08Response\x12\x43\n\x18hydrated_dataset_by_user\x18\x01 \x01(\x0b\x32!.ai.verta.modeldb.HydratedDataset\x12\x43\n\x18shared_hydrated_datasets\x18\x02 \x03(\x0b\x32!.ai.verta.modeldb.HydratedDataset\"\xe3\x01\n\x1eGetHydratedDatasetsByProjectId\x12\x12\n\nproject_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a_\n\x08Response\x12<\n\x11hydrated_datasets\x18\x01 \x03(\x0b\x32!.ai.verta.modeldb.HydratedDataset\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x32\xbb\x1b\n\x0fHydratedService\x12\x9a\x01\n\x13getHydratedProjects\x12%.ai.verta.modeldb.GetHydratedProjects\x1a..ai.verta.modeldb.GetHydratedProjects.Response\",\x82\xd3\xe4\x93\x02&\x12$/v1/hydratedData/getHydratedProjects\x12\xa6\x01\n\x16getHydratedProjectById\x12(.ai.verta.modeldb.GetHydratedProjectById\x1a\x31.ai.verta.modeldb.GetHydratedProjectById.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/hydratedData/getHydratedProjectById\x12\xd2\x01\n!getHydratedExperimentsByProjectId\x12\x33.ai.verta.modeldb.GetHydratedExperimentsByProjectId\x1a<.ai.verta.modeldb.GetHydratedExperimentsByProjectId.Response\":\x82\xd3\xe4\x93\x02\x34\x12\x32/v1/hydratedData/getHydratedExperimentsByProjectId\x12\xda\x01\n\"getHydratedExperimentRunsInProject\x12\x36.ai.verta.modeldb.GetHydratedExperimentRunsByProjectId\x1a?.ai.verta.modeldb.GetHydratedExperimentRunsByProjectId.Response\";\x82\xd3\xe4\x93\x02\x35\x12\x33/v1/hydratedData/getHydratedExperimentRunsInProject\x12\xbe\x01\n\x1cgetHydratedExperimentRunById\x12..ai.verta.modeldb.GetHydratedExperimentRunById\x1a\x37.ai.verta.modeldb.GetHydratedExperimentRunById.Response\"5\x82\xd3\xe4\x93\x02/\x12-/v1/hydratedData/getHydratedExperimentRunById\x12\xb1\x01\n\x1a\x66indHydratedExperimentRuns\x12$.ai.verta.modeldb.FindExperimentRuns\x1a\x35.ai.verta.modeldb.AdvancedQueryExperimentRunsResponse\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/hydratedData/findHydratedExperimentRuns:\x01*\x12\xae\x01\n\x1asortHydratedExperimentRuns\x12$.ai.verta.modeldb.SortExperimentRuns\x1a\x35.ai.verta.modeldb.AdvancedQueryExperimentRunsResponse\"3\x82\xd3\xe4\x93\x02-\x12+/v1/hydratedData/sortHydratedExperimentRuns\x12\xb9\x01\n\x1cgetTopHydratedExperimentRuns\x12+.ai.verta.modeldb.TopExperimentRunsSelector\x1a\x35.ai.verta.modeldb.AdvancedQueryExperimentRunsResponse\"5\x82\xd3\xe4\x93\x02/\x12-/v1/hydratedData/getTopHydratedExperimentRuns\x12\xa5\x01\n\x17\x66indHydratedExperiments\x12!.ai.verta.modeldb.FindExperiments\x1a\x32.ai.verta.modeldb.AdvancedQueryExperimentsResponse\"3\x82\xd3\xe4\x93\x02-\"(/v1/hydratedData/findHydratedExperiments:\x01*\x12\x99\x01\n\x14\x66indHydratedProjects\x12\x1e.ai.verta.modeldb.FindProjects\x1a/.ai.verta.modeldb.AdvancedQueryProjectsResponse\"0\x82\xd3\xe4\x93\x02*\"%/v1/hydratedData/findHydratedProjects:\x01*\x12\xb3\x01\n\x1a\x66indHydratedProjectsByUser\x12,.ai.verta.modeldb.FindHydratedProjectsByUser\x1a/.ai.verta.modeldb.AdvancedQueryProjectsResponse\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/hydratedData/findHydratedProjectsByUser:\x01*\x12\xcb\x01\n\"findHydratedProjectsByOrganization\x12\x34.ai.verta.modeldb.FindHydratedProjectsByOrganization\x1a/.ai.verta.modeldb.AdvancedQueryProjectsResponse\">\x82\xd3\xe4\x93\x02\x38\"3/v1/hydratedData/findHydratedProjectsByOrganization:\x01*\x12\xb3\x01\n\x1a\x66indHydratedProjectsByTeam\x12,.ai.verta.modeldb.FindHydratedProjectsByTeam\x1a/.ai.verta.modeldb.AdvancedQueryProjectsResponse\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/hydratedData/findHydratedProjectsByTeam:\x01*\x12\xcb\x01\n\"findHydratedDatasetsByOrganization\x12\x34.ai.verta.modeldb.FindHydratedDatasetsByOrganization\x1a/.ai.verta.modeldb.AdvancedQueryDatasetsResponse\">\x82\xd3\xe4\x93\x02\x38\"3/v1/hydratedData/findHydratedDatasetsByOrganization:\x01*\x12\xb3\x01\n\x1a\x66indHydratedDatasetsByTeam\x12,.ai.verta.modeldb.FindHydratedDatasetsByTeam\x1a/.ai.verta.modeldb.AdvancedQueryDatasetsResponse\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/hydratedData/findHydratedDatasetsByTeam:\x01*\x12\x99\x01\n\x14\x66indHydratedDatasets\x12\x1e.ai.verta.modeldb.FindDatasets\x1a/.ai.verta.modeldb.AdvancedQueryDatasetsResponse\"0\x82\xd3\xe4\x93\x02*\"%/v1/hydratedData/findHydratedDatasets:\x01*\x12\xb5\x01\n\x1b\x66indHydratedDatasetVersions\x12%.ai.verta.modeldb.FindDatasetVersions\x1a\x36.ai.verta.modeldb.AdvancedQueryDatasetVersionsResponse\"7\x82\xd3\xe4\x93\x02\x31\",/v1/hydratedData/findHydratedDatasetVersions:\x01*\x12\xae\x01\n\x18getHydratedDatasetByName\x12*.ai.verta.modeldb.GetHydratedDatasetByName\x1a\x33.ai.verta.modeldb.GetHydratedDatasetByName.Response\"1\x82\xd3\xe4\x93\x02+\x12)/v1/hydratedData/getHydratedDatasetByName\x12\xc6\x01\n\x1egetHydratedDatasetsByProjectId\x12\x30.ai.verta.modeldb.GetHydratedDatasetsByProjectId\x1a\x39.ai.verta.modeldb.GetHydratedDatasetsByProjectId.Response\"7\x82\xd3\xe4\x93\x02\x31\x12//v1/hydratedData/getHydratedDatasetsByProjectIdBBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
+  serialized_pb=b'\n\x1dmodeldb/HydratedService.proto\x12\x10\x61i.verta.modeldb\x1a\x1cgoogle/api/annotations.proto\x1a\x14uac/UACService.proto\x1a\x16uac/Organization.proto\x1a\x0euac/Team.proto\x1a\x15modeldb/Comment.proto\x1a\x1cmodeldb/ProjectService.proto\x1a\x1fmodeldb/ExperimentService.proto\x1a\"modeldb/ExperimentRunService.proto\x1a\x1cmodeldb/DatasetService.proto\x1a#modeldb/DatasetVersionService.proto\x1a\x15uac/RoleService.proto\x1a\x1a\x63ommon/CommonService.proto\"\xdc\x01\n\x13GetHydratedProjects\x12\x13\n\x0bpage_number\x18\x01 \x01(\x05\x12\x12\n\npage_limit\x18\x02 \x01(\x05\x12\x11\n\tascending\x18\x03 \x01(\x08\x12\x10\n\x08sort_key\x18\x04 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x05 \x01(\t\x1a_\n\x08Response\x12<\n\x11hydrated_projects\x18\x01 \x03(\x0b\x32!.ai.verta.modeldb.HydratedProject\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xa1\x03\n\x14\x43ollaboratorUserInfo\x12\x38\n\x16\x63ollaborator_user_info\x18\x01 \x01(\x0b\x32\x16.ai.verta.uac.UserInfoH\x00\x12?\n\x19\x63ollaborator_organization\x18\x03 \x01(\x0b\x32\x1a.ai.verta.uac.OrganizationH\x00\x12/\n\x11\x63ollaborator_team\x18\x04 \x01(\x0b\x32\x12.ai.verta.uac.TeamH\x00\x12Q\n\x11\x63ollaborator_type\x18\x02 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x38\n\ncan_deploy\x18\x08 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12@\n\x0b\x65ntity_type\x18\t \x01(\x0e\x32+.ai.verta.common.EntitiesEnum.EntitiesTypesB\x0e\n\x0c\x63ollaborator\"\xe6\x01\n\x0fHydratedProject\x12*\n\x07project\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Project\x12G\n\x17\x63ollaborator_user_infos\x18\x02 \x03(\x0b\x32&.ai.verta.modeldb.CollaboratorUserInfo\x12/\n\x0fowner_user_info\x18\x03 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12-\n\x0f\x61llowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\"m\n\x16GetHydratedProjectById\x12\n\n\x02id\x18\x01 \x01(\t\x1aG\n\x08Response\x12;\n\x10hydrated_project\x18\x01 \x01(\x0b\x32!.ai.verta.modeldb.HydratedProject\"\xa6\x01\n\x12HydratedExperiment\x12\x30\n\nexperiment\x18\x01 \x01(\x0b\x32\x1c.ai.verta.modeldb.Experiment\x12/\n\x0fowner_user_info\x18\x02 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12-\n\x0f\x61llowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\xec\x01\n!GetHydratedExperimentsByProjectId\x12\x12\n\nproject_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a\x65\n\x08Response\x12\x42\n\x14hydrated_experiments\x18\x01 \x03(\x0b\x32$.ai.verta.modeldb.HydratedExperiment\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x8f\x02\n\x15HydratedExperimentRun\x12\x37\n\x0e\x65xperiment_run\x18\x01 \x01(\x0b\x32\x1f.ai.verta.modeldb.ExperimentRun\x12+\n\x08\x63omments\x18\x02 \x03(\x0b\x32\x19.ai.verta.modeldb.Comment\x12/\n\x0fowner_user_info\x18\x03 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12\x30\n\nexperiment\x18\x04 \x01(\x0b\x32\x1c.ai.verta.modeldb.Experiment\x12-\n\x0f\x61llowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\xf6\x01\n$GetHydratedExperimentRunsByProjectId\x12\x12\n\nproject_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1al\n\x08Response\x12I\n\x18hydrated_experiment_runs\x18\x01 \x03(\x0b\x32\'.ai.verta.modeldb.HydratedExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x80\x01\n\x1cGetHydratedExperimentRunById\x12\n\n\x02id\x18\x01 \x01(\t\x1aT\n\x08Response\x12H\n\x17hydrated_experiment_run\x18\x01 \x01(\x0b\x32\'.ai.verta.modeldb.HydratedExperimentRun\"\x87\x01\n#AdvancedQueryExperimentRunsResponse\x12I\n\x18hydrated_experiment_runs\x18\x01 \x03(\x0b\x32\'.ai.verta.modeldb.HydratedExperimentRun\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"}\n AdvancedQueryExperimentsResponse\x12\x42\n\x14hydrated_experiments\x18\x01 \x03(\x0b\x32$.ai.verta.modeldb.HydratedExperiment\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xa5\x01\n\x1a\x46indHydratedProjectsByUser\x12\x35\n\rfind_projects\x18\x01 \x01(\x0b\x32\x1e.ai.verta.modeldb.FindProjects\x12\x0f\n\x05\x65mail\x18\x02 \x01(\tH\x00\x12\x16\n\x08username\x18\x03 \x01(\tB\x02\x18\x01H\x00\x12\x12\n\x08verta_id\x18\x04 \x01(\tH\x00\x42\x13\n\x11host_user_details\"\x8e\x01\n\"FindHydratedProjectsByOrganization\x12\x35\n\rfind_projects\x18\x01 \x01(\x0b\x32\x1e.ai.verta.modeldb.FindProjects\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x12\x0c\n\x02id\x18\x04 \x01(\tH\x00\x42\x13\n\x11host_organization\"\x8e\x01\n\x1a\x46indHydratedProjectsByTeam\x12\x35\n\rfind_projects\x18\x01 \x01(\x0b\x32\x1e.ai.verta.modeldb.FindProjects\x12\x0e\n\x06org_id\x18\x02 \x01(\t\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x12\x0c\n\x02id\x18\x04 \x01(\tH\x00\x42\x0b\n\thost_team\"\x8e\x01\n\"FindHydratedDatasetsByOrganization\x12\x35\n\rfind_datasets\x18\x01 \x01(\x0b\x32\x1e.ai.verta.modeldb.FindDatasets\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x12\x0c\n\x02id\x18\x04 \x01(\tH\x00\x42\x13\n\x11host_organization\"\x8e\x01\n\x1a\x46indHydratedDatasetsByTeam\x12\x35\n\rfind_datasets\x18\x01 \x01(\x0b\x32\x1e.ai.verta.modeldb.FindDatasets\x12\x0e\n\x06org_id\x18\x02 \x01(\t\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x12\x0c\n\x02id\x18\x04 \x01(\tH\x00\x42\x0b\n\thost_team\"t\n\x1d\x41\x64vancedQueryProjectsResponse\x12<\n\x11hydrated_projects\x18\x01 \x03(\x0b\x32!.ai.verta.modeldb.HydratedProject\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xe6\x01\n\x0fHydratedDataset\x12*\n\x07\x64\x61taset\x18\x01 \x01(\x0b\x32\x19.ai.verta.modeldb.Dataset\x12G\n\x17\x63ollaborator_user_infos\x18\x02 \x03(\x0b\x32&.ai.verta.modeldb.CollaboratorUserInfo\x12/\n\x0fowner_user_info\x18\x03 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12-\n\x0f\x61llowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\"t\n\x1d\x41\x64vancedQueryDatasetsResponse\x12<\n\x11hydrated_datasets\x18\x01 \x03(\x0b\x32!.ai.verta.modeldb.HydratedDataset\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xb3\x01\n\x16HydratedDatasetVersion\x12\x39\n\x0f\x64\x61taset_version\x18\x01 \x01(\x0b\x32 .ai.verta.modeldb.DatasetVersion\x12/\n\x0fowner_user_info\x18\x03 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12-\n\x0f\x61llowed_actions\x18\x04 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\x8a\x01\n$AdvancedQueryDatasetVersionsResponse\x12K\n\x19hydrated_dataset_versions\x18\x01 \x03(\x0b\x32(.ai.verta.modeldb.HydratedDatasetVersion\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xd7\x01\n\x18GetHydratedDatasetByName\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\x1a\x94\x01\n\x08Response\x12\x43\n\x18hydrated_dataset_by_user\x18\x01 \x01(\x0b\x32!.ai.verta.modeldb.HydratedDataset\x12\x43\n\x18shared_hydrated_datasets\x18\x02 \x03(\x0b\x32!.ai.verta.modeldb.HydratedDataset\"\xe3\x01\n\x1eGetHydratedDatasetsByProjectId\x12\x12\n\nproject_id\x18\x01 \x01(\t\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a_\n\x08Response\x12<\n\x11hydrated_datasets\x18\x01 \x03(\x0b\x32!.ai.verta.modeldb.HydratedDataset\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x32\xb4\x1f\n\x0fHydratedService\x12\x9a\x01\n\x13getHydratedProjects\x12%.ai.verta.modeldb.GetHydratedProjects\x1a..ai.verta.modeldb.GetHydratedProjects.Response\",\x82\xd3\xe4\x93\x02&\x12$/v1/hydratedData/getHydratedProjects\x12\xa6\x01\n\x19getHydratedPublicProjects\x12%.ai.verta.modeldb.GetHydratedProjects\x1a..ai.verta.modeldb.GetHydratedProjects.Response\"2\x82\xd3\xe4\x93\x02,\x12*/v1/hydratedData/getHydratedPublicProjects\x12\xa6\x01\n\x16getHydratedProjectById\x12(.ai.verta.modeldb.GetHydratedProjectById\x1a\x31.ai.verta.modeldb.GetHydratedProjectById.Response\"/\x82\xd3\xe4\x93\x02)\x12\'/v1/hydratedData/getHydratedProjectById\x12\xd2\x01\n!getHydratedExperimentsByProjectId\x12\x33.ai.verta.modeldb.GetHydratedExperimentsByProjectId\x1a<.ai.verta.modeldb.GetHydratedExperimentsByProjectId.Response\":\x82\xd3\xe4\x93\x02\x34\x12\x32/v1/hydratedData/getHydratedExperimentsByProjectId\x12\xda\x01\n\"getHydratedExperimentRunsInProject\x12\x36.ai.verta.modeldb.GetHydratedExperimentRunsByProjectId\x1a?.ai.verta.modeldb.GetHydratedExperimentRunsByProjectId.Response\";\x82\xd3\xe4\x93\x02\x35\x12\x33/v1/hydratedData/getHydratedExperimentRunsInProject\x12\xbe\x01\n\x1cgetHydratedExperimentRunById\x12..ai.verta.modeldb.GetHydratedExperimentRunById\x1a\x37.ai.verta.modeldb.GetHydratedExperimentRunById.Response\"5\x82\xd3\xe4\x93\x02/\x12-/v1/hydratedData/getHydratedExperimentRunById\x12\xb1\x01\n\x1a\x66indHydratedExperimentRuns\x12$.ai.verta.modeldb.FindExperimentRuns\x1a\x35.ai.verta.modeldb.AdvancedQueryExperimentRunsResponse\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/hydratedData/findHydratedExperimentRuns:\x01*\x12\xae\x01\n\x1asortHydratedExperimentRuns\x12$.ai.verta.modeldb.SortExperimentRuns\x1a\x35.ai.verta.modeldb.AdvancedQueryExperimentRunsResponse\"3\x82\xd3\xe4\x93\x02-\x12+/v1/hydratedData/sortHydratedExperimentRuns\x12\xb9\x01\n\x1cgetTopHydratedExperimentRuns\x12+.ai.verta.modeldb.TopExperimentRunsSelector\x1a\x35.ai.verta.modeldb.AdvancedQueryExperimentRunsResponse\"5\x82\xd3\xe4\x93\x02/\x12-/v1/hydratedData/getTopHydratedExperimentRuns\x12\xa5\x01\n\x17\x66indHydratedExperiments\x12!.ai.verta.modeldb.FindExperiments\x1a\x32.ai.verta.modeldb.AdvancedQueryExperimentsResponse\"3\x82\xd3\xe4\x93\x02-\"(/v1/hydratedData/findHydratedExperiments:\x01*\x12\x99\x01\n\x14\x66indHydratedProjects\x12\x1e.ai.verta.modeldb.FindProjects\x1a/.ai.verta.modeldb.AdvancedQueryProjectsResponse\"0\x82\xd3\xe4\x93\x02*\"%/v1/hydratedData/findHydratedProjects:\x01*\x12\xa5\x01\n\x1a\x66indHydratedPublicProjects\x12\x1e.ai.verta.modeldb.FindProjects\x1a/.ai.verta.modeldb.AdvancedQueryProjectsResponse\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/hydratedData/findHydratedPublicProjects:\x01*\x12\xb3\x01\n\x1a\x66indHydratedProjectsByUser\x12,.ai.verta.modeldb.FindHydratedProjectsByUser\x1a/.ai.verta.modeldb.AdvancedQueryProjectsResponse\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/hydratedData/findHydratedProjectsByUser:\x01*\x12\xcb\x01\n\"findHydratedProjectsByOrganization\x12\x34.ai.verta.modeldb.FindHydratedProjectsByOrganization\x1a/.ai.verta.modeldb.AdvancedQueryProjectsResponse\">\x82\xd3\xe4\x93\x02\x38\"3/v1/hydratedData/findHydratedProjectsByOrganization:\x01*\x12\xb3\x01\n\x1a\x66indHydratedProjectsByTeam\x12,.ai.verta.modeldb.FindHydratedProjectsByTeam\x1a/.ai.verta.modeldb.AdvancedQueryProjectsResponse\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/hydratedData/findHydratedProjectsByTeam:\x01*\x12\xcb\x01\n\"findHydratedDatasetsByOrganization\x12\x34.ai.verta.modeldb.FindHydratedDatasetsByOrganization\x1a/.ai.verta.modeldb.AdvancedQueryDatasetsResponse\">\x82\xd3\xe4\x93\x02\x38\"3/v1/hydratedData/findHydratedDatasetsByOrganization:\x01*\x12\xb3\x01\n\x1a\x66indHydratedDatasetsByTeam\x12,.ai.verta.modeldb.FindHydratedDatasetsByTeam\x1a/.ai.verta.modeldb.AdvancedQueryDatasetsResponse\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/hydratedData/findHydratedDatasetsByTeam:\x01*\x12\x99\x01\n\x14\x66indHydratedDatasets\x12\x1e.ai.verta.modeldb.FindDatasets\x1a/.ai.verta.modeldb.AdvancedQueryDatasetsResponse\"0\x82\xd3\xe4\x93\x02*\"%/v1/hydratedData/findHydratedDatasets:\x01*\x12\xa5\x01\n\x1a\x66indHydratedPublicDatasets\x12\x1e.ai.verta.modeldb.FindDatasets\x1a/.ai.verta.modeldb.AdvancedQueryDatasetsResponse\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/hydratedData/findHydratedPublicDatasets:\x01*\x12\xb5\x01\n\x1b\x66indHydratedDatasetVersions\x12%.ai.verta.modeldb.FindDatasetVersions\x1a\x36.ai.verta.modeldb.AdvancedQueryDatasetVersionsResponse\"7\x82\xd3\xe4\x93\x02\x31\",/v1/hydratedData/findHydratedDatasetVersions:\x01*\x12\xae\x01\n\x18getHydratedDatasetByName\x12*.ai.verta.modeldb.GetHydratedDatasetByName\x1a\x33.ai.verta.modeldb.GetHydratedDatasetByName.Response\"1\x82\xd3\xe4\x93\x02+\x12)/v1/hydratedData/getHydratedDatasetByName\x12\xc6\x01\n\x1egetHydratedDatasetsByProjectId\x12\x30.ai.verta.modeldb.GetHydratedDatasetsByProjectId\x1a\x39.ai.verta.modeldb.GetHydratedDatasetsByProjectId.Response\"7\x82\xd3\xe4\x93\x02\x31\x12//v1/hydratedData/getHydratedDatasetsByProjectIdBBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,uac_dot_UACService__pb2.DESCRIPTOR,uac_dot_Organization__pb2.DESCRIPTOR,uac_dot_Team__pb2.DESCRIPTOR,modeldb_dot_Comment__pb2.DESCRIPTOR,modeldb_dot_ProjectService__pb2.DESCRIPTOR,modeldb_dot_ExperimentService__pb2.DESCRIPTOR,modeldb_dot_ExperimentRunService__pb2.DESCRIPTOR,modeldb_dot_DatasetService__pb2.DESCRIPTOR,modeldb_dot_DatasetVersionService__pb2.DESCRIPTOR,uac_dot_RoleService__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
@@ -1735,7 +1735,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=4686,
-  serialized_end=8201,
+  serialized_end=8706,
   methods=[
   _descriptor.MethodDescriptor(
     name='getHydratedProjects',
@@ -1747,9 +1747,18 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
     serialized_options=b'\202\323\344\223\002&\022$/v1/hydratedData/getHydratedProjects',
   ),
   _descriptor.MethodDescriptor(
+    name='getHydratedPublicProjects',
+    full_name='ai.verta.modeldb.HydratedService.getHydratedPublicProjects',
+    index=1,
+    containing_service=None,
+    input_type=_GETHYDRATEDPROJECTS,
+    output_type=_GETHYDRATEDPROJECTS_RESPONSE,
+    serialized_options=b'\202\323\344\223\002,\022*/v1/hydratedData/getHydratedPublicProjects',
+  ),
+  _descriptor.MethodDescriptor(
     name='getHydratedProjectById',
     full_name='ai.verta.modeldb.HydratedService.getHydratedProjectById',
-    index=1,
+    index=2,
     containing_service=None,
     input_type=_GETHYDRATEDPROJECTBYID,
     output_type=_GETHYDRATEDPROJECTBYID_RESPONSE,
@@ -1758,7 +1767,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getHydratedExperimentsByProjectId',
     full_name='ai.verta.modeldb.HydratedService.getHydratedExperimentsByProjectId',
-    index=2,
+    index=3,
     containing_service=None,
     input_type=_GETHYDRATEDEXPERIMENTSBYPROJECTID,
     output_type=_GETHYDRATEDEXPERIMENTSBYPROJECTID_RESPONSE,
@@ -1767,7 +1776,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getHydratedExperimentRunsInProject',
     full_name='ai.verta.modeldb.HydratedService.getHydratedExperimentRunsInProject',
-    index=3,
+    index=4,
     containing_service=None,
     input_type=_GETHYDRATEDEXPERIMENTRUNSBYPROJECTID,
     output_type=_GETHYDRATEDEXPERIMENTRUNSBYPROJECTID_RESPONSE,
@@ -1776,7 +1785,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getHydratedExperimentRunById',
     full_name='ai.verta.modeldb.HydratedService.getHydratedExperimentRunById',
-    index=4,
+    index=5,
     containing_service=None,
     input_type=_GETHYDRATEDEXPERIMENTRUNBYID,
     output_type=_GETHYDRATEDEXPERIMENTRUNBYID_RESPONSE,
@@ -1785,7 +1794,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='findHydratedExperimentRuns',
     full_name='ai.verta.modeldb.HydratedService.findHydratedExperimentRuns',
-    index=5,
+    index=6,
     containing_service=None,
     input_type=modeldb_dot_ExperimentRunService__pb2._FINDEXPERIMENTRUNS,
     output_type=_ADVANCEDQUERYEXPERIMENTRUNSRESPONSE,
@@ -1794,7 +1803,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='sortHydratedExperimentRuns',
     full_name='ai.verta.modeldb.HydratedService.sortHydratedExperimentRuns',
-    index=6,
+    index=7,
     containing_service=None,
     input_type=modeldb_dot_ExperimentRunService__pb2._SORTEXPERIMENTRUNS,
     output_type=_ADVANCEDQUERYEXPERIMENTRUNSRESPONSE,
@@ -1803,7 +1812,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getTopHydratedExperimentRuns',
     full_name='ai.verta.modeldb.HydratedService.getTopHydratedExperimentRuns',
-    index=7,
+    index=8,
     containing_service=None,
     input_type=modeldb_dot_ExperimentRunService__pb2._TOPEXPERIMENTRUNSSELECTOR,
     output_type=_ADVANCEDQUERYEXPERIMENTRUNSRESPONSE,
@@ -1812,7 +1821,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='findHydratedExperiments',
     full_name='ai.verta.modeldb.HydratedService.findHydratedExperiments',
-    index=8,
+    index=9,
     containing_service=None,
     input_type=modeldb_dot_ExperimentService__pb2._FINDEXPERIMENTS,
     output_type=_ADVANCEDQUERYEXPERIMENTSRESPONSE,
@@ -1821,16 +1830,25 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='findHydratedProjects',
     full_name='ai.verta.modeldb.HydratedService.findHydratedProjects',
-    index=9,
+    index=10,
     containing_service=None,
     input_type=modeldb_dot_ProjectService__pb2._FINDPROJECTS,
     output_type=_ADVANCEDQUERYPROJECTSRESPONSE,
     serialized_options=b'\202\323\344\223\002*\"%/v1/hydratedData/findHydratedProjects:\001*',
   ),
   _descriptor.MethodDescriptor(
+    name='findHydratedPublicProjects',
+    full_name='ai.verta.modeldb.HydratedService.findHydratedPublicProjects',
+    index=11,
+    containing_service=None,
+    input_type=modeldb_dot_ProjectService__pb2._FINDPROJECTS,
+    output_type=_ADVANCEDQUERYPROJECTSRESPONSE,
+    serialized_options=b'\202\323\344\223\0020\"+/v1/hydratedData/findHydratedPublicProjects:\001*',
+  ),
+  _descriptor.MethodDescriptor(
     name='findHydratedProjectsByUser',
     full_name='ai.verta.modeldb.HydratedService.findHydratedProjectsByUser',
-    index=10,
+    index=12,
     containing_service=None,
     input_type=_FINDHYDRATEDPROJECTSBYUSER,
     output_type=_ADVANCEDQUERYPROJECTSRESPONSE,
@@ -1839,7 +1857,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='findHydratedProjectsByOrganization',
     full_name='ai.verta.modeldb.HydratedService.findHydratedProjectsByOrganization',
-    index=11,
+    index=13,
     containing_service=None,
     input_type=_FINDHYDRATEDPROJECTSBYORGANIZATION,
     output_type=_ADVANCEDQUERYPROJECTSRESPONSE,
@@ -1848,7 +1866,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='findHydratedProjectsByTeam',
     full_name='ai.verta.modeldb.HydratedService.findHydratedProjectsByTeam',
-    index=12,
+    index=14,
     containing_service=None,
     input_type=_FINDHYDRATEDPROJECTSBYTEAM,
     output_type=_ADVANCEDQUERYPROJECTSRESPONSE,
@@ -1857,7 +1875,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='findHydratedDatasetsByOrganization',
     full_name='ai.verta.modeldb.HydratedService.findHydratedDatasetsByOrganization',
-    index=13,
+    index=15,
     containing_service=None,
     input_type=_FINDHYDRATEDDATASETSBYORGANIZATION,
     output_type=_ADVANCEDQUERYDATASETSRESPONSE,
@@ -1866,7 +1884,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='findHydratedDatasetsByTeam',
     full_name='ai.verta.modeldb.HydratedService.findHydratedDatasetsByTeam',
-    index=14,
+    index=16,
     containing_service=None,
     input_type=_FINDHYDRATEDDATASETSBYTEAM,
     output_type=_ADVANCEDQUERYDATASETSRESPONSE,
@@ -1875,16 +1893,25 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='findHydratedDatasets',
     full_name='ai.verta.modeldb.HydratedService.findHydratedDatasets',
-    index=15,
+    index=17,
     containing_service=None,
     input_type=modeldb_dot_DatasetService__pb2._FINDDATASETS,
     output_type=_ADVANCEDQUERYDATASETSRESPONSE,
     serialized_options=b'\202\323\344\223\002*\"%/v1/hydratedData/findHydratedDatasets:\001*',
   ),
   _descriptor.MethodDescriptor(
+    name='findHydratedPublicDatasets',
+    full_name='ai.verta.modeldb.HydratedService.findHydratedPublicDatasets',
+    index=18,
+    containing_service=None,
+    input_type=modeldb_dot_DatasetService__pb2._FINDDATASETS,
+    output_type=_ADVANCEDQUERYDATASETSRESPONSE,
+    serialized_options=b'\202\323\344\223\0020\"+/v1/hydratedData/findHydratedPublicDatasets:\001*',
+  ),
+  _descriptor.MethodDescriptor(
     name='findHydratedDatasetVersions',
     full_name='ai.verta.modeldb.HydratedService.findHydratedDatasetVersions',
-    index=16,
+    index=19,
     containing_service=None,
     input_type=modeldb_dot_DatasetVersionService__pb2._FINDDATASETVERSIONS,
     output_type=_ADVANCEDQUERYDATASETVERSIONSRESPONSE,
@@ -1893,7 +1920,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getHydratedDatasetByName',
     full_name='ai.verta.modeldb.HydratedService.getHydratedDatasetByName',
-    index=17,
+    index=20,
     containing_service=None,
     input_type=_GETHYDRATEDDATASETBYNAME,
     output_type=_GETHYDRATEDDATASETBYNAME_RESPONSE,
@@ -1902,7 +1929,7 @@ _HYDRATEDSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getHydratedDatasetsByProjectId',
     full_name='ai.verta.modeldb.HydratedService.getHydratedDatasetsByProjectId',
-    index=18,
+    index=21,
     containing_service=None,
     input_type=_GETHYDRATEDDATASETSBYPROJECTID,
     output_type=_GETHYDRATEDDATASETSBYPROJECTID_RESPONSE,

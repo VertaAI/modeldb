@@ -1581,6 +1581,17 @@
       ],
       "default": "STRING"
     },
+    "VisibilityEnumVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC",
+        "ORG_DEFAULT"
+      ],
+      "default": "PRIVATE",
+      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Public to organization\n - ORG_DEFAULT: Default access for organization"
+    },
     "commonArtifact": {
       "type": "object",
       "properties": {
@@ -2016,12 +2027,8 @@
           "title": "Labels added to the registered models"
         },
         "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility",
+          "$ref": "#/definitions/VisibilityEnumVisibility",
           "title": "Visibility of Registered Models"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
         "workspace_id": {
           "type": "string",
@@ -2045,6 +2052,13 @@
             "$ref": "#/definitions/commonKeyValue"
           },
           "title": "Other attributes"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
+        "resource_visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },
@@ -2155,12 +2169,13 @@
     "uacResourceVisibility": {
       "type": "string",
       "enum": [
-        "WORKSPACE_DEFAULT",
+        "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
-        "PRIVATE"
+        "PRIVATE",
+        "WORKSPACE_DEFAULT"
       ],
-      "default": "WORKSPACE_DEFAULT"
+      "default": "UNKNOWN"
     },
     "versioningDockerEnvironmentBlob": {
       "type": "object",

@@ -341,6 +341,72 @@
         ]
       }
     },
+    "/hydratedData/findHydratedPublicDatasets": {
+      "post": {
+        "summary": "queries",
+        "operationId": "HydratedService_findHydratedPublicDatasets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbAdvancedQueryDatasetsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbFindDatasets"
+            }
+          }
+        ],
+        "tags": [
+          "HydratedService"
+        ]
+      }
+    },
+    "/hydratedData/findHydratedPublicProjects": {
+      "post": {
+        "summary": "queries",
+        "operationId": "HydratedService_findHydratedPublicProjects",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbAdvancedQueryProjectsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbFindProjects"
+            }
+          }
+        ],
+        "tags": [
+          "HydratedService"
+        ]
+      }
+    },
     "/hydratedData/getHydratedDatasetByName": {
       "get": {
         "operationId": "HydratedService_getHydratedDatasetByName",
@@ -665,6 +731,63 @@
         ]
       }
     },
+    "/hydratedData/getHydratedPublicProjects": {
+      "get": {
+        "operationId": "HydratedService_getHydratedPublicProjects",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetHydratedProjectsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "ascending",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          },
+          {
+            "name": "sort_key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "HydratedService"
+        ]
+      }
+    },
     "/hydratedData/getTopHydratedExperimentRuns": {
       "get": {
         "operationId": "HydratedService_getTopHydratedExperimentRuns",
@@ -839,6 +962,15 @@
       ],
       "default": "RAW"
     },
+    "DatasetVisibilityEnumDatasetVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
+    },
     "DeploymentActionEnumDeploymentServiceActions": {
       "type": "string",
       "enum": [
@@ -847,7 +979,8 @@
         "CREATE",
         "READ",
         "UPDATE",
-        "DELETE"
+        "DELETE",
+        "UPDATE_PERMISSIONS"
       ],
       "default": "UNKNOWN"
     },
@@ -883,7 +1016,8 @@
         "UPDATE",
         "DELETE",
         "DEPLOY",
-        "PUBLIC_READ"
+        "PUBLIC_READ",
+        "UPDATE_PERMISSIONS"
       ],
       "default": "UNKNOWN"
     },
@@ -1181,12 +1315,8 @@
             "type": "string"
           }
         },
-        "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        "dataset_visibility": {
+          "$ref": "#/definitions/DatasetVisibilityEnumDatasetVisibility"
         },
         "dataset_type": {
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
@@ -1214,6 +1344,13 @@
         "workspace_service_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },
@@ -2038,12 +2175,8 @@
         "readme_text": {
           "type": "string"
         },
-        "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        "project_visibility": {
+          "$ref": "#/definitions/modeldbProjectVisibility"
         },
         "workspace_id": {
           "type": "string"
@@ -2054,6 +2187,13 @@
         "workspace_service_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         },
         "attributes": {
           "type": "array",
@@ -2080,6 +2220,15 @@
           }
         }
       }
+    },
+    "modeldbProjectVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
     },
     "modeldbQueryDatasetVersionInfo": {
       "type": "object",
@@ -2303,12 +2452,13 @@
     "uacResourceVisibility": {
       "type": "string",
       "enum": [
-        "WORKSPACE_DEFAULT",
+        "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
-        "PRIVATE"
+        "PRIVATE",
+        "WORKSPACE_DEFAULT"
       ],
-      "default": "WORKSPACE_DEFAULT"
+      "default": "UNKNOWN"
     },
     "uacTeam": {
       "type": "object",

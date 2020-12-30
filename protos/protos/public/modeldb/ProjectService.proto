@@ -22,14 +22,16 @@ message Project {
     uint64 date_updated = 5;
     string short_name = 6;
     string readme_text = 7;
-    uac.ResourceVisibility visibility = 8;
-    // The next field only makes sense when visibility == ORG_CUSTOM
-    // They will be empty otherwise
-    uac.CollaboratorPermissions custom_permission = 12;
+    ProjectVisibility project_visibility = 8;
 
     string workspace_id = 9;
     common.WorkspaceTypeEnum.WorkspaceType workspace_type = 10;
     uint64 workspace_service_id = 11;
+
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    uac.CollaboratorPermissions custom_permission = 12;
+    uac.ResourceVisibility visibility = 13;
 
     repeated common.KeyValue attributes = 20;
     repeated string tags = 21;
@@ -38,19 +40,26 @@ message Project {
     repeated common.Artifact artifacts = 24;
 }
 
+enum ProjectVisibility {
+    PRIVATE = 0;
+    PUBLIC = 1;
+    ORG_SCOPED_PUBLIC = 2;
+}
+
 message CreateProject {
     string name = 1;
     string description = 2;
     repeated common.KeyValue attributes = 3;
     repeated string tags = 4;
     string readme_text = 5;
-    uac.ResourceVisibility visibility = 6;
-    // The next field only makes sense when visibility == ORG_CUSTOM
-    // They will be empty otherwise
-    uac.CollaboratorPermissions custom_permission = 10;
+    ProjectVisibility project_visibility = 6;
     repeated common.Artifact artifacts = 7;
     string workspace_name = 8;
     int64 date_created = 9;
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    uac.CollaboratorPermissions custom_permission = 10;
+    uac.ResourceVisibility visibility = 11;
 
     message Response {
         Project project = 1;
@@ -184,6 +193,15 @@ message GetProjects {
     message Response {
         repeated Project projects = 1;
         int64 total_records = 2;
+    }
+}
+
+message GetPublicProjects {
+    string user_id = 1;
+    string workspace_name = 2;
+
+    message Response {
+        repeated Project projects = 1;
     }
 }
 

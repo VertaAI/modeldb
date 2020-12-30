@@ -321,6 +321,128 @@
         ]
       }
     },
+    "/collaborator/getResources": {
+      "get": {
+        "summary": "The caller must have permission to GET the resource accordingly",
+        "operationId": "CollaboratorService_getResources",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetResourcesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "resources.service",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ROLE_SERVICE",
+              "AUTHZ_SERVICE",
+              "MODELDB_SERVICE",
+              "DEPLOYMENT_SERVICE"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resources.resource_ids",
+            "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "resources.resource_type.role_service_resource_type",
+            "description": "Separate based on the service itself.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ROLE",
+              "ROLE_BINDING"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resources.resource_type.authz_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ORGANIZATION",
+              "TEAM"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resources.resource_type.modeldb_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "PROJECT",
+              "EXPERIMENT",
+              "EXPERIMENT_RUN",
+              "DATASET",
+              "DATASET_VERSION",
+              "DASHBOARD",
+              "REPOSITORY",
+              "REGISTERED_MODEL"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resources.resource_type.deployment_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ENDPOINT"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
     "/collaborator/removeDatasetCollaborator": {
       "delete": {
         "operationId": "CollaboratorService_removeDatasetCollaborator",
@@ -600,6 +722,39 @@
           "CollaboratorService"
         ]
       }
+    },
+    "/collaborator/setResource": {
+      "post": {
+        "summary": "The caller must have permission to CREATE or UPDATE the resource accordingly",
+        "operationId": "CollaboratorService_setResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacSetResourceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacSetResource"
+            }
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -643,7 +798,8 @@
         "CREATE",
         "READ",
         "UPDATE",
-        "DELETE"
+        "DELETE",
+        "UPDATE_PERMISSIONS"
       ],
       "default": "UNKNOWN"
     },
@@ -688,7 +844,8 @@
         "UPDATE",
         "DELETE",
         "DEPLOY",
-        "PUBLIC_READ"
+        "PUBLIC_READ",
+        "UPDATE_PERMISSIONS"
       ],
       "default": "UNKNOWN"
     },
@@ -819,6 +976,9 @@
         "share_with": {
           "type": "string"
         },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
         "message": {
           "type": "string"
         },
@@ -829,6 +989,9 @@
         "date_updated": {
           "type": "string",
           "format": "uint64"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
@@ -902,11 +1065,17 @@
         "user_id": {
           "type": "string"
         },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
         "share_via_type": {
           "$ref": "#/definitions/uacShareViaEnum"
         },
         "verta_id": {
           "type": "string"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
@@ -934,6 +1103,9 @@
           "$ref": "#/definitions/ServiceEnumService"
         },
         "resource_id": {
+          "type": "string"
+        },
+        "resource_name": {
           "type": "string"
         },
         "resource_type": {
@@ -1046,12 +1218,13 @@
     "uacResourceVisibility": {
       "type": "string",
       "enum": [
-        "WORKSPACE_DEFAULT",
+        "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
-        "PRIVATE"
+        "PRIVATE",
+        "WORKSPACE_DEFAULT"
       ],
-      "default": "WORKSPACE_DEFAULT"
+      "default": "UNKNOWN"
     },
     "uacResources": {
       "type": "object",
@@ -1072,7 +1245,49 @@
       },
       "title": "A resource describes a specific object in a service that can receive an action"
     },
-    "uacSetResourcesResponse": {
+    "uacSetResource": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService",
+          "title": "Specification of the resources. IDs are globally unique, so changes in the fields above cause\nupdate on pre-exising resources"
+        },
+        "resource_id": {
+          "type": "string",
+          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
+        },
+        "resource_name": {
+          "type": "string"
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Owner of the resource"
+        },
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility",
+          "title": "Type of the visibility"
+        },
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType",
+          "title": "The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC. We should error\notherwise"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
+    "uacSetResourceResponse": {
       "type": "object"
     },
     "uacShareViaEnum": {

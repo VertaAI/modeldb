@@ -31,10 +31,7 @@ message RegisteredModel {
     repeated string labels = 6;
 
     // Visibility of Registered Models
-    uac.ResourceVisibility visibility = 7;
-    // The next field only makes sense when visibility == ORG_CUSTOM
-    // They will be empty otherwise
-    uac.CollaboratorPermissions custom_permission = 13;
+    common.VisibilityEnum.Visibility visibility = 7;
 
     // id of the workspace this belongs to
     //not storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files
@@ -50,6 +47,10 @@ message RegisteredModel {
 
     // Other attributes
     repeated common.KeyValue attributes = 11;
+    // The next field only makes sense when visibility == ORG_CUSTOM
+    // They will be empty otherwise
+    uac.CollaboratorPermissions custom_permission = 13;
+    uac.ResourceVisibility resource_visibility = 14;
 }
 
 //CRUD for Registred Models

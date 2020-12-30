@@ -722,6 +722,42 @@
         ]
       }
     },
+    "/project/getPublicProjects": {
+      "get": {
+        "operationId": "ProjectService_getPublicProjects",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbGetPublicProjectsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ProjectService"
+        ]
+      }
+    },
     "/project/getSummary": {
       "get": {
         "operationId": "ProjectService_getSummary",
@@ -1259,12 +1295,8 @@
         "readme_text": {
           "type": "string"
         },
-        "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        "project_visibility": {
+          "$ref": "#/definitions/modeldbProjectVisibility"
         },
         "artifacts": {
           "type": "array",
@@ -1278,6 +1310,13 @@
         "date_created": {
           "type": "string",
           "format": "int64"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },
@@ -1570,6 +1609,17 @@
         }
       }
     },
+    "modeldbGetPublicProjectsResponse": {
+      "type": "object",
+      "properties": {
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modeldbProject"
+          }
+        }
+      }
+    },
     "modeldbGetSummaryResponse": {
       "type": "object",
       "properties": {
@@ -1766,12 +1816,8 @@
         "readme_text": {
           "type": "string"
         },
-        "visibility": {
-          "$ref": "#/definitions/uacResourceVisibility"
-        },
-        "custom_permission": {
-          "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        "project_visibility": {
+          "$ref": "#/definitions/modeldbProjectVisibility"
         },
         "workspace_id": {
           "type": "string"
@@ -1782,6 +1828,13 @@
         "workspace_service_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
+        "visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         },
         "attributes": {
           "type": "array",
@@ -1808,6 +1861,15 @@
           }
         }
       }
+    },
+    "modeldbProjectVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC"
+      ],
+      "default": "PRIVATE"
     },
     "modeldbSetProjectReadme": {
       "type": "object",
@@ -1968,12 +2030,13 @@
     "uacResourceVisibility": {
       "type": "string",
       "enum": [
-        "WORKSPACE_DEFAULT",
+        "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
-        "PRIVATE"
+        "PRIVATE",
+        "WORKSPACE_DEFAULT"
       ],
-      "default": "WORKSPACE_DEFAULT"
+      "default": "UNKNOWN"
     }
   },
   "basePath": "/v1"

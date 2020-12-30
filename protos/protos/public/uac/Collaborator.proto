@@ -20,10 +20,12 @@ message CollaboratorPermissions {
 message AddCollaboratorRequest {
     repeated string entity_ids = 1; // List of project.id, experiment.id etc.
     string share_with = 2; // Collaborator user Id
+    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 3;
     string message = 4; // Shared message for reference
     uint64 date_created = 5; // shared on
     uint64 date_updated = 6; // CollaboratorType updated on
 
+    common.TernaryEnum.Ternary can_deploy = 7;
     common.EntitiesEnum.EntitiesTypes authz_entity_type = 8; //user, team, org
 
     CollaboratorPermissions permission = 9;
@@ -59,8 +61,10 @@ message RemoveCollaborator {
 
 message GetCollaboratorResponseItem {
     string user_id = 1 [deprecated=true];
+    common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 2;
     ShareViaEnum share_via_type = 3;
     string verta_id = 4; //user_verta_id, team_id, org_id
+    common.TernaryEnum.Ternary can_deploy = 5;
     common.EntitiesEnum.EntitiesTypes authz_entity_type = 6;
     CollaboratorPermissions permission = 7;
 }
@@ -74,10 +78,11 @@ message GetCollaborator {
 }
 
 enum ResourceVisibility {
-    WORKSPACE_DEFAULT = 0;
+    UNKNOWN = 0;
     ORG_DEFAULT = 1;
     ORG_CUSTOM = 2;
     PRIVATE = 3;
+    WORKSPACE_DEFAULT = 4;
 }
 
 message GetResources {
@@ -97,6 +102,7 @@ message GetResources {
 message GetResourcesResponseItem {
     ServiceEnum.Service service = 10;
     string resource_id = 11;
+    string resource_name = 13;
     ResourceType resource_type = 12;
 
     uint64 workspace_id = 2;
@@ -110,10 +116,16 @@ message GetResourcesResponseItem {
     CollaboratorPermissions custom_permission = 9;
 }
 
-message SetResources {
+message SetResource {
     // Specification of the resources. IDs are globally unique, so changes in the fields above cause
     // update on pre-exising resources
-    Resources resources = 1;
+    ServiceEnum.Service service = 1;
+    // Internal ID for the resource in the service, whose meaning doesn't matter for other services
+    // This is optional. If empty, means all resources
+    string resource_id = 8;
+    string resource_name = 9;
+    ResourceType resource_type = 10;
+
     // Workspace where the resources belong
     oneof workspace {
         uint64 workspace_id = 2;
@@ -142,10 +154,17 @@ message DeleteResources {
 service CollaboratorService {
     // The caller must have permission to GET the resource accordingly
     rpc getResources (GetResources) returns (GetResources.Response) {
+        option (google.api.http) = {
+            get: "/v1/collaborator/getResources"
+        };
     };
 
     // The caller must have permission to CREATE or UPDATE the resource accordingly
-    rpc setResources (SetResources) returns (SetResources.Response) {
+    rpc setResource (SetResource) returns (SetResource.Response) {
+        option (google.api.http) = {
+            post: "/v1/collaborator/setResource"
+            body: "*"
+        };
     };
 
     // The caller must have permission to DELETE the resource accordingly

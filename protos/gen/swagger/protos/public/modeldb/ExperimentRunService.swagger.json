@@ -1521,6 +1521,38 @@
         ]
       }
     },
+    "/experiment-run/logEnvironment": {
+      "post": {
+        "operationId": "ExperimentRunService_logEnvironment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/modeldbLogEnvironmentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/modeldbLogEnvironment"
+            }
+          }
+        ],
+        "tags": [
+          "ExperimentRunService"
+        ]
+      }
+    },
     "/experiment-run/logExperimentRunCodeVersion": {
       "post": {
         "summary": "code version",
@@ -3349,6 +3381,20 @@
       "title": "datasets"
     },
     "modeldbLogDatasetsResponse": {
+      "type": "object"
+    },
+    "modeldbLogEnvironment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "environment": {
+          "$ref": "#/definitions/versioningEnvironmentBlob"
+        }
+      }
+    },
+    "modeldbLogEnvironmentResponse": {
       "type": "object"
     },
     "modeldbLogExperimentRunCodeVersion": {

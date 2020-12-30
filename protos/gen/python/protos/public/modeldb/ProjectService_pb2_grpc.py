@@ -25,6 +25,11 @@ class ProjectServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.GetProjects.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.GetProjects.Response.FromString,
         )
+    self.getPublicProjects = channel.unary_unary(
+        '/ai.verta.modeldb.ProjectService/getPublicProjects',
+        request_serializer=modeldb_dot_ProjectService__pb2.GetPublicProjects.SerializeToString,
+        response_deserializer=modeldb_dot_ProjectService__pb2.GetPublicProjects.Response.FromString,
+        )
     self.getProjectById = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/getProjectById',
         request_serializer=modeldb_dot_ProjectService__pb2.GetProjectById.SerializeToString,
@@ -184,6 +189,13 @@ class ProjectServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def getProjects(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getPublicProjects(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -405,6 +417,11 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           servicer.getProjects,
           request_deserializer=modeldb_dot_ProjectService__pb2.GetProjects.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.GetProjects.Response.SerializeToString,
+      ),
+      'getPublicProjects': grpc.unary_unary_rpc_method_handler(
+          servicer.getPublicProjects,
+          request_deserializer=modeldb_dot_ProjectService__pb2.GetPublicProjects.FromString,
+          response_serializer=modeldb_dot_ProjectService__pb2.GetPublicProjects.Response.SerializeToString,
       ),
       'getProjectById': grpc.unary_unary_rpc_method_handler(
           servicer.getProjectById,
