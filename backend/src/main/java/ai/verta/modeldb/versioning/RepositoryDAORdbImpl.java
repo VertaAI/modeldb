@@ -7,6 +7,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.AddDatasetTags;
 import ai.verta.modeldb.Dataset;
+import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.GetDatasetById;
 import ai.verta.modeldb.ModelDBConstants;
@@ -34,6 +35,7 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Status;
@@ -75,6 +77,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       "Unexpected error on repository entity conversion to proto";
   private final AuthService authService;
   private final RoleService roleService;
+  private final CommitDAO commitDAO;
+  private final MetadataDAO metadataDAO;
 
   private static final String SHORT_NAME = "repo";
 
@@ -188,9 +192,15 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(" = :repoId")
           .toString();
 
-  public RepositoryDAORdbImpl(AuthService authService, RoleService roleService) {
+  public RepositoryDAORdbImpl(
+      AuthService authService,
+      RoleService roleService,
+      CommitDAO commitDAO,
+      MetadataDAO metadataDAO) {
     this.authService = authService;
     this.roleService = roleService;
+    this.commitDAO = commitDAO;
+    this.metadataDAO = metadataDAO;
   }
 
   @Override
@@ -354,19 +364,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public SetRepository.Response setRepository(
-      CommitDAO commitDAO, SetRepository request, UserInfo userInfo, boolean create)
+      SetRepository request, UserInfo userInfo, boolean create)
       throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository =
           setRepository(
               session,
-              commitDAO,
               null,
               request.getRepository(),
               request.getId(),
               null,
               userInfo,
-              null,
               create,
               RepositoryTypeEnum.REGULAR);
       return SetRepository.Response.newBuilder()
@@ -374,30 +382,32 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return setRepository(commitDAO, request, userInfo, create);
+        return setRepository(request, userInfo, create);
       } else {
         throw ex;
       }
     }
   }
 
-  public RepositoryEntity setRepository(
+  private RepositoryEntity setRepository(
       Session session,
-      CommitDAO commitDAO,
-      MetadataDAO metadataDAO,
+      String workspaceName,
       Repository repository,
       RepositoryIdentification repoId,
       List<String> tagList,
       UserInfo userInfo,
-      WorkspaceDTO workspaceDTO,
       boolean create,
       RepositoryTypeEnum repositoryType)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
+
+    if (workspaceName == null && repoId.hasNamedId()) {
+      workspaceName = repoId.getNamedId().getWorkspaceName();
+    }
+
     RepositoryEntity repositoryEntity;
+    Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
     if (create) {
-      if (workspaceDTO == null) {
-        workspaceDTO = verifyAndGetWorkspaceDTO(repoId, false, true);
-      }
+      WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(repoId, false, true);
       StringBuilder getRepoCountByNamePrefixHQL =
           new StringBuilder(GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL);
       setRepositoryTypeInQueryBuilder(repositoryType, getRepoCountByNamePrefixHQL);
@@ -412,7 +422,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           workspaceDTO.getWorkspaceId(),
           workspaceDTO.getWorkspaceType(),
           LOGGER);
-      repositoryEntity = new RepositoryEntity(repository, workspaceDTO, repositoryType);
+      repositoryEntity = new RepositoryEntity(repository, repositoryType);
     } else {
       repositoryEntity = getRepositoryById(session, repoId, true, false, repositoryType);
       session.lock(repositoryEntity, LockMode.PESSIMISTIC_WRITE);
@@ -429,8 +439,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             "repositoryName",
             repository.getName(),
             ModelDBConstants.WORKSPACE_ID,
-            repositoryEntity.getWorkspace_id(),
-            WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
+            null,
+            null,
             LOGGER);
       }
       repositoryEntity.update(repository);
@@ -465,15 +475,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     if (create) {
       try {
         ResourceVisibility resourceVisibility = repository.getVisibility();
-        WorkspaceType workspaceType = WorkspaceType.forNumber(repositoryEntity.getWorkspace_type());
         if (repository.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
           resourceVisibility =
-              ModelDBUtils.getResourceVisibility(
-                  Optional.of(workspaceType), repository.getRepositoryVisibility());
+              ModelDBUtils.getResourceVisibility(workspace, repository.getRepositoryVisibility());
         }
         roleService.createWorkspacePermissions(
-            repositoryEntity.getWorkspaceServiceId(),
-            Optional.of(workspaceType),
+            workspace.getId(),
+            Optional.empty(),
             String.valueOf(repositoryEntity.getId()),
             repositoryEntity.getName(),
             Optional.empty(), // UAC will populate the owner ID
@@ -586,73 +594,67 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public Repository createRepository(
-      CommitDAO commitDAO,
-      MetadataDAO metadataDAO,
-      Dataset dataset,
-      boolean create,
-      UserInfo userInfo)
+  public Dataset createOrUpdateDataset(
+      Dataset dataset, String workspaceName, boolean create, UserInfo userInfo)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      return createRepository(session, commitDAO, metadataDAO, dataset, create, userInfo);
+      RepositoryIdentification.Builder repositoryIdBuilder = RepositoryIdentification.newBuilder();
+      if (dataset.getId().isEmpty()) {
+        repositoryIdBuilder.setNamedId(
+            RepositoryNamedIdentification.newBuilder()
+                .setName(dataset.getName())
+                .setWorkspaceName(workspaceName)
+                .build());
+      } else {
+        repositoryIdBuilder.setRepoId(Long.parseLong(dataset.getId()));
+      }
+      Repository repository =
+          createDatasetRepository(
+              session, dataset, repositoryIdBuilder.build(), workspaceName, create, userInfo);
+      return repositoryToDataset(session, metadataDAO, repository);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return createRepository(commitDAO, metadataDAO, dataset, create, userInfo);
+        return createOrUpdateDataset(dataset, workspaceName, create, userInfo);
       } else {
         throw ex;
       }
     }
   }
 
-  private Repository createRepository(
+  private Repository createDatasetRepository(
       Session session,
-      CommitDAO commitDAO,
-      MetadataDAO metadataDAO,
       Dataset dataset,
+      RepositoryIdentification repositoryId,
+      String workspaceName,
       boolean create,
       UserInfo userInfo)
       throws NoSuchAlgorithmException, ModelDBException, InvalidProtocolBufferException {
-    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
-    workspaceDTO.setWorkspaceId(dataset.getWorkspaceId());
-    workspaceDTO.setWorkspaceType(dataset.getWorkspaceType());
-    workspaceDTO.setWorkspaceServiceId(dataset.getWorkspaceServiceId());
-    RepositoryIdentification.Builder repositoryId = RepositoryIdentification.newBuilder();
-    if (dataset.getId().isEmpty()) {
-      repositoryId.setNamedId(
-          RepositoryNamedIdentification.newBuilder()
-              .setName(dataset.getName())
-              .setWorkspaceName(dataset.getWorkspaceId())
-              .build());
-    } else {
-      repositoryId.setRepoId(Long.parseLong(dataset.getId()));
+    Repository.Builder datasetRepositoryBuilder =
+        Repository.newBuilder()
+            .setRepositoryVisibility(
+                RepositoryVisibilityEnum.RepositoryVisibility.forNumber(
+                    dataset.getDatasetVisibilityValue()))
+            .setVisibility(dataset.getVisibility())
+            .setDateCreated(dataset.getTimeCreated())
+            .setDateUpdated(dataset.getTimeUpdated())
+            .setName(dataset.getName())
+            .setDescription(dataset.getDescription())
+            .setOwner(dataset.getOwner())
+            .addAllAttributes(dataset.getAttributesList())
+            .setCustomPermission(dataset.getCustomPermission());
+
+    if (!dataset.getId().isEmpty()) {
+      datasetRepositoryBuilder.setId(Long.parseLong(dataset.getId()));
     }
 
     RepositoryEntity repositoryEntity =
         setRepository(
             session,
-            commitDAO,
-            metadataDAO,
-            Repository.newBuilder()
-                .setRepositoryVisibility(
-                    RepositoryVisibilityEnum.RepositoryVisibility.forNumber(
-                        dataset.getDatasetVisibilityValue()))
-                .setVisibility(dataset.getVisibility())
-                .setWorkspaceType(dataset.getWorkspaceType())
-                .setWorkspaceId(dataset.getWorkspaceId())
-                .setWorkspaceServiceId(dataset.getWorkspaceServiceId())
-                .setDateCreated(dataset.getTimeCreated())
-                .setDateUpdated(dataset.getTimeUpdated())
-                .setCustomPermission(dataset.getCustomPermission())
-                .setName(dataset.getName())
-                .setDescription(dataset.getDescription())
-                .setOwner(dataset.getOwner())
-                .addAllAttributes(dataset.getAttributesList())
-                .setCustomPermission(dataset.getCustomPermission())
-                .build(),
-            repositoryId.build(),
+            workspaceName,
+            datasetRepositoryBuilder.build(),
+            repositoryId,
             dataset.getTagsList(),
             userInfo,
-            workspaceDTO,
             create,
             RepositoryTypeEnum.DATASET);
     return repositoryEntity.toProto(roleService);
@@ -664,6 +666,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
     Repository repository = repositoryEntity.toProto(roleService);
 
+    return repositoryToDataset(session, metadataDAO, repository);
+  }
+
+  private Dataset repositoryToDataset(
+      Session session, MetadataDAO metadataDAO, Repository repository) throws ModelDBException {
     Dataset.Builder dataset = Dataset.newBuilder();
     dataset.setId(String.valueOf(repository.getId()));
 
@@ -676,7 +683,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         .setTimeUpdated(repository.getDateUpdated())
         .setName(repository.getName())
         .setDescription(repository.getDescription())
-        .setOwner(repository.getOwner());
+        .setOwner(repository.getOwner())
+        .setCustomPermission(repository.getCustomPermission())
+        .setDatasetVisibility(
+            DatasetVisibilityEnum.DatasetVisibility.forNumber(
+                repository.getRepositoryVisibilityValue()));
     dataset.addAllAttributes(repository.getAttributesList());
     List<String> tags =
         metadataDAO.getLabels(

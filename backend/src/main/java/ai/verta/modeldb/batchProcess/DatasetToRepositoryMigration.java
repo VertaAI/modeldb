@@ -33,7 +33,6 @@ import ai.verta.modeldb.versioning.BlobDAORdbImpl;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitDAORdbImpl;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
-import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.GetCollaboratorResponseItem;
@@ -89,7 +88,7 @@ public class DatasetToRepositoryMigration {
     }
 
     commitDAO = new CommitDAORdbImpl(authService, roleService);
-    repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
+    repositoryDAO = new RepositoryDAORdbImpl(authService, roleService, commitDAO, metadataDAO);
     blobDAO = new BlobDAORdbImpl(authService, roleService);
     metadataDAO = new MetadataDAORdbImpl();
     experimentRunDAO =
@@ -287,25 +286,27 @@ public class DatasetToRepositoryMigration {
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     String datasetId = datasetEntity.getId();
     Dataset newDataset = datasetEntity.getProtoObject(roleService).toBuilder().setId("").build();
-    Repository repository;
+    Dataset dataset;
     try {
       LOGGER.debug("Creating repository for dataset {}", datasetEntity.getId());
-      repository =
-          repositoryDAO.createRepository(commitDAO, metadataDAO, newDataset, true, userInfoValue);
-      markStartedDatasetMigration(datasetId, repository.getId(), "started");
+      dataset =
+          repositoryDAO.createOrUpdateDataset(
+              newDataset, authService.getUsernameFromUserInfo(userInfoValue), true, userInfoValue);
+      markStartedDatasetMigration(datasetId, Long.parseLong(dataset.getId()), "started");
       LOGGER.debug("Adding repository collaborattor for dataset {}", datasetEntity.getId());
-      migrateDatasetCollaborators(datasetId, repository);
+      migrateDatasetCollaborators(datasetId, dataset);
     } catch (Exception e) {
       if (e instanceof StatusRuntimeException) {
         LOGGER.info("Getting error while migrating {} dataset", datasetId);
         LOGGER.info(e.getMessage());
         Status status = Status.fromThrowable(e);
         if (status.getCode().equals(Status.Code.ALREADY_EXISTS)) {
-          repository =
-              repositoryDAO.createRepository(commitDAO, metadataDAO, newDataset, false, null);
+          dataset =
+              repositoryDAO.createOrUpdateDataset(
+                  newDataset, authService.getUsernameFromUserInfo(userInfoValue), false, null);
           LOGGER.debug(
               "Continuing with repository {} already created for dataset {}",
-              repository.getId(),
+              dataset.getId(),
               datasetEntity.getId());
         } else {
           throw e;
@@ -314,17 +315,18 @@ public class DatasetToRepositoryMigration {
         throw e;
       }
     }
-    LOGGER.debug("Created repository {} for dataset {}", repository.getId(), datasetEntity.getId());
-    migrateDatasetVersionToCommitsBlobsMigration(session, datasetId, repository.getId());
-    updateDatasetMigrationStatus(datasetId, repository.getId(), "done");
+    LOGGER.debug("Created repository {} for dataset {}", dataset.getId(), datasetEntity.getId());
+    migrateDatasetVersionToCommitsBlobsMigration(
+        session, datasetId, Long.parseLong(dataset.getId()));
+    updateDatasetMigrationStatus(datasetId, Long.parseLong(dataset.getId()), "done");
   }
 
-  private static void migrateDatasetCollaborators(String datasetId, Repository repository) {
+  private static void migrateDatasetCollaborators(String datasetId, Dataset dataset) {
     List<GetCollaboratorResponseItem> collaboratorResponses =
         roleService.getResourceCollaborators(
             ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET,
             datasetId,
-            repository.getOwner(),
+            dataset.getOwner(),
             null);
 
     if (!collaboratorResponses.isEmpty()) {
@@ -348,13 +350,13 @@ public class DatasetToRepositoryMigration {
           roleService.createRoleBinding(
               readOnlyRole,
               collaboratorBase,
-              String.valueOf(repository.getId()),
+              dataset.getId(),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
         } else {
           roleService.createRoleBinding(
               writeOnlyRole,
               collaboratorBase,
-              String.valueOf(repository.getId()),
+              dataset.getId(),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
         }
       }

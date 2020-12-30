@@ -64,7 +64,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -679,11 +678,11 @@ public class ModelDBUtils {
   }
 
   public static ResourceVisibility getResourceVisibility(
-      Optional<WorkspaceType> workspaceType, ProtocolMessageEnum visibility) {
-    if (!workspaceType.isPresent()) {
+      Workspace workspace, ProtocolMessageEnum visibility) {
+    if (workspace == null) {
       return ResourceVisibility.PRIVATE;
     }
-    if (workspaceType.get() == WorkspaceType.ORGANIZATION) {
+    if (workspace.getInternalIdCase() == Workspace.InternalIdCase.ORG_ID) {
       if (visibility == ProjectVisibility.ORG_SCOPED_PUBLIC
           || visibility == RepositoryVisibility.ORG_SCOPED_PUBLIC
           || visibility == DatasetVisibility.ORG_SCOPED_PUBLIC) {
