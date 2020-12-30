@@ -255,6 +255,8 @@ public class App implements ApplicationContextAware {
       App app = App.getInstance();
       app.requestTimeout =
           (Integer) grpcServerMap.getOrDefault(ModelDBConstants.REQUEST_TIMEOUT, 30);
+      // Set user credentials to App class
+      app.setServiceUser(propertiesMap, app);
 
       Map<String, Object> featureFlagMap =
           (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
@@ -357,19 +359,6 @@ public class App implements ApplicationContextAware {
       throws ModelDBException, IOException {
 
     App app = App.getInstance();
-    Map<String, Object> serviceUserDetailMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.MDB_SERVICE_USER);
-    if (serviceUserDetailMap != null) {
-      if (serviceUserDetailMap.containsKey(ModelDBConstants.EMAIL)) {
-        app.serviceUserEmail = (String) serviceUserDetailMap.get(ModelDBConstants.EMAIL);
-        LOGGER.trace("service user email found");
-      }
-      if (serviceUserDetailMap.containsKey(ModelDBConstants.DEV_KEY)) {
-        app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
-        LOGGER.trace("service user devKey found");
-      }
-    }
-
     Map<String, Object> trialMap =
         (Map<String, Object>)
             propertiesMap.getOrDefault(ModelDBConstants.TRIAL, Collections.emptyMap());
@@ -476,6 +465,21 @@ public class App implements ApplicationContextAware {
     // Initialize cron jobs
     CronJobUtils.initializeBasedOnConfig(
         propertiesMap, authService, roleService, artifactStoreService);
+  }
+
+  public void setServiceUser(Map<String, Object> propertiesMap, App app) {
+    Map<String, Object> serviceUserDetailMap =
+        (Map<String, Object>) propertiesMap.get(ModelDBConstants.MDB_SERVICE_USER);
+    if (serviceUserDetailMap != null) {
+      if (serviceUserDetailMap.containsKey(ModelDBConstants.EMAIL)) {
+        app.serviceUserEmail = (String) serviceUserDetailMap.get(ModelDBConstants.EMAIL);
+        LOGGER.trace("service user email found");
+      }
+      if (serviceUserDetailMap.containsKey(ModelDBConstants.DEV_KEY)) {
+        app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
+        LOGGER.trace("service user devKey found");
+      }
+    }
   }
 
   private static void initializeRelationalDBServices(
