@@ -15,13 +15,16 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.CollaboratorPermissions;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -97,35 +100,63 @@ public class CollaboratorResourceMigration {
 
         if (projectEntities.size() > 0) {
           Set<String> userIds = new HashSet<>();
+          Set<String> newVisibilityProjectIds = new HashSet<>();
           for (ProjectEntity projectEntity : projectEntities) {
-            userIds.add(projectEntity.getOwner());
+            if (projectEntity.getOwner() != null && !projectEntity.getOwner().isEmpty()) {
+              userIds.add(projectEntity.getOwner());
+            } else {
+              newVisibilityProjectIds.add(projectEntity.getId());
+            }
           }
           LOGGER.debug("Project userId list : " + userIds);
 
           // Fetch the project owners userInfo
-          Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
+          Map<String, UserInfo> userInfoMap = new HashMap<>();
+          if (!userIds.isEmpty()) {
+            userInfoMap.putAll(authService.getUserInfoFromAuthServer(userIds, null, null));
+          }
+
+          List<GetResourcesResponseItem> responseItems =
+              roleService.getResourceItems(
+                  null, newVisibilityProjectIds, ModelDBServiceResourceTypes.PROJECT);
+          Map<String, GetResourcesResponseItem> responseItemMap =
+              responseItems.stream()
+                  .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
+
           for (ProjectEntity project : projectEntities) {
-            WorkspaceDTO workspaceDTO =
-                roleService.getWorkspaceDTOByWorkspaceId(
-                    userInfoMap.get(project.getOwner()),
-                    project.getWorkspace(),
-                    project.getWorkspace_type());
-            // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
-            // ignore the CollaboratorType
-            roleService.createWorkspacePermissions(
-                workspaceDTO.getWorkspaceName(),
-                project.getId(),
-                project.getName(),
-                Optional.of(Long.parseLong(project.getOwner())),
-                ModelDBServiceResourceTypes.PROJECT,
-                CollaboratorPermissions.newBuilder()
-                    .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
-                    .build(),
-                getResourceVisibility(
-                    Optional.ofNullable(
-                        WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
-                    VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
+            if (project.getOwner() != null && !project.getOwner().isEmpty()) {
+              WorkspaceDTO workspaceDTO =
+                  roleService.getWorkspaceDTOByWorkspaceId(
+                      userInfoMap.get(project.getOwner()),
+                      project.getWorkspace(),
+                      project.getWorkspace_type());
+              // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
+              // ignore the CollaboratorType
+              roleService.createWorkspacePermissions(
+                  workspaceDTO.getWorkspaceName(),
+                  project.getId(),
+                  project.getName(),
+                  Optional.of(Long.parseLong(project.getOwner())),
+                  ModelDBServiceResourceTypes.PROJECT,
+                  CollaboratorPermissions.newBuilder()
+                      .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                      .build(),
+                  getResourceVisibility(
+                      Optional.ofNullable(
+                          WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
+                      VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
+            } else {
+              GetResourcesResponseItem resourceDetails = responseItemMap.get(project.getId());
+              roleService.createWorkspacePermissions(
+                  resourceDetails.getWorkspaceId(),
+                  Optional.empty(),
+                  project.getId(),
+                  project.getName(),
+                  Optional.of(resourceDetails.getOwnerId()),
+                  ModelDBServiceResourceTypes.PROJECT,
+                  resourceDetails.getCustomPermission(),
+                  resourceDetails.getVisibility());
+            }
             Transaction transaction = null;
             try {
               transaction = session.beginTransaction();
