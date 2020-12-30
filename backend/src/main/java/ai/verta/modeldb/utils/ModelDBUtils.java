@@ -6,7 +6,6 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
-import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
@@ -16,21 +15,25 @@ import ai.verta.modeldb.GetHydratedProjects;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.UpdateProjectName;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
-import ai.verta.modeldb.collaborator.CollaboratorOrg;
-import ai.verta.modeldb.collaborator.CollaboratorTeam;
-import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
+import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
+import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.GetCollaboratorResponseItem;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ShareViaEnum;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.amazonaws.AmazonServiceException;
 import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
@@ -68,6 +71,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.LockAcquisitionException;
@@ -592,6 +596,42 @@ public class ModelDBUtils {
     }
   }
 
+  public static void checkIfEntityAlreadyExists(
+      RoleService roleService,
+      Workspace workspace,
+      String name,
+      List<String> projectEntityIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    List<GetResourcesResponseItem> responseItems =
+        roleService.getResourceItems(
+            workspace, new HashSet<>(projectEntityIds), modelDBServiceResourceTypes);
+    for (GetResourcesResponseItem item : responseItems) {
+      if (workspace.getId() == item.getWorkspaceId()) {
+        // Throw error if it is an insert request and project with same name already exists
+        LOGGER.info("{} with name {} already exists", modelDBServiceResourceTypes, name);
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.ALREADY_EXISTS_VALUE)
+                .setMessage(modelDBServiceResourceTypes + " already exists in database")
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+    }
+  }
+
+  public static Set<String> filterWorkspaceOnlyAccessibleIds(
+      RoleService roleService,
+      Set<String> accessibleAllWorkspaceProjectIds,
+      String workspaceName,
+      UserInfo userInfo,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+    List<GetResourcesResponseItem> items =
+        roleService.getResourceItems(
+            workspace, accessibleAllWorkspaceProjectIds, modelDBServiceResourceTypes);
+    return items.stream().map(GetResourcesResponseItem::getResourceId).collect(Collectors.toSet());
+  }
+
   public static String getLocationWithSlashOperator(List<String> locations) {
     return String.join("/", locations);
   }
@@ -602,96 +642,6 @@ public class ModelDBUtils {
 
   public static String getJoinedLocation(List<String> location) {
     return String.join("#", location);
-  }
-
-  public interface RetryCallInterface<T> {
-    T retryCall(boolean retry);
-  }
-
-  public static Object retryOrThrowException(
-      StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
-    String errorMessage = ex.getMessage();
-    LOGGER.debug(errorMessage);
-    if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-      errorMessage = "UAC Service unavailable : " + errorMessage;
-      if (retry && retryCallInterface != null) {
-        try {
-          App app = App.getInstance();
-          Thread.sleep(app.getRequestTimeout() * 1000);
-          retry = false;
-        } catch (InterruptedException e) {
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.INTERNAL_VALUE)
-                  .setMessage("Thread interrupted while UAC retrying call")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
-        }
-        return retryCallInterface.retryCall(retry);
-      }
-
-      Status status =
-          Status.newBuilder().setCode(Code.UNAVAILABLE_VALUE).setMessage(errorMessage).build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
-    throw ex;
-  }
-
-  public static void initializeBackgroundUtilsCount() {
-    int backgroundUtilsCount = 0;
-    try {
-      if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) == null) {
-        LOGGER.trace("Initialize runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-        System.setProperty(
-            ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
-      }
-      LOGGER.trace(
-          "Found runningBackgroundUtilsCount while initialization: {}",
-          getRegisteredBackgroundUtilsCount());
-    } catch (NullPointerException ex) {
-      LOGGER.trace("NullPointerException while initialize runningBackgroundUtilsCount");
-      System.setProperty(
-          ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
-    }
-  }
-
-  /**
-   * If service want to call other verta service internally then should to registered those service
-   * here with count
-   */
-  public static void registeredBackgroundUtilsCount() {
-    int backgroundUtilsCount = 0;
-    if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) != null) {
-      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
-    }
-    backgroundUtilsCount = backgroundUtilsCount + 1;
-    LOGGER.trace("After registered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-    System.setProperty(
-        ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
-  }
-
-  public static void unregisteredBackgroundUtilsCount() {
-    int backgroundUtilsCount = 0;
-    if (System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT) != null) {
-      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
-      backgroundUtilsCount = backgroundUtilsCount - 1;
-    }
-    LOGGER.trace("After unregistered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-    System.setProperty(
-        ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
-  }
-
-  public static Integer getRegisteredBackgroundUtilsCount() {
-    try {
-      Integer backgroundUtilsCount =
-          Integer.parseInt(System.getProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT));
-      LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-      return backgroundUtilsCount;
-    } catch (NullPointerException ex) {
-      LOGGER.trace("NullPointerException while get runningBackgroundUtilsCount");
-      System.setProperty(ModelDBConstants.BACKGROUND_UTILS_COUNT, Integer.toString(0));
-      return 0;
-    }
   }
 
   public static boolean isEnvSet(String envVar) {
@@ -733,7 +683,7 @@ public class ModelDBUtils {
     if (!workspaceType.isPresent()) {
       return ResourceVisibility.PRIVATE;
     }
-    if (workspaceType.get() == WorkspaceTypeEnum.WorkspaceType.ORGANIZATION) {
+    if (workspaceType.get() == WorkspaceType.ORGANIZATION) {
       if (visibility == ProjectVisibility.ORG_SCOPED_PUBLIC
           || visibility == RepositoryVisibility.ORG_SCOPED_PUBLIC
           || visibility == DatasetVisibility.ORG_SCOPED_PUBLIC) {
@@ -778,5 +728,11 @@ public class ModelDBUtils {
       default:
         return null;
     }
+  }
+
+  public static Object retryOrThrowException(
+      StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
+    return CommonUtils.retryOrThrowException(
+        ex, retry, retryCallInterface, App.getInstance().getRequestTimeout());
   }
 }

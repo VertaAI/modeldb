@@ -10,9 +10,9 @@ import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.GetDatasetById;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -475,6 +475,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             repositoryEntity.getWorkspaceServiceId(),
             Optional.of(workspaceType),
             String.valueOf(repositoryEntity.getId()),
+            repositoryEntity.getName(),
             Optional.empty(), // UAC will populate the owner ID
             ModelDBServiceResourceTypes.REPOSITORY,
             repository.getCustomPermission(),
@@ -482,6 +483,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         LOGGER.debug("Project role bindings created successfully");
         Transaction transaction = session.beginTransaction();
         repositoryEntity.setCreated(true);
+        repositoryEntity.setVisibility_migration(true);
         transaction.commit();
       } catch (Exception e) {
         LOGGER.info("Exception from UAC during Repo role binding creation : {}", e.getMessage());
@@ -696,7 +698,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              ResourceVisibility.PRIVATE,
               ModelDBServiceResourceTypes.REPOSITORY,
               Collections.emptyList());
 
@@ -1155,7 +1156,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             roleService.getAccessibleResourceIds(
                 null,
                 new CollaboratorUser(authService, currentLoginUserInfo),
-                ResourceVisibility.PRIVATE,
                 ModelDBServiceResourceTypes.REPOSITORY,
                 request.getRepoIdsList().stream()
                     .map(String::valueOf)
@@ -1330,7 +1330,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              resourceVisibility,
               ModelDBServiceResourceTypes.REPOSITORY,
               queryParameters.getDatasetIdsList());
 
@@ -1417,7 +1416,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
-                entityName, predicates, builder, criteriaQuery, repositoryRoot, authService);
+                entityName,
+                predicates,
+                builder,
+                criteriaQuery,
+                repositoryRoot,
+                authService,
+                roleService);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }

@@ -1,4 +1,4 @@
-package ai.verta.modeldb.dto;
+package ai.verta.modeldb.common.dto;
 
 import ai.verta.uac.UserInfo;
 import java.util.List;

@@ -3,7 +3,8 @@ package ai.verta.modeldb.authservice;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -18,16 +19,31 @@ import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.BlobDAORdbImpl;
 import ai.verta.modeldb.versioning.CommitDAORdbImpl;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
-import ai.verta.uac.*;
+import ai.verta.uac.Actions;
+import ai.verta.uac.CollaboratorPermissions;
+import ai.verta.uac.GetCollaboratorResponseItem;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.Organization;
+import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.Resources;
+import ai.verta.uac.Role;
+import ai.verta.uac.RoleBinding;
+import ai.verta.uac.RoleScope;
+import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.ProtocolMessageEnum;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.Metadata;
 import io.grpc.protobuf.StatusProto;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public class PublicRoleServiceUtils implements RoleService {
 
@@ -205,7 +221,6 @@ public class PublicRoleServiceUtils implements RoleService {
   public List<String> getAccessibleResourceIds(
       CollaboratorBase hostUserInfo,
       CollaboratorBase currentLoginUserInfo,
-      ProtocolMessageEnum resourceVisibility,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       List<String> requestedResourceIds) {
     return requestedResourceIds;
@@ -225,6 +240,12 @@ public class PublicRoleServiceUtils implements RoleService {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceName(workspaceName);
     return workspaceDTO;
+  }
+
+  @Override
+  public Workspace getWorkspaceByWorkspaceName(
+      UserInfo currentLoginUserInfo, String workspaceName) {
+    return Workspace.newBuilder().build();
   }
 
   @Override
@@ -253,13 +274,29 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
+  public boolean createWorkspacePermissions(
+      Optional<Long> workspaceId,
+      Optional<String> workspaceName,
+      String resourceId,
+      String resourceName,
+      Optional<Long> ownerId,
+      ModelDBServiceResourceTypes resourceType,
+      CollaboratorPermissions permissions,
+      ResourceVisibility resourceVisibility) {
+    return false;
+  }
+
+  @Override
   public boolean deleteEntityResources(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return true;
   }
 
   @Override
-  public List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo) {
+  public List<GetResourcesResponseItem> getResourceItems(
+      Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return Collections.emptyList();
   }
 
@@ -267,6 +304,7 @@ public class PublicRoleServiceUtils implements RoleService {
   public boolean createWorkspacePermissions(
       String workspaceName,
       String resourceId,
+      String resourceName,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
@@ -279,6 +317,7 @@ public class PublicRoleServiceUtils implements RoleService {
       Long workspaceId,
       Optional<WorkspaceType> workspaceType,
       String resourceId,
+      String resourceName,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,

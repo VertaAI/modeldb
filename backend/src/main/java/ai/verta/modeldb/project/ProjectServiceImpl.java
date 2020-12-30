@@ -8,14 +8,13 @@ import ai.verta.modeldb.LogProjectCodeVersion.Response;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
@@ -83,68 +82,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   /**
-   * Method to convert createProject request to Project object. This method generates the project Id
-   * using UUID and puts it in Project object.
-   *
-   * @param CreateProject request
-   * @param UserInfo userInfo
-   * @return Project
-   */
-  private Project getProjectFromRequest(CreateProject request, UserInfo userInfo) {
-
-    if (request.getName().isEmpty()) {
-      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
-    }
-
-    String projectShortName = ModelDBUtils.convertToProjectShortName(request.getName());
-
-    /*
-     * Create Project entity from given CreateProject request. generate UUID and put as id in
-     * project for uniqueness. set above created List<KeyValue> attributes in project entity.
-     */
-    Project.Builder projectBuilder =
-        Project.newBuilder()
-            .setId(UUID.randomUUID().toString())
-            .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
-            .setShortName(projectShortName)
-            .setDescription(request.getDescription())
-            .addAllAttributes(request.getAttributesList())
-            .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
-            .setProjectVisibility(request.getProjectVisibility())
-            .setVisibility(request.getVisibility())
-            .addAllArtifacts(request.getArtifactsList())
-            .setReadmeText(request.getReadmeText())
-            .setCustomPermission(request.getCustomPermission());
-
-    App app = App.getInstance();
-    if (app.getStoreClientCreationTimestamp() && request.getDateCreated() != 0L) {
-      projectBuilder
-          .setDateCreated(request.getDateCreated())
-          .setDateUpdated(request.getDateCreated());
-    } else {
-      projectBuilder
-          .setDateCreated(Calendar.getInstance().getTimeInMillis())
-          .setDateUpdated(Calendar.getInstance().getTimeInMillis());
-    }
-    if (userInfo != null) {
-      String vertaId = authService.getVertaIdFromUserInfo(userInfo);
-      projectBuilder.setOwner(vertaId);
-      String workspaceName = request.getWorkspaceName();
-      WorkspaceDTO workspaceDTO =
-          roleService.getWorkspaceDTOByWorkspaceName(userInfo, workspaceName);
-      if (workspaceDTO.getWorkspaceId() != null) {
-        projectBuilder.setWorkspaceId(workspaceDTO.getWorkspaceId());
-        projectBuilder.setWorkspaceType(workspaceDTO.getWorkspaceType());
-        if (workspaceDTO.getWorkspaceServiceId() != null) {
-          projectBuilder.setWorkspaceServiceId(workspaceDTO.getWorkspaceServiceId());
-        }
-      }
-    }
-
-    return projectBuilder.build();
-  }
-
-  /**
    * Convert CreateProject request to Project entity and insert in database.
    *
    * @param CreateProject request, CreateProject.Response response
@@ -160,11 +97,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      Project project = getProjectFromRequest(request, userInfo);
-
-      ModelDBUtils.checkPersonalWorkspace(
-          userInfo, project.getWorkspaceType(), project.getWorkspaceId(), "project");
-      project = projectDAO.insertProject(project, userInfo);
+      Project project = projectDAO.insertProject(request, userInfo);
 
       saveAuditLogs(
           userInfo, ModelDBConstants.CREATE, Collections.singletonList(project.getId()), "");
@@ -205,11 +138,12 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
       Project updatedProject =
           projectDAO.updateProjectName(
-              request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
+              userInfo, request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
       saveAuditLogs(
-          null,
+          userInfo,
           ModelDBConstants.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           String.format(
@@ -804,7 +738,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       UserInfo hostUserInfo = null;
       if (!request.getUserId().isEmpty()) {
         hostUserInfo =
-            authService.getUserInfo(request.getUserId(), ModelDBConstants.UserIdentifier.VERTA_ID);
+            authService.getUserInfo(request.getUserId(), CommonConstants.UserIdentifier.VERTA_ID);
       }
 
       List<Project> projectList =

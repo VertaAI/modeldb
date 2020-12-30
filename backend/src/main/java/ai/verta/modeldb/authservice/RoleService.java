@@ -1,21 +1,31 @@
 package ai.verta.modeldb.authservice;
 
-import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
-import ai.verta.uac.*;
+import ai.verta.uac.Actions;
+import ai.verta.uac.CollaboratorPermissions;
+import ai.verta.uac.GetCollaboratorResponseItem;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.Organization;
+import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.Resources;
+import ai.verta.uac.Role;
+import ai.verta.uac.RoleBinding;
+import ai.verta.uac.RoleScope;
+import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.ProtocolMessageEnum;
 import io.grpc.Metadata;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
-public interface RoleService {
+public interface RoleService extends ai.verta.modeldb.common.authservice.RoleService {
 
   boolean IsImplemented();
 
@@ -101,7 +111,6 @@ public interface RoleService {
   List<String> getAccessibleResourceIds(
       CollaboratorBase hostUserInfo,
       CollaboratorBase currentLoginUserInfo,
-      ProtocolMessageEnum resourceVisibility,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       List<String> requestedResourceIds);
 
@@ -120,6 +129,16 @@ public interface RoleService {
    */
   WorkspaceDTO getWorkspaceDTOByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
 
+  /**
+   * from the name for workspace, get the workspace id and type. if no workspace is present assume
+   * user's personal workspace
+   *
+   * @param currentLoginUserInfo : current login userInfo
+   * @param workspaceName : orgName or username
+   * @return {@link Workspace} : workspace
+   */
+  Workspace getWorkspaceByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
+
   WorkspaceDTO getWorkspaceDTOByWorkspaceId(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
 
@@ -128,7 +147,10 @@ public interface RoleService {
   GetResourcesResponseItem getEntityResource(
       String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo);
+  List<GetResourcesResponseItem> getResourceItems(
+      Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   boolean deleteResources(Resources resources);
 
@@ -138,6 +160,7 @@ public interface RoleService {
   boolean createWorkspacePermissions(
       String workspaceName,
       String resourceId,
+      String resourceName,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
@@ -147,6 +170,7 @@ public interface RoleService {
       Long workspaceId,
       Optional<WorkspaceType> workspaceType,
       String resourceId,
+      String resourceName,
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
@@ -174,7 +198,7 @@ public interface RoleService {
       List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   boolean checkConnectionsBasedOnPrivileges(
-      ModelDBResourceEnum.ModelDBServiceResourceTypes serviceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions serviceActions,
+      ModelDBServiceResourceTypes serviceResourceTypes,
+      ModelDBServiceActions serviceActions,
       String resourceId);
 }

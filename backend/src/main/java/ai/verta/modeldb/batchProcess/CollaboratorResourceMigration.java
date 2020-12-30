@@ -5,10 +5,11 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -29,6 +30,7 @@ import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 public class CollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
@@ -53,14 +55,14 @@ public class CollaboratorResourceMigration {
     }
 
     LOGGER.info("Migration start");
-    ModelDBUtils.registeredBackgroundUtilsCount();
+    CommonUtils.registeredBackgroundUtilsCount();
     try {
       migrateProjects();
       LOGGER.info("Projects done migration");
       migrateRepositories();
       LOGGER.info("Repositories done migration");
     } finally {
-      ModelDBUtils.unregisteredBackgroundUtilsCount();
+      CommonUtils.unregisteredBackgroundUtilsCount();
     }
 
     LOGGER.info("Migration End");
@@ -84,7 +86,9 @@ public class CollaboratorResourceMigration {
         Root<ProjectEntity> root = criteriaQuery.from(ProjectEntity.class);
 
         CriteriaQuery<ProjectEntity> selectQuery =
-            criteriaQuery.select(root).orderBy(criteriaBuilder.asc(root.get("id")));
+            criteriaQuery
+                .select(root)
+                .where(criteriaBuilder.equal(root.get("visibility_migration"), false));
 
         TypedQuery<ProjectEntity> typedQuery = session.createQuery(selectQuery);
 
@@ -113,6 +117,7 @@ public class CollaboratorResourceMigration {
             roleService.createWorkspacePermissions(
                 workspaceDTO.getWorkspaceName(),
                 project.getId(),
+                project.getName(),
                 Optional.of(Long.parseLong(project.getOwner())),
                 ModelDBServiceResourceTypes.PROJECT,
                 CollaboratorPermissions.newBuilder()
@@ -122,6 +127,17 @@ public class CollaboratorResourceMigration {
                     Optional.ofNullable(
                         WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
                     VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
+            Transaction transaction = null;
+            try {
+              transaction = session.beginTransaction();
+              project.setVisibility_migration(true);
+              session.update(project);
+              transaction.commit();
+            } catch (Exception ex) {
+              if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
+              }
+            }
           }
         } else {
           LOGGER.debug("Total projects count 0");
@@ -157,7 +173,9 @@ public class CollaboratorResourceMigration {
         Root<RepositoryEntity> root = criteriaQuery.from(RepositoryEntity.class);
 
         CriteriaQuery<RepositoryEntity> selectQuery =
-            criteriaQuery.select(root).orderBy(criteriaBuilder.asc(root.get("id")));
+            criteriaQuery
+                .select(root)
+                .where(criteriaBuilder.equal(root.get("visibility_migration"), false));
 
         TypedQuery<RepositoryEntity> typedQuery = session.createQuery(selectQuery);
 
@@ -186,6 +204,7 @@ public class CollaboratorResourceMigration {
             roleService.createWorkspacePermissions(
                 workspaceDTO.getWorkspaceName(),
                 String.valueOf(repository.getId()),
+                repository.getName(),
                 Optional.of(Long.parseLong(repository.getOwner())),
                 ModelDBServiceResourceTypes.REPOSITORY,
                 CollaboratorPermissions.newBuilder()
@@ -195,6 +214,17 @@ public class CollaboratorResourceMigration {
                     Optional.ofNullable(
                         WorkspaceTypeEnum.WorkspaceType.forNumber(repository.getWorkspace_type())),
                     VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())));
+            Transaction transaction = null;
+            try {
+              transaction = session.beginTransaction();
+              repository.setVisibility_migration(true);
+              session.update(repository);
+              transaction.commit();
+            } catch (Exception ex) {
+              if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
+              }
+            }
           }
         } else {
           LOGGER.debug("Total repositories count 0");

@@ -9,9 +9,9 @@ import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -32,7 +32,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolStringList;
@@ -955,7 +954,6 @@ public class CommitDAORdbImpl implements CommitDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              ResourceVisibility.PRIVATE,
               ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
               request.getRepoIdsList().stream().map(String::valueOf).collect(Collectors.toList()));
 

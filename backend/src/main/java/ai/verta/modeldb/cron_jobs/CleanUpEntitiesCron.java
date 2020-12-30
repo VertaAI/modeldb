@@ -3,10 +3,10 @@ package ai.verta.modeldb.cron_jobs;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class CleanUpEntitiesCron extends TimerTask {
   public void run() {
     LOGGER.info("CleanUpEntitiesCron wakeup");
 
-    ModelDBUtils.registeredBackgroundUtilsCount();
+    CommonUtils.registeredBackgroundUtilsCount();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       // Clean up projects
       cleanProjects(session);
@@ -54,7 +54,7 @@ public class CleanUpEntitiesCron extends TimerTask {
         LOGGER.warn("CleanUpEntitiesCron Exception: ", ex);
       }
     } finally {
-      ModelDBUtils.unregisteredBackgroundUtilsCount();
+      CommonUtils.unregisteredBackgroundUtilsCount();
     }
     LOGGER.info("CleanUpEntitiesCron finish tasks and reschedule");
   }

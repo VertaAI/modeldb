@@ -9,6 +9,7 @@ import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.ArtifactStoreMapping;
@@ -199,7 +200,7 @@ public class ModelDBHibernateUtil {
         setDatabaseProperties(app, databasePropMap);
 
         // Initialize background utils count
-        ModelDBUtils.initializeBackgroundUtilsCount();
+        CommonUtils.initializeBackgroundUtilsCount();
 
         // Hibernate settings equivalent to hibernate.cfg.xml's properties
         Configuration configuration = new Configuration();
@@ -710,7 +711,7 @@ public class ModelDBHibernateUtil {
     if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
       new Thread(
               () -> {
-                ModelDBUtils.registeredBackgroundUtilsCount();
+                CommonUtils.registeredBackgroundUtilsCount();
                 int index = 0;
                 try {
                   CompletableFuture<Boolean>[] completableFutures =
@@ -772,7 +773,7 @@ public class ModelDBHibernateUtil {
                   LOGGER.warn(
                       "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
                 } finally {
-                  ModelDBUtils.unregisteredBackgroundUtilsCount();
+                  CommonUtils.unregisteredBackgroundUtilsCount();
                 }
               })
           .start();
@@ -783,7 +784,7 @@ public class ModelDBHibernateUtil {
         Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
         if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
           try {
-            ModelDBUtils.registeredBackgroundUtilsCount();
+            CommonUtils.registeredBackgroundUtilsCount();
             boolean isLocked =
                 checkMigrationLockedStatus(
                     migrationName, rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
@@ -800,7 +801,7 @@ public class ModelDBHibernateUtil {
           } catch (SQLException | DatabaseException e) {
             LOGGER.error("Error on migration: {}", e.getMessage());
           } finally {
-            ModelDBUtils.unregisteredBackgroundUtilsCount();
+            CommonUtils.unregisteredBackgroundUtilsCount();
           }
         }
       }
@@ -809,27 +810,9 @@ public class ModelDBHibernateUtil {
       if (migrationTypeMap.containsKey(migrationName)) {
         Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
         if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
-          try {
-            boolean isLocked =
-                checkMigrationLockedStatus(
-                    migrationName, rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
-            if (!isLocked) {
-              LOGGER.debug("Obtaining migration lock");
-              lockedMigration(
-                  migrationName, rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
-              int recordUpdateLimit =
-                  (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-              CollaboratorResourceMigration.execute(recordUpdateLimit);
-            } else {
-              LOGGER.debug("Migration already locked");
-              /*throw new ModelDBException(
-              migrationName
-                  + " Migration already running, You would not start service till finish the Migration it");*/
-            }
-          } catch (SQLException | DatabaseException e) {
-            LOGGER.error("Error on migration: {}", e.getMessage());
-            throw new ModelDBException(e.getMessage(), e);
-          }
+          int recordUpdateLimit =
+              (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
+          CollaboratorResourceMigration.execute(recordUpdateLimit);
         }
       }
     }

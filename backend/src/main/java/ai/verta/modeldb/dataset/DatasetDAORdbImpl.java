@@ -10,9 +10,9 @@ import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -159,6 +159,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           dataset.getWorkspaceServiceId(),
           Optional.of(dataset.getWorkspaceType()),
           dataset.getId(),
+          datasetEntity.getName(),
           Optional.empty(), // UAC will populate the owner ID
           ModelDBServiceResourceTypes.DATASET,
           dataset.getCustomPermission(),
@@ -297,7 +298,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              datasetVisibility,
               ModelDBServiceResourceTypes.DATASET,
               queryParameters.getDatasetIdsList());
 
@@ -388,7 +388,13 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
-                entityName, predicates, builder, criteriaQuery, datasetRoot, authService);
+                entityName,
+                predicates,
+                builder,
+                criteriaQuery,
+                datasetRoot,
+                authService,
+                roleService);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
@@ -820,7 +826,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              ResourceVisibility.PRIVATE,
               ModelDBServiceResourceTypes.DATASET,
               Collections.EMPTY_LIST);
 

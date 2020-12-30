@@ -8,8 +8,8 @@ import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -360,7 +360,13 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
-                entityName, predicates, builder, criteriaQuery, datasetVersionRoot, authService);
+                entityName,
+                predicates,
+                builder,
+                criteriaQuery,
+                datasetVersionRoot,
+                authService,
+                roleService);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
