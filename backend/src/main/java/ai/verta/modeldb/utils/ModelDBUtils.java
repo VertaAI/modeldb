@@ -6,7 +6,6 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
-import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
@@ -14,7 +13,6 @@ import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.GetHydratedProjects;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.UpdateProjectName;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
@@ -568,31 +566,6 @@ public class ModelDBUtils {
       rootCause = rootCause.getCause();
     }
     return rootCause;
-  }
-
-  /**
-   * Throws an error if the workspace type is USER and the workspaceId and userID do not match. Is a
-   * NO-OP if userinfo is null.
-   */
-  public static void checkPersonalWorkspace(
-      UserInfo userInfo,
-      WorkspaceType workspaceType,
-      String workspaceId,
-      String resourceNameString) {
-    if (userInfo != null
-        && workspaceType == WorkspaceType.USER
-        && !workspaceId.equals(userInfo.getVertaInfo().getUserId())) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  "Creation of "
-                      + resourceNameString
-                      + " in other user's workspace is not permitted")
-              .addDetails(Any.pack(UpdateProjectName.Response.getDefaultInstance()))
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
   }
 
   public static void checkIfEntityAlreadyExists(
