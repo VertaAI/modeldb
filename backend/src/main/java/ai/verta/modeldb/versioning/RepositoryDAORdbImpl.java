@@ -108,6 +108,28 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(" = :repositoryName ")
           .toString();
 
+  private static final String GET_REPOSITORY_IDS_BY_NAME_HQL =
+      new StringBuilder("SELECT ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append(ModelDBConstants.ID)
+          .append(" FROM ")
+          .append(RepositoryEntity.class.getSimpleName())
+          .append(" ")
+          .append(SHORT_NAME)
+          .append(" where ")
+          .append(" ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append(ModelDBConstants.NAME)
+          .append(" = :repositoryName ")
+          .append(" AND ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append(ModelDBConstants.DELETED)
+          .append(" = false")
+          .toString();
+
   private static final String GET_TAG_HQL =
       new StringBuilder("From ")
           .append(TagsEntity.class.getSimpleName())
@@ -201,6 +223,29 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     this.roleService = roleService;
     this.commitDAO = commitDAO;
     this.metadataDAO = metadataDAO;
+  }
+
+  private void checkIfEntityAlreadyExists(
+      Session session, Workspace workspace, String name, RepositoryTypeEnum repositoryType) {
+    List<Long> repositoryEntityIds = getRepositoryEntityIdsByName(session, name, repositoryType);
+    if (repositoryEntityIds != null && !repositoryEntityIds.isEmpty()) {
+      ModelDBUtils.checkIfEntityAlreadyExists(
+          roleService,
+          workspace,
+          name,
+          repositoryEntityIds.stream().map(String::valueOf).collect(Collectors.toList()),
+          ModelDBServiceResourceTypes.REPOSITORY);
+    }
+  }
+
+  private List<Long> getRepositoryEntityIdsByName(
+      Session session, String name, RepositoryTypeEnum repositoryType) {
+    StringBuilder getRepoCountByNamePrefixHQL = new StringBuilder(GET_REPOSITORY_IDS_BY_NAME_HQL);
+    setRepositoryTypeInQueryBuilder(repositoryType, getRepoCountByNamePrefixHQL);
+    Query query = session.createQuery(getRepoCountByNamePrefixHQL.toString());
+    query.setParameter("repositoryName", name);
+    List<Long> repositoryEntityIds = query.list();
+    return repositoryEntityIds;
   }
 
   @Override
@@ -407,41 +452,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     RepositoryEntity repositoryEntity;
     Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
     if (create) {
-      WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(repoId, false, true);
-      StringBuilder getRepoCountByNamePrefixHQL =
-          new StringBuilder(GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL);
-      setRepositoryTypeInQueryBuilder(repositoryType, getRepoCountByNamePrefixHQL);
-      ModelDBHibernateUtil.checkIfEntityAlreadyExists(
-          session,
-          SHORT_NAME,
-          getRepoCountByNamePrefixHQL.toString(),
-          RepositoryEntity.class.getSimpleName(),
-          "repositoryName",
-          repository.getName(),
-          ModelDBConstants.WORKSPACE_ID,
-          workspaceDTO.getWorkspaceId(),
-          workspaceDTO.getWorkspaceType(),
-          LOGGER);
+      if (repoId.getNamedId().getName().isEmpty()) {
+        throw new ModelDBException("Repository name should not be empty", Code.INVALID_ARGUMENT);
+      }
+      checkIfEntityAlreadyExists(session, workspace, repoId.getNamedId().getName(), repositoryType);
       repositoryEntity = new RepositoryEntity(repository, repositoryType);
     } else {
       repositoryEntity = getRepositoryById(session, repoId, true, false, repositoryType);
       session.lock(repositoryEntity, LockMode.PESSIMISTIC_WRITE);
       if (!repository.getName().isEmpty()
           && !repositoryEntity.getName().equals(repository.getName())) {
-        StringBuilder getRepoCountByNamePrefixHQL =
-            new StringBuilder(GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL);
-        setRepositoryTypeInQueryBuilder(repositoryType, getRepoCountByNamePrefixHQL);
-        ModelDBHibernateUtil.checkIfEntityAlreadyExists(
-            session,
-            SHORT_NAME,
-            getRepoCountByNamePrefixHQL.toString(),
-            RepositoryEntity.class.getSimpleName(),
-            "repositoryName",
-            repository.getName(),
-            ModelDBConstants.WORKSPACE_ID,
-            null,
-            null,
-            LOGGER);
+        checkIfEntityAlreadyExists(session, workspace, repository.getName(), repositoryType);
       }
       repositoryEntity.update(repository);
     }
