@@ -1,8 +1,8 @@
-package ai.verta.modeldb.collaborator;
+package ai.verta.modeldb.common.collaborator;
 
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.modeldb.CollaboratorUserInfo;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.authservice.RoleService;
 import ai.verta.uac.AddCollaboratorRequest.Response.Builder;
 import ai.verta.uac.Entities;
 import ai.verta.uac.Organization;

@@ -5,10 +5,11 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -54,14 +55,14 @@ public class CollaboratorResourceMigration {
     }
 
     LOGGER.info("Migration start");
-    ModelDBUtils.registeredBackgroundUtilsCount();
+    CommonUtils.registeredBackgroundUtilsCount();
     try {
       migrateProjects();
       LOGGER.info("Projects done migration");
       migrateRepositories();
       LOGGER.info("Repositories done migration");
     } finally {
-      ModelDBUtils.unregisteredBackgroundUtilsCount();
+      CommonUtils.unregisteredBackgroundUtilsCount();
     }
 
     LOGGER.info("Migration End");

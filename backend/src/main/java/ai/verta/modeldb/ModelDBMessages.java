@@ -29,12 +29,6 @@ public interface ModelDBMessages {
   String ACCESSIBLE_DATASET_IN_SERVICE = "Accessible datasets in service : {}";
   String DATSET_ALREADY_EXISTS_IN_DATABASE = "Dataset already exists in database";
   String READY_STATUS = "Setting isReady to true, was {}";
-  String HOST_PORT_INFO_STR = "Host : {} Port : {}";
-  String AUTH_SERVICE_REQ_SENT_MSG = "AuthService Request sent";
-  String AUTH_SERVICE_RES_RECEIVED_MSG = "AuthService response received";
-  String ROLE_SERVICE_RES_RECEIVED_MSG = "RoleService response received";
-  String ROLE_SERVICE_RES_RECEIVED_TRACE_MSG = ROLE_SERVICE_RES_RECEIVED_MSG + " : {}";
-  String CALL_TO_ROLE_SERVICE_MSG = "Making a call to RoleService";
   String MODIFICATION_OF_ORG_ADMIN_COLLABORATOR_DENIED =
       "Can not modify collaboration settings of organization admin user.";
   String PROJECT_NOT_FOUND_FOR_ID = "Project not found for given ID";
