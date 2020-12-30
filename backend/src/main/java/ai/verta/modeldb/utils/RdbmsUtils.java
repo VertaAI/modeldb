@@ -113,13 +113,14 @@ public class RdbmsUtils {
     return new ProjectEntity(project);
   }
 
+  // TODO: delete as it seems unused
   public static List<Project> convertProjectsFromProjectEntityList(
-      RoleService roleService, List<ProjectEntity> projectEntityList)
+      RoleService roleService, AuthService authService, List<ProjectEntity> projectEntityList)
       throws InvalidProtocolBufferException {
     List<Project> projects = new ArrayList<>();
     if (projectEntityList != null) {
       for (ProjectEntity projectEntity : projectEntityList) {
-        projects.add(projectEntity.getProtoObject(roleService));
+        projects.add(projectEntity.getProtoObject(roleService, authService));
       }
     }
     return projects;

@@ -37,5 +37,5 @@ public interface AuthService {
 
   Workspace workspaceIdByName(boolean retry, String workspaceName);
 
-  Workspace workspaceById(boolean retry, String workspaceId);
+  Workspace workspaceById(boolean retry, Long workspaceId);
 }
