@@ -4,7 +4,7 @@ Backend for ModelDB version 2
 
 ## Prerequisites
 
-1. General tools: git, maven, jdk 1.8
+1. General tools: git, maven, jdk 11
 
 ## Project build & execution steps
 

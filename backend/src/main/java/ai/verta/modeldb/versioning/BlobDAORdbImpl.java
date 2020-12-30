@@ -16,8 +16,8 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.PathLocationTypeEnum;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
@@ -585,8 +585,6 @@ public class BlobDAORdbImpl implements BlobDAO {
         if (version != null) {
           datasetVersionBuilder.setVersion(Long.parseLong(version));
         }
-        datasetVersionBuilder.setDatasetVersionVisibilityValue(
-            repositoryEntity.getRepository_visibility());
         datasetVersionBuilder.addAllAttributes(getComponentResponse.getAttributesList());
         datasetVersionBuilder.setOwner(commit.getAuthor());
         DatasetBlob dataset = blob.getDataset();

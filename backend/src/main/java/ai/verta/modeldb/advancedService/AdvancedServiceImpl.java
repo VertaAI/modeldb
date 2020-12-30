@@ -11,7 +11,6 @@ import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.Comment;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindDatasetVersions;
@@ -39,20 +38,20 @@ import ai.verta.modeldb.HydratedExperimentRun;
 import ai.verta.modeldb.HydratedProject;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceImplBase;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBConstants.UserIdentifier;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthInterceptor;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
-import ai.verta.modeldb.collaborator.CollaboratorOrg;
-import ai.verta.modeldb.collaborator.CollaboratorTeam;
-import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.comment.CommentDAO;
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
+import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
+import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
@@ -871,7 +870,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               resourceIds.add(dataset.getId());
               List<GetCollaboratorResponseItem> datasetCollaboratorList =
                   roleService.getResourceCollaborators(
-                      ModelDBServiceResourceTypes.DATASET,
+                      ModelDBServiceResourceTypes.REPOSITORY,
                       dataset.getId(),
                       dataset.getOwner(),
                       requestHeaders);
@@ -894,7 +893,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     LOGGER.trace("Got results from UAC : {}", userInfoMap.size());
 
     Map<String, Actions> selfAllowedActions =
-        roleService.getSelfAllowedActionsBatch(resourceIds, ModelDBServiceResourceTypes.DATASET);
+        roleService.getSelfAllowedActionsBatch(resourceIds, ModelDBServiceResourceTypes.REPOSITORY);
 
     for (Dataset dataset : datasets) {
       // Use the map for vertaId  to UserInfo generated for this batch request to populate the
@@ -948,7 +947,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(request, userInfo, DatasetVisibility.PRIVATE);
+          datasetDAO.findDatasets(request, userInfo, ResourceVisibility.PRIVATE);
       LOGGER.debug(
           ModelDBMessages.DATASET_RECORD_COUNT_MSG, datasetPaginationDTO.getTotalRecords());
       List<HydratedDataset> hydratedDatasets =
@@ -974,7 +973,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(request, userInfo, DatasetVisibility.PUBLIC);
+          datasetDAO.findDatasets(request, userInfo, ResourceVisibility.ORG_DEFAULT);
       LOGGER.debug(
           ModelDBMessages.DATASET_RECORD_COUNT_MSG, datasetPaginationDTO.getTotalRecords());
 
@@ -1002,12 +1001,12 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
   private HydratedDatasetVersion getHydratedDatasetVersion(DatasetVersion datasetVersion) {
     UserInfo ownerUserInfo =
-        authService.getUserInfo(datasetVersion.getOwner(), UserIdentifier.VERTA_ID);
+        authService.getUserInfo(datasetVersion.getOwner(), CommonConstants.UserIdentifier.VERTA_ID);
 
     Map<String, Actions> selfAllowedActions =
         roleService.getSelfAllowedActionsBatch(
             Collections.singletonList(datasetVersion.getDatasetId()),
-            ModelDBServiceResourceTypes.DATASET);
+            ModelDBServiceResourceTypes.REPOSITORY);
 
     HydratedDatasetVersion.Builder hydratedDatasetVersionBuilder =
         HydratedDatasetVersion.newBuilder().setDatasetVersion(datasetVersion);
@@ -1051,7 +1050,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       if (!request.getDatasetId().isEmpty()) {
         // Validate if current user has access to the entity or not
         roleService.validateEntityUserWithUserInfo(
-            ModelDBServiceResourceTypes.DATASET,
+            ModelDBServiceResourceTypes.REPOSITORY,
             request.getDatasetId(),
             ModelDBServiceActions.READ);
       }
@@ -1122,7 +1121,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                       : request.getWorkspaceName());
 
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(findDatasets.build(), userInfo, DatasetVisibility.PRIVATE);
+          datasetDAO.findDatasets(findDatasets.build(), userInfo, ResourceVisibility.PRIVATE);
 
       if (datasetPaginationDTO.getTotalRecords() == 0) {
         Status status =
@@ -1237,13 +1236,14 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       CollaboratorUser hostCollaboratorBase = null;
       String userEmail = request.getEmail();
       if (!userEmail.isEmpty() && ModelDBUtils.isValidEmail(userEmail)) {
-        UserInfo hostUserInfo = authService.getUserInfo(userEmail, UserIdentifier.EMAIL_ID);
+        UserInfo hostUserInfo =
+            authService.getUserInfo(userEmail, CommonConstants.UserIdentifier.EMAIL_ID);
         hostCollaboratorBase = new CollaboratorUser(authService, hostUserInfo);
       } else if (!userEmail.isEmpty()) {
         errorMessage = "Invalid email found in the FindHydratedPublicProjects request";
       } else if (!request.getVertaId().isEmpty()) {
         UserInfo hostUserInfo =
-            authService.getUserInfo(request.getVertaId(), UserIdentifier.VERTA_ID);
+            authService.getUserInfo(request.getVertaId(), CommonConstants.UserIdentifier.VERTA_ID);
         hostCollaboratorBase = new CollaboratorUser(authService, hostUserInfo);
       }
 
@@ -1435,7 +1435,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           // Get the user info from the Context
           UserInfo userInfo = authService.getCurrentLoginUserInfo();
           DatasetPaginationDTO datasetPaginationDTO =
-              datasetDAO.findDatasets(findDatasetsRequest, userInfo, DatasetVisibility.PRIVATE);
+              datasetDAO.findDatasets(findDatasetsRequest, userInfo, ResourceVisibility.PRIVATE);
           LOGGER.debug(
               ModelDBMessages.DATASET_RECORD_COUNT_MSG, datasetPaginationDTO.getTotalRecords());
           hydratedDatasets = findHydratedDatasets(datasetPaginationDTO, false);

@@ -1,6 +1,5 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.utils.TestConstants.RESOURCE_OWNER_ID;
 import static org.junit.Assert.*;
 
 import ai.verta.common.CollaboratorTypeEnum;
@@ -11,6 +10,8 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.Pagination;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.authservice.AuthServiceUtils;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.exceptions.ModelDBException;
@@ -37,6 +38,7 @@ import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.UACServiceGrpc;
@@ -425,7 +427,11 @@ public class RepositoryTest {
         repository.getName(),
         getByNameResult.getRepository().getName());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      Assert.assertEquals(RESOURCE_OWNER_ID, getByNameResult.getRepository().getOwner());
+      UserInfo userInfo =
+          uacServiceStub.getUser(
+              GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
+      Assert.assertEquals(
+          userInfo.getVertaInfo().getUserId(), getByNameResult.getRepository().getOwner());
     }
 
     LOGGER.info("Update repository by name test end................................");
@@ -528,7 +534,11 @@ public class RepositoryTest {
         repository.getName(),
         getByNameResult.getRepository().getName());
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      Assert.assertEquals(RESOURCE_OWNER_ID, getByNameResult.getRepository().getOwner());
+      UserInfo userInfo =
+          uacServiceStub.getUser(
+              GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
+      Assert.assertEquals(
+          userInfo.getVertaInfo().getUserId(), getByNameResult.getRepository().getOwner());
     }
 
     LOGGER.info("Get repository by name test end................................");
@@ -1245,17 +1255,18 @@ public class RepositoryTest {
     // Get the user info by vertaId form the AuthService
     UserInfo testUser2 = uacServiceStub.getUser(getUserRequest);
 
-    AddCollaboratorRequest.Builder addCollaboratorRequestBuilder =
+    AddCollaboratorRequest addCollaboratorRequest =
         AddCollaboratorRequest.newBuilder()
             .setShareWith(testUser2.getEmail())
+            .setPermission(
+                CollaboratorPermissions.newBuilder()
+                    .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)
+                    .build())
             .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
-            .addEntityIds(String.valueOf(repository.getId()));
-    addCollaboratorRequestBuilder
-        .getPermissionBuilder()
-        .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
+            .addEntityIds(String.valueOf(repository.getId()))
+            .build();
     AddCollaboratorRequest.Response collaboratorResponse =
-        collaboratorServiceBlockingStub.addOrUpdateRepositoryCollaborator(
-            addCollaboratorRequestBuilder.build());
+        collaboratorServiceBlockingStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
     assertTrue(collaboratorResponse.getStatus());
 
     FindRepositories findRepositoriesRequest =

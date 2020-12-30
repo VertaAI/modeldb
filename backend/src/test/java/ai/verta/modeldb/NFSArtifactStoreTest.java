@@ -6,6 +6,8 @@ import static org.junit.Assume.assumeTrue;
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.authservice.AuthServiceUtils;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;

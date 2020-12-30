@@ -8,16 +8,16 @@ import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetTypeEnum;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
-import ai.verta.modeldb.collaborator.CollaboratorOrg;
-import ai.verta.modeldb.collaborator.CollaboratorTeam;
-import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
+import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
+import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -286,7 +286,7 @@ public class DatasetToRepositoryMigration {
       Session session, DatasetEntity datasetEntity, UserInfo userInfoValue)
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     String datasetId = datasetEntity.getId();
-    Dataset newDataset = datasetEntity.getProtoObject().toBuilder().setId("").build();
+    Dataset newDataset = datasetEntity.getProtoObject(roleService).toBuilder().setId("").build();
     Repository repository;
     try {
       LOGGER.debug("Creating repository for dataset {}", datasetEntity.getId());

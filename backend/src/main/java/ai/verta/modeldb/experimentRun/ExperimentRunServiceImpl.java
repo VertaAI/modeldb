@@ -53,6 +53,7 @@ import ai.verta.modeldb.LogAttribute;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogDataset;
 import ai.verta.modeldb.LogDatasets;
+import ai.verta.modeldb.LogEnvironment;
 import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.LogHyperparameter;
 import ai.verta.modeldb.LogHyperparameters;
@@ -73,8 +74,8 @@ import ai.verta.modeldb.UpdateExperimentRunDescription;
 import ai.verta.modeldb.UpdateExperimentRunName;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
@@ -2789,6 +2790,36 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, CloneExperimentRun.Response.getDefaultInstance());
+    }
+  }
+
+  @Override
+  public void logEnvironment(
+      LogEnvironment request, StreamObserver<LogEnvironment.Response> responseObserver) {
+    try {
+      if (request.getId().isEmpty()) {
+        throw new ModelDBException("ExperimentRun Id should not be empty", Code.INVALID_ARGUMENT);
+      }
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      // Validate if current user has access to the entity or not
+      roleService.validateEntityUserWithUserInfo(
+          ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
+
+      experimentRunDAO.logEnvironment(request.getId(), request.getEnvironment());
+      saveAuditLogs(
+          null,
+          ModelDBConstants.UPDATE,
+          Collections.singletonList(request.getId()),
+          String.format(
+              ModelDBConstants.METADATA_JSON_TEMPLATE,
+              "log",
+              "environment",
+              ModelDBUtils.getStringFromProtoObject(request.getEnvironment())));
+      responseObserver.onNext(LogEnvironment.Response.newBuilder().build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      ModelDBUtils.observeError(responseObserver, e, LogEnvironment.Response.getDefaultInstance());
     }
   }
 }

@@ -4,8 +4,9 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.modeldb.CollaboratorUserInfo;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.Organization;
 import ai.verta.uac.Team;
@@ -38,22 +39,23 @@ public class ModelDBUtilsTest {
     final CollaboratorType readWrite = CollaboratorType.READ_WRITE;
 
     final Ternary aTrue = Ternary.TRUE;
-    GetCollaboratorResponseItem.Builder builder1 =
-        GetCollaboratorResponseItem.newBuilder()
-            .setAuthzEntityType(EntitiesTypes.USER)
-            .setVertaId(USER_ID);
-    builder1.getPermissionBuilder().setCollaboratorType(readWrite);
-    GetCollaboratorResponseItem.Builder builder2 =
-        GetCollaboratorResponseItem.newBuilder()
-            .setAuthzEntityType(EntitiesTypes.ORGANIZATION)
-            .setVertaId(ORG_ID);
-    GetCollaboratorResponseItem.Builder builder3 =
-        GetCollaboratorResponseItem.newBuilder()
-            .setAuthzEntityType(EntitiesTypes.TEAM)
-            .setVertaId(TEAM_ID);
-    builder3.getPermissionBuilder().setCanDeploy(aTrue);
     List<GetCollaboratorResponseItem> collaboratorList =
-        Arrays.asList(builder1.build(), builder2.build(), builder3.build());
+        Arrays.asList(
+            GetCollaboratorResponseItem.newBuilder()
+                .setAuthzEntityType(EntitiesTypes.USER)
+                .setVertaId(USER_ID)
+                .setPermission(
+                    CollaboratorPermissions.newBuilder().setCollaboratorType(readWrite).build())
+                .build(),
+            GetCollaboratorResponseItem.newBuilder()
+                .setAuthzEntityType(EntitiesTypes.ORGANIZATION)
+                .setVertaId(ORG_ID)
+                .build(),
+            GetCollaboratorResponseItem.newBuilder()
+                .setAuthzEntityType(EntitiesTypes.TEAM)
+                .setPermission(CollaboratorPermissions.newBuilder().setCanDeploy(aTrue).build())
+                .setVertaId(TEAM_ID)
+                .build());
     Map<String, UserInfo> userInfoMap = new HashMap<>();
     final UserInfo userInfo =
         UserInfo.newBuilder()

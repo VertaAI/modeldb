@@ -32,9 +32,9 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.VersioningEntry;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ArtifactEntity;
@@ -70,6 +70,7 @@ import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
+import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
@@ -1618,7 +1619,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
-                entityName, predicates, builder, criteriaQuery, experimentRunRoot, authService);
+                entityName,
+                predicates,
+                builder,
+                criteriaQuery,
+                experimentRunRoot,
+                authService,
+                roleService);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
@@ -3049,5 +3056,34 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
     desExperimentRunBuilder.clearOwner().setOwner(authService.getVertaIdFromUserInfo(userInfo));
     return insertExperimentRun(projectDAO, desExperimentRunBuilder.build(), userInfo);
+  }
+
+  @Override
+  public void logEnvironment(String experimentRunId, EnvironmentBlob environmentBlob)
+      throws InvalidProtocolBufferException {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      Transaction transaction = session.beginTransaction();
+      ExperimentRunEntity experimentRunEntity =
+          session.get(ExperimentRunEntity.class, experimentRunId);
+      if (experimentRunEntity == null) {
+        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.NOT_FOUND_VALUE)
+                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
+      }
+      experimentRunEntity.setEnvironment(ModelDBUtils.getStringFromProtoObject(environmentBlob));
+      session.update(experimentRunEntity);
+      transaction.commit();
+      LOGGER.debug("EnvironmentBlob logged successfully");
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        logEnvironment(experimentRunId, environmentBlob);
+      } else {
+        throw ex;
+      }
+    }
   }
 }

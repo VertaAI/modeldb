@@ -1,20 +1,13 @@
 package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.FindDatasetVersions;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
-import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.grpc.Status;
-import java.util.Calendar;
 import java.util.List;
 import org.hibernate.Session;
 
@@ -176,53 +169,6 @@ public interface DatasetVersionDAO {
   DatasetVersion deleteDatasetVersionAttributes(
       String datasetVersionId, List<String> attributeKeyList, Boolean deleteAll)
       throws InvalidProtocolBufferException;
-
-  /**
-   * Set/Update datasetVersion visibility
-   *
-   * @param datasetVersionId : datasetVersion.id
-   * @param datasetVersionVisibility : DatasetVisibility.PUBLIC, DatasetVisibility.PRIVATE
-   * @return {@link DatasetVersion} : updated DatasetVersion
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
-   */
-  DatasetVersion setDatasetVersionVisibility(
-      String datasetVersionId, DatasetVisibility datasetVersionVisibility)
-      throws InvalidProtocolBufferException;
-
-  default DatasetVersion getDatasetVersionFromRequest(
-      AuthService authService, CreateDatasetVersion request, UserInfo userInfo)
-      throws ModelDBException {
-    DatasetVersion.Builder datasetVersionBuilder =
-        DatasetVersion.newBuilder()
-            .setDatasetId(request.getDatasetId())
-            .setDescription(request.getDescription())
-            .addAllTags(request.getTagsList())
-            .setDatasetVersionVisibility(request.getDatasetVersionVisibility())
-            .addAllAttributes(request.getAttributesList());
-
-    if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
-      datasetVersionBuilder.setTimeLogged(request.getTimeCreated());
-      datasetVersionBuilder.setTimeUpdated(request.getTimeCreated());
-    } else {
-      datasetVersionBuilder.setTimeLogged(Calendar.getInstance().getTimeInMillis());
-      datasetVersionBuilder.setTimeUpdated(Calendar.getInstance().getTimeInMillis());
-    }
-
-    if (!request.getParentId().isEmpty()) {
-      datasetVersionBuilder.setParentId(request.getParentId());
-    }
-
-    if (userInfo != null) {
-      datasetVersionBuilder.setOwner(authService.getVertaIdFromUserInfo(userInfo));
-    }
-
-    if (!request.hasPathDatasetVersionInfo()) {
-      throw new ModelDBException("Not supported", Status.Code.UNIMPLEMENTED);
-    }
-    datasetVersionBuilder.setPathDatasetVersionInfo(request.getPathDatasetVersionInfo());
-
-    return datasetVersionBuilder.build();
-  }
 
   boolean isDatasetVersionExists(Session session, String id);
 }

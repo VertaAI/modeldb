@@ -11,10 +11,16 @@ import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAODisabled;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAORdbImpl;
-import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.authservice.AuthInterceptor;
+import ai.verta.modeldb.authservice.AuthServiceUtils;
+import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
+import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -148,7 +154,6 @@ public class App implements ApplicationContextAware {
 
   // Feature flags
   private Boolean disabledAuthz = false;
-  private Boolean publicSharingEnabled = false;
   private Boolean storeClientCreationTimestamp = false;
   private Integer requestTimeout = 30;
 
@@ -267,8 +272,8 @@ public class App implements ApplicationContextAware {
         Tracer tracer = Configuration.fromEnv().getTracer();
         app.tracingInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
         GlobalTracer.register(tracer);
-        io.opentracing.contrib.jdbc.TracingDriver.load();
-        io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
+        TracingDriver.load();
+        TracingDriver.setInterceptorMode(true);
         TracingDriver.setInterceptorProperty(true);
       }
       AuthService authService = new PublicAuthServiceUtils();
@@ -392,8 +397,6 @@ public class App implements ApplicationContextAware {
     if (featureFlagMap != null) {
       app.setDisabledAuthz(
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
-      app.setPublicSharingEnabled(
-          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.PUBLIC_SHARING_ENABLED, false));
       app.disabledArtifactStore =
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_ARTIFACT_STORE, false);
     }
@@ -591,8 +594,6 @@ public class App implements ApplicationContextAware {
         new DatasetServiceImpl(
             authService,
             roleService,
-            datasetDAO,
-            datasetVersionDAO,
             projectDAO,
             experimentDAO,
             experimentRunDAO,
@@ -869,14 +870,6 @@ public class App implements ApplicationContextAware {
 
   public void setDisabledAuthz(Boolean disabledAuthz) {
     this.disabledAuthz = disabledAuthz;
-  }
-
-  public Boolean getPublicSharingEnabled() {
-    return publicSharingEnabled;
-  }
-
-  public void setPublicSharingEnabled(Boolean publicSharingEnabled) {
-    this.publicSharingEnabled = publicSharingEnabled;
   }
 
   public String getCloudAccessKey() {

@@ -12,6 +12,8 @@ import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStu
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.authservice.AuthServiceUtils;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -153,7 +155,7 @@ public class ProjectTest {
     serverBuilder.build().start();
     ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 100);
+    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 1000);
 
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
@@ -1473,12 +1475,14 @@ public class ProjectTest {
       }
 
     } finally {
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          client2ProjectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
+      if (project != null) {
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            client2ProjectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
+      }
     }
 
     LOGGER.info("Get project by name test stop................................");
@@ -2492,8 +2496,11 @@ public class ProjectTest {
         try {
           GetExperimentRunsInProject getExperimentRuns =
               GetExperimentRunsInProject.newBuilder().setProjectId(project.getId()).build();
-          experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
-          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          GetExperimentRunsInProject.Response getResponse =
+              experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
+          if (app.getAuthServerHost() != null
+              && app.getAuthServerPort() != null
+              && getResponse.getExperimentRunsCount() > 0) {
             fail();
           }
         } catch (StatusRuntimeException e) {

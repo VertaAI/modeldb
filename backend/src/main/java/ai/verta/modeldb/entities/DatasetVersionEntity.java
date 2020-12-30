@@ -31,7 +31,6 @@ public class DatasetVersionEntity {
     setTime_logged(datasetVersion.getTimeLogged());
     setDescription(datasetVersion.getDescription());
     setTags(RdbmsUtils.convertTagListFromTagMappingList(this, datasetVersion.getTagsList()));
-    setDataset_version_visibility(datasetVersion.getDatasetVersionVisibilityValue());
     setDataset_type(datasetVersion.getDatasetTypeValue());
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
@@ -190,10 +189,6 @@ public class DatasetVersionEntity {
     return dataset_version_visibility;
   }
 
-  public void setDataset_version_visibility(Integer dataset_version_visibility) {
-    this.dataset_version_visibility = dataset_version_visibility;
-  }
-
   public Integer getDataset_type() {
     return dataset_type;
   }
@@ -272,7 +267,6 @@ public class DatasetVersionEntity {
             .setTimeUpdated(getTime_updated())
             .setDescription(getDescription() != null ? getDescription() : "")
             .addAllTags(RdbmsUtils.convertTagsMappingListFromTagList(getTags()))
-            .setDatasetVersionVisibilityValue(getDataset_version_visibility())
             .setDatasetTypeValue(getDataset_type())
             .addAllAttributes(
                 RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))

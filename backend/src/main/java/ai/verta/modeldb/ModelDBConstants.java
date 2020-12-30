@@ -70,7 +70,6 @@ public interface ModelDBConstants {
   // feature-flags
   String DISABLED_AUTHZ = "disabled-authz";
   String STORE_CLIENT_CREATION_TIMESTAMP = "store-client-creation-timestamp";
-  String PUBLIC_SHARING_ENABLED = "public_sharing_enabled";
   String DISABLED_ARTIFACT_STORE = "disabled-artifact-store";
 
   // Threshold Constant
@@ -82,8 +81,6 @@ public interface ModelDBConstants {
   int INITIAL_CRON_DELAY = 300; // 300second = 5min : timeout in second
   String INITIAL_DELAY = "initial_delay";
 
-  // String Constants
-  String STRING_COLON = ":";
   String EMPTY_STRING = "";
 
   // Column/protos field names
@@ -111,7 +108,6 @@ public interface ModelDBConstants {
   String PROJECT_COLLABORATORS = "project_collaborators";
   String PROJECT_ID = "project_id";
   String PROJECT_IDS = "project_ids";
-  String PROJECT_VISIBILITY = "visibility";
   String QUERY_DATSET_VERSION_INFO = "query_dataset_version_info";
   String RAW_DATSET_VERSION_INFO = "raw_dataset_version_info";
   String SHORT_NAME = "short_name";
@@ -156,9 +152,7 @@ public interface ModelDBConstants {
   String DATE_TIME = "date_time";
   String DATASET_ID_STR = "datasetId";
   String DATASET_VERSION_ID_STR = "datasetVersionId";
-  String DATASET_VISIBILITY = "dataset_visibility";
   String EMAILID = "email_id";
-  String DATASET_VERSION_VISIBILITY = "dataset_version_visibility";
   String EXPERIMENT_ID_STR = "experimentId";
   String EXPERIMENT_RUN_ID_STR = "experimentRunId";
   String FIELD_TYPE_STR = "fieldType";
@@ -172,7 +166,6 @@ public interface ModelDBConstants {
   String TIME_CREATED = "time_created";
   String TIME_UPDATED = "time_updated";
   String TIME_LOGGED = "time_logged";
-  String UNSIGNED_USER = "unsigned_user";
   String VERSION = "version";
   String VERTA_ID_STR = "vertaId";
   String VERTA_ID = "verta_id";
@@ -181,6 +174,7 @@ public interface ModelDBConstants {
   String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
   String HEALTH_CHECK_SERVICE_FIELD = "service";
   String DELETED = "deleted";
+  String CREATED = "created";
   String DEV_KEY = "devKey";
   String REQUEST_TIMEOUT = "requestTimeout";
 
@@ -189,7 +183,6 @@ public interface ModelDBConstants {
 
   // Common error messages
   String ACCESS_DENIED_EXPERIMENT_RUN = "User does not have access to the ExperimentRun.";
-  String AUTH_SERVICE_CHANNEL_CLOSE_ERROR = "AuthServiceChannel close() error : ";
   String INTERNAL_ERROR = "Internal server error";
   String NON_EQ_ID_PRED_ERROR_MESSAGE =
       "Only equality predicates supported on ids. Use EQ Operator.";
@@ -220,12 +213,7 @@ public interface ModelDBConstants {
       "Can't add new versioning entry, because an existing one has different repository or commit";
   String REPOSITORY_ENTITY = "repositoryEntity";
   String POPULATE_VERSION_MIGRATION = "POPULATE_VERSION_MIGRATION";
-
-  enum UserIdentifier {
-    VERTA_ID,
-    EMAIL_ID,
-    USER_NAME
-  }
+  String COLLABORATOR_RESOURCE_MIGRATION = "COLLABORATOR_RESOURCE_MIGRATION";
 
   // Role name
   String ROLE_DATASET_CREATE = "DATASET_CREATE";
@@ -272,7 +260,7 @@ public interface ModelDBConstants {
   String MASTER_BRANCH = "master";
   String COMMIT = "commit";
   String VERSIONING_LOCATION = "versioning_location";
-  String REPOSITORY_VISIBILITY = "repository_visibility";
+  String VISIBILITY = "visibility";
   String REPOSITORY = "repository";
   String VERSIONING_REPOSITORY = "versioning_repository";
   String VERSIONING_COMMIT = "versioning_commit";
@@ -290,10 +278,10 @@ public interface ModelDBConstants {
   String CRON_JOB = "cron_job";
   String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
   String DELETE_ENTITIES = "delete_entities";
-  String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
   String EXPIRED_TOKEN = "ExpiredToken";
   String UPDATE_RUN_ENVIRONMENTS = "update_run_environments";
   String DELETE_AUDIT_LOGS = "delete_audit_logs";
+  String CLEAN_UP_ENTITIES = "clean_up_entities";
 
   // Audit log constants
   String CREATE = "CREATE";

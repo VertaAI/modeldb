@@ -7,8 +7,9 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.authservice.AuthServiceUtils;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -256,7 +257,6 @@ public class FindDatasetEntitiesTest {
             .addTags("A5")
             .addTags("A7")
             .addTags("A8")
-            .setDatasetVisibility(DatasetVisibility.PUBLIC)
             .build();
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
     dataset4 = createDatasetResponse.getDataset();
@@ -371,7 +371,6 @@ public class FindDatasetEntitiesTest {
             .addTags("A5")
             .addTags("A7")
             .addTags("A8")
-            .setDatasetVersionVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
             .build();
     createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
@@ -942,82 +941,6 @@ public class FindDatasetEntitiesTest {
     }
 
     LOGGER.info("Find and sort Datasets by attributes test start................................");
-  }
-
-  /** Find public datasets sort by name */
-  @Test
-  public void findPublicDatasetsSortingByNameTest() {
-    LOGGER.info(
-        "Find public Datasets with sorting by name test start................................");
-
-    KeyValueQuery keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey(ModelDBConstants.DATASET_VISIBILITY)
-            .setValue(Value.newBuilder().setStringValue("PUBLIC").build())
-            .setOperator(OperatorEnum.Operator.EQ)
-            .build();
-    FindDatasets findDatasets =
-        FindDatasets.newBuilder()
-            .addPredicates(keyValueQuery)
-            .setAscending(false)
-            .setIdsOnly(false)
-            .setSortKey("name")
-            .build();
-
-    FindDatasets.Response response = datasetServiceStub.findDatasets(findDatasets);
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        response.getTotalRecords());
-    assertEquals(
-        "Dataset count not match with expected dataset count", 1, response.getDatasetsCount());
-    assertEquals(
-        "Dataset Id not match with expected dataset Id",
-        dataset4.getId(),
-        response.getDatasets(0).getId());
-
-    keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey(ModelDBConstants.DATASET_VISIBILITY)
-            .setValue(Value.newBuilder().setStringValue("PUBLIC").build())
-            .setOperator(OperatorEnum.Operator.NE)
-            .build();
-    findDatasets =
-        FindDatasets.newBuilder().addPredicates(keyValueQuery).setSortKey("name").build();
-
-    response = datasetServiceStub.findDatasets(findDatasets);
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
-    assertEquals(
-        "Dataset count not match with expected dataset count", 3, response.getDatasetsCount());
-    assertEquals(
-        "Dataset Id not match with expected dataset Id",
-        dataset3.getId(),
-        response.getDatasets(0).getId());
-
-    findDatasets =
-        FindDatasets.newBuilder()
-            .addPredicates(keyValueQuery)
-            .setAscending(true)
-            .setSortKey("name")
-            .build();
-
-    response = datasetServiceStub.findDatasets(findDatasets);
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
-    assertEquals(
-        "Dataset count not match with expected dataset count", 3, response.getDatasetsCount());
-    assertEquals(
-        "Dataset Id not match with expected dataset Id",
-        dataset1.getId(),
-        response.getDatasets(0).getId());
-
-    LOGGER.info(
-        "Find public Datasets with sorting by name test start................................");
   }
 
   /** Validation check for the predicate value with empty string which is not valid */

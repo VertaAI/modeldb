@@ -3871,7 +3871,7 @@ var file_modeldb_ProjectService_proto_rawDesc = []byte{
 	0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x12, 0x0b, 0x0a, 0x07, 0x50, 0x52, 0x49, 0x56, 0x41, 0x54,
 	0x45, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x50, 0x55, 0x42, 0x4c, 0x49, 0x43, 0x10, 0x01, 0x12,
 	0x15, 0x0a, 0x11, 0x4f, 0x52, 0x47, 0x5f, 0x53, 0x43, 0x4f, 0x50, 0x45, 0x44, 0x5f, 0x50, 0x55,
-	0x42, 0x4c, 0x49, 0x43, 0x10, 0x02, 0x32, 0xc6, 0x22, 0x0a, 0x0e, 0x50, 0x72, 0x6f, 0x6a, 0x65,
+	0x42, 0x4c, 0x49, 0x43, 0x10, 0x02, 0x32, 0xd6, 0x23, 0x0a, 0x0e, 0x50, 0x72, 0x6f, 0x6a, 0x65,
 	0x63, 0x74, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x80, 0x01, 0x0a, 0x0d, 0x63, 0x72,
 	0x65, 0x61, 0x74, 0x65, 0x50, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x12, 0x1f, 0x2e, 0x61, 0x69,
 	0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2e, 0x43,
@@ -3888,6 +3888,15 @@ var file_modeldb_ProjectService_proto_rawDesc = []byte{
 	0x74, 0x50, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
 	0x73, 0x65, 0x22, 0x1f, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x19, 0x12, 0x17, 0x2f, 0x76, 0x31, 0x2f,
 	0x70, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x2f, 0x67, 0x65, 0x74, 0x50, 0x72, 0x6f, 0x6a, 0x65,
+	0x63, 0x74, 0x73, 0x12, 0x8d, 0x01, 0x0a, 0x11, 0x67, 0x65, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69,
+	0x63, 0x50, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x12, 0x23, 0x2e, 0x61, 0x69, 0x2e, 0x76,
+	0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2e, 0x47, 0x65, 0x74,
+	0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x50, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x73, 0x1a, 0x2c,
+	0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64,
+	0x62, 0x2e, 0x47, 0x65, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x50, 0x72, 0x6f, 0x6a, 0x65,
+	0x63, 0x74, 0x73, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x25, 0x82, 0xd3,
+	0xe4, 0x93, 0x02, 0x1f, 0x12, 0x1d, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x72, 0x6f, 0x6a, 0x65, 0x63,
+	0x74, 0x2f, 0x67, 0x65, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x50, 0x72, 0x6f, 0x6a, 0x65,
 	0x63, 0x74, 0x73, 0x12, 0x81, 0x01, 0x0a, 0x0e, 0x67, 0x65, 0x74, 0x50, 0x72, 0x6f, 0x6a, 0x65,
 	0x63, 0x74, 0x42, 0x79, 0x49, 0x64, 0x12, 0x20, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74,
 	0x61, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2e, 0x47, 0x65, 0x74, 0x50, 0x72, 0x6f,
@@ -4294,68 +4303,70 @@ var file_modeldb_ProjectService_proto_depIdxs = []int32{
 	1,  // 42: ai.verta.modeldb.DeleteProjectArtifact.Response.project:type_name -> ai.verta.modeldb.Project
 	2,  // 43: ai.verta.modeldb.ProjectService.createProject:input_type -> ai.verta.modeldb.CreateProject
 	16, // 44: ai.verta.modeldb.ProjectService.getProjects:input_type -> ai.verta.modeldb.GetProjects
-	18, // 45: ai.verta.modeldb.ProjectService.getProjectById:input_type -> ai.verta.modeldb.GetProjectById
-	19, // 46: ai.verta.modeldb.ProjectService.getProjectByName:input_type -> ai.verta.modeldb.GetProjectByName
-	3,  // 47: ai.verta.modeldb.ProjectService.deleteProject:input_type -> ai.verta.modeldb.DeleteProject
-	4,  // 48: ai.verta.modeldb.ProjectService.updateProjectName:input_type -> ai.verta.modeldb.UpdateProjectName
-	5,  // 49: ai.verta.modeldb.ProjectService.updateProjectDescription:input_type -> ai.verta.modeldb.UpdateProjectDescription
-	6,  // 50: ai.verta.modeldb.ProjectService.addProjectTags:input_type -> ai.verta.modeldb.AddProjectTags
-	69, // 51: ai.verta.modeldb.ProjectService.getProjectTags:input_type -> ai.verta.modeldb.GetTags
-	7,  // 52: ai.verta.modeldb.ProjectService.deleteProjectTags:input_type -> ai.verta.modeldb.DeleteProjectTags
-	8,  // 53: ai.verta.modeldb.ProjectService.addProjectTag:input_type -> ai.verta.modeldb.AddProjectTag
-	9,  // 54: ai.verta.modeldb.ProjectService.deleteProjectTag:input_type -> ai.verta.modeldb.DeleteProjectTag
-	12, // 55: ai.verta.modeldb.ProjectService.updateProjectAttributes:input_type -> ai.verta.modeldb.UpdateProjectAttributes
-	70, // 56: ai.verta.modeldb.ProjectService.getProjectAttributes:input_type -> ai.verta.modeldb.GetAttributes
-	11, // 57: ai.verta.modeldb.ProjectService.addProjectAttributes:input_type -> ai.verta.modeldb.AddProjectAttributes
-	13, // 58: ai.verta.modeldb.ProjectService.deleteProjectAttributes:input_type -> ai.verta.modeldb.DeleteProjectAttributes
-	14, // 59: ai.verta.modeldb.ProjectService.logProjectCodeVersion:input_type -> ai.verta.modeldb.LogProjectCodeVersion
-	15, // 60: ai.verta.modeldb.ProjectService.getProjectCodeVersion:input_type -> ai.verta.modeldb.GetProjectCodeVersion
-	20, // 61: ai.verta.modeldb.ProjectService.verifyConnection:input_type -> ai.verta.modeldb.Empty
-	22, // 62: ai.verta.modeldb.ProjectService.deepCopyProject:input_type -> ai.verta.modeldb.DeepCopyProject
-	25, // 63: ai.verta.modeldb.ProjectService.getSummary:input_type -> ai.verta.modeldb.GetSummary
-	26, // 64: ai.verta.modeldb.ProjectService.setProjectReadme:input_type -> ai.verta.modeldb.SetProjectReadme
-	27, // 65: ai.verta.modeldb.ProjectService.getProjectReadme:input_type -> ai.verta.modeldb.GetProjectReadme
-	28, // 66: ai.verta.modeldb.ProjectService.setProjectShortName:input_type -> ai.verta.modeldb.SetProjectShortName
-	29, // 67: ai.verta.modeldb.ProjectService.getProjectShortName:input_type -> ai.verta.modeldb.GetProjectShortName
-	71, // 68: ai.verta.modeldb.ProjectService.getUrlForArtifact:input_type -> ai.verta.modeldb.GetUrlForArtifact
-	30, // 69: ai.verta.modeldb.ProjectService.findProjects:input_type -> ai.verta.modeldb.FindProjects
-	31, // 70: ai.verta.modeldb.ProjectService.logArtifacts:input_type -> ai.verta.modeldb.LogProjectArtifacts
-	72, // 71: ai.verta.modeldb.ProjectService.getArtifacts:input_type -> ai.verta.modeldb.GetArtifacts
-	32, // 72: ai.verta.modeldb.ProjectService.deleteArtifact:input_type -> ai.verta.modeldb.DeleteProjectArtifact
-	33, // 73: ai.verta.modeldb.ProjectService.deleteProjects:input_type -> ai.verta.modeldb.DeleteProjects
-	34, // 74: ai.verta.modeldb.ProjectService.createProject:output_type -> ai.verta.modeldb.CreateProject.Response
-	48, // 75: ai.verta.modeldb.ProjectService.getProjects:output_type -> ai.verta.modeldb.GetProjects.Response
-	50, // 76: ai.verta.modeldb.ProjectService.getProjectById:output_type -> ai.verta.modeldb.GetProjectById.Response
-	51, // 77: ai.verta.modeldb.ProjectService.getProjectByName:output_type -> ai.verta.modeldb.GetProjectByName.Response
-	35, // 78: ai.verta.modeldb.ProjectService.deleteProject:output_type -> ai.verta.modeldb.DeleteProject.Response
-	36, // 79: ai.verta.modeldb.ProjectService.updateProjectName:output_type -> ai.verta.modeldb.UpdateProjectName.Response
-	37, // 80: ai.verta.modeldb.ProjectService.updateProjectDescription:output_type -> ai.verta.modeldb.UpdateProjectDescription.Response
-	38, // 81: ai.verta.modeldb.ProjectService.addProjectTags:output_type -> ai.verta.modeldb.AddProjectTags.Response
-	73, // 82: ai.verta.modeldb.ProjectService.getProjectTags:output_type -> ai.verta.modeldb.GetTags.Response
-	39, // 83: ai.verta.modeldb.ProjectService.deleteProjectTags:output_type -> ai.verta.modeldb.DeleteProjectTags.Response
-	40, // 84: ai.verta.modeldb.ProjectService.addProjectTag:output_type -> ai.verta.modeldb.AddProjectTag.Response
-	41, // 85: ai.verta.modeldb.ProjectService.deleteProjectTag:output_type -> ai.verta.modeldb.DeleteProjectTag.Response
-	44, // 86: ai.verta.modeldb.ProjectService.updateProjectAttributes:output_type -> ai.verta.modeldb.UpdateProjectAttributes.Response
-	74, // 87: ai.verta.modeldb.ProjectService.getProjectAttributes:output_type -> ai.verta.modeldb.GetAttributes.Response
-	43, // 88: ai.verta.modeldb.ProjectService.addProjectAttributes:output_type -> ai.verta.modeldb.AddProjectAttributes.Response
-	45, // 89: ai.verta.modeldb.ProjectService.deleteProjectAttributes:output_type -> ai.verta.modeldb.DeleteProjectAttributes.Response
-	46, // 90: ai.verta.modeldb.ProjectService.logProjectCodeVersion:output_type -> ai.verta.modeldb.LogProjectCodeVersion.Response
-	47, // 91: ai.verta.modeldb.ProjectService.getProjectCodeVersion:output_type -> ai.verta.modeldb.GetProjectCodeVersion.Response
-	21, // 92: ai.verta.modeldb.ProjectService.verifyConnection:output_type -> ai.verta.modeldb.VerifyConnectionResponse
-	52, // 93: ai.verta.modeldb.ProjectService.deepCopyProject:output_type -> ai.verta.modeldb.DeepCopyProject.Response
-	53, // 94: ai.verta.modeldb.ProjectService.getSummary:output_type -> ai.verta.modeldb.GetSummary.Response
-	54, // 95: ai.verta.modeldb.ProjectService.setProjectReadme:output_type -> ai.verta.modeldb.SetProjectReadme.Response
-	55, // 96: ai.verta.modeldb.ProjectService.getProjectReadme:output_type -> ai.verta.modeldb.GetProjectReadme.Response
-	56, // 97: ai.verta.modeldb.ProjectService.setProjectShortName:output_type -> ai.verta.modeldb.SetProjectShortName.Response
-	57, // 98: ai.verta.modeldb.ProjectService.getProjectShortName:output_type -> ai.verta.modeldb.GetProjectShortName.Response
-	75, // 99: ai.verta.modeldb.ProjectService.getUrlForArtifact:output_type -> ai.verta.modeldb.GetUrlForArtifact.Response
-	58, // 100: ai.verta.modeldb.ProjectService.findProjects:output_type -> ai.verta.modeldb.FindProjects.Response
-	59, // 101: ai.verta.modeldb.ProjectService.logArtifacts:output_type -> ai.verta.modeldb.LogProjectArtifacts.Response
-	76, // 102: ai.verta.modeldb.ProjectService.getArtifacts:output_type -> ai.verta.modeldb.GetArtifacts.Response
-	60, // 103: ai.verta.modeldb.ProjectService.deleteArtifact:output_type -> ai.verta.modeldb.DeleteProjectArtifact.Response
-	61, // 104: ai.verta.modeldb.ProjectService.deleteProjects:output_type -> ai.verta.modeldb.DeleteProjects.Response
-	74, // [74:105] is the sub-list for method output_type
-	43, // [43:74] is the sub-list for method input_type
+	17, // 45: ai.verta.modeldb.ProjectService.getPublicProjects:input_type -> ai.verta.modeldb.GetPublicProjects
+	18, // 46: ai.verta.modeldb.ProjectService.getProjectById:input_type -> ai.verta.modeldb.GetProjectById
+	19, // 47: ai.verta.modeldb.ProjectService.getProjectByName:input_type -> ai.verta.modeldb.GetProjectByName
+	3,  // 48: ai.verta.modeldb.ProjectService.deleteProject:input_type -> ai.verta.modeldb.DeleteProject
+	4,  // 49: ai.verta.modeldb.ProjectService.updateProjectName:input_type -> ai.verta.modeldb.UpdateProjectName
+	5,  // 50: ai.verta.modeldb.ProjectService.updateProjectDescription:input_type -> ai.verta.modeldb.UpdateProjectDescription
+	6,  // 51: ai.verta.modeldb.ProjectService.addProjectTags:input_type -> ai.verta.modeldb.AddProjectTags
+	69, // 52: ai.verta.modeldb.ProjectService.getProjectTags:input_type -> ai.verta.modeldb.GetTags
+	7,  // 53: ai.verta.modeldb.ProjectService.deleteProjectTags:input_type -> ai.verta.modeldb.DeleteProjectTags
+	8,  // 54: ai.verta.modeldb.ProjectService.addProjectTag:input_type -> ai.verta.modeldb.AddProjectTag
+	9,  // 55: ai.verta.modeldb.ProjectService.deleteProjectTag:input_type -> ai.verta.modeldb.DeleteProjectTag
+	12, // 56: ai.verta.modeldb.ProjectService.updateProjectAttributes:input_type -> ai.verta.modeldb.UpdateProjectAttributes
+	70, // 57: ai.verta.modeldb.ProjectService.getProjectAttributes:input_type -> ai.verta.modeldb.GetAttributes
+	11, // 58: ai.verta.modeldb.ProjectService.addProjectAttributes:input_type -> ai.verta.modeldb.AddProjectAttributes
+	13, // 59: ai.verta.modeldb.ProjectService.deleteProjectAttributes:input_type -> ai.verta.modeldb.DeleteProjectAttributes
+	14, // 60: ai.verta.modeldb.ProjectService.logProjectCodeVersion:input_type -> ai.verta.modeldb.LogProjectCodeVersion
+	15, // 61: ai.verta.modeldb.ProjectService.getProjectCodeVersion:input_type -> ai.verta.modeldb.GetProjectCodeVersion
+	20, // 62: ai.verta.modeldb.ProjectService.verifyConnection:input_type -> ai.verta.modeldb.Empty
+	22, // 63: ai.verta.modeldb.ProjectService.deepCopyProject:input_type -> ai.verta.modeldb.DeepCopyProject
+	25, // 64: ai.verta.modeldb.ProjectService.getSummary:input_type -> ai.verta.modeldb.GetSummary
+	26, // 65: ai.verta.modeldb.ProjectService.setProjectReadme:input_type -> ai.verta.modeldb.SetProjectReadme
+	27, // 66: ai.verta.modeldb.ProjectService.getProjectReadme:input_type -> ai.verta.modeldb.GetProjectReadme
+	28, // 67: ai.verta.modeldb.ProjectService.setProjectShortName:input_type -> ai.verta.modeldb.SetProjectShortName
+	29, // 68: ai.verta.modeldb.ProjectService.getProjectShortName:input_type -> ai.verta.modeldb.GetProjectShortName
+	71, // 69: ai.verta.modeldb.ProjectService.getUrlForArtifact:input_type -> ai.verta.modeldb.GetUrlForArtifact
+	30, // 70: ai.verta.modeldb.ProjectService.findProjects:input_type -> ai.verta.modeldb.FindProjects
+	31, // 71: ai.verta.modeldb.ProjectService.logArtifacts:input_type -> ai.verta.modeldb.LogProjectArtifacts
+	72, // 72: ai.verta.modeldb.ProjectService.getArtifacts:input_type -> ai.verta.modeldb.GetArtifacts
+	32, // 73: ai.verta.modeldb.ProjectService.deleteArtifact:input_type -> ai.verta.modeldb.DeleteProjectArtifact
+	33, // 74: ai.verta.modeldb.ProjectService.deleteProjects:input_type -> ai.verta.modeldb.DeleteProjects
+	34, // 75: ai.verta.modeldb.ProjectService.createProject:output_type -> ai.verta.modeldb.CreateProject.Response
+	48, // 76: ai.verta.modeldb.ProjectService.getProjects:output_type -> ai.verta.modeldb.GetProjects.Response
+	49, // 77: ai.verta.modeldb.ProjectService.getPublicProjects:output_type -> ai.verta.modeldb.GetPublicProjects.Response
+	50, // 78: ai.verta.modeldb.ProjectService.getProjectById:output_type -> ai.verta.modeldb.GetProjectById.Response
+	51, // 79: ai.verta.modeldb.ProjectService.getProjectByName:output_type -> ai.verta.modeldb.GetProjectByName.Response
+	35, // 80: ai.verta.modeldb.ProjectService.deleteProject:output_type -> ai.verta.modeldb.DeleteProject.Response
+	36, // 81: ai.verta.modeldb.ProjectService.updateProjectName:output_type -> ai.verta.modeldb.UpdateProjectName.Response
+	37, // 82: ai.verta.modeldb.ProjectService.updateProjectDescription:output_type -> ai.verta.modeldb.UpdateProjectDescription.Response
+	38, // 83: ai.verta.modeldb.ProjectService.addProjectTags:output_type -> ai.verta.modeldb.AddProjectTags.Response
+	73, // 84: ai.verta.modeldb.ProjectService.getProjectTags:output_type -> ai.verta.modeldb.GetTags.Response
+	39, // 85: ai.verta.modeldb.ProjectService.deleteProjectTags:output_type -> ai.verta.modeldb.DeleteProjectTags.Response
+	40, // 86: ai.verta.modeldb.ProjectService.addProjectTag:output_type -> ai.verta.modeldb.AddProjectTag.Response
+	41, // 87: ai.verta.modeldb.ProjectService.deleteProjectTag:output_type -> ai.verta.modeldb.DeleteProjectTag.Response
+	44, // 88: ai.verta.modeldb.ProjectService.updateProjectAttributes:output_type -> ai.verta.modeldb.UpdateProjectAttributes.Response
+	74, // 89: ai.verta.modeldb.ProjectService.getProjectAttributes:output_type -> ai.verta.modeldb.GetAttributes.Response
+	43, // 90: ai.verta.modeldb.ProjectService.addProjectAttributes:output_type -> ai.verta.modeldb.AddProjectAttributes.Response
+	45, // 91: ai.verta.modeldb.ProjectService.deleteProjectAttributes:output_type -> ai.verta.modeldb.DeleteProjectAttributes.Response
+	46, // 92: ai.verta.modeldb.ProjectService.logProjectCodeVersion:output_type -> ai.verta.modeldb.LogProjectCodeVersion.Response
+	47, // 93: ai.verta.modeldb.ProjectService.getProjectCodeVersion:output_type -> ai.verta.modeldb.GetProjectCodeVersion.Response
+	21, // 94: ai.verta.modeldb.ProjectService.verifyConnection:output_type -> ai.verta.modeldb.VerifyConnectionResponse
+	52, // 95: ai.verta.modeldb.ProjectService.deepCopyProject:output_type -> ai.verta.modeldb.DeepCopyProject.Response
+	53, // 96: ai.verta.modeldb.ProjectService.getSummary:output_type -> ai.verta.modeldb.GetSummary.Response
+	54, // 97: ai.verta.modeldb.ProjectService.setProjectReadme:output_type -> ai.verta.modeldb.SetProjectReadme.Response
+	55, // 98: ai.verta.modeldb.ProjectService.getProjectReadme:output_type -> ai.verta.modeldb.GetProjectReadme.Response
+	56, // 99: ai.verta.modeldb.ProjectService.setProjectShortName:output_type -> ai.verta.modeldb.SetProjectShortName.Response
+	57, // 100: ai.verta.modeldb.ProjectService.getProjectShortName:output_type -> ai.verta.modeldb.GetProjectShortName.Response
+	75, // 101: ai.verta.modeldb.ProjectService.getUrlForArtifact:output_type -> ai.verta.modeldb.GetUrlForArtifact.Response
+	58, // 102: ai.verta.modeldb.ProjectService.findProjects:output_type -> ai.verta.modeldb.FindProjects.Response
+	59, // 103: ai.verta.modeldb.ProjectService.logArtifacts:output_type -> ai.verta.modeldb.LogProjectArtifacts.Response
+	76, // 104: ai.verta.modeldb.ProjectService.getArtifacts:output_type -> ai.verta.modeldb.GetArtifacts.Response
+	60, // 105: ai.verta.modeldb.ProjectService.deleteArtifact:output_type -> ai.verta.modeldb.DeleteProjectArtifact.Response
+	61, // 106: ai.verta.modeldb.ProjectService.deleteProjects:output_type -> ai.verta.modeldb.DeleteProjects.Response
+	75, // [75:107] is the sub-list for method output_type
+	43, // [43:75] is the sub-list for method input_type
 	43, // [43:43] is the sub-list for extension type_name
 	43, // [43:43] is the sub-list for extension extendee
 	0,  // [0:43] is the sub-list for field type_name
@@ -5136,6 +5147,7 @@ const _ = grpc.SupportPackageIsVersion6
 type ProjectServiceClient interface {
 	CreateProject(ctx context.Context, in *CreateProject, opts ...grpc.CallOption) (*CreateProject_Response, error)
 	GetProjects(ctx context.Context, in *GetProjects, opts ...grpc.CallOption) (*GetProjects_Response, error)
+	GetPublicProjects(ctx context.Context, in *GetPublicProjects, opts ...grpc.CallOption) (*GetPublicProjects_Response, error)
 	GetProjectById(ctx context.Context, in *GetProjectById, opts ...grpc.CallOption) (*GetProjectById_Response, error)
 	GetProjectByName(ctx context.Context, in *GetProjectByName, opts ...grpc.CallOption) (*GetProjectByName_Response, error)
 	DeleteProject(ctx context.Context, in *DeleteProject, opts ...grpc.CallOption) (*DeleteProject_Response, error)
@@ -5191,6 +5203,15 @@ func (c *projectServiceClient) CreateProject(ctx context.Context, in *CreateProj
 func (c *projectServiceClient) GetProjects(ctx context.Context, in *GetProjects, opts ...grpc.CallOption) (*GetProjects_Response, error) {
 	out := new(GetProjects_Response)
 	err := c.cc.Invoke(ctx, "/ai.verta.modeldb.ProjectService/getProjects", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *projectServiceClient) GetPublicProjects(ctx context.Context, in *GetPublicProjects, opts ...grpc.CallOption) (*GetPublicProjects_Response, error) {
+	out := new(GetPublicProjects_Response)
+	err := c.cc.Invoke(ctx, "/ai.verta.modeldb.ProjectService/getPublicProjects", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -5462,6 +5483,7 @@ func (c *projectServiceClient) DeleteProjects(ctx context.Context, in *DeletePro
 type ProjectServiceServer interface {
 	CreateProject(context.Context, *CreateProject) (*CreateProject_Response, error)
 	GetProjects(context.Context, *GetProjects) (*GetProjects_Response, error)
+	GetPublicProjects(context.Context, *GetPublicProjects) (*GetPublicProjects_Response, error)
 	GetProjectById(context.Context, *GetProjectById) (*GetProjectById_Response, error)
 	GetProjectByName(context.Context, *GetProjectByName) (*GetProjectByName_Response, error)
 	DeleteProject(context.Context, *DeleteProject) (*DeleteProject_Response, error)
@@ -5506,6 +5528,9 @@ func (*UnimplementedProjectServiceServer) CreateProject(context.Context, *Create
 }
 func (*UnimplementedProjectServiceServer) GetProjects(context.Context, *GetProjects) (*GetProjects_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProjects not implemented")
+}
+func (*UnimplementedProjectServiceServer) GetPublicProjects(context.Context, *GetPublicProjects) (*GetPublicProjects_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPublicProjects not implemented")
 }
 func (*UnimplementedProjectServiceServer) GetProjectById(context.Context, *GetProjectById) (*GetProjectById_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProjectById not implemented")
@@ -5631,6 +5656,24 @@ func _ProjectService_GetProjects_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ProjectServiceServer).GetProjects(ctx, req.(*GetProjects))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ProjectService_GetPublicProjects_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPublicProjects)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProjectServiceServer).GetPublicProjects(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ai.verta.modeldb.ProjectService/GetPublicProjects",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProjectServiceServer).GetPublicProjects(ctx, req.(*GetPublicProjects))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -6168,6 +6211,10 @@ var _ProjectService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "getProjects",
 			Handler:    _ProjectService_GetProjects_Handler,
+		},
+		{
+			MethodName: "getPublicProjects",
+			Handler:    _ProjectService_GetPublicProjects_Handler,
 		},
 		{
 			MethodName: "getProjectById",

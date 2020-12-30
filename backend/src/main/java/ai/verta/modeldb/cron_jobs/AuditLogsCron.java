@@ -1,7 +1,8 @@
 package ai.verta.modeldb.cron_jobs;
 
-import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.authservice.AuthServiceChannel;
+import ai.verta.modeldb.common.CommonMessages;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -35,7 +36,7 @@ public class AuditLogsCron extends TimerTask {
   public void run() {
     LOGGER.info("AuditLogsCron wakeup");
 
-    ModelDBUtils.registeredBackgroundUtilsCount();
+    CommonUtils.registeredBackgroundUtilsCount();
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       String alias = "al";
       String getAuditLogsLocalQueryString =
@@ -76,7 +77,7 @@ public class AuditLogsCron extends TimerTask {
         LOGGER.warn("AuditLogsCron Exception: ", ex);
       }
     } finally {
-      ModelDBUtils.unregisteredBackgroundUtilsCount();
+      CommonUtils.unregisteredBackgroundUtilsCount();
     }
     LOGGER.info("AuditLogsCron finish tasks and reschedule");
   }
@@ -128,7 +129,7 @@ public class AuditLogsCron extends TimerTask {
   private List<BatchResponseRow> sendAuditLogsToUAC(
       boolean retry, List<AuditLogLocalEntity> auditLogLocalEntities) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.AUTH_SERVICE_REQ_SENT_MSG);
+      LOGGER.info(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
       List<AuditLog> auditLogs =
           auditLogLocalEntities.stream()
               .map(
@@ -161,7 +162,7 @@ public class AuditLogsCron extends TimerTask {
           ModelDBUtils.retryOrThrowException(
               ex,
               retry,
-              (ModelDBUtils.RetryCallInterface<List<BatchResponseRow>>)
+              (CommonUtils.RetryCallInterface<List<BatchResponseRow>>)
                   (retry1) -> sendAuditLogsToUAC(retry1, auditLogLocalEntities));
     }
   }

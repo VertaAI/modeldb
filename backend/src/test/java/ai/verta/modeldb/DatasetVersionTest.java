@@ -7,8 +7,9 @@ import ai.verta.common.ArtifactPart;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.authservice.AuthServiceUtils;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -271,7 +272,6 @@ public class DatasetVersionTest {
     return CreateDatasetVersion.newBuilder()
         .setDatasetId(datasetId)
         .setDescription("this is the description of datsetVersion")
-        .setDatasetVersionVisibility(DatasetVisibility.PRIVATE)
         .addTags("A")
         .addTags("A0")
         .addAllAttributes(attributeList)

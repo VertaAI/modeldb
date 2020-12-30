@@ -1,11 +1,17 @@
 package ai.verta.modeldb.entities;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
+import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -139,6 +145,9 @@ public class ProjectEntity {
 
   @Column(name = "created")
   private Boolean created = false;
+
+  @Column(name = "visibility_migration")
+  private Boolean visibility_migration = false;
 
   public String getId() {
     return id;
@@ -324,7 +333,12 @@ public class ProjectEntity {
     this.created = created;
   }
 
-  public Project getProtoObject(RoleService roleService) throws InvalidProtocolBufferException {
+  public void setVisibility_migration(Boolean visibility_migration) {
+    this.visibility_migration = visibility_migration;
+  }
+
+  public Project getProtoObject(RoleService roleService, AuthService authService)
+      throws InvalidProtocolBufferException {
     Project.Builder projectBuilder =
         Project.newBuilder()
             .setId(getId())
@@ -341,18 +355,36 @@ public class ProjectEntity {
                 RdbmsUtils.convertArtifactEntityListFromArtifacts(
                     getArtifactMapping(ModelDBConstants.ARTIFACTS)))
             .setOwner(getOwner())
-            .setReadmeText(getReadme_text())
-            .setWorkspaceId(getWorkspace())
-            .setWorkspaceTypeValue(getWorkspace_type());
+            .setReadmeText(getReadme_text());
 
     if (getCode_version_snapshot() != null) {
       projectBuilder.setCodeVersionSnapshot(getCode_version_snapshot().getProtoObject());
     }
 
-    GetResourcesResponseItem projectResource = roleService.getProjectResource(this.id);
+    GetResourcesResponseItem projectResource =
+        roleService.getEntityResource(this.id, ModelDBServiceResourceTypes.PROJECT);
     projectBuilder.setVisibility(projectResource.getVisibility());
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
     projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+    projectBuilder.setCustomPermission(projectResource.getCustomPermission());
+
+    Workspace workspace = authService.workspaceById(false, projectResource.getWorkspaceId());
+    switch (workspace.getInternalIdCase()) {
+      case ORG_ID:
+        projectBuilder.setWorkspaceId(workspace.getOrgId());
+        projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
+        break;
+      case USER_ID:
+        projectBuilder.setWorkspaceId(workspace.getUserId());
+        projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+        break;
+    }
+
+    ProjectVisibility visibility =
+        (ProjectVisibility)
+            ModelDBUtils.getOldVisibility(
+                ModelDBServiceResourceTypes.PROJECT, projectResource.getVisibility());
+    projectBuilder.setProjectVisibility(visibility);
 
     return projectBuilder.build();
   }

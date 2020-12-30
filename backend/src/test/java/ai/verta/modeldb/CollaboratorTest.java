@@ -7,17 +7,21 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.authservice.AuthServiceUtils;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetCollaborator;
 import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.RemoveCollaborator;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import io.grpc.ManagedChannel;
@@ -728,7 +732,7 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("Dataset-" + new Date().getTime())
-            .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
+            .setVisibility(ResourceVisibility.PRIVATE)
             .build();
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
@@ -772,7 +776,7 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("Dataset-" + new Date().getTime())
-            .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
+            .setVisibility(ResourceVisibility.PRIVATE)
             .build();
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
@@ -863,7 +867,7 @@ public class CollaboratorTest {
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("Dataset-" + new Date().getTime())
-            .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
+            .setVisibility(ResourceVisibility.PRIVATE)
             .build();
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
@@ -931,7 +935,7 @@ public class CollaboratorTest {
         CreateDataset createDatasetRequest =
             CreateDataset.newBuilder()
                 .setName("Dataset-" + new Date().getTime() + ".csv")
-                .setDatasetVisibility(DatasetVisibilityEnum.DatasetVisibility.PUBLIC)
+                .setVisibility(ResourceVisibility.PRIVATE)
                 .build();
         CreateDataset.Response createDatasetResponse =
             datasetServiceStub.createDataset(createDatasetRequest);
@@ -1102,7 +1106,8 @@ public class CollaboratorTest {
         .addAllEntityIds(ids)
         .setShareWith(email)
         .setAuthzEntityType(EntitiesTypes.USER)
-        .setCollaboratorType(collaboratorType)
+        .setPermission(
+            CollaboratorPermissions.newBuilder().setCollaboratorType(collaboratorType).build())
         .setDateCreated(Calendar.getInstance().getTimeInMillis())
         .setMessage(message)
         .build();
