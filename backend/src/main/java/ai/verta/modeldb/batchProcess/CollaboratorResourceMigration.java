@@ -215,35 +215,64 @@ public class CollaboratorResourceMigration {
 
         if (repositoryEntities.size() > 0) {
           Set<String> userIds = new HashSet<>();
+          Set<String> newVisibilityRepositoryIds = new HashSet<>();
           for (RepositoryEntity repositoryEntity : repositoryEntities) {
-            userIds.add(repositoryEntity.getOwner());
+            if (repositoryEntity.getOwner() != null && !repositoryEntity.getOwner().isEmpty()) {
+              userIds.add(repositoryEntity.getOwner());
+            } else {
+              newVisibilityRepositoryIds.add(String.valueOf(repositoryEntity.getId()));
+            }
           }
           LOGGER.debug("Repository userId list : " + userIds);
 
           // Fetch the repository owners userInfo
-          Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
+          Map<String, UserInfo> userInfoMap = new HashMap<>();
+          if (!userIds.isEmpty()) {
+            userInfoMap.putAll(authService.getUserInfoFromAuthServer(userIds, null, null));
+          }
+
+          List<GetResourcesResponseItem> responseItems =
+              roleService.getResourceItems(
+                  null, newVisibilityRepositoryIds, ModelDBServiceResourceTypes.REPOSITORY);
+          Map<String, GetResourcesResponseItem> responseItemMap =
+              responseItems.stream()
+                  .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
           for (RepositoryEntity repository : repositoryEntities) {
-            WorkspaceDTO workspaceDTO =
-                roleService.getWorkspaceDTOByWorkspaceId(
-                    userInfoMap.get(repository.getOwner()),
-                    repository.getWorkspace_id(),
-                    repository.getWorkspace_type());
-            // if repositoryVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
-            // ignore the CollaboratorType
-            roleService.createWorkspacePermissions(
-                workspaceDTO.getWorkspaceName(),
-                String.valueOf(repository.getId()),
-                repository.getName(),
-                Optional.of(Long.parseLong(repository.getOwner())),
-                ModelDBServiceResourceTypes.REPOSITORY,
-                CollaboratorPermissions.newBuilder()
-                    .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
-                    .build(),
-                getResourceVisibility(
-                    Optional.ofNullable(
-                        WorkspaceTypeEnum.WorkspaceType.forNumber(repository.getWorkspace_type())),
-                    VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())));
+            if (repository.getOwner() != null && !repository.getOwner().isEmpty()) {
+              WorkspaceDTO workspaceDTO =
+                  roleService.getWorkspaceDTOByWorkspaceId(
+                      userInfoMap.get(repository.getOwner()),
+                      repository.getWorkspace_id(),
+                      repository.getWorkspace_type());
+              // if repositoryVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
+              // ignore the CollaboratorType
+              roleService.createWorkspacePermissions(
+                  workspaceDTO.getWorkspaceName(),
+                  String.valueOf(repository.getId()),
+                  repository.getName(),
+                  Optional.of(Long.parseLong(repository.getOwner())),
+                  ModelDBServiceResourceTypes.REPOSITORY,
+                  CollaboratorPermissions.newBuilder()
+                      .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                      .build(),
+                  getResourceVisibility(
+                      Optional.ofNullable(
+                          WorkspaceTypeEnum.WorkspaceType.forNumber(
+                              repository.getWorkspace_type())),
+                      VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())));
+            } else {
+              GetResourcesResponseItem resourceDetails =
+                  responseItemMap.get(String.valueOf(repository.getId()));
+              roleService.createWorkspacePermissions(
+                  resourceDetails.getWorkspaceId(),
+                  Optional.empty(),
+                  String.valueOf(repository.getId()),
+                  repository.getName(),
+                  Optional.of(resourceDetails.getOwnerId()),
+                  ModelDBServiceResourceTypes.REPOSITORY,
+                  resourceDetails.getCustomPermission(),
+                  resourceDetails.getVisibility());
+            }
             Transaction transaction = null;
             try {
               transaction = session.beginTransaction();
