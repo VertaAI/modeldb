@@ -407,15 +407,14 @@ public class GlobalSharingTest {
         SetResource.newBuilder()
             .setWorkspaceName(organization.getName())
             .setResourceId(orgResourceId)
-                    .setResourceType(
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(
-                                resourceType
-                                        == ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET
-                                    ? ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY
-                                    : resourceType)
-                            .build())
-                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .setResourceType(
+                ResourceType.newBuilder()
+                    .setModeldbServiceResourceType(
+                        resourceType == ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET
+                            ? ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY
+                            : resourceType)
+                    .build())
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
             .setVisibility(resourceVisibility)
             .setCollaboratorType(customPermission.getCollaboratorType())
             .setCanDeploy(customPermission.getCanDeploy())
