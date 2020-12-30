@@ -341,72 +341,6 @@
         ]
       }
     },
-    "/hydratedData/findHydratedPublicDatasets": {
-      "post": {
-        "summary": "queries",
-        "operationId": "HydratedService_findHydratedPublicDatasets",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbAdvancedQueryDatasetsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbFindDatasets"
-            }
-          }
-        ],
-        "tags": [
-          "HydratedService"
-        ]
-      }
-    },
-    "/hydratedData/findHydratedPublicProjects": {
-      "post": {
-        "summary": "queries",
-        "operationId": "HydratedService_findHydratedPublicProjects",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbAdvancedQueryProjectsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/modeldbFindProjects"
-            }
-          }
-        ],
-        "tags": [
-          "HydratedService"
-        ]
-      }
-    },
     "/hydratedData/getHydratedDatasetByName": {
       "get": {
         "operationId": "HydratedService_getHydratedDatasetByName",
@@ -677,63 +611,6 @@
     "/hydratedData/getHydratedProjects": {
       "get": {
         "operationId": "HydratedService_getHydratedProjects",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetHydratedProjectsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "ascending",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          },
-          {
-            "name": "sort_key",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "workspace_name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "HydratedService"
-        ]
-      }
-    },
-    "/hydratedData/getHydratedPublicProjects": {
-      "get": {
-        "operationId": "HydratedService_getHydratedPublicProjects",
         "responses": {
           "200": {
             "description": "A successful response.",

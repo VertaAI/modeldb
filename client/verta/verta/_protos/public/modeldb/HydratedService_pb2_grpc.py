@@ -24,11 +24,6 @@ class HydratedServiceStub(object):
         request_serializer=modeldb_dot_HydratedService__pb2.GetHydratedProjects.SerializeToString,
         response_deserializer=modeldb_dot_HydratedService__pb2.GetHydratedProjects.Response.FromString,
         )
-    self.getHydratedPublicProjects = channel.unary_unary(
-        '/ai.verta.modeldb.HydratedService/getHydratedPublicProjects',
-        request_serializer=modeldb_dot_HydratedService__pb2.GetHydratedProjects.SerializeToString,
-        response_deserializer=modeldb_dot_HydratedService__pb2.GetHydratedProjects.Response.FromString,
-        )
     self.getHydratedProjectById = channel.unary_unary(
         '/ai.verta.modeldb.HydratedService/getHydratedProjectById',
         request_serializer=modeldb_dot_HydratedService__pb2.GetHydratedProjectById.SerializeToString,
@@ -74,11 +69,6 @@ class HydratedServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.FindProjects.SerializeToString,
         response_deserializer=modeldb_dot_HydratedService__pb2.AdvancedQueryProjectsResponse.FromString,
         )
-    self.findHydratedPublicProjects = channel.unary_unary(
-        '/ai.verta.modeldb.HydratedService/findHydratedPublicProjects',
-        request_serializer=modeldb_dot_ProjectService__pb2.FindProjects.SerializeToString,
-        response_deserializer=modeldb_dot_HydratedService__pb2.AdvancedQueryProjectsResponse.FromString,
-        )
     self.findHydratedProjectsByUser = channel.unary_unary(
         '/ai.verta.modeldb.HydratedService/findHydratedProjectsByUser',
         request_serializer=modeldb_dot_HydratedService__pb2.FindHydratedProjectsByUser.SerializeToString,
@@ -109,11 +99,6 @@ class HydratedServiceStub(object):
         request_serializer=modeldb_dot_DatasetService__pb2.FindDatasets.SerializeToString,
         response_deserializer=modeldb_dot_HydratedService__pb2.AdvancedQueryDatasetsResponse.FromString,
         )
-    self.findHydratedPublicDatasets = channel.unary_unary(
-        '/ai.verta.modeldb.HydratedService/findHydratedPublicDatasets',
-        request_serializer=modeldb_dot_DatasetService__pb2.FindDatasets.SerializeToString,
-        response_deserializer=modeldb_dot_HydratedService__pb2.AdvancedQueryDatasetsResponse.FromString,
-        )
     self.findHydratedDatasetVersions = channel.unary_unary(
         '/ai.verta.modeldb.HydratedService/findHydratedDatasetVersions',
         request_serializer=modeldb_dot_DatasetVersionService__pb2.FindDatasetVersions.SerializeToString,
@@ -136,13 +121,6 @@ class HydratedServiceServicer(object):
   pass
 
   def getHydratedProjects(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getHydratedPublicProjects(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -212,13 +190,6 @@ class HydratedServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def findHydratedPublicProjects(self, request, context):
-    """queries
-    """
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def findHydratedProjectsByUser(self, request, context):
     """queries
     """
@@ -261,13 +232,6 @@ class HydratedServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def findHydratedPublicDatasets(self, request, context):
-    """queries
-    """
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def findHydratedDatasetVersions(self, request, context):
     """queries
     """
@@ -294,11 +258,6 @@ def add_HydratedServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'getHydratedProjects': grpc.unary_unary_rpc_method_handler(
           servicer.getHydratedProjects,
-          request_deserializer=modeldb_dot_HydratedService__pb2.GetHydratedProjects.FromString,
-          response_serializer=modeldb_dot_HydratedService__pb2.GetHydratedProjects.Response.SerializeToString,
-      ),
-      'getHydratedPublicProjects': grpc.unary_unary_rpc_method_handler(
-          servicer.getHydratedPublicProjects,
           request_deserializer=modeldb_dot_HydratedService__pb2.GetHydratedProjects.FromString,
           response_serializer=modeldb_dot_HydratedService__pb2.GetHydratedProjects.Response.SerializeToString,
       ),
@@ -347,11 +306,6 @@ def add_HydratedServiceServicer_to_server(servicer, server):
           request_deserializer=modeldb_dot_ProjectService__pb2.FindProjects.FromString,
           response_serializer=modeldb_dot_HydratedService__pb2.AdvancedQueryProjectsResponse.SerializeToString,
       ),
-      'findHydratedPublicProjects': grpc.unary_unary_rpc_method_handler(
-          servicer.findHydratedPublicProjects,
-          request_deserializer=modeldb_dot_ProjectService__pb2.FindProjects.FromString,
-          response_serializer=modeldb_dot_HydratedService__pb2.AdvancedQueryProjectsResponse.SerializeToString,
-      ),
       'findHydratedProjectsByUser': grpc.unary_unary_rpc_method_handler(
           servicer.findHydratedProjectsByUser,
           request_deserializer=modeldb_dot_HydratedService__pb2.FindHydratedProjectsByUser.FromString,
@@ -379,11 +333,6 @@ def add_HydratedServiceServicer_to_server(servicer, server):
       ),
       'findHydratedDatasets': grpc.unary_unary_rpc_method_handler(
           servicer.findHydratedDatasets,
-          request_deserializer=modeldb_dot_DatasetService__pb2.FindDatasets.FromString,
-          response_serializer=modeldb_dot_HydratedService__pb2.AdvancedQueryDatasetsResponse.SerializeToString,
-      ),
-      'findHydratedPublicDatasets': grpc.unary_unary_rpc_method_handler(
-          servicer.findHydratedPublicDatasets,
           request_deserializer=modeldb_dot_DatasetService__pb2.FindDatasets.FromString,
           response_serializer=modeldb_dot_HydratedService__pb2.AdvancedQueryDatasetsResponse.SerializeToString,
       ),
