@@ -12,7 +12,6 @@ import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAODisabled;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAORdbImpl;
 import ai.verta.modeldb.authservice.AuthInterceptor;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
@@ -21,6 +20,7 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -272,8 +272,8 @@ public class App implements ApplicationContextAware {
         Tracer tracer = Configuration.fromEnv().getTracer();
         app.tracingInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
         GlobalTracer.register(tracer);
-        io.opentracing.contrib.jdbc.TracingDriver.load();
-        io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
+        TracingDriver.load();
+        TracingDriver.setInterceptorMode(true);
         TracingDriver.setInterceptorProperty(true);
       }
       AuthService authService = new PublicAuthServiceUtils();

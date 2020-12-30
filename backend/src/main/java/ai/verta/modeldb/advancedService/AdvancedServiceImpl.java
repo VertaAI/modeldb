@@ -38,20 +38,20 @@ import ai.verta.modeldb.HydratedExperimentRun;
 import ai.verta.modeldb.HydratedProject;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceImplBase;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBConstants.UserIdentifier;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.SortExperimentRuns;
 import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthInterceptor;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
-import ai.verta.modeldb.collaborator.CollaboratorOrg;
-import ai.verta.modeldb.collaborator.CollaboratorTeam;
-import ai.verta.modeldb.collaborator.CollaboratorUser;
 import ai.verta.modeldb.comment.CommentDAO;
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
+import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
+import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
@@ -1001,7 +1001,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
   private HydratedDatasetVersion getHydratedDatasetVersion(DatasetVersion datasetVersion) {
     UserInfo ownerUserInfo =
-        authService.getUserInfo(datasetVersion.getOwner(), UserIdentifier.VERTA_ID);
+        authService.getUserInfo(datasetVersion.getOwner(), CommonConstants.UserIdentifier.VERTA_ID);
 
     Map<String, Actions> selfAllowedActions =
         roleService.getSelfAllowedActionsBatch(
@@ -1236,13 +1236,14 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       CollaboratorUser hostCollaboratorBase = null;
       String userEmail = request.getEmail();
       if (!userEmail.isEmpty() && ModelDBUtils.isValidEmail(userEmail)) {
-        UserInfo hostUserInfo = authService.getUserInfo(userEmail, UserIdentifier.EMAIL_ID);
+        UserInfo hostUserInfo =
+            authService.getUserInfo(userEmail, CommonConstants.UserIdentifier.EMAIL_ID);
         hostCollaboratorBase = new CollaboratorUser(authService, hostUserInfo);
       } else if (!userEmail.isEmpty()) {
         errorMessage = "Invalid email found in the FindHydratedPublicProjects request";
       } else if (!request.getVertaId().isEmpty()) {
         UserInfo hostUserInfo =
-            authService.getUserInfo(request.getVertaId(), UserIdentifier.VERTA_ID);
+            authService.getUserInfo(request.getVertaId(), CommonConstants.UserIdentifier.VERTA_ID);
         hostCollaboratorBase = new CollaboratorUser(authService, hostUserInfo);
       }
 

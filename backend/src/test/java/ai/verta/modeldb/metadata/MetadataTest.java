@@ -6,6 +6,8 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.AuthClientInterceptor;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.authservice.AuthServiceUtils;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceBlockingStub;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;

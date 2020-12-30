@@ -2,7 +2,7 @@ package ai.verta.modeldb.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.Actions;
 import ai.verta.uac.CollaboratorPermissions;
@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public interface RoleService {
+public interface RoleService extends ai.verta.modeldb.common.authservice.RoleService {
 
   boolean IsImplemented();
 

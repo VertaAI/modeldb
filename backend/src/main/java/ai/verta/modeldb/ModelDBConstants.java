@@ -166,7 +166,6 @@ public interface ModelDBConstants {
   String TIME_CREATED = "time_created";
   String TIME_UPDATED = "time_updated";
   String TIME_LOGGED = "time_logged";
-  String UNSIGNED_USER = "unsigned_user";
   String VERSION = "version";
   String VERTA_ID_STR = "vertaId";
   String VERTA_ID = "verta_id";
@@ -215,12 +214,6 @@ public interface ModelDBConstants {
   String REPOSITORY_ENTITY = "repositoryEntity";
   String POPULATE_VERSION_MIGRATION = "POPULATE_VERSION_MIGRATION";
   String COLLABORATOR_RESOURCE_MIGRATION = "COLLABORATOR_RESOURCE_MIGRATION";
-
-  enum UserIdentifier {
-    VERTA_ID,
-    EMAIL_ID,
-    USER_NAME
-  }
 
   // Role name
   String ROLE_DATASET_CREATE = "DATASET_CREATE";

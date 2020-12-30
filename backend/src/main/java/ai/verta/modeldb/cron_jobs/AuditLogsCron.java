@@ -1,7 +1,7 @@
 package ai.verta.modeldb.cron_jobs;
 
-import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.authservice.AuthServiceChannel;
+import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -129,7 +129,7 @@ public class AuditLogsCron extends TimerTask {
   private List<BatchResponseRow> sendAuditLogsToUAC(
       boolean retry, List<AuditLogLocalEntity> auditLogLocalEntities) {
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(ModelDBMessages.AUTH_SERVICE_REQ_SENT_MSG);
+      LOGGER.info(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
       List<AuditLog> auditLogs =
           auditLogLocalEntities.stream()
               .map(
