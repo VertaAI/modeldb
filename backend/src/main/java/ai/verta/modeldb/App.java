@@ -62,6 +62,7 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
+import io.grpc.protobuf.services.ProtoReflectionService;
 import io.jaegertracing.Configuration;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.TracingServerInterceptor;
@@ -294,6 +295,8 @@ public class App implements ApplicationContextAware {
       HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
       serverBuilder.addService(healthStatusManager.getHealthService());
       healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
+
+      serverBuilder.addService(ProtoReflectionService.newInstance());
 
       // ----------------- Start Initialize database & modelDB services with DAO ---------
       initializeServicesBaseOnDataBase(
