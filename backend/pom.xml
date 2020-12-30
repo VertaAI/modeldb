@@ -21,7 +21,7 @@
 	<properties>
 		<hibernate.version>5.4.17.Final</hibernate.version>
 		<log4j.version>2.13.2</log4j.version>
-		<grpc.version>1.28.1</grpc.version>
+		<grpc.version>1.34.1</grpc.version>
 		<postgres.version>42.2.6</postgres.version>
 		<liquibase.version>3.8.0</liquibase.version>
 		<prometheus.version>0.8.1</prometheus.version>
