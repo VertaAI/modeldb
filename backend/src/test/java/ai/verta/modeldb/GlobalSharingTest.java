@@ -8,12 +8,12 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.AuthInterceptor;
-import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -39,7 +39,7 @@ import ai.verta.uac.RoleScope;
 import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.SetOrganization;
-import ai.verta.uac.SetResources;
+import ai.verta.uac.SetResource;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
@@ -403,12 +403,10 @@ public class GlobalSharingTest {
       String orgResourceId,
       ResourceVisibility resourceVisibility,
       CollaboratorPermissions.Builder customPermission) {
-    collaboratorServiceStub.setResources(
-        SetResources.newBuilder()
+    collaboratorServiceStub.setResource(
+        SetResource.newBuilder()
             .setWorkspaceName(organization.getName())
-            .setResources(
-                Resources.newBuilder()
-                    .addResourceIds(orgResourceId)
+            .setResourceId(orgResourceId)
                     .setResourceType(
                         ResourceType.newBuilder()
                             .setModeldbServiceResourceType(
@@ -418,7 +416,6 @@ public class GlobalSharingTest {
                                     : resourceType)
                             .build())
                     .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                    .build())
             .setVisibility(resourceVisibility)
             .setCollaboratorType(customPermission.getCollaboratorType())
             .setCanDeploy(customPermission.getCanDeploy())
