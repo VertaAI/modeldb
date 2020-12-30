@@ -1,10 +1,12 @@
 package ai.verta.modeldb.common.authservice;
 
+import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Empty;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.GetUsers;
@@ -316,32 +318,30 @@ public class AuthServiceUtils implements AuthService {
               timeout);
     }
   }
-
   @Override
-  public Workspace workspaceById(boolean retry, String workspaceId) {
-    try (ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      GetWorkspaceById.Builder getWorkspaceById =
-          GetWorkspaceById.newBuilder().setId(Long.parseLong(workspaceId));
+  public Workspace workspaceById(boolean retry, Long workspaceId) {
+    try (AuthServiceChannel authServiceChannel = new ai.verta.modeldb.authservice.AuthServiceChannel()) {
+      GetWorkspaceById.Builder getWorkspaceById = GetWorkspaceById.newBuilder().setId(workspaceId);
 
       LOGGER.trace("get workspaceById: ID : {}", workspaceId);
       // Get the user info from the Context
       Workspace workspace =
-          authServiceChannel
-              .getWorkspaceServiceBlockingStub()
-              .getWorkspaceById(getWorkspaceById.build());
+              authServiceChannel
+                      .getWorkspaceServiceBlockingStub()
+                      .getWorkspaceById(getWorkspaceById.build());
       LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       return workspace;
     } catch (StatusRuntimeException ex) {
       return (Workspace)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<Workspace>)
-                  (retry1) -> workspaceById(retry1, workspaceId), timeout);
+              CommonUtils.retryOrThrowException(
+                      ex,
+                      retry,
+                      (CommonUtils.RetryCallInterface<Workspace>)
+                              (retry1) -> workspaceById(retry1, workspaceId), timeout);
     }
   }
 
-  private ai.verta.modeldb.common.authservice.AuthServiceChannel getAuthServiceChannel() {
+  private AuthServiceChannel getAuthServiceChannel() {
     return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey, metadataInfo);
   }
 }
