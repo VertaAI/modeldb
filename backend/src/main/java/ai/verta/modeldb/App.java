@@ -11,12 +11,7 @@ import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAODisabled;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAORdbImpl;
-import ai.verta.modeldb.authservice.AuthInterceptor;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
@@ -53,14 +48,7 @@ import ai.verta.modeldb.project.ProjectServiceImpl;
 import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.BlobDAO;
-import ai.verta.modeldb.versioning.BlobDAORdbImpl;
-import ai.verta.modeldb.versioning.CommitDAO;
-import ai.verta.modeldb.versioning.CommitDAORdbImpl;
-import ai.verta.modeldb.versioning.FileHasher;
-import ai.verta.modeldb.versioning.RepositoryDAO;
-import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
-import ai.verta.modeldb.versioning.VersioningServiceImpl;
+import ai.verta.modeldb.versioning.*;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -73,14 +61,6 @@ import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
@@ -94,6 +74,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
@@ -153,9 +142,6 @@ public class App implements ApplicationContextAware {
 
   // Control parameter for delayed shutdown
   private Long shutdownTimeout;
-
-  // Feature flags
-  private Integer requestTimeout = 30;
 
   private Boolean traceEnabled = false;
   private static TracingServerInterceptor tracingInterceptor;
@@ -261,18 +247,8 @@ public class App implements ApplicationContextAware {
       ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
 
       // --------------- Start Initialize modelDB gRPC server --------------------------
-      Map<String, Object> grpcServerMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.GRPC_SERVER);
-      if (grpcServerMap == null) {
-        throw new ModelDBException("grpcServer configuration not found in properties.");
-      }
+      ServerBuilder<?> serverBuilder = ServerBuilder.forPort(config.grpcServer.port);
 
-      Integer grpcServerPort = (Integer) grpcServerMap.get(ModelDBConstants.PORT);
-      LOGGER.trace("grpc server port number found");
-      ServerBuilder<?> serverBuilder = ServerBuilder.forPort(grpcServerPort);
-
-      app.requestTimeout =
-          (Integer) grpcServerMap.getOrDefault(ModelDBConstants.REQUEST_TIMEOUT, 30);
       // Set user credentials to App class
       app.setServiceUser(propertiesMap, app);
 
@@ -318,7 +294,7 @@ public class App implements ApplicationContextAware {
       // --------------- Start modelDB gRPC server --------------------------
       server.start();
       up.inc();
-      LOGGER.info("Backend server started listening on {}", grpcServerPort);
+      LOGGER.info("Backend server started listening on {}", config.grpcServer.port);
 
       Runtime.getRuntime()
           .addShutdownHook(
@@ -867,10 +843,6 @@ public class App implements ApplicationContextAware {
 
   public Boolean getTraceEnabled() {
     return traceEnabled;
-  }
-
-  public Integer getRequestTimeout() {
-    return requestTimeout;
   }
 
   public void setRoleService(RoleService roleService) {

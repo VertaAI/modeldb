@@ -1,14 +1,15 @@
 package ai.verta.modeldb.config;
 
-import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
-
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.exceptions.InternalErrorException;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
+
+import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
 
 public class Config {
   public static String MISSING_REQUIRED = "required field is missing";
@@ -16,6 +17,7 @@ public class Config {
   private static Config config = null;
 
   public DatabaseConfig database;
+  public GrpcServerConfig grpcServer;
   public TestConfig test;
 
   // FIXME
@@ -24,7 +26,7 @@ public class Config {
   public Object authService;
   public Object cron_job;
   public Object enableTrace;
-  public Object grpcServer;
+
   public Object mdb_service_user;
   public Object populateConnectionsBasedOnPrivileges;
   public Object springServer;
@@ -53,6 +55,9 @@ public class Config {
   public void Validate() throws InvalidConfigException {
     if (database == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
     database.Validate("database");
+
+    if (grpcServer == null) throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
+    grpcServer.Validate("grpcServer");
 
     if (test != null) {
       test.Validate("test");

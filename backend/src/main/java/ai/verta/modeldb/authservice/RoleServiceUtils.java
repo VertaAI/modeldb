@@ -15,6 +15,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.exceptions.InternalErrorException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -26,11 +27,12 @@ import com.google.protobuf.GeneratedMessageV3;
 import com.google.rpc.Code;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleServiceUtils
     implements RoleService {
@@ -47,7 +49,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
         app.getAuthServerPort(),
         app.getServiceUserEmail(),
         app.getServiceUserDevKey(),
-        app.getRequestTimeout(),
+        Config.getInstance().grpcServer.requestTimeout,
         AuthInterceptor.METADATA_INFO);
   }
 
