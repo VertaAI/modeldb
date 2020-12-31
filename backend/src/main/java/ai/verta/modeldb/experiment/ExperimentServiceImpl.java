@@ -184,14 +184,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (!projectDAO.projectExistsInDB(request.getProjectId())) {
         String errorMessage = "Project ID not found.";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetExperimentsInProject.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -1040,14 +1033,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (s3Key == null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetUrlForArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       GetUrlForArtifact.Response response =
           artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());

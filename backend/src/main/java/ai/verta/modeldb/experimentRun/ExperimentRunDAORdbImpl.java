@@ -20,6 +20,7 @@ import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -256,12 +257,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw StatusProto.toStatusRuntimeException(status);
       } else if (!existStatus && !isInsert) {
         // Throw error if it is an update request and ExperimentRun with given name does not exist
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("ExperimentRun does not exist in database")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException("ExperimentRun does not exist in database");
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -554,13 +550,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunEntity =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntity == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       LOGGER.debug("Got ExperimentRun successfully");
       ExperimentRun experimentRun = experimentRunEntity.getProtoObject();
@@ -770,13 +760,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       List<String> newTags = new ArrayList<>();
       ExperimentRun existingProtoExperimentRunObj = experimentRunObj.getProtoObject();
@@ -855,13 +839,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
 
       List<ObservationEntity> newObservationList =
@@ -894,13 +872,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntityObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       ExperimentRun experimentRun = experimentRunEntityObj.getProtoObject();
       List<Observation> observationEntities = new ArrayList<>();
@@ -928,13 +900,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
 
       List<KeyValue> existingMetrics = experimentRunEntityObj.getProtoObject().getMetricsList();
@@ -978,13 +944,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       LOGGER.debug("Got ExperimentRun Metrics");
       return experimentRunObj.getProtoObject().getMetricsList();
@@ -1004,13 +964,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       LOGGER.debug("Got ExperimentRun Datasets");
       ExperimentRun experimentRun = experimentRunObj.getProtoObject();
@@ -1032,13 +986,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       ExperimentRun experimentRun = experimentRunEntityObj.getProtoObject();
 
@@ -1096,13 +1044,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
 
       List<Artifact> existingArtifacts = experimentRunEntityObj.getProtoObject().getArtifactsList();
@@ -1148,13 +1090,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       ExperimentRun experimentRun = experimentRunObj.getProtoObject();
       if (experimentRun.getArtifactsList() != null && !experimentRun.getArtifactsList().isEmpty()) {
@@ -1162,10 +1098,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         return experimentRun.getArtifactsList();
       } else {
         String errorMessage = "Artifacts not found in the ExperimentRun";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -1230,13 +1163,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
 
       List<KeyValue> existingHyperparameters =
@@ -1281,13 +1208,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       LOGGER.debug("Got ExperimentRun Hyperparameters");
       return experimentRunObj.getProtoObject().getHyperparametersList();
@@ -1307,13 +1228,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
 
       List<KeyValue> existingAttributes =
@@ -1360,10 +1275,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
         String errorMessage = "Invalid ExperimentRun ID found";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
 
       if (getAll) {
@@ -1651,8 +1563,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           if (!expRunHyperparameterConfigBlobMap.isEmpty()
               && expRunHyperparameterConfigBlobMap.containsKey(experimentRun.getId())) {
             experimentRun =
-                experimentRun
-                    .toBuilder()
+                experimentRun.toBuilder()
                     .addAllHyperparameters(
                         expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
                     .build();
@@ -1660,8 +1571,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           if (!expRunCodeVersionMap.isEmpty()
               && expRunCodeVersionMap.containsKey(experimentRun.getId())) {
             experimentRun =
-                experimentRun
-                    .toBuilder()
+                experimentRun.toBuilder()
                     .putAllCodeVersionFromBlob(expRunCodeVersionMap.get(experimentRun.getId()))
                     .build();
           }
@@ -2142,10 +2052,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         return experimentRunObj.getProject_id();
       } else {
         String errorMessage = "ExperimentRun not found for given ID : " + experimentRunId;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -2412,10 +2319,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             .build();
       } else {
         String errorMessage = "ExperimentRun not found for given ID : " + request.getId();
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -2572,13 +2476,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     ExperimentRunEntity experimentRunObj =
         session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
     if (experimentRunObj == null) {
-      LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.NOT_FOUND_VALUE)
-              .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
     }
 
     Map<String, List<ArtifactEntity>> artifactEntityMap = experimentRunObj.getArtifactEntityMap();
@@ -2989,13 +2887,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunEntity =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntity == null) {
-        LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       experimentRunEntity.setEnvironment(ModelDBUtils.getStringFromProtoObject(environmentBlob));
       session.update(experimentRunEntity);

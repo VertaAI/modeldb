@@ -13,6 +13,7 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -697,13 +698,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.findProjects(findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
 
       if (projectPaginationDTO.getTotalRecords() == 0) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("Project not found")
-                .addDetails(Any.pack(GetProjectByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException("Project not found");
       }
 
       Project selfOwnerProject = null;
@@ -800,14 +795,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.getProjects(ModelDBConstants.ID, request.getEntityId(), userInfo);
       if (projects.isEmpty()) {
         String errorMessage = "Project not found for given EntityId";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetSummary.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       } else if (projects.size() != 1) {
         String errorMessage = "Multiple projects found for given EntityId";
         LOGGER.warn(errorMessage);
@@ -1191,14 +1179,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (s3Key == null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetUrlForArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       GetUrlForArtifact.Response response =
           artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());

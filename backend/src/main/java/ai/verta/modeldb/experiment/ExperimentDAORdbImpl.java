@@ -197,12 +197,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         throw StatusProto.toStatusRuntimeException(status);
       } else if (!existStatus && !isInsert) {
         // Throw error if it is an update request and Experiment with given name does not exist
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("Experiment does not exist in database")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException("Experiment does not exist in database");
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -297,10 +292,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         return experimentObj.getProtoObject();
       } else {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -361,10 +353,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           session.load(ExperimentEntity.class, experimentId, LockMode.PESSIMISTIC_WRITE);
       if (experimentObj == null) {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       List<String> newTags = new ArrayList<>();
       Experiment existingProtoExperimentObj = experimentObj.getProtoObject();
@@ -459,10 +448,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           session.get(ExperimentEntity.class, experimentId, LockMode.PESSIMISTIC_WRITE);
       if (experimentObj == null) {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       experimentObj.setAttributeMapping(
           RdbmsUtils.convertAttributesFromAttributeEntityList(
@@ -491,10 +477,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       ExperimentEntity experimentObj = session.get(ExperimentEntity.class, experimentId);
       if (experimentObj == null) {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
 
       if (getAll) {
@@ -634,10 +617,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       ExperimentEntity experimentObj = (ExperimentEntity) query.uniqueResult();
       if (experimentObj == null) {
         String errorMessage = "Experiment not found";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       return experimentObj.getProtoObject();
     } catch (Exception ex) {
@@ -1027,10 +1007,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         return experiment.getArtifactsList();
       } else {
         String errorMessage = "Artifacts not found in the Experiment";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {

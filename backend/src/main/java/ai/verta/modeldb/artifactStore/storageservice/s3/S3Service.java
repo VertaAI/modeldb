@@ -5,24 +5,14 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.HttpCodeToGRPCCode;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PartETag;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.services.s3.model.UploadPartRequest;
-import com.amazonaws.services.s3.model.UploadPartResult;
+import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
@@ -31,15 +21,6 @@ import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.Executors;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
@@ -47,6 +28,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.Executors;
 
 public class S3Service implements ArtifactStoreService {
 
@@ -197,10 +184,7 @@ public class S3Service implements ArtifactStoreService {
       reqMethod = HttpMethod.GET;
     } else {
       String errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
-      Status status =
-          Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-      LOGGER.info(errorMessage);
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(errorMessage);
     }
 
     // Set Expiration
@@ -370,10 +354,7 @@ public class S3Service implements ArtifactStoreService {
           app.getArtifactStoreServerHost());
     } else {
       String errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
-      Status status =
-          Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-      LOGGER.info(errorMessage);
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(errorMessage);
     }
   }
 

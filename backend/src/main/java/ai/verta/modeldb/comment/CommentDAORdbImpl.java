@@ -6,21 +6,20 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.UserCommentEntity;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.UserInfo;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class CommentDAORdbImpl implements CommentDAO {
 
@@ -90,12 +89,7 @@ public class CommentDAORdbImpl implements CommentDAO {
       UserCommentEntity userCommentEntity =
           session.load(UserCommentEntity.class, updatedComment.getId());
       if (userCommentEntity == null) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("Comment does not exist in database")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException("Comment does not exist in database");
       }
       userCommentEntity.setUser_id(updatedComment.getUserId());
       userCommentEntity.setOwner(updatedComment.getVertaId());

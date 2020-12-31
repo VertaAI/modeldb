@@ -5,19 +5,12 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.entities.metadata.KeyValuePropertyMappingEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.protobuf.StatusProto;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -25,6 +18,12 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class MetadataDAORdbImpl implements MetadataDAO {
   private static final Logger LOGGER = LogManager.getLogger(MetadataDAORdbImpl.class);
@@ -342,12 +341,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       if (existingMetadataMappingEntity != null) {
         session.delete(existingMetadataMappingEntity);
       } else {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("Label '" + key + "' not found in DB")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException("Label '" + key + "' not found in DB");
       }
       transaction.commit();
       return true;
