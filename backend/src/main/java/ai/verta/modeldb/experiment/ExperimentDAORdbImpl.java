@@ -10,10 +10,7 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.*;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.exceptions.ModelDBException;
-import ai.verta.modeldb.exceptions.NotFoundException;
-import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -24,8 +21,6 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -189,12 +184,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
       // Throw error if it is an insert request and Experiment with same name already exists
       if (existStatus && isInsert) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ALREADY_EXISTS_VALUE)
-                .setMessage("Experiment already exists in database")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new AlreadyExistsException("Experiment already exists in database");
       } else if (!existStatus && !isInsert) {
         // Throw error if it is an update request and Experiment with given name does not exist
         throw new NotFoundException("Experiment does not exist in database");
@@ -596,13 +586,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
             paramMap.put(key, value.getBoolValue());
             break;
           default:
-            Status invalidValueTypeError =
-                Status.newBuilder()
-                    .setCode(Code.UNIMPLEMENTED_VALUE)
-                    .setMessage(
-                        "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+            throw new UnimplementedException(
+                "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE");
         }
         stringQueryBuilder.append(" ee." + key + " = :" + key);
         if (index < keyValues.size() - 1) {
@@ -651,13 +636,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
             paramMap.put(key, value.getBoolValue());
             break;
           default:
-            Status invalidValueTypeError =
-                Status.newBuilder()
-                    .setCode(Code.UNIMPLEMENTED_VALUE)
-                    .setMessage(
-                        "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+            throw new UnimplementedException(
+                "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE");
         }
         stringQueryBuilder.append(" ee." + key + " = :" + key);
         if (index < keyValues.size() - 1) {
@@ -965,14 +945,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       for (Artifact existingArtifact : existingArtifacts) {
         for (Artifact newArtifact : newArtifacts) {
           if (existingArtifact.getKey().equals(newArtifact.getKey())) {
-            Status status =
-                Status.newBuilder()
-                    .setCode(Code.ALREADY_EXISTS_VALUE)
-                    .setMessage(
-                        "Artifact being logged already exists. existing artifact key : "
-                            + newArtifact.getKey())
-                    .build();
-            throw StatusProto.toStatusRuntimeException(status);
+            throw new AlreadyExistsException(
+                "Artifact being logged already exists. existing artifact key : "
+                    + newArtifact.getKey());
           }
         }
       }

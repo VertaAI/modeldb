@@ -19,9 +19,7 @@ import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
-import ai.verta.modeldb.exceptions.ModelDBException;
-import ai.verta.modeldb.exceptions.NotFoundException;
-import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -39,9 +37,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.protobuf.StatusProto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -249,12 +245,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       // Throw error if it is an insert request and ExperimentRun with same name already exists
       if (existStatus && isInsert) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ALREADY_EXISTS_VALUE)
-                .setMessage("ExperimentRun already exists in database")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new AlreadyExistsException("ExperimentRun already exists in database");
       } else if (!existStatus && !isInsert) {
         // Throw error if it is an update request and ExperimentRun with given name does not exist
         throw new NotFoundException("ExperimentRun does not exist in database");
@@ -410,14 +401,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           getAccessibleExperimentRunIDs(
               experimentRunIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
       if (accessibleExperimentRunIds.isEmpty()) {
-        Status statusMessage =
-            Status.newBuilder()
-                .setCode(Code.PERMISSION_DENIED_VALUE)
-                .setMessage(
-                    "Access is denied. User is unauthorized for given ExperimentRun entities : "
-                        + accessibleExperimentRunIds)
-                .build();
-        throw StatusProto.toStatusRuntimeException(statusMessage);
+        throw new PermissionDeniedException(
+            "Access is denied. User is unauthorized for given ExperimentRun entities : "
+                + accessibleExperimentRunIds);
       }
       Transaction transaction = session.beginTransaction();
       Query query =
@@ -907,14 +893,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       for (KeyValue existingMetric : existingMetrics) {
         for (KeyValue newMetric : newMetrics) {
           if (existingMetric.getKey().equals(newMetric.getKey())) {
-            Status status =
-                Status.newBuilder()
-                    .setCode(Code.ALREADY_EXISTS_VALUE)
-                    .setMessage(
-                        "Metric being logged already exists. existing metric Key : "
-                            + newMetric.getKey())
-                    .build();
-            throw StatusProto.toStatusRuntimeException(status);
+            throw new AlreadyExistsException(
+                "Metric being logged already exists. existing metric Key : " + newMetric.getKey());
           }
         }
       }
@@ -1003,14 +983,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         for (Artifact existingDataset : existingDatasets) {
           for (Artifact newDataset : newDatasets) {
             if (existingDataset.getKey().equals(newDataset.getKey())) {
-              Status status =
-                  Status.newBuilder()
-                      .setCode(Code.ALREADY_EXISTS_VALUE)
-                      .setMessage(
-                          "Dataset being logged already exists. existing dataSet key : "
-                              + newDataset.getKey())
-                      .build();
-              throw StatusProto.toStatusRuntimeException(status);
+              throw new AlreadyExistsException(
+                  "Dataset being logged already exists. existing dataSet key : "
+                      + newDataset.getKey());
             }
           }
         }
@@ -1051,14 +1026,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       for (Artifact existingArtifact : existingArtifacts) {
         for (Artifact newArtifact : newArtifacts) {
           if (existingArtifact.getKey().equals(newArtifact.getKey())) {
-            Status status =
-                Status.newBuilder()
-                    .setCode(Code.ALREADY_EXISTS_VALUE)
-                    .setMessage(
-                        "Artifact being logged already exists. existing artifact key : "
-                            + newArtifact.getKey())
-                    .build();
-            throw StatusProto.toStatusRuntimeException(status);
+            throw new AlreadyExistsException(
+                "Artifact being logged already exists. existing artifact key : "
+                    + newArtifact.getKey());
           }
         }
       }
@@ -1171,14 +1141,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       for (KeyValue existingHyperparameter : existingHyperparameters) {
         for (KeyValue newHyperparameter : newHyperparameters) {
           if (existingHyperparameter.getKey().equals(newHyperparameter.getKey())) {
-            Status status =
-                Status.newBuilder()
-                    .setCode(Code.ALREADY_EXISTS_VALUE)
-                    .setMessage(
-                        "Hyperparameter being logged already exists. existing hyperparameter Key : "
-                            + newHyperparameter.getKey())
-                    .build();
-            throw StatusProto.toStatusRuntimeException(status);
+            throw new AlreadyExistsException(
+                "Hyperparameter being logged already exists. existing hyperparameter Key : "
+                    + newHyperparameter.getKey());
           }
         }
       }
@@ -1236,14 +1201,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       for (KeyValue existingAttribute : existingAttributes) {
         for (KeyValue newAttribute : newAttributes) {
           if (existingAttribute.getKey().equals(newAttribute.getKey())) {
-            Status status =
-                Status.newBuilder()
-                    .setCode(Code.ALREADY_EXISTS_VALUE)
-                    .setMessage(
-                        "Attribute being logged already exists. existing attribute Key : "
-                            + newAttribute.getKey())
-                    .build();
-            throw StatusProto.toStatusRuntimeException(status);
+            throw new AlreadyExistsException(
+                "Attribute being logged already exists. existing attribute Key : "
+                    + newAttribute.getKey());
           }
         }
       }
@@ -1320,14 +1280,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     Map<String, String> projectIdExperimentRunIdMap =
         getProjectIdsFromExperimentRunIds(requestedExperimentRunIds);
     if (projectIdExperimentRunIdMap.size() == 0) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  "Access is denied. ExperimentRun not found for given ids : "
-                      + requestedExperimentRunIds)
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new PermissionDeniedException(
+          "Access is denied. ExperimentRun not found for given ids : " + requestedExperimentRunIds);
     }
     Set<String> projectIdSet = new HashSet<>(projectIdExperimentRunIdMap.values());
 
@@ -1563,8 +1517,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           if (!expRunHyperparameterConfigBlobMap.isEmpty()
               && expRunHyperparameterConfigBlobMap.containsKey(experimentRun.getId())) {
             experimentRun =
-                experimentRun
-                    .toBuilder()
+                experimentRun.toBuilder()
                     .addAllHyperparameters(
                         expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
                     .build();
@@ -1572,8 +1525,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           if (!expRunCodeVersionMap.isEmpty()
               && expRunCodeVersionMap.containsKey(experimentRun.getId())) {
             experimentRun =
-                experimentRun
-                    .toBuilder()
+                experimentRun.toBuilder()
                     .putAllCodeVersionFromBlob(expRunCodeVersionMap.get(experimentRun.getId()))
                     .build();
           }
@@ -2014,13 +1966,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             paramMap.put(key, value.getBoolValue());
             break;
           default:
-            Status invalidValueTypeError =
-                Status.newBuilder()
-                    .setCode(Code.UNIMPLEMENTED_VALUE)
-                    .setMessage(
-                        "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+            throw new UnimplementedException(
+                "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE");
         }
         stringQueryBuilder.append(" er." + key + " = :" + key);
         if (index < keyValues.size() - 1) {

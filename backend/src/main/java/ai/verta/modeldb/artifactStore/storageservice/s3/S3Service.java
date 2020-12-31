@@ -7,6 +7,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.UnavailableException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.AmazonServiceException;
@@ -19,8 +20,6 @@ import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
 import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.InputStreamResource;
@@ -52,22 +51,14 @@ public class S3Service implements ArtifactStoreService {
       return client.getClient().doesBucketExistV2(bucketName);
     } catch (AmazonServiceException e) {
       ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
-      throw StatusProto.toStatusRuntimeException(
-          Status.newBuilder()
-              .setCode(Code.UNAVAILABLE_VALUE)
-              .setMessage(
-                  "AWS S3 could not be checked for bucket existence for artifact store : "
-                      + e.getErrorMessage())
-              .build());
+      throw new UnavailableException(
+          "AWS S3 could not be checked for bucket existence for artifact store : "
+              + e.getErrorMessage());
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
-      throw StatusProto.toStatusRuntimeException(
-          Status.newBuilder()
-              .setCode(Code.UNAVAILABLE_VALUE)
-              .setMessage(
-                  "AWS S3 could not be checked for bucket existence for artifact store : "
-                      + e.getMessage())
-              .build());
+      throw new UnavailableException(
+          "AWS S3 could not be checked for bucket existence for artifact store : "
+              + e.getMessage());
     }
   }
 
@@ -76,22 +67,14 @@ public class S3Service implements ArtifactStoreService {
       return client.getClient().doesObjectExist(bucketName, path);
     } catch (AmazonServiceException e) {
       ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
-      throw StatusProto.toStatusRuntimeException(
-          Status.newBuilder()
-              .setCode(Code.UNAVAILABLE_VALUE)
-              .setMessage(
-                  "AWS S3 could not be checked for bucket existance for artifact store : "
-                      + e.getErrorMessage())
-              .build());
+      throw new UnavailableException(
+          "AWS S3 could not be checked for bucket existance for artifact store : "
+              + e.getErrorMessage());
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
-      throw StatusProto.toStatusRuntimeException(
-          Status.newBuilder()
-              .setCode(Code.UNAVAILABLE_VALUE)
-              .setMessage(
-                  "AWS S3 could not be checked for bucket existance for artifact store : "
-                      + e.getMessage())
-              .build());
+      throw new UnavailableException(
+          "AWS S3 could not be checked for bucket existance for artifact store : "
+              + e.getMessage());
     } catch (Exception ex) {
       LOGGER.warn(ex.getMessage());
       throw ex;

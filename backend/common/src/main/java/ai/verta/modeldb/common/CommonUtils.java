@@ -1,10 +1,9 @@
 package ai.verta.modeldb.common;
 
-import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.exceptions.InternalErrorException;
+import ai.verta.modeldb.exceptions.UnavailableException;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.protobuf.StatusProto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,23 +23,23 @@ public class CommonUtils {
     }
   }
 
-    public static void initializeBackgroundUtilsCount() {
-      int backgroundUtilsCount = 0;
-      try {
-        if (System.getProperty(CommonConstants.BACKGROUND_UTILS_COUNT) == null) {
-          LOGGER.trace("Initialize runningBackgroundUtilsCount : {}", backgroundUtilsCount);
-          System.setProperty(
-              CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
-        }
-        LOGGER.trace(
-            "Found runningBackgroundUtilsCount while initialization: {}",
-            getRegisteredBackgroundUtilsCount());
-      } catch (NullPointerException ex) {
-        LOGGER.trace("NullPointerException while initialize runningBackgroundUtilsCount");
+  public static void initializeBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    try {
+      if (System.getProperty(CommonConstants.BACKGROUND_UTILS_COUNT) == null) {
+        LOGGER.trace("Initialize runningBackgroundUtilsCount : {}", backgroundUtilsCount);
         System.setProperty(
             CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
       }
+      LOGGER.trace(
+          "Found runningBackgroundUtilsCount while initialization: {}",
+          getRegisteredBackgroundUtilsCount());
+    } catch (NullPointerException ex) {
+      LOGGER.trace("NullPointerException while initialize runningBackgroundUtilsCount");
+      System.setProperty(
+          CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
     }
+  }
 
   /**
    * If service want to call other verta service internally then should to registered those service
@@ -86,19 +85,12 @@ public class CommonUtils {
           Thread.sleep(requestTimeout * 1000);
           retry = false;
         } catch (InterruptedException e) {
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.INTERNAL_VALUE)
-                  .setMessage("Thread interrupted while UAC retrying call")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
+          throw new InternalErrorException("Thread interrupted while UAC retrying call");
         }
         return retryCallInterface.retryCall(retry);
       }
 
-      Status status =
-          Status.newBuilder().setCode(Code.UNAVAILABLE_VALUE).setMessage(errorMessage).build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new UnavailableException(errorMessage);
     }
     throw ex;
   }

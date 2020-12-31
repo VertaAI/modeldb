@@ -4,40 +4,12 @@ import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.batchProcess.CollaboratorResourceMigration;
-import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
-import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
-import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
-import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
+import ai.verta.modeldb.batchProcess.*;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.DatabaseConfig;
 import ai.verta.modeldb.config.RdbConfig;
-import ai.verta.modeldb.entities.ArtifactEntity;
-import ai.verta.modeldb.entities.ArtifactPartEntity;
-import ai.verta.modeldb.entities.ArtifactStoreMapping;
-import ai.verta.modeldb.entities.AttributeEntity;
-import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.CommentEntity;
-import ai.verta.modeldb.entities.DatasetEntity;
-import ai.verta.modeldb.entities.DatasetPartInfoEntity;
-import ai.verta.modeldb.entities.DatasetVersionEntity;
-import ai.verta.modeldb.entities.ExperimentEntity;
-import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.entities.FeatureEntity;
-import ai.verta.modeldb.entities.GitSnapshotEntity;
-import ai.verta.modeldb.entities.JobEntity;
-import ai.verta.modeldb.entities.KeyValueEntity;
-import ai.verta.modeldb.entities.LineageEntity;
-import ai.verta.modeldb.entities.ObservationEntity;
-import ai.verta.modeldb.entities.PathDatasetVersionInfoEntity;
-import ai.verta.modeldb.entities.ProjectEntity;
-import ai.verta.modeldb.entities.QueryDatasetVersionInfoEntity;
-import ai.verta.modeldb.entities.QueryParameterEntity;
-import ai.verta.modeldb.entities.RawDatasetVersionInfoEntity;
-import ai.verta.modeldb.entities.TagsMapping;
-import ai.verta.modeldb.entities.UploadStatusEntity;
-import ai.verta.modeldb.entities.UserCommentEntity;
+import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
@@ -48,41 +20,16 @@ import ai.verta.modeldb.entities.config.HyperparameterSetConfigBlobEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.QueryDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.S3DatasetComponentBlobEntity;
-import ai.verta.modeldb.entities.environment.DockerEnvironmentBlobEntity;
-import ai.verta.modeldb.entities.environment.EnvironmentBlobEntity;
-import ai.verta.modeldb.entities.environment.EnvironmentCommandLineEntity;
-import ai.verta.modeldb.entities.environment.EnvironmentVariablesEntity;
-import ai.verta.modeldb.entities.environment.PythonEnvironmentBlobEntity;
-import ai.verta.modeldb.entities.environment.PythonEnvironmentRequirementBlobEntity;
+import ai.verta.modeldb.entities.environment.*;
 import ai.verta.modeldb.entities.metadata.KeyValuePropertyMappingEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
-import ai.verta.modeldb.entities.versioning.BranchEntity;
-import ai.verta.modeldb.entities.versioning.CommitEntity;
-import ai.verta.modeldb.entities.versioning.DatasetRepositoryMappingEntity;
-import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
-import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.entities.versioning.TagsEntity;
-import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
+import ai.verta.modeldb.entities.versioning.*;
+import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.UnavailableException;
 import com.google.common.base.Joiner;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
 import io.grpc.health.v1.HealthCheckResponse;
-import io.grpc.protobuf.StatusProto;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -111,6 +58,11 @@ import org.hibernate.exception.JDBCConnectionException;
 import org.hibernate.query.Query;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
+
+import java.sql.*;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class ModelDBHibernateUtil {
   private static final Logger LOGGER = LogManager.getLogger(ModelDBHibernateUtil.class);
@@ -262,13 +214,7 @@ public class ModelDBHibernateUtil {
   }
 
   public static SessionFactory getSessionFactory() {
-    try {
-      return createOrGetSessionFactory(Config.getInstance().database);
-    } catch (Exception e) {
-      Status status =
-          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
+    return createOrGetSessionFactory(Config.getInstance().database);
   }
 
   private static SessionFactory loopBack(SessionFactory sessionFactory) {
@@ -285,9 +231,7 @@ public class ModelDBHibernateUtil {
       return sessionFactory;
     } catch (Exception ex) {
       LOGGER.warn("ModelDBHibernateUtil loopBack() getting error ", ex);
-      Status status =
-          Status.newBuilder().setCode(Code.UNAVAILABLE_VALUE).setMessage(ex.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new UnavailableException(ex.getMessage());
     }
   }
 
@@ -314,12 +258,7 @@ public class ModelDBHibernateUtil {
           loopBackTime = 2560;
         }
       } else {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("DB connection not found after 2560 millisecond")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new UnavailableException("DB connection not found after 2560 millisecond");
       }
     }
   }
@@ -561,12 +500,7 @@ public class ModelDBHibernateUtil {
     if (count > 0) {
       // Throw error if it is an insert request and project with same name already exists
       logger.info(entityName + " with name {} already exists", name);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.ALREADY_EXISTS_VALUE)
-              .setMessage(entityName + " already exists in database")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new AlreadyExistsException(entityName + " already exists in database");
     }
   }
 

@@ -9,27 +9,22 @@ import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class VersioningUtils {
   private static final Logger LOGGER = LogManager.getLogger(VersioningUtils.class);
@@ -172,12 +167,7 @@ public class VersioningUtils {
           }
           break;
         } else {
-          Status invalidValueTypeError =
-              Status.newBuilder()
-                  .setCode(com.google.rpc.Code.INVALID_ARGUMENT_VALUE)
-                  .setMessage("Predicate does not contain string value in request")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+          throw new InvalidArgumentException("Predicate does not contain string value in request");
         }
       case BOOL_VALUE:
         LOGGER.debug("Called switch case : bool_value");
@@ -185,13 +175,8 @@ public class VersioningUtils {
             index, queryBuilder, operator, value.getStringValue(), parametersMap);
         break;
       default:
-        Status invalidValueTypeError =
-            Status.newBuilder()
-                .setCode(Code.UNIMPLEMENTED_VALUE)
-                .setMessage(
-                    "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE")
-                .build();
-        throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+        throw new UnimplementedException(
+            "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE");
     }
   }
 

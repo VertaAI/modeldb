@@ -13,6 +13,8 @@ import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -25,8 +27,6 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -235,12 +235,7 @@ public class RdbmsUtils {
                 + " in "
                 + observation;
         LOGGER.warn(unimplementedErrorMessage);
-        Status unimplementedError =
-            Status.newBuilder()
-                .setCode(Code.UNIMPLEMENTED_VALUE)
-                .setMessage(unimplementedErrorMessage)
-                .build();
-        throw StatusProto.toStatusRuntimeException(unimplementedError);
+        throw new UnimplementedException(unimplementedErrorMessage);
       }
     }
   }
@@ -776,13 +771,8 @@ public class RdbmsUtils {
         }
         return getOperatorPredicate(builder, valueExpression, operator, valueList);
       default:
-        Status invalidValueTypeError =
-            Status.newBuilder()
-                .setCode(Code.UNIMPLEMENTED_VALUE)
-                .setMessage(
-                    "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE")
-                .build();
-        throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+        throw new UnimplementedException(
+            "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE");
     }
   }
 
@@ -906,12 +896,7 @@ public class RdbmsUtils {
         LOGGER.debug("switch case : Observation");
         if (keys.length > 2) {
           // If getting third level key like observation.attribute.attr_1 then it is not supported
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.UNIMPLEMENTED_VALUE)
-                  .setMessage("Third level of sorting not supported")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
+          throw new InvalidArgumentException("Third level of sorting not supported");
           /*TODO: Below code for supporting the third level (ex: experimentRun.attributes.att_1) ordering data but right now Mongo doesn't support the third level ordering so commented below code to maintain the functionality.
           switch (keys[1]) {
               case ModelDBConstants.ATTRIBUTES:
@@ -1137,12 +1122,7 @@ public class RdbmsUtils {
         LOGGER.debug("switch case : Observation");
         if (keys.length > 2) {
           // If getting third level key like observation.attribute.attr_1 then it is not supported
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.UNIMPLEMENTED_VALUE)
-                  .setMessage("Third level of sorting not supported")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
+          throw new InvalidArgumentException("Third level of sorting not supported");
           /*TODO: Below code for supporting the third level (ex: experimentRun.attributes.att_1) ordering data but right now Mongo doesn't support the third level ordering so commented below code to maintain the functionality.
           switch (keys[1]) {
               case ModelDBConstants.ATTRIBUTES:
@@ -2039,16 +2019,11 @@ public class RdbmsUtils {
       String entityId = predicate.getValue().getStringValue();
       if ((accessibleEntityIds.isEmpty() || !accessibleEntityIds.contains(entityId))
           && roleService.IsImplemented()) {
-        Status statusMessage =
-            Status.newBuilder()
-                .setCode(Code.PERMISSION_DENIED_VALUE)
-                .setMessage(
-                    "Access is denied. User is unauthorized for given "
-                        + entityName
-                        + " entity ID : "
-                        + entityId)
-                .build();
-        throw StatusProto.toStatusRuntimeException(statusMessage);
+        throw new PermissionDeniedException(
+            "Access is denied. User is unauthorized for given "
+                + entityName
+                + " entity ID : "
+                + entityId);
       }
     }
 
