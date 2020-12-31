@@ -6,7 +6,6 @@ import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.InvalidConfigException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-
 import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

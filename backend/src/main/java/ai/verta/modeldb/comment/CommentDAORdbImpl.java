@@ -11,15 +11,14 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.UserInfo;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 public class CommentDAORdbImpl implements CommentDAO {
 

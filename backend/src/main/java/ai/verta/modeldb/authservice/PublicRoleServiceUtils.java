@@ -18,6 +18,7 @@ import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.BlobDAORdbImpl;
+import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitDAORdbImpl;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.*;
@@ -25,7 +26,6 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Metadata;
-
 import java.util.*;
 
 public class PublicRoleServiceUtils implements RoleService {
@@ -35,12 +35,13 @@ public class PublicRoleServiceUtils implements RoleService {
 
   public PublicRoleServiceUtils(AuthService authService) {
     MetadataDAO metadataDAO = new MetadataDAORdbImpl();
+    CommitDAO commitDAO = new CommitDAORdbImpl(authService, this);
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, this);
     ExperimentRunDAO experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             authService,
             this,
-            new RepositoryDAORdbImpl(authService, this),
+            new RepositoryDAORdbImpl(authService, this, commitDAO, metadataDAO),
             new CommitDAORdbImpl(authService, this),
             new BlobDAORdbImpl(authService, this),
             metadataDAO);

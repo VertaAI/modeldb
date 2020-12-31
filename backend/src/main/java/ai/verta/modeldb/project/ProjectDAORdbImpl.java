@@ -25,6 +25,11 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
+import com.google.rpc.Status;
+import io.grpc.protobuf.StatusProto;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.persistence.criteria.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -32,10 +37,6 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-
-import javax.persistence.criteria.*;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class ProjectDAORdbImpl implements ProjectDAO {
 
@@ -243,7 +244,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       if (project.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
         resourceVisibility =
             ModelDBUtils.getResourceVisibility(
-                Optional.of(project.getWorkspaceType()), project.getProjectVisibility());
+                Optional.of(workspace), project.getProjectVisibility());
       }
 
       roleService.createWorkspacePermissions(

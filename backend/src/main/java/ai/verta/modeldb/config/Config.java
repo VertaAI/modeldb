@@ -10,6 +10,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 public class Config {
   public static String MISSING_REQUIRED = "required field is missing";

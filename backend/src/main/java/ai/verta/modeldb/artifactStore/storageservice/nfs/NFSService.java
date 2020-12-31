@@ -10,15 +10,6 @@ import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.api.client.util.IOUtils;
 import com.google.rpc.Code;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,6 +19,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import javax.servlet.http.HttpServletRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 public class NFSService implements ArtifactStoreService {

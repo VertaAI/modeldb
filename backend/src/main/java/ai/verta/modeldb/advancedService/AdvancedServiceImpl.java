@@ -35,11 +35,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import io.grpc.Metadata;
 import io.grpc.stub.StreamObserver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class AdvancedServiceImpl extends HydratedServiceImplBase {
 

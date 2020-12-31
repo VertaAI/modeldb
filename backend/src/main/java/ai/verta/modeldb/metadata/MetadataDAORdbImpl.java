@@ -11,6 +11,11 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import io.grpc.StatusRuntimeException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -18,12 +23,6 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class MetadataDAORdbImpl implements MetadataDAO {
   private static final Logger LOGGER = LogManager.getLogger(MetadataDAORdbImpl.class);

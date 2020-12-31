@@ -7,10 +7,9 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.rpc.Code;
 import com.oblac.nomen.Nomen;
 import io.grpc.stub.StreamObserver;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.List;
 
 public class MetadataServiceImpl extends MetadataServiceImplBase {
 

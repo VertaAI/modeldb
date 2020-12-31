@@ -26,11 +26,10 @@ import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import io.grpc.stub.StreamObserver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ProjectServiceImpl extends ProjectServiceImplBase {
 
