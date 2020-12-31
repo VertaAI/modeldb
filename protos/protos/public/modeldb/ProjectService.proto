@@ -358,12 +358,6 @@ service ProjectService {
         };
     };
 
-    rpc getPublicProjects (GetPublicProjects) returns (GetPublicProjects.Response) {
-        option (google.api.http) = {
-            get: "/v1/project/getPublicProjects"
-        };
-    };
-
     rpc getProjectById(GetProjectById) returns (GetProjectById.Response) {
         option (google.api.http) = {
             get: "/v1/project/getProjectById"

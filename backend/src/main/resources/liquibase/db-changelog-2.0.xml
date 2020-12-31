@@ -446,4 +446,18 @@
         <tagDatabase tag="db_version_2.20"/>
     </changeSet>
 
+    <changeSet id="set-visibility-migration-false-on-repositories" author="anandJ">
+        <update tableName="repository">
+            <column name="visibility_migration" valueBoolean="false"/>
+            <where>visibility_migration=true</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="set-visibility-migration-false-on-projects" author="anandJ">
+        <update tableName="project">
+            <column name="visibility_migration" valueBoolean="false"/>
+            <where>visibility_migration=true</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

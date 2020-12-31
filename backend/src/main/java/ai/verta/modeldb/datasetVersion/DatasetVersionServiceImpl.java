@@ -2,32 +2,9 @@ package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.Pagination;
-import ai.verta.modeldb.AddDatasetVersionAttributes;
-import ai.verta.modeldb.AddDatasetVersionTags;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CommitMultipartVersionedDatasetBlobArtifact;
-import ai.verta.modeldb.CommitVersionedDatasetBlobArtifactPart;
-import ai.verta.modeldb.CreateDatasetVersion;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.CreateDatasetVersion.Response;
-import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceImplBase;
-import ai.verta.modeldb.DeleteDatasetVersion;
-import ai.verta.modeldb.DeleteDatasetVersionAttributes;
-import ai.verta.modeldb.DeleteDatasetVersionTags;
-import ai.verta.modeldb.DeleteDatasetVersions;
-import ai.verta.modeldb.FindDatasetVersions;
-import ai.verta.modeldb.GetAllDatasetVersionsByDatasetId;
-import ai.verta.modeldb.GetAttributes;
-import ai.verta.modeldb.GetCommittedVersionedDatasetBlobArtifactParts;
-import ai.verta.modeldb.GetDatasetVersionAttributes;
-import ai.verta.modeldb.GetDatasetVersionById;
-import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
-import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.PathDatasetVersionInfo;
-import ai.verta.modeldb.UpdateDatasetVersionAttributes;
-import ai.verta.modeldb.UpdateDatasetVersionDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
@@ -42,22 +19,12 @@ import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.BlobDAO;
-import ai.verta.modeldb.versioning.Commit;
-import ai.verta.modeldb.versioning.CommitDAO;
-import ai.verta.modeldb.versioning.CreateCommitRequest;
-import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
-import ai.verta.modeldb.versioning.ListCommitsRequest;
-import ai.verta.modeldb.versioning.RepositoryDAO;
-import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
-import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -132,7 +99,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             .addAllTags(request.getTagsList())
             .addAllAttributes(request.getAttributesList());
 
-    if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
+    if (request.getTimeCreated() != 0L) {
       datasetVersionBuilder.setTimeLogged(request.getTimeCreated());
       datasetVersionBuilder.setTimeUpdated(request.getTimeCreated());
     } else {
@@ -502,14 +469,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddDatasetVersionTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       DatasetVersion datasetVersion =
@@ -558,14 +518,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteDatasetVersionTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       DatasetVersion datasetVersion =
@@ -614,14 +567,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddDatasetVersionAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       DatasetVersion updatedDatasetVersion =
@@ -671,14 +617,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateDatasetVersionAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       DatasetVersion updatedDatasetVersion =
@@ -730,14 +669,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       List<KeyValue> attributes =
@@ -779,14 +711,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteDatasetVersionAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       DatasetVersion updatedDatasetVersion =

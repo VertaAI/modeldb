@@ -7,14 +7,9 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CollaboratorUserInfo;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
-import ai.verta.modeldb.GetHydratedProjects;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.UpdateProjectName;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
@@ -24,24 +19,12 @@ import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
-import ai.verta.uac.Action;
-import ai.verta.uac.Actions;
-import ai.verta.uac.GetCollaboratorResponseItem;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.ShareViaEnum;
-import ai.verta.uac.UserInfo;
-import ai.verta.uac.Workspace;
+import ai.verta.uac.*;
 import com.amazonaws.AmazonServiceException;
-import com.google.protobuf.Any;
-import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
-import com.google.protobuf.MessageOrBuilder;
-import com.google.protobuf.ProtocolMessageEnum;
-import com.google.protobuf.Value;
+import com.google.protobuf.*;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -58,15 +41,7 @@ import java.math.BigInteger;
 import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -163,10 +138,7 @@ public class ModelDBUtils {
     if (entityName != null && entityName.length() > ModelDBConstants.NAME_LENGTH) {
       String errorMessage =
           "Entity name can not be more than " + ModelDBConstants.NAME_LENGTH + " characters";
-      LOGGER.info(errorMessage);
-      Status status =
-          Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE).setMessage(errorMessage).build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(errorMessage);
     }
     return entityName;
   }
@@ -175,26 +147,14 @@ public class ModelDBUtils {
     for (String tag : tags) {
       if (tag.isEmpty()) {
         String errorMessage = "Invalid tag found, Tag shouldn't be empty";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       } else if (tag.length() > ModelDBConstants.TAG_LENGTH) {
         String errorMessage =
             "Tag name can not be more than "
                 + ModelDBConstants.TAG_LENGTH
                 + " characters. Limit exceeded tag is: "
                 + tag;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
     }
     return tags;
