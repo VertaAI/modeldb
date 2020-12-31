@@ -243,6 +243,12 @@ public class App implements ApplicationContextAware {
         ModelDBHibernateUtil.runLiquibaseMigration(config.database);
         LOGGER.info("Liquibase migration done");
 
+        ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
+
+        LOGGER.info("Code migration starting");
+        ModelDBHibernateUtil.runMigration(config.database);
+        LOGGER.info("Code migration done");
+
         boolean runLiquibaseSeparate =
             Boolean.parseBoolean(
                 Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))

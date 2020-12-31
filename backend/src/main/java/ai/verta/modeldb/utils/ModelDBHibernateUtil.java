@@ -245,9 +245,6 @@ public class ModelDBHibernateUtil {
           exportSchema(metaDataSrc.buildMetadata());
         }
 
-        // Check if any migration need to be run or not and based on the migration status flag
-        runMigration(config);
-
         LOGGER.info(ModelDBMessages.READY_STATUS, isReady);
         isReady = true;
         return sessionFactory;
