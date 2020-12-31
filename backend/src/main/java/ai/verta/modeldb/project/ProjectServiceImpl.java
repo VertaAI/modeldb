@@ -723,37 +723,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     }
   }
 
-  /**
-   * Gets all the projects belonging to the user and returns as response. If user auth is not
-   * enabled, it returns all the projects from the database.
-   *
-   * @param GetProjects request, GetProjects.Response response
-   * @return void
-   */
-  @Override
-  public void getPublicProjects(
-      GetPublicProjects request, StreamObserver<GetPublicProjects.Response> responseObserver) {
-    try {
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-      UserInfo hostUserInfo = null;
-      if (!request.getUserId().isEmpty()) {
-        hostUserInfo =
-            authService.getUserInfo(request.getUserId(), CommonConstants.UserIdentifier.VERTA_ID);
-      }
-
-      List<Project> projectList =
-          projectDAO.getPublicProjects(
-              hostUserInfo, currentLoginUserInfo, request.getWorkspaceName());
-      responseObserver.onNext(
-          GetPublicProjects.Response.newBuilder().addAllProjects(projectList).build());
-      responseObserver.onCompleted();
-
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, GetPublicProjects.Response.getDefaultInstance());
-    }
-  }
-
   @Override
   public void getProjectById(
       GetProjectById request, StreamObserver<GetProjectById.Response> responseObserver) {

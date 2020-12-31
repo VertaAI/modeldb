@@ -13,7 +13,6 @@ public interface ModelDBConstants {
   String CLOUD_BUCKET_NAME = "cloudBucketName";
   String MINIO_ENDPOINT = "minioEndpoint";
   String AWS_REGION = "aws_region";
-  String DATABASE = "database";
   String DB_TYPE = "DBType";
   String MIN_CONNECTION_POOL_SIZE = "minConnectionPoolSize";
   String MAX_CONNECTION_POOL_SIZE = "maxConnectionPoolSize";
@@ -206,7 +205,6 @@ public interface ModelDBConstants {
   String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
   String DATASET_VERSIONING_MIGRATION = "DATASET_VERSIONING_MIGRATION";
-  String POSTGRES_DB_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
   String DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE =
       "Can't add new versioning entry, because an existing one has different repository or commit";
   String REPOSITORY_ENTITY = "repositoryEntity";
