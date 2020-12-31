@@ -30,6 +30,7 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
@@ -40,7 +41,6 @@ import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Status;
 import io.grpc.Status.Code;
-import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap.SimpleEntry;
@@ -84,19 +84,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   private static final String GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL =
       new StringBuilder("Select count(*) From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(" where ")
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.NAME)
-          .append(" = :repositoryName ")
-          .toString();
-
-  private static final String GET_REPOSITORY_BY_NAME_PREFIX_HQL =
-      new StringBuilder("From ")
           .append(RepositoryEntity.class.getSimpleName())
           .append(" ")
           .append(SHORT_NAME)
@@ -265,50 +252,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
   }
 
-  private WorkspaceDTO verifyAndGetWorkspaceDTO(
-      RepositoryIdentification id, boolean shouldCheckNamed, boolean create)
-      throws ModelDBException {
-    WorkspaceDTO workspaceDTO = null;
-    String message = null;
-    if (id.hasNamedId()) {
-      UserInfo userInfo;
-      try {
-        userInfo = authService.getCurrentLoginUserInfo();
-      } catch (StatusRuntimeException e) {
-        throw new ModelDBException("Authorization error", e.getStatus().getCode());
-      }
-      RepositoryNamedIdentification named = id.getNamedId();
-      try {
-        workspaceDTO =
-            roleService.getWorkspaceDTOByWorkspaceName(userInfo, named.getWorkspaceName());
-        if (create) {
-          ModelDBUtils.checkPersonalWorkspace(
-              userInfo,
-              workspaceDTO.getWorkspaceType(),
-              workspaceDTO.getWorkspaceId(),
-              "repository");
-        }
-      } catch (StatusRuntimeException e) {
-        LOGGER.warn(e);
-        throw new ModelDBException(
-            "Error getting workspace: " + e.getStatus().getDescription(), e.getStatus().getCode());
-      }
-      if (named.getName().isEmpty() && shouldCheckNamed) {
-        message = "Repository name should not be empty";
-      }
-    }
-
-    if (message != null) {
-      throw new ModelDBException(message, Code.INVALID_ARGUMENT);
-    }
-    return workspaceDTO;
-  }
-
-  private WorkspaceDTO verifyAndGetWorkspaceDTO(
-      RepositoryIdentification id, boolean shouldCheckNamed) throws ModelDBException {
-    return verifyAndGetWorkspaceDTO(id, shouldCheckNamed, false);
-  }
-
   @Override
   public RepositoryEntity getRepositoryById(
       Session session, RepositoryIdentification id, boolean checkWrite) throws ModelDBException {
@@ -326,11 +269,27 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       boolean canNotOperateOnProtected,
       RepositoryTypeEnum repositoryType)
       throws ModelDBException {
+    return getRepositoryEntity(
+        session, null, id, checkWrite, canNotOperateOnProtected, repositoryType);
+  }
+
+  private RepositoryEntity getRepositoryEntity(
+      Session session,
+      Workspace workspace,
+      RepositoryIdentification id,
+      boolean checkWrite,
+      boolean canNotOperateOnProtected,
+      RepositoryTypeEnum repositoryType)
+      throws ModelDBException {
     RepositoryEntity repository;
     if (id.hasNamedId()) {
-      WorkspaceDTO workspaceDTO = verifyAndGetWorkspaceDTO(id, true);
+      if (workspace == null) {
+        workspace =
+            roleService.getWorkspaceByWorkspaceName(
+                authService.getCurrentLoginUserInfo(), id.getNamedId().getWorkspaceName());
+      }
       repository =
-          getRepositoryByName(session, id.getNamedId().getName(), workspaceDTO, repositoryType)
+          getRepositoryByName(session, id.getNamedId().getName(), workspace, repositoryType)
               .orElseThrow(
                   () ->
                       new ModelDBException(
@@ -389,22 +348,26 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   private Optional<RepositoryEntity> getRepositoryByName(
-      Session session, String name, WorkspaceDTO workspaceDTO, RepositoryTypeEnum repositoryType) {
-    StringBuilder queryBuilder = new StringBuilder(GET_REPOSITORY_BY_NAME_PREFIX_HQL);
-    setRepositoryTypeInQueryBuilder(repositoryType, queryBuilder);
-    Query query =
-        ModelDBHibernateUtil.getWorkspaceEntityQuery(
-            session,
-            SHORT_NAME,
-            queryBuilder.toString(),
-            "repositoryName",
-            name,
-            ModelDBConstants.WORKSPACE_ID,
-            workspaceDTO.getWorkspaceId(),
-            workspaceDTO.getWorkspaceType(),
-            true,
-            null);
-    return Optional.ofNullable((RepositoryEntity) query.uniqueResult());
+      Session session, String name, Workspace workspace, RepositoryTypeEnum repositoryType) {
+    List<Long> repositoryIds = getRepositoryEntityIdsByName(session, name, repositoryType);
+    List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+        roleService.getResourceItems(
+            workspace,
+            !repositoryIds.isEmpty()
+                ? repositoryIds.stream().map(String::valueOf).collect(Collectors.toSet())
+                : Collections.emptySet(),
+            ModelDBServiceResourceTypes.REPOSITORY);
+    Optional<Long> repoId =
+        accessibleAllWorkspaceItems.stream()
+            .map(
+                getResourcesResponseItem ->
+                    Long.parseLong(getResourcesResponseItem.getResourceId()))
+            .findFirst();
+    if (repoId.isPresent()) {
+      return getRepositoryById(session, repoId.get());
+    } else {
+      return Optional.empty();
+    }
   }
 
   @Override
@@ -458,7 +421,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       checkIfEntityAlreadyExists(session, workspace, repoId.getNamedId().getName(), repositoryType);
       repositoryEntity = new RepositoryEntity(repository, repositoryType);
     } else {
-      repositoryEntity = getRepositoryById(session, repoId, true, false, repositoryType);
+      repositoryEntity =
+          getRepositoryEntity(session, workspace, repoId, true, false, repositoryType);
       session.lock(repositoryEntity, LockMode.PESSIMISTIC_WRITE);
       if (!repository.getName().isEmpty()
           && !repositoryEntity.getName().equals(repository.getName())) {
@@ -726,18 +690,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       ListRepositoriesRequest request, UserInfo currentLoginUserInfo)
       throws ModelDBException, InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      List<String> accessibleResourceIds =
-          roleService.getAccessibleResourceIds(
-              null,
-              new CollaboratorUser(authService, currentLoginUserInfo),
-              ModelDBServiceResourceTypes.REPOSITORY,
-              Collections.emptyList());
-
-      if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
-        LOGGER.debug("Accessible Repository Ids not found, size 0");
-        return ListRepositoriesRequest.Response.newBuilder().setTotalRecords(0).build();
-      }
-
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
       // Using FROM and JOIN
       CriteriaQuery<RepositoryEntity> criteriaQuery =
@@ -746,31 +698,41 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       repositoryEntityRoot.alias(SHORT_NAME);
       List<Predicate> finalPredicatesList = new ArrayList<>();
 
-      if (!request.getWorkspaceName().isEmpty()) {
-        WorkspaceDTO workspaceDTO =
-            verifyAndGetWorkspaceDTO(
-                RepositoryIdentification.newBuilder()
-                    .setNamedId(
-                        RepositoryNamedIdentification.newBuilder()
-                            .setWorkspaceName(request.getWorkspaceName()))
-                    .build(),
-                false);
-        List<KeyValueQuery> workspacePredicates =
-            ModelDBUtils.getKeyValueQueriesByWorkspaceDTO(workspaceDTO);
-        if (workspacePredicates.size() > 0) {
-          Predicate privateWorkspacePredicate =
-              criteriaBuilder.equal(
-                  repositoryEntityRoot.get(ModelDBConstants.WORKSPACE_ID),
-                  workspacePredicates.get(0).getValue().getStringValue());
-          Predicate privateWorkspaceTypePredicate =
-              criteriaBuilder.equal(
-                  repositoryEntityRoot.get(ModelDBConstants.WORKSPACE_TYPE),
-                  workspacePredicates.get(1).getValue().getNumberValue());
-          Predicate privatePredicate =
-              criteriaBuilder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
+      Set<String> accessibleResourceIds;
+      if (!request.getWorkspaceName().isEmpty()
+          && request
+              .getWorkspaceName()
+              .equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+            roleService.getResourceItems(
+                null, Collections.emptySet(), ModelDBServiceResourceTypes.REPOSITORY);
+        accessibleResourceIds =
+            accessibleAllWorkspaceItems.stream()
+                .map(GetResourcesResponseItem::getResourceId)
+                .collect(Collectors.toSet());
 
-          finalPredicatesList.add(privatePredicate);
+        List<String> orgWorkspaceIds =
+            roleService.listMyOrganizations().stream()
+                .map(Organization::getWorkspaceId)
+                .collect(Collectors.toList());
+        for (GetResourcesResponseItem item : accessibleAllWorkspaceItems) {
+          if (orgWorkspaceIds.contains(String.valueOf(item.getWorkspaceId()))) {
+            accessibleResourceIds.remove(item.getResourceId());
+          }
         }
+      } else {
+        accessibleResourceIds =
+            ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
+                roleService,
+                Collections.emptySet(),
+                request.getWorkspaceName(),
+                currentLoginUserInfo,
+                ModelDBServiceResourceTypes.REPOSITORY);
+      }
+
+      if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
+        LOGGER.debug("Accessible Repository Ids not found, size 0");
+        return ListRepositoriesRequest.Response.newBuilder().setTotalRecords(0).build();
       }
 
       if (!accessibleResourceIds.isEmpty()) {
