@@ -3,12 +3,14 @@ package ai.verta.modeldb.telemetry;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.config.InvalidConfigException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.CollectTelemetry;
 import com.google.api.client.http.HttpMethods;
 import com.google.protobuf.Value;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -26,7 +28,7 @@ public class TelemetryCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(TelemetryCron.class);
   private TelemetryUtils telemetryUtils;
 
-  public TelemetryCron(String consumerURL) {
+  public TelemetryCron(String consumerURL) throws FileNotFoundException, InvalidConfigException {
     telemetryUtils = new TelemetryUtils(consumerURL);
   }
 
