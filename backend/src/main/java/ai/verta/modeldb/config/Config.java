@@ -17,6 +17,7 @@ public class Config {
   private static Config config = null;
 
   public DatabaseConfig database;
+  public Boolean enableTrace = false;
   public GrpcServerConfig grpcServer;
   public TestConfig test;
 
@@ -25,7 +26,6 @@ public class Config {
   public Object artifactStore_grpcServer;
   public Object authService;
   public Object cron_job;
-  public Object enableTrace;
 
   public Object mdb_service_user;
   public Object populateConnectionsBasedOnPrivileges;
