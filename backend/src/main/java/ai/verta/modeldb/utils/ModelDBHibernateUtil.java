@@ -30,6 +30,10 @@ import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.exceptions.UnavailableException;
 import com.google.common.base.Joiner;
 import io.grpc.health.v1.HealthCheckResponse;
+import java.sql.*;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -58,11 +62,6 @@ import org.hibernate.exception.JDBCConnectionException;
 import org.hibernate.query.Query;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
-
-import java.sql.*;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class ModelDBHibernateUtil {
   private static final Logger LOGGER = LogManager.getLogger(ModelDBHibernateUtil.class);
@@ -638,31 +637,7 @@ public class ModelDBHibernateUtil {
               })
           .start();
 
-      // Blocking migration
-      String migrationName = ModelDBConstants.DATASET_VERSIONING_MIGRATION;
-      if (migrationTypeMap.containsKey(migrationName)) {
-        Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
-        if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
-          try {
-            CommonUtils.registeredBackgroundUtilsCount();
-            boolean isLocked = checkMigrationLockedStatus(migrationName, rdb);
-            if (!isLocked) {
-              LOGGER.debug("Obtaingin migration lock");
-              lockedMigration(migrationName, rdb);
-              int recordUpdateLimit =
-                  (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-              DatasetToRepositoryMigration.execute(recordUpdateLimit);
-            } else {
-              LOGGER.debug("Migration already locked");
-            }
-          } catch (SQLException | DatabaseException e) {
-            LOGGER.error("Error on migration: {}", e.getMessage());
-          } finally {
-            CommonUtils.unregisteredBackgroundUtilsCount();
-          }
-        }
-      }
-
+      // Execute migration on main thread
       CollaboratorResourceMigration.execute();
     }
   }
