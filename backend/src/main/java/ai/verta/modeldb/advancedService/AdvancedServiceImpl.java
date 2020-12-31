@@ -93,7 +93,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     List<String> resourceIds = new LinkedList<>();
     Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
 
-    projects.parallelStream()
+    projects
+        .parallelStream()
         .forEach(
             (project) -> {
               vertaIds.add(project.getOwner());
@@ -745,7 +746,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
     List<String> resourceIds = new LinkedList<>();
 
-    datasets.parallelStream()
+    datasets
+        .parallelStream()
         .forEach(
             (dataset) -> {
               vertaIds.add(dataset.getOwner());

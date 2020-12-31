@@ -129,7 +129,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       Repository repository =
           repositoryDAO.createRepository(commitDAO, metadataDAO, dataset, true, userInfo);
       Dataset createdDataset =
-          dataset.toBuilder()
+          dataset
+              .toBuilder()
               .setId(String.valueOf(repository.getId()))
               .setTimeCreated(repository.getDateCreated())
               .setTimeUpdated(repository.getDateUpdated())
@@ -423,7 +424,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
-          getDatasetResponse.getDataset().toBuilder()
+          getDatasetResponse
+              .getDataset()
+              .toBuilder()
               .setDescription(request.getDescription())
               .build();
       repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
@@ -574,7 +577,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
-          getDatasetResponse.getDataset().toBuilder()
+          getDatasetResponse
+              .getDataset()
+              .toBuilder()
               .addAllAttributes(request.getAttributesList())
               .build();
       repositoryDAO.createRepository(commitDAO, metadataDAO, updatedDataset, false, null);
