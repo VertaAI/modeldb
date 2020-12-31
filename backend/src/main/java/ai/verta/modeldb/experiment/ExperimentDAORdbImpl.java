@@ -4,21 +4,13 @@ import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.Experiment;
-import ai.verta.modeldb.FindExperiments;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.Project;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
-import ai.verta.modeldb.entities.AttributeEntity;
-import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.ExperimentEntity;
-import ai.verta.modeldb.entities.ProjectEntity;
-import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.entities.*;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -34,22 +26,6 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -57,6 +33,10 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import javax.persistence.criteria.*;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class ExperimentDAORdbImpl implements ExperimentDAO {
 
@@ -742,12 +722,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     checkIfEntityAlreadyExists(srcExperiment, false);
 
     if (newOwner == null || newProject == null) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage("New owner or new project not passed for cloning Experiment.")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(
+          "New owner or new project not passed for cloning Experiment.");
     }
 
     Experiment copyExperiment = copyExperimentAndUpdateDetails(srcExperiment, newProject, newOwner);

@@ -1,47 +1,12 @@
 package ai.verta.modeldb.advancedService;
 
-import ai.verta.common.*;
+import ai.verta.common.Artifact;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.AdvancedQueryDatasetVersionsResponse;
-import ai.verta.modeldb.AdvancedQueryDatasetsResponse;
-import ai.verta.modeldb.AdvancedQueryExperimentRunsResponse;
-import ai.verta.modeldb.AdvancedQueryExperimentsResponse;
-import ai.verta.modeldb.AdvancedQueryProjectsResponse;
-import ai.verta.modeldb.CollaboratorUserInfo;
-import ai.verta.modeldb.Comment;
-import ai.verta.modeldb.Dataset;
-import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.Experiment;
-import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.FindDatasetVersions;
-import ai.verta.modeldb.FindDatasets;
-import ai.verta.modeldb.FindExperimentRuns;
-import ai.verta.modeldb.FindExperiments;
-import ai.verta.modeldb.FindHydratedDatasetsByOrganization;
-import ai.verta.modeldb.FindHydratedDatasetsByTeam;
-import ai.verta.modeldb.FindHydratedProjectsByOrganization;
-import ai.verta.modeldb.FindHydratedProjectsByTeam;
-import ai.verta.modeldb.FindHydratedProjectsByUser;
-import ai.verta.modeldb.FindProjects;
-import ai.verta.modeldb.GetDatasetByName;
-import ai.verta.modeldb.GetHydratedDatasetByName;
-import ai.verta.modeldb.GetHydratedDatasetsByProjectId;
-import ai.verta.modeldb.GetHydratedExperimentRunById;
-import ai.verta.modeldb.GetHydratedExperimentRunsByProjectId;
-import ai.verta.modeldb.GetHydratedExperimentsByProjectId;
-import ai.verta.modeldb.GetHydratedProjectById;
-import ai.verta.modeldb.GetHydratedProjects;
-import ai.verta.modeldb.HydratedDataset;
-import ai.verta.modeldb.HydratedDatasetVersion;
-import ai.verta.modeldb.HydratedExperiment;
-import ai.verta.modeldb.HydratedExperimentRun;
-import ai.verta.modeldb.HydratedProject;
+import ai.verta.common.OperatorEnum;
+import ai.verta.common.ValueTypeEnum;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceImplBase;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.Project;
-import ai.verta.modeldb.SortExperimentRuns;
-import ai.verta.modeldb.TopExperimentRunsSelector;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthInterceptor;
 import ai.verta.modeldb.authservice.RoleService;
@@ -54,12 +19,9 @@ import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
-import ai.verta.modeldb.dto.DatasetPaginationDTO;
-import ai.verta.modeldb.dto.DatasetVersionDTO;
-import ai.verta.modeldb.dto.ExperimentPaginationDTO;
-import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
-import ai.verta.modeldb.dto.ProjectPaginationDTO;
+import ai.verta.modeldb.dto.*;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -76,17 +38,11 @@ import com.google.rpc.Status;
 import io.grpc.Metadata;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
@@ -250,14 +206,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     try {
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetHydratedProjectById request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetHydratedProjectById.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
@@ -283,15 +232,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     try {
       if (request.getProjectId().isEmpty()) {
         String errorMessage = "Project ID not found in GetHydratedExperimentsByProjectId request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(
-                    Any.pack(GetHydratedExperimentsByProjectId.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
@@ -334,15 +275,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       if (request.getProjectId().isEmpty()) {
         String errorMessage =
             "Project ID not found in GetHydratedExperimentRunsByProjectId request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(
-                    Any.pack(GetHydratedExperimentRunsByProjectId.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
@@ -490,14 +423,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     try {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetHydratedExperimentRunById request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetHydratedExperimentRunById.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
 
@@ -610,14 +536,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(SortExperimentRuns.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
@@ -1028,14 +947,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     try {
       if (request.getName().isEmpty()) {
         String errorMessage = "Dataset Name not found in GetHydratedDatasetByName request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetHydratedDatasetByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Get the user info from the Context
@@ -1152,14 +1064,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(FindHydratedProjectsByUser.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       responseObserver.onNext(
@@ -1187,14 +1092,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(FindHydratedProjectsByOrganization.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
       GeneratedMessageV3 hostOrgInfo;
       if (!request.getId().isEmpty()) {
@@ -1229,14 +1127,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(FindHydratedProjectsByTeam.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
       GeneratedMessageV3 hostTeamInfo;
       if (!request.getId().isEmpty()) {
@@ -1282,15 +1173,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     try {
       if (request.getProjectId().isEmpty()) {
         String errorMessage = "Project ID not found in GetHydratedDatasetsByProjectId request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(
-                    Any.pack(GetHydratedExperimentRunsByProjectId.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(

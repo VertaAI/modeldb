@@ -1,21 +1,8 @@
 package ai.verta.modeldb.project;
 
-import ai.verta.common.Artifact;
-import ai.verta.common.KeyValue;
-import ai.verta.common.KeyValueQuery;
+import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.OperatorEnum;
-import ai.verta.common.ValueTypeEnum;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CloneExperimentRun;
-import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.CreateProject;
-import ai.verta.modeldb.Experiment;
-import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.FindProjects;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.Project;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
@@ -25,6 +12,7 @@ import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -33,32 +21,13 @@ import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.Organization;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.UserInfo;
-import ai.verta.uac.Workspace;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -66,6 +35,10 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import javax.persistence.criteria.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ProjectDAORdbImpl implements ProjectDAO {
 
@@ -715,23 +688,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
     // if this is not a starter project, then cloning is not supported
     if (!srcProjectID.equals(starterProjectID)) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage("Cloning project supported only for starter project")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException("Cloning project supported only for starter project");
     }
 
     // source project
     Project srcProject = getProjectByID(srcProjectID);
     if (newOwner == null) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage("New owner not passed for cloning Project ")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException("New owner not passed for cloning Project");
     }
 
     // cloned project

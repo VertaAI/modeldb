@@ -16,6 +16,7 @@ import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -28,20 +29,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -49,6 +36,9 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import javax.persistence.criteria.*;
+import java.util.*;
 
 public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
@@ -184,12 +174,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public String getUrlForDatasetVersion(String datasetVersionId, String method)
       throws InvalidProtocolBufferException {
-    Status status =
-        Status.newBuilder()
-            .setCode(Code.INVALID_ARGUMENT_VALUE)
-            .setMessage("Not supported yet")
-            .build();
-    throw StatusProto.toStatusRuntimeException(status);
+    throw new InvalidArgumentException("Not supported yet");
   }
 
   @Override
@@ -426,12 +411,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       for (KeyValueQuery predicate : predicates) {
         if (predicate.getKey().equals(ModelDBConstants.ID)) {
           if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
-            Status statusMessage =
-                Status.newBuilder()
-                    .setCode(Code.INVALID_ARGUMENT_VALUE)
-                    .setMessage("Unknown 'Operator' type recognized, valid 'Operator' type is EQ")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(statusMessage);
+            throw new InvalidArgumentException(
+                "Unknown 'Operator' type recognized, valid 'Operator' type is EQ");
           }
           if (datasetVersionList.isEmpty()) {
             Status statusMessage =
