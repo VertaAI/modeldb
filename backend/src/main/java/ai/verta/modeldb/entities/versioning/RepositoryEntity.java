@@ -199,8 +199,6 @@ public class RepositoryEntity {
         .setName(this.name)
         .setDateCreated(this.date_created)
         .setDateUpdated(this.date_updated)
-        .setWorkspaceId(this.workspace_id)
-        .setWorkspaceTypeValue(this.workspace_type)
         .addAllAttributes(
             RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
 
