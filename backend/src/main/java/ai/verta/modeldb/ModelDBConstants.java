@@ -13,7 +13,6 @@ public interface ModelDBConstants {
   String CLOUD_BUCKET_NAME = "cloudBucketName";
   String MINIO_ENDPOINT = "minioEndpoint";
   String AWS_REGION = "aws_region";
-  String DATABASE = "database";
   String DB_TYPE = "DBType";
   String MIN_CONNECTION_POOL_SIZE = "minConnectionPoolSize";
   String MAX_CONNECTION_POOL_SIZE = "maxConnectionPoolSize";

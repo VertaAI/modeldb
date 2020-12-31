@@ -2,8 +2,12 @@ package ai.verta.modeldb.telemetry;
 
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.InvalidConfigException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
+
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,7 +24,7 @@ public class TelemetryUtils {
   public static String telemetryUniqueIdentifier = null;
   private String consumer = ModelDBConstants.TELEMETRY_CONSUMER_URL;
 
-  public TelemetryUtils(String consumer) {
+  public TelemetryUtils(String consumer) throws FileNotFoundException, InvalidConfigException {
     if (consumer != null && !consumer.isEmpty()) {
       this.consumer = consumer;
     }
@@ -31,13 +35,13 @@ public class TelemetryUtils {
     return consumer;
   }
 
-  public void initializeTelemetry() {
+  public void initializeTelemetry() throws FileNotFoundException, InvalidConfigException {
     if (!telemetryInitialized) {
       LOGGER.info("Found value for telemetryInitialized : {}", telemetryInitialized);
 
       try (Connection connection = ModelDBHibernateUtil.getConnection()) {
         boolean existStatus =
-            ModelDBHibernateUtil.tableExists(connection, "modeldb_deployment_info");
+            ModelDBHibernateUtil.tableExists(connection, Config.getInstance().database, "modeldb_deployment_info");
         if (!existStatus) {
           LOGGER.warn("modeldb_deployment_info table not found");
           LOGGER.info("Table modeldb_deployment_info creating");

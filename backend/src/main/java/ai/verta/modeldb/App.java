@@ -21,6 +21,9 @@ import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.DatabaseConfig;
+import ai.verta.modeldb.config.InvalidConfigException;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -70,9 +73,12 @@ import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -145,9 +151,6 @@ public class App implements ApplicationContextAware {
   private String getArtifactEndpoint = null;
   private String storeTypePathPrefix = null;
   private boolean s3presignedURLEnabled = true;
-
-  // Database connection details
-  private Map<String, Object> databasePropMap;
 
   // Control parameter for delayed shutdown
   private Long shutdownTimeout;
@@ -228,17 +231,24 @@ public class App implements ApplicationContextAware {
       // --------------- Start reading properties --------------------------
       Map<String, Object> propertiesMap =
           ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
+      Config config = Config.getInstance();
       // --------------- End reading properties --------------------------
 
-      Map<String, Object> databasePropMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.DATABASE);
-
       boolean liquibaseMigration =
-          Boolean.parseBoolean(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION));
+          Boolean.parseBoolean(
+              Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION)).orElse("false"));
       if (liquibaseMigration) {
-        LOGGER.info("Liquibase validation starting");
+        LOGGER.info("Liquibase migration starting");
+        ModelDBHibernateUtil.runLiquibaseMigration(config.database);
+        LOGGER.info("Liquibase migration done");
 
-        if (ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap)) return;
+        boolean runLiquibaseSeparate =
+            Boolean.parseBoolean(
+                Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))
+                    .orElse("false"));
+        if (runLiquibaseSeparate) {
+          return;
+        }
       }
 
       // --------------- Start Initialize modelDB gRPC server --------------------------
@@ -297,7 +307,7 @@ public class App implements ApplicationContextAware {
 
       // ----------------- Start Initialize database & modelDB services with DAO ---------
       initializeServicesBaseOnDataBase(
-          serverBuilder, databasePropMap, propertiesMap, authService, app.roleService);
+          serverBuilder, config.database, propertiesMap, authService, app.roleService);
       // ----------------- Finish Initialize database & modelDB services with DAO --------
 
       serverBuilder.intercept(new MonitoringInterceptor());
@@ -350,11 +360,11 @@ public class App implements ApplicationContextAware {
 
   public static void initializeServicesBaseOnDataBase(
       ServerBuilder<?> serverBuilder,
-      Map<String, Object> databasePropMap,
+      DatabaseConfig database,
       Map<String, Object> propertiesMap,
       AuthService authService,
       RoleService roleService)
-      throws ModelDBException, IOException {
+          throws ModelDBException, IOException, InvalidConfigException {
 
     App app = App.getInstance();
     Map<String, Object> serviceUserDetailMap =
@@ -440,20 +450,15 @@ public class App implements ApplicationContextAware {
     healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
     // --------------- Start Initialize Database base on configuration --------------------------
-    if (databasePropMap.isEmpty()) {
-      throw new ModelDBException("database properties not found in config.");
-    }
     LOGGER.trace("Database properties found");
 
-    String dbType = (String) databasePropMap.get(ModelDBConstants.DB_TYPE);
-    switch (dbType) {
+    switch (database.DBType) {
       case ModelDBConstants.RELATIONAL:
 
         // --------------- Start Initialize relational Database base on configuration
         // ---------------
-        app.databasePropMap = databasePropMap;
         app.propertiesMap = propertiesMap;
-        ModelDBHibernateUtil.createOrGetSessionFactory();
+        ModelDBHibernateUtil.createOrGetSessionFactory(database);
 
         LOGGER.trace("RDBMS configured with server");
         // --------------- Finish Initialize relational Database base on configuration
@@ -782,7 +787,7 @@ public class App implements ApplicationContextAware {
     return artifactStoreService;
   }
 
-  public static void initializeTelemetryBasedOnConfig(Map<String, Object> propertiesMap) {
+  public static void initializeTelemetryBasedOnConfig(Map<String, Object> propertiesMap) throws FileNotFoundException, InvalidConfigException {
     boolean optIn = true;
     int frequency = 1;
     String consumer = null;
@@ -854,10 +859,6 @@ public class App implements ApplicationContextAware {
 
   public String getStoreTypePathPrefix() {
     return storeTypePathPrefix;
-  }
-
-  public Map<String, Object> getDatabasePropMap() {
-    return databasePropMap;
   }
 
   public Map<String, Object> getPropertiesMap() {
