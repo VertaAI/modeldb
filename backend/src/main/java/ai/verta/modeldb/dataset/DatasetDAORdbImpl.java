@@ -152,7 +152,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       ResourceVisibility resourceVisibility = dataset.getVisibility();
       if (dataset.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
         resourceVisibility =
-            ModelDBUtils.getResourceVisibility(null, dataset.getDatasetVisibility());
+            ModelDBUtils.getResourceVisibility(Optional.empty(), dataset.getDatasetVisibility());
       }
       roleService.createWorkspacePermissions(
           dataset.getWorkspaceServiceId(),

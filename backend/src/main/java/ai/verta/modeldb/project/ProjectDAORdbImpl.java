@@ -272,7 +272,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ResourceVisibility resourceVisibility = project.getVisibility();
       if (project.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
         resourceVisibility =
-            ModelDBUtils.getResourceVisibility(workspace, project.getProjectVisibility());
+            ModelDBUtils.getResourceVisibility(
+                Optional.of(workspace), project.getProjectVisibility());
       }
 
       roleService.createWorkspacePermissions(
