@@ -160,7 +160,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
             .addAllArtifacts(request.getArtifactsList());
 
-    if (App.getInstance().getStoreClientCreationTimestamp() && request.getDateCreated() != 0L) {
+    if (request.getDateCreated() != 0L) {
       experimentBuilder
           .setDateCreated(request.getDateCreated())
           .setDateUpdated(request.getDateCreated());

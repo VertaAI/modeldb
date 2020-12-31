@@ -511,12 +511,7 @@ public class ModelDBHibernateUtil {
   public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
       throws SQLException {
     boolean tExists = false;
-    try (ResultSet rs =
-        getTableBasedOnDialect(
-            conn,
-            tableName,
-            config.RdbConfiguration.RdbDatabaseName,
-            config.RdbConfiguration.RdbDialect)) {
+    try (ResultSet rs = getTableBasedOnDialect(conn, tableName, config.RdbConfiguration)) {
       while (rs.next()) {
         String tName = rs.getString("TABLE_NAME");
         if (tName != null && tName.equals(tableName)) {
@@ -528,13 +523,13 @@ public class ModelDBHibernateUtil {
     return tExists;
   }
 
-  private static ResultSet getTableBasedOnDialect(
-      Connection conn, String tableName, String dbName, String rDBDialect) throws SQLException {
-    if (rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
+  private static ResultSet getTableBasedOnDialect(Connection conn, String tableName, RdbConfig rdb)
+      throws SQLException {
+    if (rdb.isPostgres()) {
       // TODO: make postgres implementation multitenant as well.
       return conn.getMetaData().getTables(null, null, tableName, null);
     } else {
-      return conn.getMetaData().getTables(dbName, null, tableName, null);
+      return conn.getMetaData().getTables(rdb.RdbDatabaseName, null, tableName, null);
     }
   }
 
@@ -814,7 +809,7 @@ public class ModelDBHibernateUtil {
     RdbConfig rdb = config.RdbConfiguration;
 
     if (rdb.RdbDatabaseName.contains("-")) {
-      if (rdb.RdbDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
+      if (rdb.isPostgres()) {
         throw new InterruptedException("Postgres doesn't allow '-' in the database name");
       } else {
         ModelDBHibernateUtil.createDBIfNotExists(rdb);

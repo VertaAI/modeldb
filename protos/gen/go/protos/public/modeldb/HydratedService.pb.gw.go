@@ -68,42 +68,6 @@ func local_request_HydratedService_GetHydratedProjects_0(ctx context.Context, ma
 }
 
 var (
-	filter_HydratedService_GetHydratedPublicProjects_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_HydratedService_GetHydratedPublicProjects_0(ctx context.Context, marshaler runtime.Marshaler, client HydratedServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetHydratedProjects
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_GetHydratedPublicProjects_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.GetHydratedPublicProjects(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_HydratedService_GetHydratedPublicProjects_0(ctx context.Context, marshaler runtime.Marshaler, server HydratedServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetHydratedProjects
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_HydratedService_GetHydratedPublicProjects_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.GetHydratedPublicProjects(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
-var (
 	filter_HydratedService_GetHydratedProjectById_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
@@ -421,40 +385,6 @@ func local_request_HydratedService_FindHydratedProjects_0(ctx context.Context, m
 
 }
 
-func request_HydratedService_FindHydratedPublicProjects_0(ctx context.Context, marshaler runtime.Marshaler, client HydratedServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq FindProjects
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.FindHydratedPublicProjects(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_HydratedService_FindHydratedPublicProjects_0(ctx context.Context, marshaler runtime.Marshaler, server HydratedServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq FindProjects
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.FindHydratedPublicProjects(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
 func request_HydratedService_FindHydratedProjectsByUser_0(ctx context.Context, marshaler runtime.Marshaler, client HydratedServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq FindHydratedProjectsByUser
 	var metadata runtime.ServerMetadata
@@ -659,40 +589,6 @@ func local_request_HydratedService_FindHydratedDatasets_0(ctx context.Context, m
 
 }
 
-func request_HydratedService_FindHydratedPublicDatasets_0(ctx context.Context, marshaler runtime.Marshaler, client HydratedServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq FindDatasets
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.FindHydratedPublicDatasets(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_HydratedService_FindHydratedPublicDatasets_0(ctx context.Context, marshaler runtime.Marshaler, server HydratedServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq FindDatasets
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.FindHydratedPublicDatasets(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
 func request_HydratedService_FindHydratedDatasetVersions_0(ctx context.Context, marshaler runtime.Marshaler, client HydratedServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq FindDatasetVersions
 	var metadata runtime.ServerMetadata
@@ -821,26 +717,6 @@ func RegisterHydratedServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		}
 
 		forward_HydratedService_GetHydratedProjects_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_HydratedService_GetHydratedPublicProjects_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_HydratedService_GetHydratedPublicProjects_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_HydratedService_GetHydratedPublicProjects_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1024,26 +900,6 @@ func RegisterHydratedServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_HydratedService_FindHydratedPublicProjects_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_HydratedService_FindHydratedPublicProjects_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_HydratedService_FindHydratedPublicProjects_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("POST", pattern_HydratedService_FindHydratedProjectsByUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1161,26 +1017,6 @@ func RegisterHydratedServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		}
 
 		forward_HydratedService_FindHydratedDatasets_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("POST", pattern_HydratedService_FindHydratedPublicDatasets_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_HydratedService_FindHydratedPublicDatasets_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_HydratedService_FindHydratedPublicDatasets_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1302,26 +1138,6 @@ func RegisterHydratedServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		}
 
 		forward_HydratedService_GetHydratedProjects_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_HydratedService_GetHydratedPublicProjects_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_HydratedService_GetHydratedPublicProjects_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_HydratedService_GetHydratedPublicProjects_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1505,26 +1321,6 @@ func RegisterHydratedServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_HydratedService_FindHydratedPublicProjects_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_HydratedService_FindHydratedPublicProjects_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_HydratedService_FindHydratedPublicProjects_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("POST", pattern_HydratedService_FindHydratedProjectsByUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1645,26 +1441,6 @@ func RegisterHydratedServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_HydratedService_FindHydratedPublicDatasets_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_HydratedService_FindHydratedPublicDatasets_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_HydratedService_FindHydratedPublicDatasets_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("POST", pattern_HydratedService_FindHydratedDatasetVersions_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1731,8 +1507,6 @@ func RegisterHydratedServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 var (
 	pattern_HydratedService_GetHydratedProjects_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "getHydratedProjects"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_HydratedService_GetHydratedPublicProjects_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "getHydratedPublicProjects"}, "", runtime.AssumeColonVerbOpt(true)))
-
 	pattern_HydratedService_GetHydratedProjectById_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "getHydratedProjectById"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_HydratedService_GetHydratedExperimentsByProjectId_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "getHydratedExperimentsByProjectId"}, "", runtime.AssumeColonVerbOpt(true)))
@@ -1751,8 +1525,6 @@ var (
 
 	pattern_HydratedService_FindHydratedProjects_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "findHydratedProjects"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_HydratedService_FindHydratedPublicProjects_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "findHydratedPublicProjects"}, "", runtime.AssumeColonVerbOpt(true)))
-
 	pattern_HydratedService_FindHydratedProjectsByUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "findHydratedProjectsByUser"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_HydratedService_FindHydratedProjectsByOrganization_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "findHydratedProjectsByOrganization"}, "", runtime.AssumeColonVerbOpt(true)))
@@ -1765,8 +1537,6 @@ var (
 
 	pattern_HydratedService_FindHydratedDatasets_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "findHydratedDatasets"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_HydratedService_FindHydratedPublicDatasets_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "findHydratedPublicDatasets"}, "", runtime.AssumeColonVerbOpt(true)))
-
 	pattern_HydratedService_FindHydratedDatasetVersions_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "findHydratedDatasetVersions"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_HydratedService_GetHydratedDatasetByName_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "hydratedData", "getHydratedDatasetByName"}, "", runtime.AssumeColonVerbOpt(true)))
@@ -1776,8 +1546,6 @@ var (
 
 var (
 	forward_HydratedService_GetHydratedProjects_0 = runtime.ForwardResponseMessage
-
-	forward_HydratedService_GetHydratedPublicProjects_0 = runtime.ForwardResponseMessage
 
 	forward_HydratedService_GetHydratedProjectById_0 = runtime.ForwardResponseMessage
 
@@ -1797,8 +1565,6 @@ var (
 
 	forward_HydratedService_FindHydratedProjects_0 = runtime.ForwardResponseMessage
 
-	forward_HydratedService_FindHydratedPublicProjects_0 = runtime.ForwardResponseMessage
-
 	forward_HydratedService_FindHydratedProjectsByUser_0 = runtime.ForwardResponseMessage
 
 	forward_HydratedService_FindHydratedProjectsByOrganization_0 = runtime.ForwardResponseMessage
@@ -1810,8 +1576,6 @@ var (
 	forward_HydratedService_FindHydratedDatasetsByTeam_0 = runtime.ForwardResponseMessage
 
 	forward_HydratedService_FindHydratedDatasets_0 = runtime.ForwardResponseMessage
-
-	forward_HydratedService_FindHydratedPublicDatasets_0 = runtime.ForwardResponseMessage
 
 	forward_HydratedService_FindHydratedDatasetVersions_0 = runtime.ForwardResponseMessage
 

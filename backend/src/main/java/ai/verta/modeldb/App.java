@@ -156,7 +156,6 @@ public class App implements ApplicationContextAware {
 
   // Feature flags
   private Boolean disabledAuthz = false;
-  private Boolean storeClientCreationTimestamp = false;
   private Integer requestTimeout = 30;
 
   private Boolean traceEnabled = false;
@@ -280,10 +279,6 @@ public class App implements ApplicationContextAware {
       if (featureFlagMap != null) {
         app.setDisabledAuthz(
             (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
-        app.storeClientCreationTimestamp =
-            (Boolean)
-                featureFlagMap.getOrDefault(
-                    ModelDBConstants.STORE_CLIENT_CREATION_TIMESTAMP, false);
       }
 
       if (propertiesMap.containsKey("enableTrace") && (Boolean) propertiesMap.get("enableTrace")) {
@@ -316,7 +311,7 @@ public class App implements ApplicationContextAware {
 
       // ----------------- Start Initialize database & modelDB services with DAO ---------
       initializeServicesBaseOnDataBase(
-          serverBuilder, propertiesMap, authService, app.roleService);
+          serverBuilder, config.database, propertiesMap, authService, app.roleService);
       // ----------------- Finish Initialize database & modelDB services with DAO --------
 
       serverBuilder.intercept(new MonitoringInterceptor());
@@ -369,6 +364,7 @@ public class App implements ApplicationContextAware {
 
   public static void initializeServicesBaseOnDataBase(
       ServerBuilder<?> serverBuilder,
+      DatabaseConfig database,
       Map<String, Object> propertiesMap,
       AuthService authService,
       RoleService roleService)
@@ -872,14 +868,6 @@ public class App implements ApplicationContextAware {
 
   public String getAwsRegion() {
     return awsRegion;
-  }
-
-  public Boolean getStoreClientCreationTimestamp() {
-    return storeClientCreationTimestamp;
-  }
-
-  public Boolean setStoreClientCreationTimestamp(Boolean storeClientCreationTimestamp) {
-    return this.storeClientCreationTimestamp = storeClientCreationTimestamp;
   }
 
   public String getServiceUserEmail() {

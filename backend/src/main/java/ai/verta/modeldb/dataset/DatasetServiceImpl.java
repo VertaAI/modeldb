@@ -194,7 +194,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             .setDatasetType(request.getDatasetType())
             .setCustomPermission(request.getCustomPermission());
 
-    if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
+    if (request.getTimeCreated() != 0L) {
       datasetBuilder
           .setTimeCreated(request.getTimeCreated())
           .setTimeUpdated(request.getTimeCreated());
