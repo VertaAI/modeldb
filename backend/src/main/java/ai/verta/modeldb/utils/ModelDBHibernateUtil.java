@@ -519,7 +519,8 @@ public class ModelDBHibernateUtil {
     return HealthCheckResponse.ServingStatus.SERVING;
   }
 
-  public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName) throws SQLException {
+  public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
+      throws SQLException {
     boolean tExists = false;
     try (ResultSet rs =
         getTableBasedOnDialect(
