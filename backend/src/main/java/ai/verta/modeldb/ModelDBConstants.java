@@ -21,7 +21,6 @@ public interface ModelDBConstants {
   Integer MIN_CONNECTION_SIZE_DEFAULT = 5;
   Integer MAX_CONNECTION_SIZE_DEFAULT = 20;
   Integer CONNECTION_TIMEOUT_DEFAULT = 300;
-  String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";
   String FEATURE_FLAG = "feature-flag";
   String GET_ARTIFACT_ENDPOINT = "getArtifact";
   String GRPC_SERVER = "grpcServer";
@@ -68,7 +67,6 @@ public interface ModelDBConstants {
   Integer RETRY_INIT_TIME_AWS_TEMP_CREDENTIALS = 10 * 60; // Time in second
 
   // feature-flags
-  String DISABLED_AUTHZ = "disabled-authz";
   String STORE_CLIENT_CREATION_TIMESTAMP = "store-client-creation-timestamp";
   String DISABLED_ARTIFACT_STORE = "disabled-artifact-store";
 

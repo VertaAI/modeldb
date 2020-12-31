@@ -153,7 +153,6 @@ public class App implements ApplicationContextAware {
   private Long shutdownTimeout;
 
   // Feature flags
-  private Boolean disabledAuthz = false;
   private Boolean storeClientCreationTimestamp = false;
   private Integer requestTimeout = 30;
 
@@ -259,8 +258,6 @@ public class App implements ApplicationContextAware {
       Map<String, Object> featureFlagMap =
           (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
       if (featureFlagMap != null) {
-        app.setDisabledAuthz(
-            (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
         app.storeClientCreationTimestamp =
             (Boolean)
                 featureFlagMap.getOrDefault(
@@ -395,8 +392,6 @@ public class App implements ApplicationContextAware {
     Map<String, Object> featureFlagMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
     if (featureFlagMap != null) {
-      app.setDisabledAuthz(
-          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
       app.disabledArtifactStore =
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_ARTIFACT_STORE, false);
     }
@@ -862,14 +857,6 @@ public class App implements ApplicationContextAware {
 
   public Map<String, Object> getPropertiesMap() {
     return propertiesMap;
-  }
-
-  public Boolean getDisabledAuthz() {
-    return disabledAuthz;
-  }
-
-  public void setDisabledAuthz(Boolean disabledAuthz) {
-    this.disabledAuthz = disabledAuthz;
   }
 
   public String getCloudAccessKey() {
