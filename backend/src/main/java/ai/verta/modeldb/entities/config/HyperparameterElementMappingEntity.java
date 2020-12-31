@@ -5,11 +5,10 @@ import ai.verta.modeldb.exceptions.InternalErrorException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import io.grpc.Status;
+import java.util.Objects;
+import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import javax.persistence.*;
-import java.util.Objects;
 
 @Entity
 @Table(name = "hyperparameter_element_mapping")

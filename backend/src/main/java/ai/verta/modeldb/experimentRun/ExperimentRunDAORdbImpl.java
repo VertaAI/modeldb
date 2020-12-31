@@ -10,7 +10,6 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
@@ -29,9 +28,11 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.modeldb.versioning.*;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -40,16 +41,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.LockMode;
-import org.hibernate.LockOptions;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
-
-import javax.persistence.criteria.*;
-import io.grpc.protobuf.StatusProto;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
@@ -1446,6 +1437,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           experimentRunPaginationDTO.setTotalRecords(0L);
           return experimentRunPaginationDTO;
         }
+        throw ex;
       }
 
       finalPredicatesList.add(
@@ -2329,13 +2321,16 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         findExperimentRuns.setWorkspaceName(
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
-        WorkspaceDTO workspaceDTO =
-            roleService.getWorkspaceDTOByWorkspaceId(
-                currentLoginUserInfo,
-                repositoryEntity.getWorkspace_id(),
-                repositoryEntity.getWorkspace_type());
-        if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
-          findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());
+        GetResourcesResponseItem entityResource =
+            roleService.getEntityResource(
+                String.valueOf(request.getRepositoryId().getRepoId()),
+                ModelDBServiceResourceTypes.REPOSITORY);
+        Workspace workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
+        if (workspace != null) {
+          findExperimentRuns.setWorkspaceName(
+              workspace.getInternalIdCase() == Workspace.InternalIdCase.ORG_ID
+                  ? workspace.getOrgName()
+                  : workspace.getUsername());
         }
       }
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
@@ -2405,13 +2400,16 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         findExperimentRuns.setWorkspaceName(
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
-        WorkspaceDTO workspaceDTO =
-            roleService.getWorkspaceDTOByWorkspaceId(
-                currentLoginUserInfo,
-                repositoryEntity.getWorkspace_id(),
-                repositoryEntity.getWorkspace_type());
-        if (workspaceDTO != null && workspaceDTO.getWorkspaceName() != null) {
-          findExperimentRuns.setWorkspaceName(workspaceDTO.getWorkspaceName());
+        GetResourcesResponseItem entityResource =
+            roleService.getEntityResource(
+                String.valueOf(request.getRepositoryId().getRepoId()),
+                ModelDBServiceResourceTypes.REPOSITORY);
+        Workspace workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
+        if (workspace != null) {
+          findExperimentRuns.setWorkspaceName(
+              workspace.getInternalIdCase() == Workspace.InternalIdCase.ORG_ID
+                  ? workspace.getOrgName()
+                  : workspace.getUsername());
         }
       }
 

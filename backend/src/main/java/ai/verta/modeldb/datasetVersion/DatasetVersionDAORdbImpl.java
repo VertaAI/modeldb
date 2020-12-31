@@ -28,8 +28,6 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import java.util.*;
 import javax.persistence.criteria.*;
 import org.apache.logging.log4j.LogManager;
@@ -358,6 +356,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           datasetVersionDTO.setTotalRecords(0L);
           return datasetVersionDTO;
         }
+        throw ex;
       }
 
       finalPredicatesList.add(
