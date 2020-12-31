@@ -42,8 +42,8 @@ public class CollaboratorResourceMigration {
 
   public CollaboratorResourceMigration() {}
 
-  public static void execute(int recordUpdateLimit) {
-    CollaboratorResourceMigration.paginationSize = recordUpdateLimit;
+  public static void execute() {
+    CollaboratorResourceMigration.paginationSize = 100;
     App app = App.getInstance();
     if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
       app.setAuthServerHost(app.getAuthServerHost());
