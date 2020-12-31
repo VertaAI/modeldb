@@ -316,7 +316,7 @@ public class App implements ApplicationContextAware {
 
       // ----------------- Start Initialize database & modelDB services with DAO ---------
       initializeServicesBaseOnDataBase(
-          serverBuilder, config.database, propertiesMap, authService, app.roleService);
+          serverBuilder, propertiesMap, authService, app.roleService);
       // ----------------- Finish Initialize database & modelDB services with DAO --------
 
       serverBuilder.intercept(new MonitoringInterceptor());
@@ -369,7 +369,6 @@ public class App implements ApplicationContextAware {
 
   public static void initializeServicesBaseOnDataBase(
       ServerBuilder<?> serverBuilder,
-      DatabaseConfig database,
       Map<String, Object> propertiesMap,
       AuthService authService,
       RoleService roleService)
