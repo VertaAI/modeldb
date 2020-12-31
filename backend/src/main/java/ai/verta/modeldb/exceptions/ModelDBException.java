@@ -2,7 +2,7 @@ package ai.verta.modeldb.exceptions;
 
 import io.grpc.Status.Code;
 
-public class ModelDBException extends Exception {
+public class ModelDBException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
 

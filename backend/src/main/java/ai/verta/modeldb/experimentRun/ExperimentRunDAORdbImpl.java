@@ -1,52 +1,15 @@
 package ai.verta.modeldb.experimentRun;
 
-import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
-
-import ai.verta.common.Artifact;
-import ai.verta.common.KeyValue;
-import ai.verta.common.KeyValueQuery;
+import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.OperatorEnum;
-import ai.verta.common.ValueTypeEnum;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CloneExperimentRun;
-import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.CommitArtifactPart.Response;
-import ai.verta.modeldb.CommitMultipartArtifact;
-import ai.verta.modeldb.Experiment;
-import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.FindExperimentRuns;
-import ai.verta.modeldb.GetCommittedArtifactParts;
-import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
-import ai.verta.modeldb.GetVersionedInput;
-import ai.verta.modeldb.GitSnapshot;
-import ai.verta.modeldb.ListBlobExperimentRunsRequest;
-import ai.verta.modeldb.ListCommitExperimentRunsRequest;
-import ai.verta.modeldb.Location;
-import ai.verta.modeldb.LogVersionedInput;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.Observation;
-import ai.verta.modeldb.Project;
-import ai.verta.modeldb.SortExperimentRuns;
-import ai.verta.modeldb.TopExperimentRunsSelector;
-import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
-import ai.verta.modeldb.entities.ArtifactEntity;
-import ai.verta.modeldb.entities.ArtifactPartEntity;
-import ai.verta.modeldb.entities.AttributeEntity;
-import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.ExperimentEntity;
-import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.entities.KeyValueEntity;
-import ai.verta.modeldb.entities.ObservationEntity;
-import ai.verta.modeldb.entities.ProjectEntity;
-import ai.verta.modeldb.entities.TagsMapping;
+import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
@@ -64,20 +27,7 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.utils.TrialUtils;
-import ai.verta.modeldb.versioning.Blob;
-import ai.verta.modeldb.versioning.BlobDAO;
-import ai.verta.modeldb.versioning.BlobExpanded;
-import ai.verta.modeldb.versioning.CodeBlob;
-import ai.verta.modeldb.versioning.CommitDAO;
-import ai.verta.modeldb.versioning.CommitFunction;
-import ai.verta.modeldb.versioning.EnvironmentBlob;
-import ai.verta.modeldb.versioning.GitCodeBlob;
-import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
-import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
-import ai.verta.modeldb.versioning.RepositoryDAO;
-import ai.verta.modeldb.versioning.RepositoryFunction;
-import ai.verta.modeldb.versioning.RepositoryIdentification;
-import ai.verta.modeldb.versioning.VersioningUtils;
+import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
@@ -85,42 +35,12 @@ import com.amazonaws.services.s3.model.PartETag;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaDelete;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -128,6 +48,19 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import javax.persistence.criteria.*;
+import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
+
+import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
 public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
@@ -1718,8 +1651,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           if (!expRunHyperparameterConfigBlobMap.isEmpty()
               && expRunHyperparameterConfigBlobMap.containsKey(experimentRun.getId())) {
             experimentRun =
-                experimentRun
-                    .toBuilder()
+                experimentRun.toBuilder()
                     .addAllHyperparameters(
                         expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
                     .build();
@@ -1727,8 +1659,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           if (!expRunCodeVersionMap.isEmpty()
               && expRunCodeVersionMap.containsKey(experimentRun.getId())) {
             experimentRun =
-                experimentRun
-                    .toBuilder()
+                experimentRun.toBuilder()
                     .putAllCodeVersionFromBlob(expRunCodeVersionMap.get(experimentRun.getId()))
                     .build();
           }
@@ -2700,27 +2631,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     String uploadId;
     if (partNumberSpecified && app.getArtifactStoreType().equals(ModelDBConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
-      try {
-        String message = null;
-        if (uploadId == null || artifactEntity.isUploadCompleted()) {
-          if (initializeMultipart == null) {
-            message = "Multipart wasn't initialized";
-          } else {
-            uploadId = initializeMultipart.apply(artifactEntity.getPath()).orElse(null);
-          }
+      String message = null;
+      if (uploadId == null || artifactEntity.isUploadCompleted()) {
+        if (initializeMultipart == null) {
+          message = "Multipart wasn't initialized";
+        } else {
+          uploadId = initializeMultipart.apply(artifactEntity.getPath()).orElse(null);
         }
-        if (message != null) {
-          LOGGER.info(message);
-          throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
-        }
-      } catch (ModelDBException e) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(e.getMessage())
-                .addDetails(Any.pack(CommitMultipartArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+      }
+      if (message != null) {
+        LOGGER.info(message);
+        throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
       }
       if (!Objects.equals(uploadId, artifactEntity.getUploadId())
           || artifactEntity.isUploadCompleted()) {
