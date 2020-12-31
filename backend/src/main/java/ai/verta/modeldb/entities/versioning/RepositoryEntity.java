@@ -2,7 +2,6 @@ package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -18,26 +17,11 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import com.google.api.client.util.Objects;
 import com.google.protobuf.InvalidProtocolBufferException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+
+import javax.persistence.*;
+import java.util.*;
 
 @Entity
 @Table(name = "repository")
@@ -50,19 +34,14 @@ public class RepositoryEntity {
       throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
-    if (App.getInstance().getStoreClientCreationTimestamp()) {
-      if (repository.getDateCreated() != 0L) {
-        this.date_created = repository.getDateCreated();
-      } else {
-        this.date_created = new Date().getTime();
-      }
-      if (repository.getDateUpdated() != 0L) {
-        this.date_updated = repository.getDateUpdated();
-      } else {
-        this.date_updated = new Date().getTime();
-      }
+    if (repository.getDateCreated() != 0L) {
+      this.date_created = repository.getDateCreated();
     } else {
       this.date_created = new Date().getTime();
+    }
+    if (repository.getDateUpdated() != 0L) {
+      this.date_updated = repository.getDateUpdated();
+    } else {
       this.date_updated = new Date().getTime();
     }
     this.repositoryVisibility = repository.getVisibility();

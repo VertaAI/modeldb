@@ -70,6 +70,7 @@ message DeploymentActionEnum {
         READ = 3;
         UPDATE = 4;
         DELETE = 5;
+        UPDATE_PERMISSIONS = 8;
     }
 };
 

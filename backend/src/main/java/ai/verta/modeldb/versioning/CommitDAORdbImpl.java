@@ -304,7 +304,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException {
     long timeCreated = new Date().getTime();
-    if (App.getInstance().getStoreClientCreationTimestamp() && commit.getDateCreated() != 0L) {
+    if (commit.getDateCreated() != 0L) {
       timeCreated = commit.getDateCreated();
     }
 

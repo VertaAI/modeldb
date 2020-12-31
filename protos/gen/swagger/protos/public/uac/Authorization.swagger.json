@@ -333,7 +333,8 @@
         "CREATE",
         "READ",
         "UPDATE",
-        "DELETE"
+        "DELETE",
+        "UPDATE_PERMISSIONS"
       ],
       "default": "UNKNOWN"
     },
