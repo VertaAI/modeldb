@@ -244,38 +244,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   }
 
   @Override
-  public void getHydratedPublicProjects(
-      GetHydratedProjects request, StreamObserver<GetHydratedProjects.Response> responseObserver) {
-    try {
-      ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.getProjects(
-              null,
-              request.getPageNumber(),
-              request.getPageLimit(),
-              request.getAscending(),
-              request.getSortKey(),
-              ResourceVisibility.PRIVATE);
-      List<Project> projects = projectPaginationDTO.getProjects();
-
-      List<HydratedProject> hydratedProjects = new ArrayList<>();
-      if (projects != null && !projects.isEmpty()) {
-        hydratedProjects = getHydratedProjects(projects);
-      }
-
-      responseObserver.onNext(
-          GetHydratedProjects.Response.newBuilder()
-              .addAllHydratedProjects(hydratedProjects)
-              .setTotalRecords(projectPaginationDTO.getTotalRecords())
-              .build());
-      responseObserver.onCompleted();
-
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, GetHydratedProjects.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
   public void getHydratedProjectById(
       GetHydratedProjectById request,
       StreamObserver<GetHydratedProjectById.Response> responseObserver) {
@@ -966,39 +934,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     }
   }
 
-  @Override
-  public void findHydratedPublicDatasets(
-      FindDatasets request, StreamObserver<AdvancedQueryDatasetsResponse> responseObserver) {
-    try {
-      // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(request, userInfo, ResourceVisibility.ORG_DEFAULT);
-      LOGGER.debug(
-          ModelDBMessages.DATASET_RECORD_COUNT_MSG, datasetPaginationDTO.getTotalRecords());
-
-      List<HydratedDataset> hydratedDatasets = new ArrayList<>();
-      if (request.getIdsOnly()) {
-        for (Dataset dataset : datasetPaginationDTO.getDatasets()) {
-          hydratedDatasets.add(HydratedDataset.newBuilder().setDataset(dataset).build());
-        }
-      } else if (!datasetPaginationDTO.getDatasets().isEmpty()) {
-        hydratedDatasets = getHydratedDatasets(datasetPaginationDTO.getDatasets());
-      }
-
-      responseObserver.onNext(
-          AdvancedQueryDatasetsResponse.newBuilder()
-              .addAllHydratedDatasets(hydratedDatasets)
-              .setTotalRecords(datasetPaginationDTO.getTotalRecords())
-              .build());
-      responseObserver.onCompleted();
-
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, AdvancedQueryDatasetsResponse.getDefaultInstance());
-    }
-  }
-
   private HydratedDatasetVersion getHydratedDatasetVersion(DatasetVersion datasetVersion) {
     UserInfo ownerUserInfo =
         authService.getUserInfo(datasetVersion.getOwner(), CommonConstants.UserIdentifier.VERTA_ID);
@@ -1164,37 +1099,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, GetHydratedDatasetByName.Response.getDefaultInstance());
-    }
-  }
-
-  @Override
-  public void findHydratedPublicProjects(
-      FindProjects request, StreamObserver<AdvancedQueryProjectsResponse> responseObserver) {
-    try {
-      ProjectPaginationDTO projectPaginationDTO =
-          projectDAO.findProjects(request, null, null, ResourceVisibility.PRIVATE);
-      LOGGER.debug(
-          ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectPaginationDTO.getTotalRecords());
-
-      List<HydratedProject> hydratedProjects = new ArrayList<>();
-      if (request.getIdsOnly()) {
-        for (Project project : projectPaginationDTO.getProjects()) {
-          hydratedProjects.add(HydratedProject.newBuilder().setProject(project).build());
-        }
-      } else if (!projectPaginationDTO.getProjects().isEmpty()) {
-        hydratedProjects = getHydratedProjects(projectPaginationDTO.getProjects());
-      }
-
-      responseObserver.onNext(
-          AdvancedQueryProjectsResponse.newBuilder()
-              .addAllHydratedProjects(hydratedProjects)
-              .setTotalRecords(projectPaginationDTO.getTotalRecords())
-              .build());
-      responseObserver.onCompleted();
-
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, AdvancedQueryProjectsResponse.getDefaultInstance());
     }
   }
 
