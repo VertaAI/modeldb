@@ -12,6 +12,8 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
+import ai.verta.modeldb.exceptions.AlreadyExistsException;
+import ai.verta.modeldb.exceptions.InternalErrorException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -21,12 +23,8 @@ import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
-import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -797,14 +795,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw new NotFoundException(errorMessage);
       } else if (projects.size() != 1) {
         String errorMessage = "Multiple projects found for given EntityId";
-        LOGGER.warn(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNKNOWN_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetSummary.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InternalErrorException(errorMessage);
       }
       Project project = projects.get(0);
 
@@ -973,14 +964,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       String projectShortName = ModelDBUtils.convertToProjectShortName(request.getShortName());
       if (!projectShortName.equals(request.getShortName())) {
         errorMessage = "Project short name is not valid";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ABORTED_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(SetProjectShortName.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InternalErrorException(errorMessage);
       }
 
       Project project =
@@ -1058,14 +1042,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
             projectDAO.logProjectCodeVersion(request.getId(), request.getCodeVersion());
       } else {
         errorMessage = "Code version already logged for project " + existingProject.getId();
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ALREADY_EXISTS_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(LogProjectCodeVersion.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new AlreadyExistsException(errorMessage);
       }
       /*Build response*/
       LogProjectCodeVersion.Response.Builder responseBuilder =

@@ -1,12 +1,15 @@
 package ai.verta.modeldb.config;
 
-import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
-
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.exceptions.InternalErrorException;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
+
+import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -30,14 +33,18 @@ public class Config {
   public Object springServer;
   public Object telemetry;
 
-  public static Config getInstance() throws InvalidConfigException, FileNotFoundException {
+  public static Config getInstance() throws InternalErrorException {
     if (config == null) {
-      Yaml yaml = new Yaml(new Constructor(Config.class));
-      String filePath = System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG);
-      filePath = appendOptionalTelepresencePath(filePath);
-      InputStream inputStream = new FileInputStream(new File(filePath));
-      config = yaml.load(inputStream);
-      config.Validate();
+      try {
+        Yaml yaml = new Yaml(new Constructor(Config.class));
+        String filePath = System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG);
+        filePath = appendOptionalTelepresencePath(filePath);
+        InputStream inputStream = new FileInputStream(new File(filePath));
+        config = yaml.load(inputStream);
+        config.Validate();
+      } catch (Exception ex) {
+        throw new InternalErrorException(ex.getMessage());
+      }
     }
     return config;
   }

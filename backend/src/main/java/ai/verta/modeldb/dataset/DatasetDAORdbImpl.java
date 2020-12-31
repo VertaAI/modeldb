@@ -20,6 +20,7 @@ import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.exceptions.NotFoundException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -213,12 +214,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             ModelDBActionEnum.ModelDBServiceActions.DELETE,
             datasetIds);
     if (allowedDatasetIds.isEmpty()) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage("Access Denied for given dataset Ids : " + datasetIds)
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new PermissionDeniedException("Access Denied for given dataset Ids : " + datasetIds);
     }
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {

@@ -1,24 +1,15 @@
 package ai.verta.modeldb.entities.config;
 
 import ai.verta.modeldb.entities.ExperimentRunEntity;
+import ai.verta.modeldb.exceptions.InternalErrorException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
-import com.google.rpc.Code;
 import io.grpc.Status;
-import io.grpc.protobuf.StatusProto;
-import java.util.Objects;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "hyperparameter_element_mapping")
@@ -53,12 +44,7 @@ public class HyperparameterElementMappingEntity {
       this.experimentRunEntity = (ExperimentRunEntity) entity;
     } else {
       LOGGER.warn("ExperimentRunEntity expected : found {}", entity.getClass());
-      com.google.rpc.Status status =
-          com.google.rpc.Status.newBuilder()
-              .setCode(Code.INTERNAL_VALUE)
-              .setMessage("Invalid ModelDB entity found")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InternalErrorException("Invalid ModelDB entity found");
     }
   }
 

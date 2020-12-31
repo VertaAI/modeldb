@@ -12,9 +12,7 @@ import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.exceptions.ModelDBException;
-import ai.verta.modeldb.exceptions.NotFoundException;
+import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
@@ -733,12 +731,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         roleService.getAccessibleResourceIdsByActions(
             ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.DELETE, projectIds);
     if (allowedProjectIds.isEmpty()) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage("Delete Access Denied for given project Ids : " + projectIds)
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new PermissionDeniedException(
+          "Delete Access Denied for given project Ids : " + projectIds);
     }
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -832,12 +826,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       query.setParameterList("projectIds", accessibleProjectIds);
       List<ProjectEntity> projectEntities = query.list();
       if (!projectEntities.isEmpty()) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ALREADY_EXISTS_VALUE)
-                .setMessage("Project already exist with given short name")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new AlreadyExistsException("Project already exist with given short name");
       }
 
       query = session.createQuery(GET_PROJECT_BY_ID_HQL);
@@ -1071,14 +1060,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       for (Artifact existingArtifact : existingArtifacts) {
         for (Artifact newArtifact : newArtifacts) {
           if (existingArtifact.getKey().equals(newArtifact.getKey())) {
-            Status status =
-                Status.newBuilder()
-                    .setCode(Code.ALREADY_EXISTS_VALUE)
-                    .setMessage(
-                        "Artifact being logged already exists. existing artifact key : "
-                            + newArtifact.getKey())
-                    .build();
-            throw StatusProto.toStatusRuntimeException(status);
+            throw new AlreadyExistsException(
+                "Artifact being logged already exists. existing artifact key : "
+                    + newArtifact.getKey());
           }
         }
       }

@@ -1,12 +1,10 @@
 package ai.verta.modeldb.versioning;
 
-import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
-
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.AddDatasetTags;
 import ai.verta.modeldb.Dataset;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.GetDatasetById;
@@ -17,12 +15,9 @@ import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
-import ai.verta.modeldb.entities.versioning.BranchEntity;
-import ai.verta.modeldb.entities.versioning.CommitEntity;
-import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.entities.versioning.RepositoryEnums;
+import ai.verta.modeldb.entities.versioning.*;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
-import ai.verta.modeldb.entities.versioning.TagsEntity;
+import ai.verta.modeldb.exceptions.InternalErrorException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.IdentificationType;
@@ -39,8 +34,8 @@ import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.rpc.Status;
 import io.grpc.Status.Code;
+import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap.SimpleEntry;
@@ -68,6 +63,14 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import javax.persistence.criteria.*;
+import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
 
 public class RepositoryDAORdbImpl implements RepositoryDAO {
 
@@ -1618,13 +1621,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           repositoryEntity.toProto(roleService));
     } catch (InvalidProtocolBufferException | ModelDBException e) {
       LOGGER.warn(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
-      Status status =
-          Status.newBuilder()
-              .setCode(com.google.rpc.Code.INTERNAL_VALUE)
-              .setMessage(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO)
-              .addDetails(Any.pack(FindDatasets.Response.getDefaultInstance()))
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InternalErrorException(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
     }
   }
 

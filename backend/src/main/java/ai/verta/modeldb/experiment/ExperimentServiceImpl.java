@@ -13,10 +13,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.exceptions.ModelDBException;
-import ai.verta.modeldb.exceptions.NotFoundException;
-import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -24,12 +21,9 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
-import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -896,14 +890,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             experimentDAO.logExperimentCodeVersion(request.getId(), request.getCodeVersion());
       } else {
         errorMessage = "Code version already logged for experiment " + existingExperiment.getId();
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ALREADY_EXISTS_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(LogExperimentCodeVersion.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new AlreadyExistsException(errorMessage);
       }
       saveAuditLogs(
           null,

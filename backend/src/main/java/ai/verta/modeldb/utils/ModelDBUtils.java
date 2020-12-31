@@ -6,11 +6,16 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
+import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.App;
+import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.GetHydratedProjects;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
@@ -23,8 +28,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.WorkspaceDTO;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.*;
 import com.amazonaws.AmazonServiceException;
@@ -119,9 +123,7 @@ public class ModelDBUtils {
 
     // For specifying wrong message digest algorithms
     catch (NoSuchAlgorithmException e) {
-      Status status =
-          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InternalErrorException(e.getMessage());
     }
   }
 
@@ -247,13 +249,7 @@ public class ModelDBUtils {
               collaborator1 = new CollaboratorTeam(collaborator.getVertaId(), roleService);
               break;
             default:
-              Status status =
-                  Status.newBuilder()
-                      .setCode(Code.INTERNAL.getNumber())
-                      .setMessage(ModelDBConstants.INTERNAL_ERROR)
-                      .addDetails(Any.pack(GetHydratedProjects.Response.getDefaultInstance()))
-                      .build();
-              throw StatusProto.toStatusRuntimeException(status);
+              throw new InternalErrorException(ModelDBConstants.INTERNAL_ERROR);
           }
 
           final Builder builder = CollaboratorUserInfo.newBuilder();
@@ -535,6 +531,23 @@ public class ModelDBUtils {
     return rootCause;
   }
 
+  /**
+   * Throws an error if the workspace type is USER and the workspaceId and userID do not match. Is a
+   * NO-OP if userinfo is null.
+   */
+  public static void checkPersonalWorkspace(
+      UserInfo userInfo,
+      WorkspaceType workspaceType,
+      String workspaceId,
+      String resourceNameString) {
+    if (userInfo != null
+        && workspaceType == WorkspaceType.USER
+        && !workspaceId.equals(userInfo.getVertaInfo().getUserId())) {
+      throw new PermissionDeniedException(
+          "Creation of " + resourceNameString + " in other user's workspace is not permitted");
+    }
+  }
+
   public static void checkIfEntityAlreadyExists(
       RoleService roleService,
       Workspace workspace,
@@ -548,12 +561,8 @@ public class ModelDBUtils {
       if (workspace.getId() == item.getWorkspaceId()) {
         // Throw error if it is an insert request and project with same name already exists
         LOGGER.info("{} with name {} already exists", modelDBServiceResourceTypes, name);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ALREADY_EXISTS_VALUE)
-                .setMessage(modelDBServiceResourceTypes + " already exists in database")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new AlreadyExistsException(
+            modelDBServiceResourceTypes + " already exists in database");
       }
     }
   }

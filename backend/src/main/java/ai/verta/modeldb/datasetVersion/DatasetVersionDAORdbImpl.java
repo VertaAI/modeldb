@@ -409,13 +409,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
                 "Unknown 'Operator' type recognized, valid 'Operator' type is EQ");
           }
           if (datasetVersionList.isEmpty()) {
-            Status statusMessage =
-                Status.newBuilder()
-                    .setCode(Code.PERMISSION_DENIED_VALUE)
-                    .setMessage(
-                        "Access is denied. User is unauthorized for given DatasetVersion entity ID")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(statusMessage);
+            throw new PermissionDeniedException(
+                "Access is denied. User is unauthorized for given DatasetVersion entity ID");
           } else {
             String datasetVersionId = predicate.getValue().getStringValue();
             for (DatasetVersion datasetVersion : datasetVersionList) {

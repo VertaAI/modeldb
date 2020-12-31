@@ -3,27 +3,16 @@ package ai.verta.modeldb.common.authservice;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.uac.AuthzServiceGrpc;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.OrganizationServiceGrpc;
-import ai.verta.uac.RoleServiceGrpc;
-import ai.verta.uac.TeamServiceGrpc;
-import ai.verta.uac.UACServiceGrpc;
-import ai.verta.uac.WorkspaceServiceGrpc;
+import ai.verta.modeldb.exceptions.InternalErrorException;
+import ai.verta.modeldb.exceptions.UnavailableException;
+import ai.verta.uac.*;
 import ai.verta.uac.versioning.AuditLogServiceGrpc;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.ClientInterceptor;
-import io.grpc.Context;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.Metadata;
-import io.grpc.StatusRuntimeException;
-import io.grpc.protobuf.StatusProto;
+import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
-import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.TimeUnit;
 
 public class AuthServiceChannel implements AutoCloseable {
 
@@ -58,12 +47,8 @@ public class AuthServiceChannel implements AutoCloseable {
       this.serviceUserEmail = serviceUserEmail;
       this.serviceUserDevKey = serviceUserDevKey;
     } else {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.UNAVAILABLE_VALUE)
-              .setMessage("Host OR Port not found for contacting authentication service")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new UnavailableException(
+          "Host OR Port not found for contacting authentication service");
     }
     this.metadataInfo = metadataInfo;
   }
@@ -245,25 +230,16 @@ public class AuthServiceChannel implements AutoCloseable {
         authServiceChannel.shutdown();
       }
     } catch (Exception ex) {
-      LOGGER.trace(CommonMessages.AUTH_SERVICE_CHANNEL_CLOSE_ERROR, ex);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL_VALUE)
-              .setMessage(CommonMessages.AUTH_SERVICE_CHANNEL_CLOSE_ERROR + ex.getMessage())
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InternalErrorException(
+          CommonMessages.AUTH_SERVICE_CHANNEL_CLOSE_ERROR + ex.getMessage());
     } finally {
       if (authServiceChannel != null && !authServiceChannel.isShutdown()) {
         try {
           authServiceChannel.awaitTermination(30, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
           LOGGER.warn(ex.getMessage(), ex);
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.INTERNAL_VALUE)
-                  .setMessage("AuthService channel termination error: " + ex.getMessage())
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
+          throw new InternalErrorException(
+              "AuthService channel termination error: " + ex.getMessage());
         }
       }
     }

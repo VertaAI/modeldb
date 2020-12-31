@@ -25,12 +25,9 @@ import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
@@ -403,13 +400,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       if (experimentRunList.isEmpty()) {
         throw new NotFoundException("ExperimentRun not found in database");
       } else if (experimentRunList.size() != 1) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INTERNAL_VALUE)
-                .setMessage("Multiple ExperimentRun found in database")
-                .addDetails(Any.pack(GetExperimentRunByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InternalErrorException("Multiple ExperimentRun found in database");
       }
 
       responseObserver.onNext(
@@ -1349,13 +1340,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         } else {
           errorMessage =
               "Code version already logged for experiment " + existingExperimentRun.getId();
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.ALREADY_EXISTS_VALUE)
-                  .setMessage(errorMessage)
-                  .addDetails(Any.pack(LogExperimentRunCodeVersion.getDefaultInstance()))
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
+          throw new AlreadyExistsException(errorMessage);
         }
       }
       saveAuditLogs(
