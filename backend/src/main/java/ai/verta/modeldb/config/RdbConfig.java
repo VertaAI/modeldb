@@ -25,6 +25,6 @@ public class RdbConfig {
   }
 
   public boolean isPostgres() {
-      return RdbDialect.equals("org.hibernate.dialect.PostgreSQLDialect");
+    return RdbDialect.equals("org.hibernate.dialect.PostgreSQLDialect");
   }
 }
