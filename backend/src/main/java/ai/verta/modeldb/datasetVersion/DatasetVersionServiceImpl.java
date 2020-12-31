@@ -132,7 +132,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             .addAllTags(request.getTagsList())
             .addAllAttributes(request.getAttributesList());
 
-    if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
+    if (request.getTimeCreated() != 0L) {
       datasetVersionBuilder.setTimeLogged(request.getTimeCreated());
       datasetVersionBuilder.setTimeUpdated(request.getTimeCreated());
     } else {

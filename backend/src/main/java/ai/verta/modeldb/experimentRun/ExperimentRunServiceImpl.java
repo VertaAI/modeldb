@@ -236,7 +236,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             .addAllObservations(request.getObservationsList())
             .addAllFeatures(request.getFeaturesList());
 
-    if (app.getStoreClientCreationTimestamp() && request.getDateCreated() != 0L) {
+    if (request.getDateCreated() != 0L) {
       experimentRunBuilder
           .setDateCreated(request.getDateCreated())
           .setDateUpdated(request.getDateCreated());

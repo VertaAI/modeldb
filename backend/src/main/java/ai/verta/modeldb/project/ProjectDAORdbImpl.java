@@ -237,7 +237,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             .setCustomPermission(request.getCustomPermission());
 
     App app = App.getInstance();
-    if (app.getStoreClientCreationTimestamp() && request.getDateCreated() != 0L) {
+    if (request.getDateCreated() != 0L) {
       projectBuilder
           .setDateCreated(request.getDateCreated())
           .setDateUpdated(request.getDateCreated());
