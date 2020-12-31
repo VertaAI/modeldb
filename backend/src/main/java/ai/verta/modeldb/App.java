@@ -73,7 +73,6 @@ import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
@@ -234,6 +233,7 @@ public class App implements ApplicationContextAware {
       Config config = Config.getInstance();
       // --------------- End reading properties --------------------------
 
+      // Initialize database configuration and maybe run migration
       boolean liquibaseMigration =
           Boolean.parseBoolean(
               Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
@@ -257,6 +257,8 @@ public class App implements ApplicationContextAware {
           return;
         }
       }
+
+      ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
 
       // --------------- Start Initialize modelDB gRPC server --------------------------
       Map<String, Object> grpcServerMap =
@@ -456,32 +458,8 @@ public class App implements ApplicationContextAware {
         new HealthStatusManager(app.applicationContext.getBean(HealthServiceImpl.class));
     healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
-    // --------------- Start Initialize Database base on configuration --------------------------
-    LOGGER.trace("Database properties found");
-
-    switch (database.DBType) {
-      case ModelDBConstants.RELATIONAL:
-
-        // --------------- Start Initialize relational Database base on configuration
-        // ---------------
-        app.propertiesMap = propertiesMap;
-        ModelDBHibernateUtil.createOrGetSessionFactory(database);
-
-        LOGGER.trace("RDBMS configured with server");
-        // --------------- Finish Initialize relational Database base on configuration
-        // --------------
-
-        // -- Start Initialize relational Service and modelDB services --
-        initializeRelationalDBServices(
-            serverBuilder, artifactStoreService, authService, roleService);
-        // -- Start Initialize relational Service and modelDB services --
-        break;
-      default:
-        throw new ModelDBException(
-            "Please enter valid database name (DBType) in config.yaml file.");
-    }
-
-    // --------------- Finish Initialize Database base on configuration --------------------------
+    app.propertiesMap = propertiesMap;
+    initializeRelationalDBServices(serverBuilder, artifactStoreService, authService, roleService);
 
     initializeTelemetryBasedOnConfig(propertiesMap);
 
