@@ -23,4 +23,8 @@ public class RdbConfig {
     if (RdbPassword == null || RdbPassword.isEmpty())
       throw new InvalidConfigException(base + ".RdbPassword", Config.MISSING_REQUIRED);
   }
+
+  public boolean isPostgres() {
+    return RdbDialect.equals("org.hibernate.dialect.PostgreSQLDialect");
+  }
 }
