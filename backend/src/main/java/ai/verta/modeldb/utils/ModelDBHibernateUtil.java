@@ -116,14 +116,6 @@ public class ModelDBHibernateUtil {
   private static final Logger LOGGER = LogManager.getLogger(ModelDBHibernateUtil.class);
   private static StandardServiceRegistry registry;
   private static SessionFactory sessionFactory;
-  //  private static String databaseName;
-  //  private static String rDBDriver;
-  //  private static String rDBUrl;
-  //  public static String rDBDialect;
-  //  private static String configUsername;
-  //  private static String configPassword;
-  //  private static Integer timeout = 4;
-  //  private static Long liquibaseLockThreshold = 0L;
   private static Boolean isReady = false;
   public static DatabaseConfig config;
   private static Class[] entities = {
