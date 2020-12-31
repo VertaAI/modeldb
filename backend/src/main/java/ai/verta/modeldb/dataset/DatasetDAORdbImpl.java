@@ -33,8 +33,6 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.*;
@@ -384,6 +382,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           datasetPaginationDTO.setTotalRecords(0L);
           return datasetPaginationDTO;
         }
+        throw ex;
       }
 
       finalPredicatesList.add(builder.equal(datasetRoot.get(ModelDBConstants.DELETED), false));

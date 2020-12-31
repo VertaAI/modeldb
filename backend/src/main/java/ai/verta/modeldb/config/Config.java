@@ -1,15 +1,12 @@
 package ai.verta.modeldb.config;
 
+import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
+
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.exceptions.InternalErrorException;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-
-import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -32,6 +29,10 @@ public class Config {
   public Object populateConnectionsBasedOnPrivileges;
   public Object springServer;
   public Object telemetry;
+  public Object starterProject;
+  public Object migration;
+  public Object trial;
+  public Object feature_flag;
 
   public static Config getInstance() throws InternalErrorException {
     if (config == null) {

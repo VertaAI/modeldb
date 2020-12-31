@@ -27,15 +27,6 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
-
-import javax.persistence.criteria.*;
-import javax.persistence.criteria.CriteriaBuilder.Trimspec;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Pattern;

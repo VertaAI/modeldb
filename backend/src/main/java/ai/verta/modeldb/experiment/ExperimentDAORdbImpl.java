@@ -21,8 +21,6 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import java.util.*;
 import java.util.Map.Entry;
 import javax.persistence.criteria.*;
@@ -856,6 +854,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           experimentPaginationDTO.setTotalRecords(0L);
           return experimentPaginationDTO;
         }
+        throw ex;
       }
 
       finalPredicatesList.add(builder.equal(experimentRoot.get(ModelDBConstants.DELETED), false));

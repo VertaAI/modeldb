@@ -228,6 +228,8 @@ public class App implements ApplicationContextAware {
       // --------------- Start reading properties --------------------------
       Map<String, Object> propertiesMap =
           ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
+      App app = App.getInstance();
+      app.propertiesMap = propertiesMap;
       Config config = Config.getInstance();
       // --------------- End reading properties --------------------------
 
@@ -269,7 +271,6 @@ public class App implements ApplicationContextAware {
       LOGGER.trace("grpc server port number found");
       ServerBuilder<?> serverBuilder = ServerBuilder.forPort(grpcServerPort);
 
-      App app = App.getInstance();
       app.requestTimeout =
           (Integer) grpcServerMap.getOrDefault(ModelDBConstants.REQUEST_TIMEOUT, 30);
       // Set user credentials to App class
@@ -432,7 +433,6 @@ public class App implements ApplicationContextAware {
         new HealthStatusManager(app.applicationContext.getBean(HealthServiceImpl.class));
     healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
-    app.propertiesMap = propertiesMap;
     initializeRelationalDBServices(serverBuilder, artifactStoreService, authService, roleService);
 
     initializeTelemetryBasedOnConfig(propertiesMap);

@@ -3,14 +3,13 @@ package ai.verta.modeldb.entities.versioning;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.exceptions.InternalErrorException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import javax.persistence.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Entity
 @Table(name = "versioning_modeldb_entity_mapping")

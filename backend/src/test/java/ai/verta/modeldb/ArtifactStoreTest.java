@@ -70,7 +70,6 @@ public class ArtifactStoreTest {
     Map<String, Object> propertiesMap =
         ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
     Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-    Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
 
     App app = App.getInstance();
     // Set user credentials to App class
@@ -91,6 +90,7 @@ public class ArtifactStoreTest {
     }
 
     ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
+    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
     serverBuilder.intercept(new AuthInterceptor());

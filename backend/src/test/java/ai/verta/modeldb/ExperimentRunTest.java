@@ -136,7 +136,6 @@ public class ExperimentRunTest {
     Map<String, Object> propertiesMap =
         ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
     Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-    Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
 
     app = App.getInstance();
     // Set user credentials to App class
@@ -157,6 +156,7 @@ public class ExperimentRunTest {
     }
 
     ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
+    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
     serverBuilder.intercept(new AuthInterceptor());
@@ -360,7 +360,6 @@ public class ExperimentRunTest {
             .addMetrics(metric1)
             .addMetrics(metric2)
             .addHyperparameters(hyperparameter1)
-            .setDateCreated(123456)
             .build();
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -826,7 +825,7 @@ public class ExperimentRunTest {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     LOGGER.info(
@@ -913,7 +912,7 @@ public class ExperimentRunTest {
           2,
           experimentRunResponse.getTotalRecords());
 
-      if (experimentRunResponse.getExperimentRunsList() != null) {
+      if (!experimentRunResponse.getExperimentRunsList().isEmpty()) {
         isExpectedResultFound = true;
         for (ExperimentRun experimentRun : experimentRunResponse.getExperimentRunsList()) {
           assertEquals(
@@ -925,6 +924,7 @@ public class ExperimentRunTest {
         if (isExpectedResultFound) {
           LOGGER.warn("More ExperimentRun not found in database");
           assertTrue(true);
+          break;
         } else {
           fail("Expected experimentRun not found in response");
         }
@@ -994,7 +994,7 @@ public class ExperimentRunTest {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     LOGGER.info(
@@ -4097,7 +4097,7 @@ public class ExperimentRunTest {
         Status status = Status.fromThrowable(e);
         LOGGER.warn(
             "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
       }
 
       sortExperimentRuns =
@@ -5006,7 +5006,7 @@ public class ExperimentRunTest {
         Status status = Status.fromThrowable(e);
         LOGGER.warn(
             "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
       }
     } finally {
       for (String runId : experimentRunIds) {
@@ -5801,6 +5801,8 @@ public class ExperimentRunTest {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -5818,6 +5820,8 @@ public class ExperimentRunTest {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-2-" + new Date().getTime())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
@@ -5834,6 +5838,8 @@ public class ExperimentRunTest {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-3-" + new Date().getTime())
               .build();
       createExperimentRunResponse =
@@ -6035,6 +6041,8 @@ public class ExperimentRunTest {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-2")
               .setVersionedInputs(
                   createExperimentRunRequest
@@ -6052,6 +6060,8 @@ public class ExperimentRunTest {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-3")
               .setVersionedInputs(
                   createExperimentRunRequest

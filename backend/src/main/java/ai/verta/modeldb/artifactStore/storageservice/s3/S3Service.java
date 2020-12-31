@@ -20,8 +20,6 @@ import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
 import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
