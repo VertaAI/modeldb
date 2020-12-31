@@ -13,10 +13,7 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
-import ai.verta.modeldb.exceptions.InternalErrorException;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.exceptions.ModelDBException;
-import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -405,13 +402,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       List<ExperimentRun> experimentRunList =
           experimentRunDAO.getExperimentRuns(experimentRunFilter);
       if (experimentRunList.isEmpty()) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("ExperimentRun not found in database")
-                .addDetails(Any.pack(GetExperimentRunByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException("ExperimentRun not found in database");
       } else if (experimentRunList.size() != 1) {
         Status status =
             Status.newBuilder()
@@ -1119,14 +1110,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         uploadId = s3KeyUploadId.getValue();
       }
       if (s3Key == null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetUrlForArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       GetUrlForArtifact.Response response =
           artifactStoreDAO.getUrlForArtifactMultipart(

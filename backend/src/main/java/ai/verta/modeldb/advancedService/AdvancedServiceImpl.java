@@ -22,6 +22,7 @@ import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.*;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -29,14 +30,10 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
-import com.google.protobuf.Any;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
 import io.grpc.Metadata;
-import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -971,13 +968,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           datasetDAO.findDatasets(findDatasets.build(), userInfo, ResourceVisibility.PRIVATE);
 
       if (datasetPaginationDTO.getTotalRecords() == 0) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("Dataset not found")
-                .addDetails(Any.pack(GetDatasetByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException("Dataset not found");
       }
       Dataset selfOwnerdataset = null;
       List<Dataset> sharedDatasets = new ArrayList<>();

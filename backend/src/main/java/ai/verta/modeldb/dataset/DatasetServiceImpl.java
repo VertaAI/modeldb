@@ -18,6 +18,7 @@ import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
@@ -30,12 +31,9 @@ import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
-import com.google.protobuf.Any;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -332,13 +330,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               metadataDAO, findDatasets.build(), userInfo, ResourceVisibility.PRIVATE);
 
       if (datasetPaginationDTO.getTotalRecords() == 0) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("Dataset not found")
-                .addDetails(Any.pack(GetDatasetByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException("Dataset not found");
       }
       Dataset selfOwnerdataset = null;
       List<Dataset> sharedDatasets = new ArrayList<>();

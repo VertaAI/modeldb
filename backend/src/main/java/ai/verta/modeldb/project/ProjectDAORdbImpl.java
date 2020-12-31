@@ -14,6 +14,7 @@ import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
@@ -395,10 +396,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           session.get(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
       if (projectObj == null) {
         String errorMessage = "Project not found for given ID";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
 
       AttributeEntity updatedAttributeObj =
@@ -445,10 +443,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
         if (projectObj == null) {
           String errorMessage = "Project not found for given ID: " + projectId;
-          LOGGER.info(errorMessage);
-          Status status =
-              Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-          throw StatusProto.toStatusRuntimeException(status);
+          throw new NotFoundException(errorMessage);
         }
         return projectObj.getProtoObject(roleService, authService).getAttributesList();
       } else {
@@ -478,10 +473,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           session.get(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
       if (projectObj == null) {
         String errorMessage = "Project not found for given ID";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       List<String> newTags = new ArrayList<>();
       Project existingProtoProjectObj = projectObj.getProtoObject(roleService, authService);
@@ -814,10 +806,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
         String errorMessage = ModelDBMessages.PROJECT_NOT_FOUND_FOR_ID;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       LOGGER.debug(ModelDBMessages.GETTING_PROJECT_BY_ID_MSG_STR);
 
@@ -1075,10 +1064,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
         String errorMessage = "Project not found for given ID: " + projectId;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
 
       List<Artifact> existingArtifacts =
@@ -1125,10 +1111,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
         String errorMessage = "Project not found for given ID: " + projectId;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       Project project = projectEntity.getProtoObject(roleService, authService);
       if (project.getArtifactsList() != null && !project.getArtifactsList().isEmpty()) {
@@ -1136,10 +1119,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         return project.getArtifactsList();
       } else {
         String errorMessage = "Artifacts not found in the Project";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {

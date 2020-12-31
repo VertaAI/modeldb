@@ -18,6 +18,7 @@ import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -152,13 +153,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       if (datasetVersionObj == null || datasetVersionObj.getDeleted()) {
-        LOGGER.info(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
       }
       LOGGER.debug("DatasetVersion getting successfully");
       return datasetVersionObj.getProtoObject();
@@ -497,13 +492,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       if (datasetVersionObj == null) {
-        LOGGER.info(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
       }
       List<String> newTags = new ArrayList<>();
       DatasetVersion existingProtoDatasetVersionObj = datasetVersionObj.getProtoObject();
@@ -609,13 +598,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       if (datasetVersionObj == null) {
-        LOGGER.info(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
       }
 
       AttributeEntity updatedAttributeObj =
