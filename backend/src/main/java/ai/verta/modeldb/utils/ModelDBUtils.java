@@ -309,7 +309,8 @@ public class ModelDBUtils {
               ? getPathForArtifact(entityId, artifact)
               : artifact.getPath();
       artifact =
-          artifact.toBuilder()
+          artifact
+              .toBuilder()
               .setKey(artifact.getKey())
               .setPath(path)
               .setPathOnly(pathOnly)
