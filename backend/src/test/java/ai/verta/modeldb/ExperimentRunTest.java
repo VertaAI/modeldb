@@ -139,6 +139,8 @@ public class ExperimentRunTest {
     Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
 
     app = App.getInstance();
+    // Set user credentials to App class
+    app.setServiceUser(propertiesMap, app);
     AuthService authService = new PublicAuthServiceUtils();
     RoleService roleService = new PublicRoleServiceUtils(authService);
 
