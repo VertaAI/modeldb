@@ -729,15 +729,7 @@ public class ModelDBHibernateUtil {
         }
       }
 
-      migrationName = ModelDBConstants.COLLABORATOR_RESOURCE_MIGRATION;
-      if (migrationTypeMap.containsKey(migrationName)) {
-        Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
-        if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
-          int recordUpdateLimit =
-              (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-          CollaboratorResourceMigration.execute(recordUpdateLimit);
-        }
-      }
+      CollaboratorResourceMigration.execute();
     }
   }
 
