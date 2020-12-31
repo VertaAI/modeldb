@@ -780,10 +780,8 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (ModelDBHibernateUtil.config
-            .RdbConfiguration
-            .RdbDialect
-            .equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
+        if (ModelDBHibernateUtil.config.RdbConfiguration.RdbDialect.equals(
+            ModelDBConstants.POSTGRES_DB_DIALECT)) {
           if (stringColumn) {
 
             return getOperatorPredicate(

@@ -236,7 +236,8 @@ public class App implements ApplicationContextAware {
 
       boolean liquibaseMigration =
           Boolean.parseBoolean(
-              Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION)).orElse("false"));
+              Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
+                  .orElse("false"));
       if (liquibaseMigration) {
         LOGGER.info("Liquibase migration starting");
         ModelDBHibernateUtil.runLiquibaseMigration(config.database);
@@ -364,7 +365,7 @@ public class App implements ApplicationContextAware {
       Map<String, Object> propertiesMap,
       AuthService authService,
       RoleService roleService)
-          throws ModelDBException, IOException, InvalidConfigException {
+      throws ModelDBException, IOException, InvalidConfigException {
 
     App app = App.getInstance();
     Map<String, Object> serviceUserDetailMap =
@@ -787,7 +788,8 @@ public class App implements ApplicationContextAware {
     return artifactStoreService;
   }
 
-  public static void initializeTelemetryBasedOnConfig(Map<String, Object> propertiesMap) throws FileNotFoundException, InvalidConfigException {
+  public static void initializeTelemetryBasedOnConfig(Map<String, Object> propertiesMap)
+      throws FileNotFoundException, InvalidConfigException {
     boolean optIn = true;
     int frequency = 1;
     String consumer = null;

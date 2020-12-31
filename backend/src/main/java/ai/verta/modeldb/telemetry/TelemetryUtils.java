@@ -41,7 +41,8 @@ public class TelemetryUtils {
 
       try (Connection connection = ModelDBHibernateUtil.getConnection()) {
         boolean existStatus =
-            ModelDBHibernateUtil.tableExists(connection, Config.getInstance().database, "modeldb_deployment_info");
+            ModelDBHibernateUtil.tableExists(
+                connection, Config.getInstance().database, "modeldb_deployment_info");
         if (!existStatus) {
           LOGGER.warn("modeldb_deployment_info table not found");
           LOGGER.info("Table modeldb_deployment_info creating");
