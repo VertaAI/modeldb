@@ -462,7 +462,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         ResourceVisibility resourceVisibility = repository.getVisibility();
         if (repository.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
           resourceVisibility =
-              ModelDBUtils.getResourceVisibility(workspace, repository.getRepositoryVisibility());
+              ModelDBUtils.getResourceVisibility(
+                  Optional.of(workspace), repository.getRepositoryVisibility());
         }
         roleService.createWorkspacePermissions(
             workspace.getId(),

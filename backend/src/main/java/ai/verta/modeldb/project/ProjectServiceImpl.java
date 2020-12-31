@@ -9,11 +9,11 @@ import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -124,14 +124,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in UpdateProjectName request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateProjectName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -173,14 +166,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID is not found in UpdateProjectDescription request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateProjectDescription.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -224,14 +210,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddProjectAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -281,14 +260,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateProjectAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -340,14 +312,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -385,14 +350,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteProjectAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -436,14 +394,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in AddProjectTags request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddProjectTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -477,14 +428,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetTags request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -521,14 +465,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteProjectTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -572,14 +509,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddProjectTag.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -619,14 +549,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteProjectTag.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -664,14 +587,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in DeleteProject request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteProject.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       List<String> deletedProjectIds =
@@ -723,37 +639,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     }
   }
 
-  /**
-   * Gets all the projects belonging to the user and returns as response. If user auth is not
-   * enabled, it returns all the projects from the database.
-   *
-   * @param GetProjects request, GetProjects.Response response
-   * @return void
-   */
-  @Override
-  public void getPublicProjects(
-      GetPublicProjects request, StreamObserver<GetPublicProjects.Response> responseObserver) {
-    try {
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-      UserInfo hostUserInfo = null;
-      if (!request.getUserId().isEmpty()) {
-        hostUserInfo =
-            authService.getUserInfo(request.getUserId(), CommonConstants.UserIdentifier.VERTA_ID);
-      }
-
-      List<Project> projectList =
-          projectDAO.getPublicProjects(
-              hostUserInfo, currentLoginUserInfo, request.getWorkspaceName());
-      responseObserver.onNext(
-          GetPublicProjects.Response.newBuilder().addAllProjects(projectList).build());
-      responseObserver.onCompleted();
-
-    } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, GetPublicProjects.Response.getDefaultInstance());
-    }
-  }
-
   @Override
   public void getProjectById(
       GetProjectById request, StreamObserver<GetProjectById.Response> responseObserver) {
@@ -761,14 +646,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectById request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetProjectById.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -795,14 +673,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetProjectByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Get the user info from the Context
@@ -826,13 +697,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.findProjects(findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
 
       if (projectPaginationDTO.getTotalRecords() == 0) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("Project not found")
-                .addDetails(Any.pack(GetProjectByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException("Project not found");
       }
 
       Project selfOwnerProject = null;
@@ -876,14 +741,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId() == null) {
         String errorMessage = "Project ID not found in DeepCopyProject request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetProjectByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Get the user info from the Context
@@ -922,14 +780,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getEntityId().isEmpty()) {
         String errorMessage = "Project ID not found in GetSummary request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetSummary.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       LOGGER.debug("Getting user info");
@@ -943,14 +794,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.getProjects(ModelDBConstants.ID, request.getEntityId(), userInfo);
       if (projects.isEmpty()) {
         String errorMessage = "Project not found for given EntityId";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetSummary.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       } else if (projects.size() != 1) {
         String errorMessage = "Multiple projects found for given EntityId";
         LOGGER.warn(errorMessage);
@@ -1050,13 +894,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       if (errorMessage != null) {
         LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(SetProjectReadme.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -1090,14 +928,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectReadme request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetProjectReadme.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -1129,14 +960,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(SetProjectShortName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       LOGGER.debug("Getting user info");
@@ -1186,14 +1010,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectShortName request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetProjectShortName.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -1225,14 +1042,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(LogProjectCodeVersion.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -1286,14 +1096,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
         String errorMessage = "Project ID not found in GetProjectCodeVersion request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetProjectCodeVersion.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -1355,14 +1158,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetUrlForArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -1378,25 +1174,11 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         s3Key = getUrlForCode(request);
       } else {
         errorMessage = "Project level artifacts only supported for code";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetUrlForArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       if (s3Key == null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetUrlForArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       GetUrlForArtifact.Response response =
           artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());

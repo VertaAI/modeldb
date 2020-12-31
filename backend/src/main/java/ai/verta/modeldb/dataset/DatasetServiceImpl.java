@@ -6,32 +6,9 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
-import ai.verta.modeldb.AddDatasetAttributes;
-import ai.verta.modeldb.AddDatasetTags;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CreateDataset;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
-import ai.verta.modeldb.DeleteDataset;
-import ai.verta.modeldb.DeleteDatasetAttributes;
-import ai.verta.modeldb.DeleteDatasetTags;
-import ai.verta.modeldb.DeleteDatasets;
-import ai.verta.modeldb.Experiment;
-import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.FindDatasets;
-import ai.verta.modeldb.FindExperimentRuns;
-import ai.verta.modeldb.FindExperiments;
-import ai.verta.modeldb.GetAllDatasets;
-import ai.verta.modeldb.GetDatasetById;
-import ai.verta.modeldb.GetDatasetByName;
-import ai.verta.modeldb.GetExperimentRunByDataset;
-import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.LastExperimentByDatasetId;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.UpdateDatasetAttributes;
-import ai.verta.modeldb.UpdateDatasetDescription;
-import ai.verta.modeldb.UpdateDatasetName;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
@@ -42,12 +19,14 @@ import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
@@ -59,12 +38,9 @@ import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
-import com.google.protobuf.Any;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -179,7 +155,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             .setDatasetType(request.getDatasetType())
             .setCustomPermission(request.getCustomPermission());
 
-    if (App.getInstance().getStoreClientCreationTimestamp() && request.getTimeCreated() != 0L) {
+    if (request.getTimeCreated() != 0L) {
       datasetBuilder
           .setTimeCreated(request.getTimeCreated())
           .setTimeUpdated(request.getTimeCreated());
@@ -239,14 +215,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST)
-                .addDetails(Any.pack(DeleteDataset.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
 
       deleteRepositoriesByDatasetIds(Collections.singletonList(request.getId()));
@@ -269,14 +238,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST)
-                .addDetails(Any.pack(GetDatasetById.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
 
       // Validate if current user has access to the entity or not
@@ -317,14 +279,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getName().isEmpty()) {
-        LOGGER.info(ModelDBMessages.DATASET_NAME_NOT_FOUND_IN_REQUEST);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBMessages.DATASET_NAME_NOT_FOUND_IN_REQUEST)
-                .addDetails(Any.pack(GetDatasetByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(ModelDBMessages.DATASET_NAME_NOT_FOUND_IN_REQUEST);
       }
 
       // Get the user info from the Context
@@ -349,13 +304,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               metadataDAO, findDatasets.build(), userInfo, ResourceVisibility.PRIVATE);
 
       if (datasetPaginationDTO.getTotalRecords() == 0) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("Dataset not found")
-                .addDetails(Any.pack(GetDatasetByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException("Dataset not found");
       }
       Dataset selfOwnerdataset = null;
       List<Dataset> sharedDatasets = new ArrayList<>();
@@ -399,14 +348,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateDatasetName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -498,14 +440,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddDatasetTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -561,14 +496,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteDatasetTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -613,14 +541,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddDatasetAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -671,14 +592,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(UpdateDatasetAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -730,14 +644,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteDatasetAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -781,14 +688,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getIdsList().isEmpty()) {
-        LOGGER.info(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST)
-                .addDetails(Any.pack(DeleteDatasets.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
 
       deleteRepositoriesByDatasetIds(request.getIdsList());

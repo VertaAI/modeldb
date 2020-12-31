@@ -12,6 +12,7 @@ import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -75,6 +76,8 @@ public class IntegrationTest {
     Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
 
     App app = App.getInstance();
+    // Set user credentials to App class
+    app.setServiceUser(propertiesMap, app);
     AuthService authService = new PublicAuthServiceUtils();
     RoleService roleService = new PublicRoleServiceUtils(authService);
 
@@ -92,9 +95,9 @@ public class IntegrationTest {
       roleService = new RoleServiceUtils(authService);
     }
 
-    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
+    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
     App.initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
+        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
     serverBuilder.intercept(new AuthInterceptor());
 
     Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");

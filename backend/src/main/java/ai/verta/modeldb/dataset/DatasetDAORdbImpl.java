@@ -19,6 +19,7 @@ import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -33,23 +34,9 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -152,7 +139,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       ResourceVisibility resourceVisibility = dataset.getVisibility();
       if (dataset.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
         resourceVisibility =
-            ModelDBUtils.getResourceVisibility(null, dataset.getDatasetVisibility());
+            ModelDBUtils.getResourceVisibility(Optional.empty(), dataset.getDatasetVisibility());
       }
       roleService.createWorkspacePermissions(
           dataset.getWorkspaceServiceId(),
@@ -274,12 +261,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public DatasetEntity getDatasetEntity(Session session, String datasetId) {
     DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
     if (datasetObj == null) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.NOT_FOUND_VALUE)
-              .setMessage("dataset with input id not found")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new NotFoundException("dataset with input id not found");
     }
     LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
     return datasetObj;
@@ -556,10 +538,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       List<String> newTags = new ArrayList<>();
       Dataset existingProtoDatasetObj = datasetObj.getProtoObject(roleService);
@@ -676,10 +655,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
 
       AttributeEntity updatedAttributeObj =

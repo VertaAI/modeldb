@@ -94,10 +94,7 @@ public class DatasetToRepositoryMigration {
     experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
-    Boolean oldStoreClientCreationTimestampValue = app.getStoreClientCreationTimestamp();
-    app.setStoreClientCreationTimestamp(true);
     migrateDatasetsToRepositories();
-    app.setStoreClientCreationTimestamp(oldStoreClientCreationTimestampValue);
   }
 
   private static void migrateDatasetsToRepositories() {
