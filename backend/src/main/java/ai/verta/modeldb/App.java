@@ -155,7 +155,6 @@ public class App implements ApplicationContextAware {
   private Long shutdownTimeout;
 
   // Feature flags
-  private Boolean disabledAuthz = false;
   private Integer requestTimeout = 30;
 
   private Boolean traceEnabled = false;
@@ -273,13 +272,6 @@ public class App implements ApplicationContextAware {
       App app = App.getInstance();
       app.requestTimeout =
           (Integer) grpcServerMap.getOrDefault(ModelDBConstants.REQUEST_TIMEOUT, 30);
-
-      Map<String, Object> featureFlagMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
-      if (featureFlagMap != null) {
-        app.setDisabledAuthz(
-            (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
-      }
 
       if (propertiesMap.containsKey("enableTrace") && (Boolean) propertiesMap.get("enableTrace")) {
         app.traceEnabled = true;
@@ -409,8 +401,6 @@ public class App implements ApplicationContextAware {
     Map<String, Object> featureFlagMap =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
     if (featureFlagMap != null) {
-      app.setDisabledAuthz(
-          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_AUTHZ, false));
       app.disabledArtifactStore =
           (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_ARTIFACT_STORE, false);
     }
@@ -844,14 +834,6 @@ public class App implements ApplicationContextAware {
 
   public Map<String, Object> getPropertiesMap() {
     return propertiesMap;
-  }
-
-  public Boolean getDisabledAuthz() {
-    return disabledAuthz;
-  }
-
-  public void setDisabledAuthz(Boolean disabledAuthz) {
-    this.disabledAuthz = disabledAuthz;
   }
 
   public String getCloudAccessKey() {
