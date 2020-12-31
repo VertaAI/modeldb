@@ -1,7 +1,6 @@
 package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.ModelDBConstants;
-import java.util.Optional;
 
 public class DatabaseConfig {
   public String DBType;

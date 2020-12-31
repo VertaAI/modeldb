@@ -1,6 +1,5 @@
 package ai.verta.modeldb.cron_jobs;
 
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.TimerTask;

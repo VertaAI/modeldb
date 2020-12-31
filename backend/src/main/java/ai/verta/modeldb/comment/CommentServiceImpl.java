@@ -13,12 +13,11 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import io.grpc.stub.StreamObserver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CommentServiceImpl extends CommentServiceImplBase {
 

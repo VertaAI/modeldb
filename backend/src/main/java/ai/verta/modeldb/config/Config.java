@@ -3,14 +3,12 @@ package ai.verta.modeldb.config;
 import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
 
 import ai.verta.modeldb.ModelDBConstants;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
-import java.util.Optional;
 
 public class Config {
   public static String MISSING_REQUIRED = "required field is missing";

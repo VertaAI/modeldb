@@ -27,17 +27,16 @@ import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
-
-import javax.persistence.criteria.*;
-import javax.persistence.criteria.CriteriaBuilder.Trimspec;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder.Trimspec;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 
 public class RdbmsUtils {
 

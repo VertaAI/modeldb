@@ -4,7 +4,6 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryModifierEnum;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
@@ -17,11 +16,10 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import com.google.api.client.util.Objects;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.*;
+import javax.persistence.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
-
-import javax.persistence.*;
-import java.util.*;
 
 @Entity
 @Table(name = "repository")
@@ -29,8 +27,7 @@ public class RepositoryEntity {
 
   public RepositoryEntity() {}
 
-  public RepositoryEntity(
-      Repository repository, WorkspaceDTO workspaceDTO, RepositoryTypeEnum repositoryTypeEnum)
+  public RepositoryEntity(Repository repository, RepositoryTypeEnum repositoryTypeEnum)
       throws InvalidProtocolBufferException {
     this.name = repository.getName();
     this.description = repository.getDescription();
@@ -45,17 +42,7 @@ public class RepositoryEntity {
       this.date_updated = new Date().getTime();
     }
     this.repositoryVisibility = repository.getVisibility();
-    if (workspaceDTO.getWorkspaceId() != null) {
-      this.workspace_id = workspaceDTO.getWorkspaceId();
-      this.workspace_type = workspaceDTO.getWorkspaceType().getNumber();
-      this.workspaceServiceId = workspaceDTO.getWorkspaceServiceId();
-      this.owner = repository.getOwner();
-    } else {
-      this.workspace_id = "";
-      this.workspaceServiceId = 0L;
-      this.workspace_type = 0;
-      this.owner = "";
-    }
+
     setAttributeMapping(
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, repository.getAttributesList()));
@@ -231,9 +218,6 @@ public class RepositoryEntity {
                 ModelDBServiceResourceTypes.REPOSITORY, repositoryResource.getVisibility());
     builder.setRepositoryVisibility(visibility);
 
-    if (owner != null) {
-      builder.setOwner(owner);
-    }
     if (description != null) {
       builder.setDescription(description);
     }
@@ -244,8 +228,6 @@ public class RepositoryEntity {
     this.name = repository.getName();
     this.description = repository.getDescription();
     this.repositoryVisibility = repository.getVisibility();
-    this.workspace_id = repository.getWorkspaceId();
-    this.workspace_type = repository.getWorkspaceTypeValue();
     update();
     updateAttribute(repository.getAttributesList());
   }

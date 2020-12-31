@@ -3,7 +3,6 @@ package ai.verta.modeldb.versioning;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
