@@ -12,6 +12,7 @@ import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.exceptions.ModelDBException;
@@ -127,9 +128,9 @@ public class RepositoryTest {
       roleService = new RoleServiceUtils(authService);
     }
 
-    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
+    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
     App.initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
+        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
     serverBuilder.intercept(new AuthInterceptor());
     serverBuilder.build().start();
 
