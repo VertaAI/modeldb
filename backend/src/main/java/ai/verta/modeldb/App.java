@@ -301,7 +301,7 @@ public class App implements ApplicationContextAware {
       app.starterProjectID = (String) starterProjectDetail.get(ModelDBConstants.STARTER_PROJECT_ID);
     }
     // --------------- Start Initialize Cloud Config ---------------------------------------------
-        System.getProperties().put("server.port", config.springServer.port);
+    System.getProperties().put("server.port", config.springServer.port);
 
     app.shutdownTimeout = config.springServer.shutdownTimeout;
 
