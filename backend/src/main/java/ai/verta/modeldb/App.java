@@ -224,8 +224,7 @@ public class App implements ApplicationContextAware {
       healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
       // ----------------- Start Initialize database & modelDB services with DAO ---------
-      initializeServicesBaseOnDataBase(
-          serverBuilder, config, authService, app.roleService);
+      initializeServicesBaseOnDataBase(serverBuilder, config, authService, app.roleService);
       // ----------------- Finish Initialize database & modelDB services with DAO --------
 
       serverBuilder.intercept(new MonitoringInterceptor());
