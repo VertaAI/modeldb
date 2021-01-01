@@ -115,10 +115,6 @@ public class App implements ApplicationContextAware {
   // project which can be use for deep copying on user login
   private String starterProjectID = null;
 
-  // Authentication service
-  private String authServerHost = null;
-  private Integer authServerPort = null;
-
   // Service Account details
   private String serviceUserEmail = null;
   private String serviceUserDevKey = null;
@@ -143,8 +139,6 @@ public class App implements ApplicationContextAware {
   // Control parameter for delayed shutdown
   private Long shutdownTimeout;
 
-  private Boolean traceEnabled = false;
-  private static TracingServerInterceptor tracingInterceptor;
   private boolean populateConnectionsBasedOnPrivileges = false;
   private RoleService roleService;
 
@@ -252,29 +246,18 @@ public class App implements ApplicationContextAware {
       // Set user credentials to App class
       app.setServiceUser(propertiesMap, app);
 
-      if (propertiesMap.containsKey("enableTrace") && (Boolean) propertiesMap.get("enableTrace")) {
-        app.traceEnabled = true;
+      if (config.enableTrace) {
         Tracer tracer = Configuration.fromEnv().getTracer();
-        app.tracingInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
+        TracingServerInterceptor tracingInterceptor =
+            TracingServerInterceptor.newBuilder().withTracer(tracer).build();
         GlobalTracer.register(tracer);
         TracingDriver.load();
         TracingDriver.setInterceptorMode(true);
         TracingDriver.setInterceptorProperty(true);
+        serverBuilder.intercept(tracingInterceptor);
       }
-      AuthService authService = new PublicAuthServiceUtils();
-      app.roleService = new PublicRoleServiceUtils(authService);
-
-      Map<String, Object> authServicePropMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-      if (authServicePropMap != null) {
-        String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-        Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-        app.setAuthServerHost(authServiceHost);
-        app.setAuthServerPort(authServicePort);
-
-        authService = new AuthServiceUtils();
-        app.roleService = new RoleServiceUtils(authService);
-      }
+      AuthService authService = AuthServiceUtils.FromConfig(config);
+      app.roleService = RoleServiceUtils.FromConfig(config, authService);
 
       HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
       serverBuilder.addService(healthStatusManager.getHealthService());
@@ -606,10 +589,7 @@ public class App implements ApplicationContextAware {
   }
 
   private static void wrapService(ServerBuilder<?> serverBuilder, BindableService bindableService) {
-    App app = App.getInstance();
-    if (app.traceEnabled)
-      serverBuilder.addService(app.tracingInterceptor.intercept(bindableService));
-    else serverBuilder.addService(bindableService);
+    serverBuilder.addService(bindableService);
   }
 
   private static ArtifactStoreService initializeServicesBaseOnArtifactStoreType(
@@ -769,22 +749,6 @@ public class App implements ApplicationContextAware {
     return starterProjectID;
   }
 
-  public String getAuthServerHost() {
-    return authServerHost;
-  }
-
-  public void setAuthServerHost(String authServerHost) {
-    this.authServerHost = authServerHost;
-  }
-
-  public Integer getAuthServerPort() {
-    return authServerPort;
-  }
-
-  public void setAuthServerPort(Integer authServerPort) {
-    this.authServerPort = authServerPort;
-  }
-
   public boolean isS3presignedURLEnabled() {
     return s3presignedURLEnabled;
   }
@@ -839,10 +803,6 @@ public class App implements ApplicationContextAware {
 
   public String getServiceUserDevKey() {
     return serviceUserDevKey;
-  }
-
-  public Boolean getTraceEnabled() {
-    return traceEnabled;
   }
 
   public void setRoleService(RoleService roleService) {

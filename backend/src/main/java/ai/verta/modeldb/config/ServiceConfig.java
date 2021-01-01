@@ -1,10 +1,12 @@
 package ai.verta.modeldb.config;
 
-public class GrpcServerConfig {
+public class ServiceConfig {
   public int port;
-  public int requestTimeout = 30;
+  public String host;
 
   public void Validate(String base) throws InvalidConfigException {
     if (port == 0) throw new InvalidConfigException(base + ".port", Config.MISSING_REQUIRED);
+    if (host == null || host.isEmpty())
+      throw new InvalidConfigException(base + ".host", Config.MISSING_REQUIRED);
   }
 }

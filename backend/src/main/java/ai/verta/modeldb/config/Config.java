@@ -16,16 +16,17 @@ public class Config {
 
   private static Config config = null;
 
+  public ServiceConfig authService;
   public DatabaseConfig database;
+  public boolean enableTrace = false;
   public GrpcServerConfig grpcServer;
   public TestConfig test;
 
   // FIXME
   public Object artifactStoreConfig;
   public Object artifactStore_grpcServer;
-  public Object authService;
+
   public Object cron_job;
-  public Object enableTrace;
 
   public Object mdb_service_user;
   public Object populateConnectionsBasedOnPrivileges;
@@ -53,6 +54,10 @@ public class Config {
   }
 
   public void Validate() throws InvalidConfigException {
+    if (authService != null) {
+      authService.Validate("authService");
+    }
+
     if (database == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
     database.Validate("database");
 
@@ -62,5 +67,9 @@ public class Config {
     if (test != null) {
       test.Validate("test");
     }
+  }
+
+  public boolean hasAuth() {
+    return authService != null;
   }
 }
