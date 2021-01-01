@@ -10,16 +10,16 @@ public class AuthServiceUtils extends ai.verta.modeldb.common.authservice.AuthSe
   }
 
   public AuthServiceUtils() {
-    this(App.getInstance());
+    this(Config.getInstance());
   }
 
-  private AuthServiceUtils(App app) {
+  private AuthServiceUtils(Config config) {
     super(
-        Config.getInstance().authService.host,
-        Config.getInstance().authService.port,
-        app.getServiceUserEmail(),
-        app.getServiceUserDevKey(),
-        Config.getInstance().grpcServer.requestTimeout,
+            config.authService.host,
+            config.authService.port,
+            config.mdb_service_user.email,
+            config.mdb_service_user.devKey,
+            config.grpcServer.requestTimeout,
         AuthInterceptor.METADATA_INFO);
   }
 }

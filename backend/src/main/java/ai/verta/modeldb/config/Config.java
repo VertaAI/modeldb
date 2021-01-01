@@ -24,13 +24,13 @@ public class Config {
   public DatabaseConfig database;
   public boolean enableTrace = false;
   public GrpcServerConfig grpcServer;
+  public ServiceUserConfig mdb_service_user;
   public TestConfig test;
 
   // FIXME
 
   public Object artifactStore_grpcServer;
 
-  public Object mdb_service_user;
   public Object populateConnectionsBasedOnPrivileges;
   public Object springServer;
   public Object telemetry;
@@ -64,11 +64,19 @@ public class Config {
       authService.Validate("authService");
     }
 
+    for (Map.Entry<String, CronJobConfig> cronJob : cron_job.entrySet()) {
+      cronJob.getValue().Validate("cron_job." + cronJob.getKey());
+    }
+
     if (database == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
     database.Validate("database");
 
     if (grpcServer == null) throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
     grpcServer.Validate("grpcServer");
+
+    if (mdb_service_user != null) {
+      mdb_service_user.Validate("mdb_service_user");
+    }
 
     if (test != null) {
       test.Validate("test");
@@ -77,5 +85,9 @@ public class Config {
 
   public boolean hasAuth() {
     return authService != null;
+  }
+
+  public boolean hasServiceAccount() {
+    return mdb_service_user != null;
   }
 }

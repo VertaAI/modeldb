@@ -115,10 +115,6 @@ public class App implements ApplicationContextAware {
   // project which can be use for deep copying on user login
   private String starterProjectID = null;
 
-  // Service Account details
-  private String serviceUserEmail = null;
-  private String serviceUserDevKey = null;
-
   // Control parameter for delayed shutdown
   private Long shutdownTimeout;
 
@@ -225,9 +221,6 @@ public class App implements ApplicationContextAware {
 
       // --------------- Start Initialize modelDB gRPC server --------------------------
       ServerBuilder<?> serverBuilder = ServerBuilder.forPort(config.grpcServer.port);
-
-      // Set user credentials to App class
-      app.setServiceUser(propertiesMap, app);
 
       if (config.enableTrace) {
         Tracer tracer = Configuration.fromEnv().getTracer();
@@ -371,21 +364,6 @@ public class App implements ApplicationContextAware {
 
     // Initialize cron jobs
     CronJobUtils.initializeBasedOnConfig(config, authService, roleService, artifactStoreService);
-  }
-
-  public void setServiceUser(Map<String, Object> propertiesMap, App app) {
-    Map<String, Object> serviceUserDetailMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.MDB_SERVICE_USER);
-    if (serviceUserDetailMap != null) {
-      if (serviceUserDetailMap.containsKey(ModelDBConstants.EMAIL)) {
-        app.serviceUserEmail = (String) serviceUserDetailMap.get(ModelDBConstants.EMAIL);
-        LOGGER.trace("service user email found");
-      }
-      if (serviceUserDetailMap.containsKey(ModelDBConstants.DEV_KEY)) {
-        app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
-        LOGGER.trace("service user devKey found");
-      }
-    }
   }
 
   private static void initializeRelationalDBServices(
@@ -664,14 +642,6 @@ public class App implements ApplicationContextAware {
 
   public Map<String, Object> getPropertiesMap() {
     return propertiesMap;
-  }
-
-  public String getServiceUserEmail() {
-    return serviceUserEmail;
-  }
-
-  public String getServiceUserDevKey() {
-    return serviceUserDevKey;
   }
 
   public void setRoleService(RoleService roleService) {
