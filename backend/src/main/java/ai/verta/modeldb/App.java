@@ -573,7 +573,8 @@ public class App implements ApplicationContextAware {
     if (!config.telemetry.opt_out) {
       // creating an instance of task to be scheduled
       TimerTask task = new TelemetryCron(config.telemetry.consumer);
-      ModelDBUtils.scheduleTask(task, config.telemetry.frequency, config.telemetry.frequency, TimeUnit.HOURS);
+      ModelDBUtils.scheduleTask(
+          task, config.telemetry.frequency, config.telemetry.frequency, TimeUnit.HOURS);
       LOGGER.info("Telemetry scheduled successfully");
     } else {
       LOGGER.info("Telemetry opt out by user");
