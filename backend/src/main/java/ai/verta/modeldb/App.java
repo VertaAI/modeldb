@@ -118,7 +118,6 @@ public class App implements ApplicationContextAware {
   // Control parameter for delayed shutdown
   private Long shutdownTimeout;
 
-  private boolean populateConnectionsBasedOnPrivileges = false;
   private RoleService roleService;
 
   // metric for prometheus monitoring
@@ -296,33 +295,15 @@ public class App implements ApplicationContextAware {
 
     App app = App.getInstance();
 
-    app.populateConnectionsBasedOnPrivileges =
-        (boolean)
-            propertiesMap.getOrDefault(
-                ModelDBConstants.POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES, false);
-
     Map<String, Object> starterProjectDetail =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.STARTER_PROJECT);
     if (starterProjectDetail != null) {
       app.starterProjectID = (String) starterProjectDetail.get(ModelDBConstants.STARTER_PROJECT_ID);
     }
     // --------------- Start Initialize Cloud Config ---------------------------------------------
-    Map<String, Object> springServerMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.SPRING_SERVER);
-    if (springServerMap == null) {
-      throw new ModelDBException("springServer configuration not found in properties.");
-    }
+        System.getProperties().put("server.port", config.springServer.port);
 
-    Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
-    LOGGER.trace("spring server port number found");
-    System.getProperties().put("server.port", String.valueOf(springServerPort));
-
-    Object object = springServerMap.get(ModelDBConstants.SHUTDOWN_TIMEOUT);
-    if (object instanceof Integer) {
-      app.shutdownTimeout = ((Integer) object).longValue();
-    } else {
-      app.shutdownTimeout = ModelDBConstants.DEFAULT_SHUTDOWN_TIMEOUT;
-    }
+    app.shutdownTimeout = config.springServer.shutdownTimeout;
 
     ArtifactStoreService artifactStoreService = null;
     if (config.artifactStoreConfig.enabled) {
@@ -628,9 +609,5 @@ public class App implements ApplicationContextAware {
 
   public RoleService getRoleService() {
     return roleService;
-  }
-
-  public boolean isPopulateConnectionsBasedOnPrivileges() {
-    return populateConnectionsBasedOnPrivileges;
   }
 }

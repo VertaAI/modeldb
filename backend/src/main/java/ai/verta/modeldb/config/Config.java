@@ -25,6 +25,8 @@ public class Config {
   public boolean enableTrace = false;
   public GrpcServerConfig grpcServer;
   public ServiceUserConfig mdb_service_user;
+  public boolean populateConnectionsBasedOnPrivileges = false;
+  public SpringServerConfig springServer;
   public TestConfig test;
   public TrialConfig trial;
 
@@ -32,8 +34,6 @@ public class Config {
 
   public Object artifactStore_grpcServer;
 
-  public Object populateConnectionsBasedOnPrivileges;
-  public Object springServer;
   public Object telemetry;
   public Object starterProject;
   public Object migration;
@@ -77,6 +77,9 @@ public class Config {
     if (mdb_service_user != null) {
       mdb_service_user.Validate("mdb_service_user");
     }
+
+    if (springServer == null) throw new InvalidConfigException("springServer", MISSING_REQUIRED);
+    springServer.Validate("springServer");
 
     if (test != null) {
       test.Validate("test");
