@@ -5,6 +5,7 @@ public class MigrationConfig {
   public int record_update_limit = 100;
 
   public void Validate(String base) throws InvalidConfigException {
-    if (name == null || name.isEmpty()) throw new InvalidConfigException(base + ".name", Config.MISSING_REQUIRED);
+    if (name == null || name.isEmpty())
+      throw new InvalidConfigException(base + ".name", Config.MISSING_REQUIRED);
   }
 }

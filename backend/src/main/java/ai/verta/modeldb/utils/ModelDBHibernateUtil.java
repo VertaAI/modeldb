@@ -562,7 +562,7 @@ public class ModelDBHibernateUtil {
    */
   @SuppressWarnings("unchecked")
   public static void runMigration(DatabaseConfig config)
-          throws ClassNotFoundException, ModelDBException, DatabaseException, SQLException {
+      throws ClassNotFoundException, ModelDBException, DatabaseException, SQLException {
     RdbConfig rdb = config.RdbConfiguration;
 
     if (config.migrations != null) {
@@ -590,9 +590,9 @@ public class ModelDBHibernateUtil {
             break;
         }
       }
-      }
+    }
 
-      CollaboratorResourceMigration.execute();
+    CollaboratorResourceMigration.execute();
   }
 
   private static boolean checkMigrationLockedStatus(String migrationName, RdbConfig rdb)
