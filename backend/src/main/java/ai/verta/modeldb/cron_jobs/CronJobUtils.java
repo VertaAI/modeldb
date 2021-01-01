@@ -30,30 +30,28 @@ public class CronJobUtils {
     LOGGER.info("Enter in CronJobUtils: initializeBasedOnConfig()");
     for (Map.Entry<String, CronJobConfig> cronJob : config.cron_job.entrySet()) {
       TimerTask task = null;
-          if (cronJob.getKey().equals(ModelDBConstants.UPDATE_PARENT_TIMESTAMP)) {
-            task = new ParentTimestampUpdateCron(cronJob.getValue().record_update_limit);
-          } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
-              && (config.hasServiceAccount()
-                  || !roleService.IsImplemented())) {
-            task =
-                    new DeleteEntitiesCron(
-                            authService, roleService, cronJob.getValue().record_update_limit);
-          } else if (cronJob.getKey().equals(ModelDBConstants.UPDATE_RUN_ENVIRONMENTS)
-              && artifactStoreService != null
-              && !(artifactStoreService instanceof ArtifactStoreDAODisabled)) {
-            task =
-                    new PopulateEnvironmentInRunCron(
-                            artifactStoreService, cronJob.getValue().record_update_limit);
-          } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_AUDIT_LOGS)
-              && config.hasServiceAccount()) {
-            task = new AuditLogsCron(cronJob.getValue().record_update_limit);
-          } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
-              && (config.hasServiceAccount()
-                  || !roleService.IsImplemented())) {
-            task = new CleanUpEntitiesCron(roleService, cronJob.getValue().record_update_limit);
-          } else {
-            LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());
-          }
+      if (cronJob.getKey().equals(ModelDBConstants.UPDATE_PARENT_TIMESTAMP)) {
+        task = new ParentTimestampUpdateCron(cronJob.getValue().record_update_limit);
+      } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
+          && (config.hasServiceAccount() || !roleService.IsImplemented())) {
+        task =
+            new DeleteEntitiesCron(
+                authService, roleService, cronJob.getValue().record_update_limit);
+      } else if (cronJob.getKey().equals(ModelDBConstants.UPDATE_RUN_ENVIRONMENTS)
+          && artifactStoreService != null
+          && !(artifactStoreService instanceof ArtifactStoreDAODisabled)) {
+        task =
+            new PopulateEnvironmentInRunCron(
+                artifactStoreService, cronJob.getValue().record_update_limit);
+      } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_AUDIT_LOGS)
+          && config.hasServiceAccount()) {
+        task = new AuditLogsCron(cronJob.getValue().record_update_limit);
+      } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
+          && (config.hasServiceAccount() || !roleService.IsImplemented())) {
+        task = new CleanUpEntitiesCron(roleService, cronJob.getValue().record_update_limit);
+      } else {
+        LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());
+      }
       if (task != null) {
         ModelDBUtils.scheduleTask(
             task, cronJob.getValue().initial_delay, cronJob.getValue().frequency, TimeUnit.SECONDS);

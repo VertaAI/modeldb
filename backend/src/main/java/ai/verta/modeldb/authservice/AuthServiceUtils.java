@@ -15,11 +15,11 @@ public class AuthServiceUtils extends ai.verta.modeldb.common.authservice.AuthSe
 
   private AuthServiceUtils(Config config) {
     super(
-            config.authService.host,
-            config.authService.port,
-            config.mdb_service_user.email,
-            config.mdb_service_user.devKey,
-            config.grpcServer.requestTimeout,
+        config.authService.host,
+        config.authService.port,
+        config.mdb_service_user.email,
+        config.mdb_service_user.devKey,
+        config.grpcServer.requestTimeout,
         AuthInterceptor.METADATA_INFO);
   }
 }
