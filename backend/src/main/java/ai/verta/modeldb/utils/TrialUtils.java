@@ -31,10 +31,12 @@ public class TrialUtils {
   private TrialUtils() {}
 
   public static void validateMaxArtifactsForTrial(
-          TrialConfig config, int newArtifactsCount, int existingArtifactsCount) throws ModelDBException {
+      TrialConfig config, int newArtifactsCount, int existingArtifactsCount)
+      throws ModelDBException {
     if (config != null) {
       if (config.restrictions.max_artifact_per_run != null
-          && existingArtifactsCount + newArtifactsCount > config.restrictions.max_artifact_per_run) {
+          && existingArtifactsCount + newArtifactsCount
+              > config.restrictions.max_artifact_per_run) {
         throw new ModelDBException(
             ModelDBConstants.LIMIT_RUN_ARTIFACT_NUMBER
                 + "“Number of artifacts exceeded”: You are allowed to log upto "
@@ -46,7 +48,7 @@ public class TrialUtils {
   }
 
   public static void validateExperimentRunPerWorkspaceForTrial(
-          TrialConfig config,
+      TrialConfig config,
       ProjectDAO projectDAO,
       RoleService roleService,
       ExperimentRunDAO experimentRunDAO,
@@ -62,7 +64,8 @@ public class TrialUtils {
         ExperimentRunPaginationDTO paginationDTO =
             experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
         if (config.restrictions.max_experiment_run_per_workspace != null
-            && paginationDTO.getTotalRecords() >= config.restrictions.max_experiment_run_per_workspace) {
+            && paginationDTO.getTotalRecords()
+                >= config.restrictions.max_experiment_run_per_workspace) {
           throw new ModelDBException(
               ModelDBConstants.LIMIT_RUN_NUMBER
                   + "“Number of experiment runs exceeded”: Your trial account allows you to log upto "
@@ -74,8 +77,8 @@ public class TrialUtils {
     }
   }
 
-  public static void validateArtifactSizeForTrial(TrialConfig config, String artifactPath, int artifactSize)
-      throws ModelDBException {
+  public static void validateArtifactSizeForTrial(
+      TrialConfig config, String artifactPath, int artifactSize) throws ModelDBException {
     if (config != null) {
       double uploadedArtifactSize = ((double) artifactSize / 1024); // In KB
       if (config.restrictions.max_artifact_size_MB != null

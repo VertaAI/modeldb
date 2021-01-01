@@ -1034,7 +1034,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
-      TrialUtils.validateMaxArtifactsForTrial(config.trial, newArtifacts.size(), existingArtifacts.size());
+      TrialUtils.validateMaxArtifactsForTrial(
+          config.trial, newArtifacts.size(), existingArtifacts.size());
 
       List<ArtifactEntity> newArtifactList =
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
