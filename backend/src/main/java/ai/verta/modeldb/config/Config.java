@@ -36,7 +36,6 @@ public class Config {
   public Object artifactStore_grpcServer;
 
   public Object starterProject;
-  public Object migration;
   public Object feature_flag;
 
   public static Config getInstance() throws InternalErrorException {
