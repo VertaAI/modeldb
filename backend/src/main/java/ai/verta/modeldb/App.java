@@ -319,7 +319,7 @@ public class App implements ApplicationContextAware {
 
     initializeRelationalDBServices(serverBuilder, artifactStoreService, authService, roleService);
 
-    initializeTelemetryBasedOnConfig(propertiesMap);
+    initializeTelemetryBasedOnConfig(config);
 
     // Initialize cron jobs
     CronJobUtils.initializeBasedOnConfig(config, authService, roleService, artifactStoreService);
@@ -568,27 +568,12 @@ public class App implements ApplicationContextAware {
     return artifactStoreService;
   }
 
-  public static void initializeTelemetryBasedOnConfig(Map<String, Object> propertiesMap)
+  public static void initializeTelemetryBasedOnConfig(Config config)
       throws FileNotFoundException, InvalidConfigException {
-    boolean optIn = true;
-    int frequency = 1;
-    String consumer = null;
-    if (propertiesMap.containsKey(ModelDBConstants.TELEMETRY)) {
-      Map<String, Object> telemetryMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.TELEMETRY);
-      if (telemetryMap != null) {
-        optIn = (boolean) telemetryMap.getOrDefault(ModelDBConstants.OPT_IN, true);
-        frequency = (int) telemetryMap.getOrDefault(ModelDBConstants.TELEMENTRY_FREQUENCY, 1);
-        if (telemetryMap.containsKey(ModelDBConstants.TELEMETRY_CONSUMER)) {
-          consumer = (String) telemetryMap.get(ModelDBConstants.TELEMETRY_CONSUMER);
-        }
-      }
-    }
-
-    if (optIn) {
+    if (!config.telemetry.opt_out) {
       // creating an instance of task to be scheduled
-      TimerTask task = new TelemetryCron(consumer);
-      ModelDBUtils.scheduleTask(task, frequency, frequency, TimeUnit.HOURS);
+      TimerTask task = new TelemetryCron(config.telemetry.consumer);
+      ModelDBUtils.scheduleTask(task, config.telemetry.frequency, config.telemetry.frequency, TimeUnit.HOURS);
       LOGGER.info("Telemetry scheduled successfully");
     } else {
       LOGGER.info("Telemetry opt out by user");
