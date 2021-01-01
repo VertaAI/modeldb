@@ -115,10 +115,6 @@ public class App implements ApplicationContextAware {
   // project which can be use for deep copying on user login
   private String starterProjectID = null;
 
-  // Authentication service
-  private String authServerHost = null;
-  private Integer authServerPort = null;
-
   // Service Account details
   private String serviceUserEmail = null;
   private String serviceUserDevKey = null;
@@ -260,20 +256,8 @@ public class App implements ApplicationContextAware {
         TracingDriver.setInterceptorProperty(true);
         serverBuilder.intercept(tracingInterceptor);
       }
-      AuthService authService = new PublicAuthServiceUtils();
-      app.roleService = new PublicRoleServiceUtils(authService);
-
-      Map<String, Object> authServicePropMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-      if (authServicePropMap != null) {
-        String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-        Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-        app.setAuthServerHost(authServiceHost);
-        app.setAuthServerPort(authServicePort);
-
-        authService = new AuthServiceUtils();
-        app.roleService = new RoleServiceUtils(authService);
-      }
+      AuthService authService = AuthServiceUtils.FromConfig(config);
+      app.roleService = RoleServiceUtils.FromConfig(config, authService);
 
       HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
       serverBuilder.addService(healthStatusManager.getHealthService());
@@ -763,22 +747,6 @@ public class App implements ApplicationContextAware {
 
   public String getStarterProjectID() {
     return starterProjectID;
-  }
-
-  public String getAuthServerHost() {
-    return authServerHost;
-  }
-
-  public void setAuthServerHost(String authServerHost) {
-    this.authServerHost = authServerHost;
-  }
-
-  public Integer getAuthServerPort() {
-    return authServerPort;
-  }
-
-  public void setAuthServerPort(Integer authServerPort) {
-    this.authServerPort = authServerPort;
   }
 
   public boolean isS3presignedURLEnabled() {

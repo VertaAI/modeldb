@@ -38,6 +38,12 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
     implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
 
+  public static ai.verta.modeldb.authservice.RoleService FromConfig(
+      Config config, AuthService authService) {
+    if (!config.hasAuth()) return new PublicRoleServiceUtils(authService);
+    else return new RoleServiceUtils(authService);
+  }
+
   public RoleServiceUtils(AuthService authService) {
     this(App.getInstance(), authService);
   }
@@ -45,8 +51,8 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   private RoleServiceUtils(App app, AuthService authService) {
     super(
         authService,
-        app.getAuthServerHost(),
-        app.getAuthServerPort(),
+        Config.getInstance().authService.host,
+        Config.getInstance().authService.port,
         app.getServiceUserEmail(),
         app.getServiceUserDevKey(),
         Config.getInstance().grpcServer.requestTimeout,
