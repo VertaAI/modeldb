@@ -564,8 +564,9 @@ public class App implements ApplicationContextAware {
   private static void wrapService(ServerBuilder<?> serverBuilder, BindableService bindableService) {
     serverBuilder.addService(bindableService);
   }
+
   private static ArtifactStoreService initializeArtifactStore(Config config)
-          throws ModelDBException, IOException {
+      throws ModelDBException, IOException {
 
     App app = App.getInstance();
 
@@ -574,34 +575,34 @@ public class App implements ApplicationContextAware {
 
     if (config.artifactStoreConfig.artifactEndpoint != null) {
       System.getProperties()
-              .put(
-                      "artifactEndpoint.storeArtifact",
-                      config.artifactStoreConfig.artifactEndpoint.storeArtifact);
+          .put(
+              "artifactEndpoint.storeArtifact",
+              config.artifactStoreConfig.artifactEndpoint.storeArtifact);
       System.getProperties()
-              .put(
-                      "artifactEndpoint.getArtifact",
-                      config.artifactStoreConfig.artifactEndpoint.getArtifact);
+          .put(
+              "artifactEndpoint.getArtifact",
+              config.artifactStoreConfig.artifactEndpoint.getArtifact);
     }
 
     if (config.artifactStoreConfig.NFS != null
-            && config.artifactStoreConfig.NFS.artifactEndpoint != null) {
+        && config.artifactStoreConfig.NFS.artifactEndpoint != null) {
       System.getProperties()
-              .put(
-                      "artifactEndpoint.storeArtifact",
-                      config.artifactStoreConfig.NFS.artifactEndpoint.storeArtifact);
+          .put(
+              "artifactEndpoint.storeArtifact",
+              config.artifactStoreConfig.NFS.artifactEndpoint.storeArtifact);
       System.getProperties()
-              .put(
-                      "artifactEndpoint.getArtifact",
-                      config.artifactStoreConfig.NFS.artifactEndpoint.getArtifact);
+          .put(
+              "artifactEndpoint.getArtifact",
+              config.artifactStoreConfig.NFS.artifactEndpoint.getArtifact);
     }
 
     switch (config.artifactStoreConfig.artifactStoreType) {
       case "S3":
         if (!config.artifactStoreConfig.S3.s3presignedURLEnabled) {
           System.setProperty(
-                  ModelDBConstants.CLOUD_BUCKET_NAME, config.artifactStoreConfig.S3.cloudBucketName);
+              ModelDBConstants.CLOUD_BUCKET_NAME, config.artifactStoreConfig.S3.cloudBucketName);
           System.getProperties()
-                  .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
+              .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
           SpringApplication.run(App.class);
           artifactStoreService = app.applicationContext.getBean(S3Service.class);
         } else {
@@ -616,7 +617,7 @@ public class App implements ApplicationContextAware {
 
         System.getProperties().put("file.upload-dir", rootDir);
         System.getProperties()
-                .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
+            .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
         SpringApplication.run(App.class, new String[0]);
 
         artifactStoreService = app.applicationContext.getBean(NFSService.class);
@@ -627,7 +628,7 @@ public class App implements ApplicationContextAware {
     // ------------- Finish Initialize Cloud storage base on configuration ------------------
 
     LOGGER.info(
-            "ArtifactStore service initialized and resolved storage dependency before server start");
+        "ArtifactStore service initialized and resolved storage dependency before server start");
     return artifactStoreService;
   }
 
@@ -662,11 +663,9 @@ public class App implements ApplicationContextAware {
     return starterProjectID;
   }
 
-
   public Map<String, Object> getPropertiesMap() {
     return propertiesMap;
   }
-
 
   public String getServiceUserEmail() {
     return serviceUserEmail;
@@ -687,7 +686,6 @@ public class App implements ApplicationContextAware {
   public boolean isPopulateConnectionsBasedOnPrivileges() {
     return populateConnectionsBasedOnPrivileges;
   }
-
 
   public Boolean getTrialEnabled() {
     return trialEnabled;

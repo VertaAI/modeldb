@@ -117,8 +117,7 @@ public class TrialUtils {
     bodyParametersMap.put(
         "X-Amz-Credential",
         String.format(
-            "%s/%s/%s/s3/aws4_request",
-            awsCredentials.getAWSAccessKeyId(), date, region));
+            "%s/%s/%s/s3/aws4_request", awsCredentials.getAWSAccessKeyId(), date, region));
     if (awsCredentials instanceof AWSSessionCredentials) {
       AWSSessionCredentials sessionCreds = (AWSSessionCredentials) awsCredentials;
       bodyParametersMap.put("X-Amz-Security-Token", sessionCreds.getSessionToken());

@@ -26,7 +26,8 @@ public class ArtifactEntity {
     setKey(artifact.getKey());
     setPath(artifact.getPath());
     if (!artifact.getPathOnly()) {
-      setStore_type_path(Config.getInstance().artifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
+      setStore_type_path(
+          Config.getInstance().artifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
     }
     setArtifact_type(artifact.getArtifactTypeValue());
     setPath_only(artifact.getPathOnly());

@@ -322,20 +322,20 @@ public class S3Service implements ArtifactStoreService {
       parameters.put("upload_id", uploadId);
       return getUploadUrl(
           parameters,
-              config.artifactStoreConfig.protocol,
-              config.artifactStoreConfig.artifactEndpoint.getArtifact,
-              config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
-              config.artifactStoreConfig.host);
+          config.artifactStoreConfig.protocol,
+          config.artifactStoreConfig.artifactEndpoint.getArtifact,
+          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+          config.artifactStoreConfig.host);
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("S3Service - generatePresignedUrl - get url returned");
       String filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
       parameters.put(ModelDBConstants.FILENAME, filename);
       return getDownloadUrl(
           parameters,
-              config.artifactStoreConfig.protocol,
-              config.artifactStoreConfig.artifactEndpoint.getArtifact,
-              config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
-              config.artifactStoreConfig.host);
+          config.artifactStoreConfig.protocol,
+          config.artifactStoreConfig.artifactEndpoint.getArtifact,
+          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+          config.artifactStoreConfig.host);
     } else {
       String errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
       throw new InvalidArgumentException(errorMessage);
