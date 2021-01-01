@@ -7,6 +7,9 @@ import ai.verta.modeldb.exceptions.InternalErrorException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -17,6 +20,7 @@ public class Config {
 
   public ArtifactStoreConfig artifactStoreConfig;
   public ServiceConfig authService;
+  public Map<String, CronJobConfig> cron_job = new HashMap<>();
   public DatabaseConfig database;
   public boolean enableTrace = false;
   public GrpcServerConfig grpcServer;
@@ -25,8 +29,6 @@ public class Config {
   // FIXME
 
   public Object artifactStore_grpcServer;
-
-  public Object cron_job;
 
   public Object mdb_service_user;
   public Object populateConnectionsBasedOnPrivileges;

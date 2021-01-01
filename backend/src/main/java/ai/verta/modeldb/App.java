@@ -371,7 +371,7 @@ public class App implements ApplicationContextAware {
 
     // Initialize cron jobs
     CronJobUtils.initializeBasedOnConfig(
-        propertiesMap, authService, roleService, artifactStoreService);
+        config, authService, roleService, artifactStoreService);
   }
 
   public void setServiceUser(Map<String, Object> propertiesMap, App app) {

@@ -6,6 +6,8 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.CronJobConfig;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.Map;
 import java.util.TimerTask;
@@ -19,113 +21,43 @@ public class CronJobUtils {
   public static Integer deleteEntitiesFrequency = 60;
 
   public static void initializeBasedOnConfig(
-      Map<String, Object> propertiesMap,
+          Config config,
       AuthService authService,
       RoleService roleService,
       ArtifactStoreService artifactStoreService) {
 
     App app = App.getInstance();
     LOGGER.info("Enter in CronJobUtils: initializeBasedOnConfig()");
-    if (propertiesMap.containsKey(ModelDBConstants.CRON_JOB)) {
-      Map<String, Object> cronJobMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.CRON_JOB);
-      if (cronJobMap != null && !cronJobMap.isEmpty()) {
-        for (Map.Entry<String, Object> cronJob : cronJobMap.entrySet()) {
+    for (Map.Entry<String, CronJobConfig> cronJob : config.cron_job.entrySet()) {
+      TimerTask task = null;
           if (cronJob.getKey().equals(ModelDBConstants.UPDATE_PARENT_TIMESTAMP)) {
-            Map<String, Object> updateParentTimestampCronMap =
-                (Map<String, Object>) cronJob.getValue();
-            updateParentTimestampFrequency =
-                (int) updateParentTimestampCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);
-            int recordUpdateLimit =
-                (int)
-                    updateParentTimestampCronMap.getOrDefault(
-                        ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-            int initialDelay =
-                (int)
-                    updateParentTimestampCronMap.getOrDefault(
-                        ModelDBConstants.INITIAL_DELAY, ModelDBConstants.INITIAL_CRON_DELAY);
-            // creating an instance of task to be scheduled
-            TimerTask task = new ParentTimestampUpdateCron(recordUpdateLimit);
-            ModelDBUtils.scheduleTask(
-                task, initialDelay, updateParentTimestampFrequency, TimeUnit.SECONDS);
-            LOGGER.info(
-                "{} cron job scheduled successfully", ModelDBConstants.UPDATE_PARENT_TIMESTAMP);
+            task = new ParentTimestampUpdateCron(cronJob.getValue().record_update_limit);
           } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
               && ((app.getServiceUserEmail() != null && app.getServiceUserDevKey() != null)
                   || !roleService.IsImplemented())) {
-            Map<String, Object> deleteEntitiesCronMap = (Map<String, Object>) cronJob.getValue();
-            deleteEntitiesFrequency =
-                (int) deleteEntitiesCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);
-            int recordUpdateLimit =
-                (int) deleteEntitiesCronMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-            int initialDelay =
-                (int)
-                    deleteEntitiesCronMap.getOrDefault(
-                        ModelDBConstants.INITIAL_DELAY, ModelDBConstants.INITIAL_CRON_DELAY);
-            // creating an instance of task to be scheduled
-            TimerTask task = new DeleteEntitiesCron(authService, roleService, recordUpdateLimit);
-            ModelDBUtils.scheduleTask(
-                task, initialDelay, deleteEntitiesFrequency, TimeUnit.SECONDS);
-            LOGGER.info("{} cron job scheduled successfully", ModelDBConstants.DELETE_ENTITIES);
+            task =
+                    new DeleteEntitiesCron(
+                            authService, roleService, cronJob.getValue().record_update_limit);
           } else if (cronJob.getKey().equals(ModelDBConstants.UPDATE_RUN_ENVIRONMENTS)
               && artifactStoreService != null
               && !(artifactStoreService instanceof ArtifactStoreDAODisabled)) {
-            Map<String, Object> updateRunEnvironmentCronMap =
-                (Map<String, Object>) cronJob.getValue();
-            int cronExecutionFrequency =
-                (int) updateRunEnvironmentCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);
-            int recordUpdateLimit =
-                (int)
-                    updateRunEnvironmentCronMap.getOrDefault(
-                        ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-            int initialDelay =
-                (int)
-                    updateRunEnvironmentCronMap.getOrDefault(
-                        ModelDBConstants.INITIAL_DELAY, ModelDBConstants.INITIAL_CRON_DELAY);
-            // creating an instance of task to be scheduled
-            TimerTask task =
-                new PopulateEnvironmentInRunCron(artifactStoreService, recordUpdateLimit);
-            ModelDBUtils.scheduleTask(task, initialDelay, cronExecutionFrequency, TimeUnit.SECONDS);
-            LOGGER.info(
-                "{} cron job scheduled successfully", ModelDBConstants.UPDATE_RUN_ENVIRONMENTS);
+            task =
+                    new PopulateEnvironmentInRunCron(
+                            artifactStoreService, cronJob.getValue().record_update_limit);
           } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_AUDIT_LOGS)
               && (app.getServiceUserEmail() != null && app.getServiceUserDevKey() != null)) {
-            Map<String, Object> deleteAuditLogsCronMap = (Map<String, Object>) cronJob.getValue();
-            deleteEntitiesFrequency =
-                (int) deleteAuditLogsCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);
-            int recordUpdateLimit =
-                (int)
-                    deleteAuditLogsCronMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-            int initialDelay =
-                (int)
-                    deleteAuditLogsCronMap.getOrDefault(
-                        ModelDBConstants.INITIAL_DELAY, ModelDBConstants.INITIAL_CRON_DELAY);
-            // creating an instance of task to be scheduled
-            TimerTask task = new AuditLogsCron(recordUpdateLimit);
-            ModelDBUtils.scheduleTask(
-                task, initialDelay, deleteEntitiesFrequency, TimeUnit.SECONDS);
-            LOGGER.info("{} cron job scheduled successfully", ModelDBConstants.DELETE_AUDIT_LOGS);
+            task = new AuditLogsCron(cronJob.getValue().record_update_limit);
           } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
               && ((app.getServiceUserEmail() != null && app.getServiceUserDevKey() != null)
                   || !roleService.IsImplemented())) {
-            Map<String, Object> deleteEntitiesCronMap = (Map<String, Object>) cronJob.getValue();
-            int deleteEntitiesFrequency =
-                (int) deleteEntitiesCronMap.getOrDefault(ModelDBConstants.FREQUENCY, 60);
-            int recordUpdateLimit =
-                (int) deleteEntitiesCronMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-            int initialDelay =
-                (int)
-                    deleteEntitiesCronMap.getOrDefault(
-                        ModelDBConstants.INITIAL_DELAY, ModelDBConstants.INITIAL_CRON_DELAY);
-            // creating an instance of task to be scheduled
-            TimerTask task = new CleanUpEntitiesCron(roleService, recordUpdateLimit);
-            ModelDBUtils.scheduleTask(
-                task, initialDelay, deleteEntitiesFrequency, TimeUnit.SECONDS);
-            LOGGER.info("{} cron job scheduled successfully", ModelDBConstants.CLEAN_UP_ENTITIES);
+            task = new CleanUpEntitiesCron(roleService, cronJob.getValue().record_update_limit);
           } else {
             LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());
           }
-        }
+      if (task != null) {
+        ModelDBUtils.scheduleTask(
+                task, cronJob.getValue().initial_delay, cronJob.getValue().frequency, TimeUnit.SECONDS);
+        LOGGER.info("{} cron job scheduled successfully", cronJob.getKey());
       }
     }
     LOGGER.info("Exit from CronJobUtils: initializeBasedOnConfig()");
