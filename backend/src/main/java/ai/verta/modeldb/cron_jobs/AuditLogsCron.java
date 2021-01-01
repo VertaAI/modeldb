@@ -6,22 +6,19 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.versioning.AddAuditLogBatch;
-import ai.verta.uac.versioning.AuditLog;
-import ai.verta.uac.versioning.AuditResource;
-import ai.verta.uac.versioning.AuditUser;
-import ai.verta.uac.versioning.BatchResponseRow;
+import ai.verta.uac.versioning.*;
 import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
 
 public class AuditLogsCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(AuditLogsCron.class);

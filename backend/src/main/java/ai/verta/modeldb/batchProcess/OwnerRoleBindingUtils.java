@@ -1,13 +1,13 @@
 package ai.verta.modeldb.batchProcess;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
@@ -17,18 +17,19 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class OwnerRoleBindingUtils {
   private OwnerRoleBindingUtils() {}
@@ -38,13 +39,9 @@ public class OwnerRoleBindingUtils {
   private static RoleService roleService;
 
   public static void execute() {
-    App app = App.getInstance();
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      app.setAuthServerHost(app.getAuthServerHost());
-      app.setAuthServerPort(app.getAuthServerPort());
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
+    if (Config.getInstance().hasAuth()) {
+      authService = AuthServiceUtils.FromConfig(Config.getInstance());
+      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
       return;
