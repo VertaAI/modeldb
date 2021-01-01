@@ -119,23 +119,6 @@ public class App implements ApplicationContextAware {
   private String serviceUserEmail = null;
   private String serviceUserDevKey = null;
 
-  // S3 Artifact store
-  private String cloudAccessKey = null;
-  private String cloudSecretKey = null;
-  private String minioEndpoint = null;
-  private String awsRegion = null;
-
-  // Artifact store
-  private String artifactStoreType = "";
-  private boolean disabledArtifactStore = false;
-  private Boolean pickArtifactStoreHostFromConfig = null;
-  private String artifactStoreServerHost = null;
-  private String artifactStoreUrlProtocol = null;
-  private String storeArtifactEndpoint = null;
-  private String getArtifactEndpoint = null;
-  private String storeTypePathPrefix = null;
-  private boolean s3presignedURLEnabled = true;
-
   // Control parameter for delayed shutdown
   private Long shutdownTimeout;
 
@@ -265,7 +248,7 @@ public class App implements ApplicationContextAware {
 
       // ----------------- Start Initialize database & modelDB services with DAO ---------
       initializeServicesBaseOnDataBase(
-          serverBuilder, config.database, propertiesMap, authService, app.roleService);
+          serverBuilder, config, propertiesMap, authService, app.roleService);
       // ----------------- Finish Initialize database & modelDB services with DAO --------
 
       serverBuilder.intercept(new MonitoringInterceptor());
@@ -318,7 +301,7 @@ public class App implements ApplicationContextAware {
 
   public static void initializeServicesBaseOnDataBase(
       ServerBuilder<?> serverBuilder,
-      DatabaseConfig database,
+      Config config,
       Map<String, Object> propertiesMap,
       AuthService authService,
       RoleService roleService)
@@ -347,13 +330,6 @@ public class App implements ApplicationContextAware {
             propertiesMap.getOrDefault(
                 ModelDBConstants.POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES, false);
 
-    Map<String, Object> featureFlagMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.FEATURE_FLAG);
-    if (featureFlagMap != null) {
-      app.disabledArtifactStore =
-          (Boolean) featureFlagMap.getOrDefault(ModelDBConstants.DISABLED_ARTIFACT_STORE, false);
-    }
-
     Map<String, Object> starterProjectDetail =
         (Map<String, Object>) propertiesMap.get(ModelDBConstants.STARTER_PROJECT);
     if (starterProjectDetail != null) {
@@ -378,11 +354,8 @@ public class App implements ApplicationContextAware {
     }
 
     ArtifactStoreService artifactStoreService = null;
-    if (!app.disabledArtifactStore) {
-      Map<String, Object> artifactStoreConfigMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.ARTIFACT_STORE_CONFIG);
-
-      artifactStoreService = initializeServicesBaseOnArtifactStoreType(artifactStoreConfigMap);
+    if (config.artifactStoreConfig.enabled) {
+      artifactStoreService = initializeArtifactStore(config);
     } else {
       System.getProperties().put("scan.packages", "dummyPackageName");
       SpringApplication.run(App.class);
@@ -591,119 +564,59 @@ public class App implements ApplicationContextAware {
   private static void wrapService(ServerBuilder<?> serverBuilder, BindableService bindableService) {
     serverBuilder.addService(bindableService);
   }
-
-  private static ArtifactStoreService initializeServicesBaseOnArtifactStoreType(
-      Map<String, Object> artifactStoreConfigMap) throws ModelDBException, IOException {
+  private static ArtifactStoreService initializeArtifactStore(Config config)
+          throws ModelDBException, IOException {
 
     App app = App.getInstance();
-    app.artifactStoreType =
-        (String) artifactStoreConfigMap.getOrDefault(ModelDBConstants.ARTIFACT_STORE_TYPE, "");
 
     // ------------- Start Initialize Cloud storage base on configuration ------------------
     ArtifactStoreService artifactStoreService;
 
-    app.pickArtifactStoreHostFromConfig =
-        (Boolean)
-            artifactStoreConfigMap.getOrDefault(
-                ModelDBConstants.PICK_ARTIFACT_STORE_HOST_FROM_CONFIG, false);
-    LOGGER.trace(
-        "ArtifactStore pick host from config flag : {}", app.pickArtifactStoreHostFromConfig);
-    app.artifactStoreServerHost =
-        (String)
-            artifactStoreConfigMap.getOrDefault(ModelDBConstants.ARTIFACT_STORE_SERVER_HOST, "");
-    LOGGER.trace("ArtifactStore server host URL found : {}", app.artifactStoreServerHost);
-    app.artifactStoreUrlProtocol =
-        (String)
-            artifactStoreConfigMap.getOrDefault(
-                ModelDBConstants.ARTIFACT_STORE_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
-    LOGGER.debug("ArtifactStore URL protocol found : {}", app.artifactStoreUrlProtocol);
-
-    Map<String, Object> artifactStoreEndpointConfigMap =
-        (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
-    if (artifactStoreEndpointConfigMap != null && !artifactStoreEndpointConfigMap.isEmpty()) {
-      app.getArtifactEndpoint =
-          (String) artifactStoreEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
-      LOGGER.trace("ArtifactStore Get artifact endpoint found : {}", app.getArtifactEndpoint);
-      app.storeArtifactEndpoint =
-          (String) artifactStoreEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
-      LOGGER.trace("ArtifactStore Store artifact endpoint found : {}", app.storeArtifactEndpoint);
-
-      System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
-      System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
+    if (config.artifactStoreConfig.artifactEndpoint != null) {
+      System.getProperties()
+              .put(
+                      "artifactEndpoint.storeArtifact",
+                      config.artifactStoreConfig.artifactEndpoint.storeArtifact);
+      System.getProperties()
+              .put(
+                      "artifactEndpoint.getArtifact",
+                      config.artifactStoreConfig.artifactEndpoint.getArtifact);
     }
-    switch (app.artifactStoreType) {
-      case ModelDBConstants.S3:
-        Map<String, Object> s3ConfigMap =
-            (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.S3);
-        app.cloudAccessKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_ACCESS_KEY);
-        app.cloudSecretKey = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_SECRET_KEY);
-        app.minioEndpoint = (String) s3ConfigMap.get(ModelDBConstants.MINIO_ENDPOINT);
-        app.awsRegion =
-            (String)
-                s3ConfigMap.getOrDefault(
-                    ModelDBConstants.AWS_REGION, ModelDBConstants.DEFAULT_AWS_REGION);
-        String cloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
-        app.storeTypePathPrefix = "s3://" + cloudBucketName + ModelDBConstants.PATH_DELIMITER;
 
-        if (s3ConfigMap.containsKey(ModelDBConstants.S3_PRESIGNED_URL_ENABLED)
-            && !((boolean) s3ConfigMap.get(ModelDBConstants.S3_PRESIGNED_URL_ENABLED))) {
-          app.s3presignedURLEnabled = false;
+    if (config.artifactStoreConfig.NFS != null
+            && config.artifactStoreConfig.NFS.artifactEndpoint != null) {
+      System.getProperties()
+              .put(
+                      "artifactEndpoint.storeArtifact",
+                      config.artifactStoreConfig.NFS.artifactEndpoint.storeArtifact);
+      System.getProperties()
+              .put(
+                      "artifactEndpoint.getArtifact",
+                      config.artifactStoreConfig.NFS.artifactEndpoint.getArtifact);
+    }
 
-          System.setProperty(ModelDBConstants.CLOUD_BUCKET_NAME, cloudBucketName);
+    switch (config.artifactStoreConfig.artifactStoreType) {
+      case "S3":
+        if (!config.artifactStoreConfig.S3.s3presignedURLEnabled) {
+          System.setProperty(
+                  ModelDBConstants.CLOUD_BUCKET_NAME, config.artifactStoreConfig.S3.cloudBucketName);
           System.getProperties()
-              .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
+                  .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
           SpringApplication.run(App.class);
           artifactStoreService = app.applicationContext.getBean(S3Service.class);
         } else {
-          artifactStoreService = new S3Service(cloudBucketName);
+          artifactStoreService = new S3Service(config.artifactStoreConfig.S3.cloudBucketName);
           System.getProperties().put("scan.packages", "dummyPackageName");
           SpringApplication.run(App.class);
         }
         break;
-      case ModelDBConstants.NFS:
-        Map<String, Object> nfsConfigMap =
-            (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.NFS);
-        String rootDir = (String) nfsConfigMap.get(ModelDBConstants.NFS_ROOT_PATH);
+      case "NFS":
+        String rootDir = config.artifactStoreConfig.NFS.nfsRootPath;
         LOGGER.trace("NFS server root path {}", rootDir);
-        app.storeTypePathPrefix = "nfs://" + rootDir + ModelDBConstants.PATH_DELIMITER;
 
-        if (!artifactStoreConfigMap.containsKey(
-            ModelDBConstants.PICK_ARTIFACT_STORE_HOST_FROM_CONFIG)) {
-          app.pickArtifactStoreHostFromConfig =
-              (Boolean)
-                  nfsConfigMap.getOrDefault(ModelDBConstants.PICK_NFS_HOST_FROM_CONFIG, false);
-          LOGGER.trace("NFS pick host from config flag : {}", app.pickArtifactStoreHostFromConfig);
-        }
-        if (!artifactStoreConfigMap.containsKey(ModelDBConstants.ARTIFACT_STORE_SERVER_HOST)) {
-          app.artifactStoreServerHost =
-              (String) nfsConfigMap.getOrDefault(ModelDBConstants.NFS_SERVER_HOST, "");
-          LOGGER.trace("NFS server host URL found : {}", app.artifactStoreServerHost);
-        }
-        if (!artifactStoreConfigMap.containsKey(ModelDBConstants.ARTIFACT_STORE_URL_PROTOCOL)) {
-          app.artifactStoreUrlProtocol =
-              (String)
-                  nfsConfigMap.getOrDefault(
-                      ModelDBConstants.NFS_URL_PROTOCOL, ModelDBConstants.HTTPS_STR);
-          LOGGER.debug("NFS URL protocol found : {}", app.artifactStoreUrlProtocol);
-        }
-
-        if (artifactStoreEndpointConfigMap == null || artifactStoreEndpointConfigMap.isEmpty()) {
-          Map<String, Object> artifactEndpointConfigMap =
-              (Map<String, Object>) nfsConfigMap.get(ModelDBConstants.ARTIFACT_ENDPOINT);
-          if (artifactEndpointConfigMap != null && !artifactEndpointConfigMap.isEmpty()) {
-            app.getArtifactEndpoint =
-                (String) artifactEndpointConfigMap.get(ModelDBConstants.GET_ARTIFACT_ENDPOINT);
-            LOGGER.trace("Get artifact endpoint found : {}", app.getArtifactEndpoint);
-            app.storeArtifactEndpoint =
-                (String) artifactEndpointConfigMap.get(ModelDBConstants.STORE_ARTIFACT_ENDPOINT);
-            LOGGER.trace("Store artifact endpoint found : {}", app.storeArtifactEndpoint);
-          }
-          System.getProperties().put("artifactEndpoint.storeArtifact", app.storeArtifactEndpoint);
-          System.getProperties().put("artifactEndpoint.getArtifact", app.getArtifactEndpoint);
-        }
         System.getProperties().put("file.upload-dir", rootDir);
         System.getProperties()
-            .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
+                .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
         SpringApplication.run(App.class, new String[0]);
 
         artifactStoreService = app.applicationContext.getBean(NFSService.class);
@@ -714,7 +627,7 @@ public class App implements ApplicationContextAware {
     // ------------- Finish Initialize Cloud storage base on configuration ------------------
 
     LOGGER.info(
-        "ArtifactStore service initialized and resolved storage dependency before server start");
+            "ArtifactStore service initialized and resolved storage dependency before server start");
     return artifactStoreService;
   }
 
@@ -749,53 +662,11 @@ public class App implements ApplicationContextAware {
     return starterProjectID;
   }
 
-  public boolean isS3presignedURLEnabled() {
-    return s3presignedURLEnabled;
-  }
-
-  public Boolean getPickArtifactStoreHostFromConfig() {
-    return pickArtifactStoreHostFromConfig;
-  }
-
-  public String getArtifactStoreServerHost() {
-    return artifactStoreServerHost;
-  }
-
-  public String getArtifactStoreUrlProtocol() {
-    return artifactStoreUrlProtocol;
-  }
-
-  public String getStoreArtifactEndpoint() {
-    return storeArtifactEndpoint;
-  }
-
-  public String getGetArtifactEndpoint() {
-    return getArtifactEndpoint;
-  }
-
-  public String getStoreTypePathPrefix() {
-    return storeTypePathPrefix;
-  }
 
   public Map<String, Object> getPropertiesMap() {
     return propertiesMap;
   }
 
-  public String getCloudAccessKey() {
-    return cloudAccessKey;
-  }
-
-  public String getCloudSecretKey() {
-    return cloudSecretKey;
-  }
-
-  public String getMinioEndpoint() {
-    return minioEndpoint;
-  }
-
-  public String getAwsRegion() {
-    return awsRegion;
-  }
 
   public String getServiceUserEmail() {
     return serviceUserEmail;
@@ -817,9 +688,6 @@ public class App implements ApplicationContextAware {
     return populateConnectionsBasedOnPrivileges;
   }
 
-  public String getArtifactStoreType() {
-    return artifactStoreType;
-  }
 
   public Boolean getTrialEnabled() {
     return trialEnabled;

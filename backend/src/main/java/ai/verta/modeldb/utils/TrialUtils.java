@@ -92,17 +92,17 @@ public class TrialUtils {
   }
 
   public static Map<String, String> getBodyParameterMapForTrialPresignedURL(
-      App app,
       AWSCredentials awsCredentials,
       String bucketName,
       String s3Key,
+      String region,
       int maxArtifactSize) {
     LocalDateTime localDateTime = LocalDateTime.now();
     String dateTimeStr = localDateTime.format(ofPattern("yyyyMMdd'T'HHmmss'Z'"));
     String date = localDateTime.format(ofPattern("yyyyMMdd"));
 
     S3SignatureUtil s3SignatureUtil =
-        new S3SignatureUtil(awsCredentials, app.getAwsRegion(), ModelDBConstants.S3.toLowerCase());
+        new S3SignatureUtil(awsCredentials, region, ModelDBConstants.S3.toLowerCase());
 
     String policy = s3SignatureUtil.readPolicy(bucketName, maxArtifactSize, awsCredentials);
     String signature = s3SignatureUtil.getSignature(policy, localDateTime);
@@ -118,7 +118,7 @@ public class TrialUtils {
         "X-Amz-Credential",
         String.format(
             "%s/%s/%s/s3/aws4_request",
-            awsCredentials.getAWSAccessKeyId(), date, app.getAwsRegion()));
+            awsCredentials.getAWSAccessKeyId(), date, region));
     if (awsCredentials instanceof AWSSessionCredentials) {
       AWSSessionCredentials sessionCreds = (AWSSessionCredentials) awsCredentials;
       bodyParametersMap.put("X-Amz-Security-Token", sessionCreds.getSessionToken());

@@ -65,6 +65,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       LogManager.getLogger(ExperimentRunDAORdbImpl.class.getName());
   private static final boolean OVERWRITE_VERSION_MAP = false;
   private App app = App.getInstance();
+  private ai.verta.modeldb.config.Config config = ai.verta.modeldb.config.Config.getInstance();
   private static final long CACHE_SIZE = 1000;
   private static final int DURATION = 10;
   private final AuthService authService;
@@ -2487,7 +2488,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       boolean partNumberSpecified,
       S3KeyFunction initializeMultipart) {
     String uploadId;
-    if (partNumberSpecified && app.getArtifactStoreType().equals(ModelDBConstants.S3)) {
+    if (partNumberSpecified && config.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {

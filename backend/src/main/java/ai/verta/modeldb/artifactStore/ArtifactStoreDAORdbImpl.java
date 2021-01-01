@@ -6,6 +6,7 @@ import ai.verta.modeldb.GetUrlForArtifact.Response;
 import ai.verta.modeldb.HttpCodeToGRPCCode;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
@@ -22,10 +23,12 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
   private static final Logger LOGGER = LogManager.getLogger(ArtifactStoreDAORdbImpl.class);
   private ArtifactStoreService artifactStoreService;
   private App app;
+  private Config config;
 
   public ArtifactStoreDAORdbImpl(ArtifactStoreService artifactStoreService) {
     this.artifactStoreService = artifactStoreService;
     this.app = App.getInstance();
+    this.config = Config.getInstance();
   }
 
   @Override
@@ -46,7 +49,7 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
             artifactStoreService.generatePresignedUrl(s3Key, method, partNumber, uploadId);
         return GetUrlForArtifact.Response.newBuilder()
             .setMultipartUploadOk(
-                app.getArtifactStoreType().equals(ModelDBConstants.S3) && uploadId != null)
+                    config.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3) && uploadId != null)
             .setUrl(presignedUrl)
             .build();
       }
