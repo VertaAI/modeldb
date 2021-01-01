@@ -109,12 +109,6 @@ public class App implements ApplicationContextAware {
 
   private static App app = null;
 
-  // Over all map of properties
-  private Map<String, Object> propertiesMap;
-
-  // project which can be use for deep copying on user login
-  private String starterProjectID = null;
-
   // Control parameter for delayed shutdown
   private Long shutdownTimeout;
 
@@ -178,10 +172,7 @@ public class App implements ApplicationContextAware {
           java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
       logger.setLevel(Level.WARNING);
       // --------------- Start reading properties --------------------------
-      Map<String, Object> propertiesMap =
-          ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
       App app = App.getInstance();
-      app.propertiesMap = propertiesMap;
       Config config = Config.getInstance();
       // --------------- End reading properties --------------------------
 
@@ -234,7 +225,7 @@ public class App implements ApplicationContextAware {
 
       // ----------------- Start Initialize database & modelDB services with DAO ---------
       initializeServicesBaseOnDataBase(
-          serverBuilder, config, propertiesMap, authService, app.roleService);
+          serverBuilder, config, authService, app.roleService);
       // ----------------- Finish Initialize database & modelDB services with DAO --------
 
       serverBuilder.intercept(new MonitoringInterceptor());
@@ -288,18 +279,11 @@ public class App implements ApplicationContextAware {
   public static void initializeServicesBaseOnDataBase(
       ServerBuilder<?> serverBuilder,
       Config config,
-      Map<String, Object> propertiesMap,
       AuthService authService,
       RoleService roleService)
       throws ModelDBException, IOException, InvalidConfigException {
-
     App app = App.getInstance();
 
-    Map<String, Object> starterProjectDetail =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.STARTER_PROJECT);
-    if (starterProjectDetail != null) {
-      app.starterProjectID = (String) starterProjectDetail.get(ModelDBConstants.STARTER_PROJECT_ID);
-    }
     // --------------- Start Initialize Cloud Config ---------------------------------------------
     System.getProperties().put("server.port", config.springServer.port);
 
@@ -579,14 +563,6 @@ public class App implements ApplicationContextAware {
     } else {
       LOGGER.info("Telemetry opt out by user");
     }
-  }
-
-  public String getStarterProjectID() {
-    return starterProjectID;
-  }
-
-  public Map<String, Object> getPropertiesMap() {
-    return propertiesMap;
   }
 
   public void setRoleService(RoleService roleService) {

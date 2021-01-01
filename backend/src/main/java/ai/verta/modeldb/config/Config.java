@@ -27,16 +27,10 @@ public class Config {
   public ServiceUserConfig mdb_service_user;
   public boolean populateConnectionsBasedOnPrivileges = false;
   public SpringServerConfig springServer;
+  public String starterProject;
   public TelemetryConfig telemetry;
   public TestConfig test;
   public TrialConfig trial;
-
-  // FIXME
-
-  public Object artifactStore_grpcServer;
-
-  public Object starterProject;
-  public Object feature_flag;
 
   public static Config getInstance() throws InternalErrorException {
     if (config == null) {
