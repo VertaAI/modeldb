@@ -121,12 +121,6 @@ public class App implements ApplicationContextAware {
   private boolean populateConnectionsBasedOnPrivileges = false;
   private RoleService roleService;
 
-  // Trial flags
-  private Boolean trialEnabled = false;
-  private Integer maxArtifactSizeMB;
-  private Integer maxArtifactPerRun;
-  private Integer maxExperimentRunPerWorkspace;
-
   // metric for prometheus monitoring
   private static final Gauge up =
       Gauge.build()
@@ -301,22 +295,6 @@ public class App implements ApplicationContextAware {
       throws ModelDBException, IOException, InvalidConfigException {
 
     App app = App.getInstance();
-    Map<String, Object> trialMap =
-        (Map<String, Object>)
-            propertiesMap.getOrDefault(ModelDBConstants.TRIAL, Collections.emptyMap());
-    app.trialEnabled = (Boolean) trialMap.getOrDefault(ModelDBConstants.ENABLE, false);
-    if (app.trialEnabled) {
-      Map<String, Object> restrictionsMap =
-          (Map<String, Object>)
-              trialMap.getOrDefault(ModelDBConstants.RESTRICTIONS, Collections.emptyMap());
-      app.maxArtifactSizeMB =
-          (Integer) restrictionsMap.getOrDefault(ModelDBConstants.MAX_ARTIFACT_SIZE_MB, null);
-      app.maxArtifactPerRun =
-          (Integer) restrictionsMap.getOrDefault(ModelDBConstants.MAX_ARTIFACT_PER_RUN, null);
-      app.maxExperimentRunPerWorkspace =
-          (Integer)
-              restrictionsMap.getOrDefault(ModelDBConstants.MAX_EXPERIMENT_RUN_PER_WORKSPACE, null);
-    }
 
     app.populateConnectionsBasedOnPrivileges =
         (boolean)
@@ -654,21 +632,5 @@ public class App implements ApplicationContextAware {
 
   public boolean isPopulateConnectionsBasedOnPrivileges() {
     return populateConnectionsBasedOnPrivileges;
-  }
-
-  public Boolean getTrialEnabled() {
-    return trialEnabled;
-  }
-
-  public Integer getMaxArtifactSizeMB() {
-    return maxArtifactSizeMB;
-  }
-
-  public Integer getMaxArtifactPerRun() {
-    return maxArtifactPerRun;
-  }
-
-  public Integer getMaxExperimentRunPerWorkspace() {
-    return maxExperimentRunPerWorkspace;
   }
 }

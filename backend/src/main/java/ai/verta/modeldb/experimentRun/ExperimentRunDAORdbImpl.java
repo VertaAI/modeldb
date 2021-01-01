@@ -316,8 +316,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       TrialUtils.validateExperimentRunPerWorkspaceForTrial(
-          app, projectDAO, roleService, this, experimentRun.getProjectId(), userInfo);
-      TrialUtils.validateMaxArtifactsForTrial(app, experimentRun.getArtifactsCount(), 0);
+          config.trial, projectDAO, roleService, this, experimentRun.getProjectId(), userInfo);
+      TrialUtils.validateMaxArtifactsForTrial(config.trial, experimentRun.getArtifactsCount(), 0);
 
       if (experimentRun.getDatasetsCount() > 0 && app.isPopulateConnectionsBasedOnPrivileges()) {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
@@ -1034,7 +1034,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
-      TrialUtils.validateMaxArtifactsForTrial(app, newArtifacts.size(), existingArtifacts.size());
+      TrialUtils.validateMaxArtifactsForTrial(config.trial, newArtifacts.size(), existingArtifacts.size());
 
       List<ArtifactEntity> newArtifactList =
           RdbmsUtils.convertArtifactsFromArtifactEntityList(

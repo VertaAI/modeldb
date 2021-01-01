@@ -26,6 +26,7 @@ public class Config {
   public GrpcServerConfig grpcServer;
   public ServiceUserConfig mdb_service_user;
   public TestConfig test;
+  public TrialConfig trial;
 
   // FIXME
 
@@ -36,7 +37,6 @@ public class Config {
   public Object telemetry;
   public Object starterProject;
   public Object migration;
-  public Object trial;
   public Object feature_flag;
 
   public static Config getInstance() throws InternalErrorException {
@@ -80,6 +80,10 @@ public class Config {
 
     if (test != null) {
       test.Validate("test");
+    }
+
+    if (trial != null) {
+      trial.Validate("trial");
     }
   }
 

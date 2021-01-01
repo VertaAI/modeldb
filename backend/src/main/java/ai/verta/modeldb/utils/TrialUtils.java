@@ -8,6 +8,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3SignatureUtil;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -30,14 +31,14 @@ public class TrialUtils {
   private TrialUtils() {}
 
   public static void validateMaxArtifactsForTrial(
-      App app, int newArtifactsCount, int existingArtifactsCount) throws ModelDBException {
-    if (app.getTrialEnabled()) {
-      if (app.getMaxArtifactPerRun() != null
-          && existingArtifactsCount + newArtifactsCount > app.getMaxArtifactPerRun()) {
+          TrialConfig config, int newArtifactsCount, int existingArtifactsCount) throws ModelDBException {
+    if (config != null) {
+      if (config.restrictions.max_artifact_per_run != null
+          && existingArtifactsCount + newArtifactsCount > config.restrictions.max_artifact_per_run) {
         throw new ModelDBException(
             ModelDBConstants.LIMIT_RUN_ARTIFACT_NUMBER
                 + "“Number of artifacts exceeded”: You are allowed to log upto "
-                + app.getMaxArtifactPerRun()
+                + config.restrictions.max_artifact_per_run
                 + " artifacts per experiment run.",
             Code.RESOURCE_EXHAUSTED);
       }
@@ -45,14 +46,14 @@ public class TrialUtils {
   }
 
   public static void validateExperimentRunPerWorkspaceForTrial(
-      App app,
+          TrialConfig config,
       ProjectDAO projectDAO,
       RoleService roleService,
       ExperimentRunDAO experimentRunDAO,
       String projectId,
       UserInfo userInfo)
       throws InvalidProtocolBufferException, ModelDBException {
-    if (app.getTrialEnabled()) {
+    if (config != null) {
       Project project = projectDAO.getProjectByID(projectId);
       if (project.getWorkspaceId() != null && !project.getWorkspaceId().isEmpty()) {
         // TODO: We can be replaced by a count(*) query instead .setIdsOnly(true)
@@ -60,12 +61,12 @@ public class TrialUtils {
             FindExperimentRuns.newBuilder().setIdsOnly(true).setProjectId(projectId).build();
         ExperimentRunPaginationDTO paginationDTO =
             experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
-        if (app.getMaxExperimentRunPerWorkspace() != null
-            && paginationDTO.getTotalRecords() >= app.getMaxExperimentRunPerWorkspace()) {
+        if (config.restrictions.max_experiment_run_per_workspace != null
+            && paginationDTO.getTotalRecords() >= config.restrictions.max_experiment_run_per_workspace) {
           throw new ModelDBException(
               ModelDBConstants.LIMIT_RUN_NUMBER
                   + "“Number of experiment runs exceeded”: Your trial account allows you to log upto "
-                  + app.getMaxExperimentRunPerWorkspace()
+                  + config.restrictions.max_experiment_run_per_workspace
                   + " experiment runs. Try deleting prior experiment runs in order to proceed.",
               Code.RESOURCE_EXHAUSTED);
         }
@@ -73,18 +74,18 @@ public class TrialUtils {
     }
   }
 
-  public static void validateArtifactSizeForTrial(App app, String artifactPath, int artifactSize)
+  public static void validateArtifactSizeForTrial(TrialConfig config, String artifactPath, int artifactSize)
       throws ModelDBException {
-    if (app.getTrialEnabled()) {
+    if (config != null) {
       double uploadedArtifactSize = ((double) artifactSize / 1024); // In KB
-      if (app.getMaxArtifactSizeMB() != null
-          && uploadedArtifactSize > ((double) app.getMaxArtifactSizeMB() * 1024)) {
+      if (config.restrictions.max_artifact_size_MB != null
+          && uploadedArtifactSize > ((double) config.restrictions.max_artifact_size_MB * 1024)) {
         throw new ModelDBException(
             ModelDBConstants.LIMIT_RUN_ARTIFACT_SIZE
                 + "“"
                 + artifactPath
                 + " exceeds maximum allowed artifact size of "
-                + app.getMaxArtifactSizeMB()
+                + config.restrictions.max_artifact_size_MB
                 + "MB”: The artifact you are trying to log exceeds the allowable limit for your trial account",
             Code.RESOURCE_EXHAUSTED);
       }
