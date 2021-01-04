@@ -4,7 +4,6 @@ import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
 
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum;
@@ -28,7 +27,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
@@ -1312,88 +1310,69 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       ResourceVisibility resourceVisibility)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-
-      DatasetPaginationDTO emptyPaginationDTO = new DatasetPaginationDTO();
-      emptyPaginationDTO.setDatasets(Collections.emptyList());
-      emptyPaginationDTO.setRepositories(Collections.emptyList());
-      emptyPaginationDTO.setTotalRecords(0L);
-      List<String> accessibleDatasetIds =
-          roleService.getAccessibleResourceIds(
-              null,
-              new CollaboratorUser(authService, currentLoginUserInfo),
-              ModelDBServiceResourceTypes.REPOSITORY,
-              queryParameters.getDatasetIdsList());
-
-      if (accessibleDatasetIds.isEmpty() && roleService.IsImplemented()) {
-        LOGGER.debug("Accessible Dataset Ids not found, size 0");
-        return emptyPaginationDTO;
-      }
-
       CriteriaBuilder builder = session.getCriteriaBuilder();
       // Using FROM and JOIN
       CriteriaQuery<RepositoryEntity> criteriaQuery = builder.createQuery(RepositoryEntity.class);
       Root<RepositoryEntity> repositoryRoot = criteriaQuery.from(RepositoryEntity.class);
       repositoryRoot.alias("ds");
+
+      Set<String> accessibleDatasetIds = new HashSet<>();
+      String workspaceName = queryParameters.getWorkspaceName();
+
+      if (!workspaceName.isEmpty()
+          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+            roleService.getResourceItems(
+                null,
+                !queryParameters.getDatasetIdsList().isEmpty()
+                    ? new HashSet<>(queryParameters.getDatasetIdsList())
+                    : Collections.emptySet(),
+                ModelDBServiceResourceTypes.REPOSITORY);
+        accessibleDatasetIds =
+            accessibleAllWorkspaceItems.stream()
+                .map(GetResourcesResponseItem::getResourceId)
+                .collect(Collectors.toSet());
+
+        List<String> orgWorkspaceIds =
+            roleService.listMyOrganizations().stream()
+                .map(Organization::getWorkspaceId)
+                .collect(Collectors.toList());
+        for (GetResourcesResponseItem item : accessibleAllWorkspaceItems) {
+          if (orgWorkspaceIds.contains(String.valueOf(item.getWorkspaceId()))) {
+            accessibleDatasetIds.remove(item.getResourceId());
+          }
+        }
+      } else {
+        accessibleDatasetIds =
+            ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
+                roleService,
+                !queryParameters.getDatasetIdsList().isEmpty()
+                    ? new HashSet<>(queryParameters.getDatasetIdsList())
+                    : Collections.emptySet(),
+                workspaceName,
+                currentLoginUserInfo,
+                ModelDBServiceResourceTypes.REPOSITORY);
+      }
+
+      if (accessibleDatasetIds.isEmpty() && roleService.IsImplemented()) {
+        LOGGER.debug("Accessible Dataset Ids not found, size 0");
+        DatasetPaginationDTO emptyPaginationDTO = new DatasetPaginationDTO();
+        emptyPaginationDTO.setDatasets(Collections.emptyList());
+        emptyPaginationDTO.setRepositories(Collections.emptyList());
+        emptyPaginationDTO.setTotalRecords(0L);
+        return emptyPaginationDTO;
+      }
+
       List<Predicate> finalPredicatesList = new ArrayList<>();
 
       List<KeyValueQuery> predicates = new ArrayList<>(queryParameters.getPredicatesList());
       for (KeyValueQuery predicate : predicates) {
         // Validate if current user has access to the entity or not where predicate key has an id
         RdbmsUtils.validatePredicates(
-            ModelDBConstants.DATASETS, accessibleDatasetIds, predicate, roleService);
-      }
-
-      String workspaceName = queryParameters.getWorkspaceName();
-
-      if (workspaceName != null
-          && !workspaceName.isEmpty()
-          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
-        accessibleDatasetIds =
-            roleService.getSelfDirectlyAllowedResources(
-                ModelDBServiceResourceTypes.REPOSITORY,
-                ModelDBActionEnum.ModelDBServiceActions.READ);
-        if (queryParameters.getDatasetIdsList() != null
-            && !queryParameters.getDatasetIdsList().isEmpty()) {
-          accessibleDatasetIds.retainAll(queryParameters.getDatasetIdsList());
-        }
-        // user is in his workspace and has no repositorys, return empty
-        if (accessibleDatasetIds.isEmpty()) {
-          return emptyPaginationDTO;
-        }
-
-        List<String> orgIds =
-            roleService.listMyOrganizations().stream()
-                .map(Organization::getId)
-                .collect(Collectors.toList());
-        if (!orgIds.isEmpty()) {
-          finalPredicatesList.add(
-              builder.not(
-                  builder.and(
-                      repositoryRoot.get(ModelDBConstants.WORKSPACE_ID).in(orgIds),
-                      builder.equal(
-                          repositoryRoot.get(ModelDBConstants.WORKSPACE_TYPE),
-                          WorkspaceType.ORGANIZATION_VALUE))));
-        }
-      } else {
-        if (resourceVisibility.equals(ResourceVisibility.PRIVATE)) {
-          List<KeyValueQuery> workspacePredicates =
-              ModelDBUtils.getKeyValueQueriesByWorkspace(
-                  roleService, currentLoginUserInfo, workspaceName);
-          if (workspacePredicates.size() > 0) {
-            Predicate privateWorkspacePredicate =
-                builder.equal(
-                    repositoryRoot.get(ModelDBConstants.WORKSPACE_ID),
-                    workspacePredicates.get(0).getValue().getStringValue());
-            Predicate privateWorkspaceTypePredicate =
-                builder.equal(
-                    repositoryRoot.get(ModelDBConstants.WORKSPACE_TYPE),
-                    workspacePredicates.get(1).getValue().getNumberValue());
-            Predicate privatePredicate =
-                builder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
-
-            finalPredicatesList.add(privatePredicate);
-          }
-        }
+            ModelDBConstants.DATASETS,
+            new ArrayList<>(accessibleDatasetIds),
+            predicate,
+            roleService);
       }
 
       if (!accessibleDatasetIds.isEmpty()) {
@@ -1421,6 +1400,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         if (ex.getCode().ordinal() == com.google.rpc.Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
           LOGGER.info(ex.getMessage());
+          DatasetPaginationDTO emptyPaginationDTO = new DatasetPaginationDTO();
+          emptyPaginationDTO.setDatasets(Collections.emptyList());
+          emptyPaginationDTO.setRepositories(Collections.emptyList());
+          emptyPaginationDTO.setTotalRecords(0L);
           return emptyPaginationDTO;
         }
         throw ex;
@@ -1433,7 +1416,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               RepositoryEnums.RepositoryModifierEnum.PROTECTED.ordinal()));
 
       String sortBy = queryParameters.getSortKey();
-      if (sortBy == null || sortBy.isEmpty()) {
+      if (sortBy.isEmpty()) {
         sortBy = ModelDBConstants.DATE_UPDATED;
       } else if (sortBy.equals(ModelDBConstants.TIME_CREATED)) {
         sortBy = ModelDBConstants.DATE_CREATED;

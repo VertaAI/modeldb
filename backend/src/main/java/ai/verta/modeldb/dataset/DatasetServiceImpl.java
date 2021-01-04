@@ -359,12 +359,11 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
           getDatasetResponse.getDataset().toBuilder().setName(request.getName()).build();
-      updatedDataset =
-          repositoryDAO.createOrUpdateDataset(
-              updatedDataset, null, false, authService.getCurrentLoginUserInfo());
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
 
       saveAuditLogs(
-          null,
+          userInfo,
           ModelDBConstants.UPDATE,
           Collections.singletonList(updatedDataset.getId()),
           String.format(
@@ -403,11 +402,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .toBuilder()
               .setDescription(request.getDescription())
               .build();
-      updatedDataset =
-          repositoryDAO.createOrUpdateDataset(
-              updatedDataset, null, false, authService.getCurrentLoginUserInfo());
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
       saveAuditLogs(
-          null,
+          userInfo,
           ModelDBConstants.UPDATE,
           Collections.singletonList(updatedDataset.getId()),
           String.format(
@@ -556,9 +554,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .toBuilder()
               .addAllAttributes(request.getAttributesList())
               .build();
-      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, null);
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
       saveAuditLogs(
-          null,
+          userInfo,
           ModelDBConstants.UPDATE,
           Collections.singletonList(request.getId()),
           String.format(
@@ -603,11 +602,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
           getDatasetResponse.getDataset().toBuilder().addAttributes(request.getAttribute()).build();
-      updatedDataset =
-          repositoryDAO.createOrUpdateDataset(
-              updatedDataset, null, false, authService.getCurrentLoginUserInfo());
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
       saveAuditLogs(
-          null,
+          userInfo,
           ModelDBConstants.UPDATE,
           Collections.singletonList(updatedDataset.getId()),
           String.format(
