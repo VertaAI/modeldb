@@ -194,7 +194,7 @@ public class App implements ApplicationContextAware {
       initializeTelemetryBasedOnConfig(config);
 
       // Initialize cron jobs
-      CronJobUtils.initializeBasedOnConfig(
+      CronJobUtils.initializeCronJobs(
           config, services.authService, services.roleService, services.artifactStoreService);
 
       // Initialize grpc server
