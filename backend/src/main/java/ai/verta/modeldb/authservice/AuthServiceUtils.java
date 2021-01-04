@@ -1,6 +1,5 @@
 package ai.verta.modeldb.authservice;
 
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.config.Config;
 
 public class AuthServiceUtils extends ai.verta.modeldb.common.authservice.AuthServiceUtils {

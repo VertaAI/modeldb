@@ -2,7 +2,6 @@ package ai.verta.modeldb.utils;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
 
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
