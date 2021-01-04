@@ -2,6 +2,8 @@ package ai.verta.modeldb.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.S3Config;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.ClientConfiguration;
@@ -43,13 +45,15 @@ public class S3Client {
   private AtomicInteger referenceCounter;
   private AWSCredentials awsCredentials;
   private App app;
+  private S3Config config;
 
   public S3Client(String cloudBucketName) throws IOException, ModelDBException {
     app = App.getInstance();
-    String cloudAccessKey = app.getCloudAccessKey();
-    String cloudSecretKey = app.getCloudSecretKey();
-    String minioEndpoint = app.getMinioEndpoint();
-    awsRegion = Regions.fromName(app.getAwsRegion());
+    config = Config.getInstance().artifactStoreConfig.S3;
+    String cloudAccessKey = config.cloudAccessKey;
+    String cloudSecretKey = config.cloudSecretKey;
+    String minioEndpoint = config.minioEndpoint;
+    awsRegion = Regions.fromName(config.awsRegion);
     this.bucketName = cloudBucketName;
 
     // Start the counter with one because this class has a reference to it

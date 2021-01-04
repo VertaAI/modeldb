@@ -1,13 +1,13 @@
 package ai.verta.modeldb.batchProcess;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
@@ -38,13 +38,9 @@ public class OwnerRoleBindingUtils {
   private static RoleService roleService;
 
   public static void execute() {
-    App app = App.getInstance();
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      app.setAuthServerHost(app.getAuthServerHost());
-      app.setAuthServerPort(app.getAuthServerPort());
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
+    if (Config.getInstance().hasAuth()) {
+      authService = AuthServiceUtils.FromConfig(Config.getInstance());
+      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
       return;

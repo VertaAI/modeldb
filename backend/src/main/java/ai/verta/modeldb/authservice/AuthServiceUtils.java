@@ -1,19 +1,24 @@
 package ai.verta.modeldb.authservice;
 
-import ai.verta.modeldb.App;
+import ai.verta.modeldb.config.Config;
 
 public class AuthServiceUtils extends ai.verta.modeldb.common.authservice.AuthServiceUtils {
-  public AuthServiceUtils() {
-    this(App.getInstance());
+  public static ai.verta.modeldb.common.authservice.AuthService FromConfig(Config config) {
+    if (!config.hasAuth()) return new PublicAuthServiceUtils();
+    else return new AuthServiceUtils();
   }
 
-  private AuthServiceUtils(App app) {
+  public AuthServiceUtils() {
+    this(Config.getInstance());
+  }
+
+  private AuthServiceUtils(Config config) {
     super(
-        app.getAuthServerHost(),
-        app.getAuthServerPort(),
-        app.getServiceUserEmail(),
-        app.getServiceUserDevKey(),
-        app.getRequestTimeout(),
+        config.authService.host,
+        config.authService.port,
+        config.mdb_service_user.email,
+        config.mdb_service_user.devKey,
+        config.grpcServer.requestTimeout,
         AuthInterceptor.METADATA_INFO);
   }
 }

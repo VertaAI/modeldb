@@ -104,7 +104,6 @@ public class ProjectTest {
     Map<String, Object> propertiesMap =
         ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
     Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-    Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
 
     app = App.getInstance();
     // Set user credentials to App class
@@ -125,6 +124,7 @@ public class ProjectTest {
     }
 
     ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
+    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
     App.initializeServicesBaseOnDataBase(
         serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
     serverBuilder.intercept(new AuthInterceptor());
@@ -2043,7 +2043,7 @@ public class ProjectTest {
       } catch (StatusRuntimeException e) {
         Status status = Status.fromThrowable(e);
         LOGGER.info("Error Code : " + status.getCode() + " Error : " + status.getDescription());
-        assertEquals(Status.ABORTED.getCode(), status.getCode());
+        assertEquals(Status.INTERNAL.getCode(), status.getCode());
       }
 
       String shortName = "project-sprt_app";

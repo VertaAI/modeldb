@@ -1,10 +1,12 @@
 package ai.verta.modeldb.versioning;
 
+import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
+
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.*;
+import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.GetDatasetById;
@@ -32,12 +34,10 @@ import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
-import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status.Code;
-import io.grpc.StatusRuntimeException;
-import io.grpc.protobuf.StatusProto;
 import java.security.NoSuchAlgorithmException;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.persistence.criteria.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -63,14 +64,6 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-
-import javax.persistence.criteria.*;
-import java.security.NoSuchAlgorithmException;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
 
 public class RepositoryDAORdbImpl implements RepositoryDAO {
 
@@ -1430,6 +1423,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           LOGGER.info(ex.getMessage());
           return emptyPaginationDTO;
         }
+        throw ex;
       }
 
       finalPredicatesList.add(builder.equal(repositoryRoot.get(ModelDBConstants.DELETED), false));

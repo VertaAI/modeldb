@@ -4,7 +4,6 @@ import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
@@ -15,6 +14,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.exceptions.InternalErrorException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -26,29 +26,34 @@ import com.google.protobuf.GeneratedMessageV3;
 import com.google.rpc.Code;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleServiceUtils
     implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
 
-  public RoleServiceUtils(AuthService authService) {
-    this(App.getInstance(), authService);
+  public static ai.verta.modeldb.authservice.RoleService FromConfig(
+      Config config, AuthService authService) {
+    if (!config.hasAuth()) return new PublicRoleServiceUtils(authService);
+    else return new RoleServiceUtils(authService);
   }
 
-  private RoleServiceUtils(App app, AuthService authService) {
+  public RoleServiceUtils(AuthService authService) {
+    this(Config.getInstance(), authService);
+  }
+
+  private RoleServiceUtils(Config config, AuthService authService) {
     super(
         authService,
-        app.getAuthServerHost(),
-        app.getAuthServerPort(),
-        app.getServiceUserEmail(),
-        app.getServiceUserDevKey(),
-        app.getRequestTimeout(),
+        config.authService.host,
+        config.authService.port,
+        config.mdb_service_user.email,
+        config.mdb_service_user.devKey,
+        config.grpcServer.requestTimeout,
         AuthInterceptor.METADATA_INFO);
   }
 
