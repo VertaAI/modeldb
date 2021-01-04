@@ -8,5 +8,9 @@ public class TestConfig {
     if (database == null)
       throw new InvalidConfigException(base + ".database", Config.MISSING_REQUIRED);
     database.Validate(base + ".database");
+
+    if (Config.getInstance().hasAuth() && testUsers == null) {
+      throw new InvalidConfigException(base + ".testUsers", Config.MISSING_REQUIRED);
+    }
   }
 }

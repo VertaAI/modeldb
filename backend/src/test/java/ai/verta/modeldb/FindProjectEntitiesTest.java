@@ -9,13 +9,8 @@ import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStu
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UACServiceGrpc;
@@ -55,7 +50,7 @@ public class FindProjectEntitiesTest {
   private static InProcessChannelBuilder client1ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
-  private static App app;
+  private static Config config;
 
   // Project Entities
   private static Project project1;
@@ -88,44 +83,24 @@ public class FindProjectEntitiesTest {
   @SuppressWarnings("unchecked")
   @BeforeClass
   public static void setServerAndService() throws Exception {
+    config = Config.getInstance();
+    // Initialize services that we depend on
+    ServiceSet services = ServiceSet.fromConfig(config);
+    // Initialize data access
+    DAOSet daos = DAOSet.fromServices(services);
+    App.migrate(config);
 
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-
-    app = App.getInstance();
-    // Set user credentials to App class
-    app.setServiceUser(propertiesMap, app);
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
-    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
+    App.initializeBackendServices(serverBuilder, services, daos);
     serverBuilder.intercept(new AuthInterceptor());
 
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
+    if (config.test != null) {
+      authClientInterceptor = new AuthClientInterceptor(config.test);
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
     }
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       ManagedChannel authServiceChannel =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
@@ -134,8 +109,7 @@ public class FindProjectEntitiesTest {
 
     serverBuilder.build().start();
     ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
 
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
@@ -588,7 +562,7 @@ public class FindProjectEntitiesTest {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -2601,7 +2575,7 @@ public class FindProjectEntitiesTest {
   @Test
   public void findProjectsByFuzzyOwnerTest() {
     LOGGER.info("FindProjects by owner fuzzy search test start................................");
-    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+    if (!config.hasAuth()) {
       assertTrue(true);
       return;
     }

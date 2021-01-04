@@ -7,13 +7,9 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.CollaboratorServiceGrpc;
@@ -38,7 +34,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -70,8 +65,7 @@ public class CollaboratorTest {
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static InProcessChannelBuilder channelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static String authHost;
-  private static Integer authPort;
+  private static Config config;
   private static AuthClientInterceptor authClientInterceptor;
   private static AuthService authService;
   private static DeleteEntitiesCron deleteEntitiesCron;
@@ -79,44 +73,22 @@ public class CollaboratorTest {
   @SuppressWarnings("unchecked")
   @BeforeClass
   public static void setServerAndService() throws Exception {
+    config = Config.getInstance();
+    // Initialize services that we depend on
+    ServiceSet services = ServiceSet.fromConfig(config);
+    // Initialize data access
+    DAOSet daos = DAOSet.fromServices(services);
+    App.migrate(config);
 
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-
-    App app = App.getInstance();
-    // Set user credentials to App class
-    app.setServiceUser(propertiesMap, app);
-    authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-      authHost = authServiceHost;
-      authPort = authServicePort;
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
-    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
+    App.initializeBackendServices(serverBuilder, services, daos);
     serverBuilder.intercept(new AuthInterceptor());
 
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
+    if (config.test != null) {
+      authClientInterceptor = new AuthClientInterceptor(config.test);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
     }
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+    authService = services.authService;
+    deleteEntitiesCron = new DeleteEntitiesCron(authService, services.roleService, 1000);
   }
 
   @AfterClass
@@ -141,7 +113,7 @@ public class CollaboratorTest {
     grpcCleanup.register(serverBuilder.build().start());
     channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
     authServiceChannel =
-        ManagedChannelBuilder.forTarget(authHost + ":" + authPort)
+        ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
             .usePlaintext()
             .intercept(authClientInterceptor.getClient1AuthInterceptor())
             .build();

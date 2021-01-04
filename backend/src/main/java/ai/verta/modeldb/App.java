@@ -81,9 +81,6 @@ public class App implements ApplicationContextAware {
 
   private static App app = null;
 
-  // Control parameter for delayed shutdown
-  private Long shutdownTimeout;
-
   // metric for prometheus monitoring
   private static final Gauge up =
       Gauge.build()
@@ -108,8 +105,8 @@ public class App implements ApplicationContextAware {
 
   @Bean
   public GracefulShutdown gracefulShutdown() {
-    app = App.getInstance();
-    return new GracefulShutdown(app.shutdownTimeout);
+    Config config = Config.getInstance();
+    return new GracefulShutdown(config.springServer.shutdownTimeout);
   }
 
   @Bean
@@ -149,7 +146,7 @@ public class App implements ApplicationContextAware {
       ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
 
       LOGGER.info("Code migration starting");
-      ModelDBHibernateUtil.runMigration(config.database);
+      ModelDBHibernateUtil.runMigration(config);
       LOGGER.info("Code migration done");
 
       boolean runLiquibaseSeparate =
@@ -181,8 +178,6 @@ public class App implements ApplicationContextAware {
 
       // Configure server
       System.getProperties().put("server.port", config.springServer.port);
-
-      app.shutdownTimeout = config.springServer.shutdownTimeout;
 
       // Initialize services that we depend on
       ServiceSet services = ServiceSet.fromConfig(config);
@@ -268,7 +263,7 @@ public class App implements ApplicationContextAware {
     }
   }
 
-  private static void initializeBackendServices(
+  public static void initializeBackendServices(
       ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos) {
     wrapService(
         serverBuilder,

@@ -8,13 +8,8 @@ import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.S3DatasetBlob;
@@ -65,7 +60,7 @@ public class DatasetVersionTest {
   private static InProcessChannelBuilder client2ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
-  private static App app;
+  private static Config config;
   private static DeleteEntitiesCron deleteEntitiesCron;
 
   // all service stubs
@@ -87,46 +82,25 @@ public class DatasetVersionTest {
   @SuppressWarnings("unchecked")
   @BeforeClass
   public static void setServerAndService() throws Exception {
+    config = Config.getInstance();
+    // Initialize services that we depend on
+    ServiceSet services = ServiceSet.fromConfig(config);
+    // Initialize data access
+    DAOSet daos = DAOSet.fromServices(services);
+    App.migrate(config);
 
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-
-    app = App.getInstance();
-    // Set user credentials to App class
-    app.setServiceUser(propertiesMap, app);
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
-    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
+    App.initializeBackendServices(serverBuilder, services, daos);
     serverBuilder.intercept(new AuthInterceptor());
-    serverBuilder.build().start();
 
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
+    if (config.test != null) {
+      authClientInterceptor = new AuthClientInterceptor(config.test);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       ManagedChannel authServiceChannelClient1 =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
@@ -135,9 +109,9 @@ public class DatasetVersionTest {
 
     ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
 
+    serverBuilder.build().start();
     // Create all service blocking stub
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
     datasetVersionServiceStubClient2 = DatasetVersionServiceGrpc.newBlockingStub(client2Channel);
@@ -1149,7 +1123,7 @@ public class DatasetVersionTest {
   public void deleteDatasetVersionTest() {
     LOGGER.info("delete DatasetVersion by parent entities owner test start........");
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestUser(
               dataset.getId(),
@@ -1182,7 +1156,7 @@ public class DatasetVersionTest {
     DeleteDatasetVersions deleteDatasetVersionsRequest =
         DeleteDatasetVersions.newBuilder().addAllIds(datasetVersionIds).build();
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       try {
         datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
       } catch (StatusRuntimeException e) {

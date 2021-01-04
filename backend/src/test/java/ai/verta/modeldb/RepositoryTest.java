@@ -10,10 +10,7 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.Pagination;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.AddLabelsRequest;
@@ -21,8 +18,6 @@ import ai.verta.modeldb.metadata.DeleteLabelsRequest;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
@@ -87,7 +82,7 @@ public class RepositoryTest {
   private static InProcessChannelBuilder client2ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
-  private static App app;
+  private static Config config;
   private static DeleteEntitiesCron deleteEntitiesCron;
 
   private static VersioningServiceBlockingStub versioningServiceBlockingStub;
@@ -106,46 +101,26 @@ public class RepositoryTest {
   @SuppressWarnings("unchecked")
   @BeforeClass
   public static void setServerAndService() throws Exception {
+    config = Config.getInstance();
+    // Initialize services that we depend on
+    ServiceSet services = ServiceSet.fromConfig(config);
+    // Initialize data access
+    DAOSet daos = DAOSet.fromServices(services);
+    App.migrate(config);
 
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-
-    app = App.getInstance();
-    // Set user credentials to App class
-    app.setServiceUser(propertiesMap, app);
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
-    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
+    App.initializeBackendServices(serverBuilder, services, daos);
     serverBuilder.intercept(new AuthInterceptor());
     serverBuilder.build().start();
 
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
+    if (config.test != null) {
+      authClientInterceptor = new AuthClientInterceptor(config.test);
       channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       ManagedChannel authServiceChannelClient1 =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
@@ -157,8 +132,7 @@ public class RepositoryTest {
 
     ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
+    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
 
     // Create all service blocking stub
     versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
@@ -260,7 +234,7 @@ public class RepositoryTest {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -316,7 +290,7 @@ public class RepositoryTest {
         versioningServiceBlockingStub.createRepository(setRepository);
         Assert.fail();
       } catch (StatusRuntimeException e) {
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           assertEquals(Status.PERMISSION_DENIED.getCode(), e.getStatus().getCode());
         } else {
           assertEquals(Status.ALREADY_EXISTS.getCode(), e.getStatus().getCode());
@@ -329,7 +303,7 @@ public class RepositoryTest {
                 .setRepository(
                     Repository.newBuilder().setName("Repo-updated-name-" + new Date().getTime()))
                 .build());
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
@@ -340,7 +314,7 @@ public class RepositoryTest {
             GetRepositoryRequest.newBuilder()
                 .setId(RepositoryIdentification.newBuilder().setRepoId(id))
                 .build());
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
@@ -353,14 +327,14 @@ public class RepositoryTest {
               .build();
       try {
         versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
       }
 
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (config.hasAuth()) {
         DeleteRepositoryRequest.Response deleteResult =
             versioningServiceBlockingStub.deleteRepository(deleteRepository);
         Assert.assertTrue(deleteResult.getStatus());
@@ -429,7 +403,7 @@ public class RepositoryTest {
         "Repository name not match with expected repository name",
         repository.getName(),
         getByNameResult.getRepository().getName());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       UserInfo userInfo =
           uacServiceStub.getUser(
               GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
@@ -536,7 +510,7 @@ public class RepositoryTest {
         "Repository name not match with expected repository name",
         repository.getName(),
         getByNameResult.getRepository().getName());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       UserInfo userInfo =
           uacServiceStub.getUser(
               GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
@@ -847,7 +821,7 @@ public class RepositoryTest {
         assertTrue(status.getDescription().contains(": tags"));
       }
 
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (config.hasAuth()) {
         findRepositoriesRequest =
             FindRepositories.newBuilder()
                 .addPredicates(
@@ -929,7 +903,7 @@ public class RepositoryTest {
   @Test
   public void findRepositoriesByFuzzyOwnerTest() {
     LOGGER.info("FindRepositories by owner fuzzy search test start ...");
-    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+    if (!config.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -1009,7 +983,7 @@ public class RepositoryTest {
   @Test
   public void findRepositoriesByOwnerArrWithInOperatorTest() {
     LOGGER.info("FindRepositories by owner fuzzy search test start ...");
-    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+    if (!config.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -1248,7 +1222,7 @@ public class RepositoryTest {
   @Test
   public void findRepositoriesFoSharedUserTest() {
     LOGGER.info("FindRepositories by owner fuzzy search test start ....");
-    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+    if (!config.hasAuth()) {
       assertTrue(true);
       return;
     }

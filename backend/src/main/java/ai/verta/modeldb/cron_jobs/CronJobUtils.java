@@ -1,6 +1,5 @@
 package ai.verta.modeldb.cron_jobs;
 
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
@@ -24,7 +23,6 @@ public class CronJobUtils {
       RoleService roleService,
       ArtifactStoreService artifactStoreService) {
 
-    App app = App.getInstance();
     LOGGER.info("Enter in CronJobUtils: initializeBasedOnConfig()");
     for (Map.Entry<String, CronJobConfig> cronJob : config.cron_job.entrySet()) {
       TimerTask task = null;

@@ -1,5 +1,6 @@
 package ai.verta.modeldb;
 
+import ai.verta.modeldb.config.TestConfig;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -19,8 +20,8 @@ public class AuthClientInterceptor {
   private Client1AuthInterceptor client1AuthInterceptor;
   private Client2AuthInterceptor client2AuthInterceptor;
 
-  public AuthClientInterceptor(Map<String, Object> testPropMap) {
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
+  public AuthClientInterceptor(TestConfig testConfig) {
+    Map<String, Object> testUerPropMap = (Map<String, Object>) testConfig.testUsers;
     Map<String, Object> primaryUserPropMap =
         (Map<String, Object>) testUerPropMap.get("primaryUser");
     Map<String, Object> secondaryUserPropMap =

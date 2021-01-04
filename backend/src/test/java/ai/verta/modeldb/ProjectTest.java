@@ -12,11 +12,8 @@ import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStu
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
@@ -60,16 +57,16 @@ public class ProjectTest {
 
   private static final Logger LOGGER = LogManager.getLogger(ProjectTest.class);
 
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
+  private static final String serverName = InProcessServerBuilder.generateName();
+  private static final InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client1ChannelBuilder =
+  private static final InProcessChannelBuilder client1ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client2ChannelBuilder =
+  private static final InProcessChannelBuilder client2ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
   private static AuthClientInterceptor authClientInterceptor;
 
-  private static App app;
+  private static Config config;
   private static DeleteEntitiesCron deleteEntitiesCron;
 
   // Project Entities
@@ -100,45 +97,25 @@ public class ProjectTest {
   @SuppressWarnings("unchecked")
   @BeforeClass
   public static void setServerAndService() throws Exception {
+    config = Config.getInstance();
+    // Initialize services that we depend on
+    ServiceSet services = ServiceSet.fromConfig(config);
+    // Initialize data access
+    DAOSet daos = DAOSet.fromServices(services);
+    App.migrate(config);
 
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-
-    app = App.getInstance();
-    // Set user credentials to App class
-    app.setServiceUser(propertiesMap, app);
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
-    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
+    App.initializeBackendServices(serverBuilder, services, daos);
     serverBuilder.intercept(new AuthInterceptor());
 
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
+    if (config.test != null) {
+      authClientInterceptor = new AuthClientInterceptor(config.test);
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.authService != null) {
       ManagedChannel authServiceChannel =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
@@ -148,7 +125,7 @@ public class ProjectTest {
       collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
       ManagedChannel authServiceChannelClient2 =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
+          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
               .usePlaintext()
               .intercept(authClientInterceptor.getClient2AuthInterceptor())
               .build();
@@ -158,7 +135,7 @@ public class ProjectTest {
     serverBuilder.build().start();
     ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 1000);
+    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
 
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
@@ -326,7 +303,7 @@ public class ProjectTest {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -1410,7 +1387,7 @@ public class ProjectTest {
         assertEquals("Shared project name not match", project.getName(), sharedProject.getName());
       }
 
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (config.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorTest.addCollaboratorRequestProject(
                 project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -1494,7 +1471,7 @@ public class ProjectTest {
   @Test
   public void k_getProjectByNameWithWorkspace() {
     LOGGER.info("Get Project by name with workspace test start................................");
-    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+    if (!config.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -2274,7 +2251,7 @@ public class ProjectTest {
 
         // Create two collaborator for above project
         // For Collaborator1
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           AddCollaboratorRequest addCollaboratorRequest =
               CollaboratorTest.addCollaboratorRequestProjectInterceptor(
                   project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -2314,7 +2291,7 @@ public class ProjectTest {
         GetExperimentsInProject getExperiment =
             GetExperimentsInProject.newBuilder().setProjectId(project.getId()).build();
         experimentServiceStub.getExperimentsInProject(getExperiment);
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           fail();
         }
       } catch (StatusRuntimeException ex) {
@@ -2327,7 +2304,7 @@ public class ProjectTest {
             GetExperimentRunsInProject.newBuilder().setProjectId(project.getId()).build();
         GetExperimentRunsInProject.Response runResponse =
             experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           assertEquals(0, runResponse.getExperimentRunsCount());
           assertEquals(0, runResponse.getTotalRecords());
         }
@@ -2342,7 +2319,7 @@ public class ProjectTest {
       GetComments.Response getCommentsResponse;
       try {
         commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           fail();
         }
       } catch (StatusRuntimeException e) {
@@ -2359,7 +2336,7 @@ public class ProjectTest {
       }
 
       // Start cross-checking for project collaborator
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (config.hasAuth()) {
         GetCollaborator getCollaboratorRequest =
             GetCollaborator.newBuilder().setEntityId(project.getId()).build();
         try {
@@ -2448,7 +2425,7 @@ public class ProjectTest {
 
           // Create two collaborator for above project
           // For Collaborator1
-          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          if (config.hasAuth()) {
             AddCollaboratorRequest addCollaboratorRequest =
                 CollaboratorTest.addCollaboratorRequestProjectInterceptor(
                     project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -2488,7 +2465,7 @@ public class ProjectTest {
           GetExperimentsInProject getExperiment =
               GetExperimentsInProject.newBuilder().setProjectId(project.getId()).build();
           experimentServiceStub.getExperimentsInProject(getExperiment);
-          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          if (config.hasAuth()) {
             fail();
           }
         } catch (StatusRuntimeException ex) {
@@ -2501,9 +2478,7 @@ public class ProjectTest {
               GetExperimentRunsInProject.newBuilder().setProjectId(project.getId()).build();
           GetExperimentRunsInProject.Response getResponse =
               experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
-          if (app.getAuthServerHost() != null
-              && app.getAuthServerPort() != null
-              && getResponse.getExperimentRunsCount() > 0) {
+          if (config.hasAuth() && getResponse.getExperimentRunsCount() > 0) {
             fail();
           }
         } catch (StatusRuntimeException e) {
@@ -2515,7 +2490,7 @@ public class ProjectTest {
         getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
         try {
           commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          if (config.hasAuth()) {
             fail();
           }
         } catch (StatusRuntimeException e) {
@@ -2526,7 +2501,7 @@ public class ProjectTest {
         getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
         try {
           commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-          if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+          if (config.hasAuth()) {
             fail();
           }
         } catch (StatusRuntimeException e) {
@@ -2534,7 +2509,7 @@ public class ProjectTest {
         }
 
         // Start cross-checking for project collaborator
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           GetCollaborator getCollaboratorRequest =
               GetCollaborator.newBuilder().setEntityId(project.getId()).build();
           try {
@@ -2983,7 +2958,7 @@ public class ProjectTest {
   public void createProjectWithGlobalSharingOrganization() {
     LOGGER.info("Global organization Project test start................................");
 
-    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+    if (!config.hasAuth()) {
       Assert.assertTrue(true);
       return;
     }
