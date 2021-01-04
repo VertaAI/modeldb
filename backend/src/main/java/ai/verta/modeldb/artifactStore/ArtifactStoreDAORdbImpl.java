@@ -41,7 +41,7 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
   public Response getUrlForArtifactMultipart(
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
     try {
-      if (App.getInstance().getTrialEnabled()) {
+      if (config.trial != null) {
         return artifactStoreService.generatePresignedUrlForTrial(
             s3Key, method, partNumber, uploadId);
       } else {
