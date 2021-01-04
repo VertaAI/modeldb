@@ -17,10 +17,8 @@ import org.apache.logging.log4j.Logger;
 
 public class CronJobUtils {
   private static final Logger LOGGER = LogManager.getLogger(CronJobUtils.class);
-  public static Integer updateParentTimestampFrequency = 60;
-  public static Integer deleteEntitiesFrequency = 60;
 
-  public static void initializeBasedOnConfig(
+  public static void initializeCronJobs(
       Config config,
       AuthService authService,
       RoleService roleService,
@@ -33,8 +31,7 @@ public class CronJobUtils {
       if (cronJob.getKey().equals(ModelDBConstants.UPDATE_PARENT_TIMESTAMP)) {
         task = new ParentTimestampUpdateCron(cronJob.getValue().record_update_limit);
       } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
-          && ((app.getServiceUserEmail() != null && app.getServiceUserDevKey() != null)
-              || !roleService.IsImplemented())) {
+          && (config.hasServiceAccount() || !roleService.IsImplemented())) {
         task =
             new DeleteEntitiesCron(
                 authService, roleService, cronJob.getValue().record_update_limit);
@@ -45,11 +42,10 @@ public class CronJobUtils {
             new PopulateEnvironmentInRunCron(
                 artifactStoreService, cronJob.getValue().record_update_limit);
       } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_AUDIT_LOGS)
-          && (app.getServiceUserEmail() != null && app.getServiceUserDevKey() != null)) {
+          && config.hasServiceAccount()) {
         task = new AuditLogsCron(cronJob.getValue().record_update_limit);
       } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
-          && ((app.getServiceUserEmail() != null && app.getServiceUserDevKey() != null)
-              || !roleService.IsImplemented())) {
+          && (config.hasServiceAccount() || !roleService.IsImplemented())) {
         task = new CleanUpEntitiesCron(roleService, cronJob.getValue().record_update_limit);
       } else {
         LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());

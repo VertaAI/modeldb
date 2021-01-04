@@ -1,49 +1,23 @@
 package ai.verta.modeldb;
 
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
-import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
-import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
-import ai.verta.modeldb.audit_log.AuditLogLocalDAODisabled;
-import ai.verta.modeldb.audit_log.AuditLogLocalDAORdbImpl;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.comment.CommentDAO;
-import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
-import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.config.DatabaseConfig;
 import ai.verta.modeldb.config.InvalidConfigException;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
-import ai.verta.modeldb.dataset.DatasetDAO;
-import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAORdbImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
 import ai.verta.modeldb.exceptions.ModelDBException;
-import ai.verta.modeldb.experiment.ExperimentDAO;
-import ai.verta.modeldb.experiment.ExperimentDAORdbImpl;
 import ai.verta.modeldb.experiment.ExperimentServiceImpl;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunServiceImpl;
 import ai.verta.modeldb.health.HealthServiceImpl;
 import ai.verta.modeldb.health.HealthStatusManager;
-import ai.verta.modeldb.lineage.LineageDAO;
-import ai.verta.modeldb.lineage.LineageDAORdbImpl;
 import ai.verta.modeldb.lineage.LineageServiceImpl;
-import ai.verta.modeldb.metadata.MetadataDAO;
-import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
-import ai.verta.modeldb.project.ProjectDAO;
-import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.project.ProjectServiceImpl;
 import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -61,6 +35,14 @@ import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Optional;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
@@ -75,15 +57,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
 @EnableAutoConfiguration
@@ -92,8 +65,7 @@ import java.util.logging.Level;
 @ComponentScan(basePackages = "${scan.packages}, ai.verta.modeldb.health")
 @SuppressWarnings("unchecked")
 public class App implements ApplicationContextAware {
-
-  private ApplicationContext applicationContext;
+  public ApplicationContext applicationContext;
 
   /**
    * Shut down the spring boot server
@@ -109,27 +81,8 @@ public class App implements ApplicationContextAware {
 
   private static App app = null;
 
-  // Over all map of properties
-  private Map<String, Object> propertiesMap;
-
-  // project which can be use for deep copying on user login
-  private String starterProjectID = null;
-
-  // Service Account details
-  private String serviceUserEmail = null;
-  private String serviceUserDevKey = null;
-
   // Control parameter for delayed shutdown
   private Long shutdownTimeout;
-
-  private boolean populateConnectionsBasedOnPrivileges = false;
-  private RoleService roleService;
-
-  // Trial flags
-  private Boolean trialEnabled = false;
-  private Integer maxArtifactSizeMB;
-  private Integer maxArtifactPerRun;
-  private Integer maxExperimentRunPerWorkspace;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -182,6 +135,37 @@ public class App implements ApplicationContextAware {
     return app;
   }
 
+  public static boolean migrate(Config config)
+      throws SQLException, LiquibaseException, ClassNotFoundException, InterruptedException {
+    boolean liquibaseMigration =
+        Boolean.parseBoolean(
+            Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
+                .orElse("false"));
+    if (liquibaseMigration) {
+      LOGGER.info("Liquibase migration starting");
+      ModelDBHibernateUtil.runLiquibaseMigration(config.database);
+      LOGGER.info("Liquibase migration done");
+
+      ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
+
+      LOGGER.info("Code migration starting");
+      ModelDBHibernateUtil.runMigration(config.database);
+      LOGGER.info("Code migration done");
+
+      boolean runLiquibaseSeparate =
+          Boolean.parseBoolean(
+              Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))
+                  .orElse("false"));
+      if (runLiquibaseSeparate) {
+        return true;
+      }
+    }
+
+    ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
+
+    return false;
+  }
+
   public static void main(String[] args) {
     try {
       LOGGER.info("Backend server starting.");
@@ -189,46 +173,39 @@ public class App implements ApplicationContextAware {
           java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
       logger.setLevel(Level.WARNING);
       // --------------- Start reading properties --------------------------
-      Map<String, Object> propertiesMap =
-          ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
       App app = App.getInstance();
-      app.propertiesMap = propertiesMap;
       Config config = Config.getInstance();
-      // --------------- End reading properties --------------------------
 
       // Initialize database configuration and maybe run migration
-      boolean liquibaseMigration =
-          Boolean.parseBoolean(
-              Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
-                  .orElse("false"));
-      if (liquibaseMigration) {
-        LOGGER.info("Liquibase migration starting");
-        ModelDBHibernateUtil.runLiquibaseMigration(config.database);
-        LOGGER.info("Liquibase migration done");
+      if (migrate(config)) return;
 
-        ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
+      // Configure server
+      System.getProperties().put("server.port", config.springServer.port);
 
-        LOGGER.info("Code migration starting");
-        ModelDBHibernateUtil.runMigration(config.database);
-        LOGGER.info("Code migration done");
+      app.shutdownTimeout = config.springServer.shutdownTimeout;
 
-        boolean runLiquibaseSeparate =
-            Boolean.parseBoolean(
-                Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))
-                    .orElse("false"));
-        if (runLiquibaseSeparate) {
-          return;
-        }
-      }
+      // Initialize services that we depend on
+      ServiceSet services = ServiceSet.fromConfig(config);
 
-      ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
+      // Initialize data access
+      DAOSet daos = DAOSet.fromServices(services);
 
-      // --------------- Start Initialize modelDB gRPC server --------------------------
+      // Initialize telemetry
+      initializeTelemetryBasedOnConfig(config);
+
+      // Initialize cron jobs
+      CronJobUtils.initializeCronJobs(
+          config, services.authService, services.roleService, services.artifactStoreService);
+
+      // Initialize grpc server
       ServerBuilder<?> serverBuilder = ServerBuilder.forPort(config.grpcServer.port);
 
-      // Set user credentials to App class
-      app.setServiceUser(propertiesMap, app);
+      // Initialize health check
+      HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
+      serverBuilder.addService(healthStatusManager.getHealthService());
+      healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
+      // Add middleware/interceptors
       if (config.enableTrace) {
         Tracer tracer = Configuration.fromEnv().getTracer();
         TracingServerInterceptor tracingInterceptor =
@@ -239,23 +216,15 @@ public class App implements ApplicationContextAware {
         TracingDriver.setInterceptorProperty(true);
         serverBuilder.intercept(tracingInterceptor);
       }
-      AuthService authService = AuthServiceUtils.FromConfig(config);
-      app.roleService = RoleServiceUtils.FromConfig(config, authService);
-
-      HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
-      serverBuilder.addService(healthStatusManager.getHealthService());
-      healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
-
-      // ----------------- Start Initialize database & modelDB services with DAO ---------
-      initializeServicesBaseOnDataBase(
-          serverBuilder, config, propertiesMap, authService, app.roleService);
-      // ----------------- Finish Initialize database & modelDB services with DAO --------
 
       serverBuilder.intercept(new MonitoringInterceptor());
       serverBuilder.intercept(new AuthInterceptor());
 
+      // Add APIs
+      initializeBackendServices(serverBuilder, services, daos);
+
+      // Create the server
       Server server = serverBuilder.build();
-      // --------------- Finish Initialize modelDB gRPC server --------------------------
 
       // --------------- Start modelDB gRPC server --------------------------
       server.start();
@@ -299,263 +268,105 @@ public class App implements ApplicationContextAware {
     }
   }
 
-  public static void initializeServicesBaseOnDataBase(
-      ServerBuilder<?> serverBuilder,
-      Config config,
-      Map<String, Object> propertiesMap,
-      AuthService authService,
-      RoleService roleService)
-      throws ModelDBException, IOException, InvalidConfigException {
-
-    App app = App.getInstance();
-    Map<String, Object> trialMap =
-        (Map<String, Object>)
-            propertiesMap.getOrDefault(ModelDBConstants.TRIAL, Collections.emptyMap());
-    app.trialEnabled = (Boolean) trialMap.getOrDefault(ModelDBConstants.ENABLE, false);
-    if (app.trialEnabled) {
-      Map<String, Object> restrictionsMap =
-          (Map<String, Object>)
-              trialMap.getOrDefault(ModelDBConstants.RESTRICTIONS, Collections.emptyMap());
-      app.maxArtifactSizeMB =
-          (Integer) restrictionsMap.getOrDefault(ModelDBConstants.MAX_ARTIFACT_SIZE_MB, null);
-      app.maxArtifactPerRun =
-          (Integer) restrictionsMap.getOrDefault(ModelDBConstants.MAX_ARTIFACT_PER_RUN, null);
-      app.maxExperimentRunPerWorkspace =
-          (Integer)
-              restrictionsMap.getOrDefault(ModelDBConstants.MAX_EXPERIMENT_RUN_PER_WORKSPACE, null);
-    }
-
-    app.populateConnectionsBasedOnPrivileges =
-        (boolean)
-            propertiesMap.getOrDefault(
-                ModelDBConstants.POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES, false);
-
-    Map<String, Object> starterProjectDetail =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.STARTER_PROJECT);
-    if (starterProjectDetail != null) {
-      app.starterProjectID = (String) starterProjectDetail.get(ModelDBConstants.STARTER_PROJECT_ID);
-    }
-    // --------------- Start Initialize Cloud Config ---------------------------------------------
-    Map<String, Object> springServerMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.SPRING_SERVER);
-    if (springServerMap == null) {
-      throw new ModelDBException("springServer configuration not found in properties.");
-    }
-
-    Integer springServerPort = (Integer) springServerMap.get(ModelDBConstants.PORT);
-    LOGGER.trace("spring server port number found");
-    System.getProperties().put("server.port", String.valueOf(springServerPort));
-
-    Object object = springServerMap.get(ModelDBConstants.SHUTDOWN_TIMEOUT);
-    if (object instanceof Integer) {
-      app.shutdownTimeout = ((Integer) object).longValue();
-    } else {
-      app.shutdownTimeout = ModelDBConstants.DEFAULT_SHUTDOWN_TIMEOUT;
-    }
-
-    ArtifactStoreService artifactStoreService = null;
-    if (config.artifactStoreConfig.enabled) {
-      artifactStoreService = initializeArtifactStore(config);
-    } else {
-      System.getProperties().put("scan.packages", "dummyPackageName");
-      SpringApplication.run(App.class);
-    }
-
-    HealthStatusManager healthStatusManager =
-        new HealthStatusManager(app.applicationContext.getBean(HealthServiceImpl.class));
-    healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
-
-    initializeRelationalDBServices(serverBuilder, artifactStoreService, authService, roleService);
-
-    initializeTelemetryBasedOnConfig(propertiesMap);
-
-    // Initialize cron jobs
-    CronJobUtils.initializeBasedOnConfig(config, authService, roleService, artifactStoreService);
-  }
-
-  public void setServiceUser(Map<String, Object> propertiesMap, App app) {
-    Map<String, Object> serviceUserDetailMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.MDB_SERVICE_USER);
-    if (serviceUserDetailMap != null) {
-      if (serviceUserDetailMap.containsKey(ModelDBConstants.EMAIL)) {
-        app.serviceUserEmail = (String) serviceUserDetailMap.get(ModelDBConstants.EMAIL);
-        LOGGER.trace("service user email found");
-      }
-      if (serviceUserDetailMap.containsKey(ModelDBConstants.DEV_KEY)) {
-        app.serviceUserDevKey = (String) serviceUserDetailMap.get(ModelDBConstants.DEV_KEY);
-        LOGGER.trace("service user devKey found");
-      }
-    }
-  }
-
-  private static void initializeRelationalDBServices(
-      ServerBuilder<?> serverBuilder,
-      ArtifactStoreService artifactStoreService,
-      AuthService authService,
-      RoleService roleService) {
-
-    // --------------- Start Initialize DAO --------------------------
-    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
-    CommitDAO commitDAO = new CommitDAORdbImpl(authService, roleService);
-    RepositoryDAO repositoryDAO =
-        new RepositoryDAORdbImpl(authService, roleService, commitDAO, metadataDAO);
-    BlobDAO blobDAO = new BlobDAORdbImpl(authService, roleService);
-
-    ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, roleService);
-    ExperimentRunDAO experimentRunDAO =
-        new ExperimentRunDAORdbImpl(
-            authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
-    ProjectDAO projectDAO =
-        new ProjectDAORdbImpl(authService, roleService, experimentDAO, experimentRunDAO);
-    ArtifactStoreDAO artifactStoreDAO;
-    if (artifactStoreService != null) {
-      artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
-    } else {
-      artifactStoreDAO = new ArtifactStoreDAODisabled();
-    }
-
-    CommentDAO commentDAO = new CommentDAORdbImpl(authService);
-    DatasetDAO datasetDAO = new DatasetDAORdbImpl(authService, roleService);
-    LineageDAO lineageDAO = new LineageDAORdbImpl();
-    DatasetVersionDAO datasetVersionDAO = new DatasetVersionDAORdbImpl(authService, roleService);
-    AuditLogLocalDAO auditLogLocalDAO;
-    if (authService instanceof PublicAuthServiceUtils) {
-      auditLogLocalDAO = new AuditLogLocalDAODisabled();
-    } else {
-      auditLogLocalDAO = new AuditLogLocalDAORdbImpl();
-    }
-    LOGGER.info("All DAO initialized");
-    // --------------- Finish Initialize DAO --------------------------
-    initializeBackendServices(
-        serverBuilder,
-        projectDAO,
-        experimentDAO,
-        experimentRunDAO,
-        datasetDAO,
-        datasetVersionDAO,
-        artifactStoreDAO,
-        commentDAO,
-        lineageDAO,
-        metadataDAO,
-        repositoryDAO,
-        commitDAO,
-        blobDAO,
-        auditLogLocalDAO,
-        authService,
-        roleService);
-  }
-
   private static void initializeBackendServices(
-      ServerBuilder<?> serverBuilder,
-      ProjectDAO projectDAO,
-      ExperimentDAO experimentDAO,
-      ExperimentRunDAO experimentRunDAO,
-      DatasetDAO datasetDAO,
-      DatasetVersionDAO datasetVersionDAO,
-      ArtifactStoreDAO artifactStoreDAO,
-      CommentDAO commentDAO,
-      LineageDAO lineageDAO,
-      MetadataDAO metadataDAO,
-      RepositoryDAO repositoryDAO,
-      CommitDAO commitDAO,
-      BlobDAO blobDAO,
-      AuditLogLocalDAO auditLogLocalDAO,
-      AuthService authService,
-      RoleService roleService) {
+      ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos) {
     wrapService(
         serverBuilder,
         new ProjectServiceImpl(
-            authService,
-            roleService,
-            projectDAO,
-            experimentRunDAO,
-            artifactStoreDAO,
-            auditLogLocalDAO));
+            services.authService,
+            services.roleService,
+            daos.projectDAO,
+            daos.experimentRunDAO,
+            daos.artifactStoreDAO,
+            daos.auditLogLocalDAO));
     LOGGER.trace("Project serviceImpl initialized");
     wrapService(
         serverBuilder,
         new ExperimentServiceImpl(
-            authService,
-            roleService,
-            experimentDAO,
-            projectDAO,
-            artifactStoreDAO,
-            auditLogLocalDAO));
+            services.authService,
+            services.roleService,
+            daos.experimentDAO,
+            daos.projectDAO,
+            daos.artifactStoreDAO,
+            daos.auditLogLocalDAO));
     LOGGER.trace("Experiment serviceImpl initialized");
     wrapService(
         serverBuilder,
         new ExperimentRunServiceImpl(
-            authService,
-            roleService,
-            experimentRunDAO,
-            projectDAO,
-            experimentDAO,
-            artifactStoreDAO,
-            datasetVersionDAO,
-            repositoryDAO,
-            commitDAO,
-            auditLogLocalDAO));
+            services.authService,
+            services.roleService,
+            daos.experimentRunDAO,
+            daos.projectDAO,
+            daos.experimentDAO,
+            daos.artifactStoreDAO,
+            daos.datasetVersionDAO,
+            daos.repositoryDAO,
+            daos.commitDAO,
+            daos.auditLogLocalDAO));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
     wrapService(
         serverBuilder,
-        new CommentServiceImpl(authService, commentDAO, experimentRunDAO, roleService));
+        new CommentServiceImpl(
+            services.authService, daos.commentDAO, daos.experimentRunDAO, services.roleService));
     LOGGER.trace("Comment serviceImpl initialized");
     wrapService(
         serverBuilder,
         new DatasetServiceImpl(
-            authService,
-            roleService,
-            projectDAO,
-            experimentDAO,
-            experimentRunDAO,
-            repositoryDAO,
-            commitDAO,
-            metadataDAO,
-            auditLogLocalDAO));
+            services.authService,
+            services.roleService,
+            daos.projectDAO,
+            daos.experimentDAO,
+            daos.experimentRunDAO,
+            daos.repositoryDAO,
+            daos.commitDAO,
+            daos.metadataDAO,
+            daos.auditLogLocalDAO));
     LOGGER.trace("Dataset serviceImpl initialized");
     wrapService(
         serverBuilder,
         new DatasetVersionServiceImpl(
-            authService,
-            roleService,
-            repositoryDAO,
-            commitDAO,
-            blobDAO,
-            metadataDAO,
-            artifactStoreDAO,
-            auditLogLocalDAO));
+            services.authService,
+            services.roleService,
+            daos.repositoryDAO,
+            daos.commitDAO,
+            daos.blobDAO,
+            daos.metadataDAO,
+            daos.artifactStoreDAO,
+            daos.auditLogLocalDAO));
     LOGGER.trace("Dataset Version serviceImpl initialized");
     wrapService(
         serverBuilder,
         new AdvancedServiceImpl(
-            authService,
-            roleService,
-            projectDAO,
-            experimentRunDAO,
-            commentDAO,
-            experimentDAO,
-            artifactStoreDAO,
-            datasetDAO,
-            datasetVersionDAO));
+            services.authService,
+            services.roleService,
+            daos.projectDAO,
+            daos.experimentRunDAO,
+            daos.commentDAO,
+            daos.experimentDAO,
+            daos.artifactStoreDAO,
+            daos.datasetDAO,
+            daos.datasetVersionDAO));
     LOGGER.trace("Hydrated serviceImpl initialized");
-    wrapService(serverBuilder, new LineageServiceImpl(lineageDAO, experimentRunDAO, commitDAO));
+    wrapService(
+        serverBuilder,
+        new LineageServiceImpl(daos.lineageDAO, daos.experimentRunDAO, daos.commitDAO));
     LOGGER.trace("Lineage serviceImpl initialized");
 
     wrapService(
         serverBuilder,
         new VersioningServiceImpl(
-            authService,
-            roleService,
-            repositoryDAO,
-            commitDAO,
-            blobDAO,
-            projectDAO,
-            experimentDAO,
-            experimentRunDAO,
+            services.authService,
+            services.roleService,
+            daos.repositoryDAO,
+            daos.commitDAO,
+            daos.blobDAO,
+            daos.projectDAO,
+            daos.experimentDAO,
+            daos.experimentRunDAO,
             new FileHasher(),
-            artifactStoreDAO));
+            daos.artifactStoreDAO));
     LOGGER.trace("Versioning serviceImpl initialized");
-    wrapService(serverBuilder, new MetadataServiceImpl(metadataDAO));
+    wrapService(serverBuilder, new MetadataServiceImpl(daos.metadataDAO));
     LOGGER.trace("Metadata serviceImpl initialized");
     LOGGER.info("All services initialized and resolved dependency before server start");
   }
@@ -564,141 +375,16 @@ public class App implements ApplicationContextAware {
     serverBuilder.addService(bindableService);
   }
 
-  private static ArtifactStoreService initializeArtifactStore(Config config)
-      throws ModelDBException, IOException {
-
-    App app = App.getInstance();
-
-    // ------------- Start Initialize Cloud storage base on configuration ------------------
-    ArtifactStoreService artifactStoreService;
-
-    if (config.artifactStoreConfig.artifactEndpoint != null) {
-      System.getProperties()
-          .put(
-              "artifactEndpoint.storeArtifact",
-              config.artifactStoreConfig.artifactEndpoint.storeArtifact);
-      System.getProperties()
-          .put(
-              "artifactEndpoint.getArtifact",
-              config.artifactStoreConfig.artifactEndpoint.getArtifact);
-    }
-
-    if (config.artifactStoreConfig.NFS != null
-        && config.artifactStoreConfig.NFS.artifactEndpoint != null) {
-      System.getProperties()
-          .put(
-              "artifactEndpoint.storeArtifact",
-              config.artifactStoreConfig.NFS.artifactEndpoint.storeArtifact);
-      System.getProperties()
-          .put(
-              "artifactEndpoint.getArtifact",
-              config.artifactStoreConfig.NFS.artifactEndpoint.getArtifact);
-    }
-
-    switch (config.artifactStoreConfig.artifactStoreType) {
-      case "S3":
-        if (!config.artifactStoreConfig.S3.s3presignedURLEnabled) {
-          System.setProperty(
-              ModelDBConstants.CLOUD_BUCKET_NAME, config.artifactStoreConfig.S3.cloudBucketName);
-          System.getProperties()
-              .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
-          SpringApplication.run(App.class);
-          artifactStoreService = app.applicationContext.getBean(S3Service.class);
-        } else {
-          artifactStoreService = new S3Service(config.artifactStoreConfig.S3.cloudBucketName);
-          System.getProperties().put("scan.packages", "dummyPackageName");
-          SpringApplication.run(App.class);
-        }
-        break;
-      case "NFS":
-        String rootDir = config.artifactStoreConfig.NFS.nfsRootPath;
-        LOGGER.trace("NFS server root path {}", rootDir);
-
-        System.getProperties().put("file.upload-dir", rootDir);
-        System.getProperties()
-            .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
-        SpringApplication.run(App.class, new String[0]);
-
-        artifactStoreService = app.applicationContext.getBean(NFSService.class);
-        break;
-      default:
-        throw new ModelDBException("Configure valid artifact store name in config.yaml file.");
-    }
-    // ------------- Finish Initialize Cloud storage base on configuration ------------------
-
-    LOGGER.info(
-        "ArtifactStore service initialized and resolved storage dependency before server start");
-    return artifactStoreService;
-  }
-
-  public static void initializeTelemetryBasedOnConfig(Map<String, Object> propertiesMap)
+  public static void initializeTelemetryBasedOnConfig(Config config)
       throws FileNotFoundException, InvalidConfigException {
-    boolean optIn = true;
-    int frequency = 1;
-    String consumer = null;
-    if (propertiesMap.containsKey(ModelDBConstants.TELEMETRY)) {
-      Map<String, Object> telemetryMap =
-          (Map<String, Object>) propertiesMap.get(ModelDBConstants.TELEMETRY);
-      if (telemetryMap != null) {
-        optIn = (boolean) telemetryMap.getOrDefault(ModelDBConstants.OPT_IN, true);
-        frequency = (int) telemetryMap.getOrDefault(ModelDBConstants.TELEMENTRY_FREQUENCY, 1);
-        if (telemetryMap.containsKey(ModelDBConstants.TELEMETRY_CONSUMER)) {
-          consumer = (String) telemetryMap.get(ModelDBConstants.TELEMETRY_CONSUMER);
-        }
-      }
-    }
-
-    if (optIn) {
+    if (!config.telemetry.opt_out) {
       // creating an instance of task to be scheduled
-      TimerTask task = new TelemetryCron(consumer);
-      ModelDBUtils.scheduleTask(task, frequency, frequency, TimeUnit.HOURS);
+      TimerTask task = new TelemetryCron(config.telemetry.consumer);
+      ModelDBUtils.scheduleTask(
+          task, config.telemetry.frequency, config.telemetry.frequency, TimeUnit.HOURS);
       LOGGER.info("Telemetry scheduled successfully");
     } else {
       LOGGER.info("Telemetry opt out by user");
     }
-  }
-
-  public String getStarterProjectID() {
-    return starterProjectID;
-  }
-
-  public Map<String, Object> getPropertiesMap() {
-    return propertiesMap;
-  }
-
-  public String getServiceUserEmail() {
-    return serviceUserEmail;
-  }
-
-  public String getServiceUserDevKey() {
-    return serviceUserDevKey;
-  }
-
-  public void setRoleService(RoleService roleService) {
-    this.roleService = roleService;
-  }
-
-  public RoleService getRoleService() {
-    return roleService;
-  }
-
-  public boolean isPopulateConnectionsBasedOnPrivileges() {
-    return populateConnectionsBasedOnPrivileges;
-  }
-
-  public Boolean getTrialEnabled() {
-    return trialEnabled;
-  }
-
-  public Integer getMaxArtifactSizeMB() {
-    return maxArtifactSizeMB;
-  }
-
-  public Integer getMaxArtifactPerRun() {
-    return maxArtifactPerRun;
-  }
-
-  public Integer getMaxExperimentRunPerWorkspace() {
-    return maxExperimentRunPerWorkspace;
   }
 }

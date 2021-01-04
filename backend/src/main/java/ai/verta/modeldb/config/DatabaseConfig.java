@@ -1,6 +1,7 @@
 package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.ModelDBConstants;
+import java.util.List;
 
 public class DatabaseConfig {
   public String DBType;
@@ -12,6 +13,7 @@ public class DatabaseConfig {
   public Integer connectionTimeout = ModelDBConstants.CONNECTION_TIMEOUT_DEFAULT;
 
   public RdbConfig RdbConfiguration;
+  public List<MigrationConfig> migrations;
 
   public void Validate(String base) throws InvalidConfigException {
     if (DBType == null || DBType.isEmpty())
