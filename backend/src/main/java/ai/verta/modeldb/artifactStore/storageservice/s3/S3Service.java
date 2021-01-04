@@ -5,6 +5,7 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.HttpCodeToGRPCCode;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.exceptions.UnavailableException;
@@ -39,6 +40,7 @@ public class S3Service implements ArtifactStoreService {
   private S3Client s3Client;
   private String bucketName;
   private App app = App.getInstance();
+  private Config config = Config.getInstance();
 
   public S3Service(String cloudBucketName) throws ModelDBException, IOException {
     s3Client = new S3Client(cloudBucketName);
@@ -99,7 +101,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public GetUrlForArtifact.Response generatePresignedUrlForTrial(
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
-    if (app.isS3presignedURLEnabled()) {
+    if (config.artifactStoreConfig.S3.s3presignedURLEnabled) {
       if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
         return GetUrlForArtifact.Response.newBuilder()
             .setMultipartUploadOk(false)
@@ -107,10 +109,7 @@ public class S3Service implements ArtifactStoreService {
             .build();
       } else if (method.equalsIgnoreCase(ModelDBConstants.POST)
           || method.equalsIgnoreCase(ModelDBConstants.PUT)) {
-        int maxArtifactSize =
-            app.getMaxArtifactSizeMB() != null
-                ? app.getMaxArtifactSizeMB()
-                : ModelDBConstants.MAX_ARTIFACT_SIZE_DEFAULT;
+        int maxArtifactSize = config.trial.restrictions.max_artifact_size_MB;
         LOGGER.debug("bucketName " + bucketName);
         try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
           return GetUrlForArtifact.Response.newBuilder()
@@ -118,9 +117,9 @@ public class S3Service implements ArtifactStoreService {
               .setUrl(String.format("http://%s.s3.amazonaws.com", bucketName))
               .putAllFields(
                   TrialUtils.getBodyParameterMapForTrialPresignedURL(
-                      app,
                       client.getCredentials(),
                       bucketName,
+                      config.artifactStoreConfig.S3.awsRegion,
                       s3Key,
                       maxArtifactSize * 1024 * 1024))
               .build();
@@ -144,7 +143,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public String generatePresignedUrl(String s3Key, String method, long partNumber, String uploadId)
       throws ModelDBException {
-    if (app.isS3presignedURLEnabled()) {
+    if (config.artifactStoreConfig.S3.s3presignedURLEnabled) {
       return getS3PresignedUrl(s3Key, method, partNumber, uploadId);
     } else {
       return getPresignedUrlViaMDB(s3Key, method, partNumber, uploadId);
@@ -222,7 +221,8 @@ public class S3Service implements ArtifactStoreService {
       }
 
       // Validate Artifact size for trial case
-      TrialUtils.validateArtifactSizeForTrial(app, artifactPath, request.getContentLength());
+      TrialUtils.validateArtifactSizeForTrial(
+          config.trial, artifactPath, request.getContentLength());
 
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
         UploadPartRequest uploadRequest =
@@ -320,20 +320,20 @@ public class S3Service implements ArtifactStoreService {
       parameters.put("upload_id", uploadId);
       return getUploadUrl(
           parameters,
-          app.getArtifactStoreUrlProtocol(),
-          app.getStoreArtifactEndpoint(),
-          app.getPickArtifactStoreHostFromConfig(),
-          app.getArtifactStoreServerHost());
+          config.artifactStoreConfig.protocol,
+          config.artifactStoreConfig.artifactEndpoint.getArtifact,
+          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+          config.artifactStoreConfig.host);
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("S3Service - generatePresignedUrl - get url returned");
       String filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
       parameters.put(ModelDBConstants.FILENAME, filename);
       return getDownloadUrl(
           parameters,
-          app.getArtifactStoreUrlProtocol(),
-          app.getGetArtifactEndpoint(),
-          app.getPickArtifactStoreHostFromConfig(),
-          app.getArtifactStoreServerHost());
+          config.artifactStoreConfig.protocol,
+          config.artifactStoreConfig.artifactEndpoint.getArtifact,
+          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+          config.artifactStoreConfig.host);
     } else {
       String errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
       throw new InvalidArgumentException(errorMessage);
