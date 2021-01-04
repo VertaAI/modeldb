@@ -9,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -27,17 +26,10 @@ public class Config {
   public ServiceUserConfig mdb_service_user;
   public boolean populateConnectionsBasedOnPrivileges = false;
   public SpringServerConfig springServer;
+  public String starterProject;
+  public TelemetryConfig telemetry;
   public TestConfig test;
   public TrialConfig trial;
-
-  // FIXME
-
-  public Object artifactStore_grpcServer;
-
-  public Object telemetry;
-  public Object starterProject;
-  public Object migration;
-  public Object feature_flag;
 
   public static Config getInstance() throws InternalErrorException {
     if (config == null) {
@@ -80,6 +72,9 @@ public class Config {
 
     if (springServer == null) throw new InvalidConfigException("springServer", MISSING_REQUIRED);
     springServer.Validate("springServer");
+
+    if (telemetry == null) telemetry = new TelemetryConfig();
+    telemetry.Validate("telemetry");
 
     if (test != null) {
       test.Validate("test");
