@@ -56,7 +56,7 @@ public class Config {
   public void Validate() throws InvalidConfigException {
     if (artifactStoreConfig == null)
       throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
-    artifactStoreConfig.Validate("database");
+    artifactStoreConfig.Validate("artifactStoreConfig");
 
     if (authService != null) {
       authService.Validate("authService");
