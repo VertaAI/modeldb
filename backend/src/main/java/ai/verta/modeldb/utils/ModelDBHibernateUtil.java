@@ -1,13 +1,13 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.batchProcess.*;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.DatabaseConfig;
+import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.config.RdbConfig;
 import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
@@ -32,8 +32,6 @@ import com.google.common.base.Joiner;
 import io.grpc.health.v1.HealthCheckResponse;
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -561,109 +559,40 @@ public class ModelDBHibernateUtil {
    */
   @SuppressWarnings("unchecked")
   public static void runMigration(DatabaseConfig config)
-      throws ClassNotFoundException, ModelDBException {
+      throws ClassNotFoundException, ModelDBException, DatabaseException, SQLException {
     RdbConfig rdb = config.RdbConfiguration;
 
-    App app = App.getInstance();
-    Map<String, Map<String, Object>> migrationTypeMap =
-        (Map<String, Map<String, Object>>) app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
-    if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
-      new Thread(
-              () -> {
-                CommonUtils.registeredBackgroundUtilsCount();
-                int index = 0;
-                try {
-                  CompletableFuture<Boolean>[] completableFutures =
-                      new CompletableFuture[migrationTypeMap.size()];
-                  for (String migrationName : migrationTypeMap.keySet()) {
-                    Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
-                    if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
-                      if (migrationName.equals(
-                          ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION)) {
-                        // Manually migration for populate RoleBinding of experiment, experimentRun
-                        // &
-                        // datasetVersion owner
-                        CompletableFuture<Boolean> futureTask =
-                            CompletableFuture.supplyAsync(
-                                () -> {
-                                  OwnerRoleBindingUtils.execute();
-                                  return true;
-                                });
-                        completableFutures[index] = futureTask;
-                        index = index + 1;
-                      }
-                      if (migrationName.equals(
-                          ModelDBConstants.SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION)) {
-                        // Manual migration for populate RoleBinding of repository
-                        CompletableFuture<Boolean> futureTask =
-                            CompletableFuture.supplyAsync(
-                                () -> {
-                                  OwnerRoleBindingRepositoryUtils.execute();
-                                  return true;
-                                });
-                        completableFutures[index] = futureTask;
-                        index = index + 1;
-                      }
-                      if (migrationName.equals(ModelDBConstants.POPULATE_VERSION_MIGRATION)) {
-                        // Manual migration for populate RoleBinding of repository
-                        CompletableFuture<Boolean> futureTask =
-                            CompletableFuture.supplyAsync(
-                                () -> {
-                                  int recordUpdateLimit =
-                                      (int)
-                                          migrationDetailMap.getOrDefault(
-                                              ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-                                  PopulateVersionMigration.execute(recordUpdateLimit);
-                                  return true;
-                                });
-                        completableFutures[index] = futureTask;
-                        index = index + 1;
-                      }
-                      // add if here for the new migration type
-                    }
-                  }
-                  if (index > 0) {
-                    CompletableFuture<Void> combinedFuture =
-                        CompletableFuture.allOf(completableFutures);
-                    combinedFuture.get();
-                    LOGGER.info("Finished all the future tasks");
-                  }
-                } catch (InterruptedException | ExecutionException e) {
-                  LOGGER.warn(
-                      "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
-                } finally {
-                  CommonUtils.unregisteredBackgroundUtilsCount();
-                }
-              })
-          .start();
-
-      // Blocking migration
-      String migrationName = ModelDBConstants.DATASET_VERSIONING_MIGRATION;
-      if (migrationTypeMap.containsKey(migrationName)) {
-        Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
-        if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
-          try {
+    if (config.migrations != null) {
+      for (MigrationConfig migrationConfig : config.migrations) {
+        if (!migrationConfig.enabled) {
+          continue;
+        }
+        switch (migrationConfig.name) {
+          case ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION:
+            OwnerRoleBindingUtils.execute();
+            break;
+          case ModelDBConstants.SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION:
+            OwnerRoleBindingRepositoryUtils.execute();
+            break;
+          case ModelDBConstants.POPULATE_VERSION_MIGRATION:
+            PopulateVersionMigration.execute(migrationConfig.record_update_limit);
+            break;
+          case ModelDBConstants.DATASET_VERSIONING_MIGRATION:
             CommonUtils.registeredBackgroundUtilsCount();
-            boolean isLocked = checkMigrationLockedStatus(migrationName, rdb);
+            boolean isLocked = checkMigrationLockedStatus(migrationConfig.name, rdb);
             if (!isLocked) {
-              LOGGER.debug("Obtaingin migration lock");
-              lockedMigration(migrationName, rdb);
-              int recordUpdateLimit =
-                  (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-              DatasetToRepositoryMigration.execute(recordUpdateLimit);
+              LOGGER.debug("Obtaining migration lock");
+              lockedMigration(migrationConfig.name, rdb);
+              DatasetToRepositoryMigration.execute(migrationConfig.record_update_limit);
             } else {
               LOGGER.debug("Migration already locked");
             }
-          } catch (SQLException | DatabaseException e) {
-            LOGGER.error("Error on migration: {}", e.getMessage());
-          } finally {
-            CommonUtils.unregisteredBackgroundUtilsCount();
-          }
+            break;
         }
       }
-
-      CollaboratorResourceMigration.execute();
     }
+
+    CollaboratorResourceMigration.execute();
   }
 
   private static boolean checkMigrationLockedStatus(String migrationName, RdbConfig rdb)

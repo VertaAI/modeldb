@@ -4,7 +4,6 @@ import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
@@ -44,17 +43,17 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   }
 
   public RoleServiceUtils(AuthService authService) {
-    this(App.getInstance(), authService);
+    this(Config.getInstance(), authService);
   }
 
-  private RoleServiceUtils(App app, AuthService authService) {
+  private RoleServiceUtils(Config config, AuthService authService) {
     super(
         authService,
-        Config.getInstance().authService.host,
-        Config.getInstance().authService.port,
-        app.getServiceUserEmail(),
-        app.getServiceUserDevKey(),
-        Config.getInstance().grpcServer.requestTimeout,
+        config.authService.host,
+        config.authService.port,
+        config.mdb_service_user.email,
+        config.mdb_service_user.devKey,
+        config.grpcServer.requestTimeout,
         AuthInterceptor.METADATA_INFO);
   }
 

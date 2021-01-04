@@ -7,6 +7,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -149,7 +150,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     this.experimentDAO = experimentDAO;
     this.experimentRunDAO = experimentRunDAO;
     App app = App.getInstance();
-    this.starterProjectID = app.getStarterProjectID();
+    this.starterProjectID = Config.getInstance().starterProject;
   }
 
   private void checkIfEntityAlreadyExists(

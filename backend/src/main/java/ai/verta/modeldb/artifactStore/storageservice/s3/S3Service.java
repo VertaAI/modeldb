@@ -109,10 +109,7 @@ public class S3Service implements ArtifactStoreService {
             .build();
       } else if (method.equalsIgnoreCase(ModelDBConstants.POST)
           || method.equalsIgnoreCase(ModelDBConstants.PUT)) {
-        int maxArtifactSize =
-            app.getMaxArtifactSizeMB() != null
-                ? app.getMaxArtifactSizeMB()
-                : ModelDBConstants.MAX_ARTIFACT_SIZE_DEFAULT;
+        int maxArtifactSize = config.trial.restrictions.max_artifact_size_MB;
         LOGGER.debug("bucketName " + bucketName);
         try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
           return GetUrlForArtifact.Response.newBuilder()
@@ -224,7 +221,8 @@ public class S3Service implements ArtifactStoreService {
       }
 
       // Validate Artifact size for trial case
-      TrialUtils.validateArtifactSizeForTrial(app, artifactPath, request.getContentLength());
+      TrialUtils.validateArtifactSizeForTrial(
+          config.trial, artifactPath, request.getContentLength());
 
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
         UploadPartRequest uploadRequest =
