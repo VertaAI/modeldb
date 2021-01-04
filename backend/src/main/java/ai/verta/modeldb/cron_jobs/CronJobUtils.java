@@ -17,10 +17,8 @@ import org.apache.logging.log4j.Logger;
 
 public class CronJobUtils {
   private static final Logger LOGGER = LogManager.getLogger(CronJobUtils.class);
-  public static Integer updateParentTimestampFrequency = 60;
-  public static Integer deleteEntitiesFrequency = 60;
 
-  public static void initializeBasedOnConfig(
+  public static void initializeCronJobs(
       Config config,
       AuthService authService,
       RoleService roleService,
