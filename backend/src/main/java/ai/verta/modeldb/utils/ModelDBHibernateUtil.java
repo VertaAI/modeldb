@@ -1,7 +1,6 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.batchProcess.*;
@@ -33,8 +32,6 @@ import com.google.common.base.Joiner;
 import io.grpc.health.v1.HealthCheckResponse;
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
