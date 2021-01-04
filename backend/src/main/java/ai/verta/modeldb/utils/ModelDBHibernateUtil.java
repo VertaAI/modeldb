@@ -567,6 +567,9 @@ public class ModelDBHibernateUtil {
 
     if (config.migrations != null) {
       for (MigrationConfig migrationConfig : config.migrations) {
+        if (!migrationConfig.enabled) {
+          continue;
+        }
         switch (migrationConfig.name) {
           case ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION:
             OwnerRoleBindingUtils.execute();
