@@ -11,7 +11,7 @@
   "dependencies": {
     "@types/ramda": "^0.26.21",
     "authenticator": "^1.1.5",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chromedriver": "^87.0.0",
