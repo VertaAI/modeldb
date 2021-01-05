@@ -1720,23 +1720,38 @@ public class RdbmsUtils {
                 }
               }
               predicate = predicate.toBuilder().setOperator(operator).build();
-              if (key.equalsIgnoreCase("owner")
-                  && (operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
-                Predicate fuzzySearchPredicate =
-                    getFuzzyUsersQueryPredicate(
-                        authService, roleService, builder, entityRootPath, predicate);
-                if (fuzzySearchPredicate != null) {
-                  keyValuePredicates.add(fuzzySearchPredicate);
+              if (key.equalsIgnoreCase(ModelDBConstants.OWNER)) {
+                if ((operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
+                  Predicate fuzzySearchPredicate =
+                      getFuzzyUsersQueryPredicate(
+                          authService,
+                          roleService,
+                          builder,
+                          entityRootPath,
+                          predicate,
+                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+                  if (fuzzySearchPredicate != null) {
+                    keyValuePredicates.add(fuzzySearchPredicate);
+                  } else {
+                    throw new ModelDBException(
+                        ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, Code.FAILED_PRECONDITION);
+                  }
                 } else {
-                  throw new ModelDBException(
-                      ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, Code.FAILED_PRECONDITION);
+                  String ownerId = predicate.getValue().getStringValue();
+                  Map<String, UserInfo> userInfoMap =
+                      authService.getUserInfoFromAuthServer(
+                          new HashSet<>(Collections.singleton(ownerId)),
+                          Collections.emptySet(),
+                          Collections.emptyList());
+                  Set<String> resourceIdSet =
+                      getResourceIdsBasedOnUserInfo(
+                          authService,
+                          roleService,
+                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                          Collections.singletonList(userInfoMap.get(ownerId)));
+                  Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
+                  keyValuePredicates.add(exp.in(resourceIdSet));
                 }
-              } else if (key.equalsIgnoreCase("dataset_visibility")) {
-                expression = entityRootPath.get("repository_visibility");
-                Predicate queryPredicate =
-                    RdbmsUtils.getValuePredicate(builder, key, expression, predicate, false);
-                keyValuePredicates.add(queryPredicate);
-                criteriaQuery.multiselect(entityRootPath, expression);
               } else {
                 expression = entityRootPath.get(key);
                 Predicate queryPredicate =
@@ -1777,26 +1792,15 @@ public class RdbmsUtils {
       RoleService roleService,
       CriteriaBuilder builder,
       Root<?> entityRootPath,
-      KeyValueQuery requestedPredicate) {
+      KeyValueQuery requestedPredicate,
+      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     if (requestedPredicate.getValue().getKindCase().equals(Value.KindCase.STRING_VALUE)) {
       Operator operator = requestedPredicate.getOperator();
       List<UserInfo> userInfoList = getFuzzyUserInfos(authService, requestedPredicate);
       if (userInfoList != null && !userInfoList.isEmpty()) {
-        Set<String> projectIdSet = new HashSet<>();
-        for (UserInfo userInfo : userInfoList) {
-          List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
-              roleService.getResourceItems(
-                  Workspace.newBuilder()
-                      .setId(authService.getWorkspaceIdFromUserInfo(userInfo))
-                      .build(),
-                  Collections.emptySet(),
-                  ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
-          projectIdSet.addAll(
-              accessibleAllWorkspaceItems.stream()
-                  .map(GetResourcesResponseItem::getResourceId)
-                  .collect(Collectors.toSet()));
-        }
-
+        Set<String> projectIdSet =
+            getResourceIdsBasedOnUserInfo(
+                authService, roleService, modelDBServiceResourceTypes, userInfoList);
         Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
         if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
           return builder.not(exp.in(projectIdSet));
@@ -1809,6 +1813,28 @@ public class RdbmsUtils {
           "Predicate for the owner search only supporting 'String' value");
     }
     return null;
+  }
+
+  public static Set<String> getResourceIdsBasedOnUserInfo(
+      AuthService authService,
+      RoleService roleService,
+      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      List<UserInfo> userInfoList) {
+    Set<String> resourceIdsSet = new HashSet<>();
+    for (UserInfo userInfo : userInfoList) {
+      List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+          roleService.getResourceItems(
+              Workspace.newBuilder()
+                  .setId(authService.getWorkspaceIdFromUserInfo(userInfo))
+                  .build(),
+              Collections.emptySet(),
+              modelDBServiceResourceTypes);
+      resourceIdsSet.addAll(
+          accessibleAllWorkspaceItems.stream()
+              .map(GetResourcesResponseItem::getResourceId)
+              .collect(Collectors.toSet()));
+    }
+    return resourceIdsSet;
   }
 
   public static List<UserInfo> getFuzzyUserInfos(

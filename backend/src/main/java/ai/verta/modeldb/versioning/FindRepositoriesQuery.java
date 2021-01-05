@@ -1,11 +1,12 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.common.KeyValueQuery;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
@@ -16,9 +17,12 @@ import ai.verta.uac.UserInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,7 +55,7 @@ public class FindRepositoriesQuery {
 
     final Session session;
     final AuthService authService;
-    final WorkspaceDTO workspaceDTO;
+    final RoleService roleService;
     String countQueryString;
     Map<String, Object> parametersMap = new HashMap<>();
 
@@ -62,10 +66,10 @@ public class FindRepositoriesQuery {
     private Integer pageLimit = 0;
 
     public FindRepositoriesHQLQueryBuilder(
-        Session session, AuthService authService, WorkspaceDTO workspaceDTO) {
+        Session session, AuthService authService, RoleService roleService) {
       this.session = session;
       this.authService = authService;
-      this.workspaceDTO = workspaceDTO;
+      this.roleService = roleService;
     }
 
     public FindRepositoriesHQLQueryBuilder setRepoIds(List<Long> repoIds) {
@@ -165,22 +169,6 @@ public class FindRepositoriesQuery {
       }
 
       List<String> whereClauseList = new ArrayList<>();
-      if (workspaceDTO != null
-          && workspaceDTO.getWorkspaceId() != null
-          && !workspaceDTO.getWorkspaceId().isEmpty()) {
-        whereClauseList.add(
-            alias + "." + ModelDBConstants.WORKSPACE_ID + " = :" + ModelDBConstants.WORKSPACE_ID);
-        parametersMap.put(ModelDBConstants.WORKSPACE_ID, workspaceDTO.getWorkspaceId());
-        whereClauseList.add(
-            alias
-                + "."
-                + ModelDBConstants.WORKSPACE_TYPE
-                + " = :"
-                + ModelDBConstants.WORKSPACE_TYPE);
-        parametersMap.put(
-            ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
-      }
-
       if (this.predicates != null && !this.predicates.isEmpty()) {
         for (int index = 0; index < this.predicates.size(); index++) {
           KeyValueQuery keyValueQuery = this.predicates.get(index);
@@ -192,7 +180,7 @@ public class FindRepositoriesQuery {
             whereClauseList.add(joinStringBuilder.toString());
           } else if (keyValueQuery.getKey().contains(ModelDBConstants.OWNER)) {
             StringBuilder predicateStringBuilder =
-                new StringBuilder(alias).append(".").append(keyValueQuery.getKey());
+                new StringBuilder(alias).append(".").append(ModelDBConstants.ID);
             setOwnerPredicate(index, keyValueQuery, predicateStringBuilder);
             whereClauseList.add(predicateStringBuilder.toString());
           } else {
@@ -266,37 +254,47 @@ public class FindRepositoriesQuery {
         int index, KeyValueQuery keyValueQuery, StringBuilder predicateStringBuilder)
         throws ModelDBException {
       OperatorEnum.Operator operator = keyValueQuery.getOperator();
-      if (operator.equals(OperatorEnum.Operator.IN)) {
-        String ownerIdsArrString = keyValueQuery.getValue().getStringValue();
-        List<String> ownerIds = Arrays.asList(ownerIdsArrString.split(","));
-        RdbmsUtils.setValueWithOperatorInQuery(
-            index, predicateStringBuilder, operator, ownerIds, parametersMap);
-      } else if (operator.equals(OperatorEnum.Operator.CONTAIN)
+      List<UserInfo> userInfoList;
+      if (operator.equals(OperatorEnum.Operator.CONTAIN)
           || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
         UserInfoPaginationDTO userInfoPaginationDTO =
             authService.getFuzzyUserInfoList(keyValueQuery.getValue().getStringValue());
-        List<UserInfo> userInfoList = userInfoPaginationDTO.getUserInfoList();
-        if (userInfoList != null && !userInfoList.isEmpty()) {
-          List<String> ownerIds =
-              userInfoList.stream()
-                  .map(authService::getVertaIdFromUserInfo)
-                  .collect(Collectors.toList());
-          if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
-            RdbmsUtils.setValueWithOperatorInQuery(
-                index, predicateStringBuilder, OperatorEnum.Operator.IN, ownerIds, parametersMap);
-          } else {
-            String mapKey = "IN_VALUE_" + index;
-            predicateStringBuilder.append(" NOT IN (:").append(mapKey).append(")");
-            parametersMap.put(mapKey, ownerIds);
-          }
+        userInfoList = userInfoPaginationDTO.getUserInfoList();
+      } else {
+        String ownerIdsArrString = keyValueQuery.getValue().getStringValue();
+        List<String> ownerIds = new ArrayList<>();
+        if (operator.equals(OperatorEnum.Operator.IN)) {
+          ownerIds = Arrays.asList(ownerIdsArrString.split(","));
         } else {
-          throw new ModelDBException(
-              ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND,
-              io.grpc.Status.Code.FAILED_PRECONDITION);
+          ownerIds.add(ownerIdsArrString);
+        }
+        Map<String, UserInfo> userInfoMap =
+            authService.getUserInfoFromAuthServer(
+                new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList());
+        userInfoList = new ArrayList<>(userInfoMap.values());
+      }
+
+      if (userInfoList != null && !userInfoList.isEmpty()) {
+        Set<String> repositoryIdSet =
+            RdbmsUtils.getResourceIdsBasedOnUserInfo(
+                authService,
+                roleService,
+                ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
+                userInfoList);
+        List<Long> resourcesIds =
+            repositoryIdSet.stream().map(Long::parseLong).collect(Collectors.toList());
+        if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)
+            || operator.equals(OperatorEnum.Operator.NE)) {
+          String mapKey = "IN_VALUE_" + index;
+          predicateStringBuilder.append(" NOT IN (:").append(mapKey).append(")");
+          parametersMap.put(mapKey, resourcesIds);
+        } else {
+          RdbmsUtils.setValueWithOperatorInQuery(
+              index, predicateStringBuilder, OperatorEnum.Operator.IN, resourcesIds, parametersMap);
         }
       } else {
-        VersioningUtils.setQueryParameters(
-            index, predicateStringBuilder, keyValueQuery, parametersMap);
+        throw new ModelDBException(
+            ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, io.grpc.Status.Code.FAILED_PRECONDITION);
       }
     }
   }
