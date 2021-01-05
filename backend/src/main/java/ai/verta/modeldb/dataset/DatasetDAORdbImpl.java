@@ -2,6 +2,7 @@ package ai.verta.modeldb.dataset;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
@@ -358,7 +359,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
                 criteriaQuery,
                 datasetRoot,
                 authService,
-                roleService);
+                roleService,
+                ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }

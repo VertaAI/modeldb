@@ -1426,7 +1426,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 criteriaQuery,
                 experimentRunRoot,
                 authService,
-                roleService);
+                roleService,
+                ModelDBServiceResourceTypes.EXPERIMENT_RUN);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }

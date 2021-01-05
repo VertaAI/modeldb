@@ -1388,7 +1388,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 criteriaQuery,
                 repositoryRoot,
                 authService,
-                roleService);
+                roleService,
+                ModelDBServiceResourceTypes.REPOSITORY);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
