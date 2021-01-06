@@ -7,11 +7,11 @@ import verta
 
 
 class TestMetadata:
-    def test_description(self, client, created_datasets, strs):
+    def test_description(self, client, created_entities, strs):
         first_desc, second_desc = strs[:2]
 
         dataset = client.create_dataset(desc=first_desc)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert dataset.get_description() == first_desc
 
         dataset.set_description(second_desc)
@@ -19,11 +19,11 @@ class TestMetadata:
 
         assert client.get_dataset(id=dataset.id).get_description() == second_desc
 
-    def test_tags(self, client, created_datasets, strs):
+    def test_tags(self, client, created_entities, strs):
         tag1, tag2, tag3, tag4 = strs[:4]
 
         dataset = client.create_dataset(tags=[tag1])
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert set(dataset.get_tags()) == {tag1}
 
         dataset.add_tag(tag2)
@@ -38,7 +38,7 @@ class TestMetadata:
 
         assert set(client.get_dataset(id=dataset.id).get_tags()) == {tag1, tag2, tag4}
 
-    def test_attributes(self, client, created_datasets):
+    def test_attributes(self, client, created_entities):
         Attr = collections.namedtuple('Attr', ['key', 'value'])
         attr1 = Attr('key1', {'a': 1})
         attr2 = Attr('key2', ['a', 1])
@@ -46,7 +46,7 @@ class TestMetadata:
         attr4 = Attr('key4', 1)
 
         dataset = client.create_dataset(attrs=dict([attr1]))
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert dataset.get_attributes() == dict([attr1])
 
         dataset.add_attribute(*attr2)
@@ -71,29 +71,29 @@ class TestMetadata:
 
 
 class TestCreateGet:
-    def test_create(self, client, created_datasets):
+    def test_create(self, client, created_entities):
         dataset = client.set_dataset()
         assert dataset
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         name = verta._internal_utils._utils.generate_default_name()
         dataset = client.create_dataset(name)
         assert dataset
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         with pytest.raises(requests.HTTPError, match="already exists"):
             assert client.create_dataset(name)
         with pytest.warns(UserWarning, match="already exists"):
             client.set_dataset(name=dataset.name, time_created=123)
 
-    def test_get(self, client, created_datasets):
+    def test_get(self, client, created_entities):
         name = verta._internal_utils._utils.generate_default_name()
 
         with pytest.raises(ValueError):
             client.get_dataset(name)
 
         dataset = client.set_dataset(name)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         assert dataset.id == client.get_dataset(dataset.name).id
         assert dataset.id == client.get_dataset(id=dataset.id).id
@@ -101,7 +101,7 @@ class TestCreateGet:
         # Deleting non-existing key:
         dataset.del_attribute("non-existing")
 
-    def test_find(self, client, created_datasets, strs):
+    def test_find(self, client, created_entities, strs):
         name1, name2, name3, name4, tag1, tag2 = (
             s + str(verta._internal_utils._utils.now())
             for s in strs[:6]
@@ -111,7 +111,7 @@ class TestCreateGet:
         dataset2 = client.create_dataset(name2, tags=[tag1])
         dataset3 = client.create_dataset(name3, tags=[tag2])
         dataset4 = client.create_dataset(name4, tags=[tag2])
-        created_datasets.extend([dataset1, dataset2, dataset3, dataset4])
+        created_entities.extend([dataset1, dataset2, dataset3, dataset4])
 
         datasets = client.datasets.find("name == {}".format(name3))
         assert len(datasets) == 1
@@ -121,11 +121,11 @@ class TestCreateGet:
         assert len(datasets) == 2
         assert set(dataset.id for dataset in datasets) == {dataset1.id, dataset2.id}
 
-    def test_repr(self, client, created_datasets):
+    def test_repr(self, client, created_entities):
         description = "this is a cool dataset"
         tags = [u"tag1", u"tag2"]
         dataset = client.set_dataset(desc=description, tags=tags)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         str_repr = repr(dataset)
 

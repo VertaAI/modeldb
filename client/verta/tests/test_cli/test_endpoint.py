@@ -18,14 +18,14 @@ pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire 
 
 
 class TestList:
-    def test_list_endpoint(self, organization, created_endpoints):
+    def test_list_endpoint(self, organization, created_entities):
         client = Client()
         path = _utils.generate_default_name()
         path2 = _utils.generate_default_name()
         endpoint1 = client.get_or_create_endpoint(path, workspace=organization.name)
         endpoint2 = client.get_or_create_endpoint(path2, workspace=organization.name)
-        created_endpoints.append(endpoint1)
-        created_endpoints.append(endpoint2)
+        created_entities.append(endpoint1)
+        created_entities.append(endpoint2)
         runner = CliRunner()
         result = runner.invoke(
             cli,
@@ -37,7 +37,7 @@ class TestList:
         assert path2 in result.output
 
 class TestCreate:
-    def test_create_endpoint(self, client, created_endpoints):
+    def test_create_endpoint(self, client, created_entities):
         endpoint_name = _utils.generate_default_name()
 
         runner = CliRunner()
@@ -51,9 +51,9 @@ class TestCreate:
         endpoint = client.get_endpoint(endpoint_name)
         assert endpoint
 
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
-    def test_create_workspace_config(self, client, organization, in_tempdir, created_endpoints):
+    def test_create_workspace_config(self, client, organization, in_tempdir, created_entities):
         client_config = {
             "workspace": organization.name
         }
@@ -76,17 +76,17 @@ class TestCreate:
         endpoint = client.get_endpoint(endpoint_name)
         assert endpoint.workspace == organization.name
 
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
 
 class TestGet:
-    def test_get(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_get(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = _utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -114,10 +114,10 @@ class TestGet:
 
 
 class TestUpdate:
-    def test_direct_update_endpoint(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_direct_update_endpoint(self, client, created_entities, experiment_run, model_for_deployment):
         endpoint_name = _utils.generate_default_name()
         endpoint = client.set_endpoint(endpoint_name)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
 
@@ -135,10 +135,10 @@ class TestUpdate:
 
         assert len(updated_build_ids) - len(updated_build_ids.intersection(original_build_ids)) > 0
 
-    def test_canary_update_endpoint(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_canary_update_endpoint(self, client, created_entities, experiment_run, model_for_deployment):
         endpoint_name = _utils.generate_default_name()
         endpoint = client.set_endpoint(endpoint_name)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
 
@@ -167,10 +167,10 @@ class TestUpdate:
 
         assert len(updated_build_ids) - len(updated_build_ids.intersection(original_build_ids)) > 0
 
-    def test_canary_update_endpoint_env_vars(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_canary_update_endpoint_env_vars(self, client, created_entities, experiment_run, model_for_deployment):
         endpoint_name = _utils.generate_default_name()
         endpoint = client.set_endpoint(endpoint_name)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
 
@@ -195,14 +195,14 @@ class TestUpdate:
 
         assert len(updated_build_ids) - len(updated_build_ids.intersection(original_build_ids)) > 0
 
-    def test_update_invalid_parameters_error(self, client, created_endpoints, experiment_run):
+    def test_update_invalid_parameters_error(self, client, created_entities, experiment_run):
         error_msg_1 = "--canary-rule, --canary-interval, and --canary-step can only be used alongside --strategy=canary"
         error_msg_2 = "--canary-rule, --canary-interval, and --canary-step must be provided alongside --strategy=canary"
         error_msg_3 = '`env_vars` must be dictionary of str keys and str values'
 
         endpoint_name = _utils.generate_default_name()
         endpoint = client.set_endpoint(endpoint_name)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         canary_rule = json.dumps({
             "rule": "latency_avg_max",
@@ -276,7 +276,7 @@ class TestUpdate:
         assert result.exception
         assert error_msg_3 in str(result.exception)
 
-    def test_update_from_version(self, client, model_version, created_endpoints):
+    def test_update_from_version(self, client, model_version, created_entities):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
@@ -290,7 +290,7 @@ class TestUpdate:
 
         path = _utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -306,7 +306,7 @@ class TestUpdate:
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
 
-    def test_update_from_json_config(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_from_json_config(self, client, in_tempdir, created_entities, experiment_run, model_for_deployment):
         json = pytest.importorskip("json")
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -314,7 +314,7 @@ class TestUpdate:
 
         path = _utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
@@ -357,10 +357,10 @@ class TestUpdate:
         updated_build_ids = get_build_ids(endpoint.get_status())
         assert len(updated_build_ids) - len(updated_build_ids.intersection(original_build_ids)) > 0
 
-    def test_update_with_resources(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_with_resources(self, client, created_entities, experiment_run, model_for_deployment):
         endpoint_name = _utils.generate_default_name()
         endpoint = client.set_endpoint(endpoint_name)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
 
@@ -379,13 +379,13 @@ class TestUpdate:
         resources_dict = Resources._from_dict(json.loads(resources))._as_dict()  # config is `cpu`, wire is `cpu_millis`
         assert endpoint.get_update_status()['update_request']['resources'] == resources_dict
 
-    def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_autoscaling(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = _utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         autoscaling_option = '{"min_replicas": 1, "max_replicas": 4, "min_scale": 0.5, "max_scale": 2.0}'
         cpu_metric = '{"metric": "cpu_utilization", "parameters": [{"name": "target", "value": "0.5"}]}'
@@ -418,7 +418,7 @@ class TestUpdate:
 
 
 class TestDownload:
-    def test_download_context(self, experiment_run, model_for_deployment, registered_model, in_tempdir, created_registered_models, model_version):
+    def test_download_context(self, experiment_run, model_for_deployment, registered_model, in_tempdir, created_entities, model_version):
         np = pytest.importorskip("numpy")
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
@@ -463,7 +463,7 @@ class TestDownload:
 
 
 class TestPredict:
-    def test_predict(self, client, experiment_run, created_endpoints):
+    def test_predict(self, client, experiment_run, created_entities):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
@@ -479,7 +479,7 @@ class TestPredict:
 
         path = _utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
         runner = CliRunner()
