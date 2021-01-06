@@ -1356,11 +1356,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       if (accessibleDatasetIds.isEmpty() && roleService.IsImplemented()) {
         LOGGER.debug("Accessible Dataset Ids not found, size 0");
-        DatasetPaginationDTO emptyPaginationDTO = new DatasetPaginationDTO();
-        emptyPaginationDTO.setDatasets(Collections.emptyList());
-        emptyPaginationDTO.setRepositories(Collections.emptyList());
-        emptyPaginationDTO.setTotalRecords(0L);
-        return emptyPaginationDTO;
+        return getEmptyDatasetPaginationDTO();
       }
 
       List<Predicate> finalPredicatesList = new ArrayList<>();
@@ -1400,11 +1396,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         if (ex.getCode().ordinal() == com.google.rpc.Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
           LOGGER.info(ex.getMessage());
-          DatasetPaginationDTO emptyPaginationDTO = new DatasetPaginationDTO();
-          emptyPaginationDTO.setDatasets(Collections.emptyList());
-          emptyPaginationDTO.setRepositories(Collections.emptyList());
-          emptyPaginationDTO.setTotalRecords(0L);
-          return emptyPaginationDTO;
+          return getEmptyDatasetPaginationDTO();
         }
         throw ex;
       }
@@ -1475,6 +1467,14 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         throw ex;
       }
     }
+  }
+
+  private DatasetPaginationDTO getEmptyDatasetPaginationDTO() {
+    DatasetPaginationDTO emptyPaginationDTO = new DatasetPaginationDTO();
+    emptyPaginationDTO.setDatasets(Collections.emptyList());
+    emptyPaginationDTO.setRepositories(Collections.emptyList());
+    emptyPaginationDTO.setTotalRecords(0L);
+    return emptyPaginationDTO;
   }
 
   @Override
