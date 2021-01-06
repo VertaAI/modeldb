@@ -364,7 +364,7 @@ def registered_model(client):
 
 @pytest.fixture
 def created_entities():
-    """Container to track and clean up `RegisteredModel`s created during tests."""
+    """Container to track and clean up ModelDB, Registry, etc. entities created during tests."""
     to_delete = []
 
     yield to_delete
