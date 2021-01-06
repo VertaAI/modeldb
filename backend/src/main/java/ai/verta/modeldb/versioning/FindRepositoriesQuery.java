@@ -276,7 +276,7 @@ public class FindRepositoriesQuery {
 
       if (userInfoList != null && !userInfoList.isEmpty()) {
         Set<String> repositoryIdSet =
-            RdbmsUtils.getResourceIdsBasedOnUserInfo(
+            RdbmsUtils.getResourceIdsFromUserWorkspaces(
                 authService,
                 roleService,
                 ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,

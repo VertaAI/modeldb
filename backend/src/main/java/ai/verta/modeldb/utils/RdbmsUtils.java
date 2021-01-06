@@ -1746,7 +1746,7 @@ public class RdbmsUtils {
                           Collections.emptySet(),
                           Collections.emptyList());
                   Set<String> resourceIdSet =
-                      getResourceIdsBasedOnUserInfo(
+                      getResourceIdsFromUserWorkspaces(
                           authService,
                           roleService,
                           modelDBServiceResourceTypes,
@@ -1801,7 +1801,7 @@ public class RdbmsUtils {
       List<UserInfo> userInfoList = getFuzzyUserInfos(authService, requestedPredicate);
       if (userInfoList != null && !userInfoList.isEmpty()) {
         Set<String> projectIdSet =
-            getResourceIdsBasedOnUserInfo(
+            getResourceIdsFromUserWorkspaces(
                 authService, roleService, modelDBServiceResourceTypes, userInfoList);
         Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
         if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
@@ -1817,7 +1817,7 @@ public class RdbmsUtils {
     return null;
   }
 
-  public static Set<String> getResourceIdsBasedOnUserInfo(
+  public static Set<String> getResourceIdsFromUserWorkspaces(
       AuthService authService,
       RoleService roleService,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
