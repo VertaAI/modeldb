@@ -8,10 +8,10 @@ from verta.dataset import Path, S3
 
 
 class TestMetadata:  # essentially copied from test_dataset.py
-    def test_description(self, client, created_datasets, strs):
+    def test_description(self, client, created_entities, strs):
         first_desc, second_desc = strs[:2]
         dataset = client.create_dataset()
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version = dataset.create_version(Path("conftest.py"), desc=first_desc)
         assert version.get_description() == first_desc
@@ -21,10 +21,10 @@ class TestMetadata:  # essentially copied from test_dataset.py
 
         assert dataset.get_version(id=version.id).get_description() == second_desc
 
-    def test_tags(self, client, created_datasets, strs):
+    def test_tags(self, client, created_entities, strs):
         tag1, tag2, tag3, tag4 = strs[:4]
         dataset = client.create_dataset()
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version = dataset.create_version(Path("conftest.py"), tags=[tag1])
         assert set(version.get_tags()) == {tag1}
@@ -41,14 +41,14 @@ class TestMetadata:  # essentially copied from test_dataset.py
 
         assert set(dataset.get_version(id=version.id).get_tags()) == {tag1, tag2, tag4}
 
-    def test_attributes(self, client, created_datasets):
+    def test_attributes(self, client, created_entities):
         Attr = collections.namedtuple('Attr', ['key', 'value'])
         attr1 = Attr('key1', {'a': 1})
         attr2 = Attr('key2', ['a', 1])
         attr3 = Attr('key3', 'a')
         attr4 = Attr('key4', 1)
         dataset = client.create_dataset()
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version = dataset.create_version(Path("conftest.py"), attrs=dict([attr1]))
         assert version.get_attributes() == dict([attr1])
@@ -73,9 +73,9 @@ class TestMetadata:  # essentially copied from test_dataset.py
         dataset.add_attribute(attr1.key, new_val)
         assert dataset.get_attribute(attr1.key) == new_val
 
-    def test_dataset_and_parent_ids(self, client, created_datasets, with_boto3):
+    def test_dataset_and_parent_ids(self, client, created_entities, with_boto3):
         dataset = client.create_dataset()
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version1 = dataset.create_version(Path("conftest.py"))
         version2 = dataset.create_version(S3("s3://verta-starter/census-train.csv"))
@@ -85,10 +85,10 @@ class TestMetadata:  # essentially copied from test_dataset.py
 
 
 class TestCreateGet:
-    def test_create_get_path(self, client, created_datasets):
+    def test_create_get_path(self, client, created_entities):
         name = verta._internal_utils._utils.generate_default_name()
         dataset = client.set_dataset(name)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         dataset_version = dataset.create_version(Path(["modelapi_hypothesis/"]))
         dataset_version2 = dataset.create_version(Path(["modelapi_hypothesis/api_generator.py"]))
 
@@ -96,10 +96,10 @@ class TestCreateGet:
         assert dataset_version2.id == client.get_dataset_version(id=dataset_version2.id).id
         assert dataset_version2.id == dataset.get_latest_version().id
 
-    def test_get_latest_printing(self, client, created_datasets, capsys):
+    def test_get_latest_printing(self, client, created_entities, capsys):
         name = verta._internal_utils._utils.generate_default_name()
         dataset = client.set_dataset(name)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         dataset_version = dataset.create_version(Path(["modelapi_hypothesis/"]))
         dataset.get_latest_version()
@@ -107,20 +107,20 @@ class TestCreateGet:
         captured = capsys.readouterr()
         assert "got existing dataset version: {}".format(dataset_version.id) in captured.out
 
-    def test_create_get_s3(self, client, created_datasets, with_boto3):
+    def test_create_get_s3(self, client, created_entities, with_boto3):
         pytest.importorskip("boto3")
 
         name = verta._internal_utils._utils.generate_default_name()
         dataset = client.set_dataset(name)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         dataset_version = dataset.create_version(S3(["s3://verta-starter/", "s3://verta-starter/census-test.csv"]))
 
         assert dataset_version.id == dataset.get_version(id=dataset_version.id).id
 
-    def test_find(self, client, created_datasets, strs):  # essentially copied from test_dataset.py
+    def test_find(self, client, created_entities, strs):  # essentially copied from test_dataset.py
         tag1, tag2, tag3 = strs[:3]
         dataset = client.create_dataset()
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version1 = dataset.create_version(Path("conftest.py"), tags=[tag1])
         version2 = dataset.create_version(Path("conftest.py"), tags=[tag1])
@@ -139,11 +139,11 @@ class TestCreateGet:
         assert len(versions) == 1
         assert set(version.id for version in versions) == {version4.id}
 
-    def test_repr(self, client, created_datasets):  # essentially copied from test_dataset.py
+    def test_repr(self, client, created_entities):  # essentially copied from test_dataset.py
         description = "this is a cool version"
         tags = [u"tag1", u"tag2"]
         dataset = client.create_dataset()
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         version = dataset.create_version(Path("conftest.py"), desc=description, tags=tags)
 
         str_repr = repr(version)
@@ -162,7 +162,7 @@ class TestCreateGet:
 
 
 class TestLogging:
-    def test_log_get(self, client, experiment_run, created_datasets, strs, with_boto3):
+    def test_log_get(self, client, experiment_run, created_entities, strs, with_boto3):
         """Tests ExperimentRun.log_dataset_version() and ExperimentRun.get_dataset_version()."""
         key1, key2 = strs[:2]
         dataset = client.create_dataset()
@@ -183,14 +183,14 @@ class TestLogging:
 
 @pytest.mark.usefixtures("in_tempdir")
 class TestManagedVersioning:
-    def test_path(self, client, created_datasets):
+    def test_path(self, client, created_entities):
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2**16)
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
 
         dataset = client.create_dataset()
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         content = Path(filename, enable_mdb_versioning=True)
         version = dataset.create_version(content)
@@ -199,7 +199,7 @@ class TestManagedVersioning:
         with open(downloaded_filename, 'rb') as f:
             assert f.read() == FILE_CONTENTS
 
-    def test_s3(self, client, created_datasets):
+    def test_s3(self, client, created_entities):
         s3 = pytest.importorskip("boto3").client('s3')
 
         filename = "tiny1.bin"
@@ -214,7 +214,7 @@ class TestManagedVersioning:
         os.remove(filename)
 
         dataset = client.create_dataset()
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         content = S3(s3_key, enable_mdb_versioning=True)
         version = dataset.create_version(content)

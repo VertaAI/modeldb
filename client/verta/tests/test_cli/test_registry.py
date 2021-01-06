@@ -22,7 +22,7 @@ pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire 
 
 
 class TestCreate:
-    def test_create_model(self, client, created_registered_models):
+    def test_create_model(self, client, created_entities):
         model_name = RegisteredModel._generate_default_name()
 
         runner = CliRunner()
@@ -36,7 +36,7 @@ class TestCreate:
         registered_model = client.get_registered_model(model_name)
         assert registered_model
 
-        created_registered_models.append(registered_model)
+        created_entities.append(registered_model)
 
     def test_create_version(self, registered_model, in_tempdir, requirements_file):
         LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
@@ -181,7 +181,7 @@ class TestCreate:
         assert result.exception
         assert error_message in result.output
 
-    def test_create_workspace_config(self, client, organization, in_tempdir, created_registered_models):
+    def test_create_workspace_config(self, client, organization, in_tempdir, created_entities):
         model_name = _utils.generate_default_name()
         version_name = _utils.generate_default_name()
 
@@ -201,10 +201,10 @@ class TestCreate:
 
         client = Client()
         model = client.get_registered_model(model_name)
-        created_registered_models.append(model)
+        created_entities.append(model)
         assert model.workspace == organization.name
 
-    def test_create_version_with_custom_modules(self, client, registered_model, created_endpoints):
+    def test_create_version_with_custom_modules(self, client, registered_model, created_entities):
         torch = pytest.importorskip("torch")
         np = pytest.importorskip("numpy")
 
@@ -255,7 +255,7 @@ class TestCreate:
 
             path = _utils.generate_default_name()
             endpoint = client.set_endpoint(path)
-            created_endpoints.append(endpoint)
+            created_entities.append(endpoint)
             endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
 
             test_data = torch.rand((4, 4))
@@ -347,17 +347,17 @@ class TestGet:
 
 
 class TestList:
-    def test_list_model(self, created_registered_models):
+    def test_list_model(self, created_entities):
         client = Client()
         model1 = client.get_or_create_registered_model()
-        created_registered_models.append(model1)
+        created_entities.append(model1)
         label = model1._msg.name + "label1"
         model1.add_label(label)
         model1.add_label("label2")
         model2 = client.get_or_create_registered_model()
-        created_registered_models.append(model2)
+        created_entities.append(model2)
         model = client.get_or_create_registered_model()
-        created_registered_models.append(model)
+        created_entities.append(model)
         model.add_label(label)
         runner = CliRunner()
         result = runner.invoke(
@@ -379,12 +379,12 @@ class TestList:
         assert model.name in result.output
         assert model2.name in result.output
 
-    def test_list_version(self, created_registered_models):
+    def test_list_version(self, created_entities):
         client = Client()
         runner = CliRunner()
 
         model1 = client.get_or_create_registered_model()
-        created_registered_models.append(model1)
+        created_entities.append(model1)
         version1_name = "version1"
         version2_name = "version2"
         model1.get_or_create_version(version1_name)
@@ -401,7 +401,7 @@ class TestList:
 
         version2.add_label(label)
         model2 = client.get_or_create_registered_model()
-        created_registered_models.append(model2)
+        created_entities.append(model2)
         version2_1_name = "version2_1"
         version2_2_name = "version2_2"
         version21 = model2.get_or_create_version(version2_1_name)

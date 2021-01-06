@@ -54,16 +54,16 @@ def bq_location():
 
 
 class TestBaseDatasets:
-    def test_creation_from_scratch(self, client, created_datasets):
+    def test_creation_from_scratch(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert dataset.id
 
-    def test_creation_by_id(self, client, created_datasets):
+    def test_creation_by_id(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert dataset.id
 
         same_dataset = Dataset(client._conn, client._conf,
@@ -73,10 +73,10 @@ class TestBaseDatasets:
 
 class TestBaseDatasetVersions:
     @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
-    def test_creation_from_scratch(self, client, created_datasets):
+    def test_creation_from_scratch(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         version = DatasetVersion(client._conn, client._conf,
                                  dataset_id=dataset.id,
                                  dataset_version_info=_DatasetVersionService.PathDatasetVersionInfo(),
@@ -84,10 +84,10 @@ class TestBaseDatasetVersions:
         assert version.id
 
     @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
-    def test_creation_by_id(self, client, created_datasets):
+    def test_creation_by_id(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         version = DatasetVersion(client._conn, client._conf,
                                  dataset_id=dataset.id,
                                  dataset_version_info=_DatasetVersionService.PathDatasetVersionInfo(),
@@ -100,9 +100,9 @@ class TestBaseDatasetVersions:
 
     @pytest.mark.parametrize("tags", [TAG, [TAG]])
     @pytest.mark.skip(reason="api no longer  supported by backend")
-    def test_tags_is_list_of_str(self, client, created_datasets, tags):
+    def test_tags_is_list_of_str(self, client, created_entities, tags):
         dataset = client.set_dataset(tags=tags)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         version = dataset.create_version("conftest.py", tags=tags)
 
         endpoint = "{}://{}/api/v1/modeldb/dataset-version/getDatasetVersionTags".format(
@@ -125,16 +125,16 @@ class TestRawDatasetVersions:
 
 
 class TestPathDatasets:
-    def test_creation_from_scratch(self, client, created_datasets):
+    def test_creation_from_scratch(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert dataset.id
 
-    def test_creation_by_id(self, client, created_datasets):
+    def test_creation_by_id(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert dataset.id
 
         same_dataset = Dataset(client._conn, client._conf,
@@ -143,25 +143,25 @@ class TestPathDatasets:
 
 
 class TestClientDatasetFunctions:
-    def test_creation_from_scratch_client_api(self, client, created_datasets):
+    def test_creation_from_scratch_client_api(self, client, created_entities):
         dataset = client.set_dataset(type="s3")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert dataset.id
         with pytest.warns(UserWarning, match='.*already exists.*'):
             client.set_dataset(name=dataset.name, desc="new description")
 
-    def test_creation_by_id_client_api(self, client, created_datasets):
+    def test_creation_by_id_client_api(self, client, created_entities):
         dataset = client.set_dataset(type="s3")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert dataset.id
 
         same_dataset = client.set_dataset(id=dataset.id)
         assert dataset.id == same_dataset.id
         assert dataset.name == same_dataset.name
 
-    def test_get_dataset_client_api(self, client, created_datasets):
+    def test_get_dataset_client_api(self, client, created_entities):
         dataset = client.set_dataset(type="s3")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert dataset.id
 
         same_dataset = client.get_dataset(id=dataset.id)
@@ -172,30 +172,30 @@ class TestClientDatasetFunctions:
         assert dataset.id == same_dataset.id
         assert dataset.name == same_dataset.name
 
-    def test_find_datasets_by_fuzzy_name(self, client, created_datasets):
+    def test_find_datasets_by_fuzzy_name(self, client, created_entities):
         now = str(_utils.now())
-        created_datasets.append(client.set_dataset(now+" appl"))
-        created_datasets.append(client.set_dataset(now+" Appl"))
-        created_datasets.append(client.set_dataset(now+" Apple"))
+        created_entities.append(client.set_dataset(now+" appl"))
+        created_entities.append(client.set_dataset(now+" Appl"))
+        created_entities.append(client.set_dataset(now+" Apple"))
 
         datasets = client.find_datasets(name=now+" Appl")
         assert len(datasets) == 3
 
     @pytest.mark.skip("See #1285")
-    def test_find_datasets_client_api(self, client, created_datasets):
+    def test_find_datasets_client_api(self, client, created_entities):
         tags = ["test1a-{}".format(_utils.now()), "test1b-{}".format(_utils.now())]
         dataset1 = client.set_dataset(type="big query", tags=tags)
-        created_datasets.append(dataset1)
+        created_entities.append(dataset1)
         assert dataset1.id
 
         single_tag = ["test2-{}".format(_utils.now())]
         dataset2 = client.set_dataset(type="s3", tags=single_tag)
-        created_datasets.append(dataset2)
+        created_entities.append(dataset2)
         assert dataset2.id
 
         # TODO: update once RAW is supported
         # dataset3 = client.set_dataset(type="raw")
-        # created_datasets.append(dataset3)
+        # created_entities.append(dataset3)
         # assert dataset3._dataset_type == _DatasetService.DatasetTypeEnum.RAW
         # assert dataset3.id
 
@@ -237,16 +237,16 @@ class TestClientDatasetFunctions:
 
 
 class TestClientDatasetVersionFunctions:
-    def test_creation_from_scratch(self, client, created_datasets):
+    def test_creation_from_scratch(self, client, created_entities):
         dataset = client.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version = dataset.create_version(__file__)
         assert version.id
 
-    def test_creation_by_id(self, client, created_datasets):
+    def test_creation_by_id(self, client, created_entities):
         dataset = client.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version = dataset.create_version(__file__)
         assert version.id
@@ -254,9 +254,9 @@ class TestClientDatasetVersionFunctions:
         same_version = client.get_dataset_version(id=version.id)
         assert version.id == same_version.id
 
-    def test_get_versions(self, client, created_datasets):
+    def test_get_versions(self, client, created_entities):
         dataset = client.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version1 = dataset.create_version(path=__file__)
         assert version1.id
@@ -273,9 +273,9 @@ class TestClientDatasetVersionFunctions:
         version = dataset.get_latest_version(ascending=True)
         assert version.id == version1.id
 
-    def test_get_latest_printing(self, client, created_datasets, capsys):
+    def test_get_latest_printing(self, client, created_entities, capsys):
         dataset = client.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version = dataset.create_version(path=__file__)
         dataset.get_latest_version(ascending=True)
@@ -283,17 +283,17 @@ class TestClientDatasetVersionFunctions:
         captured = capsys.readouterr()
         assert "got existing dataset version: {}".format(version.id) in captured.out
 
-    def test_dataset_version_info(self, client, created_datasets):
+    def test_dataset_version_info(self, client, created_entities):
         botocore = pytest.importorskip("botocore")
         try:
             s3_dataset = client.set_dataset(type="s3")
-            created_datasets.append(s3_dataset)
+            created_entities.append(s3_dataset)
             s3_version = s3_dataset.create_version("verta-starter", key="census-train.csv")
         except botocore.exceptions.ClientError:
             pytest.skip("insufficient AWS credentials")
 
         local_dataset = client.set_dataset(type="local")
-        created_datasets.append(local_dataset)
+        created_entities.append(local_dataset)
         local_version = local_dataset.create_version(__file__)
 
         for retrieved, version in [(s3_dataset.get_latest_version(), s3_version),
@@ -302,10 +302,10 @@ class TestClientDatasetVersionFunctions:
             assert retrieved.dataset_version_info == version.dataset_version_info
 
     @pytest.mark.skip(reason="functionality removed")
-    def test_reincarnation(self, client, created_datasets):
+    def test_reincarnation(self, client, created_entities):
         """Consecutive identical versions are assigned the same ID."""
         dataset = client.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version1 = dataset.create_version(path=__file__)
         version2 = dataset.create_version(path=__file__)
@@ -333,13 +333,13 @@ class TestBasePath:
         assert dataset_version.dataset_version.path_dataset_version_info.base_path == base_path
         assert dataset_version.dataset_version_info.base_path == base_path
 
-    def test_s3_bucket(self, client, created_datasets):
+    def test_s3_bucket(self, client, created_entities):
         bucket_name = "verta-starter"
 
         botocore = pytest.importorskip("botocore")
         try:
             dataset = client.set_dataset(type="s3")
-            created_datasets.append(dataset)
+            created_entities.append(dataset)
             version = dataset.create_version(bucket_name)
         except botocore.exceptions.ClientError:
             pytest.skip("insufficient AWS credentials")
@@ -350,14 +350,14 @@ class TestBasePath:
         self.assert_base_path(version, bucket_name)
         self.assert_base_path(retrieved, bucket_name)
 
-    def test_s3_obj(self, client, created_datasets):
+    def test_s3_obj(self, client, created_entities):
         bucket_name = "verta-starter"
         obj_name = "census-train.csv"
 
         botocore = pytest.importorskip("botocore")
         try:
             dataset = client.set_dataset(type="s3")
-            created_datasets.append(dataset)
+            created_entities.append(dataset)
             version = dataset.create_version(bucket_name, obj_name)
         except botocore.exceptions.ClientError:
             pytest.skip("insufficient AWS credentials")
@@ -369,11 +369,11 @@ class TestBasePath:
         self.assert_base_path(version, base_path)
         self.assert_base_path(retrieved, base_path)
 
-    def test_local_dir(self, client, created_datasets):
+    def test_local_dir(self, client, created_entities):
         dirpath = "."
 
         dataset = client.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         version = dataset.create_version(dirpath)
 
         retrieved = dataset.get_latest_version()
@@ -383,11 +383,11 @@ class TestBasePath:
         self.assert_base_path(version, base_path)
         self.assert_base_path(retrieved, base_path)
 
-    def test_local_file(self, client, created_datasets):
+    def test_local_file(self, client, created_entities):
         filepath = "conftest.py"
 
         dataset = client.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         version = dataset.create_version(filepath)
 
         retrieved = dataset.get_latest_version()
@@ -400,10 +400,10 @@ class TestBasePath:
 
 class TestPathBasedDatasetVersions:
     @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
-    def test_creation_from_scratch(self, client, created_datasets):
+    def test_creation_from_scratch(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version = DatasetVersion(client._conn, client._conf,
                                  dataset_id=dataset.id,
@@ -412,10 +412,10 @@ class TestPathBasedDatasetVersions:
         assert version.id
 
     @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
-    def test_creation_by_id(self, client, created_datasets):
+    def test_creation_by_id(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.PATH)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version = DatasetVersion(client._conn, client._conf,
                                  dataset_id=dataset.id,
@@ -429,16 +429,16 @@ class TestPathBasedDatasetVersions:
 
 
 class TestQueryDatasets:
-    def test_creation_from_scratch(self, client, created_datasets):
+    def test_creation_from_scratch(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.DatasetType.QUERY)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert dataset.id
 
-    def test_creation_by_id(self, client, created_datasets):
+    def test_creation_by_id(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.DatasetType.QUERY)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         assert dataset.id
 
         same_dataset = Dataset(client._conn, client._conf,
@@ -448,10 +448,10 @@ class TestQueryDatasets:
 
 class TestQueryDatasetVersions:
     @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
-    def test_creation_from_scratch(self, client, created_datasets):
+    def test_creation_from_scratch(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.DatasetType.QUERY)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version = DatasetVersion(client._conn, client._conf,
                                  dataset_id=dataset.id,
@@ -460,10 +460,10 @@ class TestQueryDatasetVersions:
         assert version.id
 
     @pytest.mark.skip(reason="direct instantiation of info-less DatasetVersion not supported by backend")
-    def test_creation_by_id(self, client, created_datasets):
+    def test_creation_by_id(self, client, created_entities):
         dataset = Dataset(client._conn, client._conf,
                           dataset_type=_DatasetService.DatasetTypeEnum.QUERY)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         version = DatasetVersion(client._conn, client._conf,
                                  dataset_id=dataset.id,
@@ -526,21 +526,21 @@ class TestS3DatasetVersionInfo:
 
 
 class TestS3ClientFunctions:
-    def test_s3_dataset_creation(self, client, created_datasets):
+    def test_s3_dataset_creation(self, client, created_entities):
         botocore = pytest.importorskip("botocore")
 
         try:
             dataset = client.set_dataset(type="s3")
-            created_datasets.append(dataset)
+            created_entities.append(dataset)
         except botocore.exceptions.ClientError:
             pytest.skip("insufficient AWS credentials")
 
-    def test_s3_dataset_version_creation(self, client, s3_bucket, created_datasets):
+    def test_s3_dataset_version_creation(self, client, s3_bucket, created_entities):
         botocore = pytest.importorskip("botocore")
 
         try:
             dataset = client.set_dataset(type="s3")
-            created_datasets.append(dataset)
+            created_entities.append(dataset)
             dataset_version = dataset.create_version(s3_bucket)
 
             assert len(dataset_version.dataset_version_info.dataset_part_infos) >= 1
@@ -549,14 +549,14 @@ class TestS3ClientFunctions:
 
 
 class TestFilesystemClientFunctions:
-    def test_filesystem_dataset_creation(self, client, created_datasets):
+    def test_filesystem_dataset_creation(self, client, created_entities):
         dataset = client.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
-    def test_filesystem_dataset_version_creation(self, client, created_datasets):
+    def test_filesystem_dataset_version_creation(self, client, created_entities):
         dir_name, _ = self.create_dir_with_files(num_files=3)
         dataset = client.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         dataset_version = dataset.create_version(dir_name)
 
         assert len(dataset_version.dataset_version_info.dataset_part_infos) == 3
@@ -576,11 +576,11 @@ class TestFilesystemClientFunctions:
 
 @pytest.mark.skip("dropped support for query datasets, for the time being")
 class TestBigQueryDatasetVersionInfo:
-    def test_big_query_dataset(self, client, created_datasets):
+    def test_big_query_dataset(self, client, created_entities):
         dataset = client.set_dataset(type="big query")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
-    def test_big_query_dataset_version_creation(self, client, bq_query, bq_location, created_datasets):
+    def test_big_query_dataset_version_creation(self, client, bq_query, bq_location, created_entities):
         google = pytest.importorskip("google")
         bigquery = pytest.importorskip("google.cloud.bigquery")
 
@@ -591,7 +591,7 @@ class TestBigQueryDatasetVersionInfo:
                 location=bq_location,
             )
             dataset = client.set_dataset(type="big query")
-            created_datasets.append(dataset)
+            created_entities.append(dataset)
             dataset_version = dataset.create_version(job_id=query_job.job_id, location=bq_location)
 
             assert dataset_version.dataset_version_info.query == bq_query
@@ -601,13 +601,13 @@ class TestBigQueryDatasetVersionInfo:
 
 @pytest.mark.skip("dropped support for query datasets, for the time being")
 class TestRDBMSDatasetVersionInfo:
-    def test_rdbms_dataset(self, client, created_datasets):
+    def test_rdbms_dataset(self, client, created_entities):
         dataset = client.set_dataset(type="postgres")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
-    def test_rdbms_version_creation(self, client, created_datasets):
+    def test_rdbms_version_creation(self, client, created_entities):
         dataset = client.set_dataset(type="postgres")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         dataset_version = dataset.create_version(query="SELECT * FROM ner-table",
                                                  db_connection_str="localhost:6543",
                                                  num_records=100)
@@ -618,9 +618,9 @@ class TestRDBMSDatasetVersionInfo:
 
 @pytest.mark.skip("Backend needs to be fixed to preserve `base_path`")
 class TestLogDatasetVersion:
-    def test_log_dataset_version(self, client, created_datasets, experiment_run):
+    def test_log_dataset_version(self, client, created_entities, experiment_run):
         dataset = client.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         dataset_version = dataset.create_version(__file__)
         experiment_run.log_dataset_version('train', dataset_version)
@@ -630,9 +630,9 @@ class TestLogDatasetVersion:
         assert path.endswith(__file__)
 
     @pytest.mark.not_oss
-    def test_log_dataset_version_diff_workspaces(self, client, organization, created_datasets, experiment_run):
+    def test_log_dataset_version_diff_workspaces(self, client, organization, created_entities, experiment_run):
         dataset = client.set_dataset(type="local", workspace=organization.name)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         dataset_version = dataset.create_version(__file__)
         experiment_run.log_dataset_version('train', dataset_version)
@@ -640,9 +640,9 @@ class TestLogDatasetVersion:
         retrieved_dataset_version = experiment_run.get_dataset_version('train')
         assert retrieved_dataset_version.id == dataset_version.id
 
-    def test_log_dataset_version_diff_workspaces_no_access_error(self, client_2, created_datasets, experiment_run):
+    def test_log_dataset_version_diff_workspaces_no_access_error(self, client_2, created_entities, experiment_run):
         dataset = client_2.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         dataset_version = dataset.create_version(__file__)
 
@@ -654,9 +654,9 @@ class TestLogDatasetVersion:
         assert "Access Denied" in excinfo_value
 
 
-    def test_overwrite(self, client, created_datasets, experiment_run, s3_bucket):
+    def test_overwrite(self, client, created_entities, experiment_run, s3_bucket):
         dataset = client.set_dataset(type="local")
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
 
         dataset_version = dataset.create_version(__file__)
         experiment_run.log_dataset_version('train', dataset_version)

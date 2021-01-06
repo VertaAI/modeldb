@@ -49,9 +49,9 @@ class TestMDBIntegration:
         assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
         assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
 
-    def test_from_run_diff_workspaces(self, client, experiment_run, organization, created_registered_models):
+    def test_from_run_diff_workspaces(self, client, experiment_run, organization, created_entities):
         registered_model = client.create_registered_model(workspace=organization.name)
-        created_registered_models.append(registered_model)
+        created_entities.append(registered_model)
 
         model_version = registered_model.create_version_from_run(
             run_id=experiment_run.id,
@@ -60,9 +60,9 @@ class TestMDBIntegration:
 
         assert model_version.workspace != experiment_run.workspace
 
-    def test_from_run_diff_workspaces_no_access_error(self, experiment_run, client_2, created_registered_models):
+    def test_from_run_diff_workspaces_no_access_error(self, experiment_run, client_2, created_entities):
         registered_model = client_2.create_registered_model()
-        created_registered_models.append(registered_model)
+        created_entities.append(registered_model)
 
         with pytest.raises(requests.HTTPError) as excinfo:
             model_version = registered_model.create_version_from_run(
@@ -90,7 +90,7 @@ class TestModelVersion:
         version = registered_model.set_version(name=name)
 
         assert registered_model.set_version(name=version.name).id == version.id
-        
+
     def test_get_by_name(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
         retrieved_model_version = registered_model.get_version(name=model_version.name)
@@ -125,9 +125,9 @@ class TestModelVersion:
         assert "model" in repr
         assert "coef" in repr
 
-    def test_get_by_client(self, client, created_registered_models):
+    def test_get_by_client(self, client, created_entities):
         registered_model = client.set_registered_model()
-        created_registered_models.append(registered_model)
+        created_entities.append(registered_model)
         model_version = registered_model.get_or_create_version(name="my version")
 
         retrieved_model_version_by_id = client.get_registered_model_version(model_version.id)
@@ -267,9 +267,9 @@ class TestModelVersion:
 
         assert "environment was not previously set" in str(excinfo.value)
 
-    def test_labels(self, client, created_registered_models):
+    def test_labels(self, client, created_entities):
         registered_model = client.set_registered_model()
-        created_registered_models.append(registered_model)
+        created_entities.append(registered_model)
         model_version = registered_model.get_or_create_version(name="my version")
 
         model_version.add_label("tag1")
@@ -286,29 +286,29 @@ class TestModelVersion:
         model_version.add_labels(["tag2", "tag4", "tag1", "tag5"])
         assert model_version.get_labels() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
 
-    def test_description(self, client, created_registered_models):
+    def test_description(self, client, created_entities):
         desc = "description"
         registered_model = client.get_or_create_registered_model()
-        created_registered_models.append(registered_model)
+        created_entities.append(registered_model)
         model_version = registered_model.get_or_create_version(name="my version")
         model_version.set_description(desc)
         assert desc == model_version.get_description()
 
-    def test_list_from_client(self, client, created_registered_models):
+    def test_list_from_client(self, client, created_entities):
         """
         At some point, backend API was unexpectedly changed to require model ID
         in /model_versions/find, which broke client.registered_model_versions.
 
         """
         registered_model = client.create_registered_model()
-        created_registered_models.append(registered_model)
+        created_entities.append(registered_model)
 
         len(client.registered_model_versions)
 
-    def test_find(self, client, created_registered_models):
+    def test_find(self, client, created_entities):
         name = "registered_model_test"
         registered_model = client.set_registered_model()
-        created_registered_models.append(registered_model)
+        created_entities.append(registered_model)
         model_version = registered_model.get_or_create_version(name=name)
 
         find_result = registered_model.versions.find(["version == '{}'".format(name)])
