@@ -356,17 +356,6 @@ def commit(repository):
 
 
 @pytest.fixture
-def created_datasets(client):
-    """Container to track and clean up Datasets created during tests."""
-    created_datasets = []
-
-    yield created_datasets
-
-    for dataset in created_datasets:
-        dataset.delete()
-
-
-@pytest.fixture
 def registered_model(client):
     model = client.get_or_create_registered_model()
     yield model
@@ -374,14 +363,14 @@ def registered_model(client):
 
 
 @pytest.fixture
-def created_registered_models():
+def created_entities():
     """Container to track and clean up `RegisteredModel`s created during tests."""
     to_delete = []
 
     yield to_delete
 
-    for registered_model in to_delete:
-        registered_model.delete()
+    for entity in to_delete:
+        entity.delete()
 
 
 @pytest.fixture
@@ -390,22 +379,13 @@ def model_version(registered_model):
 
 
 @pytest.fixture
-def endpoint(client, created_endpoints):
+def endpoint(client):
     path = _utils.generate_default_name()
     endpoint = client.create_endpoint(path)
-    created_endpoints.append(endpoint)
 
     yield endpoint
 
-
-@pytest.fixture
-def created_endpoints():
-    to_delete = []
-
-    yield to_delete
-
-    for endpoint in to_delete:
-        endpoint.delete()
+    endpoint.delete()
 
 
 @pytest.fixture
