@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package ai.verta.registry;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+
+message CountPerNGram {
+  repeated ListString keys = 1;
+  repeated uint64 counts = 2;
+}
+
+message ListString {
+  repeated string item = 1;
+}
+
+message FloatHistogram {
+  repeated float bucket_limits = 1;
+  repeated uint64 bucket_counts = 2;
+}
+
+message BinaryHistogram {
+  repeated uint64 bucket_counts = 2;
+}
+
+message GetCountPerNGramRequest {
+  string profiler_id = 1;
+  int64 start_time_millis = 2;
+  int64 end_time_millis = 3;
+
+  message Response {
+    CountPerNGram countPerNGram = 1;
+  }
+}
+
+message GetFloatHistogramRequest {
+  string profiler_id = 1;
+  int64 start_time_millis = 3;
+  int64 end_time_millis = 4;
+
+  message Response {
+    FloatHistogram histogram = 1;
+  }
+}
+
+message GetBinaryHistogramRequest {
+  string profiler_id = 1;
+  int64 start_time_millis = 3;
+  int64 end_time_millis = 4;
+
+  message Response {
+    BinaryHistogram histogram = 1;
+  }
+}
+
+service DataMonitoringService {
+  rpc GetCountPerNGram(GetCountPerNGramRequest) returns (GetCountPerNGramRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/registry/data_monitoring/count_per_ngram"
+      body: "*"
+    };
+  };
+
+  rpc GetFloatHistogram(GetFloatHistogramRequest) returns (GetFloatHistogramRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/registry/data_monitoring/float_histogram"
+      body: "*"
+    };
+  };
+
+  rpc GetBinaryHistogram(GetBinaryHistogramRequest) returns (GetBinaryHistogramRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/registry/data_monitoring/binary_histogram"
+      body: "*"
+    };
+  };
+}
