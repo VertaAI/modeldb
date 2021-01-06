@@ -3,13 +3,14 @@ package ai.verta.modeldb;
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
-import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.authservice.AuthInterceptor;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.InvalidConfigException;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
+import ai.verta.modeldb.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.experiment.ExperimentServiceImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunServiceImpl;
@@ -22,7 +23,8 @@ import ai.verta.modeldb.project.ProjectServiceImpl;
 import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.*;
+import ai.verta.modeldb.versioning.FileHasher;
+import ai.verta.modeldb.versioning.VersioningServiceImpl;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -35,13 +37,6 @@ import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Optional;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,6 +51,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Optional;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
@@ -217,6 +220,7 @@ public class App implements ApplicationContextAware {
         serverBuilder.intercept(tracingInterceptor);
       }
 
+      serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());
       serverBuilder.intercept(new AuthInterceptor());
 
