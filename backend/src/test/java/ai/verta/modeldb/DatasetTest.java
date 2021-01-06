@@ -9,36 +9,24 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.DeleteOrganization;
 import ai.verta.uac.GetRoleByName;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.Organization;
-import ai.verta.uac.OrganizationServiceGrpc;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.RoleScope;
-import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.SetOrganization;
-import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -48,10 +36,8 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,35 +46,9 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class DatasetTest {
+public class DatasetTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetTest.class);
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client2ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-  private static Config config;
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
-  // all service stubs
-  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStubClient1;
-  private static DatasetServiceBlockingStub datasetServiceStub;
-  private static DatasetServiceGrpc.DatasetServiceBlockingStub client2DatasetServiceStub;
-  private static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
-      datasetVersionServiceStub;
-  private static VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub;
-  private static CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
-      collaboratorServiceStubClient2;
-  private static ProjectServiceGrpc.ProjectServiceBlockingStub projectServiceStub;
-  private static ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub;
-  private static ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private static OrganizationServiceGrpc.OrganizationServiceBlockingStub
-      organizationServiceBlockingStub;
-  private static RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub;
 
   // Dataset Entities
   private static Dataset dataset1;
@@ -96,71 +56,6 @@ public class DatasetTest {
   private static Dataset dataset3;
   private static Dataset dataset4;
   private static Map<String, Dataset> datasetMap = new HashMap<>();
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    if (config.test != null) {
-      authClientInterceptor = new AuthClientInterceptor(config.test);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
-    }
-
-    if (config.hasAuth()) {
-      ManagedChannel authServiceChannelClient1 =
-          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-      ManagedChannel authServiceChannelClient2 =
-          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient2AuthInterceptor())
-              .build();
-
-      uacServiceStubClient1 = UACServiceGrpc.newBlockingStub(authServiceChannelClient1);
-      collaboratorServiceStubClient2 =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
-      organizationServiceBlockingStub =
-          OrganizationServiceGrpc.newBlockingStub(authServiceChannelClient1);
-      roleServiceBlockingStub = RoleServiceGrpc.newBlockingStub(authServiceChannelClient1);
-    }
-
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 100);
-
-    serverBuilder.build().start();
-    // Create all service blocking stub
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-    client2DatasetServiceStub = DatasetServiceGrpc.newBlockingStub(client2Channel);
-    datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
-    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
-    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
 
   @Before
   public void createEntities() {
@@ -500,7 +395,7 @@ public class DatasetTest {
     // Create dataset
     CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
     CreateDataset.Response createDatasetResponse =
-        client2DatasetServiceStub.createDataset(createDatasetRequest);
+        datasetServiceStubClient2.createDataset(createDatasetRequest);
     Dataset dataset = createDatasetResponse.getDataset();
     LOGGER.info("Dataset created successfully");
     assertEquals(
@@ -512,7 +407,7 @@ public class DatasetTest {
       GetDatasetByName getDataset =
           GetDatasetByName.newBuilder().setName(dataset.getName()).build();
 
-      GetDatasetByName.Response response = client2DatasetServiceStub.getDatasetByName(getDataset);
+      GetDatasetByName.Response response = datasetServiceStubClient2.getDatasetByName(getDataset);
       LOGGER.info("Response DatasetByUser of Dataset : " + response.getDatasetByUser());
       LOGGER.info("Response SharedDatasetsList of Datasets : " + response.getSharedDatasetsList());
       assertEquals(
@@ -590,7 +485,7 @@ public class DatasetTest {
     } finally {
       DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
       DeleteDataset.Response deleteDatasetResponse =
-          client2DatasetServiceStub.deleteDataset(deleteDataset);
+          datasetServiceStubClient2.deleteDataset(deleteDataset);
       LOGGER.info("Dataset deleted successfully");
       LOGGER.info(deleteDatasetResponse.toString());
       assertTrue(deleteDatasetResponse.getStatus());
@@ -610,11 +505,11 @@ public class DatasetTest {
     GetUser getUserRequest =
         GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
     // Get the user info by vertaId form the AuthService
-    UserInfo secondUserInfo = uacServiceStubClient1.getUser(getUserRequest);
+    UserInfo secondUserInfo = uacServiceStub.getUser(getUserRequest);
 
     getUserRequest = GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
     // Get the user info by vertaId form the AuthService
-    UserInfo firstUserInfo = uacServiceStubClient1.getUser(getUserRequest);
+    UserInfo firstUserInfo = uacServiceStub.getUser(getUserRequest);
 
     // Create dataset
     CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
@@ -624,7 +519,7 @@ public class DatasetTest {
             .setWorkspaceName(secondUserInfo.getVertaInfo().getUsername())
             .build();
     CreateDataset.Response createDatasetResponse =
-        client2DatasetServiceStub.createDataset(createDatasetRequest);
+        datasetServiceStubClient2.createDataset(createDatasetRequest);
     Dataset dataset = createDatasetResponse.getDataset();
     LOGGER.info("Dataset created successfully");
     assertEquals(
@@ -706,7 +601,7 @@ public class DatasetTest {
     } finally {
       DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
       DeleteDataset.Response deleteDatasetResponse =
-          client2DatasetServiceStub.deleteDataset(deleteDataset);
+          datasetServiceStubClient2.deleteDataset(deleteDataset);
       LOGGER.info("Dataset deleted successfully");
       LOGGER.info(deleteDatasetResponse.toString());
       assertTrue(deleteDatasetResponse.getStatus());

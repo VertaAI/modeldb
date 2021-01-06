@@ -2,31 +2,16 @@ package ai.verta.modeldb.metadata;
 
 import static org.junit.Assert.*;
 
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.AuthClientInterceptor;
-import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.TestsInit;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceBlockingStub;
 import ai.verta.modeldb.versioning.VersioningUtils;
-import io.grpc.ManagedChannel;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -34,65 +19,12 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MetadataTest {
+public class MetadataTest extends TestsInit {
   private static final Logger LOGGER = LogManager.getLogger(MetadataTest.class.getName());
-
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
-
-  private ManagedChannel channel = null;
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    Config config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    if (config.test != null) {
-      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(config.test);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-  }
-
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
-  }
-
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
-  }
 
   @Test
   public void addDeleteLabelsTest() {
     LOGGER.info("Add & Delete labels test start................................");
-
-    MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
-
     IdentificationType id1 =
         IdentificationType.newBuilder()
             .setIdType(IDTypeEnum.IDType.VERSIONING_REPOSITORY)
@@ -100,7 +32,8 @@ public class MetadataTest {
             .build();
     AddLabelsRequest addLabelsRequest1 =
         AddLabelsRequest.newBuilder().setId(id1).addLabels("Backend").addLabels("Frontend").build();
-    AddLabelsRequest.Response addLabelsResponse1 = serviceBlockingStub.addLabels(addLabelsRequest1);
+    AddLabelsRequest.Response addLabelsResponse1 =
+        metadataServiceBlockingStub.addLabels(addLabelsRequest1);
     assertTrue("Labels not persist successfully", addLabelsResponse1.getStatus());
 
     IdentificationType id2 =
@@ -110,12 +43,14 @@ public class MetadataTest {
             .build();
     AddLabelsRequest addLabelsRequest2 =
         AddLabelsRequest.newBuilder().setId(id2).addLabels("Backend").addLabels("Frontend").build();
-    AddLabelsRequest.Response addLabelsResponse2 = serviceBlockingStub.addLabels(addLabelsRequest2);
+    AddLabelsRequest.Response addLabelsResponse2 =
+        metadataServiceBlockingStub.addLabels(addLabelsRequest2);
     assertTrue("Labels not persist successfully", addLabelsResponse2.getStatus());
 
-    serviceBlockingStub.addLabels(addLabelsRequest1);
+    metadataServiceBlockingStub.addLabels(addLabelsRequest1);
     GetLabelsRequest getLabelsRequest = GetLabelsRequest.newBuilder().setId(id1).build();
-    GetLabelsRequest.Response getLabelsResponse = serviceBlockingStub.getLabels(getLabelsRequest);
+    GetLabelsRequest.Response getLabelsResponse =
+        metadataServiceBlockingStub.getLabels(getLabelsRequest);
     assertEquals(
         "Expected labels size not in response list", 2, getLabelsResponse.getLabelsCount());
 
@@ -126,7 +61,7 @@ public class MetadataTest {
             .addLabels("Frontend")
             .build();
     DeleteLabelsRequest.Response deleteLabelsResponse =
-        serviceBlockingStub.deleteLabels(deleteLabelsRequest);
+        metadataServiceBlockingStub.deleteLabels(deleteLabelsRequest);
     assertTrue(deleteLabelsResponse.getStatus());
 
     deleteLabelsRequest =
@@ -135,7 +70,7 @@ public class MetadataTest {
             .addLabels("Backend")
             .addLabels("Frontend")
             .build();
-    deleteLabelsResponse = serviceBlockingStub.deleteLabels(deleteLabelsRequest);
+    deleteLabelsResponse = metadataServiceBlockingStub.deleteLabels(deleteLabelsRequest);
     assertTrue(deleteLabelsResponse.getStatus());
 
     LOGGER.info("Add & Delete labels test stop................................");
@@ -144,9 +79,6 @@ public class MetadataTest {
   @Test
   public void getLabelsTest() {
     LOGGER.info("Get labels test start................................");
-
-    MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
-
     IdentificationType id =
         IdentificationType.newBuilder()
             .setIdType(IDTypeEnum.IDType.VERSIONING_REPOSITORY)
@@ -154,12 +86,14 @@ public class MetadataTest {
             .build();
     AddLabelsRequest addLabelsRequest =
         AddLabelsRequest.newBuilder().setId(id).addLabels("Backend").addLabels("Frontend").build();
-    AddLabelsRequest.Response addLabelsResponse = serviceBlockingStub.addLabels(addLabelsRequest);
+    AddLabelsRequest.Response addLabelsResponse =
+        metadataServiceBlockingStub.addLabels(addLabelsRequest);
 
     assertTrue("Labels not persist successfully", addLabelsResponse.getStatus());
 
     GetLabelsRequest getLabelsRequest = GetLabelsRequest.newBuilder().setId(id).build();
-    GetLabelsRequest.Response getLabelsResponse = serviceBlockingStub.getLabels(getLabelsRequest);
+    GetLabelsRequest.Response getLabelsResponse =
+        metadataServiceBlockingStub.getLabels(getLabelsRequest);
     assertEquals(
         "Expected labels size not in response list", 2, getLabelsResponse.getLabelsCount());
     assertTrue(
@@ -173,7 +107,7 @@ public class MetadataTest {
             .addLabels("Frontend")
             .build();
     DeleteLabelsRequest.Response deleteLabelsResponse =
-        serviceBlockingStub.deleteLabels(deleteLabelsRequest);
+        metadataServiceBlockingStub.deleteLabels(deleteLabelsRequest);
     assertTrue(deleteLabelsResponse.getStatus());
 
     LOGGER.info("Get labels test stop................................");
@@ -183,9 +117,6 @@ public class MetadataTest {
   public void addDeleteLabelsWithComboRepoCommitBlobTest() {
     LOGGER.info(
         "Add & Delete labels for combo of repo, commit, blob test start................................");
-
-    MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
-
     List<String> locations = new ArrayList<>();
     locations.add("modeldb");
     locations.add("test.txt");
@@ -198,7 +129,8 @@ public class MetadataTest {
             .build();
     AddLabelsRequest addLabelsRequest2 =
         AddLabelsRequest.newBuilder().setId(id1).addLabels("Backend").addLabels("Frontend").build();
-    AddLabelsRequest.Response addLabelsResponse2 = serviceBlockingStub.addLabels(addLabelsRequest2);
+    AddLabelsRequest.Response addLabelsResponse2 =
+        metadataServiceBlockingStub.addLabels(addLabelsRequest2);
     assertTrue("Labels not persist successfully", addLabelsResponse2.getStatus());
 
     DeleteLabelsRequest deleteLabelsRequest =
@@ -208,7 +140,7 @@ public class MetadataTest {
             .addLabels("Frontend")
             .build();
     DeleteLabelsRequest.Response deleteLabelsResponse =
-        serviceBlockingStub.deleteLabels(deleteLabelsRequest);
+        metadataServiceBlockingStub.deleteLabels(deleteLabelsRequest);
     assertTrue(deleteLabelsResponse.getStatus());
 
     LOGGER.info(
@@ -218,9 +150,6 @@ public class MetadataTest {
   @Test
   public void addDeleteLabelsWithComboRepoCommitTest() {
     LOGGER.info("Add & Delete labels for combo of repo, commit test start..........");
-
-    MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
-
     String compositeId = 1L + "::" + UUID.randomUUID().toString();
     IdentificationType id1 =
         IdentificationType.newBuilder()
@@ -229,7 +158,8 @@ public class MetadataTest {
             .build();
     AddLabelsRequest addLabelsRequest2 =
         AddLabelsRequest.newBuilder().setId(id1).addLabels("Backend").addLabels("Frontend").build();
-    AddLabelsRequest.Response addLabelsResponse2 = serviceBlockingStub.addLabels(addLabelsRequest2);
+    AddLabelsRequest.Response addLabelsResponse2 =
+        metadataServiceBlockingStub.addLabels(addLabelsRequest2);
     assertTrue("Labels not persist successfully", addLabelsResponse2.getStatus());
 
     DeleteLabelsRequest deleteLabelsRequest =
@@ -239,7 +169,7 @@ public class MetadataTest {
             .addLabels("Frontend")
             .build();
     DeleteLabelsRequest.Response deleteLabelsResponse =
-        serviceBlockingStub.deleteLabels(deleteLabelsRequest);
+        metadataServiceBlockingStub.deleteLabels(deleteLabelsRequest);
     assertTrue(deleteLabelsResponse.getStatus());
 
     LOGGER.info("Add & Delete labels for combo of repo, commit  test stop.........");
@@ -248,9 +178,6 @@ public class MetadataTest {
   @Test
   public void addDeleteKeyValuePropertiesTest() {
     LOGGER.info("Add & Delete keyValue properties test start................................");
-
-    MetadataServiceBlockingStub serviceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
-
     String attrKey = "attr_key_1";
     String value = "att_value";
     String propertyName = ModelDBConstants.ATTRIBUTES;
@@ -263,7 +190,7 @@ public class MetadataTest {
                 KeyValueStringProperty.newBuilder().setKey(attrKey).setValue(value).build())
             .setPropertyName(propertyName)
             .build();
-    serviceBlockingStub.addKeyValueProperties(addKeyValuePropertiessRequest1);
+    metadataServiceBlockingStub.addKeyValueProperties(addKeyValuePropertiessRequest1);
     assertTrue(true);
 
     GetKeyValuePropertiesRequest getKeyValuePropertiessRequest =
@@ -273,7 +200,7 @@ public class MetadataTest {
             .setPropertyName(propertyName)
             .build();
     GetKeyValuePropertiesRequest.Response getKeyValuePropertiessResponse =
-        serviceBlockingStub.getKeyValueProperties(getKeyValuePropertiessRequest);
+        metadataServiceBlockingStub.getKeyValueProperties(getKeyValuePropertiessRequest);
     assertEquals(
         "Response value count not match with expected value count",
         1,
@@ -289,11 +216,11 @@ public class MetadataTest {
             .addKeys(attrKey)
             .setPropertyName(propertyName)
             .build();
-    serviceBlockingStub.deleteKeyValueProperties(deleteKeyValuePropertiessRequest);
+    metadataServiceBlockingStub.deleteKeyValueProperties(deleteKeyValuePropertiessRequest);
     assertTrue(true);
 
     GetKeyValuePropertiesRequest.Response response =
-        serviceBlockingStub.getKeyValueProperties(getKeyValuePropertiessRequest);
+        metadataServiceBlockingStub.getKeyValueProperties(getKeyValuePropertiessRequest);
     assertEquals(
         "response keyValue count not match with expected keyValue count",
         0,

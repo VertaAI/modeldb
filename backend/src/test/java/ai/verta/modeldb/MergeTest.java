@@ -1,8 +1,6 @@
 package ai.verta.modeldb;
 
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CodeBlob;
@@ -29,11 +27,6 @@ import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
-import io.grpc.ManagedChannel;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -43,9 +36,9 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,21 +52,13 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @RunWith(Parameterized.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MergeTest {
+public class MergeTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(MergeTest.class);
   private static final String FIRST_NAME = "train.json";
   private static final String OTHER_NAME = "environment.json";
   private static final boolean USE_SAME_NAMES = false; // TODO: set to true after fixing VR-3688
   private static final String SECOND_NAME = USE_SAME_NAMES ? FIRST_NAME : OTHER_NAME;
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
-  private static VersioningServiceBlockingStub versioningServiceBlockingStub;
 
   private static Repository repository;
   private static Commit parentCommit;
@@ -93,52 +78,14 @@ public class MergeTest {
     this.blobType = blobType;
   }
 
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    Config config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-    serverBuilder.build().start();
-
-    if (config.test != null) {
-      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(config.test);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
-
-    // Create all service blocking stub
-    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
-
-    createEntities();
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    removeEntities();
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
-
-  public static void createEntities() {
+  @Before
+  public void createEntities() {
     // Create all entities
     createRepositoryEntities();
   }
 
-  public static void removeEntities() {
+  @After
+  public void removeEntities() {
     for (Repository repo : new Repository[] {repository}) {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()

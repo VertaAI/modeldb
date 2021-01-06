@@ -9,17 +9,11 @@ import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceBlockingS
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
-import ai.verta.modeldb.LineageServiceGrpc.LineageServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,9 +23,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.CoreMatchers;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,64 +32,13 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class LineageTest {
+public class LineageTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(LineageTest.class);
   private static final LineageEntry.Builder NOT_EXISTENT_DATASET =
       LineageEntry.newBuilder()
           .setType(LineageEntryType.DATASET_VERSION)
           .setExternalId("id_not_existent_dataset");
-
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static LineageServiceBlockingStub lineageServiceStub;
-
-  private static DatasetVersionServiceBlockingStub datasetVersionServiceStub;
-  private static ProjectServiceBlockingStub projectServiceStub;
-  private static ExperimentServiceBlockingStub experimentServiceStub;
-  private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private static DatasetServiceBlockingStub datasetServiceStub;
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    Config config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    if (config.test != null) {
-      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(config.test);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-    serverBuilder.build().start();
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
-
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
-
-    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-    datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-    App.initiateShutdown(0);
-  }
 
   @Test
   public void createAndDeleteLineageNegativeTest() {
@@ -116,7 +57,6 @@ public class LineageTest {
         LineageEntry.newBuilder()
             .setType(LineageEntryType.EXPERIMENT_RUN)
             .setExternalId(experimentRun.getId());
-    DatasetTest datasetTest = new DatasetTest();
 
     DatasetVersion datasetVersion =
         getDatasetVersion(

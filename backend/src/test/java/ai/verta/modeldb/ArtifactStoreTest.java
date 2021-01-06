@@ -4,22 +4,15 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
-import ai.verta.artifactstore.ArtifactStoreGrpc;
-import ai.verta.artifactstore.ArtifactStoreGrpc.ArtifactStoreBlockingStub;
 import ai.verta.artifactstore.DeleteArtifact;
 import ai.verta.artifactstore.GetArtifact;
 import ai.verta.artifactstore.StoreArtifact;
 import ai.verta.artifactstore.StoreArtifactWithStream;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.config.Config;
 import com.google.api.client.util.IOUtils;
 import com.google.protobuf.ByteString;
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,12 +21,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -41,67 +29,15 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ArtifactStoreTest {
+public class ArtifactStoreTest extends TestsInit {
 
   private static final Logger LOGGER = Logger.getLogger(ArtifactStoreTest.class.getName());
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
-
-  private ManagedChannel channel = null;
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    Config config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    if (config.test != null) {
-      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(config.test);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-  }
-
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
-  }
-
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
-  }
 
   @Test
   public void storeArtifactOnCloudTest() {
     LOGGER.info("store artifact on cloud test start................................");
 
     try {
-      ArtifactStoreBlockingStub artifactStoreBlockingStub =
-          ArtifactStoreGrpc.newBlockingStub(channel);
-
       StoreArtifact storeArtifact =
           StoreArtifact.newBuilder()
               .setKey("verta_logo.png")
@@ -143,9 +79,6 @@ public class ArtifactStoreTest {
     LOGGER.info("store stream artifact on cloud test start................................");
 
     try {
-      ArtifactStoreBlockingStub artifactStoreBlockingStub =
-          ArtifactStoreGrpc.newBlockingStub(channel);
-
       URL url =
           new URL("https://www.verta.ai/static/logo-landing-424af27a5fc184c64225f604232db39e.png");
       HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -195,9 +128,6 @@ public class ArtifactStoreTest {
     LOGGER.info("get artifact from cloud test start................................");
 
     try {
-      ArtifactStoreBlockingStub artifactStoreBlockingStub =
-          ArtifactStoreGrpc.newBlockingStub(channel);
-
       StoreArtifact storeArtifact =
           StoreArtifact.newBuilder()
               .setKey("verta_logo.png")

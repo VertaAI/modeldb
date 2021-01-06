@@ -6,14 +6,9 @@ import static org.junit.Assume.assumeTrue;
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import com.google.api.client.util.IOUtils;
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,8 +19,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,15 +29,9 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class NFSArtifactStoreTest {
+public class NFSArtifactStoreTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSArtifactStoreTest.class);
-
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
   private static String artifactKey = "verta_logo.png";
 
   // Project Entity
@@ -54,59 +43,16 @@ public class NFSArtifactStoreTest {
   // ExperimentRun Entity
   private static ExperimentRun experimentRun;
 
-  // all service stubs
-  private static ProjectServiceGrpc.ProjectServiceBlockingStub projectServiceStub;
-  private static ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub;
-  private static ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    Config config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    if (config.test != null) {
-      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(config.test);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-
-    serverBuilder.build().start();
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
-
-    // Create all service blocking stub
-    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-
+  @Before
+  public void createEntities() {
     // Create all entities
     createProjectEntities();
     createExperimentEntities();
     createExperimentRunEntities();
   }
 
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Remove all entities
-    removeEntities();
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
-
-  private static void removeEntities() {
+  @After
+  public void removeEntities() {
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");

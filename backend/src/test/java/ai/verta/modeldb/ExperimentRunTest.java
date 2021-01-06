@@ -15,16 +15,10 @@ import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.common.Pagination;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
-import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.GetExperimentRunById.Response;
-import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.GenerateRandomNameRequest;
-import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -42,23 +36,15 @@ import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetUser;
-import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -70,10 +56,8 @@ import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,21 +66,9 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ExperimentRunTest {
+public class ExperimentRunTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentRunTest.class);
-
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client1ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client2ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-
-  private static Config config;
-  private static DeleteEntitiesCron deleteEntitiesCron;
 
   // Project Entities
   private static Project project;
@@ -113,72 +85,16 @@ public class ExperimentRunTest {
   private static ExperimentRun experimentRun2;
   private static Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
 
-  // all service stubs
-  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
-  private static CollaboratorServiceBlockingStub collaboratorServiceStubClient1;
-  private static ProjectServiceBlockingStub projectServiceStub;
-  private static ExperimentServiceBlockingStub experimentServiceStub;
-  private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private static ExperimentRunServiceBlockingStub experimentRunServiceStubClient2;
-  private static VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub;
-  private static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
-  private static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
-      datasetVersionServiceStub;
-  private static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    if (config.test != null) {
-      authClientInterceptor = new AuthClientInterceptor(config.test);
-      client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
-    }
-
-    if (config.hasAuth()) {
-      ManagedChannel authServiceChannel =
-          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
-      collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-    }
-
-    serverBuilder.build().start();
-    ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
-    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
-
-    // Create all service blocking stub
-    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStubClient2 = ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
-    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-    datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
-    metadataServiceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
-
+  @Before
+  public void createEntities() {
     // Create all entities
     createProjectEntities();
     createExperimentEntities();
+    createExperimentRunEntities();
   }
 
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
+  @After
+  public void removeEntities() {
     for (String projectId : projectMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
       DeleteProject.Response deleteProjectResponse =
@@ -186,6 +102,14 @@ public class ExperimentRunTest {
       LOGGER.info("Project deleted successfully");
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
+    }
+
+    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
+      DeleteExperimentRun deleteExperimentRun =
+          DeleteExperimentRun.newBuilder().setId(run.getId()).build();
+      DeleteExperimentRun.Response deleteExperimentRunResponse =
+          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
+      assertTrue(deleteExperimentRunResponse.getStatus());
     }
 
     project = null;
@@ -196,28 +120,6 @@ public class ExperimentRunTest {
     // Experiment Entities
     experiment = null;
     experiment2 = null;
-
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
-
-  @Before
-  public void createEntities() {
-    createExperimentRunEntities();
-  }
-
-  @After
-  public void removeEntities() {
-    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
-      DeleteExperimentRun deleteExperimentRun =
-          DeleteExperimentRun.newBuilder().setId(run.getId()).build();
-      DeleteExperimentRun.Response deleteExperimentRunResponse =
-          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-      assertTrue(deleteExperimentRunResponse.getStatus());
-    }
 
     // ExperimentRun Entities
     experimentRun = null;

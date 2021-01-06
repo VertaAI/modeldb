@@ -5,24 +5,10 @@ import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInt
 import static org.junit.Assert.*;
 
 import ai.verta.common.CollaboratorTypeEnum;
-import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
-import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
-import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetUser;
-import ai.verta.uac.UACServiceGrpc;
-import ai.verta.uac.UACServiceGrpc.UACServiceBlockingStub;
 import ai.verta.uac.UserInfo;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -31,8 +17,8 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,28 +27,10 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class FindHydratedServiceTest {
+public class FindHydratedServiceTest extends TestsInit {
 
   private static final Logger LOGGER =
       LogManager.getLogger(FindHydratedServiceTest.class.getName());
-
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-  private static AuthService authService;
-  private static Config config;
-
-  // all service stubs
-  private static UACServiceBlockingStub uacServiceStub;
-  private static ProjectServiceBlockingStub projectServiceStub;
-  private static ExperimentServiceBlockingStub experimentServiceStub;
-  private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private static CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub;
-  private static CollaboratorServiceBlockingStub collaboratorServiceStub;
-  private static HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub;
 
   // Project Entities
   private static Project project1;
@@ -79,67 +47,17 @@ public class FindHydratedServiceTest {
   private static ExperimentRun experimentRun3;
   private static ExperimentRun experimentRun4;
   private static Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
-  private static DeleteEntitiesCron deleteEntitiesCron;
 
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    if (config.test != null) {
-      authClientInterceptor = new AuthClientInterceptor(config.test);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-
-    serverBuilder.build().start();
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    if (config.hasAuth()) {
-      ManagedChannel authServiceChannel =
-          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
-      collaboratorServiceStub = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-    }
-    authService = services.authService;
-    deleteEntitiesCron = new DeleteEntitiesCron(authService, services.roleService, 1000);
-
-    // Create all service blocking stub
-    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-    commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
-    hydratedServiceBlockingStub = HydratedServiceGrpc.newBlockingStub(channel);
-
+  @Before
+  public void createEntities() {
     // Create all entities
     createProjectEntities();
     createExperimentEntities();
     createExperimentRun();
   }
 
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Remove all entities
-    removeEntities();
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
-
-  private static void removeEntities() {
+  @After
+  public void removeEntities() {
     // Delete all data related to project
     for (Project project : projectMap.values()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
@@ -149,6 +67,9 @@ public class FindHydratedServiceTest {
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
     }
+
+    projectMap = new HashMap<>();
+    experimentRunMap = new HashMap<>();
   }
 
   private static void createProjectEntities() {
@@ -261,7 +182,7 @@ public class FindHydratedServiceTest {
         addCollaboratorRequestProjectInterceptor(
             project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
     AddCollaboratorRequest.Response addCollaboratorResponse =
-        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
     LOGGER.info("Collaborator1 added successfully");
 
     GetHydratedProjects.Response getHydratedProjectsResponse =
@@ -343,7 +264,7 @@ public class FindHydratedServiceTest {
               shareWithUserInfo.getEmail(),
               CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
       collaboratorUsers.add(authService.getVertaIdFromUserInfo(shareWithUserInfo));
-      collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+      collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator1 added successfully");
 
       GetHydratedProjectById.Response getHydratedProjectResponse =

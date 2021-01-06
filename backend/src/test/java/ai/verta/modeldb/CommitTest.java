@@ -7,14 +7,11 @@ import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.AddLabelsRequest;
 import ai.verta.modeldb.metadata.DeleteLabelsRequest;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
-import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDiff;
 import ai.verta.modeldb.versioning.BlobDiff.ContentCase;
@@ -68,19 +65,11 @@ import ai.verta.modeldb.versioning.SetBranchRequest;
 import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import ai.verta.modeldb.versioning.VersioningUtils;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.UACServiceGrpc;
 import com.google.protobuf.Value;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -96,10 +85,8 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -109,87 +96,12 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CommitTest {
+public class CommitTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(CommitTest.class);
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client2ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-  private static Config config;
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
   private static long time = Calendar.getInstance().getTimeInMillis();
-
-  private static VersioningServiceBlockingStub versioningServiceBlockingStub;
-  private static VersioningServiceBlockingStub versioningServiceBlockingStubClient2;
-  private static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
-  private static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
-  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
-  private static CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
-      collaboratorServiceBlockingStub;
-
   private static Repository repository;
-
   private static Commit initialCommit;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    if (config.test != null) {
-      authClientInterceptor = new AuthClientInterceptor(config.test);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
-    }
-
-    if (config.hasAuth()) {
-      ManagedChannel authServiceChannelClient1 =
-          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-
-      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannelClient1);
-      collaboratorServiceBlockingStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
-    }
-
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
-
-    serverBuilder.build().start();
-    // Create all service blocking stub
-    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
-    versioningServiceBlockingStubClient2 = VersioningServiceGrpc.newBlockingStub(client2Channel);
-    metadataServiceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
 
   @Before
   public void createEntities() {
