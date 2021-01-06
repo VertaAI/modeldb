@@ -841,7 +841,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
                 criteriaQuery,
                 experimentRoot,
                 authService,
-                roleService);
+                roleService,
+                ModelDBServiceResourceTypes.EXPERIMENT);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }

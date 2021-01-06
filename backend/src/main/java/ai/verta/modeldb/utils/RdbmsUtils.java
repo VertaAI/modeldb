@@ -1,6 +1,7 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.common.*;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.RoleService;
@@ -1349,7 +1350,8 @@ public class RdbmsUtils {
       CriteriaQuery<?> criteriaQuery,
       Root<?> entityRootPath,
       AuthService authService,
-      RoleService roleService)
+      RoleService roleService,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes)
       throws InvalidProtocolBufferException, ModelDBException {
     List<Predicate> finalPredicatesList = new ArrayList<>();
     if (!predicates.isEmpty()) {
@@ -1729,7 +1731,7 @@ public class RdbmsUtils {
                           builder,
                           entityRootPath,
                           predicate,
-                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+                          modelDBServiceResourceTypes);
                   if (fuzzySearchPredicate != null) {
                     keyValuePredicates.add(fuzzySearchPredicate);
                   } else {
@@ -1747,7 +1749,7 @@ public class RdbmsUtils {
                       getResourceIdsBasedOnUserInfo(
                           authService,
                           roleService,
-                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                          modelDBServiceResourceTypes,
                           Collections.singletonList(userInfoMap.get(ownerId)));
                   Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
                   keyValuePredicates.add(exp.in(resourceIdSet));
@@ -1818,7 +1820,7 @@ public class RdbmsUtils {
   public static Set<String> getResourceIdsBasedOnUserInfo(
       AuthService authService,
       RoleService roleService,
-      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       List<UserInfo> userInfoList) {
     Set<String> resourceIdsSet = new HashSet<>();
     for (UserInfo userInfo : userInfoList) {

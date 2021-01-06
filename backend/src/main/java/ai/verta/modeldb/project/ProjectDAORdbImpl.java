@@ -968,7 +968,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 criteriaQuery,
                 projectRoot,
                 authService,
-                roleService);
+                roleService,
+                ModelDBServiceResourceTypes.PROJECT);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }

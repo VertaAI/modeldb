@@ -343,7 +343,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
                 criteriaQuery,
                 datasetVersionRoot,
                 authService,
-                roleService);
+                roleService,
+                ModelDBServiceResourceTypes.DATASET_VERSION);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
