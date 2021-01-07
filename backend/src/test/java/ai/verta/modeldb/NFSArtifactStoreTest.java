@@ -6,19 +6,9 @@ import static org.junit.Assume.assumeTrue;
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.api.client.util.IOUtils;
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,11 +17,10 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,15 +29,9 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class NFSArtifactStoreTest {
+public class NFSArtifactStoreTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSArtifactStoreTest.class);
-
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
   private static String artifactKey = "verta_logo.png";
 
   // Project Entity
@@ -60,80 +43,16 @@ public class NFSArtifactStoreTest {
   // ExperimentRun Entity
   private static ExperimentRun experimentRun;
 
-  // all service stubs
-  private static ProjectServiceGrpc.ProjectServiceBlockingStub projectServiceStub;
-  private static ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub;
-  private static ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-
-    App app = App.getInstance();
-    // Set user credentials to App class
-    app.setServiceUser(propertiesMap, app);
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
-    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(testPropMap);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-
-    serverBuilder.build().start();
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
-
-    // Create all service blocking stub
-    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-
+  @Before
+  public void createEntities() {
     // Create all entities
     createProjectEntities();
     createExperimentEntities();
     createExperimentRunEntities();
   }
 
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Remove all entities
-    removeEntities();
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
-
-  private static void removeEntities() {
+  @After
+  public void removeEntities() {
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");

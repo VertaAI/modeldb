@@ -8,27 +8,15 @@ import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.S3DatasetBlob;
 import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
 import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.CollaboratorServiceGrpc;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -42,9 +30,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -54,27 +40,9 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class DatasetVersionTest {
+public class DatasetVersionTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetVersionTest.class);
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client2ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-  private static App app;
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
-  // all service stubs
-  private static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
-  private static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
-      datasetVersionServiceStub;
-  private static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
-      datasetVersionServiceStubClient2;
-  private static CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStub;
 
   // Dataset Entities
   private static Dataset dataset;
@@ -83,77 +51,6 @@ public class DatasetVersionTest {
   private static DatasetVersion datasetVersion2;
   private static DatasetVersion datasetVersion3;
   private static Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-
-    app = App.getInstance();
-    // Set user credentials to App class
-    app.setServiceUser(propertiesMap, app);
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
-    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new AuthInterceptor());
-    serverBuilder.build().start();
-
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
-    }
-
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      ManagedChannel authServiceChannelClient1 =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-      collaboratorServiceStub = CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
-    }
-
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
-
-    // Create all service blocking stub
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-    datasetVersionServiceStubClient2 = DatasetVersionServiceGrpc.newBlockingStub(client2Channel);
-    datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
 
   @Before
   public void createEntities() {
@@ -1149,7 +1046,7 @@ public class DatasetVersionTest {
   public void deleteDatasetVersionTest() {
     LOGGER.info("delete DatasetVersion by parent entities owner test start........");
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestUser(
               dataset.getId(),
@@ -1158,7 +1055,7 @@ public class DatasetVersionTest {
               "Please refer shared dataset for your invention");
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
     }
@@ -1182,7 +1079,7 @@ public class DatasetVersionTest {
     DeleteDatasetVersions deleteDatasetVersionsRequest =
         DeleteDatasetVersions.newBuilder().addAllIds(datasetVersionIds).build();
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       try {
         datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
       } catch (StatusRuntimeException e) {
@@ -1200,7 +1097,7 @@ public class DatasetVersionTest {
               "Please refer shared dataset for your invention");
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 

@@ -6,24 +6,11 @@ import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.CommentServiceGrpc.CommentServiceBlockingStub;
-import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
-import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
-import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,9 +20,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,90 +29,15 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ExperimentTest {
+public class ExperimentTest extends TestsInit {
 
   public static final Logger LOGGER = LogManager.getLogger(ExperimentTest.class);
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-
-  private static App app;
-  private static DeleteEntitiesCron deleteEntitiesCron;
 
   // Project Entities
   private static Project project;
 
   // Experiment Entities
   private static Experiment experiment;
-
-  // all service stubs
-  private static ProjectServiceBlockingStub projectServiceStub;
-  private static ExperimentServiceBlockingStub experimentServiceStub;
-  private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private static CommentServiceBlockingStub commentServiceBlockingStub;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-
-    app = App.getInstance();
-    // Set user credentials to App class
-    app.setServiceUser(propertiesMap, app);
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
-    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-
-    serverBuilder.build().start();
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 100);
-
-    // Create all service blocking stub
-    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-    commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
 
   @Before
   public void createEntities() {
@@ -182,7 +92,7 @@ public class ExperimentTest {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()

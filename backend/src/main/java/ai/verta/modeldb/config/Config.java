@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -30,6 +31,7 @@ public class Config {
   public TelemetryConfig telemetry;
   public TestConfig test;
   public TrialConfig trial;
+  public List<MigrationConfig> migrations;
 
   public static Config getInstance() throws InternalErrorException {
     if (config == null) {
@@ -82,6 +84,12 @@ public class Config {
 
     if (trial != null) {
       trial.Validate("trial");
+    }
+
+    if (migrations != null) {
+      for (MigrationConfig migrationConfig : migrations) {
+        migrationConfig.Validate("migration");
+      }
     }
   }
 

@@ -4,41 +4,24 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
-import ai.verta.artifactstore.ArtifactStoreGrpc;
-import ai.verta.artifactstore.ArtifactStoreGrpc.ArtifactStoreBlockingStub;
 import ai.verta.artifactstore.DeleteArtifact;
 import ai.verta.artifactstore.GetArtifact;
 import ai.verta.artifactstore.StoreArtifact;
 import ai.verta.artifactstore.StoreArtifactWithStream;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.api.client.util.IOUtils;
 import com.google.protobuf.ByteString;
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -46,88 +29,15 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ArtifactStoreTest {
+public class ArtifactStoreTest extends TestsInit {
 
   private static final Logger LOGGER = Logger.getLogger(ArtifactStoreTest.class.getName());
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
-
-  private ManagedChannel channel = null;
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-
-    App app = App.getInstance();
-    // Set user credentials to App class
-    app.setServiceUser(propertiesMap, app);
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
-    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-  }
-
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
-  }
-
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
-  }
 
   @Test
   public void storeArtifactOnCloudTest() {
     LOGGER.info("store artifact on cloud test start................................");
 
     try {
-      ArtifactStoreBlockingStub artifactStoreBlockingStub =
-          ArtifactStoreGrpc.newBlockingStub(channel);
-
       StoreArtifact storeArtifact =
           StoreArtifact.newBuilder()
               .setKey("verta_logo.png")
@@ -169,9 +79,6 @@ public class ArtifactStoreTest {
     LOGGER.info("store stream artifact on cloud test start................................");
 
     try {
-      ArtifactStoreBlockingStub artifactStoreBlockingStub =
-          ArtifactStoreGrpc.newBlockingStub(channel);
-
       URL url =
           new URL("https://www.verta.ai/static/logo-landing-424af27a5fc184c64225f604232db39e.png");
       HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -221,9 +128,6 @@ public class ArtifactStoreTest {
     LOGGER.info("get artifact from cloud test start................................");
 
     try {
-      ArtifactStoreBlockingStub artifactStoreBlockingStub =
-          ArtifactStoreGrpc.newBlockingStub(channel);
-
       StoreArtifact storeArtifact =
           StoreArtifact.newBuilder()
               .setKey("verta_logo.png")

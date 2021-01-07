@@ -558,9 +558,10 @@ public class ModelDBHibernateUtil {
    * {` condition.
    */
   @SuppressWarnings("unchecked")
-  public static void runMigration(DatabaseConfig config)
+  public static void runMigration(Config config)
       throws ClassNotFoundException, ModelDBException, DatabaseException, SQLException {
-    RdbConfig rdb = config.RdbConfiguration;
+    DatabaseConfig databaseConfig = config.database;
+    RdbConfig rdb = databaseConfig.RdbConfiguration;
 
     if (config.migrations != null) {
       for (MigrationConfig migrationConfig : config.migrations) {

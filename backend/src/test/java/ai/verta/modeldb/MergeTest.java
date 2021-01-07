@@ -1,13 +1,6 @@
 package ai.verta.modeldb;
 
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CodeBlob;
@@ -34,11 +27,6 @@ import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
-import io.grpc.ManagedChannel;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -46,12 +34,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,21 +52,13 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @RunWith(Parameterized.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MergeTest {
+public class MergeTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(MergeTest.class);
   private static final String FIRST_NAME = "train.json";
   private static final String OTHER_NAME = "environment.json";
   private static final boolean USE_SAME_NAMES = false; // TODO: set to true after fixing VR-3688
   private static final String SECOND_NAME = USE_SAME_NAMES ? FIRST_NAME : OTHER_NAME;
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
-  private static VersioningServiceBlockingStub versioningServiceBlockingStub;
 
   private static Repository repository;
   private static Commit parentCommit;
@@ -99,73 +78,14 @@ public class MergeTest {
     this.blobType = blobType;
   }
 
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-
-    App app = App.getInstance();
-    // Set user credentials to App class
-    app.setServiceUser(propertiesMap, app);
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(Config.getInstance().test.database);
-    ModelDBHibernateUtil.createOrGetSessionFactory(Config.getInstance().test.database);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, Config.getInstance().test.database, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new AuthInterceptor());
-    serverBuilder.build().start();
-
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      AuthClientInterceptor authClientInterceptor = new AuthClientInterceptor(testPropMap);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
-
-    // Create all service blocking stub
-    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
-
-    createEntities();
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    removeEntities();
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
-
-  public static void createEntities() {
+  @Before
+  public void createEntities() {
     // Create all entities
     createRepositoryEntities();
   }
 
-  public static void removeEntities() {
+  @After
+  public void removeEntities() {
     for (Repository repo : new Repository[] {repository}) {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
