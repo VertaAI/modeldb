@@ -38,7 +38,7 @@ class TestOrganization:
 
         org.delete()
 
-    def test_create_same_name_diff_workspace(self, client, organization, created_entities, created_entities, created_entities):
+    def test_create_same_name_diff_workspace(self, client, organization, created_entities):
         # creating some entities:
         project_name = _utils.generate_default_name()
         exp_name = _utils.generate_default_name()
