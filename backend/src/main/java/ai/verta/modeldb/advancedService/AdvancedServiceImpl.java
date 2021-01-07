@@ -7,7 +7,6 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceImplBase;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.AuthInterceptor;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.comment.CommentDAO;
@@ -43,35 +42,24 @@ import org.apache.logging.log4j.Logger;
 public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(AdvancedServiceImpl.class);
-  private AuthService authService;
-  private RoleService roleService;
-  private ProjectDAO projectDAO;
-  private ExperimentRunDAO experimentRunDAO;
-  private CommentDAO commentDAO;
-  private ExperimentDAO experimentDAO;
-  private ArtifactStoreDAO artifactStoreDAO;
-  private DatasetDAO datasetDAO;
-  private DatasetVersionDAO datasetVersionDAO;
+  private final AuthService authService;
+  private final RoleService roleService;
+  private final ProjectDAO projectDAO;
+  private final ExperimentRunDAO experimentRunDAO;
+  private final CommentDAO commentDAO;
+  private final ExperimentDAO experimentDAO;
+  private final DatasetDAO datasetDAO;
+  private final DatasetVersionDAO datasetVersionDAO;
 
-  public AdvancedServiceImpl(
-      AuthService authService,
-      RoleService roleService,
-      ProjectDAO projectDAO,
-      ExperimentRunDAO experimentRunDAO,
-      CommentDAO commentDAO,
-      ExperimentDAO experimentDAO,
-      ArtifactStoreDAO artifactStoreDAO,
-      DatasetDAO datasetDAO,
-      DatasetVersionDAO datasetVersionDAO) {
-    this.authService = authService;
-    this.roleService = roleService;
-    this.projectDAO = projectDAO;
-    this.experimentRunDAO = experimentRunDAO;
-    this.commentDAO = commentDAO;
-    this.experimentDAO = experimentDAO;
-    this.artifactStoreDAO = artifactStoreDAO;
-    this.datasetDAO = datasetDAO;
-    this.datasetVersionDAO = datasetVersionDAO;
+  public AdvancedServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+    this.authService = serviceSet.authService;
+    this.roleService = serviceSet.roleService;
+    this.projectDAO = daoSet.projectDAO;
+    this.experimentRunDAO = daoSet.experimentRunDAO;
+    this.commentDAO = daoSet.commentDAO;
+    this.experimentDAO = daoSet.experimentDAO;
+    this.datasetDAO = daoSet.datasetDAO;
+    this.datasetVersionDAO = daoSet.datasetVersionDAO;
   }
 
   private List<HydratedProject> getHydratedProjects(List<Project> projects)

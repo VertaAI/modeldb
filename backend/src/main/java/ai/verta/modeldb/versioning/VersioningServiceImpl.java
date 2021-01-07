@@ -1,15 +1,15 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.modeldb.DAOSet;
+import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.exceptions.ModelDBException;
-import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.ListRepositoriesRequest.Response;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceImplBase;
@@ -35,34 +35,20 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
-  private final ProjectDAO projectDAO;
-  private final ExperimentDAO experimentDAO;
   private final ExperimentRunDAO experimentRunDAO;
   private final FileHasher fileHasher;
   private final Validator validator = new Validator();
   private final ArtifactStoreDAO artifactStoreDAO;
 
-  public VersioningServiceImpl(
-      AuthService authService,
-      RoleService roleService,
-      RepositoryDAO repositoryDAO,
-      CommitDAO commitDAO,
-      BlobDAO blobDAO,
-      ProjectDAO projectDAO,
-      ExperimentDAO experimentDAO,
-      ExperimentRunDAO experimentRunDAO,
-      FileHasher fileHasher,
-      ArtifactStoreDAO artifactStoreDAO) {
-    this.authService = authService;
-    this.roleService = roleService;
-    this.repositoryDAO = repositoryDAO;
-    this.commitDAO = commitDAO;
-    this.blobDAO = blobDAO;
-    this.projectDAO = projectDAO;
-    this.experimentDAO = experimentDAO;
-    this.experimentRunDAO = experimentRunDAO;
+  public VersioningServiceImpl(ServiceSet serviceSet, DAOSet daoSet, FileHasher fileHasher) {
+    this.authService = serviceSet.authService;
+    this.roleService = serviceSet.roleService;
+    this.repositoryDAO = daoSet.repositoryDAO;
+    this.commitDAO = daoSet.commitDAO;
+    this.blobDAO = daoSet.blobDAO;
+    this.experimentRunDAO = daoSet.experimentRunDAO;
+    this.artifactStoreDAO = daoSet.artifactStoreDAO;
     this.fileHasher = fileHasher;
-    this.artifactStoreDAO = artifactStoreDAO;
   }
 
   @Override

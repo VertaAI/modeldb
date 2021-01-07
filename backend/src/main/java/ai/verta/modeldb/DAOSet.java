@@ -26,19 +26,19 @@ import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.*;
 
 public class DAOSet {
-  AuditLogLocalDAO auditLogLocalDAO;
-  ArtifactStoreDAO artifactStoreDAO;
-  BlobDAO blobDAO;
-  CommentDAO commentDAO;
-  CommitDAO commitDAO;
-  DatasetDAO datasetDAO;
-  DatasetVersionDAO datasetVersionDAO;
-  ExperimentDAO experimentDAO;
-  ExperimentRunDAO experimentRunDAO;
-  LineageDAO lineageDAO;
-  MetadataDAO metadataDAO;
-  ProjectDAO projectDAO;
-  RepositoryDAO repositoryDAO;
+  public AuditLogLocalDAO auditLogLocalDAO;
+  public ArtifactStoreDAO artifactStoreDAO;
+  public BlobDAO blobDAO;
+  public CommentDAO commentDAO;
+  public CommitDAO commitDAO;
+  public DatasetDAO datasetDAO;
+  public DatasetVersionDAO datasetVersionDAO;
+  public ExperimentDAO experimentDAO;
+  public ExperimentRunDAO experimentRunDAO;
+  public LineageDAO lineageDAO;
+  public MetadataDAO metadataDAO;
+  public ProjectDAO projectDAO;
+  public RepositoryDAO repositoryDAO;
 
   public static DAOSet fromServices(ServiceSet services) {
     DAOSet set = new DAOSet();

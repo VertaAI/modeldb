@@ -56,34 +56,25 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final MetadataDAO metadataDAO;
-  private AuthService authService;
-  private RoleService roleService;
-  private ProjectDAO projectDAO;
-  private ExperimentDAO experimentDAO;
-  private ExperimentRunDAO experimentRunDAO;
+  private final AuthService authService;
+  private final RoleService roleService;
+  private final ProjectDAO projectDAO;
+  private final ExperimentDAO experimentDAO;
+  private final ExperimentRunDAO experimentRunDAO;
   private final AuditLogLocalDAO auditLogLocalDAO;
   private static final String SERVICE_NAME =
       String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.DATASET);
 
-  public DatasetServiceImpl(
-      AuthService authService,
-      RoleService roleService,
-      ProjectDAO projectDAO,
-      ExperimentDAO experimentDAO,
-      ExperimentRunDAO experimentRunDAO,
-      RepositoryDAO repositoryDAO,
-      CommitDAO commitDAO,
-      MetadataDAO metadataDAO,
-      AuditLogLocalDAO auditLogLocalDAO) {
-    this.authService = authService;
-    this.roleService = roleService;
-    this.projectDAO = projectDAO;
-    this.experimentDAO = experimentDAO;
-    this.experimentRunDAO = experimentRunDAO;
-    this.repositoryDAO = repositoryDAO;
-    this.commitDAO = commitDAO;
-    this.metadataDAO = metadataDAO;
-    this.auditLogLocalDAO = auditLogLocalDAO;
+  public DatasetServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+    this.authService = serviceSet.authService;
+    this.roleService = serviceSet.roleService;
+    this.projectDAO = daoSet.projectDAO;
+    this.experimentDAO = daoSet.experimentDAO;
+    this.experimentRunDAO = daoSet.experimentRunDAO;
+    this.repositoryDAO = daoSet.repositoryDAO;
+    this.commitDAO = daoSet.commitDAO;
+    this.metadataDAO = daoSet.metadataDAO;
+    this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
   }
 
   private void saveAuditLogs(

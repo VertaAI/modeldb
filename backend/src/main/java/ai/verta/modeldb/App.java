@@ -63,7 +63,6 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableConfigurationProperties({FileStorageProperties.class})
 // Remove bracket () code if in future define any @component outside of the defined basePackages.
 @ComponentScan(basePackages = "${scan.packages}, ai.verta.modeldb.health")
-@SuppressWarnings("unchecked")
 public class App implements ApplicationContextAware {
   public ApplicationContext applicationContext;
 
@@ -194,8 +193,7 @@ public class App implements ApplicationContextAware {
       initializeTelemetryBasedOnConfig(config);
 
       // Initialize cron jobs
-      CronJobUtils.initializeCronJobs(
-          config, services.authService, services.roleService, services.artifactStoreService);
+      CronJobUtils.initializeCronJobs(config, services);
 
       // Initialize grpc server
       ServerBuilder<?> serverBuilder = ServerBuilder.forPort(config.grpcServer.port);
@@ -270,103 +268,26 @@ public class App implements ApplicationContextAware {
 
   private static void initializeBackendServices(
       ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos) {
-    wrapService(
-        serverBuilder,
-        new ProjectServiceImpl(
-            services.authService,
-            services.roleService,
-            daos.projectDAO,
-            daos.experimentRunDAO,
-            daos.artifactStoreDAO,
-            daos.auditLogLocalDAO));
+    wrapService(serverBuilder, new ProjectServiceImpl(services, daos));
     LOGGER.trace("Project serviceImpl initialized");
-    wrapService(
-        serverBuilder,
-        new ExperimentServiceImpl(
-            services.authService,
-            services.roleService,
-            daos.experimentDAO,
-            daos.projectDAO,
-            daos.artifactStoreDAO,
-            daos.auditLogLocalDAO));
+    wrapService(serverBuilder, new ExperimentServiceImpl(services, daos));
     LOGGER.trace("Experiment serviceImpl initialized");
-    wrapService(
-        serverBuilder,
-        new ExperimentRunServiceImpl(
-            services.authService,
-            services.roleService,
-            daos.experimentRunDAO,
-            daos.projectDAO,
-            daos.experimentDAO,
-            daos.artifactStoreDAO,
-            daos.datasetVersionDAO,
-            daos.repositoryDAO,
-            daos.commitDAO,
-            daos.auditLogLocalDAO));
+    wrapService(serverBuilder, new ExperimentRunServiceImpl(services, daos));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
-    wrapService(
-        serverBuilder,
-        new CommentServiceImpl(
-            services.authService, daos.commentDAO, daos.experimentRunDAO, services.roleService));
+    wrapService(serverBuilder, new CommentServiceImpl(services, daos));
     LOGGER.trace("Comment serviceImpl initialized");
-    wrapService(
-        serverBuilder,
-        new DatasetServiceImpl(
-            services.authService,
-            services.roleService,
-            daos.projectDAO,
-            daos.experimentDAO,
-            daos.experimentRunDAO,
-            daos.repositoryDAO,
-            daos.commitDAO,
-            daos.metadataDAO,
-            daos.auditLogLocalDAO));
+    wrapService(serverBuilder, new DatasetServiceImpl(services, daos));
     LOGGER.trace("Dataset serviceImpl initialized");
-    wrapService(
-        serverBuilder,
-        new DatasetVersionServiceImpl(
-            services.authService,
-            services.roleService,
-            daos.repositoryDAO,
-            daos.commitDAO,
-            daos.blobDAO,
-            daos.metadataDAO,
-            daos.artifactStoreDAO,
-            daos.auditLogLocalDAO));
+    wrapService(serverBuilder, new DatasetVersionServiceImpl(services, daos));
     LOGGER.trace("Dataset Version serviceImpl initialized");
-    wrapService(
-        serverBuilder,
-        new AdvancedServiceImpl(
-            services.authService,
-            services.roleService,
-            daos.projectDAO,
-            daos.experimentRunDAO,
-            daos.commentDAO,
-            daos.experimentDAO,
-            daos.artifactStoreDAO,
-            daos.datasetDAO,
-            daos.datasetVersionDAO));
+    wrapService(serverBuilder, new AdvancedServiceImpl(services, daos));
     LOGGER.trace("Hydrated serviceImpl initialized");
-    wrapService(
-        serverBuilder,
-        new LineageServiceImpl(daos.lineageDAO, daos.experimentRunDAO, daos.commitDAO));
+    wrapService(serverBuilder, new LineageServiceImpl(daos));
     LOGGER.trace("Lineage serviceImpl initialized");
 
-    wrapService(
-        serverBuilder,
-        new VersioningServiceImpl(
-            services.authService,
-            services.roleService,
-            daos.repositoryDAO,
-            daos.commitDAO,
-            daos.blobDAO,
-            daos.projectDAO,
-            daos.experimentDAO,
-            daos.experimentRunDAO,
-            new FileHasher(),
-            daos.artifactStoreDAO));
+    wrapService(serverBuilder, new VersioningServiceImpl(services, daos, new FileHasher()));
     LOGGER.trace("Versioning serviceImpl initialized");
-    wrapService(serverBuilder, new MetadataServiceImpl(daos.metadataDAO));
+    wrapService(serverBuilder, new MetadataServiceImpl(daos));
     LOGGER.trace("Metadata serviceImpl initialized");
     LOGGER.info("All services initialized and resolved dependency before server start");
   }
