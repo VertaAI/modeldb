@@ -14,7 +14,6 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.TagsMapping;
@@ -25,8 +24,8 @@ import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
@@ -84,16 +83,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       "select id  From DatasetEntity d where d.deleted = false";
   private static final String NON_DELETED_DATASET_IDS_BY_IDS =
       NON_DELETED_DATASET_IDS + " AND d.id in (:" + ModelDBConstants.DATASET_IDS + ")";
-  private static final String IDS_FILTERED_BY_WORKSPACE =
-      NON_DELETED_DATASET_IDS_BY_IDS
-          + " AND d."
-          + ModelDBConstants.WORKSPACE
-          + " = :"
-          + ModelDBConstants.WORKSPACE
-          + " AND d."
-          + ModelDBConstants.WORKSPACE_TYPE
-          + " = :"
-          + ModelDBConstants.WORKSPACE_TYPE;
 
   public DatasetDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
@@ -782,8 +771,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo)
-      throws InvalidProtocolBufferException {
+  public List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo) {
     if (!roleService.IsImplemented()) {
       try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
         return session.createQuery(NON_DELETED_DATASET_IDS).list();
@@ -796,34 +784,44 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              ModelDBServiceResourceTypes.DATASET,
+              ModelDBServiceResourceTypes.REPOSITORY,
               Collections.EMPTY_LIST);
 
-      // resolve workspace
-      WorkspaceDTO workspaceDTO =
-          roleService.getWorkspaceDTOByWorkspaceName(currentLoginUserInfo, workspaceName);
+      Set<String> accessibleResourceIds = new HashSet<>(accessibleDatasetIds);
+      // in personal workspace show datasets directly shared
+      if (workspaceName != null
+          && !workspaceName.isEmpty()
+          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        LOGGER.debug("Workspace and current login user match");
+        List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+            roleService.getResourceItems(
+                null, Collections.emptySet(), ModelDBServiceResourceTypes.REPOSITORY);
+        accessibleResourceIds.addAll(
+            accessibleAllWorkspaceItems.stream()
+                .map(GetResourcesResponseItem::getResourceId)
+                .collect(Collectors.toSet()));
+      } else if (workspaceName != null && !workspaceName.isEmpty()) {
+        // get list of accessible datasets
+        accessibleResourceIds =
+            ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
+                roleService,
+                accessibleResourceIds,
+                workspaceName,
+                currentLoginUserInfo,
+                ModelDBServiceResourceTypes.REPOSITORY);
+      }
 
-      List<String> resultDatasets = new LinkedList<String>();
+      LOGGER.debug("accessibleAllWorkspaceDatasetIds : {}", accessibleResourceIds);
+
       try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
         @SuppressWarnings("unchecked")
-        Query<String> query = session.createQuery(IDS_FILTERED_BY_WORKSPACE);
+        Query<String> query = session.createQuery(NON_DELETED_DATASET_IDS_BY_IDS);
         query.setParameterList(ModelDBConstants.DATASET_IDS, accessibleDatasetIds);
-        query.setParameter(ModelDBConstants.WORKSPACE, workspaceDTO.getWorkspaceId());
-        query.setParameter(
-            ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
-        resultDatasets = query.list();
-
-        // in personal workspace show datasets directly shared
-        if (workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
-          List<String> directlySharedDatasets =
-              roleService.getSelfDirectlyAllowedResources(
-                  ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.READ);
-          query = session.createQuery(NON_DELETED_DATASET_IDS_BY_IDS);
-          query.setParameterList(ModelDBConstants.DATASET_IDS, directlySharedDatasets);
-          resultDatasets.addAll(query.list());
-        }
+        List<String> resultDatasets = query.list();
+        LOGGER.debug(
+            "Total accessible project Ids in function getWorkspaceDatasetIDs : {}", resultDatasets);
+        return resultDatasets;
       }
-      return resultDatasets;
     }
   }
 

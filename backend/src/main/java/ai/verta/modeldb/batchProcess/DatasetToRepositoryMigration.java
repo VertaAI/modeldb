@@ -282,7 +282,10 @@ public class DatasetToRepositoryMigration {
         if (status.getCode().equals(Status.Code.ALREADY_EXISTS)) {
           dataset =
               repositoryDAO.createOrUpdateDataset(
-                  newDataset, authService.getUsernameFromUserInfo(userInfoValue), false, null);
+                  newDataset,
+                  authService.getUsernameFromUserInfo(userInfoValue),
+                  false,
+                  userInfoValue);
           LOGGER.debug(
               "Continuing with repository {} already created for dataset {}",
               dataset.getId(),
