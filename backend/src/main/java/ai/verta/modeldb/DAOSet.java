@@ -9,10 +9,6 @@ import ai.verta.modeldb.audit_log.AuditLogLocalDAORdbImpl;
 import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
-import ai.verta.modeldb.dataset.DatasetDAO;
-import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAORdbImpl;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experiment.ExperimentDAORdbImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -31,8 +27,6 @@ public class DAOSet {
   BlobDAO blobDAO;
   CommentDAO commentDAO;
   CommitDAO commitDAO;
-  DatasetDAO datasetDAO;
-  DatasetVersionDAO datasetVersionDAO;
   ExperimentDAO experimentDAO;
   ExperimentRunDAO experimentRunDAO;
   LineageDAO lineageDAO;
@@ -69,10 +63,7 @@ public class DAOSet {
     }
 
     set.commentDAO = new CommentDAORdbImpl(services.authService);
-    set.datasetDAO = new DatasetDAORdbImpl(services.authService, services.roleService);
     set.lineageDAO = new LineageDAORdbImpl();
-    set.datasetVersionDAO =
-        new DatasetVersionDAORdbImpl(services.authService, services.roleService);
     if (services.authService instanceof PublicAuthServiceUtils) {
       set.auditLogLocalDAO = new AuditLogLocalDAODisabled();
     } else {

@@ -19,6 +19,7 @@ import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UserInfo;
@@ -242,26 +243,17 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         repositoryDAO.getProtectedRepositoryById(repositoryIdentification, false);
     List<DatasetVersion> datasetVersions =
         new ArrayList<>(
-            convertRepoDatasetVersions(repositoryEntity, listCommitsResponse.getCommitsList()));
+            RdbmsUtils.convertRepoDatasetVersions(
+                repositoryDAO,
+                metadataDAO,
+                blobDAO,
+                repositoryEntity,
+                listCommitsResponse.getCommitsList()));
 
     DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
     datasetVersionDTO.setDatasetVersions(datasetVersions);
     datasetVersionDTO.setTotalRecords(totalRecords);
     return datasetVersionDTO;
-  }
-
-  private List<DatasetVersion> convertRepoDatasetVersions(
-      RepositoryEntity repositoryEntity, List<Commit> commitList) throws ModelDBException {
-    List<DatasetVersion> datasetVersions = new ArrayList<>();
-    for (Commit commit : commitList) {
-      if (commit.getParentShasList().isEmpty()) {
-        continue;
-      }
-      datasetVersions.add(
-          blobDAO.convertToDatasetVersion(
-              repositoryDAO, metadataDAO, repositoryEntity, commit.getCommitSha(), false));
-    }
-    return datasetVersions;
   }
 
   /**
@@ -341,7 +333,12 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
       List<DatasetVersion> datasetVersions =
           new ArrayList<>(
-              convertRepoDatasetVersions(repositoryEntity, commitPaginationDTO.getCommits()));
+              RdbmsUtils.convertRepoDatasetVersions(
+                  repositoryDAO,
+                  metadataDAO,
+                  blobDAO,
+                  repositoryEntity,
+                  commitPaginationDTO.getCommits()));
 
       if (datasetVersions.size() != 1) {
         throw new NotFoundException(
@@ -398,7 +395,12 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
       List<DatasetVersion> datasetVersions =
           new ArrayList<>(
-              convertRepoDatasetVersions(repositoryEntity, commitPaginationDTO.getCommits()));
+              RdbmsUtils.convertRepoDatasetVersions(
+                  repositoryDAO,
+                  metadataDAO,
+                  blobDAO,
+                  repositoryEntity,
+                  commitPaginationDTO.getCommits()));
       responseObserver.onNext(
           FindDatasetVersions.Response.newBuilder()
               .addAllDatasetVersions(datasetVersions)

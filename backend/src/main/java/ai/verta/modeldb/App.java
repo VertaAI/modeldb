@@ -299,7 +299,6 @@ public class App implements ApplicationContextAware {
             daos.projectDAO,
             daos.experimentDAO,
             daos.artifactStoreDAO,
-            daos.datasetVersionDAO,
             daos.repositoryDAO,
             daos.commitDAO,
             daos.auditLogLocalDAO));
@@ -344,8 +343,9 @@ public class App implements ApplicationContextAware {
             daos.commentDAO,
             daos.experimentDAO,
             daos.artifactStoreDAO,
-            daos.datasetDAO,
-            daos.datasetVersionDAO));
+            daos.repositoryDAO,
+            daos.commitDAO,
+            daos.metadataDAO));
     LOGGER.trace("Hydrated serviceImpl initialized");
     wrapService(
         serverBuilder,

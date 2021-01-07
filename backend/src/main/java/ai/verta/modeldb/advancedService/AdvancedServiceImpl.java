@@ -17,16 +17,22 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
-import ai.verta.modeldb.dataset.DatasetDAO;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.*;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.versioning.BlobDAO;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
+import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
@@ -50,8 +56,10 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   private CommentDAO commentDAO;
   private ExperimentDAO experimentDAO;
   private ArtifactStoreDAO artifactStoreDAO;
-  private DatasetDAO datasetDAO;
-  private DatasetVersionDAO datasetVersionDAO;
+  private RepositoryDAO repositoryDAO;
+  private CommitDAO commitDAO;
+  private MetadataDAO metadataDAO;
+  private BlobDAO blobDAO;
 
   public AdvancedServiceImpl(
       AuthService authService,
@@ -61,8 +69,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       CommentDAO commentDAO,
       ExperimentDAO experimentDAO,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetDAO datasetDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      MetadataDAO metadataDAO) {
     this.authService = authService;
     this.roleService = roleService;
     this.projectDAO = projectDAO;
@@ -70,8 +79,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     this.commentDAO = commentDAO;
     this.experimentDAO = experimentDAO;
     this.artifactStoreDAO = artifactStoreDAO;
-    this.datasetDAO = datasetDAO;
-    this.datasetVersionDAO = datasetVersionDAO;
+    this.repositoryDAO = repositoryDAO;
+    this.commitDAO = commitDAO;
+    this.metadataDAO = metadataDAO;
   }
 
   private List<HydratedProject> getHydratedProjects(List<Project> projects)
@@ -830,7 +840,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(request, userInfo, ResourceVisibility.PRIVATE);
+          repositoryDAO.findDatasets(metadataDAO, request, userInfo, ResourceVisibility.PRIVATE);
       LOGGER.debug(
           ModelDBMessages.DATASET_RECORD_COUNT_MSG, datasetPaginationDTO.getTotalRecords());
       List<HydratedDataset> hydratedDatasets =
@@ -905,20 +915,54 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             ModelDBServiceActions.READ);
       }
 
-      DatasetVersionDTO datasetVersionPaginationDTO =
-          datasetVersionDAO.findDatasetVersions(datasetDAO, request, userInfo);
-      LOGGER.debug(
-          "DatasetVersionPaginationDTO record count : "
-              + datasetVersionPaginationDTO.getTotalRecords());
+      FindRepositoriesBlobs.Builder findRepositoriesBlobs =
+          FindRepositoriesBlobs.newBuilder()
+              .addAllCommits(request.getDatasetVersionIdsList())
+              .addAllPredicates(request.getPredicatesList())
+              .setPageLimit(request.getPageLimit())
+              .setPageNumber(request.getPageNumber())
+              .setWorkspaceName(request.getWorkspaceName());
+      if (!request.getDatasetId().isEmpty()) {
+        findRepositoriesBlobs.addRepoIds(Long.parseLong(request.getDatasetId()));
+      }
 
+      CommitPaginationDTO commitPaginationDTO =
+          commitDAO.findCommits(
+              findRepositoriesBlobs.build(),
+              userInfo,
+              request.getIdsOnly(),
+              false,
+              true,
+              request.getSortKey(),
+              request.getAscending());
+      LOGGER.debug(
+          "DatasetVersionPaginationDTO record count : " + commitPaginationDTO.getTotalRecords());
+
+      RepositoryEntity repositoryEntity = null;
+      if (!request.getDatasetId().isEmpty()) {
+        RepositoryIdentification repositoryIdentification =
+            RepositoryIdentification.newBuilder()
+                .setRepoId(Long.parseLong(request.getDatasetId()))
+                .build();
+        repositoryEntity =
+            repositoryDAO.getProtectedRepositoryById(repositoryIdentification, false);
+      }
+      List<DatasetVersion> datasetVersions =
+          new ArrayList<>(
+              RdbmsUtils.convertRepoDatasetVersions(
+                  repositoryDAO,
+                  metadataDAO,
+                  blobDAO,
+                  repositoryEntity,
+                  commitPaginationDTO.getCommits()));
       List<HydratedDatasetVersion> hydratedDatasetVersions = new ArrayList<>();
       if (request.getIdsOnly()) {
-        for (DatasetVersion datasetVersion : datasetVersionPaginationDTO.getDatasetVersions()) {
+        for (DatasetVersion datasetVersion : datasetVersions) {
           hydratedDatasetVersions.add(
               HydratedDatasetVersion.newBuilder().setDatasetVersion(datasetVersion).build());
         }
-      } else if (!datasetVersionPaginationDTO.getDatasetVersions().isEmpty()) {
-        for (DatasetVersion datasetVersion : datasetVersionPaginationDTO.getDatasetVersions()) {
+      } else if (!datasetVersions.isEmpty()) {
+        for (DatasetVersion datasetVersion : datasetVersions) {
           hydratedDatasetVersions.add(getHydratedDatasetVersion(datasetVersion));
         }
       }
@@ -926,7 +970,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onNext(
           AdvancedQueryDatasetVersionsResponse.newBuilder()
               .addAllHydratedDatasetVersions(hydratedDatasetVersions)
-              .setTotalRecords(datasetVersionPaginationDTO.getTotalRecords())
+              .setTotalRecords(commitPaginationDTO.getTotalRecords())
               .build());
       responseObserver.onCompleted();
 
@@ -964,7 +1008,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                       : request.getWorkspaceName());
 
       DatasetPaginationDTO datasetPaginationDTO =
-          datasetDAO.findDatasets(findDatasets.build(), userInfo, ResourceVisibility.PRIVATE);
+          repositoryDAO.findDatasets(
+              metadataDAO, findDatasets.build(), userInfo, ResourceVisibility.PRIVATE);
 
       if (datasetPaginationDTO.getTotalRecords() == 0) {
         throw new NotFoundException("Dataset not found");
@@ -1189,13 +1234,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             "Dataset version ids from experimentRun count : {}", datasetVersionIdSet.size());
         Set<String> datasetIdSet = new HashSet<>();
         if (!datasetVersionIdSet.isEmpty()) {
-          List<DatasetVersion> datasetVersionList =
-              datasetVersionDAO.getDatasetVersionsByBatchIds(new ArrayList<>(datasetVersionIdSet));
-          for (DatasetVersion datasetVersion : datasetVersionList) {
-            if (!datasetVersion.getDatasetId().isEmpty()) {
-              datasetIdSet.add(datasetVersion.getDatasetId());
-            }
-          }
+          datasetIdSet.addAll(
+              commitDAO.getDatasetIdsOfDatasetVersions(new ArrayList<>(datasetVersionIdSet)));
         }
         LOGGER.debug(
             "Dataset ids count based on the dataset version founded from experimentRun : "
@@ -1212,7 +1252,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           // Get the user info from the Context
           UserInfo userInfo = authService.getCurrentLoginUserInfo();
           DatasetPaginationDTO datasetPaginationDTO =
-              datasetDAO.findDatasets(findDatasetsRequest, userInfo, ResourceVisibility.PRIVATE);
+              repositoryDAO.findDatasets(
+                  metadataDAO, findDatasetsRequest, userInfo, ResourceVisibility.PRIVATE);
           LOGGER.debug(
               ModelDBMessages.DATASET_RECORD_COUNT_MSG, datasetPaginationDTO.getTotalRecords());
           hydratedDatasets = findHydratedDatasets(datasetPaginationDTO, false);

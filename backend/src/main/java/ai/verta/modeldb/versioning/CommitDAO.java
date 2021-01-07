@@ -116,4 +116,6 @@ public interface CommitDAO {
       MetadataDAO metadataDAO,
       String datasetVersionId)
       throws ModelDBException;
+
+  List<String> getDatasetIdsOfDatasetVersions(List<String> datasetVersionIds);
 }

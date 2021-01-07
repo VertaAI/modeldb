@@ -10,7 +10,6 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.exceptions.*;
@@ -30,7 +29,6 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -45,7 +43,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   private ProjectDAO projectDAO;
   private ExperimentDAO experimentDAO;
   private ArtifactStoreDAO artifactStoreDAO;
-  private DatasetVersionDAO datasetVersionDAO;
   private RepositoryDAO repositoryDAO;
   private CommitDAO commitDAO;
   private App app;
@@ -60,7 +57,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       ProjectDAO projectDAO,
       ExperimentDAO experimentDAO,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       AuditLogLocalDAO auditLogLocalDAO) {
@@ -72,7 +68,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     this.projectDAO = projectDAO;
     this.experimentDAO = experimentDAO;
     this.artifactStoreDAO = artifactStoreDAO;
-    this.datasetVersionDAO = datasetVersionDAO;
     this.commitDAO = commitDAO;
     this.repositoryDAO = repositoryDAO;
   }
@@ -1137,10 +1132,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     List<Artifact> datasets = exprRun.getDatasetsList();
     for (Artifact dataset : datasets) {
       if (dataset.getKey().equals(request.getKey()))
-        return new SimpleEntry<>(
-            datasetVersionDAO.getUrlForDatasetVersion(
-                dataset.getLinkedArtifactId(), request.getMethod()),
-            null);
+        throw new InvalidArgumentException("Not supported yet");
     }
     // if the loop above did not return anything that means there was no Dataset logged with the
     // particular key
