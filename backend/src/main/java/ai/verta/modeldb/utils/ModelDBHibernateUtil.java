@@ -571,9 +571,6 @@ public class ModelDBHibernateUtil {
           case ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION:
             OwnerRoleBindingUtils.execute();
             break;
-          case ModelDBConstants.SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION:
-            OwnerRoleBindingRepositoryUtils.execute();
-            break;
           case ModelDBConstants.POPULATE_VERSION_MIGRATION:
             PopulateVersionMigration.execute(migrationConfig.record_update_limit);
             break;
