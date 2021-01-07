@@ -1337,6 +1337,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             roleService.listMyOrganizations().stream()
                 .map(Organization::getWorkspaceId)
                 .collect(Collectors.toList());
+        /*TODO: Remove organization resource filtering after UAC provide the endpoint which just
+        returns the accessible ids with collaborators entities not include the organization
+        entities*/
         for (GetResourcesResponseItem item : accessibleAllWorkspaceItems) {
           if (orgWorkspaceIds.contains(String.valueOf(item.getWorkspaceId()))) {
             accessibleDatasetIds.remove(item.getResourceId());
