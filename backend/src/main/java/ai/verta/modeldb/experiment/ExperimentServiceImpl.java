@@ -33,28 +33,22 @@ import org.apache.logging.log4j.Logger;
 public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentServiceImpl.class);
-  private AuthService authService;
-  private RoleService roleService;
-  private ExperimentDAO experimentDAO;
-  private ProjectDAO projectDAO;
-  private ArtifactStoreDAO artifactStoreDAO;
+  private final AuthService authService;
+  private final RoleService roleService;
+  private final ExperimentDAO experimentDAO;
+  private final ProjectDAO projectDAO;
+  private final ArtifactStoreDAO artifactStoreDAO;
   private final AuditLogLocalDAO auditLogLocalDAO;
   private static final String SERVICE_NAME =
       String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.EXPERIMENT);
 
-  public ExperimentServiceImpl(
-      AuthService authService,
-      RoleService roleService,
-      ExperimentDAO experimentDAO,
-      ProjectDAO projectDAO,
-      ArtifactStoreDAO artifactStoreDAO,
-      AuditLogLocalDAO auditLogLocalDAO) {
-    this.authService = authService;
-    this.roleService = roleService;
-    this.experimentDAO = experimentDAO;
-    this.projectDAO = projectDAO;
-    this.artifactStoreDAO = artifactStoreDAO;
-    this.auditLogLocalDAO = auditLogLocalDAO;
+  public ExperimentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+    this.authService = serviceSet.authService;
+    this.roleService = serviceSet.roleService;
+    this.experimentDAO = daoSet.experimentDAO;
+    this.projectDAO = daoSet.projectDAO;
+    this.artifactStoreDAO = daoSet.artifactStoreDAO;
+    this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
   }
 
   private void saveAuditLogs(

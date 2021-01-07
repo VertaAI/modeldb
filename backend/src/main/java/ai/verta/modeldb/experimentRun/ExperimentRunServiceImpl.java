@@ -39,42 +39,30 @@ import org.apache.logging.log4j.Logger;
 public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentRunServiceImpl.class);
-  private AuthService authService;
-  private RoleService roleService;
-  private ExperimentRunDAO experimentRunDAO;
-  private ProjectDAO projectDAO;
-  private ExperimentDAO experimentDAO;
-  private ArtifactStoreDAO artifactStoreDAO;
-  private DatasetVersionDAO datasetVersionDAO;
-  private RepositoryDAO repositoryDAO;
-  private CommitDAO commitDAO;
-  private App app;
+  private final AuthService authService;
+  private final RoleService roleService;
+  private final ExperimentRunDAO experimentRunDAO;
+  private final ProjectDAO projectDAO;
+  private final ExperimentDAO experimentDAO;
+  private final ArtifactStoreDAO artifactStoreDAO;
+  private final DatasetVersionDAO datasetVersionDAO;
+  private final RepositoryDAO repositoryDAO;
+  private final CommitDAO commitDAO;
   private final AuditLogLocalDAO auditLogLocalDAO;
   private static final String SERVICE_NAME =
       String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.EXPERIMENT_RUN);
 
-  public ExperimentRunServiceImpl(
-      AuthService authService,
-      RoleService roleService,
-      ExperimentRunDAO experimentRunDAO,
-      ProjectDAO projectDAO,
-      ExperimentDAO experimentDAO,
-      ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO,
-      RepositoryDAO repositoryDAO,
-      CommitDAO commitDAO,
-      AuditLogLocalDAO auditLogLocalDAO) {
-    this.auditLogLocalDAO = auditLogLocalDAO;
-    this.app = App.getInstance();
-    this.authService = authService;
-    this.roleService = roleService;
-    this.experimentRunDAO = experimentRunDAO;
-    this.projectDAO = projectDAO;
-    this.experimentDAO = experimentDAO;
-    this.artifactStoreDAO = artifactStoreDAO;
-    this.datasetVersionDAO = datasetVersionDAO;
-    this.commitDAO = commitDAO;
-    this.repositoryDAO = repositoryDAO;
+  public ExperimentRunServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+    this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
+    this.authService = serviceSet.authService;
+    this.roleService = serviceSet.roleService;
+    this.experimentRunDAO = daoSet.experimentRunDAO;
+    this.projectDAO = daoSet.projectDAO;
+    this.experimentDAO = daoSet.experimentDAO;
+    this.artifactStoreDAO = daoSet.artifactStoreDAO;
+    this.datasetVersionDAO = daoSet.datasetVersionDAO;
+    this.commitDAO = daoSet.commitDAO;
+    this.repositoryDAO = daoSet.repositoryDAO;
   }
 
   private void saveAuditLogs(

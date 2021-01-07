@@ -7,7 +7,6 @@ import ai.verta.modeldb.CreateDatasetVersion.Response;
 import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceImplBase;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
-import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
@@ -37,8 +36,7 @@ import org.apache.logging.log4j.Logger;
 public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetVersionServiceImpl.class);
-  private AuthService authService;
-  private RoleService roleService;
+  private final AuthService authService;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
@@ -48,23 +46,14 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private static final String SERVICE_NAME =
       String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.DATASET_VERSION);
 
-  public DatasetVersionServiceImpl(
-      AuthService authService,
-      RoleService roleService,
-      RepositoryDAO repositoryDAO,
-      CommitDAO commitDAO,
-      BlobDAO blobDAO,
-      MetadataDAO metadataDAO,
-      ArtifactStoreDAO artifactStoreDAO,
-      AuditLogLocalDAO auditLogLocalDAO) {
-    this.authService = authService;
-    this.roleService = roleService;
-    this.repositoryDAO = repositoryDAO;
-    this.commitDAO = commitDAO;
-    this.blobDAO = blobDAO;
-    this.metadataDAO = metadataDAO;
-    this.artifactStoreDAO = artifactStoreDAO;
-    this.auditLogLocalDAO = auditLogLocalDAO;
+  public DatasetVersionServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+    this.authService = serviceSet.authService;
+    this.repositoryDAO = daoSet.repositoryDAO;
+    this.commitDAO = daoSet.commitDAO;
+    this.blobDAO = daoSet.blobDAO;
+    this.metadataDAO = daoSet.metadataDAO;
+    this.artifactStoreDAO = daoSet.artifactStoreDAO;
+    this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
   }
 
   private void saveAuditLogs(
