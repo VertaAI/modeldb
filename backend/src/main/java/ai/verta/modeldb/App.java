@@ -172,7 +172,6 @@ public class App implements ApplicationContextAware {
           java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
       logger.setLevel(Level.WARNING);
       // --------------- Start reading properties --------------------------
-      App app = App.getInstance();
       Config config = Config.getInstance();
 
       // Initialize database configuration and maybe run migration
