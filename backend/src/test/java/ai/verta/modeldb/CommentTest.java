@@ -32,7 +32,7 @@ public class CommentTest extends TestsInit {
 
   // ExperimentRun Entities
   private static ExperimentRun experimentRun;
-  private static List<Comment> commentList;
+  private static List<Comment> commentList = new ArrayList<>();
 
   @Before
   public void createEntities() {

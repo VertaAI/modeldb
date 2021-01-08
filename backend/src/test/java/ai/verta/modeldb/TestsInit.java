@@ -126,6 +126,8 @@ public class TestsInit {
     datasetVersionServiceStubClient2 = DatasetVersionServiceGrpc.newBlockingStub(client2Channel);
     lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
     artifactStoreBlockingStub = ArtifactStoreGrpc.newBlockingStub(channel);
+    hydratedServiceBlockingStub = HydratedServiceGrpc.newBlockingStub(channel);
+    hydratedServiceBlockingStubClient2 = HydratedServiceGrpc.newBlockingStub(client2Channel);
 
     serverBuilder.build().start();
   }
