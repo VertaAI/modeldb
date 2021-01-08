@@ -22,22 +22,18 @@ import org.apache.logging.log4j.Logger;
 public class CommentServiceImpl extends CommentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(CommentServiceImpl.class);
-  private AuthService authService;
-  private CommentDAO commentDAO;
-  private ExperimentRunDAO experimentRunDAO;
-  private RoleService roleService;
+  private final AuthService authService;
+  private final RoleService roleService;
+  private final CommentDAO commentDAO;
+  private final ExperimentRunDAO experimentRunDAO;
 
   String experimentRunEntity = ExperimentRunEntity.class.getSimpleName();
 
-  public CommentServiceImpl(
-      AuthService authService,
-      CommentDAO commentDAO,
-      ExperimentRunDAO experimentRunDAO,
-      RoleService roleService) {
-    this.authService = authService;
-    this.commentDAO = commentDAO;
-    this.experimentRunDAO = experimentRunDAO;
-    this.roleService = roleService;
+  public CommentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+    this.authService = serviceSet.authService;
+    this.roleService = serviceSet.roleService;
+    this.commentDAO = daoSet.commentDAO;
+    this.experimentRunDAO = daoSet.experimentRunDAO;
   }
 
   /**

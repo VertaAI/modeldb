@@ -34,28 +34,22 @@ import org.apache.logging.log4j.Logger;
 public class ProjectServiceImpl extends ProjectServiceImplBase {
 
   public static final Logger LOGGER = LogManager.getLogger(ProjectServiceImpl.class);
-  private AuthService authService;
-  private RoleService roleService;
-  private ProjectDAO projectDAO;
-  private ExperimentRunDAO experimentRunDAO;
-  private ArtifactStoreDAO artifactStoreDAO;
+  private final AuthService authService;
+  private final RoleService roleService;
+  private final ProjectDAO projectDAO;
+  private final ExperimentRunDAO experimentRunDAO;
+  private final ArtifactStoreDAO artifactStoreDAO;
   private final AuditLogLocalDAO auditLogLocalDAO;
   private static final String SERVICE_NAME =
       String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.PROJECT);
 
-  public ProjectServiceImpl(
-      AuthService authService,
-      RoleService roleService,
-      ProjectDAO projectDAO,
-      ExperimentRunDAO experimentRunDAO,
-      ArtifactStoreDAO artifactStoreDAO,
-      AuditLogLocalDAO auditLogLocalDAO) {
-    this.authService = authService;
-    this.roleService = roleService;
-    this.projectDAO = projectDAO;
-    this.experimentRunDAO = experimentRunDAO;
-    this.artifactStoreDAO = artifactStoreDAO;
-    this.auditLogLocalDAO = auditLogLocalDAO;
+  public ProjectServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+    this.authService = serviceSet.authService;
+    this.roleService = serviceSet.roleService;
+    this.projectDAO = daoSet.projectDAO;
+    this.experimentRunDAO = daoSet.experimentRunDAO;
+    this.artifactStoreDAO = daoSet.artifactStoreDAO;
+    this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
   }
 
   private void saveAuditLogs(

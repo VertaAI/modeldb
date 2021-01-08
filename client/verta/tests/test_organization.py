@@ -38,7 +38,7 @@ class TestOrganization:
 
         org.delete()
 
-    def test_create_same_name_diff_workspace(self, client, organization, created_endpoints, created_registered_models, created_datasets):
+    def test_create_same_name_diff_workspace(self, client, organization, created_entities):
         # creating some entities:
         project_name = _utils.generate_default_name()
         exp_name = _utils.generate_default_name()
@@ -55,13 +55,13 @@ class TestOrganization:
         repository = client.get_or_create_repository(name=repository_name)
 
         dataset = client.create_dataset(dataset_name)
-        created_datasets.append(dataset)
+        created_entities.append(dataset)
         model = client.create_registered_model(name=model_name)
         version = model.create_version(name=version_name)
-        created_registered_models.append(model)
+        created_entities.append(model)
 
         endpoint = client.create_endpoint(path=endpoint_path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         # create entities with same name, but different workspace:
         new_model = client.create_registered_model(name=model_name, workspace=organization.name)
@@ -78,10 +78,10 @@ class TestOrganization:
         new_repository = client.get_or_create_repository(name=repository_name, workspace=organization.name)
 
         new_dataset = client.create_dataset(dataset_name, workspace=organization.name)
-        created_datasets.append(new_dataset)
+        created_entities.append(new_dataset)
 
-        # created_endpoints.append(new_endpoint)  TODO: uncomment after VR-6053
-        created_registered_models.append(new_model)
+        # created_entities.append(new_endpoint)  TODO: uncomment after VR-6053
+        created_entities.append(new_model)
 
         assert model.id != new_model.id
         assert version.id != new_version.id

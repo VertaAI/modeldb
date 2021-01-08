@@ -7,24 +7,12 @@ import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.CommentServiceGrpc.CommentServiceBlockingStub;
-import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
-import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
-import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
-import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
-import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,10 +29,8 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,21 +39,9 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ProjectTest {
+public class ProjectTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(ProjectTest.class);
-
-  private static final String serverName = InProcessServerBuilder.generateName();
-  private static final InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static final InProcessChannelBuilder client1ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static final InProcessChannelBuilder client2ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-
-  private static Config config;
-  private static DeleteEntitiesCron deleteEntitiesCron;
 
   // Project Entities
   private static Project project;
@@ -80,83 +54,6 @@ public class ProjectTest {
 
   // ExperimentRun Entities
   private static ExperimentRun experimentRun;
-
-  // all service stubs
-  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
-  private static CollaboratorServiceBlockingStub collaboratorServiceStubClient1;
-  private static CollaboratorServiceBlockingStub collaboratorServiceStub;
-  private static ProjectServiceBlockingStub projectServiceStub;
-  private static ProjectServiceBlockingStub client2ProjectServiceStub;
-  private static ExperimentServiceBlockingStub experimentServiceStub;
-  private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private static CommentServiceBlockingStub commentServiceBlockingStub;
-  private static OrganizationServiceGrpc.OrganizationServiceBlockingStub
-      organizationServiceBlockingStub;
-  private static RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    if (config.test != null) {
-      authClientInterceptor = new AuthClientInterceptor(config.test);
-      client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
-    }
-
-    if (config.authService != null) {
-      ManagedChannel authServiceChannel =
-          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
-      organizationServiceBlockingStub = OrganizationServiceGrpc.newBlockingStub(authServiceChannel);
-      roleServiceBlockingStub = RoleServiceGrpc.newBlockingStub(authServiceChannel);
-      collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
-      ManagedChannel authServiceChannelClient2 =
-          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient2AuthInterceptor())
-              .build();
-      collaboratorServiceStub = CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
-    }
-
-    serverBuilder.build().start();
-    ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
-    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
-
-    // Create all service blocking stub
-    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    client2ProjectServiceStub = ProjectServiceGrpc.newBlockingStub(client2Channel);
-    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-    commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Remove all entities
-    // removeEntities();
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
 
   @Before
   public void createEntities() {
@@ -1393,7 +1290,7 @@ public class ProjectTest {
                 project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
 
         AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
-            collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+            collaboratorServiceStubClient2.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         LOGGER.info(
             "Collaborator added in server : " + addOrUpdateProjectCollaboratorResponse.getStatus());
         assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
@@ -1509,7 +1406,7 @@ public class ProjectTest {
               project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
 
       AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient2.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info(
           "Collaborator added in server : " + addOrUpdateProjectCollaboratorResponse.getStatus());
       assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());

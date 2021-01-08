@@ -5,25 +5,15 @@ import static org.junit.Assert.*;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
-import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.GetUser;
-import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,9 +21,9 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,23 +32,9 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class FindDatasetEntitiesTest {
+public class FindDatasetEntitiesTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(FindDatasetEntitiesTest.class);
-
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-  private static Config config;
-
-  // all service stubs
-  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
-  private static DatasetServiceBlockingStub datasetServiceStub;
-  private static DatasetVersionServiceBlockingStub datasetVersionServiceStub;
-  private static VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub;
 
   // Dataset Entities
   private static Dataset dataset1;
@@ -73,59 +49,26 @@ public class FindDatasetEntitiesTest {
   private static DatasetVersion datasetVersion3;
   private static DatasetVersion datasetVersion4;
   private static Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
-  private static DeleteEntitiesCron deleteEntitiesCron;
 
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    if (config.test != null) {
-      authClientInterceptor = new AuthClientInterceptor(config.test);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-
-    serverBuilder.build().start();
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    if (config.hasAuth()) {
-      ManagedChannel authServiceChannel =
-          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
-    }
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
-
-    // Create all service blocking stub
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-    datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
-    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
-
+  @Before
+  public void createEntities() {
     // Create all entities
     createDatasetEntities();
     createDatasetVersionEntities();
   }
 
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Remove all entities
-    removeEntities();
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
+  @After
+  public void removeEntities() {
+    for (String datasetId : datasetMap.keySet()) {
+      DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(datasetId).build();
+      DeleteDataset.Response deleteDatasetResponse =
+          datasetServiceStub.deleteDataset(deleteDataset);
+      LOGGER.info("Dataset deleted successfully");
+      LOGGER.info(deleteDatasetResponse.toString());
+      assertTrue(deleteDatasetResponse.getStatus());
+    }
+    datasetMap = new HashMap<>();
+    datasetVersionMap = new HashMap<>();
   }
 
   private static void createDatasetEntities() {
@@ -358,17 +301,6 @@ public class FindDatasetEntitiesTest {
     datasetVersionMap.put(datasetVersion2.getId(), datasetVersion2);
     datasetVersionMap.put(datasetVersion3.getId(), datasetVersion3);
     datasetVersionMap.put(datasetVersion4.getId(), datasetVersion4);
-  }
-
-  private static void removeEntities() {
-    for (String datasetId : datasetMap.keySet()) {
-      DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(datasetId).build();
-      DeleteDataset.Response deleteDatasetResponse =
-          datasetServiceStub.deleteDataset(deleteDataset);
-      LOGGER.info("Dataset deleted successfully");
-      LOGGER.info(deleteDatasetResponse.toString());
-      assertTrue(deleteDatasetResponse.getStatus());
-    }
   }
 
   /** Validation check for the predicate value with empty string which is not valid */

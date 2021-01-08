@@ -382,12 +382,16 @@ public class ModelDBUtils {
     return rootCause;
   }
 
-  public static <T extends GeneratedMessageV3> void observeError(
-      StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
+  public static StatusRuntimeException logError(Exception e) {
+    return logError(e, null);
+  }
+
+  public static <T extends GeneratedMessageV3> StatusRuntimeException logError(
+      Exception e, T defaultInstance) {
     Status status;
-    Exception statusRuntimeException;
+    StatusRuntimeException statusRuntimeException;
     if (e instanceof StatusRuntimeException) {
-      statusRuntimeException = e;
+      statusRuntimeException = (StatusRuntimeException) e;
     } else {
       Throwable throwable = findRootCause(e);
       // Condition 'throwable != null' covered by below condition 'throwable instanceof
@@ -400,7 +404,6 @@ public class ModelDBUtils {
             Status.newBuilder()
                 .setCode(Code.UNAVAILABLE_VALUE)
                 .setMessage(errorMessage + throwable.getMessage())
-                .addDetails(Any.pack(defaultInstance))
                 .build();
       } else if (e instanceof LockAcquisitionException) {
         String errorMessage = "Encountered deadlock in database connection.";
@@ -409,7 +412,6 @@ public class ModelDBUtils {
             Status.newBuilder()
                 .setCode(Code.ABORTED_VALUE)
                 .setMessage(errorMessage + throwable.getMessage())
-                .addDetails(Any.pack(defaultInstance))
                 .build();
       } else if (e instanceof ModelDBException) {
         ModelDBException modelDBException = (ModelDBException) e;
@@ -418,7 +420,6 @@ public class ModelDBUtils {
             Status.newBuilder()
                 .setCode(modelDBException.getCode().value())
                 .setMessage(modelDBException.getMessage())
-                .addDetails(Any.pack(defaultInstance))
                 .build();
       } else {
         LOGGER.error(
@@ -427,7 +428,6 @@ public class ModelDBUtils {
             Status.newBuilder()
                 .setCode(Code.INTERNAL_VALUE)
                 .setMessage(ModelDBConstants.INTERNAL_ERROR)
-                .addDetails(Any.pack(defaultInstance))
                 .build();
       }
       int n = 0;
@@ -444,7 +444,13 @@ public class ModelDBUtils {
       }
       statusRuntimeException = StatusProto.toStatusRuntimeException(status);
     }
-    responseObserver.onError(statusRuntimeException);
+
+    return statusRuntimeException;
+  }
+
+  public static <T extends GeneratedMessageV3> void observeError(
+      StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
+    responseObserver.onError(logError(e, defaultInstance));
   }
 
   public static void logBasedOnTheErrorCode(boolean isClientError, Throwable e) {

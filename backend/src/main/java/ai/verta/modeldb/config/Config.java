@@ -4,6 +4,7 @@ import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.exceptions.InternalErrorException;
+import ai.verta.modeldb.exceptions.ModelDBException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -40,8 +41,12 @@ public class Config {
         String filePath = System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG);
         filePath = appendOptionalTelepresencePath(filePath);
         InputStream inputStream = new FileInputStream(new File(filePath));
-        config = yaml.load(inputStream);
+        config = yaml.loadAs(inputStream, Config.class);
         config.Validate();
+      } catch (ModelDBException ex) {
+        throw ex;
+      } catch (NullPointerException ex) {
+        throw ex;
       } catch (Exception ex) {
         throw new InternalErrorException(ex.getMessage());
       }
@@ -58,8 +63,10 @@ public class Config {
       authService.Validate("authService");
     }
 
-    for (Map.Entry<String, CronJobConfig> cronJob : cron_job.entrySet()) {
-      cronJob.getValue().Validate("cron_job." + cronJob.getKey());
+    if (cron_job != null) {
+      for (Map.Entry<String, CronJobConfig> cronJob : cron_job.entrySet()) {
+        cronJob.getValue().Validate("cron_job." + cronJob.getKey());
+      }
     }
 
     if (database == null) throw new InvalidConfigException("database", MISSING_REQUIRED);

@@ -1,5 +1,6 @@
 package ai.verta.modeldb.metadata;
 
+import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
@@ -16,8 +17,8 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   private static final Logger LOGGER = LogManager.getLogger(MetadataServiceImpl.class);
   private final MetadataDAO metadataDAO;
 
-  public MetadataServiceImpl(MetadataDAO metadataDAO) {
-    this.metadataDAO = metadataDAO;
+  public MetadataServiceImpl(DAOSet daoSet) {
+    this.metadataDAO = daoSet.metadataDAO;
   }
 
   @Override
