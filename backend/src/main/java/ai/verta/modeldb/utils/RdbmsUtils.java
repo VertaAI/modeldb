@@ -1349,9 +1349,7 @@ public class RdbmsUtils {
       CriteriaBuilder builder,
       CriteriaQuery<?> criteriaQuery,
       Root<?> entityRootPath,
-      AuthService authService,
-      RoleService roleService,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes)
+      AuthService authService)
       throws InvalidProtocolBufferException, ModelDBException {
     List<Predicate> finalPredicatesList = new ArrayList<>();
     if (!predicates.isEmpty()) {
@@ -1722,38 +1720,22 @@ public class RdbmsUtils {
                 }
               }
               predicate = predicate.toBuilder().setOperator(operator).build();
-              if (key.equalsIgnoreCase(ModelDBConstants.OWNER)) {
-                if ((operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
-                  Predicate fuzzySearchPredicate =
-                      getFuzzyUsersQueryPredicate(
-                          authService,
-                          roleService,
-                          builder,
-                          entityRootPath,
-                          predicate,
-                          modelDBServiceResourceTypes);
-                  if (fuzzySearchPredicate != null) {
-                    keyValuePredicates.add(fuzzySearchPredicate);
-                  } else {
-                    throw new ModelDBException(
-                        ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, Code.FAILED_PRECONDITION);
-                  }
+              if (key.equalsIgnoreCase("owner")
+                  && (operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
+                Predicate fuzzySearchPredicate =
+                    getFuzzyUsersQueryPredicate(authService, builder, entityRootPath, predicate);
+                if (fuzzySearchPredicate != null) {
+                  keyValuePredicates.add(fuzzySearchPredicate);
                 } else {
-                  String ownerId = predicate.getValue().getStringValue();
-                  Map<String, UserInfo> userInfoMap =
-                      authService.getUserInfoFromAuthServer(
-                          new HashSet<>(Collections.singleton(ownerId)),
-                          Collections.emptySet(),
-                          Collections.emptyList());
-                  Set<String> resourceIdSet =
-                      getResourceIdsFromUserWorkspaces(
-                          authService,
-                          roleService,
-                          modelDBServiceResourceTypes,
-                          Collections.singletonList(userInfoMap.get(ownerId)));
-                  Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
-                  keyValuePredicates.add(exp.in(resourceIdSet));
+                  throw new ModelDBException(
+                      ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, Code.FAILED_PRECONDITION);
                 }
+              } else if (key.equalsIgnoreCase("dataset_visibility")) {
+                expression = entityRootPath.get("repository_visibility");
+                Predicate queryPredicate =
+                    RdbmsUtils.getValuePredicate(builder, key, expression, predicate, false);
+                keyValuePredicates.add(queryPredicate);
+                criteriaQuery.multiselect(entityRootPath, expression);
               } else {
                 expression = entityRootPath.get(key);
                 Predicate queryPredicate =
@@ -1791,23 +1773,22 @@ public class RdbmsUtils {
 
   private static Predicate getFuzzyUsersQueryPredicate(
       AuthService authService,
-      RoleService roleService,
       CriteriaBuilder builder,
       Root<?> entityRootPath,
-      KeyValueQuery requestedPredicate,
-      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      KeyValueQuery requestedPredicate) {
     if (requestedPredicate.getValue().getKindCase().equals(Value.KindCase.STRING_VALUE)) {
       Operator operator = requestedPredicate.getOperator();
       List<UserInfo> userInfoList = getFuzzyUserInfos(authService, requestedPredicate);
       if (userInfoList != null && !userInfoList.isEmpty()) {
-        Set<String> projectIdSet =
-            getResourceIdsFromUserWorkspaces(
-                authService, roleService, modelDBServiceResourceTypes, userInfoList);
-        Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
+        Expression<String> exp = entityRootPath.get(requestedPredicate.getKey());
+        List<String> vertaIds =
+            userInfoList.stream()
+                .map(authService::getVertaIdFromUserInfo)
+                .collect(Collectors.toList());
         if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
-          return builder.not(exp.in(projectIdSet));
+          return builder.not(exp.in(vertaIds));
         } else {
-          return exp.in(projectIdSet);
+          return exp.in(vertaIds);
         }
       }
     } else {

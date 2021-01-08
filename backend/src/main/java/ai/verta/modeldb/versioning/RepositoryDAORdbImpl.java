@@ -1382,14 +1382,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
-                entityName,
-                predicates,
-                builder,
-                criteriaQuery,
-                repositoryRoot,
-                authService,
-                roleService,
-                ModelDBServiceResourceTypes.REPOSITORY);
+                entityName, predicates, builder, criteriaQuery, repositoryRoot, authService);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
