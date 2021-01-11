@@ -1,11 +1,15 @@
 syntax = "proto3";
 
-package ai.verta.registry;
+package ai.verta.monitoring;
 option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring";
 
 option java_multiple_files = true;
 
 import "google/api/annotations.proto";
+import "common/CommonService.proto";
+import "modeldb/versioning/Dataset.proto";
+
+// Aggregate data formats
 
 message CountPerNGram {
   repeated ListString keys = 1;
@@ -21,59 +25,207 @@ message FloatHistogram {
   repeated uint64 bucket_counts = 2;
 }
 
-message BinaryHistogram {
+message DiscreteHistogram {
+  repeated string labels = 1;
   repeated uint64 bucket_counts = 2;
 }
 
-message GetCountPerNGramRequest {
-  string profiler_id = 1;
-  int64 start_time_millis = 2;
-  int64 end_time_millis = 3;
+// Data Profiler and ProfilerSet
+
+message Profiler {
+  string id = 1;
+  common.Artifact lambda = 2;
+}
+
+message ProfilerSet {
+  string id = 1;
+  repeated Profiler profilers = 2;
+}
+
+// DataFrame and DataFrameBatch
+
+message DataFrame {
+  modeldb.versioning.DatasetBlob dataSetBlob = 1;
+  repeated common.KeyValue metadata = 2;
+}
+
+message DataFrameBatch {
+  repeated DataFrame dataFrames = 1;
+}
+
+// ProfiledDataFrame and ProfiledDataFrameBatch
+
+message ParquetDataFrame {
+
+}
+
+message ProfiledDataFrame {
+  string profilerId = 1;
+  DataFrame dataframe = 2;
+  ParquetDataFrame profiledDataFrame = 3;
+}
+
+message ProfiledDataFrameBatch {
+  repeated ProfiledDataFrame dataFrames = 1;
+}
+
+// Profiler CRUD
+
+message GetProfilerRequest {
+  string id = 1;
 
   message Response {
-    CountPerNGram countPerNGram = 1;
+    Profiler profiler = 1;
   }
 }
 
-message GetFloatHistogramRequest {
-  string profiler_id = 1;
-  int64 start_time_millis = 3;
-  int64 end_time_millis = 4;
+message CreateProfilerRequest {
+  string id = 1;
+  common.Artifact lambda = 2;
 
   message Response {
-    FloatHistogram histogram = 1;
+    Profiler profiler = 1;
   }
 }
 
-message GetBinaryHistogramRequest {
-  string profiler_id = 1;
-  int64 start_time_millis = 3;
-  int64 end_time_millis = 4;
+message UpdateProfilerRequest {
+  string id = 1;
+  common.Artifact lambda = 2;
 
   message Response {
-    BinaryHistogram histogram = 1;
+    Profiler profiler = 1;
   }
 }
+
+message DeleteProfilerRequest {
+  string id = 1;
+
+  message Response {
+  }
+}
+
+message ListProfilersRequest {
+  message Response {
+    repeated Profiler profilers = 1;
+  }
+}
+
+// ProfilerSet CRUD
+
+message GetProfilerSetRequest {
+  string id = 1;
+
+  message Response {
+    ProfilerSet profilerSet = 1;
+  }
+}
+
+message CreateProfilerSetRequest {
+  string id = 1;
+  repeated Profiler profilers = 2;
+
+  message Response {
+    ProfilerSet profilerSet = 1;
+  }
+}
+
+message AddProfilerToSetRequest {
+  string profilerId = 1;
+  string profilerSetId = 2;
+
+  message Response {
+    ProfilerSet profilerSet = 1;
+  }
+}
+
+message RemoveProfilerFromSetRequest {
+  string profilerId = 1;
+  string profilerSetId = 2;
+
+  message Response {
+    ProfilerSet profilerSet = 1;
+  }
+}
+
+message DeleteProfilerSetRequest {
+  string id = 1;
+
+  message Response {
+  }
+}
+
+message ListProfilerSetsRequest {
+  message Response {
+    repeated ProfilerSet profilerSets = 1;
+  }
+}
+
+// Profiling operations
+
+message ProfileBatchRequest {
+  string profilerSetId = 1;
+  DataFrameBatch dataFrameBatch = 2;
+
+  message Response {
+  }
+}
+
+// Aggregate Data Fetching
+
+message GetAggregateRequest {
+  string profilerId = 1;
+  uint64 start_time_millis = 2;
+  uint64 end_time_millis = 3;
+
+  message Response {
+    oneof aggregate {
+      CountPerNGram countPerNGram = 1;
+      FloatHistogram floatHistogram = 2;
+      DiscreteHistogram discreteHistogram = 3;
+    }
+  }
+}
+
+// Service definitions
 
 service DataMonitoringService {
-  rpc GetCountPerNGram(GetCountPerNGramRequest) returns (GetCountPerNGramRequest.Response) {
-    option (google.api.http) = {
-      post: "/v1/registry/data_monitoring/count_per_ngram"
-      body: "*"
-    };
+  rpc getProfiler(GetProfilerRequest) returns (GetProfilerRequest.Response) {
   };
 
-  rpc GetFloatHistogram(GetFloatHistogramRequest) returns (GetFloatHistogramRequest.Response) {
-    option (google.api.http) = {
-      post: "/v1/registry/data_monitoring/float_histogram"
-      body: "*"
-    };
+  rpc createProfiler(CreateProfilerRequest) returns (CreateProfilerRequest.Response) {
   };
 
-  rpc GetBinaryHistogram(GetBinaryHistogramRequest) returns (GetBinaryHistogramRequest.Response) {
-    option (google.api.http) = {
-      post: "/v1/registry/data_monitoring/binary_histogram"
-      body: "*"
-    };
+  rpc updateProfiler(UpdateProfilerRequest) returns (UpdateProfilerRequest.Response) {
   };
+
+  rpc deleteProfiler(DeleteProfilerRequest) returns (DeleteProfilerRequest.Response) {
+  };
+
+  rpc listProfilers(ListProfilersRequest) returns (ListProfilersRequest.Response) {
+  };
+
+  rpc getProfilerSet(GetProfilerSetRequest) returns (GetProfilerSetRequest.Response) {
+  };
+
+  rpc createProfilerSet(CreateProfilerSetRequest) returns (CreateProfilerSetRequest.Response) {
+  };
+
+  rpc addProfilerToSet(AddProfilerToSetRequest) returns (AddProfilerToSetRequest.Response) {
+  };
+
+  rpc removeProfilerFromSet(RemoveProfilerFromSetRequest) returns (RemoveProfilerFromSetRequest.Response) {
+  };
+
+  rpc deleteProfilerSet(DeleteProfilerSetRequest) returns (DeleteProfilerRequest.Response) {
+  };
+
+  rpc listProfilerSets(ListProfilerSetsRequest) returns (ListProfilerSetsRequest.Response) {
+  };
+
+  rpc profileBatch(ProfileBatchRequest) returns (ProfileBatchRequest.Response) {
+  };
+
+  rpc getAggregate(GetAggregateRequest) returns (GetAggregateRequest.Response) {
+  };
+
 }
