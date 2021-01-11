@@ -99,14 +99,13 @@ public class GlobalSharingTest extends TestsInit {
 
   private static final Collection<TestParameters> requestData =
       Arrays.asList(
-              new TestParameters(
-                      ResourceVisibility.ORG_DEFAULT, CollaboratorPermissions.newBuilder(), true, false),
+          new TestParameters(
+              ResourceVisibility.ORG_DEFAULT, CollaboratorPermissions.newBuilder(), true, false),
           new TestParameters(
               ResourceVisibility.ORG_CUSTOM,
               CollaboratorPermissions.newBuilder().setCollaboratorType(CollaboratorType.READ_WRITE),
               true,
               true),
-
           new TestParameters(
               ResourceVisibility.ORG_CUSTOM,
               CollaboratorPermissions.newBuilder().setCollaboratorType(CollaboratorType.READ_ONLY),
@@ -171,7 +170,8 @@ public class GlobalSharingTest extends TestsInit {
         if (orgResourceId == null) {
           switch (resourceType) {
             case PROJECT:
-              Map.Entry<String, String> result = createProject(organization, resourceVisibility, customPermission);
+              Map.Entry<String, String> result =
+                  createProject(organization, resourceVisibility, customPermission);
               orgResourceId = result.getKey();
               orgResourceName = result.getValue();
               break;
@@ -188,7 +188,8 @@ public class GlobalSharingTest extends TestsInit {
               break;
           }
         } else {
-          updateResource(organization, orgResourceId, orgResourceName, resourceVisibility, customPermission);
+          updateResource(
+              organization, orgResourceId, orgResourceName, resourceVisibility, customPermission);
         }
         try {
           switch (resourceType) {
@@ -203,7 +204,7 @@ public class GlobalSharingTest extends TestsInit {
             case REPOSITORY:
             default:
               repository =
-                 versioningServiceBlockingStubClient2
+                  versioningServiceBlockingStubClient2
                       .getRepository(
                           GetRepositoryRequest.newBuilder()
                               .setId(
@@ -286,23 +287,23 @@ public class GlobalSharingTest extends TestsInit {
   }
 
   private void updateResource(
-          Organization organization,
-          String orgResourceId,
-          String orgResourceName, ResourceVisibility resourceVisibility,
-          CollaboratorPermissions.Builder customPermission) {
+      Organization organization,
+      String orgResourceId,
+      String orgResourceName,
+      ResourceVisibility resourceVisibility,
+      CollaboratorPermissions.Builder customPermission) {
     collaboratorServiceStubClient1.setResource(
         SetResource.newBuilder()
             .setWorkspaceName(organization.getName())
             .setResourceId(orgResourceId)
-                    .setResourceType(
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(
-                                resourceType
-                                        == ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET
-                                    ? ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY
-                                    : resourceType)
-                            .build())
-                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .setResourceType(
+                ResourceType.newBuilder()
+                    .setModeldbServiceResourceType(
+                        resourceType == ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET
+                            ? ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY
+                            : resourceType)
+                    .build())
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
             .setResourceName(orgResourceName)
             .setVisibility(resourceVisibility)
             .setCollaboratorType(customPermission.getCollaboratorType())
@@ -368,9 +369,9 @@ public class GlobalSharingTest extends TestsInit {
   }
 
   private Map.Entry<String, String> createDataset(
-          Organization organization,
-          ResourceVisibility resourceVisibility,
-          CollaboratorPermissions.Builder customPermission) {
+      Organization organization,
+      ResourceVisibility resourceVisibility,
+      CollaboratorPermissions.Builder customPermission) {
     // Create dataset
     CreateDataset createDatasetRequest =
         DatasetTest.getDatasetRequest("dataset-" + new Date().getTime());
@@ -388,9 +389,9 @@ public class GlobalSharingTest extends TestsInit {
   }
 
   private Map.Entry<String, String> createProject(
-          Organization organization,
-          ResourceVisibility resourceVisibility,
-          CollaboratorPermissions.Builder customPermission) {
+      Organization organization,
+      ResourceVisibility resourceVisibility,
+      CollaboratorPermissions.Builder customPermission) {
     // Create project
     CreateProject createProjectRequest =
         ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
