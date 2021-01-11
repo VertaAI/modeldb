@@ -1,0 +1,441 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "monitoring/DataMonitoringService.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {},
+  "definitions": {
+    "ArtifactTypeEnumArtifactType": {
+      "type": "string",
+      "enum": [
+        "IMAGE",
+        "MODEL",
+        "TENSORBOARD",
+        "DATA",
+        "BLOB",
+        "STRING",
+        "CODE",
+        "CONTAINER"
+      ],
+      "default": "IMAGE"
+    },
+    "ValueTypeEnumValueType": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "LIST",
+        "BLOB"
+      ],
+      "default": "STRING"
+    },
+    "commonArtifact": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "path_only": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "linked_artifact_id": {
+          "type": "string"
+        },
+        "filename_extension": {
+          "type": "string"
+        }
+      }
+    },
+    "commonKeyValue": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "monitoringAddProfilerToSetRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profilerSet": {
+          "$ref": "#/definitions/monitoringProfilerSet"
+        }
+      }
+    },
+    "monitoringCountPerNGram": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringListString"
+          }
+        },
+        "counts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      }
+    },
+    "monitoringCreateProfilerRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profiler": {
+          "$ref": "#/definitions/monitoringProfiler"
+        }
+      }
+    },
+    "monitoringCreateProfilerSetRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profilerSet": {
+          "$ref": "#/definitions/monitoringProfilerSet"
+        }
+      }
+    },
+    "monitoringDataFrame": {
+      "type": "object",
+      "properties": {
+        "dataSetBlob": {
+          "$ref": "#/definitions/versioningDatasetBlob"
+        },
+        "metadata": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
+        }
+      }
+    },
+    "monitoringDataFrameBatch": {
+      "type": "object",
+      "properties": {
+        "dataFrames": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringDataFrame"
+          }
+        }
+      }
+    },
+    "monitoringDeleteProfilerRequestResponse": {
+      "type": "object"
+    },
+    "monitoringDiscreteHistogram": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bucket_counts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      }
+    },
+    "monitoringFloatHistogram": {
+      "type": "object",
+      "properties": {
+        "bucket_limits": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "bucket_counts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      }
+    },
+    "monitoringGetAggregateRequestResponse": {
+      "type": "object",
+      "properties": {
+        "countPerNGram": {
+          "$ref": "#/definitions/monitoringCountPerNGram"
+        },
+        "floatHistogram": {
+          "$ref": "#/definitions/monitoringFloatHistogram"
+        },
+        "discreteHistogram": {
+          "$ref": "#/definitions/monitoringDiscreteHistogram"
+        }
+      }
+    },
+    "monitoringGetProfilerRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profiler": {
+          "$ref": "#/definitions/monitoringProfiler"
+        }
+      }
+    },
+    "monitoringGetProfilerSetRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profilerSet": {
+          "$ref": "#/definitions/monitoringProfilerSet"
+        }
+      }
+    },
+    "monitoringListProfilerSetsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profilerSets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringProfilerSet"
+          }
+        }
+      }
+    },
+    "monitoringListProfilersRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profilers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringProfiler"
+          }
+        }
+      }
+    },
+    "monitoringListString": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "monitoringProfileBatchRequestResponse": {
+      "type": "object"
+    },
+    "monitoringProfiler": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "lambda": {
+          "$ref": "#/definitions/commonArtifact"
+        }
+      }
+    },
+    "monitoringProfilerSet": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "profilers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringProfiler"
+          }
+        }
+      }
+    },
+    "monitoringRemoveProfilerFromSetRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profilerSet": {
+          "$ref": "#/definitions/monitoringProfilerSet"
+        }
+      }
+    },
+    "monitoringUpdateProfilerRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profiler": {
+          "$ref": "#/definitions/monitoringProfiler"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "versioningDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "s3": {
+          "$ref": "#/definitions/versioningS3DatasetBlob"
+        },
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetBlob"
+        },
+        "query": {
+          "$ref": "#/definitions/versioningQueryDatasetBlob"
+        }
+      }
+    },
+    "versioningPathDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningPathDatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "last_modified_at_source": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "md5": {
+          "type": "string"
+        },
+        "internal_versioned_path": {
+          "type": "string"
+        },
+        "base_path": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningQueryDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningQueryDatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningQueryDatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "data_source_uri": {
+          "type": "string",
+          "title": "string query_template = 2;\nrepeated QueryParameter query_parameters = 3;"
+        },
+        "execution_timestamp": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "num_records": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "versioningS3DatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningS3DatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningS3DatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+        },
+        "s3_version_id": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}
