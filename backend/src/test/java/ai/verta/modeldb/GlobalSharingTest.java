@@ -4,60 +4,36 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import ai.verta.artifactstore.ArtifactStoreGrpc;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
-import ai.verta.modeldb.authservice.AuthInterceptor;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
-import ai.verta.modeldb.metadata.MetadataServiceGrpc;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.GetRepositoryRequest;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.SetRepository;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.AddUser;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.DeleteOrganization;
 import ai.verta.uac.GetRoleByName;
 import ai.verta.uac.Organization;
-import ai.verta.uac.OrganizationServiceGrpc;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
 import ai.verta.uac.RoleScope;
-import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.SetOrganization;
 import ai.verta.uac.SetResource;
-import ai.verta.uac.UACServiceGrpc;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
+
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,34 +42,10 @@ import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GlobalSharingTest {
+public class GlobalSharingTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(GlobalSharingTest.class);
 
-  private static final String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static final InProcessChannelBuilder client1ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static final InProcessChannelBuilder client2ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-
-  private static App app;
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
-  private static CollaboratorServiceBlockingStub collaboratorServiceStub;
-  private static ProjectServiceBlockingStub projectServiceStub;
-  private static ProjectServiceBlockingStub client2ProjectServiceStub;
-  private static OrganizationServiceGrpc.OrganizationServiceBlockingStub
-      organizationServiceBlockingStub;
-  private static RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub;
-  private static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
-  private static DatasetServiceGrpc.DatasetServiceBlockingStub client2DatasetServiceStub;
-  private static VersioningServiceGrpc.VersioningServiceBlockingStub repositoryServiceStub;
-  private static VersioningServiceGrpc.VersioningServiceBlockingStub client2RepositoryServiceStub;
-  private static Config config;
-  private static AuthService authService;
   private final ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType;
 
   @Parameterized.Parameters
@@ -108,67 +60,6 @@ public class GlobalSharingTest {
 
   public GlobalSharingTest(ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
     this.resourceType = resourceType;
-  }
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-    String serverName = InProcessServerBuilder.generateName();
-    InProcessChannelBuilder client1ChannelBuilder =
-            InProcessChannelBuilder.forName(serverName).directExecutor();
-    InProcessChannelBuilder client2ChannelBuilder =
-            InProcessChannelBuilder.forName(serverName).directExecutor();
-
-    config = Config.getInstance();
-    // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
-    authService = services.authService;
-    // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
-    App.migrate(config);
-
-    App.initializeBackendServices(serverBuilder, services, daos);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    if (config.test != null) {
-      authClientInterceptor = new AuthClientInterceptor(config.test);
-      client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
-    }
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
-
-    if (config.authService != null) {
-      ManagedChannel authServiceChannel =
-              ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
-                      .usePlaintext()
-                      .intercept(authClientInterceptor.getClient1AuthInterceptor())
-                      .build();
-      organizationServiceBlockingStub = OrganizationServiceGrpc.newBlockingStub(authServiceChannel);
-      roleServiceBlockingStub = RoleServiceGrpc.newBlockingStub(authServiceChannel);
-    }
-
-    ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
-    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-
-    // Create all service blocking stub
-    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    client2ProjectServiceStub = ProjectServiceGrpc.newBlockingStub(client2Channel);
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-
-    serverBuilder.build().start();
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Remove all entities
-    // removeEntities();
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
   }
 
   static class TestParameters {
@@ -208,13 +99,14 @@ public class GlobalSharingTest {
 
   private static final Collection<TestParameters> requestData =
       Arrays.asList(
+              new TestParameters(
+                      ResourceVisibility.ORG_DEFAULT, CollaboratorPermissions.newBuilder(), true, false),
           new TestParameters(
               ResourceVisibility.ORG_CUSTOM,
               CollaboratorPermissions.newBuilder().setCollaboratorType(CollaboratorType.READ_WRITE),
               true,
               true),
-          new TestParameters(
-              ResourceVisibility.ORG_DEFAULT, CollaboratorPermissions.newBuilder(), true, false),
+
           new TestParameters(
               ResourceVisibility.ORG_CUSTOM,
               CollaboratorPermissions.newBuilder().setCollaboratorType(CollaboratorType.READ_ONLY),
@@ -269,6 +161,7 @@ public class GlobalSharingTest {
 
     String orgResourceId = null;
     Repository repository = null;
+    String orgResourceName = null;
     try {
       for (TestParameters testParameters : requestData) {
         ResourceVisibility resourceVisibility = testParameters.getResourceVisibility();
@@ -278,21 +171,24 @@ public class GlobalSharingTest {
         if (orgResourceId == null) {
           switch (resourceType) {
             case PROJECT:
-              orgResourceId =
-                  createProject(organization, orgResourceId, resourceVisibility, customPermission);
+              Map.Entry<String, String> result = createProject(organization, resourceVisibility, customPermission);
+              orgResourceId = result.getKey();
+              orgResourceName = result.getValue();
               break;
             case DATASET:
-              orgResourceId =
-                  createDataset(organization, orgResourceId, resourceVisibility, customPermission);
+              result = createDataset(organization, resourceVisibility, customPermission);
+              orgResourceId = result.getKey();
+              orgResourceName = result.getValue();
               break;
             case REPOSITORY:
             default:
               repository = createRepository(orgName, resourceVisibility, customPermission);
               orgResourceId = String.valueOf(repository.getId());
+              orgResourceName = repository.getName();
               break;
           }
         } else {
-          updateResource(organization, orgResourceId, resourceVisibility, customPermission);
+          updateResource(organization, orgResourceId, orgResourceName, resourceVisibility, customPermission);
         }
         try {
           switch (resourceType) {
@@ -301,13 +197,13 @@ public class GlobalSharingTest {
                   GetProjectById.newBuilder().setId(orgResourceId).build());
               break;
             case DATASET:
-              client2DatasetServiceStub.getDatasetById(
+              datasetServiceStubClient2.getDatasetById(
                   GetDatasetById.newBuilder().setId(orgResourceId).build());
               break;
             case REPOSITORY:
             default:
               repository =
-                  client2RepositoryServiceStub
+                 versioningServiceBlockingStubClient2
                       .getRepository(
                           GetRepositoryRequest.newBuilder()
                               .setId(
@@ -336,7 +232,7 @@ public class GlobalSharingTest {
                       .build());
               break;
             case DATASET:
-              client2DatasetServiceStub.updateDatasetDescription(
+              datasetServiceStubClient2.updateDatasetDescription(
                   UpdateDatasetDescription.newBuilder()
                       .setId(orgResourceId)
                       .setDescription(description)
@@ -344,7 +240,7 @@ public class GlobalSharingTest {
               break;
             case REPOSITORY:
             default:
-              client2RepositoryServiceStub.updateRepository(
+              versioningServiceBlockingStubClient2.updateRepository(
                   SetRepository.newBuilder()
                       .setId(
                           RepositoryIdentification.newBuilder()
@@ -390,11 +286,11 @@ public class GlobalSharingTest {
   }
 
   private void updateResource(
-      Organization organization,
-      String orgResourceId,
-      ResourceVisibility resourceVisibility,
-      CollaboratorPermissions.Builder customPermission) {
-    collaboratorServiceStub.setResource(
+          Organization organization,
+          String orgResourceId,
+          String orgResourceName, ResourceVisibility resourceVisibility,
+          CollaboratorPermissions.Builder customPermission) {
+    collaboratorServiceStubClient1.setResource(
         SetResource.newBuilder()
             .setWorkspaceName(organization.getName())
             .setResourceId(orgResourceId)
@@ -407,6 +303,7 @@ public class GlobalSharingTest {
                                     : resourceType)
                             .build())
                     .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .setResourceName(orgResourceName)
             .setVisibility(resourceVisibility)
             .setCollaboratorType(customPermission.getCollaboratorType())
             .setCanDeploy(customPermission.getCanDeploy())
@@ -422,7 +319,7 @@ public class GlobalSharingTest {
                     .build())
             .build();
     DeleteRepositoryRequest.Response deleteRepositoryResponse =
-        repositoryServiceStub.deleteRepository(deleteRepository);
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
     LOGGER.info("Repository deleted successfully");
     LOGGER.info(deleteRepositoryResponse.toString());
     assertTrue(deleteRepositoryResponse.getStatus());
@@ -452,7 +349,7 @@ public class GlobalSharingTest {
     // Create repository
     String repoName = "repository-" + new Date().getTime();
     SetRepository.Response createRepositoryResponse =
-        repositoryServiceStub.createRepository(
+        versioningServiceBlockingStub.createRepository(
             SetRepository.newBuilder()
                 .setId(
                     RepositoryIdentification.newBuilder()
@@ -470,11 +367,10 @@ public class GlobalSharingTest {
     return repository;
   }
 
-  private String createDataset(
-      Organization organization,
-      String orgResourceId,
-      ResourceVisibility resourceVisibility,
-      CollaboratorPermissions.Builder customPermission) {
+  private Map.Entry<String, String> createDataset(
+          Organization organization,
+          ResourceVisibility resourceVisibility,
+          CollaboratorPermissions.Builder customPermission) {
     // Create dataset
     CreateDataset createDatasetRequest =
         DatasetTest.getDatasetRequest("dataset-" + new Date().getTime());
@@ -487,15 +383,14 @@ public class GlobalSharingTest {
             .build();
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
-    orgResourceId = createDatasetResponse.getDataset().getId();
-    return orgResourceId;
+    Dataset resource = createDatasetResponse.getDataset();
+    return new AbstractMap.SimpleEntry<>(resource.getId(), resource.getName());
   }
 
-  private String createProject(
-      Organization organization,
-      String orgResourceId,
-      ResourceVisibility resourceVisibility,
-      CollaboratorPermissions.Builder customPermission) {
+  private Map.Entry<String, String> createProject(
+          Organization organization,
+          ResourceVisibility resourceVisibility,
+          CollaboratorPermissions.Builder customPermission) {
     // Create project
     CreateProject createProjectRequest =
         ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
@@ -508,7 +403,7 @@ public class GlobalSharingTest {
             .build();
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
-    orgResourceId = createProjectResponse.getProject().getId();
-    return orgResourceId;
+    Project resource = createProjectResponse.getProject();
+    return new AbstractMap.SimpleEntry<>(resource.getId(), resource.getName());
   }
 }
