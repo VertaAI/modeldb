@@ -1137,7 +1137,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       try {
-        Set<String> accessibleResourceIds =
+        Set<String> accessibleResourceIdsWithCollaborator =
             new HashSet<>(
                 roleService.getAccessibleResourceIds(
                     null,
@@ -1152,22 +1152,24 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
           List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
               roleService.getResourceItems(
-                  null, accessibleResourceIds, ModelDBServiceResourceTypes.REPOSITORY);
-          accessibleResourceIds =
+                  null,
+                  accessibleResourceIdsWithCollaborator,
+                  ModelDBServiceResourceTypes.REPOSITORY);
+          accessibleResourceIdsWithCollaborator =
               accessibleAllWorkspaceItems.stream()
                   .map(GetResourcesResponseItem::getResourceId)
                   .collect(Collectors.toSet());
         } else {
-          accessibleResourceIds =
+          accessibleResourceIdsWithCollaborator =
               ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
                   roleService,
-                  accessibleResourceIds,
+                  accessibleResourceIdsWithCollaborator,
                   workspaceName,
                   currentLoginUserInfo,
                   ModelDBServiceResourceTypes.REPOSITORY);
         }
 
-        if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
+        if (accessibleResourceIdsWithCollaborator.isEmpty() && roleService.IsImplemented()) {
           LOGGER.debug("Accessible Repository Ids not found, size 0");
           return FindRepositories.Response.newBuilder()
               .addAllRepositories(Collections.emptyList())
@@ -1179,7 +1181,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           // Validate if current user has access to the entity or not where predicate key has an id
           RdbmsUtils.validatePredicates(
               ModelDBConstants.REPOSITORY,
-              new ArrayList<>(accessibleResourceIds),
+              new ArrayList<>(accessibleResourceIdsWithCollaborator),
               predicate,
               roleService);
         }
@@ -1188,7 +1190,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(
                     session, authService, roleService)
                 .setRepoIds(
-                    accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()))
+                    accessibleResourceIdsWithCollaborator.stream()
+                        .map(Long::valueOf)
+                        .collect(Collectors.toList()))
                 .setPredicates(request.getPredicatesList())
                 .setPageLimit(request.getPageLimit())
                 .setPageNumber(request.getPageNumber())
