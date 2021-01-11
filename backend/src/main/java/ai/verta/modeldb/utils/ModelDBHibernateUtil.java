@@ -434,10 +434,15 @@ public class ModelDBHibernateUtil {
   }
 
   public static HealthCheckResponse.ServingStatus checkReady() {
-    if (isReady && ping()) {
-      return HealthCheckResponse.ServingStatus.SERVING;
+    try {
+      if (isReady && ping()) {
+        return HealthCheckResponse.ServingStatus.SERVING;
+      }
+      return HealthCheckResponse.ServingStatus.NOT_SERVING;
+    } catch (Exception ex) {
+      LOGGER.error("Getting error on health checkReady: " + ex.getMessage(), ex);
+      return HealthCheckResponse.ServingStatus.NOT_SERVING;
     }
-    return HealthCheckResponse.ServingStatus.NOT_SERVING;
   }
 
   public static HealthCheckResponse.ServingStatus checkLive() {

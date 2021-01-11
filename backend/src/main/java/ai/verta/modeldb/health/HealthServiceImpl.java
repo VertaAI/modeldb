@@ -52,6 +52,10 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
   private final Map<String, ServingStatus> statusMap = new ConcurrentHashMap<>();
   private static final Logger LOGGER = LogManager.getLogger(HealthServiceImpl.class);
 
+  public HealthServiceImpl() {
+    setStatus("", HealthCheckResponse.ServingStatus.SERVING);
+  }
+
   @Override
   public void check(
       HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver) {
@@ -105,7 +109,7 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       HealthCheckRequest request = HealthCheckRequest.newBuilder().setService(service).build();
       ServingStatus status = getServingStatus(request);
       if (status == null) {
-        LOGGER.trace("Spring custom health check returned with unknown service");
+        LOGGER.error("Spring custom health check returned with unknown service");
         throw new ResponseStatusException(
             HttpStatus.INTERNAL_SERVER_ERROR,
             "Unknown service found on health check request : '" + request.getService() + "'");
