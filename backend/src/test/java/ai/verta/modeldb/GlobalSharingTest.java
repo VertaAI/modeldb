@@ -24,13 +24,13 @@ import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.SetOrganization;
 import ai.verta.uac.SetResource;
 import io.grpc.StatusRuntimeException;
-
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
@@ -99,14 +99,13 @@ public class GlobalSharingTest extends TestsInit {
 
   private static final Collection<TestParameters> requestData =
       Arrays.asList(
-              new TestParameters(
-                      ResourceVisibility.ORG_DEFAULT, CollaboratorPermissions.newBuilder(), true, false),
+          new TestParameters(
+              ResourceVisibility.ORG_DEFAULT, CollaboratorPermissions.newBuilder(), true, false),
           new TestParameters(
               ResourceVisibility.ORG_CUSTOM,
               CollaboratorPermissions.newBuilder().setCollaboratorType(CollaboratorType.READ_WRITE),
               true,
               true),
-
           new TestParameters(
               ResourceVisibility.ORG_CUSTOM,
               CollaboratorPermissions.newBuilder().setCollaboratorType(CollaboratorType.READ_ONLY),
@@ -161,102 +160,46 @@ public class GlobalSharingTest extends TestsInit {
 
     String orgResourceId = null;
     Repository repository = null;
-    String orgResourceName = null;
+    String orgResourceName;
     try {
+      List<TestParameters> testParametersList = new LinkedList<>(requestData);
+      TestParameters testParametersFirst =
+          testParametersList.stream()
+              .findFirst()
+              .orElseThrow(() -> new RuntimeException("Request data is not specified"));
+      testParametersList.remove(testParametersFirst);
+      ResourceVisibility resourceVisibility = testParametersFirst.getResourceVisibility();
+      CollaboratorPermissions.Builder customPermission = testParametersFirst.getPermissions();
+      boolean isReadAllowed = testParametersFirst.isReadCheckSuccess();
+      boolean isWriteAllowed = testParametersFirst.isWriteCheckSuccess();
+      switch (resourceType) {
+        case PROJECT:
+          Map.Entry<String, String> result =
+              createProject(organization, resourceVisibility, customPermission);
+          orgResourceId = result.getKey();
+          orgResourceName = result.getValue();
+          break;
+        case DATASET:
+          result = createDataset(organization, resourceVisibility, customPermission);
+          orgResourceId = result.getKey();
+          orgResourceName = result.getValue();
+          break;
+        case REPOSITORY:
+        default:
+          repository = createRepository(orgName, resourceVisibility, customPermission);
+          orgResourceId = String.valueOf(repository.getId());
+          orgResourceName = repository.getName();
+          break;
+      }
+      checkResourceActions(orgResourceId, repository, isReadAllowed, isWriteAllowed);
       for (TestParameters testParameters : requestData) {
-        ResourceVisibility resourceVisibility = testParameters.getResourceVisibility();
-        CollaboratorPermissions.Builder customPermission = testParameters.getPermissions();
-        boolean isReadAllowed = testParameters.isReadCheckSuccess();
-        boolean isWriteAllowed = testParameters.isWriteCheckSuccess();
-        if (orgResourceId == null) {
-          switch (resourceType) {
-            case PROJECT:
-              Map.Entry<String, String> result = createProject(organization, resourceVisibility, customPermission);
-              orgResourceId = result.getKey();
-              orgResourceName = result.getValue();
-              break;
-            case DATASET:
-              result = createDataset(organization, resourceVisibility, customPermission);
-              orgResourceId = result.getKey();
-              orgResourceName = result.getValue();
-              break;
-            case REPOSITORY:
-            default:
-              repository = createRepository(orgName, resourceVisibility, customPermission);
-              orgResourceId = String.valueOf(repository.getId());
-              orgResourceName = repository.getName();
-              break;
-          }
-        } else {
-          updateResource(organization, orgResourceId, orgResourceName, resourceVisibility, customPermission);
-        }
-        try {
-          switch (resourceType) {
-            case PROJECT:
-              client2ProjectServiceStub.getProjectById(
-                  GetProjectById.newBuilder().setId(orgResourceId).build());
-              break;
-            case DATASET:
-              datasetServiceStubClient2.getDatasetById(
-                  GetDatasetById.newBuilder().setId(orgResourceId).build());
-              break;
-            case REPOSITORY:
-            default:
-              repository =
-                 versioningServiceBlockingStubClient2
-                      .getRepository(
-                          GetRepositoryRequest.newBuilder()
-                              .setId(
-                                  RepositoryIdentification.newBuilder()
-                                      .setRepoId(repository.getId()))
-                              .build())
-                      .getRepository();
-              break;
-          }
-          if (!isReadAllowed) {
-            fail();
-          }
-        } catch (StatusRuntimeException e) {
-          if (isReadAllowed) {
-            throw e;
-          }
-        }
-        try {
-          String description = "new-description" + new Date().getTime();
-          switch (resourceType) {
-            case PROJECT:
-              client2ProjectServiceStub.updateProjectDescription(
-                  UpdateProjectDescription.newBuilder()
-                      .setId(orgResourceId)
-                      .setDescription(description)
-                      .build());
-              break;
-            case DATASET:
-              datasetServiceStubClient2.updateDatasetDescription(
-                  UpdateDatasetDescription.newBuilder()
-                      .setId(orgResourceId)
-                      .setDescription(description)
-                      .build());
-              break;
-            case REPOSITORY:
-            default:
-              versioningServiceBlockingStubClient2.updateRepository(
-                  SetRepository.newBuilder()
-                      .setId(
-                          RepositoryIdentification.newBuilder()
-                              .setRepoId(Long.parseLong(orgResourceId)))
-                      .setRepository(repository.toBuilder().setDescription(description))
-                      .build());
-              break;
-          }
-          if (!isWriteAllowed) {
-            fail();
-          }
-        } catch (StatusRuntimeException e) {
-          if (isWriteAllowed) {
-            throw e;
-          }
-        }
+        resourceVisibility = testParameters.getResourceVisibility();
+        customPermission = testParameters.getPermissions();
+        isReadAllowed = testParameters.isReadCheckSuccess();
+        isWriteAllowed = testParameters.isWriteCheckSuccess();
+        updateResource(
+            organization, orgResourceId, orgResourceName, resourceVisibility, customPermission);
+        checkResourceActions(orgResourceId, repository, isReadAllowed, isWriteAllowed);
       }
 
       LOGGER.info("Project created successfully");
@@ -285,24 +228,94 @@ public class GlobalSharingTest extends TestsInit {
     LOGGER.info("Global organization Project test stop................................");
   }
 
+  private void checkResourceActions(
+      String orgResourceId, Repository repository, boolean isReadAllowed, boolean isWriteAllowed) {
+    try {
+      switch (resourceType) {
+        case PROJECT:
+          client2ProjectServiceStub.getProjectById(
+              GetProjectById.newBuilder().setId(orgResourceId).build());
+          break;
+        case DATASET:
+          datasetServiceStubClient2.getDatasetById(
+              GetDatasetById.newBuilder().setId(orgResourceId).build());
+          break;
+        case REPOSITORY:
+        default:
+          repository =
+              versioningServiceBlockingStubClient2
+                  .getRepository(
+                      GetRepositoryRequest.newBuilder()
+                          .setId(
+                              RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+                          .build())
+                  .getRepository();
+          break;
+      }
+      if (!isReadAllowed) {
+        fail();
+      }
+    } catch (StatusRuntimeException e) {
+      if (isReadAllowed) {
+        throw e;
+      }
+    }
+    try {
+      String description = "new-description" + new Date().getTime();
+      switch (resourceType) {
+        case PROJECT:
+          client2ProjectServiceStub.updateProjectDescription(
+              UpdateProjectDescription.newBuilder()
+                  .setId(orgResourceId)
+                  .setDescription(description)
+                  .build());
+          break;
+        case DATASET:
+          datasetServiceStubClient2.updateDatasetDescription(
+              UpdateDatasetDescription.newBuilder()
+                  .setId(orgResourceId)
+                  .setDescription(description)
+                  .build());
+          break;
+        case REPOSITORY:
+        default:
+          versioningServiceBlockingStubClient2.updateRepository(
+              SetRepository.newBuilder()
+                  .setId(
+                      RepositoryIdentification.newBuilder()
+                          .setRepoId(Long.parseLong(orgResourceId)))
+                  .setRepository(repository.toBuilder().setDescription(description))
+                  .build());
+          break;
+      }
+      if (!isWriteAllowed) {
+        fail();
+      }
+    } catch (StatusRuntimeException e) {
+      if (isWriteAllowed) {
+        throw e;
+      }
+    }
+  }
+
   private void updateResource(
-          Organization organization,
-          String orgResourceId,
-          String orgResourceName, ResourceVisibility resourceVisibility,
-          CollaboratorPermissions.Builder customPermission) {
+      Organization organization,
+      String orgResourceId,
+      String orgResourceName,
+      ResourceVisibility resourceVisibility,
+      CollaboratorPermissions.Builder customPermission) {
     collaboratorServiceStubClient1.setResource(
         SetResource.newBuilder()
             .setWorkspaceName(organization.getName())
             .setResourceId(orgResourceId)
-                    .setResourceType(
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(
-                                resourceType
-                                        == ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET
-                                    ? ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY
-                                    : resourceType)
-                            .build())
-                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .setResourceType(
+                ResourceType.newBuilder()
+                    .setModeldbServiceResourceType(
+                        resourceType == ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET
+                            ? ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY
+                            : resourceType)
+                    .build())
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
             .setResourceName(orgResourceName)
             .setVisibility(resourceVisibility)
             .setCollaboratorType(customPermission.getCollaboratorType())
@@ -368,9 +381,9 @@ public class GlobalSharingTest extends TestsInit {
   }
 
   private Map.Entry<String, String> createDataset(
-          Organization organization,
-          ResourceVisibility resourceVisibility,
-          CollaboratorPermissions.Builder customPermission) {
+      Organization organization,
+      ResourceVisibility resourceVisibility,
+      CollaboratorPermissions.Builder customPermission) {
     // Create dataset
     CreateDataset createDatasetRequest =
         DatasetTest.getDatasetRequest("dataset-" + new Date().getTime());
@@ -388,9 +401,9 @@ public class GlobalSharingTest extends TestsInit {
   }
 
   private Map.Entry<String, String> createProject(
-          Organization organization,
-          ResourceVisibility resourceVisibility,
-          CollaboratorPermissions.Builder customPermission) {
+      Organization organization,
+      ResourceVisibility resourceVisibility,
+      CollaboratorPermissions.Builder customPermission) {
     // Create project
     CreateProject createProjectRequest =
         ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
