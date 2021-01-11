@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import ai.verta.artifactstore.ArtifactStoreGrpc;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
@@ -14,7 +15,9 @@ import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
@@ -40,6 +43,7 @@ import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.SetOrganization;
 import ai.verta.uac.SetResource;
+import ai.verta.uac.UACServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
@@ -67,7 +71,7 @@ public class GlobalSharingTest {
   private static final Logger LOGGER = LogManager.getLogger(GlobalSharingTest.class);
 
   private static final String serverName = InProcessServerBuilder.generateName();
-  private static final InProcessServerBuilder serverBuilder =
+  private static InProcessServerBuilder serverBuilder =
       InProcessServerBuilder.forName(serverName).directExecutor();
   private static final InProcessChannelBuilder client1ChannelBuilder =
       InProcessChannelBuilder.forName(serverName).directExecutor();
@@ -88,6 +92,8 @@ public class GlobalSharingTest {
   private static DatasetServiceGrpc.DatasetServiceBlockingStub client2DatasetServiceStub;
   private static VersioningServiceGrpc.VersioningServiceBlockingStub repositoryServiceStub;
   private static VersioningServiceGrpc.VersioningServiceBlockingStub client2RepositoryServiceStub;
+  private static Config config;
+  private static AuthService authService;
   private final ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType;
 
   @Parameterized.Parameters
@@ -107,64 +113,49 @@ public class GlobalSharingTest {
   @SuppressWarnings("unchecked")
   @BeforeClass
   public static void setServerAndService() throws Exception {
+    String serverName = InProcessServerBuilder.generateName();
+    InProcessChannelBuilder client1ChannelBuilder =
+            InProcessChannelBuilder.forName(serverName).directExecutor();
+    InProcessChannelBuilder client2ChannelBuilder =
+            InProcessChannelBuilder.forName(serverName).directExecutor();
 
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-    Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
+    config = Config.getInstance();
+    // Initialize services that we depend on
+    ServiceSet services = ServiceSet.fromConfig(config);
+    authService = services.authService;
+    // Initialize data access
+    DAOSet daos = DAOSet.fromServices(services);
+    App.migrate(config);
 
-    app = App.getInstance();
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
+    App.initializeBackendServices(serverBuilder, services, daos);
     serverBuilder.intercept(new AuthInterceptor());
 
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
+    if (config.test != null) {
+      authClientInterceptor = new AuthClientInterceptor(config.test);
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
+    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.authService != null) {
       ManagedChannel authServiceChannel =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-      // all service stubs
+              ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
+                      .usePlaintext()
+                      .intercept(authClientInterceptor.getClient1AuthInterceptor())
+                      .build();
       organizationServiceBlockingStub = OrganizationServiceGrpc.newBlockingStub(authServiceChannel);
       roleServiceBlockingStub = RoleServiceGrpc.newBlockingStub(authServiceChannel);
-      collaboratorServiceStub = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     }
 
-    serverBuilder.build().start();
     ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 1000);
 
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     client2ProjectServiceStub = ProjectServiceGrpc.newBlockingStub(client2Channel);
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-    client2DatasetServiceStub = DatasetServiceGrpc.newBlockingStub(client2Channel);
-    repositoryServiceStub = VersioningServiceGrpc.newBlockingStub(channel);
-    client2RepositoryServiceStub = VersioningServiceGrpc.newBlockingStub(client2Channel);
+
+    serverBuilder.build().start();
   }
 
   @AfterClass
@@ -236,7 +227,7 @@ public class GlobalSharingTest {
   public void createProjectWithGlobalSharingOrganization() {
     LOGGER.info("Global organization Project test start................................");
 
-    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+    if (!config.hasAuth()) {
       Assert.assertTrue(true);
       return;
     }

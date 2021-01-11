@@ -3,14 +3,11 @@ package ai.verta.modeldb.batchProcess;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.EntitiesEnum;
 import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetTypeEnum;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
-import ai.verta.modeldb.authservice.PublicRoleServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
@@ -18,6 +15,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -28,14 +26,7 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.BlobDAO;
-import ai.verta.modeldb.versioning.BlobDAORdbImpl;
-import ai.verta.modeldb.versioning.CommitDAO;
-import ai.verta.modeldb.versioning.CommitDAORdbImpl;
-import ai.verta.modeldb.versioning.CreateCommitRequest;
-import ai.verta.modeldb.versioning.Repository;
-import ai.verta.modeldb.versioning.RepositoryDAO;
-import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
+import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
@@ -44,12 +35,7 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -77,28 +63,20 @@ public class DatasetToRepositoryMigration {
 
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
-    App app = App.getInstance();
-    authService = new PublicAuthServiceUtils();
-    roleService = new PublicRoleServiceUtils(authService);
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
+    authService = AuthServiceUtils.FromConfig(ai.verta.modeldb.config.Config.getInstance());
+    roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
 
-      readOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_ONLY, null);
-      writeOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_WRITE, null);
-    }
+    readOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_ONLY, null);
+    writeOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_WRITE, null);
 
     commitDAO = new CommitDAORdbImpl(authService, roleService);
-    repositoryDAO = new RepositoryDAORdbImpl(authService, roleService);
+    repositoryDAO = new RepositoryDAORdbImpl(authService, roleService, commitDAO, metadataDAO);
     blobDAO = new BlobDAORdbImpl(authService, roleService);
     metadataDAO = new MetadataDAORdbImpl();
     experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
-    Boolean oldStoreClientCreationTimestampValue = app.getStoreClientCreationTimestamp();
-    app.setStoreClientCreationTimestamp(true);
     migrateDatasetsToRepositories();
-    app.setStoreClientCreationTimestamp(oldStoreClientCreationTimestampValue);
   }
 
   private static void migrateDatasetsToRepositories() {
@@ -287,25 +265,30 @@ public class DatasetToRepositoryMigration {
       throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     String datasetId = datasetEntity.getId();
     Dataset newDataset = datasetEntity.getProtoObject(roleService).toBuilder().setId("").build();
-    Repository repository;
+    Dataset dataset;
     try {
       LOGGER.debug("Creating repository for dataset {}", datasetEntity.getId());
-      repository =
-          repositoryDAO.createRepository(commitDAO, metadataDAO, newDataset, true, userInfoValue);
-      markStartedDatasetMigration(datasetId, repository.getId(), "started");
+      dataset =
+          repositoryDAO.createOrUpdateDataset(
+              newDataset, authService.getUsernameFromUserInfo(userInfoValue), true, userInfoValue);
+      markStartedDatasetMigration(datasetId, Long.parseLong(dataset.getId()), "started");
       LOGGER.debug("Adding repository collaborattor for dataset {}", datasetEntity.getId());
-      migrateDatasetCollaborators(datasetId, repository);
+      migrateDatasetCollaborators(datasetId, dataset);
     } catch (Exception e) {
       if (e instanceof StatusRuntimeException) {
         LOGGER.info("Getting error while migrating {} dataset", datasetId);
         LOGGER.info(e.getMessage());
         Status status = Status.fromThrowable(e);
         if (status.getCode().equals(Status.Code.ALREADY_EXISTS)) {
-          repository =
-              repositoryDAO.createRepository(commitDAO, metadataDAO, newDataset, false, null);
+          dataset =
+              repositoryDAO.createOrUpdateDataset(
+                  newDataset,
+                  authService.getUsernameFromUserInfo(userInfoValue),
+                  false,
+                  userInfoValue);
           LOGGER.debug(
               "Continuing with repository {} already created for dataset {}",
-              repository.getId(),
+              dataset.getId(),
               datasetEntity.getId());
         } else {
           throw e;
@@ -314,17 +297,18 @@ public class DatasetToRepositoryMigration {
         throw e;
       }
     }
-    LOGGER.debug("Created repository {} for dataset {}", repository.getId(), datasetEntity.getId());
-    migrateDatasetVersionToCommitsBlobsMigration(session, datasetId, repository.getId());
-    updateDatasetMigrationStatus(datasetId, repository.getId(), "done");
+    LOGGER.debug("Created repository {} for dataset {}", dataset.getId(), datasetEntity.getId());
+    migrateDatasetVersionToCommitsBlobsMigration(
+        session, datasetId, Long.parseLong(dataset.getId()));
+    updateDatasetMigrationStatus(datasetId, Long.parseLong(dataset.getId()), "done");
   }
 
-  private static void migrateDatasetCollaborators(String datasetId, Repository repository) {
+  private static void migrateDatasetCollaborators(String datasetId, Dataset dataset) {
     List<GetCollaboratorResponseItem> collaboratorResponses =
         roleService.getResourceCollaborators(
             ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET,
             datasetId,
-            repository.getOwner(),
+            dataset.getOwner(),
             null);
 
     if (!collaboratorResponses.isEmpty()) {
@@ -348,13 +332,13 @@ public class DatasetToRepositoryMigration {
           roleService.createRoleBinding(
               readOnlyRole,
               collaboratorBase,
-              String.valueOf(repository.getId()),
+              dataset.getId(),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
         } else {
           roleService.createRoleBinding(
               writeOnlyRole,
               collaboratorBase,
-              String.valueOf(repository.getId()),
+              dataset.getId(),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
         }
       }

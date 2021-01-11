@@ -7,14 +7,11 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
-import ai.verta.modeldb.GetHydratedProjects;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.UpdateProjectName;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
@@ -23,25 +20,13 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
-import ai.verta.uac.Action;
-import ai.verta.uac.Actions;
-import ai.verta.uac.GetCollaboratorResponseItem;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.ShareViaEnum;
-import ai.verta.uac.UserInfo;
-import ai.verta.uac.Workspace;
+import ai.verta.uac.*;
 import com.amazonaws.AmazonServiceException;
-import com.google.protobuf.Any;
-import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
-import com.google.protobuf.MessageOrBuilder;
-import com.google.protobuf.ProtocolMessageEnum;
-import com.google.protobuf.Value;
+import com.google.protobuf.*;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -50,6 +35,11 @@ import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.exception.LockAcquisitionException;
+import org.yaml.snakeyaml.Yaml;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -58,24 +48,12 @@ import java.math.BigInteger;
 import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.exception.LockAcquisitionException;
-import org.yaml.snakeyaml.Yaml;
 
 public class ModelDBUtils {
 
@@ -140,9 +118,7 @@ public class ModelDBUtils {
 
     // For specifying wrong message digest algorithms
     catch (NoSuchAlgorithmException e) {
-      Status status =
-          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InternalErrorException(e.getMessage());
     }
   }
 
@@ -163,10 +139,7 @@ public class ModelDBUtils {
     if (entityName != null && entityName.length() > ModelDBConstants.NAME_LENGTH) {
       String errorMessage =
           "Entity name can not be more than " + ModelDBConstants.NAME_LENGTH + " characters";
-      LOGGER.info(errorMessage);
-      Status status =
-          Status.newBuilder().setCode(Code.INVALID_ARGUMENT_VALUE).setMessage(errorMessage).build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(errorMessage);
     }
     return entityName;
   }
@@ -175,26 +148,14 @@ public class ModelDBUtils {
     for (String tag : tags) {
       if (tag.isEmpty()) {
         String errorMessage = "Invalid tag found, Tag shouldn't be empty";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       } else if (tag.length() > ModelDBConstants.TAG_LENGTH) {
         String errorMessage =
             "Tag name can not be more than "
                 + ModelDBConstants.TAG_LENGTH
                 + " characters. Limit exceeded tag is: "
                 + tag;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
     }
     return tags;
@@ -283,13 +244,7 @@ public class ModelDBUtils {
               collaborator1 = new CollaboratorTeam(collaborator.getVertaId(), roleService);
               break;
             default:
-              Status status =
-                  Status.newBuilder()
-                      .setCode(Code.INTERNAL.getNumber())
-                      .setMessage(ModelDBConstants.INTERNAL_ERROR)
-                      .addDetails(Any.pack(GetHydratedProjects.Response.getDefaultInstance()))
-                      .build();
-              throw StatusProto.toStatusRuntimeException(status);
+              throw new InternalErrorException(ModelDBConstants.INTERNAL_ERROR);
           }
 
           final Builder builder = CollaboratorUserInfo.newBuilder();
@@ -428,12 +383,16 @@ public class ModelDBUtils {
     return rootCause;
   }
 
-  public static <T extends GeneratedMessageV3> void observeError(
-      StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
+  public static StatusRuntimeException logError(Exception e) {
+    return logError(e, null);
+  }
+
+  public static <T extends GeneratedMessageV3> StatusRuntimeException logError(
+      Exception e, T defaultInstance) {
     Status status;
-    Exception statusRuntimeException;
+    StatusRuntimeException statusRuntimeException;
     if (e instanceof StatusRuntimeException) {
-      statusRuntimeException = e;
+      statusRuntimeException = (StatusRuntimeException) e;
     } else {
       Throwable throwable = findRootCause(e);
       // Condition 'throwable != null' covered by below condition 'throwable instanceof
@@ -446,7 +405,6 @@ public class ModelDBUtils {
             Status.newBuilder()
                 .setCode(Code.UNAVAILABLE_VALUE)
                 .setMessage(errorMessage + throwable.getMessage())
-                .addDetails(Any.pack(defaultInstance))
                 .build();
       } else if (e instanceof LockAcquisitionException) {
         String errorMessage = "Encountered deadlock in database connection.";
@@ -455,7 +413,6 @@ public class ModelDBUtils {
             Status.newBuilder()
                 .setCode(Code.ABORTED_VALUE)
                 .setMessage(errorMessage + throwable.getMessage())
-                .addDetails(Any.pack(defaultInstance))
                 .build();
       } else if (e instanceof ModelDBException) {
         ModelDBException modelDBException = (ModelDBException) e;
@@ -464,7 +421,6 @@ public class ModelDBUtils {
             Status.newBuilder()
                 .setCode(modelDBException.getCode().value())
                 .setMessage(modelDBException.getMessage())
-                .addDetails(Any.pack(defaultInstance))
                 .build();
       } else {
         LOGGER.error(
@@ -473,7 +429,6 @@ public class ModelDBUtils {
             Status.newBuilder()
                 .setCode(Code.INTERNAL_VALUE)
                 .setMessage(ModelDBConstants.INTERNAL_ERROR)
-                .addDetails(Any.pack(defaultInstance))
                 .build();
       }
       int n = 0;
@@ -490,7 +445,13 @@ public class ModelDBUtils {
       }
       statusRuntimeException = StatusProto.toStatusRuntimeException(status);
     }
-    responseObserver.onError(statusRuntimeException);
+
+    return statusRuntimeException;
+  }
+
+  public static <T extends GeneratedMessageV3> void observeError(
+      StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
+    responseObserver.onError(logError(e, defaultInstance));
   }
 
   public static void logBasedOnTheErrorCode(boolean isClientError, Throwable e) {
@@ -583,16 +544,8 @@ public class ModelDBUtils {
     if (userInfo != null
         && workspaceType == WorkspaceType.USER
         && !workspaceId.equals(userInfo.getVertaInfo().getUserId())) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage(
-                  "Creation of "
-                      + resourceNameString
-                      + " in other user's workspace is not permitted")
-              .addDetails(Any.pack(UpdateProjectName.Response.getDefaultInstance()))
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new PermissionDeniedException(
+          "Creation of " + resourceNameString + " in other user's workspace is not permitted");
     }
   }
 
@@ -609,12 +562,8 @@ public class ModelDBUtils {
       if (workspace.getId() == item.getWorkspaceId()) {
         // Throw error if it is an insert request and project with same name already exists
         LOGGER.info("{} with name {} already exists", modelDBServiceResourceTypes, name);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ALREADY_EXISTS_VALUE)
-                .setMessage(modelDBServiceResourceTypes + " already exists in database")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new AlreadyExistsException(
+            modelDBServiceResourceTypes + " already exists in database");
       }
     }
   }
@@ -679,11 +628,11 @@ public class ModelDBUtils {
   }
 
   public static ResourceVisibility getResourceVisibility(
-      Optional<WorkspaceType> workspaceType, ProtocolMessageEnum visibility) {
-    if (!workspaceType.isPresent()) {
+      Optional<Workspace> workspace, ProtocolMessageEnum visibility) {
+    if (!workspace.isPresent()) {
       return ResourceVisibility.PRIVATE;
     }
-    if (workspaceType.get() == WorkspaceType.ORGANIZATION) {
+    if (workspace.get().getInternalIdCase() == Workspace.InternalIdCase.ORG_ID) {
       if (visibility == ProjectVisibility.ORG_SCOPED_PUBLIC
           || visibility == RepositoryVisibility.ORG_SCOPED_PUBLIC
           || visibility == DatasetVisibility.ORG_SCOPED_PUBLIC) {
@@ -733,6 +682,6 @@ public class ModelDBUtils {
   public static Object retryOrThrowException(
       StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
     return CommonUtils.retryOrThrowException(
-        ex, retry, retryCallInterface, App.getInstance().getRequestTimeout());
+        ex, retry, retryCallInterface, Config.getInstance().grpcServer.requestTimeout);
   }
 }

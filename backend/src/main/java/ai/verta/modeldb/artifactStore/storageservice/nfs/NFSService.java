@@ -4,13 +4,13 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.api.client.util.IOUtils;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,11 +19,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +35,7 @@ public class NFSService implements ArtifactStoreService {
   private static final Logger LOGGER = LogManager.getLogger(NFSService.class);
   private final Path fileStorageLocation;
   private App app = App.getInstance();
+  private Config config = Config.getInstance();
 
   /**
    * Create NFS service bean by springBoot and create root folder if not exists
@@ -83,7 +80,7 @@ public class NFSService implements ArtifactStoreService {
     LOGGER.trace("NFSService - storeFile called");
 
     // Validate Artifact size for trial case
-    TrialUtils.validateArtifactSizeForTrial(app, artifactPath, request.getContentLength());
+    TrialUtils.validateArtifactSizeForTrial(config.trial, artifactPath, request.getContentLength());
 
     try {
       String cleanArtifactPath = StringUtils.cleanPath(Objects.requireNonNull(artifactPath));
@@ -171,26 +168,23 @@ public class NFSService implements ArtifactStoreService {
       LOGGER.trace("NFSService - generatePresignedUrl - put url returned");
       return getUploadUrl(
           parameters,
-          app.getArtifactStoreUrlProtocol(),
-          app.getStoreArtifactEndpoint(),
-          app.getPickArtifactStoreHostFromConfig(),
-          app.getArtifactStoreServerHost());
+          config.artifactStoreConfig.protocol,
+          config.artifactStoreConfig.artifactEndpoint.getArtifact,
+          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+          config.artifactStoreConfig.host);
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("NFSService - generatePresignedUrl - get url returned");
       String filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
       parameters.put(ModelDBConstants.FILENAME, filename);
       return getDownloadUrl(
           parameters,
-          app.getArtifactStoreUrlProtocol(),
-          app.getGetArtifactEndpoint(),
-          app.getPickArtifactStoreHostFromConfig(),
-          app.getArtifactStoreServerHost());
+          config.artifactStoreConfig.protocol,
+          config.artifactStoreConfig.artifactEndpoint.getArtifact,
+          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+          config.artifactStoreConfig.host);
     } else {
       String errorMessage = "Unsupported HTTP Method for NFS Presigned URL";
-      Status status =
-          Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-      LOGGER.info(errorMessage);
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(errorMessage);
     }
   }
 

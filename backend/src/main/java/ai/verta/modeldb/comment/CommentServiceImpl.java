@@ -1,24 +1,17 @@
 package ai.verta.modeldb.comment;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.AddComment;
-import ai.verta.modeldb.Comment;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.CommentServiceGrpc.CommentServiceImplBase;
-import ai.verta.modeldb.DeleteComment;
-import ai.verta.modeldb.GetComments;
 import ai.verta.modeldb.GetComments.Response;
-import ai.verta.modeldb.UpdateComment;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.Any;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.Calendar;
 import java.util.List;
@@ -29,22 +22,18 @@ import org.apache.logging.log4j.Logger;
 public class CommentServiceImpl extends CommentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(CommentServiceImpl.class);
-  private AuthService authService;
-  private CommentDAO commentDAO;
-  private ExperimentRunDAO experimentRunDAO;
-  private RoleService roleService;
+  private final AuthService authService;
+  private final RoleService roleService;
+  private final CommentDAO commentDAO;
+  private final ExperimentRunDAO experimentRunDAO;
 
   String experimentRunEntity = ExperimentRunEntity.class.getSimpleName();
 
-  public CommentServiceImpl(
-      AuthService authService,
-      CommentDAO commentDAO,
-      ExperimentRunDAO experimentRunDAO,
-      RoleService roleService) {
-    this.authService = authService;
-    this.commentDAO = commentDAO;
-    this.experimentRunDAO = experimentRunDAO;
-    this.roleService = roleService;
+  public CommentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+    this.authService = serviceSet.authService;
+    this.roleService = serviceSet.roleService;
+    this.commentDAO = daoSet.commentDAO;
+    this.experimentRunDAO = daoSet.experimentRunDAO;
   }
 
   /**
@@ -67,14 +56,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
     }
 
     if (errorMessage != null) {
-      LOGGER.info(errorMessage);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage(errorMessage)
-              .addDetails(Any.pack(AddComment.Response.getDefaultInstance()))
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(errorMessage);
     }
 
     return Comment.newBuilder()
@@ -103,14 +85,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
     }
 
     if (errorMessage != null) {
-      LOGGER.info(errorMessage);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage(errorMessage)
-              .addDetails(Any.pack(UpdateComment.Response.getDefaultInstance()))
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(errorMessage);
     }
 
     return Comment.newBuilder()
@@ -162,14 +137,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
     try {
       if (request.getEntityId().isEmpty()) {
         String errorMessage = "Entity ID not found in GetComments request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetComments.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getEntityId());
       // Validate if current user has access to the entity or not
@@ -198,14 +166,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteComment.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Get the user info from the Context

@@ -42,6 +42,11 @@
 			<version>4.13.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.21</version>
+		</dependency>
 
 		<!-- The main transport implementation based on Netty, for both the client
 			and the server (https://grpc.io/grpc-java/javadoc/io/grpc/netty/package-summary.html) -->

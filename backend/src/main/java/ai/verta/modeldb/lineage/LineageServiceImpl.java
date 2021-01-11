@@ -1,6 +1,7 @@
 package ai.verta.modeldb.lineage;
 
 import ai.verta.modeldb.AddLineage;
+import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.DeleteLineage;
 import ai.verta.modeldb.FindAllInputs;
 import ai.verta.modeldb.FindAllInputsOutputs;
@@ -22,13 +23,12 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   private static final Logger LOGGER = LogManager.getLogger(LineageServiceImpl.class);
   private final ExperimentRunDAO experimentDAO;
   private final CommitDAO commitDAO;
-  private LineageDAO lineageDAO;
+  private final LineageDAO lineageDAO;
 
-  public LineageServiceImpl(
-      LineageDAO lineageDAO, ExperimentRunDAO experimentRunDAO, CommitDAO commitDAO) {
-    this.lineageDAO = lineageDAO;
-    this.experimentDAO = experimentRunDAO;
-    this.commitDAO = commitDAO;
+  public LineageServiceImpl(DAOSet daoSet) {
+    this.lineageDAO = daoSet.lineageDAO;
+    this.experimentDAO = daoSet.experimentRunDAO;
+    this.commitDAO = daoSet.commitDAO;
   }
 
   @Override

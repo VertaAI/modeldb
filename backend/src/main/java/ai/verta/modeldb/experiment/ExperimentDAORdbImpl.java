@@ -4,24 +4,13 @@ import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.Experiment;
-import ai.verta.modeldb.FindExperiments;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.Project;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
-import ai.verta.modeldb.entities.AttributeEntity;
-import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.ExperimentEntity;
-import ai.verta.modeldb.entities.ProjectEntity;
-import ai.verta.modeldb.entities.TagsMapping;
-import ai.verta.modeldb.exceptions.ModelDBException;
-import ai.verta.modeldb.exceptions.NotFoundException;
-import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.entities.*;
+import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -32,24 +21,9 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -209,20 +183,10 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
       // Throw error if it is an insert request and Experiment with same name already exists
       if (existStatus && isInsert) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ALREADY_EXISTS_VALUE)
-                .setMessage("Experiment already exists in database")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new AlreadyExistsException("Experiment already exists in database");
       } else if (!existStatus && !isInsert) {
         // Throw error if it is an update request and Experiment with given name does not exist
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage("Experiment does not exist in database")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException("Experiment does not exist in database");
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -317,10 +281,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         return experimentObj.getProtoObject();
       } else {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -381,10 +342,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           session.load(ExperimentEntity.class, experimentId, LockMode.PESSIMISTIC_WRITE);
       if (experimentObj == null) {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       List<String> newTags = new ArrayList<>();
       Experiment existingProtoExperimentObj = experimentObj.getProtoObject();
@@ -479,10 +437,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           session.get(ExperimentEntity.class, experimentId, LockMode.PESSIMISTIC_WRITE);
       if (experimentObj == null) {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       experimentObj.setAttributeMapping(
           RdbmsUtils.convertAttributesFromAttributeEntityList(
@@ -511,10 +466,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       ExperimentEntity experimentObj = session.get(ExperimentEntity.class, experimentId);
       if (experimentObj == null) {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
 
       if (getAll) {
@@ -633,13 +585,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
             paramMap.put(key, value.getBoolValue());
             break;
           default:
-            Status invalidValueTypeError =
-                Status.newBuilder()
-                    .setCode(Code.UNIMPLEMENTED_VALUE)
-                    .setMessage(
-                        "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+            throw new UnimplementedException(
+                "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE");
         }
         stringQueryBuilder.append(" ee." + key + " = :" + key);
         if (index < keyValues.size() - 1) {
@@ -654,10 +601,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       ExperimentEntity experimentObj = (ExperimentEntity) query.uniqueResult();
       if (experimentObj == null) {
         String errorMessage = "Experiment not found";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       return experimentObj.getProtoObject();
     } catch (Exception ex) {
@@ -691,13 +635,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
             paramMap.put(key, value.getBoolValue());
             break;
           default:
-            Status invalidValueTypeError =
-                Status.newBuilder()
-                    .setCode(Code.UNIMPLEMENTED_VALUE)
-                    .setMessage(
-                        "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+            throw new UnimplementedException(
+                "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE");
         }
         stringQueryBuilder.append(" ee." + key + " = :" + key);
         if (index < keyValues.size() - 1) {
@@ -742,12 +681,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     checkIfEntityAlreadyExists(srcExperiment, false);
 
     if (newOwner == null || newProject == null) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage("New owner or new project not passed for cloning Experiment.")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(
+          "New owner or new project not passed for cloning Experiment.");
     }
 
     Experiment copyExperiment = copyExperimentAndUpdateDetails(srcExperiment, newProject, newOwner);
@@ -919,6 +854,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           experimentPaginationDTO.setTotalRecords(0L);
           return experimentPaginationDTO;
         }
+        throw ex;
       }
 
       finalPredicatesList.add(builder.equal(experimentRoot.get(ModelDBConstants.DELETED), false));
@@ -1009,14 +945,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       for (Artifact existingArtifact : existingArtifacts) {
         for (Artifact newArtifact : newArtifacts) {
           if (existingArtifact.getKey().equals(newArtifact.getKey())) {
-            Status status =
-                Status.newBuilder()
-                    .setCode(Code.ALREADY_EXISTS_VALUE)
-                    .setMessage(
-                        "Artifact being logged already exists. existing artifact key : "
-                            + newArtifact.getKey())
-                    .build();
-            throw StatusProto.toStatusRuntimeException(status);
+            throw new AlreadyExistsException(
+                "Artifact being logged already exists. existing artifact key : "
+                    + newArtifact.getKey());
           }
         }
       }
@@ -1051,10 +982,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         return experiment.getArtifactsList();
       } else {
         String errorMessage = "Artifacts not found in the Experiment";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {

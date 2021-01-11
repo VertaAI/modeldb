@@ -2,23 +2,12 @@ package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
+import ai.verta.modeldb.exceptions.InternalErrorException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,12 +37,7 @@ public class VersioningModeldbEntityMapping implements Serializable {
       this.experimentRunEntity = (ExperimentRunEntity) entity;
     } else {
       LOGGER.warn("ExperimentRunEntity Expected : found {}", entity.getClass());
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INTERNAL_VALUE)
-              .setMessage("Invalid ModelDB entity found")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InternalErrorException("Invalid ModelDB entity found");
     }
 
     if (blobHash != null) {

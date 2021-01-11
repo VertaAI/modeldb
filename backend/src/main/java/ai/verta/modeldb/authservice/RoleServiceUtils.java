@@ -4,7 +4,6 @@ import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
@@ -15,55 +14,19 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.exceptions.InternalErrorException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.Action;
-import ai.verta.uac.Actions;
-import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.DeleteRoleBinding;
-import ai.verta.uac.DeleteRoleBindings;
-import ai.verta.uac.Entities;
-import ai.verta.uac.GetAllowedEntities;
-import ai.verta.uac.GetAllowedResources;
-import ai.verta.uac.GetCollaboratorResponseItem;
-import ai.verta.uac.GetOrganizationByName;
-import ai.verta.uac.GetResources;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GetRoleBindingByName;
-import ai.verta.uac.GetRoleByName;
-import ai.verta.uac.GetSelfAllowedActionsBatch;
-import ai.verta.uac.GetSelfAllowedResources;
-import ai.verta.uac.GetTeamByName;
-import ai.verta.uac.GetWorkspaceByLegacyId;
-import ai.verta.uac.IsSelfAllowed;
-import ai.verta.uac.ListMyOrganizations;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.Organization;
-import ai.verta.uac.RemoveResources;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
-import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.ServiceEnum.Service;
-import ai.verta.uac.SetRoleBinding;
-import ai.verta.uac.UserInfo;
-import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
-import io.grpc.protobuf.StatusProto;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
@@ -73,18 +36,24 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
     implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
 
-  public RoleServiceUtils(AuthService authService) {
-    this(App.getInstance(), authService);
+  public static ai.verta.modeldb.authservice.RoleService FromConfig(
+      Config config, AuthService authService) {
+    if (!config.hasAuth()) return new PublicRoleServiceUtils(authService);
+    else return new RoleServiceUtils(authService);
   }
 
-  private RoleServiceUtils(App app, AuthService authService) {
+  public RoleServiceUtils(AuthService authService) {
+    this(Config.getInstance(), authService);
+  }
+
+  private RoleServiceUtils(Config config, AuthService authService) {
     super(
         authService,
-        app.getAuthServerHost(),
-        app.getAuthServerPort(),
-        app.getServiceUserEmail(),
-        app.getServiceUserDevKey(),
-        app.getRequestTimeout(),
+        config.authService.host,
+        config.authService.port,
+        config.mdb_service_user.email,
+        config.mdb_service_user.devKey,
+        config.grpcServer.requestTimeout,
         AuthInterceptor.METADATA_INFO);
   }
 
@@ -211,12 +180,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, isSelfAllowedResponse);
 
       if (!isSelfAllowedResponse.getAllowed()) {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.PERMISSION_DENIED_VALUE)
-                .setMessage("Access Denied")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new PermissionDeniedException("Access Denied");
       }
     } catch (StatusRuntimeException ex) {
       ModelDBUtils.retryOrThrowException(
@@ -592,9 +556,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
         }
       }
     } catch (InterruptedException | ExecutionException ex) {
-      Status status =
-          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(ex.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InternalErrorException(ex.getMessage());
     }
     LOGGER.debug("Total Collaborators count: " + getCollaboratorResponseList.size());
     return getCollaboratorResponseList;

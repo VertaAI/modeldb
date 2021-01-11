@@ -2,55 +2,19 @@ package ai.verta.modeldb.utils;
 
 import ai.verta.common.*;
 import ai.verta.common.OperatorEnum.Operator;
-import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.Comment;
-import ai.verta.modeldb.Dataset;
-import ai.verta.modeldb.DatasetPartInfo;
-import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.EntityComment;
-import ai.verta.modeldb.Experiment;
-import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.Feature;
-import ai.verta.modeldb.GitSnapshot;
-import ai.verta.modeldb.Job;
-import ai.verta.modeldb.Location;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.Observation;
-import ai.verta.modeldb.PathDatasetVersionInfo;
-import ai.verta.modeldb.Project;
-import ai.verta.modeldb.QueryDatasetVersionInfo;
-import ai.verta.modeldb.QueryParameter;
-import ai.verta.modeldb.RawDatasetVersionInfo;
-import ai.verta.modeldb.VersioningEntry;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
-import ai.verta.modeldb.entities.ArtifactEntity;
-import ai.verta.modeldb.entities.AttributeEntity;
-import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.CommentEntity;
-import ai.verta.modeldb.entities.DatasetEntity;
-import ai.verta.modeldb.entities.DatasetPartInfoEntity;
-import ai.verta.modeldb.entities.DatasetVersionEntity;
-import ai.verta.modeldb.entities.ExperimentEntity;
-import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.entities.FeatureEntity;
-import ai.verta.modeldb.entities.GitSnapshotEntity;
-import ai.verta.modeldb.entities.JobEntity;
-import ai.verta.modeldb.entities.KeyValueEntity;
-import ai.verta.modeldb.entities.ObservationEntity;
-import ai.verta.modeldb.entities.PathDatasetVersionInfoEntity;
-import ai.verta.modeldb.entities.ProjectEntity;
-import ai.verta.modeldb.entities.QueryDatasetVersionInfoEntity;
-import ai.verta.modeldb.entities.QueryParameterEntity;
-import ai.verta.modeldb.entities.RawDatasetVersionInfoEntity;
-import ai.verta.modeldb.entities.TagsMapping;
-import ai.verta.modeldb.entities.UserCommentEntity;
+import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -63,30 +27,12 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.*;
 import javax.persistence.criteria.CriteriaBuilder.Trimspec;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -261,13 +207,7 @@ public class RdbmsUtils {
       if (observation.getEpochNumber().getKindCase() != KindCase.NUMBER_VALUE) {
         String invalidEpochMessage =
             "Observations can only have numeric epoch_number, condition not met in " + observation;
-        LOGGER.info(invalidEpochMessage);
-        Status invalidEpoch =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(invalidEpochMessage)
-                .build();
-        throw StatusProto.toStatusRuntimeException(invalidEpoch);
+        throw new InvalidArgumentException(invalidEpochMessage);
       }
       return new ObservationEntity(entity, fieldType, observation);
     } else {
@@ -294,12 +234,7 @@ public class RdbmsUtils {
                 + " in "
                 + observation;
         LOGGER.warn(unimplementedErrorMessage);
-        Status unimplementedError =
-            Status.newBuilder()
-                .setCode(Code.UNIMPLEMENTED_VALUE)
-                .setMessage(unimplementedErrorMessage)
-                .build();
-        throw StatusProto.toStatusRuntimeException(unimplementedError);
+        throw new UnimplementedException(unimplementedErrorMessage);
       }
     }
   }
@@ -780,7 +715,7 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (ModelDBHibernateUtil.rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
+        if (ModelDBHibernateUtil.config.RdbConfiguration.isPostgres()) {
           if (stringColumn) {
 
             return getOperatorPredicate(
@@ -816,12 +751,7 @@ public class RdbmsUtils {
             return getOperatorPredicate(builder, valueExpression, operator, value.getStringValue());
           }
         } else {
-          Status invalidValueTypeError =
-              Status.newBuilder()
-                  .setCode(Code.INVALID_ARGUMENT_VALUE)
-                  .setMessage("Predicate does not contain string value in request")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+          throw new InvalidArgumentException("Predicate does not contain string value in request");
         }
       case BOOL_VALUE:
         LOGGER.debug("Called switch case : bool_value");
@@ -840,13 +770,8 @@ public class RdbmsUtils {
         }
         return getOperatorPredicate(builder, valueExpression, operator, valueList);
       default:
-        Status invalidValueTypeError =
-            Status.newBuilder()
-                .setCode(Code.UNIMPLEMENTED_VALUE)
-                .setMessage(
-                    "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE")
-                .build();
-        throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+        throw new UnimplementedException(
+            "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE");
     }
   }
 
@@ -970,12 +895,7 @@ public class RdbmsUtils {
         LOGGER.debug("switch case : Observation");
         if (keys.length > 2) {
           // If getting third level key like observation.attribute.attr_1 then it is not supported
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.UNIMPLEMENTED_VALUE)
-                  .setMessage("Third level of sorting not supported")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
+          throw new InvalidArgumentException("Third level of sorting not supported");
           /*TODO: Below code for supporting the third level (ex: experimentRun.attributes.att_1) ordering data but right now Mongo doesn't support the third level ordering so commented below code to maintain the functionality.
           switch (keys[1]) {
               case ModelDBConstants.ATTRIBUTES:
@@ -1201,12 +1121,7 @@ public class RdbmsUtils {
         LOGGER.debug("switch case : Observation");
         if (keys.length > 2) {
           // If getting third level key like observation.attribute.attr_1 then it is not supported
-          Status status =
-              Status.newBuilder()
-                  .setCode(Code.UNIMPLEMENTED_VALUE)
-                  .setMessage("Third level of sorting not supported")
-                  .build();
-          throw StatusProto.toStatusRuntimeException(status);
+          throw new InvalidArgumentException("Third level of sorting not supported");
           /*TODO: Below code for supporting the third level (ex: experimentRun.attributes.att_1) ordering data but right now Mongo doesn't support the third level ordering so commented below code to maintain the functionality.
           switch (keys[1]) {
               case ModelDBConstants.ATTRIBUTES:
@@ -1452,12 +1367,7 @@ public class RdbmsUtils {
           }
 
           if (errorMessage != null) {
-            Status invalidValueTypeError =
-                Status.newBuilder()
-                    .setCode(Code.INVALID_ARGUMENT_VALUE)
-                    .setMessage(errorMessage)
-                    .build();
-            throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+            throw new InvalidArgumentException(errorMessage);
           }
 
           LOGGER.debug("Set predicate : \n{}", predicate);
@@ -1844,15 +1754,8 @@ public class RdbmsUtils {
                       + "] on this ManagedType ["
                       + entityRootPath.getJavaType().getName()
                       + "]")) {
-            Status invalidKeyError =
-                Status.newBuilder()
-                    .setCode(Code.INVALID_ARGUMENT_VALUE)
-                    .setMessage(
-                        "Predicate key '"
-                            + predicate.getKey()
-                            + "' mapping not found in the MDB entity")
-                    .build();
-            throw StatusProto.toStatusRuntimeException(invalidKeyError);
+            throw new InvalidArgumentException(
+                "Predicate key '" + predicate.getKey() + "' mapping not found in the MDB entity");
           } else {
             throw ex;
           }
@@ -1902,12 +1805,8 @@ public class RdbmsUtils {
         }
       }
     } else {
-      Status invalidValueTypeError =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage("Predicate for the owner search only supporting 'String' value")
-              .build();
-      throw StatusProto.toStatusRuntimeException(invalidValueTypeError);
+      throw new InvalidArgumentException(
+          "Predicate for the owner search only supporting 'String' value");
     }
     return null;
   }
@@ -2114,26 +2013,16 @@ public class RdbmsUtils {
       RoleService roleService) {
     if (predicate.getKey().equals(ModelDBConstants.ID)) {
       if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
-        Status statusMessage =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(ModelDBConstants.NON_EQ_ID_PRED_ERROR_MESSAGE)
-                .build();
-        throw StatusProto.toStatusRuntimeException(statusMessage);
+        throw new InvalidArgumentException(ModelDBConstants.NON_EQ_ID_PRED_ERROR_MESSAGE);
       }
       String entityId = predicate.getValue().getStringValue();
       if ((accessibleEntityIds.isEmpty() || !accessibleEntityIds.contains(entityId))
           && roleService.IsImplemented()) {
-        Status statusMessage =
-            Status.newBuilder()
-                .setCode(Code.PERMISSION_DENIED_VALUE)
-                .setMessage(
-                    "Access is denied. User is unauthorized for given "
-                        + entityName
-                        + " entity ID : "
-                        + entityId)
-                .build();
-        throw StatusProto.toStatusRuntimeException(statusMessage);
+        throw new PermissionDeniedException(
+            "Access is denied. User is unauthorized for given "
+                + entityName
+                + " entity ID : "
+                + entityId);
       }
     }
 
@@ -2141,12 +2030,7 @@ public class RdbmsUtils {
         || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_ID)
         || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_NAME)
         || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_TYPE)) {
-      Status statusMessage =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage("Workspace name OR type not supported as predicate")
-              .build();
-      throw StatusProto.toStatusRuntimeException(statusMessage);
+      throw new InvalidArgumentException("Workspace name OR type not supported as predicate");
     }
   }
 

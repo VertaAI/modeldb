@@ -3,7 +3,6 @@ package ai.verta.modeldb.versioning;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
@@ -304,7 +303,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException {
     long timeCreated = new Date().getTime();
-    if (App.getInstance().getStoreClientCreationTimestamp() && commit.getDateCreated() != 0L) {
+    if (commit.getDateCreated() != 0L) {
       timeCreated = commit.getDateCreated();
     }
 

@@ -5,47 +5,25 @@ import static org.junit.Assert.*;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
-import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetCollaborator;
 import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.RemoveCollaborator;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -53,105 +31,13 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CollaboratorTest {
+public class CollaboratorTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorTest.class);
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
-  @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
-
-  private ManagedChannel channel = null;
-  private ManagedChannel authServiceChannel = null;
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static String authHost;
-  private static Integer authPort;
-  private static AuthClientInterceptor authClientInterceptor;
-  private static AuthService authService;
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-    Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
-
-    App app = App.getInstance();
-    authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-      authHost = authServiceHost;
-      authPort = authServicePort;
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-    }
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-    App.initiateShutdown(0);
-  }
-
-  @After
-  public void clientClose() {
-    if (!channel.isShutdown()) {
-      channel.shutdownNow();
-    }
-    if (!authServiceChannel.isShutdown()) {
-      authServiceChannel.shutdownNow();
-    }
-  }
-
-  @Before
-  public void initializeChannel() throws IOException {
-    grpcCleanup.register(serverBuilder.build().start());
-    channel = grpcCleanup.register(channelBuilder.maxInboundMessageSize(1024).build());
-    authServiceChannel =
-        ManagedChannelBuilder.forTarget(authHost + ":" + authPort)
-            .usePlaintext()
-            .intercept(authClientInterceptor.getClient1AuthInterceptor())
-            .build();
-  }
 
   @Test
   public void a_collaboratorCreateTest() {
     LOGGER.info("Create Collaborator test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     ProjectTest projectTest = new ProjectTest();
     // Create project
     CreateProject createProjectRequest =
@@ -171,7 +57,7 @@ public class CollaboratorTest {
               project, CollaboratorType.READ_WRITE, authClientInterceptor);
 
       AddCollaboratorRequest.Response response =
-          collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + response.getStatus());
       assertTrue(response.getStatus());
 
@@ -180,7 +66,7 @@ public class CollaboratorTest {
               project, "github|1234", CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
 
       try {
-        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         fail();
       } catch (StatusRuntimeException ex) {
         Status status = Status.fromThrowable(ex);
@@ -194,7 +80,7 @@ public class CollaboratorTest {
               project, "google-oauth2|12345678", CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
 
       try {
-        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         fail();
       } catch (StatusRuntimeException ex) {
         Status status = Status.fromThrowable(ex);
@@ -208,7 +94,7 @@ public class CollaboratorTest {
               project, "bitbucket|12345678", CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
 
       try {
-        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         fail();
       } catch (StatusRuntimeException ex) {
         Status status = Status.fromThrowable(ex);
@@ -231,11 +117,6 @@ public class CollaboratorTest {
   @Test
   public void a_collaboratorCreateNegativeTest() {
     LOGGER.info("Create Collaborator Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     ProjectTest projectTest = new ProjectTest();
     // Create project
     CreateProject createProjectRequest =
@@ -253,7 +134,7 @@ public class CollaboratorTest {
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProject(project, "", CollaboratorType.READ_ONLY);
       try {
-        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         fail();
       } catch (StatusRuntimeException ex) {
         Status status = Status.fromThrowable(ex);
@@ -265,7 +146,7 @@ public class CollaboratorTest {
       try {
         addCollaboratorRequest =
             addCollaboratorRequestProject(project, project.getOwner(), CollaboratorType.READ_WRITE);
-        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         fail();
       } catch (StatusRuntimeException ex) {
         Status status = Status.fromThrowable(ex);
@@ -289,10 +170,6 @@ public class CollaboratorTest {
   public void aa_collaboratorCreateWithEmailTest() {
     LOGGER.info("Create Collaborator with email test start................................");
 
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     ProjectTest projectTest = new ProjectTest();
     // Create project
     CreateProject createProjectRequest =
@@ -312,7 +189,7 @@ public class CollaboratorTest {
               project, authClientInterceptor.getClient2Email(), CollaboratorType.READ_ONLY);
 
       AddCollaboratorRequest.Response response =
-          collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
 
       LOGGER.info("Collaborator added in server : " + response.getStatus());
       assertTrue(response.getStatus());
@@ -332,11 +209,6 @@ public class CollaboratorTest {
   public void aa_collaboratorCreateWithEmailNegativeTest() {
     LOGGER.info(
         "Create Collaborator with email Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     ProjectTest projectTest = new ProjectTest();
     // Create project
     CreateProject createProjectRequest =
@@ -354,7 +226,7 @@ public class CollaboratorTest {
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProject(project, "", CollaboratorType.READ_ONLY);
       try {
-        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         fail();
       } catch (StatusRuntimeException ex) {
         Status status = Status.fromThrowable(ex);
@@ -378,11 +250,6 @@ public class CollaboratorTest {
   @Test
   public void b_collaboratorUpdateTest() {
     LOGGER.info("Update Collaborator test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     ProjectTest projectTest = new ProjectTest();
     // Create project
     CreateProject createProjectRequest =
@@ -402,7 +269,7 @@ public class CollaboratorTest {
               project, CollaboratorType.READ_WRITE, authClientInterceptor);
 
       AddCollaboratorRequest.Response response =
-          collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + response.getStatus());
       assertTrue(response.getStatus());
 
@@ -414,7 +281,8 @@ public class CollaboratorTest {
               "Now you have "
                   + CollaboratorType.READ_ONLY
                   + " permission, Please refer shared project for your invention");
-      response = collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+      response =
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
 
       LOGGER.info("Collaborator updated in server : " + response.getStatus());
       assertTrue(response.getStatus());
@@ -433,11 +301,6 @@ public class CollaboratorTest {
   @Test
   public void b_collaboratorUpdateNegativeTest() {
     LOGGER.info("Update Collaborator Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     ProjectTest projectTest = new ProjectTest();
     // Create project
     CreateProject createProjectRequest =
@@ -461,7 +324,7 @@ public class CollaboratorTest {
                   + CollaboratorType.READ_ONLY
                   + " permission, Please refer shared project for your invention");
       try {
-        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         fail();
       } catch (StatusRuntimeException ex) {
         Status status = Status.fromThrowable(ex);
@@ -484,11 +347,6 @@ public class CollaboratorTest {
   @Test
   public void c_GetCollaboratorTest() {
     LOGGER.info("Get Collaborator test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     ProjectTest projectTest = new ProjectTest();
     // Create project
     CreateProject createProjectRequest =
@@ -503,12 +361,10 @@ public class CollaboratorTest {
           createProjectRequest.getName(),
           project.getName());
 
-      UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
-          UACServiceGrpc.newBlockingStub(authServiceChannel);
       GetUser getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       // Get the user info by vertaId form the AuthService
-      UserInfo shareWithUserInfo = uaServiceStub.getUser(getUserRequest);
+      UserInfo shareWithUserInfo = uacServiceStub.getUser(getUserRequest);
 
       List<String> sharedUsers = new ArrayList<>();
       AddCollaboratorRequest addCollaboratorRequest =
@@ -519,7 +375,7 @@ public class CollaboratorTest {
       sharedUsers.add(authService.getVertaIdFromUserInfo(shareWithUserInfo));
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
@@ -541,7 +397,7 @@ public class CollaboratorTest {
       GetCollaborator getCollaboratorRequest =
           GetCollaborator.newBuilder().setEntityId(project.getId()).build();
       GetCollaborator.Response getCollaboratorResponse =
-          collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
+          collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
 
       List<GetCollaboratorResponseItem> sharedUserList =
           getCollaboratorResponse.getSharedUsersList();
@@ -573,12 +429,10 @@ public class CollaboratorTest {
   public void c_GetCollaboratorNegativeTest() {
     LOGGER.info("Get Collaborator Negative test start................................");
 
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
     GetCollaborator getCollaboratorRequest = GetCollaborator.newBuilder().build();
 
     try {
-      collaboratorServiceStub.getProjectCollaborators(getCollaboratorRequest);
+      collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
@@ -592,11 +446,6 @@ public class CollaboratorTest {
   @Test
   public void z_collaboratorRemoveNegativeTest() {
     LOGGER.info("Remove Collaborator Negative test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     ProjectTest projectTest = new ProjectTest();
     // Create project
     CreateProject createProjectRequest =
@@ -618,7 +467,7 @@ public class CollaboratorTest {
               .setDateDeleted(Calendar.getInstance().getTimeInMillis())
               .build();
       try {
-        collaboratorServiceStub.removeProjectCollaborator(removeProjectCollaborator);
+        collaboratorServiceStubClient1.removeProjectCollaborator(removeProjectCollaborator);
         fail();
       } catch (StatusRuntimeException ex) {
         Status status = Status.fromThrowable(ex);
@@ -635,7 +484,7 @@ public class CollaboratorTest {
               .setDateDeleted(Calendar.getInstance().getTimeInMillis())
               .build();
       try {
-        collaboratorServiceStub.removeProjectCollaborator(removeProjectCollaborator);
+        collaboratorServiceStubClient1.removeProjectCollaborator(removeProjectCollaborator);
         fail();
       } catch (StatusRuntimeException e) {
         Status status = Status.fromThrowable(e);
@@ -658,11 +507,6 @@ public class CollaboratorTest {
   @Test
   public void z_collaboratorRemoveTest() {
     LOGGER.info("Remove Collaborator test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     ProjectTest projectTest = new ProjectTest();
     // Create project
     CreateProject createProjectRequest =
@@ -677,12 +521,10 @@ public class CollaboratorTest {
           createProjectRequest.getName(),
           project.getName());
 
-      UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
-          UACServiceGrpc.newBlockingStub(authServiceChannel);
       GetUser getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       // Get the user info by vertaId form the AuthService
-      UserInfo shareWithUserInfo = uaServiceStub.getUser(getUserRequest);
+      UserInfo shareWithUserInfo = uacServiceStub.getUser(getUserRequest);
 
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProject(
@@ -691,7 +533,7 @@ public class CollaboratorTest {
               CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
@@ -704,7 +546,7 @@ public class CollaboratorTest {
               .build();
 
       RemoveCollaborator.Response response =
-          collaboratorServiceStub.removeProjectCollaborator(removeProjectCollaborator);
+          collaboratorServiceStubClient1.removeProjectCollaborator(removeProjectCollaborator);
 
       LOGGER.info("Collaborator remove in server : " + response.getStatus());
       assertTrue(response.getStatus());
@@ -723,12 +565,6 @@ public class CollaboratorTest {
   @Test
   public void datasetCollaboratorCreateTest() {
     LOGGER.info("Create Dataset Collaborator test start................................");
-
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("Dataset-" + new Date().getTime())
@@ -748,7 +584,7 @@ public class CollaboratorTest {
               createDatasetResponse.getDataset(), CollaboratorType.READ_WRITE);
 
       AddCollaboratorRequest.Response response =
-          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + response.getStatus());
       assertTrue(response.getStatus());
     } finally {
@@ -767,12 +603,6 @@ public class CollaboratorTest {
   @Test
   public void getDatasetCollaboratorTest() {
     LOGGER.info("Get Dataset Collaborator test start................................");
-
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("Dataset-" + new Date().getTime())
@@ -788,12 +618,10 @@ public class CollaboratorTest {
           createDatasetRequest.getName(),
           createDatasetResponse.getDataset().getName());
 
-      UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
-          UACServiceGrpc.newBlockingStub(authServiceChannel);
       GetUser getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       // Get the user info by vertaId form the AuthService
-      UserInfo shareWithUserInfo = uaServiceStub.getUser(getUserRequest);
+      UserInfo shareWithUserInfo = uacServiceStub.getUser(getUserRequest);
 
       List<String> sharedUsers = new ArrayList<>();
       AddCollaboratorRequest addCollaboratorRequest =
@@ -805,7 +633,7 @@ public class CollaboratorTest {
       sharedUsers.add(authService.getVertaIdFromUserInfo(shareWithUserInfo));
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
@@ -827,7 +655,7 @@ public class CollaboratorTest {
       GetCollaborator getCollaboratorRequest =
           GetCollaborator.newBuilder().setEntityId(dataset.getId()).build();
       GetCollaborator.Response getCollaboratorResponse =
-          collaboratorServiceStub.getRepositoryCollaborators(getCollaboratorRequest);
+          collaboratorServiceStubClient1.getRepositoryCollaborators(getCollaboratorRequest);
 
       List<GetCollaboratorResponseItem> sharedUserList =
           getCollaboratorResponse.getSharedUsersList();
@@ -858,12 +686,6 @@ public class CollaboratorTest {
   @Test
   public void datasetCollaboratorRemoveTest() {
     LOGGER.info("Remove Dataset Collaborator test start................................");
-
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     CreateDataset createDatasetRequest =
         CreateDataset.newBuilder()
             .setName("Dataset-" + new Date().getTime())
@@ -879,19 +701,17 @@ public class CollaboratorTest {
           createDatasetRequest.getName(),
           dataset.getName());
 
-      UACServiceGrpc.UACServiceBlockingStub uaServiceStub =
-          UACServiceGrpc.newBlockingStub(authServiceChannel);
       GetUser getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       // Get the user info by vertaId form the AuthService
-      UserInfo shareWithUserInfo = uaServiceStub.getUser(getUserRequest);
+      UserInfo shareWithUserInfo = uacServiceStub.getUser(getUserRequest);
 
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestDataset(
               dataset, shareWithUserInfo.getEmail(), CollaboratorType.READ_WRITE);
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
@@ -904,7 +724,7 @@ public class CollaboratorTest {
               .build();
 
       RemoveCollaborator.Response response =
-          collaboratorServiceStub.removeRepositoryCollaborator(removeRepositoryCollaborator);
+          collaboratorServiceStubClient1.removeRepositoryCollaborator(removeRepositoryCollaborator);
 
       LOGGER.info("Collaborator remove in server : " + response.getStatus());
       assertTrue(response.getStatus());
@@ -923,12 +743,6 @@ public class CollaboratorTest {
   @Test
   public void datasetCollaboratorBatchCreateTest() {
     LOGGER.info("Batch Create Dataset Collaborator test start................................");
-
-    DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub =
-        DatasetServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     List<String> datasetIds = new ArrayList<>();
     try {
       for (int index = 0; index < 5; index++) {
@@ -952,7 +766,7 @@ public class CollaboratorTest {
               datasetIds, CollaboratorType.READ_WRITE, authClientInterceptor);
 
       AddCollaboratorRequest.Response response =
-          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + response.getStatus());
       assertTrue(response.getStatus());
 
@@ -960,7 +774,8 @@ public class CollaboratorTest {
           addCollaboratorRequestProjectInterceptor(
               datasetIds.subList(1, 4), CollaboratorType.READ_ONLY, authClientInterceptor);
 
-      response = collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+      response =
+          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + response.getStatus());
       assertTrue(response.getStatus());
     } finally {
@@ -980,11 +795,6 @@ public class CollaboratorTest {
   @Test
   public void projectCollaboratorBatchCreateTest() {
     LOGGER.info("Batch Create Collaborator test start................................");
-
-    ProjectServiceBlockingStub projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    CollaboratorServiceBlockingStub collaboratorServiceStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-
     ProjectTest projectTest = new ProjectTest();
 
     List<String> projectIds = new ArrayList<>();
@@ -1011,7 +821,7 @@ public class CollaboratorTest {
               projectIds, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
 
       AddCollaboratorRequest.Response response =
-          collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + response.getStatus());
       assertTrue(response.getStatus());
 
@@ -1019,7 +829,8 @@ public class CollaboratorTest {
           addCollaboratorRequestProjectInterceptor(
               projectIds.subList(1, 4), CollaboratorType.READ_ONLY, authClientInterceptor);
 
-      response = collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+      response =
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + response.getStatus());
       assertTrue(response.getStatus());
 
@@ -1028,7 +839,7 @@ public class CollaboratorTest {
               projectIds.subList(1, 4), projects.get(2).getOwner(), CollaboratorType.READ_ONLY);
 
       try {
-        collaboratorServiceStub.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
         fail();
       } catch (StatusRuntimeException ex) {
         Status status = Status.fromThrowable(ex);

@@ -221,12 +221,6 @@ service HydratedService {
         };
     };
 
-    rpc getHydratedPublicProjects (GetHydratedProjects) returns (GetHydratedProjects.Response){
-        option (google.api.http) = {
-            get: "/v1/hydratedData/getHydratedPublicProjects"
-        };
-    };
-
     rpc getHydratedProjectById (GetHydratedProjectById) returns (GetHydratedProjectById.Response){
         option (google.api.http) = {
             get: "/v1/hydratedData/getHydratedProjectById"
@@ -288,14 +282,6 @@ service HydratedService {
     };
 
     // queries
-    rpc findHydratedPublicProjects(FindProjects) returns (AdvancedQueryProjectsResponse){
-        option (google.api.http) = {
-            post: "/v1/hydratedData/findHydratedPublicProjects"
-            body: "*"
-        };
-    };
-
-    // queries
     rpc findHydratedProjectsByUser(FindHydratedProjectsByUser) returns (AdvancedQueryProjectsResponse){
         option (google.api.http) = {
             post: "/v1/hydratedData/findHydratedProjectsByUser"
@@ -339,14 +325,6 @@ service HydratedService {
     rpc findHydratedDatasets(FindDatasets) returns (AdvancedQueryDatasetsResponse){
         option (google.api.http) = {
             post: "/v1/hydratedData/findHydratedDatasets"
-            body: "*"
-        };
-    };
-
-    // queries
-    rpc findHydratedPublicDatasets(FindDatasets) returns (AdvancedQueryDatasetsResponse){
-        option (google.api.http) = {
-            post: "/v1/hydratedData/findHydratedPublicDatasets"
             body: "*"
         };
     };

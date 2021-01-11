@@ -8,6 +8,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.exceptions.NotFoundException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experiment.ExperimentDAORdbImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -17,33 +18,15 @@ import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.BlobDAORdbImpl;
+import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitDAORdbImpl;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
-import ai.verta.uac.Actions;
-import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.GetCollaboratorResponseItem;
-import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.Organization;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
-import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.UserInfo;
-import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
 import io.grpc.Metadata;
-import io.grpc.protobuf.StatusProto;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class PublicRoleServiceUtils implements RoleService {
 
@@ -52,12 +35,13 @@ public class PublicRoleServiceUtils implements RoleService {
 
   public PublicRoleServiceUtils(AuthService authService) {
     MetadataDAO metadataDAO = new MetadataDAORdbImpl();
+    CommitDAO commitDAO = new CommitDAORdbImpl(authService, this);
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, this);
     ExperimentRunDAO experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             authService,
             this,
-            new RepositoryDAORdbImpl(authService, this),
+            new RepositoryDAORdbImpl(authService, this, commitDAO, metadataDAO),
             new CommitDAORdbImpl(authService, this),
             new BlobDAORdbImpl(authService, this),
             metadataDAO);
@@ -152,9 +136,7 @@ public class PublicRoleServiceUtils implements RoleService {
       if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
         if (!projectDAO.projectExistsInDB(resourceId)) {
           String errorMessage = ModelDBMessages.PROJECT_NOT_FOUND_FOR_ID;
-          Status status =
-              Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-          throw StatusProto.toStatusRuntimeException(status);
+          throw new NotFoundException(errorMessage);
         }
       } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
         datasetDAO.getDatasetById(resourceId);

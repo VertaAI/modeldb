@@ -4,48 +4,16 @@ import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.AddAttributes;
-import ai.verta.modeldb.AddExperimentAttributes;
-import ai.verta.modeldb.AddExperimentTag;
-import ai.verta.modeldb.AddExperimentTags;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.CreateExperiment;
-import ai.verta.modeldb.DeleteExperiment;
-import ai.verta.modeldb.DeleteExperimentArtifact;
-import ai.verta.modeldb.DeleteExperimentAttributes;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.DeleteExperimentAttributes.Response;
-import ai.verta.modeldb.DeleteExperimentTag;
-import ai.verta.modeldb.DeleteExperimentTags;
-import ai.verta.modeldb.DeleteExperiments;
-import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceImplBase;
-import ai.verta.modeldb.FindExperiments;
-import ai.verta.modeldb.GetArtifacts;
-import ai.verta.modeldb.GetAttributes;
-import ai.verta.modeldb.GetExperimentById;
-import ai.verta.modeldb.GetExperimentByName;
-import ai.verta.modeldb.GetExperimentCodeVersion;
-import ai.verta.modeldb.GetExperimentsInProject;
-import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.LogExperimentArtifacts;
-import ai.verta.modeldb.LogExperimentCodeVersion;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.Project;
-import ai.verta.modeldb.UpdateExperimentDescription;
-import ai.verta.modeldb.UpdateExperimentName;
-import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.exceptions.ModelDBException;
-import ai.verta.modeldb.exceptions.NotFoundException;
-import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -53,19 +21,11 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
-import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -73,28 +33,22 @@ import org.apache.logging.log4j.Logger;
 public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentServiceImpl.class);
-  private AuthService authService;
-  private RoleService roleService;
-  private ExperimentDAO experimentDAO;
-  private ProjectDAO projectDAO;
-  private ArtifactStoreDAO artifactStoreDAO;
+  private final AuthService authService;
+  private final RoleService roleService;
+  private final ExperimentDAO experimentDAO;
+  private final ProjectDAO projectDAO;
+  private final ArtifactStoreDAO artifactStoreDAO;
   private final AuditLogLocalDAO auditLogLocalDAO;
   private static final String SERVICE_NAME =
       String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.EXPERIMENT);
 
-  public ExperimentServiceImpl(
-      AuthService authService,
-      RoleService roleService,
-      ExperimentDAO experimentDAO,
-      ProjectDAO projectDAO,
-      ArtifactStoreDAO artifactStoreDAO,
-      AuditLogLocalDAO auditLogLocalDAO) {
-    this.authService = authService;
-    this.roleService = roleService;
-    this.experimentDAO = experimentDAO;
-    this.projectDAO = projectDAO;
-    this.artifactStoreDAO = artifactStoreDAO;
-    this.auditLogLocalDAO = auditLogLocalDAO;
+  public ExperimentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+    this.authService = serviceSet.authService;
+    this.roleService = serviceSet.roleService;
+    this.experimentDAO = daoSet.experimentDAO;
+    this.projectDAO = daoSet.projectDAO;
+    this.artifactStoreDAO = daoSet.artifactStoreDAO;
+    this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
   }
 
   private void saveAuditLogs(
@@ -136,14 +90,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     }
 
     if (errorMessage != null) {
-      LOGGER.info(errorMessage);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.INVALID_ARGUMENT_VALUE)
-              .setMessage(errorMessage)
-              .addDetails(Any.pack(CreateExperiment.Response.getDefaultInstance()))
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(errorMessage);
     }
 
     /*
@@ -160,7 +107,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
             .addAllArtifacts(request.getArtifactsList());
 
-    if (App.getInstance().getStoreClientCreationTimestamp() && request.getDateCreated() != 0L) {
+    if (request.getDateCreated() != 0L) {
       experimentBuilder
           .setDateCreated(request.getDateCreated())
           .setDateUpdated(request.getDateCreated());
@@ -219,26 +166,12 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (request.getProjectId().isEmpty()) {
         String errorMessage = "Project ID not found in GetExperimentsInProject request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetExperimentsInProject.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       if (!projectDAO.projectExistsInDB(request.getProjectId())) {
         String errorMessage = "Project ID not found.";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetExperimentsInProject.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -273,14 +206,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in GetExperimentById request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetExperimentById.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Experiment experiment = experimentDAO.getExperiment(request.getId());
@@ -315,14 +241,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetExperimentByName.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
@@ -374,15 +293,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       if (request.getId().isEmpty()) {
         String errorMessage =
             "Experiment ID not found in UpdateExperimentNameOrDescription request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(
-                    Any.pack(UpdateExperimentNameOrDescription.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       } else if (request.getName().isEmpty()) {
         request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
       }
@@ -535,14 +446,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddExperimentTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -589,14 +493,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddExperimentTag.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -631,14 +528,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in GetTags request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -666,14 +556,6 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       if (request.getId().isEmpty() && request.getTagsList().isEmpty() && !request.getDeleteAll()) {
         errorMessage =
             "Experiment ID and Experiment tags not found in DeleteExperimentTags request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteExperimentTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
       } else if (request.getId().isEmpty()) {
         errorMessage = "Experiment ID not found in DeleteExperimentTags request";
       } else if (request.getTagsList().isEmpty() && !request.getDeleteAll()) {
@@ -681,14 +563,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteExperimentTags.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -735,14 +610,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteExperimentTag.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -778,14 +646,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in AddAttributes request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -835,14 +696,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddExperimentAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -890,14 +744,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -941,14 +788,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteExperimentAttributes.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -991,14 +831,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in DeleteExperiment request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteExperiment.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       List<String> deletedIds =
@@ -1031,14 +864,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(LogExperimentCodeVersion.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       /*User validation*/
@@ -1058,14 +884,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             experimentDAO.logExperimentCodeVersion(request.getId(), request.getCodeVersion());
       } else {
         errorMessage = "Code version already logged for experiment " + existingExperiment.getId();
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.ALREADY_EXISTS_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(LogExperimentCodeVersion.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new AlreadyExistsException(errorMessage);
       }
       saveAuditLogs(
           null,
@@ -1096,14 +915,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in GetExperimentCodeVersion request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetExperimentCodeVersion.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       /*User validation*/
@@ -1173,14 +985,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetUrlForArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -1204,25 +1009,11 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         s3Key = getUrlForCode(request);
       } else {
         errorMessage = "Experiment level artifacts only supported for code";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetUrlForArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       if (s3Key == null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.NOT_FOUND_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetUrlForArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       GetUrlForArtifact.Response response =
           artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
@@ -1265,14 +1056,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(LogExperimentArtifacts.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -1318,14 +1102,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (request.getId().isEmpty()) {
         String errorMessage = "Experiment ID not found in GetArtifacts request";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetArtifacts.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -1364,14 +1141,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteExperimentArtifact.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       Map<String, String> projectIdFromExperimentMap =

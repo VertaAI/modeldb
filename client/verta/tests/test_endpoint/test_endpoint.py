@@ -24,11 +24,11 @@ pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire 
 
 
 class TestEndpoint:
-    def test_create(self, client, created_endpoints):
+    def test_create(self, client, created_entities):
         name = _utils.generate_default_name()
         endpoint = client.set_endpoint(name)
         assert endpoint
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
         name = verta._internal_utils._utils.generate_default_name()
         endpoint = client.create_endpoint(name)
         assert endpoint
@@ -40,44 +40,44 @@ class TestEndpoint:
         with pytest.warns(UserWarning, match='.*already exists.*'):
             client.set_endpoint(path=endpoint.path, description="new description")
 
-    def test_get(self, client, created_endpoints):
+    def test_get(self, client, created_entities):
         name = _utils.generate_default_name()
 
         with pytest.raises(ValueError):
             client.get_endpoint(name)
 
         endpoint = client.set_endpoint(name)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         assert endpoint.id == client.get_endpoint(endpoint.path).id
         assert endpoint.id == client.get_endpoint(id=endpoint.id).id
 
-    def test_get_by_name(self, client, created_endpoints):
+    def test_get_by_name(self, client, created_entities):
         path = _utils.generate_default_name()
         path2 = _utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         dummy_endpoint = client.set_endpoint(path2)  # in case get erroneously fetches latest
-        created_endpoints.append(dummy_endpoint)
+        created_entities.append(dummy_endpoint)
 
         assert endpoint.id == client.set_endpoint(endpoint.path).id
 
-    def test_get_by_id(self, client, created_endpoints):
+    def test_get_by_id(self, client, created_entities):
         path = _utils.generate_default_name()
         path2 = _utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         dummy_endpoint = client.set_endpoint(path2)  # in case get erroneously fetches latest
-        created_endpoints.append(dummy_endpoint)
+        created_entities.append(dummy_endpoint)
 
         assert endpoint.id == client.set_endpoint(id=endpoint.id).id
 
-    def test_list(self, client, organization, created_endpoints):
+    def test_list(self, client, organization, created_entities):
         name = _utils.generate_default_name()
         endpoint = client.set_endpoint(name, workspace=organization.name)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         endpoints = client.endpoints.with_workspace(organization.name)
         assert len(endpoints) >= 1
@@ -88,10 +88,10 @@ class TestEndpoint:
                 has_new_id = True
         assert has_new_id
 
-    def test_get_status(self, client, created_endpoints):
+    def test_get_status(self, client, created_entities):
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
         status = endpoint.get_status()
 
         # Check that some fields exist:
@@ -99,13 +99,13 @@ class TestEndpoint:
         assert status["date_created"]
         assert status["stage_id"]
 
-    def test_repr(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_repr(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
         str_repr = repr(endpoint)
 
         assert "path: {}".format(endpoint.path) in str_repr
@@ -162,13 +162,13 @@ class TestEndpoint:
         }
         assert retrieved_env_vars == env_vars
 
-    def test_direct_update(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_direct_update(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
@@ -178,14 +178,14 @@ class TestEndpoint:
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
-    def test_update_wait(self, client, created_endpoints, experiment_run, model_version, model_for_deployment):
+    def test_update_wait(self, client, created_entities, experiment_run, model_version, model_for_deployment):
         """This tests endpoint.update(..., wait=True), including the case of build error"""
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         status = endpoint.update(experiment_run, DirectUpdateStrategy(), True)
 
@@ -200,13 +200,13 @@ class TestEndpoint:
         excinfo_value = str(excinfo.value).strip()
         assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in excinfo_value
 
-    def test_canary_update(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_canary_update(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
@@ -225,14 +225,14 @@ class TestEndpoint:
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
-    def test_update_from_json_config(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_from_json_config(self, client, in_tempdir, created_entities, experiment_run, model_for_deployment):
         json = pytest.importorskip("json")
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
@@ -267,14 +267,14 @@ class TestEndpoint:
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
-    def test_update_from_yaml_config(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_from_yaml_config(self, client, in_tempdir, created_entities, experiment_run, model_for_deployment):
         yaml = pytest.importorskip("yaml")
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
@@ -309,13 +309,13 @@ class TestEndpoint:
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
-    def test_update_with_parameters(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_with_parameters(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
@@ -330,10 +330,10 @@ class TestEndpoint:
         new_build_ids = get_build_ids(updated_status)
         assert len(new_build_ids) - len(new_build_ids.intersection(original_build_ids)) > 0
 
-    def test_get_access_token(self, client, created_endpoints):
+    def test_get_access_token(self, client, created_entities):
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
         token = endpoint.get_access_token()
 
         assert token is None
@@ -360,7 +360,7 @@ class TestEndpoint:
         }
 
 
-    def test_get_deployed_model(self, client, experiment_run, model_version, model_for_deployment, created_endpoints):
+    def test_get_deployed_model(self, client, experiment_run, model_version, model_for_deployment, created_entities):
         """
         Verifies prediction for a finished deployment, as well as for an endpoint in the middle of being updated.
         """
@@ -375,7 +375,7 @@ class TestEndpoint:
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
         token = verta._internal_utils._utils.generate_default_name()
@@ -398,7 +398,7 @@ class TestEndpoint:
         endpoint.update(model_version, DirectUpdateStrategy(), wait=False)
         endpoint.get_deployed_model().predict([x])  # should succeed, because the endpoint can still service requests
 
-    def test_update_from_model_version(self, client, model_version, created_endpoints):
+    def test_update_from_model_version(self, client, model_version, created_entities):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
@@ -412,13 +412,13 @@ class TestEndpoint:
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
         test_data = np.random.random((4, 12))
         assert np.array_equal(endpoint.get_deployed_model().predict(test_data), classifier.predict(test_data))
 
-    def test_update_from_json_config_model_version(self, client, in_tempdir, created_endpoints, model_version):
+    def test_update_from_json_config_model_version(self, client, in_tempdir, created_entities, model_version):
         np = pytest.importorskip("numpy")
         json = pytest.importorskip("json")
         sklearn = pytest.importorskip("sklearn")
@@ -433,7 +433,7 @@ class TestEndpoint:
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         original_status = endpoint.get_status()
         original_build_ids = get_build_ids(original_status)
@@ -470,13 +470,13 @@ class TestEndpoint:
         prediction = endpoint.get_deployed_model().predict(test_data)
         assert np.array_equal(prediction, classifier.predict(test_data))
 
-    def test_update_autoscaling(self, client, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_autoscaling(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         autoscaling = Autoscaling(min_replicas=1, max_replicas=2, min_scale=0.5, max_scale=2.0)
         autoscaling.add_metric(CpuUtilizationTarget(0.5))
@@ -498,7 +498,7 @@ class TestEndpoint:
             else:
                 assert metric["parameters"][0]["value"] == "0.7"
 
-    def test_update_with_custom_module(self, client, model_version, created_endpoints):
+    def test_update_with_custom_module(self, client, model_version, created_entities):
         torch = pytest.importorskip("torch")
 
         with sys_path_manager() as sys_path:
@@ -518,7 +518,7 @@ class TestEndpoint:
 
             path = verta._internal_utils._utils.generate_default_name()
             endpoint = client.set_endpoint(path)
-            created_endpoints.append(endpoint)
+            created_entities.append(endpoint)
             endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
 
 
@@ -526,7 +526,7 @@ class TestEndpoint:
             prediction = torch.tensor(endpoint.get_deployed_model().predict(test_data.tolist()))
             assert torch.all(classifier(test_data).eq(prediction))
 
-    def test_update_from_json_config_with_params(self, client, in_tempdir, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_from_json_config_with_params(self, client, in_tempdir, created_entities, experiment_run, model_for_deployment):
         yaml = pytest.importorskip("yaml")
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
@@ -534,7 +534,7 @@ class TestEndpoint:
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
 
         original_status = endpoint.get_status()
@@ -586,48 +586,46 @@ class TestEndpoint:
         resources_dict = Resources._from_dict(config_dict["resources"])._as_dict()  # config is `cpu`, wire is `cpu_millis`
         assert endpoint.get_update_status()['update_request']['resources'] == resources_dict
 
-    def test_update_twice(self, client, registered_model, created_endpoints):
-        np = pytest.importorskip("numpy")
-        json = pytest.importorskip("json")
-        sklearn = pytest.importorskip("sklearn")
-        from sklearn.linear_model import LogisticRegression
+    def test_update_twice(self, client, registered_model, created_entities):
+        class ModelA(object):
+            def predict(self, _):
+                return "A"
+        class ModelB(object):
+            def predict(self, _):
+                return "B"
+        env = Python(requirements=[])
 
-        env = Python(requirements=["scikit-learn"])
-
-        classifier = LogisticRegression()
-        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
         model_version = registered_model.create_version("first-version")
-        model_version.log_model(classifier)
+        model_version.log_model(ModelA())
         model_version.log_environment(env)
 
-        new_classifier = LogisticRegression()
-        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
         new_model_version = registered_model.create_version("second-version")
-        new_model_version.log_model(new_classifier)
+        new_model_version.log_model(ModelB())
         new_model_version.log_environment(env)
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
+
         endpoint.update(model_version, wait=True)
+        assert endpoint.get_deployed_model().predict("foo") == "A"
 
         # updating endpoint
         endpoint.update(new_model_version, DirectUpdateStrategy(), wait=True)
-        test_data = np.random.random((4, 12))
-        assert np.array_equal(endpoint.get_deployed_model().predict(test_data), new_classifier.predict(test_data))
+        assert endpoint.get_deployed_model().predict("foo") == "B"
 
-    def test_update_from_run_diff_workspace(self, client, organization, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_from_run_diff_workspace(self, client, organization, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.create_endpoint(path, workspace=organization.name)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
         assert endpoint.workspace != experiment_run.workspace
 
-    def test_update_from_version_diff_workspace(self, client, model_version, organization, created_endpoints):
+    def test_update_from_version_diff_workspace(self, client, model_version, organization, created_entities):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
@@ -641,18 +639,18 @@ class TestEndpoint:
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.create_endpoint(path, workspace=organization.name)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
         assert endpoint.workspace != model_version.workspace
 
-    def test_update_from_run_diff_workspace_no_access_error(self, client_2, created_endpoints, experiment_run, model_for_deployment):
+    def test_update_from_run_diff_workspace_no_access_error(self, client_2, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_requirements(['scikit-learn'])
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client_2.create_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         with pytest.raises(requests.HTTPError) as excinfo:
             endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
@@ -661,7 +659,7 @@ class TestEndpoint:
         assert "403" in excinfo_value
         assert "Access Denied" in excinfo_value
 
-    def test_update_from_version_diff_workspace_no_access_error(self, client_2, model_version, created_endpoints):
+    def test_update_from_version_diff_workspace_no_access_error(self, client_2, model_version, created_entities):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
@@ -675,7 +673,7 @@ class TestEndpoint:
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client_2.create_endpoint(path)
-        created_endpoints.append(endpoint)
+        created_entities.append(endpoint)
 
         with pytest.raises(requests.HTTPError) as excinfo:
             endpoint.update(model_version, DirectUpdateStrategy(), wait=True)

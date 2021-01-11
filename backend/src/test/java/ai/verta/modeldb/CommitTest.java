@@ -7,18 +7,11 @@ import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.AddLabelsRequest;
 import ai.verta.modeldb.metadata.DeleteLabelsRequest;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
-import ai.verta.modeldb.metadata.MetadataServiceGrpc;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDiff;
 import ai.verta.modeldb.versioning.BlobDiff.ContentCase;
@@ -72,19 +65,11 @@ import ai.verta.modeldb.versioning.SetBranchRequest;
 import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import ai.verta.modeldb.versioning.VersioningUtils;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.UACServiceGrpc;
 import com.google.protobuf.Value;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -97,14 +82,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -114,106 +96,12 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CommitTest {
+public class CommitTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(CommitTest.class);
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client2ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-  private static App app;
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
   private static long time = Calendar.getInstance().getTimeInMillis();
-
-  private static VersioningServiceBlockingStub versioningServiceBlockingStub;
-  private static VersioningServiceBlockingStub versioningServiceBlockingStubClient2;
-  private static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
-  private static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
-  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
-  private static CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
-      collaboratorServiceBlockingStub;
-
   private static Repository repository;
-
   private static Commit initialCommit;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-    Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
-
-    app = App.getInstance();
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new AuthInterceptor());
-    serverBuilder.build().start();
-
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
-    }
-
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      ManagedChannel authServiceChannelClient1 =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-
-      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannelClient1);
-      collaboratorServiceBlockingStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
-    }
-
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
-
-    // Create all service blocking stub
-    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
-    versioningServiceBlockingStubClient2 = VersioningServiceGrpc.newBlockingStub(client2Channel);
-    metadataServiceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
 
   @Before
   public void createEntities() {
@@ -692,7 +580,7 @@ public class CommitTest {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -878,7 +766,7 @@ public class CommitTest {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -932,7 +820,7 @@ public class CommitTest {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -1009,7 +897,7 @@ public class CommitTest {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -1136,7 +1024,7 @@ public class CommitTest {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -1343,7 +1231,7 @@ public class CommitTest {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -1535,7 +1423,7 @@ public class CommitTest {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -2132,7 +2020,7 @@ public class CommitTest {
           datasetBlob.toBuilder().build(),
           listCommitBlobsResponse.getBlobsList().get(0).getBlob());
 
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (config.hasAuth()) {
         findRepositoriesBlobs =
             FindRepositoriesBlobs.newBuilder()
                 .addPredicates(
@@ -2216,7 +2104,7 @@ public class CommitTest {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -2394,7 +2282,7 @@ public class CommitTest {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -2544,7 +2432,7 @@ public class CommitTest {
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -2628,7 +2516,7 @@ public class CommitTest {
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 

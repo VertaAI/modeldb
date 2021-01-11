@@ -1,13 +1,12 @@
 package ai.verta.modeldb.metadata;
 
+import ai.verta.modeldb.DAOSet;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import com.google.protobuf.Any;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
 import com.oblac.nomen.Nomen;
-import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -18,8 +17,8 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   private static final Logger LOGGER = LogManager.getLogger(MetadataServiceImpl.class);
   private final MetadataDAO metadataDAO;
 
-  public MetadataServiceImpl(MetadataDAO metadataDAO) {
-    this.metadataDAO = metadataDAO;
+  public MetadataServiceImpl(DAOSet daoSet) {
+    this.metadataDAO = daoSet.metadataDAO;
   }
 
   @Override
@@ -29,14 +28,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         String errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetLabelsRequest.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       List<String> labels = metadataDAO.getLabels(request.getId());
@@ -61,14 +53,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddLabelsRequest.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       boolean status = metadataDAO.addLabels(request.getId(), request.getLabelsList());
@@ -130,14 +115,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteLabelsRequest.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       boolean status =
@@ -167,14 +145,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(AddKeyValuePropertiesRequest.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       metadataDAO.addKeyValueProperties(request);
@@ -203,14 +174,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(GetKeyValuePropertiesRequest.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       List<KeyValueStringProperty> keyValues = metadataDAO.getKeyValueProperties(request);
@@ -242,14 +206,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       }
 
       if (errorMessage != null) {
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.INVALID_ARGUMENT_VALUE)
-                .setMessage(errorMessage)
-                .addDetails(Any.pack(DeleteKeyValuePropertiesRequest.Response.getDefaultInstance()))
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new InvalidArgumentException(errorMessage);
       }
 
       metadataDAO.deleteKeyValueProperties(request);

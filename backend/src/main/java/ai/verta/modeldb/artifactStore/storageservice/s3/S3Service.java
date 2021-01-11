@@ -5,39 +5,25 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.HttpCodeToGRPCCode;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.UnavailableException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PartETag;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.services.s3.model.UploadPartRequest;
-import com.amazonaws.services.s3.model.UploadPartResult;
+import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
 import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executors;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
@@ -54,6 +40,7 @@ public class S3Service implements ArtifactStoreService {
   private S3Client s3Client;
   private String bucketName;
   private App app = App.getInstance();
+  private Config config = Config.getInstance();
 
   public S3Service(String cloudBucketName) throws ModelDBException, IOException {
     s3Client = new S3Client(cloudBucketName);
@@ -65,22 +52,14 @@ public class S3Service implements ArtifactStoreService {
       return client.getClient().doesBucketExistV2(bucketName);
     } catch (AmazonServiceException e) {
       ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
-      throw StatusProto.toStatusRuntimeException(
-          Status.newBuilder()
-              .setCode(Code.UNAVAILABLE_VALUE)
-              .setMessage(
-                  "AWS S3 could not be checked for bucket existence for artifact store : "
-                      + e.getErrorMessage())
-              .build());
+      throw new UnavailableException(
+          "AWS S3 could not be checked for bucket existence for artifact store : "
+              + e.getErrorMessage());
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
-      throw StatusProto.toStatusRuntimeException(
-          Status.newBuilder()
-              .setCode(Code.UNAVAILABLE_VALUE)
-              .setMessage(
-                  "AWS S3 could not be checked for bucket existence for artifact store : "
-                      + e.getMessage())
-              .build());
+      throw new UnavailableException(
+          "AWS S3 could not be checked for bucket existence for artifact store : "
+              + e.getMessage());
     }
   }
 
@@ -89,22 +68,14 @@ public class S3Service implements ArtifactStoreService {
       return client.getClient().doesObjectExist(bucketName, path);
     } catch (AmazonServiceException e) {
       ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
-      throw StatusProto.toStatusRuntimeException(
-          Status.newBuilder()
-              .setCode(Code.UNAVAILABLE_VALUE)
-              .setMessage(
-                  "AWS S3 could not be checked for bucket existance for artifact store : "
-                      + e.getErrorMessage())
-              .build());
+      throw new UnavailableException(
+          "AWS S3 could not be checked for bucket existance for artifact store : "
+              + e.getErrorMessage());
     } catch (SdkClientException e) {
       LOGGER.warn(e.getMessage());
-      throw StatusProto.toStatusRuntimeException(
-          Status.newBuilder()
-              .setCode(Code.UNAVAILABLE_VALUE)
-              .setMessage(
-                  "AWS S3 could not be checked for bucket existance for artifact store : "
-                      + e.getMessage())
-              .build());
+      throw new UnavailableException(
+          "AWS S3 could not be checked for bucket existance for artifact store : "
+              + e.getMessage());
     } catch (Exception ex) {
       LOGGER.warn(ex.getMessage());
       throw ex;
@@ -130,7 +101,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public GetUrlForArtifact.Response generatePresignedUrlForTrial(
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
-    if (app.isS3presignedURLEnabled()) {
+    if (config.artifactStoreConfig.S3.s3presignedURLEnabled) {
       if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
         return GetUrlForArtifact.Response.newBuilder()
             .setMultipartUploadOk(false)
@@ -138,10 +109,7 @@ public class S3Service implements ArtifactStoreService {
             .build();
       } else if (method.equalsIgnoreCase(ModelDBConstants.POST)
           || method.equalsIgnoreCase(ModelDBConstants.PUT)) {
-        int maxArtifactSize =
-            app.getMaxArtifactSizeMB() != null
-                ? app.getMaxArtifactSizeMB()
-                : ModelDBConstants.MAX_ARTIFACT_SIZE_DEFAULT;
+        int maxArtifactSize = config.trial.restrictions.max_artifact_size_MB;
         LOGGER.debug("bucketName " + bucketName);
         try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
           return GetUrlForArtifact.Response.newBuilder()
@@ -149,9 +117,9 @@ public class S3Service implements ArtifactStoreService {
               .setUrl(String.format("http://%s.s3.amazonaws.com", bucketName))
               .putAllFields(
                   TrialUtils.getBodyParameterMapForTrialPresignedURL(
-                      app,
                       client.getCredentials(),
                       bucketName,
+                      config.artifactStoreConfig.S3.awsRegion,
                       s3Key,
                       maxArtifactSize * 1024 * 1024))
               .build();
@@ -175,7 +143,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public String generatePresignedUrl(String s3Key, String method, long partNumber, String uploadId)
       throws ModelDBException {
-    if (app.isS3presignedURLEnabled()) {
+    if (config.artifactStoreConfig.S3.s3presignedURLEnabled) {
       return getS3PresignedUrl(s3Key, method, partNumber, uploadId);
     } else {
       return getPresignedUrlViaMDB(s3Key, method, partNumber, uploadId);
@@ -197,10 +165,7 @@ public class S3Service implements ArtifactStoreService {
       reqMethod = HttpMethod.GET;
     } else {
       String errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
-      Status status =
-          Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-      LOGGER.info(errorMessage);
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(errorMessage);
     }
 
     // Set Expiration
@@ -256,7 +221,8 @@ public class S3Service implements ArtifactStoreService {
       }
 
       // Validate Artifact size for trial case
-      TrialUtils.validateArtifactSizeForTrial(app, artifactPath, request.getContentLength());
+      TrialUtils.validateArtifactSizeForTrial(
+          config.trial, artifactPath, request.getContentLength());
 
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
         UploadPartRequest uploadRequest =
@@ -354,26 +320,23 @@ public class S3Service implements ArtifactStoreService {
       parameters.put("upload_id", uploadId);
       return getUploadUrl(
           parameters,
-          app.getArtifactStoreUrlProtocol(),
-          app.getStoreArtifactEndpoint(),
-          app.getPickArtifactStoreHostFromConfig(),
-          app.getArtifactStoreServerHost());
+          config.artifactStoreConfig.protocol,
+          config.artifactStoreConfig.artifactEndpoint.getArtifact,
+          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+          config.artifactStoreConfig.host);
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("S3Service - generatePresignedUrl - get url returned");
       String filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
       parameters.put(ModelDBConstants.FILENAME, filename);
       return getDownloadUrl(
           parameters,
-          app.getArtifactStoreUrlProtocol(),
-          app.getGetArtifactEndpoint(),
-          app.getPickArtifactStoreHostFromConfig(),
-          app.getArtifactStoreServerHost());
+          config.artifactStoreConfig.protocol,
+          config.artifactStoreConfig.artifactEndpoint.getArtifact,
+          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+          config.artifactStoreConfig.host);
     } else {
       String errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
-      Status status =
-          Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-      LOGGER.info(errorMessage);
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new InvalidArgumentException(errorMessage);
     }
   }
 

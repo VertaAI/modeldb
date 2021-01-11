@@ -10,18 +10,11 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.Pagination;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.AddLabelsRequest;
 import ai.verta.modeldb.metadata.DeleteLabelsRequest;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
-import ai.verta.modeldb.metadata.MetadataServiceGrpc;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
@@ -35,23 +28,16 @@ import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.SetRepository.Response;
 import ai.verta.modeldb.versioning.SetTagRequest;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.GetUser;
-import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -63,10 +49,8 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,105 +59,14 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class RepositoryTest {
+public class RepositoryTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(RepositoryTest.class);
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder channelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client2ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-  private static App app;
-  private static DeleteEntitiesCron deleteEntitiesCron;
-
-  private static VersioningServiceBlockingStub versioningServiceBlockingStub;
-  private static VersioningServiceBlockingStub versioningServiceBlockingStubClient2;
-  private static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
-  private static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
-  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
-  private static CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
-      collaboratorServiceBlockingStub;
 
   private static Repository repository;
   private static Repository repository2;
   private static Repository repository3;
   private static Map<Long, Repository> repositoryMap;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-    Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
-
-    app = App.getInstance();
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new AuthInterceptor());
-    serverBuilder.build().start();
-
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
-      channelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
-    }
-
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      ManagedChannel authServiceChannelClient1 =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-
-      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannelClient1);
-      collaboratorServiceBlockingStub =
-          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient1);
-    }
-
-    ManagedChannel channel = channelBuilder.maxInboundMessageSize(1024).build();
-    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(authService, roleService, CronJobUtils.deleteEntitiesFrequency);
-
-    // Create all service blocking stub
-    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
-    versioningServiceBlockingStubClient2 = VersioningServiceGrpc.newBlockingStub(client2Channel);
-    metadataServiceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-  }
-
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
 
   @Before
   public void createEntities() {
@@ -257,7 +150,7 @@ public class RepositoryTest {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -313,7 +206,7 @@ public class RepositoryTest {
         versioningServiceBlockingStub.createRepository(setRepository);
         Assert.fail();
       } catch (StatusRuntimeException e) {
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           assertEquals(Status.PERMISSION_DENIED.getCode(), e.getStatus().getCode());
         } else {
           assertEquals(Status.ALREADY_EXISTS.getCode(), e.getStatus().getCode());
@@ -326,7 +219,7 @@ public class RepositoryTest {
                 .setRepository(
                     Repository.newBuilder().setName("Repo-updated-name-" + new Date().getTime()))
                 .build());
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
@@ -337,7 +230,7 @@ public class RepositoryTest {
             GetRepositoryRequest.newBuilder()
                 .setId(RepositoryIdentification.newBuilder().setRepoId(id))
                 .build());
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
@@ -350,14 +243,14 @@ public class RepositoryTest {
               .build();
       try {
         versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
-        if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+        if (config.hasAuth()) {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
       }
 
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (config.hasAuth()) {
         DeleteRepositoryRequest.Response deleteResult =
             versioningServiceBlockingStub.deleteRepository(deleteRepository);
         Assert.assertTrue(deleteResult.getStatus());
@@ -426,7 +319,7 @@ public class RepositoryTest {
         "Repository name not match with expected repository name",
         repository.getName(),
         getByNameResult.getRepository().getName());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       UserInfo userInfo =
           uacServiceStub.getUser(
               GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
@@ -533,7 +426,7 @@ public class RepositoryTest {
         "Repository name not match with expected repository name",
         repository.getName(),
         getByNameResult.getRepository().getName());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       UserInfo userInfo =
           uacServiceStub.getUser(
               GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
@@ -844,7 +737,7 @@ public class RepositoryTest {
         assertTrue(status.getDescription().contains(": tags"));
       }
 
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (config.hasAuth()) {
         findRepositoriesRequest =
             FindRepositories.newBuilder()
                 .addPredicates(
@@ -926,7 +819,7 @@ public class RepositoryTest {
   @Test
   public void findRepositoriesByFuzzyOwnerTest() {
     LOGGER.info("FindRepositories by owner fuzzy search test start ...");
-    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+    if (!config.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -1006,7 +899,7 @@ public class RepositoryTest {
   @Test
   public void findRepositoriesByOwnerArrWithInOperatorTest() {
     LOGGER.info("FindRepositories by owner fuzzy search test start ...");
-    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+    if (!config.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -1245,7 +1138,7 @@ public class RepositoryTest {
   @Test
   public void findRepositoriesFoSharedUserTest() {
     LOGGER.info("FindRepositories by owner fuzzy search test start ....");
-    if (app.getAuthServerHost() == null || app.getAuthServerPort() == null) {
+    if (!config.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -1266,7 +1159,7 @@ public class RepositoryTest {
             .addEntityIds(String.valueOf(repository.getId()))
             .build();
     AddCollaboratorRequest.Response collaboratorResponse =
-        collaboratorServiceBlockingStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+        collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
     assertTrue(collaboratorResponse.getStatus());
 
     FindRepositories findRepositoriesRequest =

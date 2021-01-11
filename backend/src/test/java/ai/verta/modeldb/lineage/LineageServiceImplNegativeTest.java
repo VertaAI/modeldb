@@ -3,6 +3,7 @@ package ai.verta.modeldb.lineage;
 import static org.mockito.Mockito.doNothing;
 
 import ai.verta.modeldb.AddLineage;
+import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.DeleteLineage;
 import ai.verta.modeldb.FindAllInputs;
 import ai.verta.modeldb.FindAllInputsOutputs;
@@ -24,7 +25,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class LineageServiceImplNegativeTest {
 
-  @Mock private LineageDAO lineageDAO;
+  @Mock private DAOSet daoSet;
   @Mock private StreamObserver<AddLineage.Response> addLineageObserver;
   @Mock private StreamObserver<DeleteLineage.Response> deleteLineageObserver;
   @Mock private StreamObserver<FindAllInputs.Response> findAllInputsObserver;
@@ -35,7 +36,7 @@ public class LineageServiceImplNegativeTest {
 
   @Before
   public void before() {
-    sut = new LineageServiceImpl(lineageDAO, null, null);
+    sut = new LineageServiceImpl(daoSet);
   }
 
   @Test

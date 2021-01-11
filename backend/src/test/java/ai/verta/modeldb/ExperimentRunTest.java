@@ -15,18 +15,10 @@ import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.common.Pagination;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
-import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.GetExperimentRunById.Response;
-import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.GenerateRandomNameRequest;
-import ai.verta.modeldb.metadata.MetadataServiceGrpc;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -44,23 +36,15 @@ import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
-import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetUser;
-import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.inprocess.InProcessChannelBuilder;
-import io.grpc.inprocess.InProcessServerBuilder;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,10 +56,8 @@ import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,21 +66,9 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ExperimentRunTest {
+public class ExperimentRunTest extends TestsInit {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentRunTest.class);
-
-  private static String serverName = InProcessServerBuilder.generateName();
-  private static InProcessServerBuilder serverBuilder =
-      InProcessServerBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client1ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static InProcessChannelBuilder client2ChannelBuilder =
-      InProcessChannelBuilder.forName(serverName).directExecutor();
-  private static AuthClientInterceptor authClientInterceptor;
-
-  private static App app;
-  private static DeleteEntitiesCron deleteEntitiesCron;
 
   // Project Entities
   private static Project project;
@@ -115,90 +85,16 @@ public class ExperimentRunTest {
   private static ExperimentRun experimentRun2;
   private static Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
 
-  // all service stubs
-  private static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
-  private static CollaboratorServiceBlockingStub collaboratorServiceStubClient1;
-  private static ProjectServiceBlockingStub projectServiceStub;
-  private static ExperimentServiceBlockingStub experimentServiceStub;
-  private static ExperimentRunServiceBlockingStub experimentRunServiceStub;
-  private static ExperimentRunServiceBlockingStub experimentRunServiceStubClient2;
-  private static VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub;
-  private static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
-  private static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
-      datasetVersionServiceStub;
-  private static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
-
-  @SuppressWarnings("unchecked")
-  @BeforeClass
-  public static void setServerAndService() throws Exception {
-
-    Map<String, Object> propertiesMap =
-        ModelDBUtils.readYamlProperties(System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG));
-    Map<String, Object> testPropMap = (Map<String, Object>) propertiesMap.get("test");
-    Map<String, Object> databasePropMap = (Map<String, Object>) testPropMap.get("test-database");
-
-    app = App.getInstance();
-    AuthService authService = new PublicAuthServiceUtils();
-    RoleService roleService = new PublicRoleServiceUtils(authService);
-
-    Map<String, Object> authServicePropMap =
-        (Map<String, Object>) propertiesMap.get(ModelDBConstants.AUTH_SERVICE);
-    if (authServicePropMap != null) {
-      String authServiceHost = (String) authServicePropMap.get(ModelDBConstants.HOST);
-      Integer authServicePort = (Integer) authServicePropMap.get(ModelDBConstants.PORT);
-      app.setAuthServerHost(authServiceHost);
-      app.setAuthServerPort(authServicePort);
-
-      authService = new AuthServiceUtils();
-      roleService = new RoleServiceUtils(authService);
-    }
-
-    ModelDBHibernateUtil.runLiquibaseMigration(databasePropMap);
-    App.initializeServicesBaseOnDataBase(
-        serverBuilder, databasePropMap, propertiesMap, authService, roleService);
-    serverBuilder.intercept(new AuthInterceptor());
-
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testPropMap.get("testUsers");
-    if (testUerPropMap != null && testUerPropMap.size() > 0) {
-      authClientInterceptor = new AuthClientInterceptor(testPropMap);
-      client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
-      client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
-    }
-
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
-      ManagedChannel authServiceChannel =
-          ManagedChannelBuilder.forTarget(app.getAuthServerHost() + ":" + app.getAuthServerPort())
-              .usePlaintext()
-              .intercept(authClientInterceptor.getClient1AuthInterceptor())
-              .build();
-      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
-      collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-    }
-
-    serverBuilder.build().start();
-    ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
-    ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
-    deleteEntitiesCron = new DeleteEntitiesCron(authService, roleService, 1000);
-
-    // Create all service blocking stub
-    projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
-    experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
-    experimentRunServiceStubClient2 = ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
-    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
-    datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
-    datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
-    metadataServiceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
-
+  @Before
+  public void createEntities() {
     // Create all entities
     createProjectEntities();
     createExperimentEntities();
+    createExperimentRunEntities();
   }
 
-  @AfterClass
-  public static void removeServerAndService() {
-    App.initiateShutdown(0);
-
+  @After
+  public void removeEntities() {
     for (String projectId : projectMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
       DeleteProject.Response deleteProjectResponse =
@@ -206,6 +102,14 @@ public class ExperimentRunTest {
       LOGGER.info("Project deleted successfully");
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
+    }
+
+    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
+      DeleteExperimentRun deleteExperimentRun =
+          DeleteExperimentRun.newBuilder().setId(run.getId()).build();
+      DeleteExperimentRun.Response deleteExperimentRunResponse =
+          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
+      assertTrue(deleteExperimentRunResponse.getStatus());
     }
 
     project = null;
@@ -216,28 +120,6 @@ public class ExperimentRunTest {
     // Experiment Entities
     experiment = null;
     experiment2 = null;
-
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
-
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
-  }
-
-  @Before
-  public void createEntities() {
-    createExperimentRunEntities();
-  }
-
-  @After
-  public void removeEntities() {
-    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
-      DeleteExperimentRun deleteExperimentRun =
-          DeleteExperimentRun.newBuilder().setId(run.getId()).build();
-      DeleteExperimentRun.Response deleteExperimentRunResponse =
-          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-      assertTrue(deleteExperimentRunResponse.getStatus());
-    }
 
     // ExperimentRun Entities
     experimentRun = null;
@@ -357,7 +239,6 @@ public class ExperimentRunTest {
             .addMetrics(metric1)
             .addMetrics(metric2)
             .addHyperparameters(hyperparameter1)
-            .setDateCreated(123456)
             .build();
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -408,7 +289,7 @@ public class ExperimentRunTest {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -823,7 +704,7 @@ public class ExperimentRunTest {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     LOGGER.info(
@@ -910,7 +791,7 @@ public class ExperimentRunTest {
           2,
           experimentRunResponse.getTotalRecords());
 
-      if (experimentRunResponse.getExperimentRunsList() != null) {
+      if (!experimentRunResponse.getExperimentRunsList().isEmpty()) {
         isExpectedResultFound = true;
         for (ExperimentRun experimentRun : experimentRunResponse.getExperimentRunsList()) {
           assertEquals(
@@ -922,6 +803,7 @@ public class ExperimentRunTest {
         if (isExpectedResultFound) {
           LOGGER.warn("More ExperimentRun not found in database");
           assertTrue(true);
+          break;
         } else {
           fail("Expected experimentRun not found in response");
         }
@@ -991,7 +873,7 @@ public class ExperimentRunTest {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     LOGGER.info(
@@ -4094,7 +3976,7 @@ public class ExperimentRunTest {
         Status status = Status.fromThrowable(e);
         LOGGER.warn(
             "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
       }
 
       sortExperimentRuns =
@@ -5003,7 +4885,7 @@ public class ExperimentRunTest {
         Status status = Status.fromThrowable(e);
         LOGGER.warn(
             "Error Code : " + status.getCode() + " Description : " + status.getDescription());
-        assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+        assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
       }
     } finally {
       for (String runId : experimentRunIds) {
@@ -5319,7 +5201,7 @@ public class ExperimentRunTest {
     LOGGER.info(
         "Delete ExperimentRun by parent entities owner test start.........................");
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
               project, CollaboratorType.READ_ONLY, authClientInterceptor);
@@ -5358,7 +5240,7 @@ public class ExperimentRunTest {
             .addAllIds(experimentRunIds.subList(0, experimentRunIds.size() - 1))
             .build();
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       try {
         experimentRunServiceStubClient2.deleteExperimentRuns(deleteExperimentRuns);
       } catch (StatusRuntimeException e) {
@@ -5687,11 +5569,11 @@ public class ExperimentRunTest {
           logVersionedInput.getVersionedInputs(),
           getVersionedInputResponse.getVersionedInputs());
 
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (config.hasAuth()) {
         getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
         getVersionedInputResponse =
             experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
-        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+        if (config.populateConnectionsBasedOnPrivileges) {
           assertTrue(
               "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
               getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
@@ -5722,7 +5604,7 @@ public class ExperimentRunTest {
     long repoId = RepositoryTest.createRepository(versioningServiceBlockingStub, repoName);
 
     String testUser1UserName = null;
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       GetUser getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
       // Get the user info by vertaId form the AuthService
@@ -5771,7 +5653,7 @@ public class ExperimentRunTest {
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     commit = commitResponse.getCommit();
 
-    if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+    if (config.hasAuth()) {
       AddCollaboratorRequest addCollaboratorRequest =
           CollaboratorTest.addCollaboratorRequestProject(
               project, authClientInterceptor.getClient2Email(), CollaboratorType.READ_WRITE);
@@ -5798,6 +5680,8 @@ public class ExperimentRunTest {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -5815,6 +5699,8 @@ public class ExperimentRunTest {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-2-" + new Date().getTime())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
@@ -5831,6 +5717,8 @@ public class ExperimentRunTest {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-3-" + new Date().getTime())
               .build();
       createExperimentRunResponse =
@@ -6032,6 +5920,8 @@ public class ExperimentRunTest {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-2")
               .setVersionedInputs(
                   createExperimentRunRequest
@@ -6049,6 +5939,8 @@ public class ExperimentRunTest {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-3")
               .setVersionedInputs(
                   createExperimentRunRequest
@@ -6524,7 +6416,7 @@ public class ExperimentRunTest {
         }
       }
 
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (config.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
             AddCollaboratorRequest.newBuilder()
                 .setShareWith(authClientInterceptor.getClient2Email())
@@ -6558,7 +6450,7 @@ public class ExperimentRunTest {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+        if (config.populateConnectionsBasedOnPrivileges) {
           assertEquals(
               "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               1,
@@ -6603,7 +6495,7 @@ public class ExperimentRunTest {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+        if (config.populateConnectionsBasedOnPrivileges) {
           assertEquals(
               "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               3,
@@ -7220,7 +7112,7 @@ public class ExperimentRunTest {
         if (exprRun.getId().equals(experimentRun2.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-          if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          if (config.populateConnectionsBasedOnPrivileges) {
             assertFalse(
                 "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
           } else {
@@ -7237,7 +7129,7 @@ public class ExperimentRunTest {
         } else if (exprRun.getId().equals(experimentRun3.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
-          if (app.isPopulateConnectionsBasedOnPrivileges()) {
+          if (config.populateConnectionsBasedOnPrivileges) {
             assertFalse(
                 "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
           } else {
@@ -7260,7 +7152,7 @@ public class ExperimentRunTest {
       ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
       String locationKey =
           ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-      if (app.isPopulateConnectionsBasedOnPrivileges()) {
+      if (config.populateConnectionsBasedOnPrivileges) {
         assertFalse("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
       } else {
         assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
@@ -7794,7 +7686,7 @@ public class ExperimentRunTest {
           experimentRun11,
           response.getExperimentRuns(0));
 
-      if (app.getAuthServerHost() != null && app.getAuthServerPort() != null) {
+      if (config.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
             addCollaboratorRequestProjectInterceptor(
                 project, CollaboratorType.READ_ONLY, authClientInterceptor);
@@ -7816,7 +7708,7 @@ public class ExperimentRunTest {
             "ExperimentRun count not match with expected experimentRun count",
             1,
             response.getExperimentRunsCount());
-        if (app.isPopulateConnectionsBasedOnPrivileges()) {
+        if (config.populateConnectionsBasedOnPrivileges) {
           assertEquals(
               "ExperimentRun not match with expected experimentRun",
               0,

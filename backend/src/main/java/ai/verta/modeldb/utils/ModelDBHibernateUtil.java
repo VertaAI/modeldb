@@ -1,40 +1,15 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.batchProcess.CollaboratorResourceMigration;
-import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
-import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
-import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
-import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
+import ai.verta.modeldb.batchProcess.*;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.entities.ArtifactEntity;
-import ai.verta.modeldb.entities.ArtifactPartEntity;
-import ai.verta.modeldb.entities.ArtifactStoreMapping;
-import ai.verta.modeldb.entities.AttributeEntity;
-import ai.verta.modeldb.entities.CodeVersionEntity;
-import ai.verta.modeldb.entities.CommentEntity;
-import ai.verta.modeldb.entities.DatasetEntity;
-import ai.verta.modeldb.entities.DatasetPartInfoEntity;
-import ai.verta.modeldb.entities.DatasetVersionEntity;
-import ai.verta.modeldb.entities.ExperimentEntity;
-import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.entities.FeatureEntity;
-import ai.verta.modeldb.entities.GitSnapshotEntity;
-import ai.verta.modeldb.entities.JobEntity;
-import ai.verta.modeldb.entities.KeyValueEntity;
-import ai.verta.modeldb.entities.LineageEntity;
-import ai.verta.modeldb.entities.ObservationEntity;
-import ai.verta.modeldb.entities.PathDatasetVersionInfoEntity;
-import ai.verta.modeldb.entities.ProjectEntity;
-import ai.verta.modeldb.entities.QueryDatasetVersionInfoEntity;
-import ai.verta.modeldb.entities.QueryParameterEntity;
-import ai.verta.modeldb.entities.RawDatasetVersionInfoEntity;
-import ai.verta.modeldb.entities.TagsMapping;
-import ai.verta.modeldb.entities.UploadStatusEntity;
-import ai.verta.modeldb.entities.UserCommentEntity;
+import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.DatabaseConfig;
+import ai.verta.modeldb.config.MigrationConfig;
+import ai.verta.modeldb.config.RdbConfig;
+import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
@@ -45,41 +20,18 @@ import ai.verta.modeldb.entities.config.HyperparameterSetConfigBlobEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.QueryDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.dataset.S3DatasetComponentBlobEntity;
-import ai.verta.modeldb.entities.environment.DockerEnvironmentBlobEntity;
-import ai.verta.modeldb.entities.environment.EnvironmentBlobEntity;
-import ai.verta.modeldb.entities.environment.EnvironmentCommandLineEntity;
-import ai.verta.modeldb.entities.environment.EnvironmentVariablesEntity;
-import ai.verta.modeldb.entities.environment.PythonEnvironmentBlobEntity;
-import ai.verta.modeldb.entities.environment.PythonEnvironmentRequirementBlobEntity;
+import ai.verta.modeldb.entities.environment.*;
 import ai.verta.modeldb.entities.metadata.KeyValuePropertyMappingEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
-import ai.verta.modeldb.entities.versioning.BranchEntity;
-import ai.verta.modeldb.entities.versioning.CommitEntity;
-import ai.verta.modeldb.entities.versioning.DatasetRepositoryMappingEntity;
-import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
-import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.entities.versioning.TagsEntity;
-import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
+import ai.verta.modeldb.entities.versioning.*;
+import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.UnavailableException;
 import com.google.common.base.Joiner;
-import com.google.rpc.Code;
-import com.google.rpc.Status;
 import io.grpc.health.v1.HealthCheckResponse;
-import io.grpc.protobuf.StatusProto;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.sql.*;
+import java.util.*;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -113,15 +65,8 @@ public class ModelDBHibernateUtil {
   private static final Logger LOGGER = LogManager.getLogger(ModelDBHibernateUtil.class);
   private static StandardServiceRegistry registry;
   private static SessionFactory sessionFactory;
-  private static String databaseName;
-  private static String rDBDriver;
-  private static String rDBUrl;
-  public static String rDBDialect;
-  private static String configUsername;
-  private static String configPassword;
-  private static Integer timeout = 4;
-  private static Long liquibaseLockThreshold = 0L;
   private static Boolean isReady = false;
+  public static DatabaseConfig config;
   private static Class[] entities = {
     ProjectEntity.class,
     ExperimentEntity.class,
@@ -176,9 +121,6 @@ public class ModelDBHibernateUtil {
     QueryDatasetComponentBlobEntity.class,
     AuditLogLocalEntity.class
   };
-  private static Integer minConnectionPoolSize;
-  private static Integer maxConnectionPoolSize;
-  private static Integer connectionTimeout;
 
   private ModelDBHibernateUtil() {}
 
@@ -190,14 +132,12 @@ public class ModelDBHibernateUtil {
         .getConnection();
   }
 
-  public static SessionFactory createOrGetSessionFactory() throws ModelDBException {
+  public static SessionFactory createOrGetSessionFactory(DatabaseConfig config)
+      throws ModelDBException {
     if (sessionFactory == null) {
       LOGGER.info("Fetching sessionFactory");
       try {
-        App app = App.getInstance();
-        Map<String, Object> databasePropMap = app.getDatabasePropMap();
-
-        setDatabaseProperties(app, databasePropMap);
+        ModelDBHibernateUtil.config = config;
 
         // Initialize background utils count
         CommonUtils.initializeBackgroundUtilsCount();
@@ -206,26 +146,27 @@ public class ModelDBHibernateUtil {
         Configuration configuration = new Configuration();
 
         Properties settings = new Properties();
+        RdbConfig rdb = config.RdbConfiguration;
 
         String connectionString =
-            rDBUrl
+            rdb.RdbUrl
                 + "/"
-                + databaseName
+                + rdb.RdbDatabaseName
                 + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
-        settings.put(Environment.DRIVER, rDBDriver);
+        settings.put(Environment.DRIVER, rdb.RdbDriver);
         settings.put(Environment.URL, connectionString);
-        settings.put(Environment.USER, configUsername);
-        settings.put(Environment.PASS, configPassword);
-        settings.put(Environment.DIALECT, rDBDialect);
+        settings.put(Environment.USER, rdb.RdbUsername);
+        settings.put(Environment.PASS, rdb.RdbPassword);
+        settings.put(Environment.DIALECT, rdb.RdbDialect);
         settings.put(Environment.HBM2DDL_AUTO, "validate");
         settings.put(Environment.SHOW_SQL, "false");
         settings.put("hibernate.c3p0.testConnectionOnCheckin", "true");
         // Reduce this time period if stale connections still exist
         settings.put("hibernate.c3p0.idleConnectionTestPeriod", "100");
         settings.put("hibernate.c3p0.preferredTestQuery", "Select 1");
-        settings.put(Environment.C3P0_MIN_SIZE, minConnectionPoolSize);
-        settings.put(Environment.C3P0_MAX_SIZE, maxConnectionPoolSize);
-        settings.put(Environment.C3P0_TIMEOUT, connectionTimeout);
+        settings.put(Environment.C3P0_MIN_SIZE, config.minConnectionPoolSize);
+        settings.put(Environment.C3P0_MAX_SIZE, config.maxConnectionPoolSize);
+        settings.put(Environment.C3P0_TIMEOUT, config.connectionTimeout);
         settings.put(Environment.QUERY_PLAN_CACHE_MAX_SIZE, 200);
         settings.put(Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, 20);
         configuration.setProperties(settings);
@@ -240,9 +181,7 @@ public class ModelDBHibernateUtil {
         }
 
         // Check DB is up or not
-        boolean dbConnectionStatus =
-            checkDBConnection(
-                rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
+        boolean dbConnectionStatus = checkDBConnection(rdb, config.timeout);
         if (!dbConnectionStatus) {
           checkDBConnectionInLoop(true);
         }
@@ -254,9 +193,6 @@ public class ModelDBHibernateUtil {
         if (ModelDBConstants.EXPORT_SCHEMA) {
           exportSchema(metaDataSrc.buildMetadata());
         }
-
-        // Check if any migration need to be run or not and based on the migration status flag
-        runMigration();
 
         LOGGER.info(ModelDBMessages.READY_STATUS, isReady);
         isReady = true;
@@ -274,61 +210,14 @@ public class ModelDBHibernateUtil {
     }
   }
 
-  public static void setDatabaseProperties(App app, Map<String, Object> databasePropMap) {
-    Map<String, Object> rDBPropMap = (Map<String, Object>) databasePropMap.get("RdbConfiguration");
-
-    databaseName = (String) rDBPropMap.get("RdbDatabaseName");
-    if (!app.getTraceEnabled()) {
-      rDBDriver = (String) rDBPropMap.get("RdbDriver");
-    } else {
-      rDBDriver = "io.opentracing.contrib.jdbc.TracingDriver";
-    }
-    rDBUrl = (String) rDBPropMap.get("RdbUrl");
-    rDBDialect = (String) rDBPropMap.get("RdbDialect");
-    configUsername = (String) rDBPropMap.get("RdbUsername");
-    configPassword = (String) rDBPropMap.get("RdbPassword");
-    if (databasePropMap.containsKey("timeout")) {
-      timeout = (Integer) databasePropMap.get("timeout");
-    }
-    minConnectionPoolSize =
-        (Integer)
-            databasePropMap.getOrDefault(
-                ModelDBConstants.MIN_CONNECTION_POOL_SIZE,
-                ModelDBConstants.MIN_CONNECTION_SIZE_DEFAULT);
-    maxConnectionPoolSize =
-        (Integer)
-            databasePropMap.getOrDefault(
-                ModelDBConstants.MAX_CONNECTION_POOL_SIZE,
-                ModelDBConstants.MAX_CONNECTION_SIZE_DEFAULT);
-    connectionTimeout =
-        (Integer)
-            databasePropMap.getOrDefault(
-                ModelDBConstants.CONNECTION_TIMEOUT, ModelDBConstants.CONNECTION_TIMEOUT_DEFAULT);
-    liquibaseLockThreshold =
-        Long.parseLong(databasePropMap.getOrDefault("liquibaseLockThreshold", "60").toString());
-
-    // Change liquibase default table names
-    System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
-    System.getProperties()
-        .put("liquibase.databaseChangeLogLockTableName", "database_change_log_lock");
-  }
-
   public static SessionFactory getSessionFactory() {
-    try {
-      return createOrGetSessionFactory();
-    } catch (Exception e) {
-      Status status =
-          Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
-    }
+    return createOrGetSessionFactory(Config.getInstance().database);
   }
 
   private static SessionFactory loopBack(SessionFactory sessionFactory) {
     try {
       LOGGER.debug("ModelDBHibernateUtil checking DB connection");
-      boolean dbConnectionLive =
-          checkDBConnection(
-              rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
+      boolean dbConnectionLive = checkDBConnection(config.RdbConfiguration, config.timeout);
       if (dbConnectionLive) {
         return sessionFactory;
       }
@@ -339,9 +228,7 @@ public class ModelDBHibernateUtil {
       return sessionFactory;
     } catch (Exception ex) {
       LOGGER.warn("ModelDBHibernateUtil loopBack() getting error ", ex);
-      Status status =
-          Status.newBuilder().setCode(Code.UNAVAILABLE_VALUE).setMessage(ex.getMessage()).build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new UnavailableException(ex.getMessage());
     }
   }
 
@@ -363,19 +250,12 @@ public class ModelDBHibernateUtil {
             loopBackTime);
         loopBackTime = loopBackTime * 2;
         loopIndex = loopIndex + 1;
-        dbConnectionLive =
-            checkDBConnection(
-                rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
+        dbConnectionLive = checkDBConnection(config.RdbConfiguration, config.timeout);
         if (isStartUpTime && loopBackTime >= 2560) {
           loopBackTime = 2560;
         }
       } else {
-        Status status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage("DB connection not found after 2560 millisecond")
-                .build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new UnavailableException("DB connection not found after 2560 millisecond");
       }
     }
   }
@@ -395,17 +275,11 @@ public class ModelDBHibernateUtil {
     }
   }
 
-  public static void releaseLiquibaseLock(
-      String rDBDriver,
-      String rDBUrl,
-      String databaseName,
-      String configUsername,
-      String configPassword)
+  public static void releaseLiquibaseLock(DatabaseConfig config)
       throws LiquibaseException, SQLException, InterruptedException, ClassNotFoundException {
     // Get database connection
-    try (Connection con =
-        getDBConnection(rDBDriver, rDBUrl, databaseName, configUsername, configPassword)) {
-      boolean existsStatus = tableExists(con, "database_change_log_lock");
+    try (Connection con = getDBConnection(config.RdbConfiguration)) {
+      boolean existsStatus = tableExists(con, config, "database_change_log_lock");
       if (!existsStatus) {
         LOGGER.info("Table database_change_log_lock does not exists in DB");
         LOGGER.info("Proceeding with liquibase assuming it has never been run");
@@ -450,7 +324,8 @@ public class ModelDBHibernateUtil {
           (currentCalender.getTimeInMillis() - lastLockAcquireTimestamp) / 1000;
       LOGGER.debug(
           "current liquibase locked time difference in second: {}", currentLockedTimeDiffSecond);
-      if (lastLockAcquireTimestamp != 0 && currentLockedTimeDiffSecond > liquibaseLockThreshold) {
+      if (lastLockAcquireTimestamp != 0
+          && currentLockedTimeDiffSecond > config.liquibaseLockThreshold) {
         // Initialize Liquibase and run the update
         Database database =
             DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
@@ -460,8 +335,8 @@ public class ModelDBHibernateUtil {
       }
 
       if (locked) {
-        Thread.sleep(liquibaseLockThreshold * 1000); // liquibaseLockThreshold = second
-        releaseLiquibaseLock(rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
+        Thread.sleep(config.liquibaseLockThreshold * 1000); // liquibaseLockThreshold = second
+        releaseLiquibaseLock(config);
       }
     } catch (InterruptedException e) {
       LOGGER.error(e.getMessage(), e);
@@ -470,16 +345,12 @@ public class ModelDBHibernateUtil {
   }
 
   public static void createTablesLiquibaseMigration(
-      String rDBDriver,
-      String rDBUrl,
-      String databaseName,
-      String configUsername,
-      String configPassword,
-      String changeSetToRevertUntilTag)
+      DatabaseConfig config, String changeSetToRevertUntilTag)
       throws LiquibaseException, SQLException, InterruptedException, ClassNotFoundException {
+    RdbConfig rdb = config.RdbConfiguration;
+
     // Get database connection
-    try (Connection con =
-        getDBConnection(rDBDriver, rDBUrl, databaseName, configUsername, configPassword)) {
+    try (Connection con = getDBConnection(rdb)) {
       JdbcConnection jdbcCon = new JdbcConnection(con);
 
       // Overwrite default liquibase table names by custom
@@ -505,47 +376,34 @@ public class ModelDBHibernateUtil {
         } catch (LockException ex) {
           LOGGER.warn(
               "ModelDBHibernateUtil createTablesLiquibaseMigration() getting LockException ", ex);
-          releaseLiquibaseLock(rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
+          releaseLiquibaseLock(config);
         }
       }
     }
   }
 
   public static boolean checkDBConnection() {
-    return checkDBConnection(
-        rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
+    return checkDBConnection(config.RdbConfiguration, config.timeout);
   }
 
-  public static Connection getDBConnection(
-      String rDBDriver,
-      String rDBUrl,
-      String databaseName,
-      String configUsername,
-      String configPassword)
+  public static Connection getDBConnection(RdbConfig rdb)
       throws SQLException, ClassNotFoundException {
     String connectionString =
-        rDBUrl
+        rdb.RdbUrl
             + "/"
-            + databaseName
+            + rdb.RdbDatabaseName
             + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
     try {
-      Class.forName(rDBDriver);
+      Class.forName(rdb.RdbDriver);
     } catch (ClassNotFoundException e) {
       LOGGER.warn("ModelDBHibernateUtil getDBConnection() got error ", e);
       throw e;
     }
-    return DriverManager.getConnection(connectionString, configUsername, configPassword);
+    return DriverManager.getConnection(connectionString, rdb.RdbUsername, rdb.RdbPassword);
   }
 
-  public static boolean checkDBConnection(
-      String rDBDriver,
-      String rDBUrl,
-      String databaseName,
-      String configUsername,
-      String configPassword,
-      Integer timeout) {
-    try (Connection con =
-        getDBConnection(rDBDriver, rDBUrl, databaseName, configUsername, configPassword)) {
+  public static boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
+    try (Connection con = getDBConnection(rdb)) {
       return con.isValid(timeout);
     } catch (Exception ex) {
       LOGGER.warn("ModelDBHibernateUtil checkDBConnection() got error ", ex);
@@ -559,7 +417,7 @@ public class ModelDBHibernateUtil {
         final boolean[] valid = {false};
         session.doWork(
             connection -> {
-              if (connection.isValid(timeout)) {
+              if (connection.isValid(config.timeout)) {
                 valid[0] = true;
               }
             });
@@ -586,9 +444,10 @@ public class ModelDBHibernateUtil {
     return HealthCheckResponse.ServingStatus.SERVING;
   }
 
-  public static boolean tableExists(Connection conn, String tableName) throws SQLException {
+  public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
+      throws SQLException {
     boolean tExists = false;
-    try (ResultSet rs = getTableBasedOnDialect(conn, tableName, databaseName, rDBDialect)) {
+    try (ResultSet rs = getTableBasedOnDialect(conn, tableName, config.RdbConfiguration)) {
       while (rs.next()) {
         String tName = rs.getString("TABLE_NAME");
         if (tName != null && tName.equals(tableName)) {
@@ -600,13 +459,13 @@ public class ModelDBHibernateUtil {
     return tExists;
   }
 
-  private static ResultSet getTableBasedOnDialect(
-      Connection conn, String tableName, String dbName, String rDBDialect) throws SQLException {
-    if (rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
+  private static ResultSet getTableBasedOnDialect(Connection conn, String tableName, RdbConfig rdb)
+      throws SQLException {
+    if (rdb.isPostgres()) {
       // TODO: make postgres implementation multitenant as well.
       return conn.getMetaData().getTables(null, null, tableName, null);
     } else {
-      return conn.getMetaData().getTables(dbName, null, tableName, null);
+      return conn.getMetaData().getTables(rdb.RdbDatabaseName, null, tableName, null);
     }
   }
 
@@ -638,12 +497,7 @@ public class ModelDBHibernateUtil {
     if (count > 0) {
       // Throw error if it is an insert request and project with same name already exists
       logger.info(entityName + " with name {} already exists", name);
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.ALREADY_EXISTS_VALUE)
-              .setMessage(entityName + " already exists in database")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new AlreadyExistsException(entityName + " already exists in database");
     }
   }
 
@@ -704,131 +558,48 @@ public class ModelDBHibernateUtil {
    * {` condition.
    */
   @SuppressWarnings("unchecked")
-  private static void runMigration() throws ClassNotFoundException, ModelDBException {
-    App app = App.getInstance();
-    Map<String, Map<String, Object>> migrationTypeMap =
-        (Map<String, Map<String, Object>>) app.getPropertiesMap().get(ModelDBConstants.MIGRATION);
-    if (migrationTypeMap != null && migrationTypeMap.size() > 0) {
-      new Thread(
-              () -> {
-                CommonUtils.registeredBackgroundUtilsCount();
-                int index = 0;
-                try {
-                  CompletableFuture<Boolean>[] completableFutures =
-                      new CompletableFuture[migrationTypeMap.size()];
-                  for (String migrationName : migrationTypeMap.keySet()) {
-                    Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
-                    if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
-                      if (migrationName.equals(
-                          ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION)) {
-                        // Manually migration for populate RoleBinding of experiment, experimentRun
-                        // &
-                        // datasetVersion owner
-                        CompletableFuture<Boolean> futureTask =
-                            CompletableFuture.supplyAsync(
-                                () -> {
-                                  OwnerRoleBindingUtils.execute();
-                                  return true;
-                                });
-                        completableFutures[index] = futureTask;
-                        index = index + 1;
-                      }
-                      if (migrationName.equals(
-                          ModelDBConstants.SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION)) {
-                        // Manual migration for populate RoleBinding of repository
-                        CompletableFuture<Boolean> futureTask =
-                            CompletableFuture.supplyAsync(
-                                () -> {
-                                  OwnerRoleBindingRepositoryUtils.execute();
-                                  return true;
-                                });
-                        completableFutures[index] = futureTask;
-                        index = index + 1;
-                      }
-                      if (migrationName.equals(ModelDBConstants.POPULATE_VERSION_MIGRATION)) {
-                        // Manual migration for populate RoleBinding of repository
-                        CompletableFuture<Boolean> futureTask =
-                            CompletableFuture.supplyAsync(
-                                () -> {
-                                  int recordUpdateLimit =
-                                      (int)
-                                          migrationDetailMap.getOrDefault(
-                                              ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-                                  PopulateVersionMigration.execute(recordUpdateLimit);
-                                  return true;
-                                });
-                        completableFutures[index] = futureTask;
-                        index = index + 1;
-                      }
-                      // add if here for the new migration type
-                    }
-                  }
-                  if (index > 0) {
-                    CompletableFuture<Void> combinedFuture =
-                        CompletableFuture.allOf(completableFutures);
-                    combinedFuture.get();
-                    LOGGER.info("Finished all the future tasks");
-                  }
-                } catch (InterruptedException | ExecutionException e) {
-                  LOGGER.warn(
-                      "ModelDBHibernateUtil runMigration() getting error : {}", e.getMessage(), e);
-                } finally {
-                  CommonUtils.unregisteredBackgroundUtilsCount();
-                }
-              })
-          .start();
+  public static void runMigration(Config config)
+      throws ClassNotFoundException, ModelDBException, DatabaseException, SQLException {
+    DatabaseConfig databaseConfig = config.database;
+    RdbConfig rdb = databaseConfig.RdbConfiguration;
 
-      // Blocking migration
-      String migrationName = ModelDBConstants.DATASET_VERSIONING_MIGRATION;
-      if (migrationTypeMap.containsKey(migrationName)) {
-        Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
-        if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
-          try {
+    if (config.migrations != null) {
+      for (MigrationConfig migrationConfig : config.migrations) {
+        if (!migrationConfig.enabled) {
+          continue;
+        }
+        switch (migrationConfig.name) {
+          case ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION:
+            OwnerRoleBindingUtils.execute();
+            break;
+          case ModelDBConstants.SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION:
+            OwnerRoleBindingRepositoryUtils.execute();
+            break;
+          case ModelDBConstants.POPULATE_VERSION_MIGRATION:
+            PopulateVersionMigration.execute(migrationConfig.record_update_limit);
+            break;
+          case ModelDBConstants.DATASET_VERSIONING_MIGRATION:
             CommonUtils.registeredBackgroundUtilsCount();
-            boolean isLocked =
-                checkMigrationLockedStatus(
-                    migrationName, rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
+            boolean isLocked = checkMigrationLockedStatus(migrationConfig.name, rdb);
             if (!isLocked) {
-              LOGGER.debug("Obtaingin migration lock");
-              lockedMigration(
-                  migrationName, rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
-              int recordUpdateLimit =
-                  (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-              DatasetToRepositoryMigration.execute(recordUpdateLimit);
+              LOGGER.debug("Obtaining migration lock");
+              lockedMigration(migrationConfig.name, rdb);
+              DatasetToRepositoryMigration.execute(migrationConfig.record_update_limit);
             } else {
               LOGGER.debug("Migration already locked");
             }
-          } catch (SQLException | DatabaseException e) {
-            LOGGER.error("Error on migration: {}", e.getMessage());
-          } finally {
-            CommonUtils.unregisteredBackgroundUtilsCount();
-          }
-        }
-      }
-
-      migrationName = ModelDBConstants.COLLABORATOR_RESOURCE_MIGRATION;
-      if (migrationTypeMap.containsKey(migrationName)) {
-        Map<String, Object> migrationDetailMap = migrationTypeMap.get(migrationName);
-        if ((boolean) migrationDetailMap.get(ModelDBConstants.ENABLE)) {
-          int recordUpdateLimit =
-              (int) migrationDetailMap.getOrDefault(ModelDBConstants.RECORD_UPDATE_LIMIT, 100);
-          CollaboratorResourceMigration.execute(recordUpdateLimit);
+            break;
         }
       }
     }
+
+    CollaboratorResourceMigration.execute();
   }
 
-  private static boolean checkMigrationLockedStatus(
-      String migrationName,
-      String rDBDriver,
-      String rDBUrl,
-      String databaseName,
-      String configUsername,
-      String configPassword)
+  private static boolean checkMigrationLockedStatus(String migrationName, RdbConfig rdb)
       throws SQLException, DatabaseException, ClassNotFoundException {
     // Get database connection
-    try (Connection con =
-        getDBConnection(rDBDriver, rDBUrl, databaseName, configUsername, configPassword)) {
+    try (Connection con = getDBConnection(rdb)) {
 
       JdbcConnection jdbcCon = new JdbcConnection(con);
 
@@ -860,17 +631,10 @@ public class ModelDBHibernateUtil {
     }
   }
 
-  private static void lockedMigration(
-      String migrationName,
-      String rDBDriver,
-      String rDBUrl,
-      String databaseName,
-      String configUsername,
-      String configPassword)
+  private static void lockedMigration(String migrationName, RdbConfig rdb)
       throws SQLException, DatabaseException, ClassNotFoundException {
     // Get database connection
-    try (Connection con =
-        getDBConnection(rDBDriver, rDBUrl, databaseName, configUsername, configPassword)) {
+    try (Connection con = getDBConnection(rdb)) {
 
       JdbcConnection jdbcCon = new JdbcConnection(con);
 
@@ -889,68 +653,55 @@ public class ModelDBHibernateUtil {
     }
   }
 
-  public static boolean runLiquibaseMigration(Map<String, Object> databasePropMap)
+  public static void runLiquibaseMigration(DatabaseConfig config)
       throws InterruptedException, LiquibaseException, SQLException, ClassNotFoundException {
-    setDatabaseProperties(App.getInstance(), databasePropMap);
+    // Change liquibase default table names
+    System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
+    System.getProperties()
+        .put("liquibase.databaseChangeLogLockTableName", "database_change_log_lock");
 
-    if (databaseName.contains("-")) {
-      if (ModelDBHibernateUtil.rDBDialect.equals(ModelDBConstants.POSTGRES_DB_DIALECT)) {
+    // Lock to RDB for now
+    RdbConfig rdb = config.RdbConfiguration;
+
+    if (rdb.RdbDatabaseName.contains("-")) {
+      if (rdb.isPostgres()) {
         throw new InterruptedException("Postgres doesn't allow '-' in the database name");
       } else {
-        ModelDBHibernateUtil.createDBIfNotExists(
-            rDBUrl, "`" + databaseName + "`", configUsername, configPassword);
+        ModelDBHibernateUtil.createDBIfNotExists(rdb);
       }
     }
 
     // Check DB is up or not
-    boolean dbConnectionStatus =
-        ModelDBHibernateUtil.checkDBConnection(
-            rDBDriver, rDBUrl, databaseName, configUsername, configPassword, timeout);
+    boolean dbConnectionStatus = ModelDBHibernateUtil.checkDBConnection(rdb, config.timeout);
     if (!dbConnectionStatus) {
       ModelDBHibernateUtil.checkDBConnectionInLoop(true);
     }
 
-    ModelDBHibernateUtil.releaseLiquibaseLock(
-        rDBDriver, rDBUrl, databaseName, configUsername, configPassword);
+    ModelDBHibernateUtil.releaseLiquibaseLock(config);
 
-    String changeSetToRevertUntilTag = (String) databasePropMap.get("changeSetToRevertUntilTag");
     // Run tables liquibase migration
-    ModelDBHibernateUtil.createTablesLiquibaseMigration(
-        rDBDriver, rDBUrl, databaseName, configUsername, configPassword, changeSetToRevertUntilTag);
-
-    LOGGER.info("Liquibase validation stop");
-
-    boolean runLiquibaseSeparate =
-        Boolean.parseBoolean(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE));
-    if (runLiquibaseSeparate) {
-      return true;
-    }
-    return false;
+    ModelDBHibernateUtil.createTablesLiquibaseMigration(config, config.changeSetToRevertUntilTag);
   }
 
-  public static void createDBIfNotExists(
-      String rDBUrl, String databaseName, String configUsername, String configPassword)
-      throws SQLException {
+  public static void createDBIfNotExists(RdbConfig rdb) throws SQLException {
 
-    Connection connection = DriverManager.getConnection(rDBUrl, configUsername, configPassword);
+    Connection connection =
+        DriverManager.getConnection(rdb.RdbUrl, rdb.RdbUsername, rdb.RdbPassword);
     ResultSet resultSet = connection.getMetaData().getCatalogs();
 
-    boolean dbExists = false;
     while (resultSet.next()) {
       String databaseNameRes = resultSet.getString(1);
-      if (databaseName.equals("`" + databaseNameRes + "`")) {
-        dbExists = true;
-        break;
+      if (rdb.RdbDatabaseName.equals(databaseNameRes)) {
+        System.out.println("the database " + rdb.RdbDatabaseName + " exists");
+        return;
       }
     }
 
-    if (dbExists) {
-      System.out.println("the database " + databaseName + " exists");
-    } else {
-      System.out.println("the database " + databaseName + " does not exists");
-      Statement statement = connection.createStatement();
-      statement.executeUpdate("CREATE DATABASE " + databaseName);
-      System.out.println("the database " + databaseName + " created successfully");
-    }
+    String quotedDBName = String.format("`%s`", rdb.RdbDatabaseName);
+
+    System.out.println("the database " + rdb.RdbDatabaseName + " does not exists");
+    Statement statement = connection.createStatement();
+    statement.executeUpdate("CREATE DATABASE " + quotedDBName);
+    System.out.println("the database " + rdb.RdbDatabaseName + " created successfully");
   }
 }

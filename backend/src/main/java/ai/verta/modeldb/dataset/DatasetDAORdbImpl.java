@@ -14,42 +14,27 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.exceptions.NotFoundException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import com.google.rpc.Status;
-import io.grpc.protobuf.StatusProto;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -98,16 +83,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       "select id  From DatasetEntity d where d.deleted = false";
   private static final String NON_DELETED_DATASET_IDS_BY_IDS =
       NON_DELETED_DATASET_IDS + " AND d.id in (:" + ModelDBConstants.DATASET_IDS + ")";
-  private static final String IDS_FILTERED_BY_WORKSPACE =
-      NON_DELETED_DATASET_IDS_BY_IDS
-          + " AND d."
-          + ModelDBConstants.WORKSPACE
-          + " = :"
-          + ModelDBConstants.WORKSPACE
-          + " AND d."
-          + ModelDBConstants.WORKSPACE_TYPE
-          + " = :"
-          + ModelDBConstants.WORKSPACE_TYPE;
 
   public DatasetDAORdbImpl(AuthService authService, RoleService roleService) {
     this.authService = authService;
@@ -152,8 +127,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       ResourceVisibility resourceVisibility = dataset.getVisibility();
       if (dataset.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
         resourceVisibility =
-            ModelDBUtils.getResourceVisibility(
-                Optional.of(dataset.getWorkspaceType()), dataset.getDatasetVisibility());
+            ModelDBUtils.getResourceVisibility(Optional.empty(), dataset.getDatasetVisibility());
       }
       roleService.createWorkspacePermissions(
           dataset.getWorkspaceServiceId(),
@@ -227,12 +201,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             ModelDBActionEnum.ModelDBServiceActions.DELETE,
             datasetIds);
     if (allowedDatasetIds.isEmpty()) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.PERMISSION_DENIED_VALUE)
-              .setMessage("Access Denied for given dataset Ids : " + datasetIds)
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new PermissionDeniedException("Access Denied for given dataset Ids : " + datasetIds);
     }
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -275,12 +244,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public DatasetEntity getDatasetEntity(Session session, String datasetId) {
     DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
     if (datasetObj == null) {
-      Status status =
-          Status.newBuilder()
-              .setCode(Code.NOT_FOUND_VALUE)
-              .setMessage("dataset with input id not found")
-              .build();
-      throw StatusProto.toStatusRuntimeException(status);
+      throw new NotFoundException("dataset with input id not found");
     }
     LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
     return datasetObj;
@@ -407,6 +371,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           datasetPaginationDTO.setTotalRecords(0L);
           return datasetPaginationDTO;
         }
+        throw ex;
       }
 
       finalPredicatesList.add(builder.equal(datasetRoot.get(ModelDBConstants.DELETED), false));
@@ -557,10 +522,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
       List<String> newTags = new ArrayList<>();
       Dataset existingProtoDatasetObj = datasetObj.getProtoObject(roleService);
@@ -677,10 +639,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       if (datasetObj == null) {
         String errorMessage = "Dataset not found for given ID";
-        LOGGER.info(errorMessage);
-        Status status =
-            Status.newBuilder().setCode(Code.NOT_FOUND_VALUE).setMessage(errorMessage).build();
-        throw StatusProto.toStatusRuntimeException(status);
+        throw new NotFoundException(errorMessage);
       }
 
       AttributeEntity updatedAttributeObj =
@@ -812,8 +771,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo)
-      throws InvalidProtocolBufferException {
+  public List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo) {
     if (!roleService.IsImplemented()) {
       try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
         return session.createQuery(NON_DELETED_DATASET_IDS).list();
@@ -826,34 +784,44 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              ModelDBServiceResourceTypes.DATASET,
+              ModelDBServiceResourceTypes.REPOSITORY,
               Collections.EMPTY_LIST);
 
-      // resolve workspace
-      WorkspaceDTO workspaceDTO =
-          roleService.getWorkspaceDTOByWorkspaceName(currentLoginUserInfo, workspaceName);
+      Set<String> accessibleResourceIds = new HashSet<>(accessibleDatasetIds);
+      // in personal workspace show datasets directly shared
+      if (workspaceName != null
+          && !workspaceName.isEmpty()
+          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        LOGGER.debug("Workspace and current login user match");
+        List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+            roleService.getResourceItems(
+                null, Collections.emptySet(), ModelDBServiceResourceTypes.REPOSITORY);
+        accessibleResourceIds.addAll(
+            accessibleAllWorkspaceItems.stream()
+                .map(GetResourcesResponseItem::getResourceId)
+                .collect(Collectors.toSet()));
+      } else if (workspaceName != null && !workspaceName.isEmpty()) {
+        // get list of accessible datasets
+        accessibleResourceIds =
+            ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
+                roleService,
+                accessibleResourceIds,
+                workspaceName,
+                currentLoginUserInfo,
+                ModelDBServiceResourceTypes.REPOSITORY);
+      }
 
-      List<String> resultDatasets = new LinkedList<String>();
+      LOGGER.debug("accessibleAllWorkspaceDatasetIds : {}", accessibleResourceIds);
+
       try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
         @SuppressWarnings("unchecked")
-        Query<String> query = session.createQuery(IDS_FILTERED_BY_WORKSPACE);
+        Query<String> query = session.createQuery(NON_DELETED_DATASET_IDS_BY_IDS);
         query.setParameterList(ModelDBConstants.DATASET_IDS, accessibleDatasetIds);
-        query.setParameter(ModelDBConstants.WORKSPACE, workspaceDTO.getWorkspaceId());
-        query.setParameter(
-            ModelDBConstants.WORKSPACE_TYPE, workspaceDTO.getWorkspaceType().getNumber());
-        resultDatasets = query.list();
-
-        // in personal workspace show datasets directly shared
-        if (workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
-          List<String> directlySharedDatasets =
-              roleService.getSelfDirectlyAllowedResources(
-                  ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.READ);
-          query = session.createQuery(NON_DELETED_DATASET_IDS_BY_IDS);
-          query.setParameterList(ModelDBConstants.DATASET_IDS, directlySharedDatasets);
-          resultDatasets.addAll(query.list());
-        }
+        List<String> resultDatasets = query.list();
+        LOGGER.debug(
+            "Total accessible project Ids in function getWorkspaceDatasetIDs : {}", resultDatasets);
+        return resultDatasets;
       }
-      return resultDatasets;
     }
   }
 
