@@ -231,7 +231,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
-      checkIfEntityAlreadyExists(session, workspace, project.getName());
 
       Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);
