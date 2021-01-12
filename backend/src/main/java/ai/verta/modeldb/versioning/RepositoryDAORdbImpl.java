@@ -105,7 +105,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(SHORT_NAME)
           .append(".")
           .append(ModelDBConstants.DELETED)
-          .append(" = false")
+          .append(" = false ")
+          .append(" AND ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append(ModelDBConstants.CREATED)
+          .append(" = true")
           .toString();
 
   private static final String GET_TAG_HQL =
@@ -171,6 +176,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(".")
           .append(ModelDBConstants.DELETED)
           .append(" = false ")
+          .append(" AND ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append(ModelDBConstants.CREATED)
+          .append(" = true ")
           .toString();
   private static final String GET_REPOSITORY_ATTRIBUTES_QUERY =
       new StringBuilder("From " + AttributeEntity.class.getSimpleName() + " attr where attr.")
@@ -1399,6 +1409,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
 
       finalPredicatesList.add(builder.equal(repositoryRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(builder.equal(repositoryRoot.get(ModelDBConstants.CREATED), true));
       finalPredicatesList.add(
           builder.equal(
               repositoryRoot.get(ModelDBConstants.REPOSITORY_ACCESS_MODIFIER),

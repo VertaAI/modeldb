@@ -82,7 +82,10 @@ public class CollaboratorResourceMigration {
         CriteriaQuery<ProjectEntity> selectQuery =
             criteriaQuery
                 .select(root)
-                .where(criteriaBuilder.equal(root.get("visibility_migration"), false));
+                .where(
+                    criteriaBuilder.and(
+                        criteriaBuilder.equal(root.get("visibility_migration"), false),
+                        criteriaBuilder.equal(root.get("created"), true)));
 
         TypedQuery<ProjectEntity> typedQuery = session.createQuery(selectQuery);
 
@@ -116,6 +119,7 @@ public class CollaboratorResourceMigration {
                   .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
 
           for (ProjectEntity project : projectEntities) {
+            boolean migrated = false;
             if (project.getOwner() != null && !project.getOwner().isEmpty()) {
               WorkspaceDTO workspaceDTO =
                   roleService.getWorkspaceDTOByWorkspaceId(
@@ -137,7 +141,8 @@ public class CollaboratorResourceMigration {
                       Optional.ofNullable(
                           WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
                       VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
-            } else {
+              migrated = true;
+            } else if (responseItemMap.containsKey(project.getId())) {
               GetResourcesResponseItem resourceDetails = responseItemMap.get(project.getId());
               roleService.createWorkspacePermissions(
                   resourceDetails.getWorkspaceId(),
@@ -148,16 +153,19 @@ public class CollaboratorResourceMigration {
                   ModelDBServiceResourceTypes.PROJECT,
                   resourceDetails.getCustomPermission(),
                   resourceDetails.getVisibility());
+              migrated = true;
             }
-            Transaction transaction = null;
-            try {
-              transaction = session.beginTransaction();
-              project.setVisibility_migration(true);
-              session.update(project);
-              transaction.commit();
-            } catch (Exception ex) {
-              if (transaction != null && transaction.getStatus().canRollback()) {
-                transaction.rollback();
+            if (migrated) {
+              Transaction transaction = null;
+              try {
+                transaction = session.beginTransaction();
+                project.setVisibility_migration(true);
+                session.update(project);
+                transaction.commit();
+              } catch (Exception ex) {
+                if (transaction != null && transaction.getStatus().canRollback()) {
+                  transaction.rollback();
+                }
               }
             }
           }
@@ -197,7 +205,10 @@ public class CollaboratorResourceMigration {
         CriteriaQuery<RepositoryEntity> selectQuery =
             criteriaQuery
                 .select(root)
-                .where(criteriaBuilder.equal(root.get("visibility_migration"), false));
+                .where(
+                    criteriaBuilder.and(
+                        criteriaBuilder.equal(root.get("visibility_migration"), false),
+                        criteriaBuilder.equal(root.get("created"), true)));
 
         TypedQuery<RepositoryEntity> typedQuery = session.createQuery(selectQuery);
 
@@ -230,6 +241,7 @@ public class CollaboratorResourceMigration {
               responseItems.stream()
                   .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
           for (RepositoryEntity repository : repositoryEntities) {
+            boolean migrated = false;
             if (repository.getOwner() != null && !repository.getOwner().isEmpty()) {
               WorkspaceDTO workspaceDTO =
                   roleService.getWorkspaceDTOByWorkspaceId(
@@ -252,7 +264,8 @@ public class CollaboratorResourceMigration {
                           WorkspaceTypeEnum.WorkspaceType.forNumber(
                               repository.getWorkspace_type())),
                       VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())));
-            } else {
+              migrated = true;
+            } else if (responseItemMap.containsKey(String.valueOf(repository.getId()))) {
               GetResourcesResponseItem resourceDetails =
                   responseItemMap.get(String.valueOf(repository.getId()));
               roleService.createWorkspacePermissions(
@@ -264,16 +277,19 @@ public class CollaboratorResourceMigration {
                   ModelDBServiceResourceTypes.REPOSITORY,
                   resourceDetails.getCustomPermission(),
                   resourceDetails.getVisibility());
+              migrated = true;
             }
-            Transaction transaction = null;
-            try {
-              transaction = session.beginTransaction();
-              repository.setVisibility_migration(true);
-              session.update(repository);
-              transaction.commit();
-            } catch (Exception ex) {
-              if (transaction != null && transaction.getStatus().canRollback()) {
-                transaction.rollback();
+            if (migrated) {
+              Transaction transaction = null;
+              try {
+                transaction = session.beginTransaction();
+                repository.setVisibility_migration(true);
+                session.update(repository);
+                transaction.commit();
+              } catch (Exception ex) {
+                if (transaction != null && transaction.getStatus().canRollback()) {
+                  transaction.rollback();
+                }
               }
             }
           }
