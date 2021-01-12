@@ -6,12 +6,11 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.CronJobConfig;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CronJobUtils {
   private static final Logger LOGGER = LogManager.getLogger(CronJobUtils.class);

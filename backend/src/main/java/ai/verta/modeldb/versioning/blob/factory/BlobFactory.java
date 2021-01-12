@@ -1,7 +1,7 @@
 package ai.verta.modeldb.versioning.blob.factory;
 
-import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.versioning.Blob;
 import io.grpc.Status.Code;
 import org.hibernate.Session;
