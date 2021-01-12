@@ -7,7 +7,7 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
-import ai.verta.modeldb.exceptions.NotFoundException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.uac.UserInfo;

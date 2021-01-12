@@ -5,7 +5,7 @@ import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
-import ai.verta.modeldb.exceptions.NotFoundException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.uac.*;
 import io.grpc.Context;
 import io.grpc.Metadata;

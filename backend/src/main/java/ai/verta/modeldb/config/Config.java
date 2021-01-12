@@ -1,7 +1,7 @@
 package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;

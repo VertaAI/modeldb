@@ -6,7 +6,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.UserCommentEntity;
-import ai.verta.modeldb.exceptions.NotFoundException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;

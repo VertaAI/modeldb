@@ -2,7 +2,7 @@ package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
-import ai.verta.modeldb.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;

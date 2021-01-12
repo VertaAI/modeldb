@@ -9,6 +9,7 @@ import ai.verta.modeldb.CommitArtifactPart.Response;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;

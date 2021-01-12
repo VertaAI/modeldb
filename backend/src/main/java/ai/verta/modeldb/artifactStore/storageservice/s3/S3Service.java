@@ -8,7 +8,7 @@ import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
-import ai.verta.modeldb.exceptions.UnavailableException;
+import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.AmazonServiceException;
