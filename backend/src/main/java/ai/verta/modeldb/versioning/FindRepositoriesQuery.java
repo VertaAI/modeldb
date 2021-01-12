@@ -215,6 +215,7 @@ public class FindRepositoriesQuery {
         parametersMap.put("repoIds", this.repoIds);
       }
       whereClauseList.add(alias + "." + ModelDBConstants.DELETED + " = false ");
+      whereClauseList.add(alias + "." + ModelDBConstants.CREATED + " = true ");
       whereClauseList.add(
           alias
               + ".repositoryAccessModifier = "
