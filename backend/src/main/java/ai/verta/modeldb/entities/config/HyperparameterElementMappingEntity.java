@@ -2,7 +2,7 @@ package ai.verta.modeldb.entities.config;
 
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import io.grpc.Status;
 import java.util.Objects;

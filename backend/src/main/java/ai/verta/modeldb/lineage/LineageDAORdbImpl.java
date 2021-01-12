@@ -10,7 +10,7 @@ import ai.verta.modeldb.LineageEntry;
 import ai.verta.modeldb.LineageEntryBatch;
 import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.entities.LineageEntity;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.Status.Code;

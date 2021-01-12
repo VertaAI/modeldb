@@ -19,7 +19,7 @@ import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
 import ai.verta.modeldb.metadata.MetadataDAO;

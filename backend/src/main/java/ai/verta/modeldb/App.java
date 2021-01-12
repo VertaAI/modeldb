@@ -11,7 +11,7 @@ import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
 import ai.verta.modeldb.exceptions.ExceptionInterceptor;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.experiment.ExperimentServiceImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunServiceImpl;
 import ai.verta.modeldb.health.HealthServiceImpl;

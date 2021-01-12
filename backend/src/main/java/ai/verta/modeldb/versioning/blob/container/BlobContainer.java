@@ -1,6 +1,6 @@
 package ai.verta.modeldb.versioning.blob.container;
 
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.TreeElem;

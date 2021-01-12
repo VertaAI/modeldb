@@ -27,7 +27,7 @@ import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.experimentRun.CommitMultipartFunction;
 import ai.verta.modeldb.experimentRun.S3KeyFunction;
 import ai.verta.modeldb.metadata.IDTypeEnum;

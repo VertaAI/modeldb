@@ -5,7 +5,7 @@ import static ai.verta.modeldb.versioning.blob.factory.BlobFactory.CONFIG_BLOB;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterSetConfigBlobEntity;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.ConfigBlob;
 import ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob;

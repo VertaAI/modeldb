@@ -26,7 +26,7 @@ import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.entities.versioning.*;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.google.common.base.Joiner;
 import io.grpc.health.v1.HealthCheckResponse;

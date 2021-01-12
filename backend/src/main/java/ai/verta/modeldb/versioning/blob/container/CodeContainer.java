@@ -5,7 +5,7 @@ import static ai.verta.modeldb.versioning.blob.factory.BlobFactory.NOTEBOOK_CODE
 
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CodeBlob;
 import ai.verta.modeldb.versioning.FileHasher;

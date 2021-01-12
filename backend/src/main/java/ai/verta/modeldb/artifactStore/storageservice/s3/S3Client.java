@@ -4,7 +4,7 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.S3Config;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;

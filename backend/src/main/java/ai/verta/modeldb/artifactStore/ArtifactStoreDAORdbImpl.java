@@ -7,7 +7,7 @@ import ai.verta.modeldb.HttpCodeToGRPCCode;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.model.PartETag;
