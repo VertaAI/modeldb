@@ -34,6 +34,28 @@ TAG = "my-tag"
 
 
 class TestClient:
+    @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
+    def test_auth_headers(self, host):
+        expected_headers = {
+            'Grpc-Metadata-email': os.environ['VERTA_EMAIL'],
+            'Grpc-Metadata-developer_key': os.environ['VERTA_DEV_KEY'],
+            'Grpc-Metadata-developer-key': os.environ['VERTA_DEV_KEY'],
+        }
+        def assert_contains_expected_headers(headers):
+            for key, val in expected_headers.items():
+                assert key in headers
+                assert headers[key] == val
+
+        # present in Client state
+        client = verta.Client(host)
+        assert_contains_expected_headers(client._conn.auth)
+
+        # sent in requests
+        with pytest.raises(requests.HTTPError) as exc_info:
+            verta.Client("www.google.com")
+        request = exc_info.value.request
+        assert_contains_expected_headers(request.headers)
+
     @pytest.mark.oss
     def test_no_auth(self, host):
         EMAIL_KEY, DEV_KEY_KEY = "VERTA_EMAIL", "VERTA_DEV_KEY"
@@ -149,6 +171,7 @@ class TestClient:
                 assert conn.socket == socket
                 assert conn.auth['Grpc-Metadata-email'] == EMAIL
                 assert conn.auth['Grpc-Metadata-developer_key'] == DEV_KEY
+                assert conn.auth['Grpc-Metadata-developer-key'] == DEV_KEY
 
                 if connect:
                     try:
