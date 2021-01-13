@@ -53,7 +53,7 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
   private static final Logger LOGGER = LogManager.getLogger(HealthServiceImpl.class);
 
   public HealthServiceImpl() {
-    setStatus("", HealthCheckResponse.ServingStatus.SERVING);
+    setStatus("", ServingStatus.NOT_SERVING);
   }
 
   @Override
@@ -78,6 +78,9 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       if (request.getService().equals("ready")) {
         if (globalStatus == ServingStatus.SERVING) {
           setStatus("ready", ModelDBHibernateUtil.checkReady());
+        } else {
+          //Return default NOT_SERVING status
+          return globalStatus;
         }
       } else if (request.getService().equals("live")) {
         setStatus("live", ModelDBHibernateUtil.checkLive());
