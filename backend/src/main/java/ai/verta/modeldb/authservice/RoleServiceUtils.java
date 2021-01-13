@@ -14,9 +14,9 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
-import ai.verta.modeldb.exceptions.InternalErrorException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
@@ -1063,6 +1063,15 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
     }
   }
 
+  /**
+   * getResourceItems method is the main roleService method at MDB which actually call to the UAC
+   * using endpoint getResources
+   *
+   * @param workspace: workspace
+   * @param resourceIds: requested resource ids
+   * @param modelDBServiceResourceTypes: modelDBServiceResourceTypes like PROJECT, REPOSITORY
+   * @return {@link List}: list of the resource details
+   */
   @Override
   public List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,

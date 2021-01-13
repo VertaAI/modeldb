@@ -1,7 +1,7 @@
 package ai.verta.modeldb.common;
 
-import ai.verta.modeldb.exceptions.InternalErrorException;
-import ai.verta.modeldb.exceptions.UnavailableException;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
 import org.apache.logging.log4j.LogManager;

@@ -59,6 +59,17 @@ public class FindDatasetEntitiesTest extends TestsInit {
 
   @After
   public void removeEntities() {
+    for (DatasetVersion datasetVersion : datasetVersionMap.values()) {
+      DeleteDatasetVersion deleteDatasetVersion =
+          DeleteDatasetVersion.newBuilder()
+              .setDatasetId(datasetVersion.getDatasetId())
+              .setId(datasetVersion.getId())
+              .build();
+      DeleteDatasetVersion.Response deleteDatasetResponse =
+          datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
+      LOGGER.info("Dataset deleted successfully");
+      LOGGER.info(deleteDatasetResponse.toString());
+    }
     for (String datasetId : datasetMap.keySet()) {
       DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(datasetId).build();
       DeleteDataset.Response deleteDatasetResponse =
@@ -67,7 +78,16 @@ public class FindDatasetEntitiesTest extends TestsInit {
       LOGGER.info(deleteDatasetResponse.toString());
       assertTrue(deleteDatasetResponse.getStatus());
     }
+    dataset1 = null;
+    dataset2 = null;
+    dataset3 = null;
+    dataset4 = null;
     datasetMap = new HashMap<>();
+
+    datasetVersion1 = null;
+    datasetVersion2 = null;
+    datasetVersion3 = null;
+    datasetVersion4 = null;
     datasetVersionMap = new HashMap<>();
   }
 
@@ -1179,6 +1199,36 @@ public class FindDatasetEntitiesTest extends TestsInit {
     assertEquals(
         "Total records count not matched with expected records count",
         4,
+        response.getTotalRecords());
+
+    numberValue = Value.newBuilder().setNumberValue(datasetVersion4.getVersion()).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey(ModelDBConstants.VERSION)
+            .setValue(numberValue)
+            .setOperator(OperatorEnum.Operator.EQ)
+            .build();
+
+    findDatasetVersions =
+        FindDatasetVersions.newBuilder()
+            .setDatasetId(dataset1.getId())
+            .addAllDatasetVersionIds(datasetVersionMap.keySet())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
+    LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersion count not match with expected datasetVersion count",
+        1,
+        response.getDatasetVersionsCount());
+    assertEquals(
+        "DatasetVersionRun not match with expected datasetVersionRun",
+        datasetVersion4.getId(),
+        response.getDatasetVersionsList().get(0).getId());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
         response.getTotalRecords());
 
     LOGGER.info("FindDatasetVersions by datasetVersion EndTime test stop..........");

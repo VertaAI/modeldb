@@ -1,6 +1,6 @@
 package ai.verta.modeldb.entities.config;
 
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import io.grpc.Status;
 import java.io.Serializable;
 import java.util.Objects;

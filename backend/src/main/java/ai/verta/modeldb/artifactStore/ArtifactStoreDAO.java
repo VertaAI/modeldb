@@ -2,7 +2,7 @@ package ai.verta.modeldb.artifactStore;
 
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetUrlForArtifact.Response;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.amazonaws.services.s3.model.PartETag;
 import java.io.InputStream;
 import java.util.List;

@@ -7,6 +7,8 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -242,7 +244,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
-      checkIfEntityAlreadyExists(session, workspace, project.getName());
 
       Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);
@@ -287,6 +288,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectName(UserInfo userInfo, String projectId, String projectName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      // TODO: Remove this after UAC support update entity name using SetResource
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, null);
       checkIfEntityAlreadyExists(session, workspace, projectName);
 
@@ -979,7 +981,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 criteriaQuery,
                 projectRoot,
                 authService,
-                roleService);
+                roleService,
+                ModelDBServiceResourceTypes.PROJECT);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }

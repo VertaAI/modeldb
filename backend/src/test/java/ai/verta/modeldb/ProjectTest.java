@@ -29,7 +29,6 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -222,7 +221,7 @@ public class ProjectTest extends TestsInit {
     LOGGER.info("Verify connection test stop................................");
   }
 
-  public CreateProject getCreateProjectRequest(String projectName) {
+  public static CreateProject getCreateProjectRequest(String projectName) {
     List<KeyValue> metadataList = new ArrayList<>();
     Value stringValue =
         Value.newBuilder()
@@ -2849,78 +2848,5 @@ public class ProjectTest extends TestsInit {
     projectMap.put(project.getId(), project);
 
     LOGGER.info("Delete Project Artifacts test stop................................");
-  }
-
-  @Test
-  public void createProjectWithGlobalSharingOrganization() {
-    LOGGER.info("Global organization Project test start................................");
-
-    if (!config.hasAuth()) {
-      Assert.assertTrue(true);
-      return;
-    }
-
-    String orgName = "Org-test-verta";
-    SetOrganization setOrganization =
-        SetOrganization.newBuilder()
-            .setOrganization(
-                Organization.newBuilder()
-                    .setName(orgName)
-                    .setDescription("This is the verta test organization")
-                    .build())
-            .build();
-    SetOrganization.Response orgResponse =
-        organizationServiceBlockingStub.setOrganization(setOrganization);
-    Organization organization = orgResponse.getOrganization();
-    assertEquals(
-        "Organization name not matched with expected organization name",
-        orgName,
-        organization.getName());
-
-    String orgRoleName = "O_" + organization.getId() + "_GLOBAL_SHARING";
-    GetRoleByName getRoleByName =
-        GetRoleByName.newBuilder()
-            .setName(orgRoleName)
-            .setScope(RoleScope.newBuilder().setOrgId(organization.getId()).build())
-            .build();
-    GetRoleByName.Response getRoleByNameResponse =
-        roleServiceBlockingStub.getRoleByName(getRoleByName);
-    assertEquals(
-        "Expected role name not found in DB",
-        orgRoleName,
-        getRoleByNameResponse.getRole().getName());
-
-    Project orgProject = null;
-    try {
-      // Create project
-      CreateProject createProjectRequest =
-          getCreateProjectRequest("project-" + new Date().getTime());
-      createProjectRequest =
-          createProjectRequest
-              .toBuilder()
-              .setWorkspaceName(organization.getName())
-              .setVisibility(ResourceVisibility.ORG_DEFAULT)
-              .build();
-      CreateProject.Response createProjectResponse =
-          projectServiceStub.createProject(createProjectRequest);
-      orgProject = createProjectResponse.getProject();
-      LOGGER.info("Project created successfully");
-    } finally {
-      if (orgProject != null) {
-        DeleteProject deleteProject = DeleteProject.newBuilder().setId(orgProject.getId()).build();
-        DeleteProject.Response deleteProjectResponse =
-            projectServiceStub.deleteProject(deleteProject);
-        LOGGER.info("Project deleted successfully");
-        LOGGER.info(deleteProjectResponse.toString());
-        assertTrue(deleteProjectResponse.getStatus());
-      }
-    }
-
-    DeleteOrganization.Response deleteOrganization =
-        organizationServiceBlockingStub.deleteOrganization(
-            DeleteOrganization.newBuilder().setOrgId(organization.getId()).build());
-    assertTrue(deleteOrganization.getStatus());
-
-    LOGGER.info("Global organization Project test stop................................");
   }
 }

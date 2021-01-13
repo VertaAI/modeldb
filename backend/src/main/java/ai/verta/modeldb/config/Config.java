@@ -1,19 +1,18 @@
 package ai.verta.modeldb.config;
 
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.exceptions.InternalErrorException;
-import ai.verta.modeldb.exceptions.ModelDBException;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
+import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
 
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 public class Config {
   public static String MISSING_REQUIRED = "required field is missing";
