@@ -3,8 +3,8 @@ package ai.verta.modeldb.config;
 import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
 
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.exceptions.InternalErrorException;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;

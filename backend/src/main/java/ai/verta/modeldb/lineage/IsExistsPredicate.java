@@ -1,7 +1,7 @@
 package ai.verta.modeldb.lineage;
 
 import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import org.hibernate.Session;
 
 public interface IsExistsPredicate {

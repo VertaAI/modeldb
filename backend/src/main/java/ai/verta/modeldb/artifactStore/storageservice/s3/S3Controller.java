@@ -2,7 +2,7 @@ package ai.verta.modeldb.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.UploadFileResponse;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;

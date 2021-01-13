@@ -8,7 +8,7 @@ import ai.verta.modeldb.FindAllInputsOutputs;
 import ai.verta.modeldb.FindAllOutputs;
 import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CommitDAO;

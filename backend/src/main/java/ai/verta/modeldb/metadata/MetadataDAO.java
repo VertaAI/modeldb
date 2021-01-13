@@ -1,7 +1,7 @@
 package ai.verta.modeldb.metadata;
 
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import java.util.List;
 import org.hibernate.Session;
 

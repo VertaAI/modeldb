@@ -5,7 +5,7 @@ import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
-import ai.verta.modeldb.exceptions.NotFoundException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.uac.*;
 import io.grpc.Context;
 import io.grpc.Metadata;
@@ -255,7 +255,7 @@ public class AuthServiceUtils implements AuthService {
 
   @Override
   public Workspace workspaceIdByName(boolean retry, String workspaceName) {
-    try (ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel =
+    try (AuthServiceChannel authServiceChannel =
         getAuthServiceChannel()) {
       GetWorkspaceByName.Builder getWorkspaceByName =
           GetWorkspaceByName.newBuilder().setName(workspaceName);
@@ -281,7 +281,7 @@ public class AuthServiceUtils implements AuthService {
   @Override
   public Workspace workspaceById(boolean retry, Long workspaceId) {
     try (AuthServiceChannel authServiceChannel =
-        new ai.verta.modeldb.authservice.AuthServiceChannel()) {
+                 getAuthServiceChannel()) {
       GetWorkspaceById.Builder getWorkspaceById = GetWorkspaceById.newBuilder().setId(workspaceId);
 
       LOGGER.trace("get workspaceById: ID : {}", workspaceId);
