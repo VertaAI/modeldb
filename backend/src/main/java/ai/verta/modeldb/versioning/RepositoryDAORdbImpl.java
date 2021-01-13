@@ -14,7 +14,6 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.*;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
@@ -35,7 +34,6 @@ import ai.verta.uac.Workspace;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +46,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.persistence.criteria.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -1150,41 +1147,39 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       try {
-        WorkspaceDTO workspaceDTO = null;
-        List<String> accessibleResourceIds =
-            roleService.getAccessibleResourceIds(
-                null,
-                new CollaboratorUser(authService, currentLoginUserInfo),
-                ModelDBServiceResourceTypes.REPOSITORY,
-                request.getRepoIdsList().stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.toList()));
+        Set<String> accessibleResourceIdsWithCollaborator =
+            new HashSet<>(
+                roleService.getAccessibleResourceIds(
+                    null,
+                    new CollaboratorUser(authService, currentLoginUserInfo),
+                    ModelDBServiceResourceTypes.REPOSITORY,
+                    request.getRepoIdsList().stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.toList())));
 
         String workspaceName = request.getWorkspaceName();
-        if (workspaceName != null
-            && !workspaceName.isEmpty()
+        if (!workspaceName.isEmpty()
             && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
-          LOGGER.debug("Workspace found and match with current login username");
-          accessibleResourceIds =
-              roleService.getSelfDirectlyAllowedResources(
-                  ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
-          LOGGER.debug(
-              "Self directly accessible Repository Ids found, size {}",
-              accessibleResourceIds.size());
-          if (request.getRepoIdsList() != null && !request.getRepoIdsList().isEmpty()) {
-            accessibleResourceIds.retainAll(
-                request.getRepoIdsList().stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.toList()));
-          }
+          List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+              roleService.getResourceItems(
+                  null,
+                  accessibleResourceIdsWithCollaborator,
+                  ModelDBServiceResourceTypes.REPOSITORY);
+          accessibleResourceIdsWithCollaborator =
+              accessibleAllWorkspaceItems.stream()
+                  .map(GetResourcesResponseItem::getResourceId)
+                  .collect(Collectors.toSet());
         } else {
-          LOGGER.debug("Workspace not found or not match with current login username");
-          workspaceDTO =
-              roleService.getWorkspaceDTOByWorkspaceName(
-                  currentLoginUserInfo, request.getWorkspaceName());
+          accessibleResourceIdsWithCollaborator =
+              ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
+                  roleService,
+                  accessibleResourceIdsWithCollaborator,
+                  workspaceName,
+                  currentLoginUserInfo,
+                  ModelDBServiceResourceTypes.REPOSITORY);
         }
 
-        if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
+        if (accessibleResourceIdsWithCollaborator.isEmpty() && roleService.IsImplemented()) {
           LOGGER.debug("Accessible Repository Ids not found, size 0");
           return FindRepositories.Response.newBuilder()
               .addAllRepositories(Collections.emptyList())
@@ -1195,14 +1190,19 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         for (KeyValueQuery predicate : request.getPredicatesList()) {
           // Validate if current user has access to the entity or not where predicate key has an id
           RdbmsUtils.validatePredicates(
-              ModelDBConstants.REPOSITORY, accessibleResourceIds, predicate, roleService);
+              ModelDBConstants.REPOSITORY,
+              new ArrayList<>(accessibleResourceIdsWithCollaborator),
+              predicate,
+              roleService);
         }
 
         FindRepositoriesQuery findRepositoriesQuery =
             new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(
-                    session, authService, workspaceDTO)
+                    session, authService, roleService)
                 .setRepoIds(
-                    accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()))
+                    accessibleResourceIdsWithCollaborator.stream()
+                        .map(Long::valueOf)
+                        .collect(Collectors.toList()))
                 .setPredicates(request.getPredicatesList())
                 .setPageLimit(request.getPageLimit())
                 .setPageNumber(request.getPageNumber())
@@ -1395,13 +1395,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
-                entityName,
-                predicates,
-                builder,
-                criteriaQuery,
-                repositoryRoot,
-                authService,
-                roleService);
+                entityName, predicates, builder, criteriaQuery, repositoryRoot, authService);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }

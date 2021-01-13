@@ -1306,7 +1306,7 @@ public class HydratedServiceTest extends TestsInit {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     // get experimentRun with value of tags == test_tag_123
@@ -1648,7 +1648,7 @@ public class HydratedServiceTest extends TestsInit {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     LOGGER.info(
@@ -1995,7 +1995,7 @@ public class HydratedServiceTest extends TestsInit {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     // get experiment with value of tags == test_tag_123
@@ -2605,7 +2605,7 @@ public class HydratedServiceTest extends TestsInit {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.UNIMPLEMENTED.getCode(), status.getCode());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     // get project with value of tags == test_tag_123

@@ -352,13 +352,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
-                entityName,
-                predicates,
-                builder,
-                criteriaQuery,
-                datasetRoot,
-                authService,
-                roleService);
+                entityName, predicates, builder, criteriaQuery, datasetRoot, authService);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
