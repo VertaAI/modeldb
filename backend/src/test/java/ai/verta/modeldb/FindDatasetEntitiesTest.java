@@ -59,6 +59,17 @@ public class FindDatasetEntitiesTest extends TestsInit {
 
   @After
   public void removeEntities() {
+    for (DatasetVersion datasetVersion : datasetVersionMap.values()) {
+      DeleteDatasetVersion deleteDatasetVersion =
+          DeleteDatasetVersion.newBuilder()
+              .setDatasetId(datasetVersion.getDatasetId())
+              .setId(datasetVersion.getId())
+              .build();
+      DeleteDatasetVersion.Response deleteDatasetResponse =
+          datasetVersionServiceStub.deleteDatasetVersion(deleteDatasetVersion);
+      LOGGER.info("Dataset deleted successfully");
+      LOGGER.info(deleteDatasetResponse.toString());
+    }
     for (String datasetId : datasetMap.keySet()) {
       DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(datasetId).build();
       DeleteDataset.Response deleteDatasetResponse =
@@ -67,7 +78,16 @@ public class FindDatasetEntitiesTest extends TestsInit {
       LOGGER.info(deleteDatasetResponse.toString());
       assertTrue(deleteDatasetResponse.getStatus());
     }
+    dataset1 = null;
+    dataset2 = null;
+    dataset3 = null;
+    dataset4 = null;
     datasetMap = new HashMap<>();
+
+    datasetVersion1 = null;
+    datasetVersion2 = null;
+    datasetVersion3 = null;
+    datasetVersion4 = null;
     datasetVersionMap = new HashMap<>();
   }
 
