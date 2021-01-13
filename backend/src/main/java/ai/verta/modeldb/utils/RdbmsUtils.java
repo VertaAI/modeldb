@@ -1,6 +1,7 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.common.*;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.RoleService;
@@ -1348,8 +1349,7 @@ public class RdbmsUtils {
       CriteriaBuilder builder,
       CriteriaQuery<?> criteriaQuery,
       Root<?> entityRootPath,
-      AuthService authService,
-      RoleService roleService)
+      AuthService authService)
       throws InvalidProtocolBufferException, ModelDBException {
     List<Predicate> finalPredicatesList = new ArrayList<>();
     if (!predicates.isEmpty()) {
@@ -1723,8 +1723,7 @@ public class RdbmsUtils {
               if (key.equalsIgnoreCase("owner")
                   && (operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
                 Predicate fuzzySearchPredicate =
-                    getFuzzyUsersQueryPredicate(
-                        authService, roleService, builder, entityRootPath, predicate);
+                    getFuzzyUsersQueryPredicate(authService, builder, entityRootPath, predicate);
                 if (fuzzySearchPredicate != null) {
                   keyValuePredicates.add(fuzzySearchPredicate);
                 } else {
@@ -1772,9 +1771,20 @@ public class RdbmsUtils {
     return finalPredicatesList;
   }
 
+  /**
+   * This logic is for the other entities excluding project, repository logic where still owner is
+   * at the MDB. above removed code with projectIds is added with this logic in subsequence PR.
+   * where added two function one for old logic with owner Id for other entities excluding project,
+   * repository
+   *
+   * @param authService: authService
+   * @param builder: CriteriaBuilder
+   * @param entityRootPath: entityRootPath
+   * @param requestedPredicate: requestedPredicate
+   * @return {@link Predicate}: criteria query predicate
+   */
   private static Predicate getFuzzyUsersQueryPredicate(
       AuthService authService,
-      RoleService roleService,
       CriteriaBuilder builder,
       Root<?> entityRootPath,
       KeyValueQuery requestedPredicate) {
@@ -1782,26 +1792,15 @@ public class RdbmsUtils {
       Operator operator = requestedPredicate.getOperator();
       List<UserInfo> userInfoList = getFuzzyUserInfos(authService, requestedPredicate);
       if (userInfoList != null && !userInfoList.isEmpty()) {
-        Set<String> projectIdSet = new HashSet<>();
-        for (UserInfo userInfo : userInfoList) {
-          List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
-              roleService.getResourceItems(
-                  Workspace.newBuilder()
-                      .setId(authService.getWorkspaceIdFromUserInfo(userInfo))
-                      .build(),
-                  Collections.emptySet(),
-                  ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
-          projectIdSet.addAll(
-              accessibleAllWorkspaceItems.stream()
-                  .map(GetResourcesResponseItem::getResourceId)
-                  .collect(Collectors.toSet()));
-        }
-
-        Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
+        Expression<String> exp = entityRootPath.get(requestedPredicate.getKey());
+        List<String> vertaIds =
+            userInfoList.stream()
+                .map(authService::getVertaIdFromUserInfo)
+                .collect(Collectors.toList());
         if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
-          return builder.not(exp.in(projectIdSet));
+          return builder.not(exp.in(vertaIds));
         } else {
-          return exp.in(projectIdSet);
+          return exp.in(vertaIds);
         }
       }
     } else {
@@ -1809,6 +1808,28 @@ public class RdbmsUtils {
           "Predicate for the owner search only supporting 'String' value");
     }
     return null;
+  }
+
+  public static Set<String> getResourceIdsFromUserWorkspaces(
+      AuthService authService,
+      RoleService roleService,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      List<UserInfo> userInfoList) {
+    Set<String> resourceIdsSet = new HashSet<>();
+    for (UserInfo userInfo : userInfoList) {
+      List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+          roleService.getResourceItems(
+              Workspace.newBuilder()
+                  .setId(authService.getWorkspaceIdFromUserInfo(userInfo))
+                  .build(),
+              Collections.emptySet(),
+              modelDBServiceResourceTypes);
+      resourceIdsSet.addAll(
+          accessibleAllWorkspaceItems.stream()
+              .map(GetResourcesResponseItem::getResourceId)
+              .collect(Collectors.toSet()));
+    }
+    return resourceIdsSet;
   }
 
   public static List<UserInfo> getFuzzyUserInfos(

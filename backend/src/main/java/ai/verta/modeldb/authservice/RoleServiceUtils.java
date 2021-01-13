@@ -1063,6 +1063,15 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
     }
   }
 
+  /**
+   * getResourceItems method is the main roleService method at MDB which actually call to the UAC
+   * using endpoint getResources
+   *
+   * @param workspace: workspace
+   * @param resourceIds: requested resource ids
+   * @param modelDBServiceResourceTypes: modelDBServiceResourceTypes like PROJECT, REPOSITORY
+   * @return {@link List}: list of the resource details
+   */
   @Override
   public List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,

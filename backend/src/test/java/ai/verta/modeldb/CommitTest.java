@@ -360,23 +360,36 @@ public class CommitTest extends TestsInit {
     LOGGER.info("List of commits test start................................");
 
     CreateCommitRequest createCommitRequest =
-        getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.DATASET);
+        getCreateCommitRequest(
+            repository.getId(),
+            Calendar.getInstance().getTimeInMillis(),
+            initialCommit,
+            Blob.ContentCase.DATASET);
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit1 = commitResponse.getCommit();
     createCommitRequest =
         getCreateCommitRequest(
-            repository.getId(), 123, commitResponse.getCommit(), Blob.ContentCase.CONFIG);
+            repository.getId(),
+            Calendar.getInstance().getTimeInMillis(),
+            commitResponse.getCommit(),
+            Blob.ContentCase.CONFIG);
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit2 = commitResponse.getCommit();
     createCommitRequest =
         getCreateCommitRequest(
-            repository.getId(), 450, commitResponse.getCommit(), Blob.ContentCase.DATASET);
+            repository.getId(),
+            Calendar.getInstance().getTimeInMillis(),
+            commitResponse.getCommit(),
+            Blob.ContentCase.DATASET);
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit3 = commitResponse.getCommit();
     createCommitRequest =
         getCreateCommitRequest(
-            repository.getId(), 500, commitResponse.getCommit(), Blob.ContentCase.DATASET);
+            repository.getId(),
+            Calendar.getInstance().getTimeInMillis(),
+            commitResponse.getCommit(),
+            Blob.ContentCase.DATASET);
     commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit commit4 = commitResponse.getCommit();
     List<Commit> commitList = new LinkedList<>();

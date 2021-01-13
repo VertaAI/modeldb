@@ -337,13 +337,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
-                entityName,
-                predicates,
-                builder,
-                criteriaQuery,
-                datasetVersionRoot,
-                authService,
-                roleService);
+                entityName, predicates, builder, criteriaQuery, datasetVersionRoot, authService);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
