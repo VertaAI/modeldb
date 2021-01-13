@@ -587,10 +587,10 @@ class TestEndpoint:
         assert endpoint.get_update_status()['update_request']['resources'] == resources_dict
 
     def test_update_twice(self, client, registered_model, created_entities):
-        class ModelA:
+        class ModelA(object):
             def predict(self, _):
                 return "A"
-        class ModelB:
+        class ModelB(object):
             def predict(self, _):
                 return "B"
         env = Python(requirements=[])

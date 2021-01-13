@@ -1857,6 +1857,18 @@ public class RdbmsUtils {
     }
   }
 
+  /**
+   * This logic is for the other entities excluding project, repository logic where still owner is
+   * at the MDB. above removed code with projectIds is added with this logic in subsequence PR.
+   * where added two function one for old logic with owner Id for other entities excluding project,
+   * repository
+   *
+   * @param authService: authService
+   * @param builder: CriteriaBuilder
+   * @param entityRootPath: entityRootPath
+   * @param requestedPredicate: requestedPredicate
+   * @return {@link Predicate}: criteria query predicate
+   */
   private static Predicate getFuzzyUsersQueryPredicate(
       AuthService authService,
       CriteriaBuilder builder,

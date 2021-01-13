@@ -97,11 +97,18 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(")")
           .toString();
   private static final String GET_PROJECT_BY_ID_HQL =
-      "From ProjectEntity p where p.id = :id AND p." + ModelDBConstants.DELETED + " = false";
-  private static final String COUNT_PROJECT_BY_ID_HQL =
-      "Select Count(id) From ProjectEntity p where p.deleted = false AND p.id = :projectId";
+      "From ProjectEntity p where p.id = :id AND p."
+          + ModelDBConstants.DELETED
+          + " = false AND p."
+          + ModelDBConstants.CREATED
+          + " = true";
+  private static final String COUNT_PROJECT_BY_ID_HQL = "Select Count(id) " + GET_PROJECT_BY_ID_HQL;
   private static final String NON_DELETED_PROJECT_IDS =
-      "select p.id  From ProjectEntity p where p.deleted = false";
+      "select p.id  From ProjectEntity p where p."
+          + ModelDBConstants.DELETED
+          + " = false AND p."
+          + ModelDBConstants.CREATED
+          + " = true";
   private static final String NON_DELETED_PROJECT_IDS_BY_IDS =
       NON_DELETED_PROJECT_IDS + " AND p.id in (:" + ModelDBConstants.PROJECT_IDS + ")";
   private static final String GET_PROJECT_BY_SHORT_NAME_HQL =
@@ -137,7 +144,11 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       new StringBuilder("SELECT p.id From ProjectEntity p where p.")
           .append(ModelDBConstants.NAME)
           .append(" = :projectName ")
-          .append(" AND p." + ModelDBConstants.DELETED + " = false")
+          .append(" AND p.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = false AND p.")
+          .append(ModelDBConstants.CREATED)
+          .append(" = true")
           .toString();
 
   public ProjectDAORdbImpl(
@@ -231,7 +242,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
-      checkIfEntityAlreadyExists(session, workspace, project.getName());
 
       Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);
@@ -276,6 +286,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectName(UserInfo userInfo, String projectId, String projectName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      // TODO: Remove this after UAC support update entity name using SetResource
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, null);
       checkIfEntityAlreadyExists(session, workspace, projectName);
 
@@ -986,6 +997,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
 
       finalPredicatesList.add(builder.equal(projectRoot.get(ModelDBConstants.DELETED), false));
+      finalPredicatesList.add(builder.equal(projectRoot.get(ModelDBConstants.CREATED), true));
 
       Order orderBy =
           RdbmsUtils.getOrderBasedOnSortKey(
@@ -1207,7 +1219,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public boolean projectExistsInDB(String projectId) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery(COUNT_PROJECT_BY_ID_HQL);
-      query.setParameter("projectId", projectId);
+      query.setParameter("id", projectId);
       Long projectCount = (Long) query.getSingleResult();
       return projectCount == 1L;
     } catch (Exception ex) {
