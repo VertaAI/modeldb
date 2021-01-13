@@ -256,7 +256,7 @@ public class RoleServiceUtils implements RoleService {
           Workspace workspace,
           Set<String> resourceIds,
           ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    try (ai.verta.modeldb.authservice.AuthServiceChannel authServiceChannel = new ai.verta.modeldb.authservice.AuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       ResourceType resourceType =
               ResourceType.newBuilder()
                       .setModeldbServiceResourceType(modelDBServiceResourceTypes)
