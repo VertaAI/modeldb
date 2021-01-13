@@ -7,7 +7,9 @@ option java_multiple_files = true;
 
 import "google/api/annotations.proto";
 import "common/CommonService.proto";
-import "modeldb/versioning/Dataset.proto";
+import "registry/RegistryService.proto";
+import "modeldb/versioning/Environment.proto";
+
 
 // Aggregate data formats
 
@@ -30,43 +32,43 @@ message DiscreteHistogram {
   repeated uint64 bucket_counts = 2;
 }
 
-// Data Profiler and ProfilerSet
+// Profiler, ProfilerSet and ProfiledModel
 
 message Profiler {
   string id = 1;
-  common.Artifact lambda = 2;
+  string name = 2;
+  common.Artifact profiler_lambda = 3; // lambdaClass?  lambdaCode? lambda?
 }
 
 message ProfilerSet {
   string id = 1;
-  repeated Profiler profilers = 2;
+  string name = 2;
+  repeated Profiler profilers = 3;
 }
 
-// DataFrame and DataFrameBatch
-
-message DataFrame {
-  modeldb.versioning.DatasetBlob dataSetBlob = 1;
-  repeated common.KeyValue metadata = 2;
+message ProfiledModel {
+  string id = 1;
+  string name = 2;
+  string model_id = 4;
+  string endpoint_id = 6;
+  common.KeyValue metadata = 7;
+  ProfilerSet profilers = 8;
 }
 
-message DataFrameBatch {
-  repeated DataFrame dataFrames = 1;
+// ProfiledAggregate and ProfiledAggregateBatch
+
+message ProfiledAggregate {
+  ProfiledModel profiled_model = 1;
+  string profiler_id = 2;
+  oneof aggregate {
+    CountPerNGram count_per_ngram = 3;
+    FloatHistogram float_histogram = 4;
+    DiscreteHistogram discrete_histogram = 5;
+  }
 }
 
-// ProfiledDataFrame and ProfiledDataFrameBatch
-
-message ParquetDataFrame {
-
-}
-
-message ProfiledDataFrame {
-  string profilerId = 1;
-  DataFrame dataframe = 2;
-  ParquetDataFrame profiledDataFrame = 3;
-}
-
-message ProfiledDataFrameBatch {
-  repeated ProfiledDataFrame dataFrames = 1;
+message ProfiledAggregateBatch {
+  repeated ProfiledAggregate aggregates = 1;
 }
 
 // Profiler CRUD
@@ -81,7 +83,8 @@ message GetProfilerRequest {
 
 message CreateProfilerRequest {
   string id = 1;
-  common.Artifact lambda = 2;
+  string name = 2;
+  common.Artifact lambda = 3;
 
   message Response {
     Profiler profiler = 1;
@@ -90,7 +93,8 @@ message CreateProfilerRequest {
 
 message UpdateProfilerRequest {
   string id = 1;
-  common.Artifact lambda = 2;
+  string name = 2;
+  common.Artifact lambda = 3;
 
   message Response {
     Profiler profiler = 1;
@@ -116,34 +120,44 @@ message GetProfilerSetRequest {
   string id = 1;
 
   message Response {
-    ProfilerSet profilerSet = 1;
+    ProfilerSet profiler_set = 1;
   }
 }
 
 message CreateProfilerSetRequest {
   string id = 1;
-  repeated Profiler profilers = 2;
+  string name = 2;
+  repeated Profiler profilers = 3;
 
   message Response {
-    ProfilerSet profilerSet = 1;
+    ProfilerSet profiler_set = 1;
+  }
+}
+
+message UpdateProfilerSetRequest {
+  string id = 1;
+  string name = 2;
+
+  message Response {
+    ProfilerSet profiler_set = 1;
   }
 }
 
 message AddProfilerToSetRequest {
-  string profilerId = 1;
-  string profilerSetId = 2;
+  string profiler_id = 1;
+  string profiler_set_id = 2;
 
   message Response {
-    ProfilerSet profilerSet = 1;
+    ProfilerSet profiler_set = 1;
   }
 }
 
 message RemoveProfilerFromSetRequest {
-  string profilerId = 1;
-  string profilerSetId = 2;
+  string profiler_id = 1;
+  string profiler_set_id = 2;
 
   message Response {
-    ProfilerSet profilerSet = 1;
+    ProfilerSet profiler_set = 1;
   }
 }
 
@@ -156,38 +170,81 @@ message DeleteProfilerSetRequest {
 
 message ListProfilerSetsRequest {
   message Response {
-    repeated ProfilerSet profilerSets = 1;
+    repeated ProfilerSet profiler_sets = 1;
   }
 }
 
-// Profiling operations
+// ProfiledModel CRUD
 
-message ProfileBatchRequest {
-  string profilerSetId = 1;
-  DataFrameBatch dataFrameBatch = 2;
+message GetProfiledModelRequest {
+  string profile_model_id = 1;
 
   message Response {
+    ProfiledModel profiled_model = 1;
+  }
+}
+
+message CreateProfiledModelRequest {
+  string name = 1;
+  string model_id = 2;
+  string endpoint_id = 4;
+  common.KeyValue metadata = 5;
+  string profiler_set_id = 6;
+
+  message Response {
+    ProfiledModel model = 1;
+  }
+}
+
+// Not yet sure what (if anything) should be modifiable.
+message UpdateProfiledModelRequest {
+  string profiled_model_id = 1;
+  string name = 2;
+
+  message Response {
+    ProfiledModel profiled_model = 1;
+  }
+}
+
+message DeleteProfiledModelRequest {
+  string profiled_model_id = 1;
+  message Response {
+  }
+}
+
+message ListProfiledModelsRequest {
+  message Response {
+    repeated ProfiledModel profiled_models = 1;
   }
 }
 
 // Aggregate Data Fetching
 
 message GetAggregateRequest {
-  string profilerId = 1;
-  uint64 start_time_millis = 2;
-  uint64 end_time_millis = 3;
+  string model_id = 1;
+  string profiler_id = 2;
+  uint64 start_time_millis = 3;
+  uint64 end_time_millis = 4;
 
   message Response {
     oneof aggregate {
-      CountPerNGram countPerNGram = 1;
-      FloatHistogram floatHistogram = 2;
-      DiscreteHistogram discreteHistogram = 3;
+      CountPerNGram count_per_ngram = 1;
+      FloatHistogram float_histogram = 2;
+      DiscreteHistogram discrete_histogram = 3;
     }
   }
 }
 
-// Service definitions
+// Aggregate Data Storage
 
+message StoreProfiledAggregateBatchRequest {
+  ProfiledAggregateBatch batch = 1;
+
+  message Response {
+  }
+}
+
+// Service definitions
 service DataMonitoringService {
   rpc getProfiler(GetProfilerRequest) returns (GetProfilerRequest.Response) {
   };
@@ -210,6 +267,9 @@ service DataMonitoringService {
   rpc createProfilerSet(CreateProfilerSetRequest) returns (CreateProfilerSetRequest.Response) {
   };
 
+  rpc updateProfilerSet(UpdateProfilerSetRequest) returns (UpdateProfilerSetRequest.Response) {
+  };
+
   rpc addProfilerToSet(AddProfilerToSetRequest) returns (AddProfilerToSetRequest.Response) {
   };
 
@@ -222,10 +282,21 @@ service DataMonitoringService {
   rpc listProfilerSets(ListProfilerSetsRequest) returns (ListProfilerSetsRequest.Response) {
   };
 
-  rpc profileBatch(ProfileBatchRequest) returns (ProfileBatchRequest.Response) {
+  rpc getProfiledModel(GetProfiledModelRequest) returns (GetProfiledModelRequest.Response) {
+  };
+
+  rpc createProfiledModel(CreateProfiledModelRequest) returns (CreateProfiledModelRequest.Response) {
+  };
+
+  rpc deleteProfiledModel(DeleteProfiledModelRequest) returns (DeleteProfiledModelRequest.Response) {
+  };
+
+  rpc listProfiledModels(ListProfiledModelsRequest) returns (ListProfiledModelsRequest.Response) {
   };
 
   rpc getAggregate(GetAggregateRequest) returns (GetAggregateRequest.Response) {
   };
 
+  rpc storeAggregateBatch(StoreProfiledAggregateBatchRequest) returns (StoreProfiledAggregateBatchRequest.Response) {
+  };
 }
