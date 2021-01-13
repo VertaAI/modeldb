@@ -17,12 +17,14 @@ import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
+import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
@@ -1224,6 +1226,49 @@ public class CommitDAORdbImpl implements CommitDAO {
                   value.longValue(),
                   parametersMap);
               whereClauseList.add(dateQueryBuilder.toString());
+              break;
+            case ModelDBConstants.VERSION:
+              LOGGER.debug("switch case : Version");
+              StringBuilder versionQueryBuilder =
+                  new StringBuilder("SELECT mpm.id.commitSha FROM ")
+                      .append(MetadataPropertyMappingEntity.class.getSimpleName())
+                      .append(" mpm WHERE ")
+                      .append(" mpm.id.key = :key")
+                      .append(" AND mpm.id.repositoryId IN (:repositoryId) ");
+              versionQueryBuilder.append(" AND mpm.value ");
+
+              Map<String, Object> versionInnerQueryParametersMap = new HashMap<>();
+              versionInnerQueryParametersMap.put("key", ModelDBConstants.VERSION);
+              versionInnerQueryParametersMap.put(
+                  "repositoryId",
+                  accessibleResourceIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+              Double version = predicate.getValue().getNumberValue();
+              if (predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
+                RdbmsUtils.setValueWithOperatorInQuery(
+                    index,
+                    versionQueryBuilder,
+                    predicate.getOperator(),
+                    String.valueOf(version.longValue()),
+                    versionInnerQueryParametersMap);
+              } else {
+                throw new InvalidArgumentException(
+                    "Operator EQ is only supported in predicate with `version` key");
+              }
+              versionQueryBuilder.append(" GROUP BY mpm.id.commitSha");
+              Query versionQuery = session.createQuery(versionQueryBuilder.toString());
+              versionInnerQueryParametersMap.forEach(versionQuery::setParameter);
+              LOGGER.debug("Find version blob final query : {}", versionQuery.getQueryString());
+              List<String> versionCommitHashes = versionQuery.list();
+              LOGGER.debug("version blob count : {}", versionCommitHashes.size());
+              if (!versionCommitHashes.isEmpty()) {
+                whereClauseList.add(alias + ".commit_hash IN (:label_" + index + "_CommitHashes)");
+                parametersMap.put("label_" + index + "_CommitHashes", versionCommitHashes);
+              } else {
+                CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
+                commitPaginationDTO.setCommitEntities(Collections.emptyList());
+                commitPaginationDTO.setTotalRecords(0L);
+                return commitPaginationDTO;
+              }
               break;
             default:
               throw new ModelDBException(
