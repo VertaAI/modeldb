@@ -42,7 +42,7 @@ v0.16.4 (2021-01-13)
 
 Internal Changes
 ^^^^^^^^^^^^^^^^
-- `send Grpc-Metadata-developer-key (dash instead of underscore) as an
+- `send Grpc-Metadata-developer-key (hyphen instead of underscore) as an
   additional auth header
   <https://github.com/VertaAI/modeldb/pull/1865>`__
 
