@@ -155,7 +155,7 @@ class Client(object):
             auth.update({
                 _utils._GRPC_PREFIX+'email': email,
                 _utils._GRPC_PREFIX+'developer_key': dev_key,
-                # for nginx support
+                # without underscore, for nginx support
                 # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
                 _utils._GRPC_PREFIX+'developer-key': dev_key,
             })
