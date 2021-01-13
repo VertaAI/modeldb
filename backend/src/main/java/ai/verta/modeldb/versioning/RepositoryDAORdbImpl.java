@@ -242,7 +242,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepositoryById(session, request.getId());
       return GetRepositoryRequest.Response.newBuilder()
-          .setRepository(repository.toProto(roleService))
+          .setRepository(repository.toProto(roleService, authService))
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -387,7 +387,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               create,
               RepositoryTypeEnum.REGULAR);
       return SetRepository.Response.newBuilder()
-          .setRepository(repository.toProto(roleService))
+          .setRepository(repository.toProto(roleService, authService))
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -644,14 +644,14 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             userInfo,
             create,
             RepositoryTypeEnum.DATASET);
-    return repositoryEntity.toProto(roleService);
+    return repositoryEntity.toProto(roleService, authService);
   }
 
   Dataset convertToDataset(
       Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity)
       throws ModelDBException, InvalidProtocolBufferException {
 
-    Repository repository = repositoryEntity.toProto(roleService);
+    Repository repository = repositoryEntity.toProto(roleService, authService);
 
     return repositoryToDataset(session, metadataDAO, repository);
   }
@@ -777,7 +777,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           ListRepositoriesRequest.Response.newBuilder();
 
       for (RepositoryEntity repositoryEntity : repositoryEntities) {
-        builder.addRepositories(repositoryEntity.toProto(roleService));
+        builder.addRepositories(repositoryEntity.toProto(roleService, authService));
       }
 
       long totalRecords = RdbmsUtils.count(session, repositoryEntityRoot, criteriaQuery);
@@ -1216,7 +1216,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
         List<Repository> repositories = new ArrayList<>();
         for (RepositoryEntity repositoryEntity : repositoryEntities) {
-          repositories.add(repositoryEntity.toProto(roleService));
+          repositories.add(repositoryEntity.toProto(roleService, authService));
         }
 
         return FindRepositories.Response.newBuilder()
@@ -1610,7 +1610,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try {
       return new SimpleEntry<>(
           convertToDataset(session, metadataDAO, repositoryEntity),
-          repositoryEntity.toProto(roleService));
+          repositoryEntity.toProto(roleService, authService));
     } catch (InvalidProtocolBufferException | ModelDBException e) {
       LOGGER.warn(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
       throw new InternalErrorException(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
