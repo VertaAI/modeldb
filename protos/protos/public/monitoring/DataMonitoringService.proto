@@ -6,10 +6,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/moni
 option java_multiple_files = true;
 
 import "google/api/annotations.proto";
-import "google/protobuf/field_mask.proto";
 import "common/CommonService.proto";
-import "registry/RegistryService.proto";
-import "modeldb/versioning/Environment.proto";
 
 // Aggregate data formats
 message CountPerNGram {
@@ -31,38 +28,47 @@ message DiscreteHistogram {
   repeated uint64 bucket_counts = 2;
 }
 
-// Profiler, ProfilerSet and ProfiledModel
+message Statistics {
+  float mean = 1;
+  float standardDeviation = 2;
+}
+
+// Profiler, ProfilerInstance, ProfiledEntity
 
 message Profiler {
   string id = 1;
   string name = 2;
-  common.Artifact profiler_lambda = 3; // lambdaClass?  lambdaCode? lambda?
+  common.Artifact lambdaClass = 3;
 }
 
-message ProfilerSet {
+// Instantiated Profiler.  Combines the profiler definition with the runtime arguments it requires.
+message ProfilerInstance {
   string id = 1;
-  string name = 2;
-  repeated Profiler profilers = 3;
+  string name = 2; // It seems like a user might want to name each instance, in case they have two instance of the same class attached to an entity with different params
+  Profiler profiler = 3;
+  repeated common.KeyValue arguments = 4;
 }
 
-message ProfiledModel {
+// Combines an entity, endpoint, metadata, and the profiler instances in use
+message ProfiledEntity {
   string id = 1;
   string name = 2;
-  string model_id = 4;
-  string endpoint_id = 6;
-  common.KeyValue metadata = 7;
-  ProfilerSet profilers = 8;
+  string entity_id = 3; // encoded domain-specific identifier (ARN, GCP resource name, or Verta entity key)
+  string endpoint_id = 4; // encoded domain-specific identifier (ARN, GCP resource name, or Verta entity key).
+  repeated common.KeyValue metadata = 5;
+  repeated ProfilerInstance profilers = 6;
 }
 
 // ProfiledAggregate and ProfiledAggregateBatch
 
 message ProfiledAggregate {
-  ProfiledModel profiled_model = 1;
-  string profiler_id = 2;
+  ProfiledEntity profiled_entity = 1;
+  string profiler_instance_id = 2;
   oneof aggregate {
     CountPerNGram count_per_ngram = 3;
     FloatHistogram float_histogram = 4;
     DiscreteHistogram discrete_histogram = 5;
+    Statistics statistics = 6;
   }
 }
 
@@ -115,112 +121,104 @@ message ListProfilersRequest {
 
 // ProfilerSet CRUD
 
-message GetProfilerSetRequest {
+message GetProfilerInstanceRequest {
   string id = 1;
 
   message Response {
-    ProfilerSet profiler_set = 1;
+    ProfilerInstance profiler_set = 1;
   }
 }
 
-message CreateProfilerSetRequest {
-  string id = 1;
-  string name = 2;
-  repeated Profiler profilers = 3;
-
-  message Response {
-    ProfilerSet profiler_set = 1;
-  }
-}
-
-message UpdateProfilerSetRequest {
+message CreateProfilerInstanceRequest {
   string id = 1;
   string name = 2;
+  string profiler_id = 3;
 
   message Response {
-    ProfilerSet profiler_set = 1;
+    ProfilerInstance profiler_instance = 1;
   }
 }
 
-message AddProfilerToSetRequest {
-  string profiler_id = 1;
-  string profiler_set_id = 2;
+message UpdateProfilerInstanceRequest {
+  string id = 1;
+  string name = 2;
 
   message Response {
-    ProfilerSet profiler_set = 1;
+    ProfilerInstance profiler_instance = 1;
   }
 }
 
-message RemoveProfilerFromSetRequest {
-  string profiler_id = 1;
-  string profiler_set_id = 2;
-
-  message Response {
-    ProfilerSet profiler_set = 1;
-  }
-}
-
-message DeleteProfilerSetRequest {
+message DeleteProfilerInstanceRequest {
   string id = 1;
 
   message Response {
   }
 }
 
-message ListProfilerSetsRequest {
+message ListProfilerInstancesRequest {
+  oneof filterTo {
+    string profiler_id = 1;
+    string profiled_entity_id = 2;
+  }
+
   message Response {
-    repeated ProfilerSet profiler_sets = 1;
+    repeated ProfilerInstance profiler_instances = 1;
   }
 }
 
-// ProfiledModel CRUD
+// ProfiledEntity CRUD
 
-message GetProfiledModelRequest {
-  string profile_model_id = 1;
+message GetProfiledEntityRequest {
+  string profile_entity_id = 1;
 
   message Response {
-    ProfiledModel profiled_model = 1;
+    ProfiledEntity profiled_entity = 1;
   }
 }
 
-message CreateProfiledModelRequest {
+message CreateProfiledEntityRequest {
   string name = 1;
-  string model_id = 2;
-  string endpoint_id = 4;
-  common.KeyValue metadata = 5;
-  string profiler_set_id = 6;
+  string entity_id = 2; // encoded domain-specific identifier (ARN, GCP resource name, or Verta entity key)
+  string endpoint_id = 3; // encoded domain-specific identifier (ARN, GCP resource name, or Verta entity key).
+  common.KeyValue metadata = 4;
+  string profiler_instance_id = 5;
 
   message Response {
-    ProfiledModel model = 1;
+    ProfiledEntity profiled_entity = 1;
   }
 }
 
-// Not yet sure what (if anything) should be modifiable.
-message UpdateProfiledModelRequest {
-  string profiled_model_id = 1;
+message UpdateProfiledEntityRequest {
+  string profiled_entity_id = 1;
   string name = 2;
 
   message Response {
-    ProfiledModel profiled_model = 1;
+    ProfiledEntity profiled_entity = 1;
   }
 }
 
-message DeleteProfiledModelRequest {
-  string profiled_model_id = 1;
+message DeleteProfiledEntityRequest {
+  string profiled_entity_id = 1;
   message Response {
   }
 }
 
-message ListProfiledModelsRequest {
+message ListProfiledEntitiesRequest {
+  // Nullable filters, applied if they are provided.
+  string name = 1;
+  string entity_id = 2;
+  string endpoint_id = 3;
+  common.KeyValue metadata = 4;
+
   message Response {
-    repeated ProfiledModel profiled_models = 1;
+    repeated ProfiledEntity profiled_entities = 1;
   }
 }
 
 // Aggregate Data Fetching
 
 message GetAggregateRequest {
-  string model_id = 1;
+  string profiled_entity_id = 1;
   string profiler_id = 2;
   uint64 start_time_millis = 3;
   uint64 end_time_millis = 4;
@@ -278,83 +276,69 @@ service DataMonitoringService {
     };
   };
 
-  rpc getProfilerSet(GetProfilerSetRequest) returns (GetProfilerSetRequest.Response) {
+  rpc getProfilerInstance(GetProfilerInstanceRequest) returns (GetProfilerInstanceRequest.Response) {
     option (google.api.http) = {
-      get: "/v1/profiler-set/getProfilerSet"
+      get: "/v1/profiler-set/getProfilerInstance"
     };
   };
 
-  rpc createProfilerSet(CreateProfilerSetRequest) returns (CreateProfilerSetRequest.Response) {
+  rpc createProfilerInstance(CreateProfilerInstanceRequest) returns (CreateProfilerInstanceRequest.Response) {
     option (google.api.http) = {
-      put: "/v1/profiler-set/createProfilerSet"
+      put: "/v1/profiler-set/createProfilerInstance"
       body: "*"
     };
   };
 
-  rpc updateProfilerSet(UpdateProfilerSetRequest) returns (UpdateProfilerSetRequest.Response) {
+  rpc updateProfilerInstance(UpdateProfilerInstanceRequest) returns (UpdateProfilerInstanceRequest.Response) {
     option (google.api.http) = {
       patch: "/v1/profile-set/updateProfileSet"
       body: "*"
     };
   };
 
-  rpc addProfilerToSet(AddProfilerToSetRequest) returns (AddProfilerToSetRequest.Response) {
+  rpc deleteProfilerInstance(DeleteProfilerInstanceRequest) returns (DeleteProfilerRequest.Response) {
     option (google.api.http) = {
-      post: "/v1/profile-set/addProfilerToSet"
+      delete: "/v1/profile-set/deleteProfilerInstance"
       body: "*"
     };
   };
 
-  rpc removeProfilerFromSet(RemoveProfilerFromSetRequest) returns (RemoveProfilerFromSetRequest.Response) {
-    option (google.api.http) = {
-      post: "/v1/profile-set/removeProfilerFromSet"
-      body: "*"
-    };
-  };
-
-  rpc deleteProfilerSet(DeleteProfilerSetRequest) returns (DeleteProfilerRequest.Response) {
-    option (google.api.http) = {
-      delete: "/v1/profile-set/deleteProfilerSet"
-      body: "*"
-    };
-  };
-
-  rpc listProfilerSets(ListProfilerSetsRequest) returns (ListProfilerSetsRequest.Response) {
+  rpc listProfilerInstances(ListProfilerInstancesRequest) returns (ListProfilerInstancesRequest.Response) {
     option (google.api.http) = {
       get: "/v1/profiler-set/listProfilersSets"
     };
   };
 
-  rpc getProfiledModel(GetProfiledModelRequest) returns (GetProfiledModelRequest.Response) {
+  rpc getProfiledEntity(GetProfiledEntityRequest) returns (GetProfiledEntityRequest.Response) {
     option (google.api.http) = {
-      get: "/v1/profiled-model/getProfiledModel"
+      get: "/v1/profiled-entity/getProfiledEntity"
     };
   };
 
-  rpc createProfiledModel(CreateProfiledModelRequest) returns (CreateProfiledModelRequest.Response) {
+  rpc createProfiledEntity(CreateProfiledEntityRequest) returns (CreateProfiledEntityRequest.Response) {
     option (google.api.http) = {
-      put: "/v1/profiled-model/createProfiledModel"
+      put: "/v1/profiled-entity/createProfiledEntity"
       body: "*"
     };
   };
 
-  rpc updateProfiledModel(UpdateProfiledModelRequest) returns (UpdateProfiledModelRequest.Response) {
+  rpc updateProfiledEntity(UpdateProfiledEntityRequest) returns (UpdateProfiledEntityRequest.Response) {
     option (google.api.http) = {
-      patch: "/v1/profiled-model/updateProfiledModel"
+      patch: "/v1/profiled-entity/updateProfiledEntity"
       body: "*"
     };
   };
 
-  rpc deleteProfiledModel(DeleteProfiledModelRequest) returns (DeleteProfiledModelRequest.Response) {
+  rpc deleteProfiledEntity(DeleteProfiledEntityRequest) returns (DeleteProfiledEntityRequest.Response) {
     option (google.api.http) = {
-      delete: "/v1/profiled-model/deleteProfiledModel"
+      delete: "/v1/profiled-entity/deleteProfiledEntity"
       body: "*"
     };
   };
 
-  rpc listProfiledModels(ListProfiledModelsRequest) returns (ListProfiledModelsRequest.Response) {
+  rpc listProfiledEntities(ListProfiledEntitiesRequest) returns (ListProfiledEntitiesRequest.Response) {
     option (google.api.http) = {
-      get: "/v1/profiled-model/listProfiledModels"
+      get: "/v1/profiled-entity/listProfiledEntities"
     };
   };
 
