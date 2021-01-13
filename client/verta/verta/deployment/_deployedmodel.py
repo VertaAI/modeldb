@@ -75,7 +75,10 @@ class DeployedModel:
             except KeyError:
                 six.raise_from(EnvironmentError("${} not found in environment".format('VERTA_EMAIL')), None)
             try:
-                self._session.headers.update({_utils._GRPC_PREFIX+'developer_key': os.environ['VERTA_DEV_KEY']})
+                self._session.headers.update({
+                    _utils._GRPC_PREFIX+'developer_key': os.environ['VERTA_DEV_KEY'],
+                    _utils._GRPC_PREFIX+'developer-key': os.environ['VERTA_DEV_KEY'],  # see Client.__init__()
+                })
             except KeyError:
                 six.raise_from(EnvironmentError("${} not found in environment".format('VERTA_DEV_KEY')), None)
 

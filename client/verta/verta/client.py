@@ -155,6 +155,9 @@ class Client(object):
             auth.update({
                 _utils._GRPC_PREFIX+'email': email,
                 _utils._GRPC_PREFIX+'developer_key': dev_key,
+                # without underscore, for NGINX support
+                # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
+                _utils._GRPC_PREFIX+'developer-key': dev_key,
             })
             # save credentials to env for other Verta Client features
             os.environ['VERTA_EMAIL'] = email
