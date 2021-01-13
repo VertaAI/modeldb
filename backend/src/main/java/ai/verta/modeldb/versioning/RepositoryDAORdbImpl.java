@@ -419,7 +419,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       if (repoId.getNamedId().getName().isEmpty()) {
         throw new ModelDBException("Repository name should not be empty", Code.INVALID_ARGUMENT);
       }
-      checkIfEntityAlreadyExists(session, workspace, repoId.getNamedId().getName(), repositoryType);
       repositoryEntity = new RepositoryEntity(repository, repositoryType);
     } else {
       repositoryEntity =
@@ -427,6 +426,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.lock(repositoryEntity, LockMode.PESSIMISTIC_WRITE);
       if (!repository.getName().isEmpty()
           && !repositoryEntity.getName().equals(repository.getName())) {
+        // TODO: Remove this after UAC support update entity name using SetResource
         checkIfEntityAlreadyExists(session, workspace, repository.getName(), repositoryType);
       }
       repositoryEntity.update(repository);

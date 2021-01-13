@@ -242,7 +242,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
-      checkIfEntityAlreadyExists(session, workspace, project.getName());
 
       Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);
@@ -287,6 +286,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   public Project updateProjectName(UserInfo userInfo, String projectId, String projectName)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      // TODO: Remove this after UAC support update entity name using SetResource
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, null);
       checkIfEntityAlreadyExists(session, workspace, projectName);
 
