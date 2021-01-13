@@ -6,13 +6,12 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/moni
 option java_multiple_files = true;
 
 import "google/api/annotations.proto";
+import "google/protobuf/field_mask.proto";
 import "common/CommonService.proto";
 import "registry/RegistryService.proto";
 import "modeldb/versioning/Environment.proto";
 
-
 // Aggregate data formats
-
 message CountPerNGram {
   repeated ListString keys = 1;
   repeated uint64 counts = 2;
@@ -247,56 +246,128 @@ message StoreProfiledAggregateBatchRequest {
 // Service definitions
 service DataMonitoringService {
   rpc getProfiler(GetProfilerRequest) returns (GetProfilerRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/profiler/getProfiler"
+    };
   };
 
   rpc createProfiler(CreateProfilerRequest) returns (CreateProfilerRequest.Response) {
+    option (google.api.http) = {
+      put: "/v1/profiler/createProfiler"
+      body: "*"
+    };
   };
 
   rpc updateProfiler(UpdateProfilerRequest) returns (UpdateProfilerRequest.Response) {
+    option (google.api.http) = {
+      patch: "/v1/profile/updateProfile"
+      body: "*"
+    };
   };
 
   rpc deleteProfiler(DeleteProfilerRequest) returns (DeleteProfilerRequest.Response) {
+    option (google.api.http) = {
+      delete: "/v1/profile/deleteProfiler"
+      body: "*"
+    };
   };
 
   rpc listProfilers(ListProfilersRequest) returns (ListProfilersRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/profiler/listProfilers"
+    };
   };
 
   rpc getProfilerSet(GetProfilerSetRequest) returns (GetProfilerSetRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/profiler-set/getProfilerSet"
+    };
   };
 
   rpc createProfilerSet(CreateProfilerSetRequest) returns (CreateProfilerSetRequest.Response) {
+    option (google.api.http) = {
+      put: "/v1/profiler-set/createProfilerSet"
+      body: "*"
+    };
   };
 
   rpc updateProfilerSet(UpdateProfilerSetRequest) returns (UpdateProfilerSetRequest.Response) {
+    option (google.api.http) = {
+      patch: "/v1/profile-set/updateProfileSet"
+      body: "*"
+    };
   };
 
   rpc addProfilerToSet(AddProfilerToSetRequest) returns (AddProfilerToSetRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/profile-set/addProfilerToSet"
+      body: "*"
+    };
   };
 
   rpc removeProfilerFromSet(RemoveProfilerFromSetRequest) returns (RemoveProfilerFromSetRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/profile-set/removeProfilerFromSet"
+      body: "*"
+    };
   };
 
   rpc deleteProfilerSet(DeleteProfilerSetRequest) returns (DeleteProfilerRequest.Response) {
+    option (google.api.http) = {
+      delete: "/v1/profile-set/deleteProfilerSet"
+      body: "*"
+    };
   };
 
   rpc listProfilerSets(ListProfilerSetsRequest) returns (ListProfilerSetsRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/profiler-set/listProfilersSets"
+    };
   };
 
   rpc getProfiledModel(GetProfiledModelRequest) returns (GetProfiledModelRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/profiled-model/getProfiledModel"
+    };
   };
 
   rpc createProfiledModel(CreateProfiledModelRequest) returns (CreateProfiledModelRequest.Response) {
+    option (google.api.http) = {
+      put: "/v1/profiled-model/createProfiledModel"
+      body: "*"
+    };
+  };
+
+  rpc updateProfiledModel(UpdateProfiledModelRequest) returns (UpdateProfiledModelRequest.Response) {
+    option (google.api.http) = {
+      patch: "/v1/profiled-model/updateProfiledModel"
+      body: "*"
+    };
   };
 
   rpc deleteProfiledModel(DeleteProfiledModelRequest) returns (DeleteProfiledModelRequest.Response) {
+    option (google.api.http) = {
+      delete: "/v1/profiled-model/deleteProfiledModel"
+      body: "*"
+    };
   };
 
   rpc listProfiledModels(ListProfiledModelsRequest) returns (ListProfiledModelsRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/profiled-model/listProfiledModels"
+    };
   };
 
   rpc getAggregate(GetAggregateRequest) returns (GetAggregateRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/aggregate/getAggregate"
+    };
   };
 
   rpc storeAggregateBatch(StoreProfiledAggregateBatchRequest) returns (StoreProfiledAggregateBatchRequest.Response) {
+    option (google.api.http) = {
+      put: "/v1/aggregate/storeAggregateBatch"
+      body: "*"
+    };
   };
 }
