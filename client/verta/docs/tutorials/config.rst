@@ -44,7 +44,7 @@ your code:
     # connection successfully established
     # setting experiment from config file
     # setting project from config file
-    # set existing Project: My Project from personal workspace
+    # set existing Project: My Project from workspace: My Workspace
     # set existing Experiment: My Experiment
     # created new ExperimentRun: New Run
 
