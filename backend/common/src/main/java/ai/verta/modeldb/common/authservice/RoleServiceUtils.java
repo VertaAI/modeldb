@@ -1,13 +1,21 @@
 package ai.verta.modeldb.common.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.WorkspaceTypeEnum;
+import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
+import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteResources;
 import ai.verta.uac.GetOrganizationById;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetTeamById;
+import ai.verta.uac.Organization;
+import ai.verta.uac.RemoveResources;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
@@ -19,6 +27,8 @@ import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -282,4 +292,81 @@ public class RoleServiceUtils implements RoleService {
       throw ex;
     }
   }
+
+  @Override
+  public List<String> getWorkspaceRoleBindings(
+          String workspaceId,
+          WorkspaceTypeEnum.WorkspaceType workspaceType,
+          String resourceId,
+          String roleName,
+          ModelDBServiceResourceTypes resourceTypes,
+          boolean orgScopedPublic,
+          String globalSharing) {
+    List<String> workspaceRoleBindingList = new ArrayList<>();
+    if (workspaceId != null && !workspaceId.isEmpty()) {
+      try {
+        CollaboratorUser collaboratorUser;
+        switch (workspaceType) {
+          case ORGANIZATION:
+            if (orgScopedPublic) {
+              String globalSharingRoleName =
+                      new StringBuilder()
+                              .append("O_")
+                              .append(workspaceId)
+                              .append(globalSharing)
+                              .toString();
+
+              String globalSharingRoleBindingName =
+                      buildRoleBindingName(
+                              globalSharingRoleName,
+                              resourceId,
+                              new CollaboratorOrg(workspaceId),
+                              resourceTypes.name());
+              if (globalSharingRoleBindingName != null) {
+                workspaceRoleBindingList.add(globalSharingRoleBindingName);
+              }
+            }
+            Organization org = (Organization) getOrgById(workspaceId);
+            collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
+            break;
+          case USER:
+            collaboratorUser = new CollaboratorUser(authService, workspaceId);
+            break;
+          default:
+            return null;
+        }
+        String roleBindingName =
+                buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
+        if (roleBindingName != null) {
+          workspaceRoleBindingList.add(roleBindingName);
+        }
+      } catch (Exception e) {
+        if (!e.getMessage().contains("Details: Doesn't exist")) {
+          throw e;
+        }
+        LOGGER.info("Workspace ({}) not found on UAC", workspaceId);
+      }
+    }
+    return workspaceRoleBindingList;
+  }
+
+  @Override
+  public String buildRoleBindingName(
+          String roleName, String resourceId, String userId, String resourceTypeName) {
+    return buildRoleBindingName(
+            roleName, resourceId, new CollaboratorUser(authService, userId), resourceTypeName);
+  }
+
+  @Override
+  public String buildRoleBindingName(
+          String roleName, String resourceId, CollaboratorBase collaborator, String resourceTypeName) {
+    return roleName
+            + "_"
+            + resourceTypeName
+            + "_"
+            + resourceId
+            + "_"
+            + collaborator.getNameForBinding();
+  }
+
 }
