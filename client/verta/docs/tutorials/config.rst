@@ -22,6 +22,7 @@ Defining a config file like this:
     email: "hello@verta.ai"
     dev_key: "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
     host: "app.verta.ai"
+    workspace: "My Workspace"
     project: "My Project"
     experiment: "My Experiment"
 
