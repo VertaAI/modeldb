@@ -2,8 +2,10 @@ package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryModifierEnum;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
@@ -14,6 +16,7 @@ import ai.verta.modeldb.versioning.Repository.Builder;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.Workspace;
 import com.google.api.client.util.Objects;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.*;
@@ -193,7 +196,8 @@ public class RepositoryEntity {
     this.visibility_migration = visibility_migration;
   }
 
-  public Repository toProto(RoleService roleService) throws InvalidProtocolBufferException {
+  public Repository toProto(RoleService roleService, AuthService authService)
+      throws InvalidProtocolBufferException {
     final Builder builder = Repository.newBuilder().setId(this.id);
     builder
         .setName(this.name)
@@ -215,6 +219,18 @@ public class RepositoryEntity {
             ModelDBUtils.getOldVisibility(
                 ModelDBServiceResourceTypes.REPOSITORY, repositoryResource.getVisibility());
     builder.setRepositoryVisibility(visibility);
+
+    Workspace workspace = authService.workspaceById(false, repositoryResource.getWorkspaceId());
+    switch (workspace.getInternalIdCase()) {
+      case ORG_ID:
+        builder.setWorkspaceId(workspace.getOrgId());
+        builder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
+        break;
+      case USER_ID:
+        builder.setWorkspaceId(workspace.getUserId());
+        builder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+        break;
+    }
 
     if (description != null) {
       builder.setDescription(description);
