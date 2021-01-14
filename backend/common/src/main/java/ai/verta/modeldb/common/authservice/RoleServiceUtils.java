@@ -11,14 +11,18 @@ import ai.verta.uac.GetTeamById;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
+import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.SetResource;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -235,6 +239,47 @@ public class RoleServiceUtils implements RoleService {
               (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
                   (retry1) -> getOrgById(retry1, orgId),
               timeout);
+    }
+  }
+
+  /**
+   * getResourceItems method is the main roleService method at MDB which actually call to the UAC
+   * using endpoint getResources
+   *
+   * @param workspace: workspace
+   * @param resourceIds: requested resource ids
+   * @param modelDBServiceResourceTypes: modelDBServiceResourceTypes like PROJECT, REPOSITORY
+   * @return {@link List}: list of the resource details
+   */
+  @Override
+  public List<GetResourcesResponseItem> getResourceItems(
+          Workspace workspace,
+          Set<String> resourceIds,
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
+      ResourceType resourceType =
+              ResourceType.newBuilder()
+                      .setModeldbServiceResourceType(modelDBServiceResourceTypes)
+                      .build();
+      Resources.Builder resources =
+              Resources.newBuilder()
+                      .setResourceType(resourceType)
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE);
+
+      if (resourceIds != null && !resourceIds.isEmpty()) {
+        resources.addAllResourceIds(resourceIds);
+      }
+
+      GetResources.Builder builder = GetResources.newBuilder().setResources(resources.build());
+      if (workspace != null) {
+        builder.setWorkspaceId(workspace.getId());
+      }
+      final GetResources.Response response =
+              authServiceChannel.getCollaboratorServiceBlockingStub().getResources(builder.build());
+      return response.getItemList();
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      throw ex;
     }
   }
 }

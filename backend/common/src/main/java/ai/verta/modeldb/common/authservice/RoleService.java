@@ -4,9 +4,11 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface RoleService {
 
@@ -29,4 +31,9 @@ public interface RoleService {
   GeneratedMessageV3 getOrgById(String orgId);
 
   GeneratedMessageV3 getTeamById(String teamId);
+
+  List<GetResourcesResponseItem> getResourceItems(
+          Workspace workspace,
+          Set<String> resourceIds,
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 }
