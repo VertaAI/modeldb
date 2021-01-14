@@ -158,7 +158,7 @@ public class CollaboratorResourceMigration {
               migrated = true;
             }
             if (migrated) {
-                migratedProjectEntities.add(project);
+              migratedProjectEntities.add(project);
               Transaction transaction = null;
               try {
                 transaction = session.beginTransaction();
@@ -349,7 +349,7 @@ public class CollaboratorResourceMigration {
     // set roleBindings name by accessible projects
     List<String> roleBindingNames = new LinkedList<>();
     setRoleBindingsNameOfAccessibleProjectsInRoleBindingNamesList(
-            projectEntities, roleBindingNames);
+        projectEntities, roleBindingNames);
     LOGGER.debug("num bindings after Projects {}", roleBindingNames.size());
 
     // Remove all role bindings
@@ -359,32 +359,31 @@ public class CollaboratorResourceMigration {
   }
 
   private static void setRoleBindingsNameOfAccessibleProjectsInRoleBindingNamesList(
-          List<ProjectEntity> allowedProjects, List<String> roleBindingNames) {
+      List<ProjectEntity> allowedProjects, List<String> roleBindingNames) {
     for (ProjectEntity project : allowedProjects) {
       String projectId = project.getId();
 
       String ownerRoleBindingName =
-              roleService.buildRoleBindingName(
-                      ModelDBConstants.ROLE_PROJECT_OWNER,
-                      project.getId(),
-                      project.getOwner(),
-                      ModelDBServiceResourceTypes.PROJECT.name());
+          roleService.buildRoleBindingName(
+              ModelDBConstants.ROLE_PROJECT_OWNER,
+              project.getId(),
+              project.getOwner(),
+              ModelDBServiceResourceTypes.PROJECT.name());
       if (ownerRoleBindingName != null) {
         roleBindingNames.add(ownerRoleBindingName);
       }
 
       // Delete workspace based roleBindings
       List<String> workspaceRoleBindingNames =
-              roleService.getWorkspaceRoleBindings(
-                      project.getWorkspace(),
-                      WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type()),
-                      projectId,
-                      ModelDBConstants.ROLE_PROJECT_ADMIN,
-                      ModelDBServiceResourceTypes.PROJECT,
-                      project.getProjectVisibility().equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
-                      "_GLOBAL_SHARING");
+          roleService.getWorkspaceRoleBindings(
+              project.getWorkspace(),
+              WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type()),
+              projectId,
+              ModelDBConstants.ROLE_PROJECT_ADMIN,
+              ModelDBServiceResourceTypes.PROJECT,
+              project.getProjectVisibility().equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
+              "_GLOBAL_SHARING");
       roleBindingNames.addAll(workspaceRoleBindingNames);
     }
   }
-
 }
