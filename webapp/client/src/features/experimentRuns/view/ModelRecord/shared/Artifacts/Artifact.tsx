@@ -70,9 +70,11 @@ const Artifact = ({
         label: artifact.key,
         title: artifact.key,
       }}
-      isShowPreloader={actions.some(action => action && action.isShowPreloader)}
+      isShowPreloader={actions.some(
+        (action) => action && action.isShowPreloader
+      )}
       actions={actions
-        .map(action => action && action.content)
+        .map((action) => action && action.content)
         .filter((x): x is JSX.Element => Boolean(x))}
     />
   );
@@ -90,7 +92,7 @@ const useDownloadArtifactAction = ({
   if (!checkArtifactWithPath(artifact)) {
     return undefined;
   }
-  const { downloadArtifact, downloadingArtifact } = useDownloadArtifact({
+  const { downloadArtifact, downloadingArtifact, reset } = useDownloadArtifact({
     artifact,
     entityId,
     entityType,
@@ -99,6 +101,7 @@ const useDownloadArtifactAction = ({
   React.useEffect(() => {
     if (downloadingArtifact.isSuccess) {
       toastSuccess(<span>The artifact is downloaded</span>);
+      reset();
     }
   }, [downloadingArtifact.isSuccess]);
   React.useEffect(() => {
@@ -108,6 +111,7 @@ const useDownloadArtifactAction = ({
           artifactErrorMessages.artifact_download
         }: ${communicationErrorToString(downloadingArtifact.error)}`
       );
+      reset();
     }
   }, [downloadingArtifact.error]);
 
@@ -148,7 +152,7 @@ const useDeleteArtifactAction = ({
             cancelButtonText="Cancel"
             confirmButtonText="Delete"
           >
-            {withConfirmAction => (
+            {(withConfirmAction) => (
               <Action
                 iconType="delete"
                 onClick={withConfirmAction(() =>

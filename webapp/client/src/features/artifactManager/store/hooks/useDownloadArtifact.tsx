@@ -37,6 +37,7 @@ const useDownloadArtifact = (props: ILocalProps) => {
         downloadArtifact(props.entityType, props.entityId, props.artifact)
       );
     },
+    reset: () => dispatch(reset()),
   };
 };
 

@@ -61,7 +61,7 @@ const loadArtifactUrl = (
     case 'experiment':
       return ServiceFactory.getExperimentsService()
         .loadArtifactUrl(entityId, artifact)
-        .then(res => {
+        .then((res) => {
           const success = action(loadArtifactUrlActionTypes.SUCCESS, {
             key: artifact.key,
             url: res,
@@ -74,7 +74,7 @@ const loadArtifactUrl = (
           );
           return success;
         })
-        .catch(error => {
+        .catch((error) => {
           const failure = action(
             loadArtifactUrlActionTypes.FAILURE,
             normalizeError(error)
@@ -85,7 +85,7 @@ const loadArtifactUrl = (
     case 'experimentRun':
       return ServiceFactory.getExperimentRunsService()
         .loadArtifactUrl(entityId, artifact)
-        .then(res => {
+        .then((res) => {
           const success = action(loadArtifactUrlActionTypes.SUCCESS, {
             key: artifact.key,
             url: res,
@@ -98,7 +98,7 @@ const loadArtifactUrl = (
           );
           return success;
         })
-        .catch(error => {
+        .catch((error) => {
           const failure = action(
             loadArtifactUrlActionTypes.FAILURE,
             normalizeError(error)
@@ -109,7 +109,7 @@ const loadArtifactUrl = (
     case 'project':
       return ServiceFactory.getProjectsService()
         .loadArtifactUrl(entityId, artifact)
-        .then(res => {
+        .then((res) => {
           const success = action(loadArtifactUrlActionTypes.SUCCESS, {
             key: artifact.key,
             url: res,
@@ -122,7 +122,7 @@ const loadArtifactUrl = (
           );
           return success;
         })
-        .catch(error => {
+        .catch((error) => {
           const failure = action(
             loadArtifactUrlActionTypes.FAILURE,
             normalizeError(error)
@@ -246,7 +246,7 @@ export const loadDatasetVersion = (
 
   await ServiceFactory.getDatasetVersionsService()
     .loadDatasetVersion(workspaceName, datasetVersionId, datasetId)
-    .then(datasetVersion => {
+    .then((datasetVersion) => {
       dispatch(
         action(loadDatasetVersionActionTypes.SUCCESS, {
           datasetVersionId,
@@ -254,7 +254,7 @@ export const loadDatasetVersion = (
         })
       );
     })
-    .catch(error => {
+    .catch((error) => {
       dispatch(
         action(loadDatasetVersionActionTypes.FAILURE, {
           datasetVersionId,
@@ -279,7 +279,7 @@ export const deleteArtifact = (
     .then(() => {
       dispatch(action(deleteArtifactActionTypes.SUCCESS, { experimentRunId }));
     })
-    .catch(error => {
+    .catch((error) => {
       dispatch(
         action(deleteArtifactActionTypes.FAILURE, {
           experimentRunId,
