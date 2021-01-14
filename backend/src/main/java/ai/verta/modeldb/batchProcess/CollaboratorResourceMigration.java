@@ -4,6 +4,7 @@ import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
@@ -118,6 +119,7 @@ public class CollaboratorResourceMigration {
               responseItems.stream()
                   .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
 
+          List<ProjectEntity> migratedProjectEntities = new LinkedList<>();
           for (ProjectEntity project : projectEntities) {
             boolean migrated = false;
             if (project.getOwner() != null && !project.getOwner().isEmpty()) {
@@ -156,6 +158,7 @@ public class CollaboratorResourceMigration {
               migrated = true;
             }
             if (migrated) {
+                migratedProjectEntities.add(project);
               Transaction transaction = null;
               try {
                 transaction = session.beginTransaction();
@@ -169,6 +172,7 @@ public class CollaboratorResourceMigration {
               }
             }
           }
+          deleteRoleBindingsForProjects(migratedProjectEntities);
         } else {
           LOGGER.debug("Total projects count 0");
         }
@@ -340,4 +344,47 @@ public class CollaboratorResourceMigration {
     }
     return ResourceVisibility.PRIVATE;
   }
+
+  private static void deleteRoleBindingsForProjects(List<ProjectEntity> projectEntities) {
+    // set roleBindings name by accessible projects
+    List<String> roleBindingNames = new LinkedList<>();
+    setRoleBindingsNameOfAccessibleProjectsInRoleBindingNamesList(
+            projectEntities, roleBindingNames);
+    LOGGER.debug("num bindings after Projects {}", roleBindingNames.size());
+
+    // Remove all role bindings
+    if (!roleBindingNames.isEmpty()) {
+      roleService.deleteRoleBindings(roleBindingNames);
+    }
+  }
+
+  private static void setRoleBindingsNameOfAccessibleProjectsInRoleBindingNamesList(
+          List<ProjectEntity> allowedProjects, List<String> roleBindingNames) {
+    for (ProjectEntity project : allowedProjects) {
+      String projectId = project.getId();
+
+      String ownerRoleBindingName =
+              roleService.buildRoleBindingName(
+                      ModelDBConstants.ROLE_PROJECT_OWNER,
+                      project.getId(),
+                      project.getOwner(),
+                      ModelDBServiceResourceTypes.PROJECT.name());
+      if (ownerRoleBindingName != null) {
+        roleBindingNames.add(ownerRoleBindingName);
+      }
+
+      // Delete workspace based roleBindings
+      List<String> workspaceRoleBindingNames =
+              roleService.getWorkspaceRoleBindings(
+                      project.getWorkspace(),
+                      WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type()),
+                      projectId,
+                      ModelDBConstants.ROLE_PROJECT_ADMIN,
+                      ModelDBServiceResourceTypes.PROJECT,
+                      project.getProjectVisibility().equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
+                      "_GLOBAL_SHARING");
+      roleBindingNames.addAll(workspaceRoleBindingNames);
+    }
+  }
+
 }
