@@ -176,7 +176,7 @@ public class AuthServiceChannel implements AutoCloseable {
   }
 
   public OrganizationServiceGrpc.OrganizationServiceBlockingStub
-  getOrganizationServiceBlockingStub() {
+      getOrganizationServiceBlockingStub() {
     if (organizationServiceBlockingStub == null) {
       initOrganizationServiceStubChannel();
     }
