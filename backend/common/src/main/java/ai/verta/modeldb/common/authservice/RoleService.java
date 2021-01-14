@@ -1,6 +1,8 @@
 package ai.verta.modeldb.common.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.WorkspaceTypeEnum;
+import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
@@ -36,4 +38,19 @@ public interface RoleService {
           Workspace workspace,
           Set<String> resourceIds,
           ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  List<String> getWorkspaceRoleBindings(
+          String workspace_id,
+          WorkspaceTypeEnum.WorkspaceType workspaceType,
+          String resourceId,
+          String adminRole,
+          ModelDBServiceResourceTypes resourceType,
+          boolean orgScopedPublic,
+          String globalSharing);
+
+  String buildRoleBindingName(
+          String roleName, String resourceId, CollaboratorBase collaborator, String resourceTypeName);
+
+  String buildRoleBindingName(
+          String roleName, String resourceId, String userId, String resourceTypeName);
 }

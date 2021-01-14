@@ -29,12 +29,6 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
 
   boolean IsImplemented();
 
-  String buildRoleBindingName(
-      String roleName, String resourceId, String userId, String resourceTypeName);
-
-  String buildRoleBindingName(
-      String roleName, String resourceId, CollaboratorBase collaborator, String resourceTypeName);
-
   void createRoleBinding(
       Role role,
       CollaboratorBase collaborator,
@@ -182,15 +176,6 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
       String valueOf,
       String roleRepositoryAdmin,
       ModelDBServiceResourceTypes repository,
-      boolean orgScopedPublic,
-      String globalSharing);
-
-  List<String> getWorkspaceRoleBindings(
-      String workspace_id,
-      WorkspaceType workspaceType,
-      String resourceId,
-      String adminRole,
-      ModelDBServiceResourceTypes resourceType,
       boolean orgScopedPublic,
       String globalSharing);
 

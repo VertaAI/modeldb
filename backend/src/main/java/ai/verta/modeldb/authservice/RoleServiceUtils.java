@@ -63,25 +63,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   }
 
   @Override
-  public String buildRoleBindingName(
-      String roleName, String resourceId, String userId, String resourceTypeName) {
-    return buildRoleBindingName(
-        roleName, resourceId, new CollaboratorUser(authService, userId), resourceTypeName);
-  }
-
-  @Override
-  public String buildRoleBindingName(
-      String roleName, String resourceId, CollaboratorBase collaborator, String resourceTypeName) {
-    return roleName
-        + "_"
-        + resourceTypeName
-        + "_"
-        + resourceId
-        + "_"
-        + collaborator.getNameForBinding();
-  }
-
-  @Override
   public void createRoleBinding(
       Role role,
       CollaboratorBase collaborator,
@@ -1159,63 +1140,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       Role admin = getRoleByName(roleAdminName, null);
       createRoleBinding(admin, collaboratorUser, resourceId, resourceType);
     }
-  }
-
-  @Override
-  public List<String> getWorkspaceRoleBindings(
-      String workspaceId,
-      WorkspaceType workspaceType,
-      String resourceId,
-      String roleName,
-      ModelDBServiceResourceTypes resourceTypes,
-      boolean orgScopedPublic,
-      String globalSharing) {
-    List<String> workspaceRoleBindingList = new ArrayList<>();
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      try {
-        CollaboratorUser collaboratorUser;
-        switch (workspaceType) {
-          case ORGANIZATION:
-            if (orgScopedPublic) {
-              String globalSharingRoleName =
-                  new StringBuilder()
-                      .append("O_")
-                      .append(workspaceId)
-                      .append(globalSharing)
-                      .toString();
-
-              String globalSharingRoleBindingName =
-                  buildRoleBindingName(
-                      globalSharingRoleName,
-                      resourceId,
-                      new CollaboratorOrg(workspaceId),
-                      resourceTypes.name());
-              if (globalSharingRoleBindingName != null) {
-                workspaceRoleBindingList.add(globalSharingRoleBindingName);
-              }
-            }
-            Organization org = (Organization) getOrgById(workspaceId);
-            collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
-            break;
-          case USER:
-            collaboratorUser = new CollaboratorUser(authService, workspaceId);
-            break;
-          default:
-            return null;
-        }
-        String roleBindingName =
-            buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
-        if (roleBindingName != null) {
-          workspaceRoleBindingList.add(roleBindingName);
-        }
-      } catch (Exception e) {
-        if (!e.getMessage().contains("Details: Doesn't exist")) {
-          throw e;
-        }
-        LOGGER.info("Workspace ({}) not found on UAC", workspaceId);
-      }
-    }
-    return workspaceRoleBindingList;
   }
 
   @Override
