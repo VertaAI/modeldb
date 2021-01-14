@@ -22,6 +22,7 @@ Defining a config file like this:
     email: "hello@verta.ai"
     dev_key: "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
     host: "app.verta.ai"
+    workspace: "My Workspace"
     project: "My Project"
     experiment: "My Experiment"
 
@@ -43,7 +44,7 @@ your code:
     # connection successfully established
     # setting experiment from config file
     # setting project from config file
-    # set existing Project: My Project from personal workspace
+    # set existing Project: My Project from workspace: My Workspace
     # set existing Experiment: My Experiment
     # created new ExperimentRun: New Run
 
