@@ -244,6 +244,7 @@ public class CollaboratorResourceMigration {
           Map<String, GetResourcesResponseItem> responseItemMap =
               responseItems.stream()
                   .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
+          List<RepositoryEntity> migratedRepositoryEntities = new LinkedList<>();
           for (RepositoryEntity repository : repositoryEntities) {
             boolean migrated = false;
             if (repository.getOwner() != null && !repository.getOwner().isEmpty()) {
@@ -284,6 +285,7 @@ public class CollaboratorResourceMigration {
               migrated = true;
             }
             if (migrated) {
+              migratedRepositoryEntities.add(repository);
               Transaction transaction = null;
               try {
                 deleteRoleBindingsOfRepositories(Collections.singletonList(repository));
@@ -298,6 +300,7 @@ public class CollaboratorResourceMigration {
               }
             }
           }
+          deleteRoleBindingsOfRepositories(migratedRepositoryEntities);
         } else {
           LOGGER.debug("Total repositories count 0");
         }
