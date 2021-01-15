@@ -4,6 +4,7 @@ import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
+import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
@@ -33,6 +34,7 @@ import org.hibernate.Transaction;
 
 public class CollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
+  private static final String REPOSITORY_GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
   private static AuthService authService;
   private static RoleService roleService;
   private static int paginationSize;
@@ -244,6 +246,7 @@ public class CollaboratorResourceMigration {
           Map<String, GetResourcesResponseItem> responseItemMap =
               responseItems.stream()
                   .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
+          List<RepositoryEntity> migratedRepositoryEntities = new LinkedList<>();
           for (RepositoryEntity repository : repositoryEntities) {
             boolean migrated = false;
             if (repository.getOwner() != null && !repository.getOwner().isEmpty()) {
@@ -284,6 +287,7 @@ public class CollaboratorResourceMigration {
               migrated = true;
             }
             if (migrated) {
+              migratedRepositoryEntities.add(repository);
               Transaction transaction = null;
               try {
                 transaction = session.beginTransaction();
@@ -297,6 +301,7 @@ public class CollaboratorResourceMigration {
               }
             }
           }
+          deleteRoleBindingsOfRepositories(migratedRepositoryEntities);
         } else {
           LOGGER.debug("Total repositories count 0");
         }
@@ -384,6 +389,42 @@ public class CollaboratorResourceMigration {
               project.getProjectVisibility().equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
               "_GLOBAL_SHARING");
       roleBindingNames.addAll(workspaceRoleBindingNames);
+    }
+  }
+
+  private static void deleteRoleBindingsOfRepositories(List<RepositoryEntity> allowedResources) {
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
+    for (RepositoryEntity repositoryEntity : allowedResources) {
+      String ownerRoleBindingName =
+          roleService.buildRoleBindingName(
+              ModelDBConstants.ROLE_REPOSITORY_OWNER,
+              String.valueOf(repositoryEntity.getId()),
+              repositoryEntity.getOwner(),
+              ModelDBServiceResourceTypes.REPOSITORY.name());
+      if (ownerRoleBindingName != null) {
+        roleBindingNames.add(ownerRoleBindingName);
+      }
+
+      // Delete workspace based roleBindings
+      List<String> repoOrgWorkspaceRoleBindings =
+          roleService.getWorkspaceRoleBindings(
+              repositoryEntity.getWorkspace_id(),
+              WorkspaceTypeEnum.WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
+              String.valueOf(repositoryEntity.getId()),
+              ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+              ModelDBServiceResourceTypes.REPOSITORY,
+              repositoryEntity
+                  .getRepository_visibility()
+                  .equals(DatasetVisibilityEnum.DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
+              REPOSITORY_GLOBAL_SHARING);
+      if (!repoOrgWorkspaceRoleBindings.isEmpty()) {
+        roleBindingNames.addAll(repoOrgWorkspaceRoleBindings);
+      }
+    }
+
+    // Remove all role bindings
+    if (!roleBindingNames.isEmpty()) {
+      roleService.deleteRoleBindings(roleBindingNames);
     }
   }
 }
