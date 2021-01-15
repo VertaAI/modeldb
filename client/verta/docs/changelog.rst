@@ -37,6 +37,16 @@ Release Notes
      <>`__
 
 
+v0.16.4 (2021-01-14)
+--------------------
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `send Grpc-Metadata-developer-key (hyphen instead of underscore) as an
+  additional auth header
+  <https://github.com/VertaAI/modeldb/pull/1865>`__
+
+
 v0.16.3 (2020-12-18)
 --------------------
 
