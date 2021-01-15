@@ -20,11 +20,15 @@ public class ServiceSet {
   public ArtifactStoreService artifactStoreService = null;
   public AuthService authService;
   public RoleService roleService;
+  public App app;
 
   public static ServiceSet fromConfig(Config config) throws IOException {
     ServiceSet set = new ServiceSet();
     set.authService = AuthServiceUtils.FromConfig(config);
     set.roleService = RoleServiceUtils.FromConfig(config, set.authService);
+
+    // Initialize App.java singleton instance
+    set.app = App.getInstance();
 
     if (config.artifactStoreConfig.enabled) {
       set.artifactStoreService = initializeArtifactStore(config);
@@ -38,8 +42,6 @@ public class ServiceSet {
 
   private static ArtifactStoreService initializeArtifactStore(Config config)
       throws ModelDBException, IOException {
-    App app = App.getInstance();
-
     // ------------- Start Initialize Cloud storage base on configuration ------------------
     ArtifactStoreService artifactStoreService;
 
@@ -74,7 +76,7 @@ public class ServiceSet {
           System.getProperties()
               .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
           SpringApplication.run(App.class);
-          artifactStoreService = app.applicationContext.getBean(S3Service.class);
+          artifactStoreService = App.getInstance().applicationContext.getBean(S3Service.class);
         } else {
           artifactStoreService = new S3Service(config.artifactStoreConfig.S3.cloudBucketName);
           System.getProperties().put("scan.packages", "dummyPackageName");
@@ -90,7 +92,7 @@ public class ServiceSet {
             .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
         SpringApplication.run(App.class, new String[0]);
 
-        artifactStoreService = app.applicationContext.getBean(NFSService.class);
+        artifactStoreService = App.getInstance().applicationContext.getBean(NFSService.class);
         break;
       default:
         throw new ModelDBException("Configure valid artifact store name in config.yaml file.");

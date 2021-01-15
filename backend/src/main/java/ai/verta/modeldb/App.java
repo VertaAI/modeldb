@@ -195,9 +195,9 @@ public class App implements ApplicationContextAware {
       ServerBuilder<?> serverBuilder = ServerBuilder.forPort(config.grpcServer.port);
 
       // Initialize health check
-      HealthStatusManager healthStatusManager = new HealthStatusManager(new HealthServiceImpl());
+      HealthServiceImpl healthService = getContext().getBean(HealthServiceImpl.class);
+      HealthStatusManager healthStatusManager = new HealthStatusManager(healthService);
       serverBuilder.addService(healthStatusManager.getHealthService());
-      healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
 
       // Add middleware/interceptors
       if (config.enableTrace) {
@@ -223,6 +223,7 @@ public class App implements ApplicationContextAware {
 
       // --------------- Start modelDB gRPC server --------------------------
       server.start();
+      healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
       up.inc();
       LOGGER.info("Backend server started listening on {}", config.grpcServer.port);
 
