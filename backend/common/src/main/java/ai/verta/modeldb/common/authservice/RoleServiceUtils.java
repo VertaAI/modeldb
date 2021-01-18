@@ -450,7 +450,7 @@ public class RoleServiceUtils implements RoleService {
                                     .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                     .setService(Service.MODELDB_SERVICE)
                     .build();
-    try (ai.verta.modeldb.authservice.AuthServiceChannel authServiceChannel = new ai.verta.modeldb.authservice.AuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
       GetAllowedResources.Response getAllowedResourcesResponse =
@@ -508,7 +508,7 @@ public class RoleServiceUtils implements RoleService {
                                     .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                     .setService(Service.MODELDB_SERVICE)
                     .build();
-    try (ai.verta.modeldb.authservice.AuthServiceChannel authServiceChannel = new ai.verta.modeldb.authservice.AuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
