@@ -7,6 +7,7 @@ import ai.verta.uac.Actions;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Role;
 import ai.verta.uac.RoleBinding;
@@ -115,4 +116,6 @@ public interface RoleService {
   GeneratedMessageV3 getTeamByName(String orgId, String teamName);
 
   GeneratedMessageV3 getOrgByName(String name);
+
+  List<Organization> listMyOrganizations();
 }

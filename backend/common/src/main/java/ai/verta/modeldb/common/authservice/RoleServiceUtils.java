@@ -8,6 +8,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.CollaboratorPermissions;
@@ -27,6 +28,7 @@ import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetTeamById;
 import ai.verta.uac.GetTeamByName;
 import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ListMyOrganizations;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceType;
@@ -966,6 +968,26 @@ public class RoleServiceUtils implements RoleService {
                       ex,
                       retry,
                       (CommonUtils.RetryCallInterface<GeneratedMessageV3>) (retry1) -> getOrgByName(retry1, name), timeout);
+    }
+  }
+
+  @Override
+  public List<Organization> listMyOrganizations() {
+    return listMyOrganizations(true);
+  }
+
+  private List<Organization> listMyOrganizations(boolean retry) {
+    try (ai.verta.modeldb.authservice.AuthServiceChannel authServiceChannel = new ai.verta.modeldb.authservice.AuthServiceChannel()) {
+      ListMyOrganizations listMyOrganizations = ListMyOrganizations.newBuilder().build();
+      ListMyOrganizations.Response listMyOrganizationsResponse =
+              authServiceChannel
+                      .getOrganizationServiceBlockingStub()
+                      .listMyOrganizations(listMyOrganizations);
+      return listMyOrganizationsResponse.getOrganizationsList();
+    } catch (StatusRuntimeException ex) {
+      return (List<Organization>)
+              ModelDBUtils.retryOrThrowException(
+                      ex, retry, (CommonUtils.RetryCallInterface<List<Organization>>) this::listMyOrganizations);
     }
   }
 }

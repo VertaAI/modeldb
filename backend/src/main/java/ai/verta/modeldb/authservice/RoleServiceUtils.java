@@ -553,22 +553,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
 
   @Override
   public List<Organization> listMyOrganizations() {
-    return listMyOrganizations(true);
-  }
-
-  private List<Organization> listMyOrganizations(boolean retry) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      ListMyOrganizations listMyOrganizations = ListMyOrganizations.newBuilder().build();
-      ListMyOrganizations.Response listMyOrganizationsResponse =
-          authServiceChannel
-              .getOrganizationServiceBlockingStub()
-              .listMyOrganizations(listMyOrganizations);
-      return listMyOrganizationsResponse.getOrganizationsList();
-    } catch (StatusRuntimeException ex) {
-      return (List<Organization>)
-          ModelDBUtils.retryOrThrowException(
-              ex, retry, (RetryCallInterface<List<Organization>>) this::listMyOrganizations);
-    }
+    return super.listMyOrganizations();
   }
 
   /**
