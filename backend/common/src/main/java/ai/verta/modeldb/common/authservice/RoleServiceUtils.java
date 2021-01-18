@@ -452,7 +452,7 @@ public class RoleServiceUtils implements RoleService {
                     .build();
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
+      Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       GetAllowedResources.Response getAllowedResourcesResponse =
               authServiceChannel
                       .getAuthzServiceBlockingStub(requestHeaders)
@@ -510,7 +510,7 @@ public class RoleServiceUtils implements RoleService {
                     .build();
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
+      Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
               authServiceChannel
                       .getAuthzServiceBlockingStub(requestHeaders)
