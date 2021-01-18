@@ -119,7 +119,6 @@ public class CollaboratorResourceMigration {
               responseItems.stream()
                   .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
 
-          List<ProjectEntity> migratedProjectEntities = new LinkedList<>();
           for (ProjectEntity project : projectEntities) {
             boolean migrated = false;
             if (project.getOwner() != null && !project.getOwner().isEmpty()) {
@@ -158,13 +157,13 @@ public class CollaboratorResourceMigration {
               migrated = true;
             }
             if (migrated) {
-              migratedProjectEntities.add(project);
               Transaction transaction = null;
               try {
                 transaction = session.beginTransaction();
                 project.setVisibility_migration(true);
                 session.update(project);
                 transaction.commit();
+                deleteRoleBindingsForProjects(Collections.singletonList(project));
               } catch (Exception ex) {
                 if (transaction != null && transaction.getStatus().canRollback()) {
                   transaction.rollback();
@@ -172,7 +171,6 @@ public class CollaboratorResourceMigration {
               }
             }
           }
-          deleteRoleBindingsForProjects(migratedProjectEntities);
         } else {
           LOGGER.debug("Total projects count 0");
         }
