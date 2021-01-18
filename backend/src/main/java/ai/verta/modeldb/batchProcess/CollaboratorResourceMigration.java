@@ -159,11 +159,11 @@ public class CollaboratorResourceMigration {
             if (migrated) {
               Transaction transaction = null;
               try {
+                deleteRoleBindingsForProjects(Collections.singletonList(project));
                 transaction = session.beginTransaction();
                 project.setVisibility_migration(true);
                 session.update(project);
                 transaction.commit();
-                deleteRoleBindingsForProjects(Collections.singletonList(project));
               } catch (Exception ex) {
                 if (transaction != null && transaction.getStatus().canRollback()) {
                   transaction.rollback();
