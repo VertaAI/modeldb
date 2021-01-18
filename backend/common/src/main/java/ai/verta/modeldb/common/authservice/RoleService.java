@@ -3,13 +3,18 @@ package ai.verta.modeldb.common.authservice;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
+import ai.verta.uac.Actions;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.Role;
+import ai.verta.uac.RoleBinding;
+import ai.verta.uac.RoleScope;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -69,4 +74,45 @@ public interface RoleService {
   List<String> getSelfAllowedResources(
           ModelDBServiceResourceTypes modelDBServiceResourceTypes,
           ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions);
+
+  RoleBinding getRoleBindingByName(String roleBindingName);
+
+  List<String> getSelfDirectlyAllowedResources(
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions);
+
+  void isSelfAllowed(
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+          String resourceId);
+
+  List<String> getAccessibleResourceIdsByActions(
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+          List<String> requestedIdList);
+
+  Map<String, Actions> getSelfAllowedActionsBatch(
+          List<String> resourceIds, ModelDBServiceResourceTypes type);
+
+  void createRoleBinding(
+          Role role,
+          CollaboratorBase collaborator,
+          String resourceId,
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  String buildPublicRoleBindingName(
+          String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  void createPublicRoleBinding(
+          String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  Role getRoleByName(String roleName, RoleScope roleScope);
+
+  boolean deleteRoleBinding(String roleBindingId);
+
+  boolean deleteRoleBindings(List<String> roleBindingNames);
+
+  GeneratedMessageV3 getTeamByName(String orgId, String teamName);
+
+  GeneratedMessageV3 getOrgByName(String name);
 }
