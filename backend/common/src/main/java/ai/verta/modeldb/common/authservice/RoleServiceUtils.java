@@ -2,16 +2,24 @@ package ai.verta.modeldb.common.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum;
+import ai.verta.modeldb.authservice.AuthInterceptor;
+import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.Action;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteResources;
+import ai.verta.uac.Entities;
+import ai.verta.uac.GetAllowedResources;
 import ai.verta.uac.GetOrganizationById;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetTeamById;
+import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
@@ -26,6 +34,8 @@ import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -366,4 +376,167 @@ public class RoleServiceUtils implements RoleService {
             + collaborator.getNameForBinding();
   }
 
+  @Override
+  public List<String> getAccessibleResourceIds(
+          CollaboratorBase hostUserInfo,
+          CollaboratorBase currentLoginUserInfo,
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+          List<String> requestedResourceIds) {
+    List<String> accessibleResourceIds;
+    if (hostUserInfo != null) {
+      accessibleResourceIds =
+              getReadOnlyAccessibleResourceIds(true, hostUserInfo, modelDBServiceResourceTypes);
+    } else {
+      accessibleResourceIds =
+              getReadOnlyAccessibleResourceIds(
+                      false, currentLoginUserInfo, modelDBServiceResourceTypes);
+    }
+
+    if (requestedResourceIds != null && !requestedResourceIds.isEmpty()) {
+      accessibleResourceIds.retainAll(requestedResourceIds);
+    }
+    return accessibleResourceIds;
+  }
+
+  private List<String> getReadOnlyAccessibleResourceIds(
+          boolean isHostUser,
+          CollaboratorBase userInfo,
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+
+    Set<String> resourceIdsSet = new HashSet<>();
+    if (userInfo != null && userInfo.getVertaId() != null) {
+      List<String> accessibleResourceIds;
+      if (isHostUser) {
+        accessibleResourceIds =
+                getAllowedResources(modelDBServiceResourceTypes, ModelDBActionEnum.ModelDBServiceActions.READ, userInfo);
+      } else {
+        accessibleResourceIds =
+                getSelfAllowedResources(modelDBServiceResourceTypes, ModelDBActionEnum.ModelDBServiceActions.READ);
+      }
+      resourceIdsSet.addAll(accessibleResourceIds);
+      LOGGER.debug(
+              "Accessible " + modelDBServiceResourceTypes + " Ids size is {}",
+              accessibleResourceIds.size());
+    }
+
+    return new ArrayList<>(resourceIdsSet);
+  }
+
+  @Override
+  public List<String> getAllowedResources(
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+          CollaboratorBase collaboratorBase) {
+    return getAllowedResources(
+            true, modelDBServiceResourceTypes, modelDBServiceActions, collaboratorBase);
+  }
+
+  private List<String> getAllowedResources(
+          boolean retry,
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+          CollaboratorBase collaboratorBase) {
+    Action action =
+            Action.newBuilder()
+                    .setService(Service.MODELDB_SERVICE)
+                    .setModeldbServiceAction(modelDBServiceActions)
+                    .build();
+    Entities entity = collaboratorBase.getEntities();
+    GetAllowedResources getAllowedResourcesRequest =
+            GetAllowedResources.newBuilder()
+                    .addActions(action)
+                    .addEntities(entity)
+                    .setResourceType(
+                            ResourceType.newBuilder()
+                                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                    .setService(Service.MODELDB_SERVICE)
+                    .build();
+    try (ai.verta.modeldb.authservice.AuthServiceChannel authServiceChannel = new ai.verta.modeldb.authservice.AuthServiceChannel()) {
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
+      GetAllowedResources.Response getAllowedResourcesResponse =
+              authServiceChannel
+                      .getAuthzServiceBlockingStub(requestHeaders)
+                      .getAllowedResources(getAllowedResourcesRequest);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
+
+      if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
+        List<String> resourcesIds = new ArrayList<>();
+        for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
+          resourcesIds.addAll(resources.getResourceIdsList());
+        }
+        return resourcesIds;
+      } else {
+        return Collections.emptyList();
+      }
+    } catch (StatusRuntimeException ex) {
+      return (List<String>)
+              ModelDBUtils.retryOrThrowException(
+                      ex,
+                      retry,
+                      (CommonUtils.RetryCallInterface<List<String>>)
+                              (retry1) ->
+                                      getAllowedResources(
+                                              retry1,
+                                              modelDBServiceResourceTypes,
+                                              modelDBServiceActions,
+                                              collaboratorBase));
+    }
+  }
+
+  @Override
+  public List<String> getSelfAllowedResources(
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
+    return getSelfAllowedResources(true, modelDBServiceResourceTypes, modelDBServiceActions);
+  }
+
+  private List<String> getSelfAllowedResources(
+          boolean retry,
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
+    Action action =
+            Action.newBuilder()
+                    .setService(Service.MODELDB_SERVICE)
+                    .setModeldbServiceAction(modelDBServiceActions)
+                    .build();
+    GetSelfAllowedResources getAllowedResourcesRequest =
+            GetSelfAllowedResources.newBuilder()
+                    .addActions(action)
+                    .setResourceType(
+                            ResourceType.newBuilder()
+                                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                    .setService(Service.MODELDB_SERVICE)
+                    .build();
+    try (ai.verta.modeldb.authservice.AuthServiceChannel authServiceChannel = new ai.verta.modeldb.authservice.AuthServiceChannel()) {
+      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
+      GetSelfAllowedResources.Response getAllowedResourcesResponse =
+              authServiceChannel
+                      .getAuthzServiceBlockingStub(requestHeaders)
+                      .getSelfAllowedResources(getAllowedResourcesRequest);
+      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
+
+      if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
+        List<String> resourcesIds = new ArrayList<>();
+        for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
+          resourcesIds.addAll(resources.getResourceIdsList());
+        }
+        return resourcesIds;
+      } else {
+        return Collections.emptyList();
+      }
+    } catch (StatusRuntimeException ex) {
+      return (List<String>)
+              ModelDBUtils.retryOrThrowException(
+                      ex,
+                      retry,
+                      (CommonUtils.RetryCallInterface<List<String>>)
+                              (retry1) ->
+                                      getSelfAllowedResources(
+                                              retry1, modelDBServiceResourceTypes, modelDBServiceActions));
+    }
+  }
 }
