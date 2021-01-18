@@ -7,7 +7,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
-import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.CollaboratorPermissions;
