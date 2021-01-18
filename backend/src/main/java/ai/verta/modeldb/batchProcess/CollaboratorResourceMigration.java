@@ -291,7 +291,6 @@ public class CollaboratorResourceMigration {
                 repository.setVisibility_migration(true);
                 session.update(repository);
                 transaction.commit();
-                deleteRoleBindingsOfRepositories(Collections.singletonList(repository));
               } catch (Exception ex) {
                 if (transaction != null && transaction.getStatus().canRollback()) {
                   transaction.rollback();
