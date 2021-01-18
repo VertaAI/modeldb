@@ -8,7 +8,6 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.CollaboratorPermissions;
@@ -977,7 +976,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private List<Organization> listMyOrganizations(boolean retry) {
-    try (ai.verta.modeldb.authservice.AuthServiceChannel authServiceChannel = new ai.verta.modeldb.authservice.AuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       ListMyOrganizations listMyOrganizations = ListMyOrganizations.newBuilder().build();
       ListMyOrganizations.Response listMyOrganizationsResponse =
               authServiceChannel
@@ -986,8 +985,8 @@ public class RoleServiceUtils implements RoleService {
       return listMyOrganizationsResponse.getOrganizationsList();
     } catch (StatusRuntimeException ex) {
       return (List<Organization>)
-              ModelDBUtils.retryOrThrowException(
-                      ex, retry, (CommonUtils.RetryCallInterface<List<Organization>>) this::listMyOrganizations);
+              CommonUtils.retryOrThrowException(
+                      ex, retry, (CommonUtils.RetryCallInterface<List<Organization>>) this::listMyOrganizations, timeout);
     }
   }
 }
