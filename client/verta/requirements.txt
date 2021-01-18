@@ -27,7 +27,7 @@ scipy>=1.4; python_version >= '3.8'
 spacy!=2.3.1,<2.3.3; python_version < '3.6'  # https://github.com/explosion/spaCy/issues/5729, https://github.com/explosion/spaCy/issues/6454
 spacy; python_version >= '3.6'
 tensorflow<2.0; python_version < '3.8'
-tensorflow>=2.2; python_version >= '3.8'  # https://www.tensorflow.org/install/pip
+tensorflow>=2.2; python_version == '3.8'  # https://www.tensorflow.org/install/pip
 torch
 xgboost
 
