@@ -2,7 +2,6 @@ package ai.verta.modeldb.common.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum;
-import ai.verta.modeldb.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
@@ -680,7 +679,7 @@ public class RoleServiceUtils implements RoleService {
                                       .build())
                       .build();
 
-      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
+      Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       IsSelfAllowed.Response isSelfAllowedResponse =
               authServiceChannel
                       .getAuthzServiceBlockingStub(requestHeaders)
@@ -742,7 +741,7 @@ public class RoleServiceUtils implements RoleService {
                                       .build())
                       .build();
 
-      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
+      Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       GetSelfAllowedActionsBatch.Response getSelfAllowedActionsBatchResponse =
               authServiceChannel
                       .getAuthzServiceBlockingStub(requestHeaders)
