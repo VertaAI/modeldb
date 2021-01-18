@@ -8,7 +8,6 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteResources;
@@ -472,7 +471,7 @@ public class RoleServiceUtils implements RoleService {
       }
     } catch (StatusRuntimeException ex) {
       return (List<String>)
-              ModelDBUtils.retryOrThrowException(
+              CommonUtils.retryOrThrowException(
                       ex,
                       retry,
                       (CommonUtils.RetryCallInterface<List<String>>)
@@ -481,7 +480,7 @@ public class RoleServiceUtils implements RoleService {
                                               retry1,
                                               modelDBServiceResourceTypes,
                                               modelDBServiceActions,
-                                              collaboratorBase));
+                                              collaboratorBase), timeout);
     }
   }
 
@@ -530,13 +529,13 @@ public class RoleServiceUtils implements RoleService {
       }
     } catch (StatusRuntimeException ex) {
       return (List<String>)
-              ModelDBUtils.retryOrThrowException(
+              CommonUtils.retryOrThrowException(
                       ex,
                       retry,
                       (CommonUtils.RetryCallInterface<List<String>>)
                               (retry1) ->
                                       getSelfAllowedResources(
-                                              retry1, modelDBServiceResourceTypes, modelDBServiceActions));
+                                              retry1, modelDBServiceResourceTypes, modelDBServiceActions), timeout);
     }
   }
 }
