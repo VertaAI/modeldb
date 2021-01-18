@@ -144,7 +144,7 @@ class S3(_dataset._Dataset):
             path=cls._S3_PATH.format(bucket_name, key),
             size=obj.get('Size') or obj.get('ContentLength') or 0,
             last_modified=_utils.timestamp_to_ms(_utils.ensure_timestamp(obj['LastModified'])),
-            md5=obj['ETag'].strip('"'),
+            md5=obj['ETag'].strip('"'),  # NOTE: ETag for multipart is not MD5 https://stackoverflow.com/a/19304527
         )
         if obj.get('VersionId', 'null') != 'null':  # S3's API returns 'null' when there's no version ID
             component.s3_version_id = obj['VersionId']
