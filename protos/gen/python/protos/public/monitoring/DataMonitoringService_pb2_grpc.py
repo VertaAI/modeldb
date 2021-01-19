@@ -6,7 +6,6 @@ from ..monitoring import DataMonitoringService_pb2 as monitoring_dot_DataMonitor
 
 class DataMonitoringServiceStub(object):
   """Service definitions
-
   """
 
   def __init__(self, channel):
@@ -40,51 +39,70 @@ class DataMonitoringServiceStub(object):
         request_serializer=monitoring_dot_DataMonitoringService__pb2.ListProfilersRequest.SerializeToString,
         response_deserializer=monitoring_dot_DataMonitoringService__pb2.ListProfilersRequest.Response.FromString,
         )
-    self.getProfilerSet = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/getProfilerSet',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.GetProfilerSetRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.GetProfilerSetRequest.Response.FromString,
+    self.getProfilerInstance = channel.unary_unary(
+        '/ai.verta.monitoring.DataMonitoringService/getProfilerInstance',
+        request_serializer=monitoring_dot_DataMonitoringService__pb2.GetProfilerInstanceRequest.SerializeToString,
+        response_deserializer=monitoring_dot_DataMonitoringService__pb2.GetProfilerInstanceRequest.Response.FromString,
         )
-    self.createProfilerSet = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/createProfilerSet',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.CreateProfilerSetRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.CreateProfilerSetRequest.Response.FromString,
+    self.createProfilerInstance = channel.unary_unary(
+        '/ai.verta.monitoring.DataMonitoringService/createProfilerInstance',
+        request_serializer=monitoring_dot_DataMonitoringService__pb2.CreateProfilerInstanceRequest.SerializeToString,
+        response_deserializer=monitoring_dot_DataMonitoringService__pb2.CreateProfilerInstanceRequest.Response.FromString,
         )
-    self.addProfilerToSet = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/addProfilerToSet',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.AddProfilerToSetRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.AddProfilerToSetRequest.Response.FromString,
+    self.updateProfilerInstance = channel.unary_unary(
+        '/ai.verta.monitoring.DataMonitoringService/updateProfilerInstance',
+        request_serializer=monitoring_dot_DataMonitoringService__pb2.UpdateProfilerInstanceRequest.SerializeToString,
+        response_deserializer=monitoring_dot_DataMonitoringService__pb2.UpdateProfilerInstanceRequest.Response.FromString,
         )
-    self.removeProfilerFromSet = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/removeProfilerFromSet',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.RemoveProfilerFromSetRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.RemoveProfilerFromSetRequest.Response.FromString,
-        )
-    self.deleteProfilerSet = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/deleteProfilerSet',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.DeleteProfilerSetRequest.SerializeToString,
+    self.deleteProfilerInstance = channel.unary_unary(
+        '/ai.verta.monitoring.DataMonitoringService/deleteProfilerInstance',
+        request_serializer=monitoring_dot_DataMonitoringService__pb2.DeleteProfilerInstanceRequest.SerializeToString,
         response_deserializer=monitoring_dot_DataMonitoringService__pb2.DeleteProfilerRequest.Response.FromString,
         )
-    self.listProfilerSets = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/listProfilerSets',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.ListProfilerSetsRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.ListProfilerSetsRequest.Response.FromString,
+    self.listProfilerInstances = channel.unary_unary(
+        '/ai.verta.monitoring.DataMonitoringService/listProfilerInstances',
+        request_serializer=monitoring_dot_DataMonitoringService__pb2.ListProfilerInstancesRequest.SerializeToString,
+        response_deserializer=monitoring_dot_DataMonitoringService__pb2.ListProfilerInstancesRequest.Response.FromString,
         )
-    self.profileBatch = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/profileBatch',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.ProfileBatchRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.ProfileBatchRequest.Response.FromString,
+    self.getProfiledEntity = channel.unary_unary(
+        '/ai.verta.monitoring.DataMonitoringService/getProfiledEntity',
+        request_serializer=monitoring_dot_DataMonitoringService__pb2.GetProfiledEntityRequest.SerializeToString,
+        response_deserializer=monitoring_dot_DataMonitoringService__pb2.GetProfiledEntityRequest.Response.FromString,
+        )
+    self.createProfiledEntity = channel.unary_unary(
+        '/ai.verta.monitoring.DataMonitoringService/createProfiledEntity',
+        request_serializer=monitoring_dot_DataMonitoringService__pb2.CreateProfiledEntityRequest.SerializeToString,
+        response_deserializer=monitoring_dot_DataMonitoringService__pb2.CreateProfiledEntityRequest.Response.FromString,
+        )
+    self.updateProfiledEntity = channel.unary_unary(
+        '/ai.verta.monitoring.DataMonitoringService/updateProfiledEntity',
+        request_serializer=monitoring_dot_DataMonitoringService__pb2.UpdateProfiledEntityRequest.SerializeToString,
+        response_deserializer=monitoring_dot_DataMonitoringService__pb2.UpdateProfiledEntityRequest.Response.FromString,
+        )
+    self.deleteProfiledEntity = channel.unary_unary(
+        '/ai.verta.monitoring.DataMonitoringService/deleteProfiledEntity',
+        request_serializer=monitoring_dot_DataMonitoringService__pb2.DeleteProfiledEntityRequest.SerializeToString,
+        response_deserializer=monitoring_dot_DataMonitoringService__pb2.DeleteProfiledEntityRequest.Response.FromString,
+        )
+    self.listProfiledEntities = channel.unary_unary(
+        '/ai.verta.monitoring.DataMonitoringService/listProfiledEntities',
+        request_serializer=monitoring_dot_DataMonitoringService__pb2.ListProfiledEntitiesRequest.SerializeToString,
+        response_deserializer=monitoring_dot_DataMonitoringService__pb2.ListProfiledEntitiesRequest.Response.FromString,
         )
     self.getAggregate = channel.unary_unary(
         '/ai.verta.monitoring.DataMonitoringService/getAggregate',
         request_serializer=monitoring_dot_DataMonitoringService__pb2.GetAggregateRequest.SerializeToString,
         response_deserializer=monitoring_dot_DataMonitoringService__pb2.GetAggregateRequest.Response.FromString,
         )
+    self.storeAggregateBatch = channel.unary_unary(
+        '/ai.verta.monitoring.DataMonitoringService/storeAggregateBatch',
+        request_serializer=monitoring_dot_DataMonitoringService__pb2.StoreProfiledAggregateBatchRequest.SerializeToString,
+        response_deserializer=monitoring_dot_DataMonitoringService__pb2.StoreProfiledAggregateBatchRequest.Response.FromString,
+        )
 
 
 class DataMonitoringServiceServicer(object):
   """Service definitions
-
   """
 
   def getProfiler(self, request, context):
@@ -122,49 +140,70 @@ class DataMonitoringServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getProfilerSet(self, request, context):
+  def getProfilerInstance(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def createProfilerSet(self, request, context):
+  def createProfilerInstance(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def addProfilerToSet(self, request, context):
+  def updateProfilerInstance(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def removeProfilerFromSet(self, request, context):
+  def deleteProfilerInstance(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def deleteProfilerSet(self, request, context):
+  def listProfilerInstances(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def listProfilerSets(self, request, context):
+  def getProfiledEntity(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def profileBatch(self, request, context):
+  def createProfiledEntity(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def updateProfiledEntity(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def deleteProfiledEntity(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def listProfiledEntities(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -172,6 +211,13 @@ class DataMonitoringServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def getAggregate(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def storeAggregateBatch(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -206,45 +252,65 @@ def add_DataMonitoringServiceServicer_to_server(servicer, server):
           request_deserializer=monitoring_dot_DataMonitoringService__pb2.ListProfilersRequest.FromString,
           response_serializer=monitoring_dot_DataMonitoringService__pb2.ListProfilersRequest.Response.SerializeToString,
       ),
-      'getProfilerSet': grpc.unary_unary_rpc_method_handler(
-          servicer.getProfilerSet,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.GetProfilerSetRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.GetProfilerSetRequest.Response.SerializeToString,
+      'getProfilerInstance': grpc.unary_unary_rpc_method_handler(
+          servicer.getProfilerInstance,
+          request_deserializer=monitoring_dot_DataMonitoringService__pb2.GetProfilerInstanceRequest.FromString,
+          response_serializer=monitoring_dot_DataMonitoringService__pb2.GetProfilerInstanceRequest.Response.SerializeToString,
       ),
-      'createProfilerSet': grpc.unary_unary_rpc_method_handler(
-          servicer.createProfilerSet,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.CreateProfilerSetRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.CreateProfilerSetRequest.Response.SerializeToString,
+      'createProfilerInstance': grpc.unary_unary_rpc_method_handler(
+          servicer.createProfilerInstance,
+          request_deserializer=monitoring_dot_DataMonitoringService__pb2.CreateProfilerInstanceRequest.FromString,
+          response_serializer=monitoring_dot_DataMonitoringService__pb2.CreateProfilerInstanceRequest.Response.SerializeToString,
       ),
-      'addProfilerToSet': grpc.unary_unary_rpc_method_handler(
-          servicer.addProfilerToSet,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.AddProfilerToSetRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.AddProfilerToSetRequest.Response.SerializeToString,
+      'updateProfilerInstance': grpc.unary_unary_rpc_method_handler(
+          servicer.updateProfilerInstance,
+          request_deserializer=monitoring_dot_DataMonitoringService__pb2.UpdateProfilerInstanceRequest.FromString,
+          response_serializer=monitoring_dot_DataMonitoringService__pb2.UpdateProfilerInstanceRequest.Response.SerializeToString,
       ),
-      'removeProfilerFromSet': grpc.unary_unary_rpc_method_handler(
-          servicer.removeProfilerFromSet,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.RemoveProfilerFromSetRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.RemoveProfilerFromSetRequest.Response.SerializeToString,
-      ),
-      'deleteProfilerSet': grpc.unary_unary_rpc_method_handler(
-          servicer.deleteProfilerSet,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.DeleteProfilerSetRequest.FromString,
+      'deleteProfilerInstance': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteProfilerInstance,
+          request_deserializer=monitoring_dot_DataMonitoringService__pb2.DeleteProfilerInstanceRequest.FromString,
           response_serializer=monitoring_dot_DataMonitoringService__pb2.DeleteProfilerRequest.Response.SerializeToString,
       ),
-      'listProfilerSets': grpc.unary_unary_rpc_method_handler(
-          servicer.listProfilerSets,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.ListProfilerSetsRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.ListProfilerSetsRequest.Response.SerializeToString,
+      'listProfilerInstances': grpc.unary_unary_rpc_method_handler(
+          servicer.listProfilerInstances,
+          request_deserializer=monitoring_dot_DataMonitoringService__pb2.ListProfilerInstancesRequest.FromString,
+          response_serializer=monitoring_dot_DataMonitoringService__pb2.ListProfilerInstancesRequest.Response.SerializeToString,
       ),
-      'profileBatch': grpc.unary_unary_rpc_method_handler(
-          servicer.profileBatch,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.ProfileBatchRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.ProfileBatchRequest.Response.SerializeToString,
+      'getProfiledEntity': grpc.unary_unary_rpc_method_handler(
+          servicer.getProfiledEntity,
+          request_deserializer=monitoring_dot_DataMonitoringService__pb2.GetProfiledEntityRequest.FromString,
+          response_serializer=monitoring_dot_DataMonitoringService__pb2.GetProfiledEntityRequest.Response.SerializeToString,
+      ),
+      'createProfiledEntity': grpc.unary_unary_rpc_method_handler(
+          servicer.createProfiledEntity,
+          request_deserializer=monitoring_dot_DataMonitoringService__pb2.CreateProfiledEntityRequest.FromString,
+          response_serializer=monitoring_dot_DataMonitoringService__pb2.CreateProfiledEntityRequest.Response.SerializeToString,
+      ),
+      'updateProfiledEntity': grpc.unary_unary_rpc_method_handler(
+          servicer.updateProfiledEntity,
+          request_deserializer=monitoring_dot_DataMonitoringService__pb2.UpdateProfiledEntityRequest.FromString,
+          response_serializer=monitoring_dot_DataMonitoringService__pb2.UpdateProfiledEntityRequest.Response.SerializeToString,
+      ),
+      'deleteProfiledEntity': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteProfiledEntity,
+          request_deserializer=monitoring_dot_DataMonitoringService__pb2.DeleteProfiledEntityRequest.FromString,
+          response_serializer=monitoring_dot_DataMonitoringService__pb2.DeleteProfiledEntityRequest.Response.SerializeToString,
+      ),
+      'listProfiledEntities': grpc.unary_unary_rpc_method_handler(
+          servicer.listProfiledEntities,
+          request_deserializer=monitoring_dot_DataMonitoringService__pb2.ListProfiledEntitiesRequest.FromString,
+          response_serializer=monitoring_dot_DataMonitoringService__pb2.ListProfiledEntitiesRequest.Response.SerializeToString,
       ),
       'getAggregate': grpc.unary_unary_rpc_method_handler(
           servicer.getAggregate,
           request_deserializer=monitoring_dot_DataMonitoringService__pb2.GetAggregateRequest.FromString,
           response_serializer=monitoring_dot_DataMonitoringService__pb2.GetAggregateRequest.Response.SerializeToString,
+      ),
+      'storeAggregateBatch': grpc.unary_unary_rpc_method_handler(
+          servicer.storeAggregateBatch,
+          request_deserializer=monitoring_dot_DataMonitoringService__pb2.StoreProfiledAggregateBatchRequest.FromString,
+          response_serializer=monitoring_dot_DataMonitoringService__pb2.StoreProfiledAggregateBatchRequest.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

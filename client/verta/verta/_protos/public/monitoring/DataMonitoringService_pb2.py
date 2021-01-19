@@ -13,7 +13,6 @@ _sym_db = _symbol_database.Default()
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from ..common import CommonService_pb2 as common_dot_CommonService__pb2
-from ..modeldb.versioning import Dataset_pb2 as modeldb_dot_versioning_dot_Dataset__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.monitoring',
   syntax='proto3',
   serialized_options=b'P\001ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring',
-  serialized_pb=b'\n&monitoring/DataMonitoringService.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\x1a modeldb/versioning/Dataset.proto\"N\n\rCountPerNGram\x12-\n\x04keys\x18\x01 \x03(\x0b\x32\x1f.ai.verta.monitoring.ListString\x12\x0e\n\x06\x63ounts\x18\x02 \x03(\x04\"\x1a\n\nListString\x12\x0c\n\x04item\x18\x01 \x03(\t\">\n\x0e\x46loatHistogram\x12\x15\n\rbucket_limits\x18\x01 \x03(\x02\x12\x15\n\rbucket_counts\x18\x02 \x03(\x04\":\n\x11\x44iscreteHistogram\x12\x0e\n\x06labels\x18\x01 \x03(\t\x12\x15\n\rbucket_counts\x18\x02 \x03(\x04\"A\n\x08Profiler\x12\n\n\x02id\x18\x01 \x01(\t\x12)\n\x06lambda\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.Artifact\"K\n\x0bProfilerSet\x12\n\n\x02id\x18\x01 \x01(\t\x12\x30\n\tprofilers\x18\x02 \x03(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"w\n\tDataFrame\x12=\n\x0b\x64\x61taSetBlob\x18\x01 \x01(\x0b\x32(.ai.verta.modeldb.versioning.DatasetBlob\x12+\n\x08metadata\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"D\n\x0e\x44\x61taFrameBatch\x12\x32\n\ndataFrames\x18\x01 \x03(\x0b\x32\x1e.ai.verta.monitoring.DataFrame\"\x12\n\x10ParquetDataFrame\"\x9c\x01\n\x11ProfiledDataFrame\x12\x12\n\nprofilerId\x18\x01 \x01(\t\x12\x31\n\tdataframe\x18\x02 \x01(\x0b\x32\x1e.ai.verta.monitoring.DataFrame\x12@\n\x11profiledDataFrame\x18\x03 \x01(\x0b\x32%.ai.verta.monitoring.ParquetDataFrame\"T\n\x16ProfiledDataFrameBatch\x12:\n\ndataFrames\x18\x01 \x03(\x0b\x32&.ai.verta.monitoring.ProfiledDataFrame\"]\n\x12GetProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\t\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"\x8b\x01\n\x15\x43reateProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12)\n\x06lambda\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.Artifact\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"\x8b\x01\n\x15UpdateProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12)\n\x06lambda\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.Artifact\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"/\n\x15\x44\x65leteProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\t\x1a\n\n\x08Response\"T\n\x14ListProfilersRequest\x1a<\n\x08Response\x12\x30\n\tprofilers\x18\x01 \x03(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"f\n\x15GetProfilerSetRequest\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x41\n\x08Response\x12\x35\n\x0bprofilerSet\x18\x01 \x01(\x0b\x32 .ai.verta.monitoring.ProfilerSet\"\x9b\x01\n\x18\x43reateProfilerSetRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x30\n\tprofilers\x18\x02 \x03(\x0b\x32\x1d.ai.verta.monitoring.Profiler\x1a\x41\n\x08Response\x12\x35\n\x0bprofilerSet\x18\x01 \x01(\x0b\x32 .ai.verta.monitoring.ProfilerSet\"\x87\x01\n\x17\x41\x64\x64ProfilerToSetRequest\x12\x12\n\nprofilerId\x18\x01 \x01(\t\x12\x15\n\rprofilerSetId\x18\x02 \x01(\t\x1a\x41\n\x08Response\x12\x35\n\x0bprofilerSet\x18\x01 \x01(\x0b\x32 .ai.verta.monitoring.ProfilerSet\"\x8c\x01\n\x1cRemoveProfilerFromSetRequest\x12\x12\n\nprofilerId\x18\x01 \x01(\t\x12\x15\n\rprofilerSetId\x18\x02 \x01(\t\x1a\x41\n\x08Response\x12\x35\n\x0bprofilerSet\x18\x01 \x01(\x0b\x32 .ai.verta.monitoring.ProfilerSet\"2\n\x18\x44\x65leteProfilerSetRequest\x12\n\n\x02id\x18\x01 \x01(\t\x1a\n\n\x08Response\"]\n\x17ListProfilerSetsRequest\x1a\x42\n\x08Response\x12\x36\n\x0cprofilerSets\x18\x01 \x03(\x0b\x32 .ai.verta.monitoring.ProfilerSet\"u\n\x13ProfileBatchRequest\x12\x15\n\rprofilerSetId\x18\x01 \x01(\t\x12;\n\x0e\x64\x61taFrameBatch\x18\x02 \x01(\x0b\x32#.ai.verta.monitoring.DataFrameBatch\x1a\n\n\x08Response\"\xb8\x02\n\x13GetAggregateRequest\x12\x12\n\nprofilerId\x18\x01 \x01(\t\x12\x19\n\x11start_time_millis\x18\x02 \x01(\x04\x12\x17\n\x0f\x65nd_time_millis\x18\x03 \x01(\x04\x1a\xd8\x01\n\x08Response\x12;\n\rcountPerNGram\x18\x01 \x01(\x0b\x32\".ai.verta.monitoring.CountPerNGramH\x00\x12=\n\x0e\x66loatHistogram\x18\x02 \x01(\x0b\x32#.ai.verta.monitoring.FloatHistogramH\x00\x12\x43\n\x11\x64iscreteHistogram\x18\x03 \x01(\x0b\x32&.ai.verta.monitoring.DiscreteHistogramH\x00\x42\x0b\n\taggregate2\xa1\x0c\n\x15\x44\x61taMonitoringService\x12j\n\x0bgetProfiler\x12\'.ai.verta.monitoring.GetProfilerRequest\x1a\x30.ai.verta.monitoring.GetProfilerRequest.Response\"\x00\x12s\n\x0e\x63reateProfiler\x12*.ai.verta.monitoring.CreateProfilerRequest\x1a\x33.ai.verta.monitoring.CreateProfilerRequest.Response\"\x00\x12s\n\x0eupdateProfiler\x12*.ai.verta.monitoring.UpdateProfilerRequest\x1a\x33.ai.verta.monitoring.UpdateProfilerRequest.Response\"\x00\x12s\n\x0e\x64\x65leteProfiler\x12*.ai.verta.monitoring.DeleteProfilerRequest\x1a\x33.ai.verta.monitoring.DeleteProfilerRequest.Response\"\x00\x12p\n\rlistProfilers\x12).ai.verta.monitoring.ListProfilersRequest\x1a\x32.ai.verta.monitoring.ListProfilersRequest.Response\"\x00\x12s\n\x0egetProfilerSet\x12*.ai.verta.monitoring.GetProfilerSetRequest\x1a\x33.ai.verta.monitoring.GetProfilerSetRequest.Response\"\x00\x12|\n\x11\x63reateProfilerSet\x12-.ai.verta.monitoring.CreateProfilerSetRequest\x1a\x36.ai.verta.monitoring.CreateProfilerSetRequest.Response\"\x00\x12y\n\x10\x61\x64\x64ProfilerToSet\x12,.ai.verta.monitoring.AddProfilerToSetRequest\x1a\x35.ai.verta.monitoring.AddProfilerToSetRequest.Response\"\x00\x12\x88\x01\n\x15removeProfilerFromSet\x12\x31.ai.verta.monitoring.RemoveProfilerFromSetRequest\x1a:.ai.verta.monitoring.RemoveProfilerFromSetRequest.Response\"\x00\x12y\n\x11\x64\x65leteProfilerSet\x12-.ai.verta.monitoring.DeleteProfilerSetRequest\x1a\x33.ai.verta.monitoring.DeleteProfilerRequest.Response\"\x00\x12y\n\x10listProfilerSets\x12,.ai.verta.monitoring.ListProfilerSetsRequest\x1a\x35.ai.verta.monitoring.ListProfilerSetsRequest.Response\"\x00\x12m\n\x0cprofileBatch\x12(.ai.verta.monitoring.ProfileBatchRequest\x1a\x31.ai.verta.monitoring.ProfileBatchRequest.Response\"\x00\x12m\n\x0cgetAggregate\x12(.ai.verta.monitoring.GetAggregateRequest\x1a\x31.ai.verta.monitoring.GetAggregateRequest.Response\"\x00\x42\x45P\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
+  serialized_pb=b'\n&monitoring/DataMonitoringService.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"N\n\rCountPerNGram\x12-\n\x04keys\x18\x01 \x03(\x0b\x32\x1f.ai.verta.monitoring.ListString\x12\x0e\n\x06\x63ounts\x18\x02 \x03(\x04\"\x1a\n\nListString\x12\x0c\n\x04item\x18\x01 \x03(\t\">\n\x0e\x46loatHistogram\x12\x15\n\rbucket_limits\x18\x01 \x03(\x02\x12\x15\n\rbucket_counts\x18\x02 \x03(\x04\":\n\x11\x44iscreteHistogram\x12\x0e\n\x06labels\x18\x01 \x03(\t\x12\x15\n\rbucket_counts\x18\x02 \x03(\x04\"5\n\nStatistics\x12\x0c\n\x04mean\x18\x01 \x01(\x02\x12\x19\n\x11standardDeviation\x18\x02 \x01(\x02\"T\n\x08Profiler\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12.\n\x0blambdaClass\x18\x03 \x01(\x0b\x32\x19.ai.verta.common.Artifact\"\x8b\x01\n\x10ProfilerInstance\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12/\n\x08profiler\x18\x03 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\x12,\n\targuments\x18\x04 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\"\xb9\x01\n\x0eProfiledEntity\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tentity_id\x18\x03 \x01(\t\x12\x13\n\x0b\x65ndpoint_id\x18\x04 \x01(\t\x12+\n\x08metadata\x18\x05 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x38\n\tprofilers\x18\x06 \x03(\x0b\x32%.ai.verta.monitoring.ProfilerInstance\"\xf8\x02\n\x11ProfiledAggregate\x12<\n\x0fprofiled_entity\x18\x01 \x01(\x0b\x32#.ai.verta.monitoring.ProfiledEntity\x12\x1c\n\x14profiler_instance_id\x18\x02 \x01(\t\x12=\n\x0f\x63ount_per_ngram\x18\x03 \x01(\x0b\x32\".ai.verta.monitoring.CountPerNGramH\x00\x12>\n\x0f\x66loat_histogram\x18\x04 \x01(\x0b\x32#.ai.verta.monitoring.FloatHistogramH\x00\x12\x44\n\x12\x64iscrete_histogram\x18\x05 \x01(\x0b\x32&.ai.verta.monitoring.DiscreteHistogramH\x00\x12\x35\n\nstatistics\x18\x06 \x01(\x0b\x32\x1f.ai.verta.monitoring.StatisticsH\x00\x42\x0b\n\taggregate\"T\n\x16ProfiledAggregateBatch\x12:\n\naggregates\x18\x01 \x03(\x0b\x32&.ai.verta.monitoring.ProfiledAggregate\"]\n\x12GetProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\t\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"\x99\x01\n\x15\x43reateProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12)\n\x06lambda\x18\x03 \x01(\x0b\x32\x19.ai.verta.common.Artifact\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"\x99\x01\n\x15UpdateProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12)\n\x06lambda\x18\x03 \x01(\x0b\x32\x19.ai.verta.common.Artifact\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"/\n\x15\x44\x65leteProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\t\x1a\n\n\x08Response\"T\n\x14ListProfilersRequest\x1a<\n\x08Response\x12\x30\n\tprofilers\x18\x01 \x03(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"q\n\x1aGetProfilerInstanceRequest\x12\n\n\x02id\x18\x01 \x01(\t\x1aG\n\x08Response\x12;\n\x0cprofiler_set\x18\x01 \x01(\x0b\x32%.ai.verta.monitoring.ProfilerInstance\"\x9c\x01\n\x1d\x43reateProfilerInstanceRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0bprofiler_id\x18\x03 \x01(\t\x1aL\n\x08Response\x12@\n\x11profiler_instance\x18\x01 \x01(\x0b\x32%.ai.verta.monitoring.ProfilerInstance\"\x87\x01\n\x1dUpdateProfilerInstanceRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x1aL\n\x08Response\x12@\n\x11profiler_instance\x18\x01 \x01(\x0b\x32%.ai.verta.monitoring.ProfilerInstance\"7\n\x1d\x44\x65leteProfilerInstanceRequest\x12\n\n\x02id\x18\x01 \x01(\t\x1a\n\n\x08Response\"\xae\x01\n\x1cListProfilerInstancesRequest\x12\x15\n\x0bprofiler_id\x18\x01 \x01(\tH\x00\x12\x1c\n\x12profiled_entity_id\x18\x02 \x01(\tH\x00\x1aM\n\x08Response\x12\x41\n\x12profiler_instances\x18\x01 \x03(\x0b\x32%.ai.verta.monitoring.ProfilerInstanceB\n\n\x08\x66ilterTo\"\x7f\n\x18GetProfiledEntityRequest\x12\x19\n\x11profile_entity_id\x18\x01 \x01(\t\x1aH\n\x08Response\x12<\n\x0fprofiled_entity\x18\x01 \x01(\x0b\x32#.ai.verta.monitoring.ProfiledEntity\"\xe8\x01\n\x1b\x43reateProfiledEntityRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\tentity_id\x18\x02 \x01(\t\x12\x13\n\x0b\x65ndpoint_id\x18\x03 \x01(\t\x12+\n\x08metadata\x18\x04 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x1c\n\x14profiler_instance_id\x18\x05 \x01(\t\x1aH\n\x08Response\x12<\n\x0fprofiled_entity\x18\x01 \x01(\x0b\x32#.ai.verta.monitoring.ProfiledEntity\"\x91\x01\n\x1bUpdateProfiledEntityRequest\x12\x1a\n\x12profiled_entity_id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x1aH\n\x08Response\x12<\n\x0fprofiled_entity\x18\x01 \x01(\x0b\x32#.ai.verta.monitoring.ProfiledEntity\"E\n\x1b\x44\x65leteProfiledEntityRequest\x12\x1a\n\x12profiled_entity_id\x18\x01 \x01(\t\x1a\n\n\x08Response\"\xcc\x01\n\x1bListProfiledEntitiesRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\tentity_id\x18\x02 \x01(\t\x12\x13\n\x0b\x65ndpoint_id\x18\x03 \x01(\t\x12+\n\x08metadata\x18\x04 \x01(\x0b\x32\x19.ai.verta.common.KeyValue\x1aJ\n\x08Response\x12>\n\x11profiled_entities\x18\x01 \x03(\x0b\x32#.ai.verta.monitoring.ProfiledEntity\"\xd9\x02\n\x13GetAggregateRequest\x12\x1a\n\x12profiled_entity_id\x18\x01 \x01(\t\x12\x13\n\x0bprofiler_id\x18\x02 \x01(\t\x12\x19\n\x11start_time_millis\x18\x03 \x01(\x04\x12\x17\n\x0f\x65nd_time_millis\x18\x04 \x01(\x04\x1a\xdc\x01\n\x08Response\x12=\n\x0f\x63ount_per_ngram\x18\x01 \x01(\x0b\x32\".ai.verta.monitoring.CountPerNGramH\x00\x12>\n\x0f\x66loat_histogram\x18\x02 \x01(\x0b\x32#.ai.verta.monitoring.FloatHistogramH\x00\x12\x44\n\x12\x64iscrete_histogram\x18\x03 \x01(\x0b\x32&.ai.verta.monitoring.DiscreteHistogramH\x00\x42\x0b\n\taggregate\"l\n\"StoreProfiledAggregateBatchRequest\x12:\n\x05\x62\x61tch\x18\x01 \x01(\x0b\x32+.ai.verta.monitoring.ProfiledAggregateBatch\x1a\n\n\x08Response2\x88\x17\n\x15\x44\x61taMonitoringService\x12\x8a\x01\n\x0bgetProfiler\x12\'.ai.verta.monitoring.GetProfilerRequest\x1a\x30.ai.verta.monitoring.GetProfilerRequest.Response\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/v1/profiler/getProfiler\x12\x99\x01\n\x0e\x63reateProfiler\x12*.ai.verta.monitoring.CreateProfilerRequest\x1a\x33.ai.verta.monitoring.CreateProfilerRequest.Response\"&\x82\xd3\xe4\x93\x02 \x1a\x1b/v1/profiler/createProfiler:\x01*\x12\x97\x01\n\x0eupdateProfiler\x12*.ai.verta.monitoring.UpdateProfilerRequest\x1a\x33.ai.verta.monitoring.UpdateProfilerRequest.Response\"$\x82\xd3\xe4\x93\x02\x1e\x32\x19/v1/profile/updateProfile:\x01*\x12\x98\x01\n\x0e\x64\x65leteProfiler\x12*.ai.verta.monitoring.DeleteProfilerRequest\x1a\x33.ai.verta.monitoring.DeleteProfilerRequest.Response\"%\x82\xd3\xe4\x93\x02\x1f*\x1a/v1/profile/deleteProfiler:\x01*\x12\x92\x01\n\rlistProfilers\x12).ai.verta.monitoring.ListProfilersRequest\x1a\x32.ai.verta.monitoring.ListProfilersRequest.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/profiler/listProfilers\x12\xae\x01\n\x13getProfilerInstance\x12/.ai.verta.monitoring.GetProfilerInstanceRequest\x1a\x38.ai.verta.monitoring.GetProfilerInstanceRequest.Response\",\x82\xd3\xe4\x93\x02&\x12$/v1/profiler-set/getProfilerInstance\x12\xbd\x01\n\x16\x63reateProfilerInstance\x12\x32.ai.verta.monitoring.CreateProfilerInstanceRequest\x1a;.ai.verta.monitoring.CreateProfilerInstanceRequest.Response\"2\x82\xd3\xe4\x93\x02,\x1a\'/v1/profiler-set/createProfilerInstance:\x01*\x12\xb6\x01\n\x16updateProfilerInstance\x12\x32.ai.verta.monitoring.UpdateProfilerInstanceRequest\x1a;.ai.verta.monitoring.UpdateProfilerInstanceRequest.Response\"+\x82\xd3\xe4\x93\x02%2 /v1/profile-set/updateProfileSet:\x01*\x12\xb4\x01\n\x16\x64\x65leteProfilerInstance\x12\x32.ai.verta.monitoring.DeleteProfilerInstanceRequest\x1a\x33.ai.verta.monitoring.DeleteProfilerRequest.Response\"1\x82\xd3\xe4\x93\x02+*&/v1/profile-set/deleteProfilerInstance:\x01*\x12\xb2\x01\n\x15listProfilerInstances\x12\x31.ai.verta.monitoring.ListProfilerInstancesRequest\x1a:.ai.verta.monitoring.ListProfilerInstancesRequest.Response\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/profiler-set/listProfilersSets\x12\xa9\x01\n\x11getProfiledEntity\x12-.ai.verta.monitoring.GetProfiledEntityRequest\x1a\x36.ai.verta.monitoring.GetProfiledEntityRequest.Response\"-\x82\xd3\xe4\x93\x02\'\x12%/v1/profiled-entity/getProfiledEntity\x12\xb8\x01\n\x14\x63reateProfiledEntity\x12\x30.ai.verta.monitoring.CreateProfiledEntityRequest\x1a\x39.ai.verta.monitoring.CreateProfiledEntityRequest.Response\"3\x82\xd3\xe4\x93\x02-\x1a(/v1/profiled-entity/createProfiledEntity:\x01*\x12\xb8\x01\n\x14updateProfiledEntity\x12\x30.ai.verta.monitoring.UpdateProfiledEntityRequest\x1a\x39.ai.verta.monitoring.UpdateProfiledEntityRequest.Response\"3\x82\xd3\xe4\x93\x02-2(/v1/profiled-entity/updateProfiledEntity:\x01*\x12\xb8\x01\n\x14\x64\x65leteProfiledEntity\x12\x30.ai.verta.monitoring.DeleteProfiledEntityRequest\x1a\x39.ai.verta.monitoring.DeleteProfiledEntityRequest.Response\"3\x82\xd3\xe4\x93\x02-*(/v1/profiled-entity/deleteProfiledEntity:\x01*\x12\xb5\x01\n\x14listProfiledEntities\x12\x30.ai.verta.monitoring.ListProfiledEntitiesRequest\x1a\x39.ai.verta.monitoring.ListProfiledEntitiesRequest.Response\"0\x82\xd3\xe4\x93\x02*\x12(/v1/profiled-entity/listProfiledEntities\x12\x8f\x01\n\x0cgetAggregate\x12(.ai.verta.monitoring.GetAggregateRequest\x1a\x31.ai.verta.monitoring.GetAggregateRequest.Response\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/aggregate/getAggregate\x12\xbe\x01\n\x13storeAggregateBatch\x12\x37.ai.verta.monitoring.StoreProfiledAggregateBatchRequest\x1a@.ai.verta.monitoring.StoreProfiledAggregateBatchRequest.Response\",\x82\xd3\xe4\x93\x02&\x1a!/v1/aggregate/storeAggregateBatch:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,modeldb_dot_versioning_dot_Dataset__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
 
 
@@ -61,8 +60,8 @@ _COUNTPERNGRAM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=155,
-  serialized_end=233,
+  serialized_start=121,
+  serialized_end=199,
 )
 
 
@@ -92,8 +91,8 @@ _LISTSTRING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=235,
-  serialized_end=261,
+  serialized_start=201,
+  serialized_end=227,
 )
 
 
@@ -130,8 +129,8 @@ _FLOATHISTOGRAM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=263,
-  serialized_end=325,
+  serialized_start=229,
+  serialized_end=291,
 )
 
 
@@ -168,8 +167,46 @@ _DISCRETEHISTOGRAM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=327,
-  serialized_end=385,
+  serialized_start=293,
+  serialized_end=351,
+)
+
+
+_STATISTICS = _descriptor.Descriptor(
+  name='Statistics',
+  full_name='ai.verta.monitoring.Statistics',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='mean', full_name='ai.verta.monitoring.Statistics.mean', index=0,
+      number=1, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='standardDeviation', full_name='ai.verta.monitoring.Statistics.standardDeviation', index=1,
+      number=2, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=353,
+  serialized_end=406,
 )
 
 
@@ -188,183 +225,14 @@ _PROFILER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='lambda', full_name='ai.verta.monitoring.Profiler.lambda', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=387,
-  serialized_end=452,
-)
-
-
-_PROFILERSET = _descriptor.Descriptor(
-  name='ProfilerSet',
-  full_name='ai.verta.monitoring.ProfilerSet',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='ai.verta.monitoring.ProfilerSet.id', index=0,
-      number=1, type=9, cpp_type=9, label=1,
+      name='name', full_name='ai.verta.monitoring.Profiler.name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='profilers', full_name='ai.verta.monitoring.ProfilerSet.profilers', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=454,
-  serialized_end=529,
-)
-
-
-_DATAFRAME = _descriptor.Descriptor(
-  name='DataFrame',
-  full_name='ai.verta.monitoring.DataFrame',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='dataSetBlob', full_name='ai.verta.monitoring.DataFrame.dataSetBlob', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='metadata', full_name='ai.verta.monitoring.DataFrame.metadata', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=531,
-  serialized_end=650,
-)
-
-
-_DATAFRAMEBATCH = _descriptor.Descriptor(
-  name='DataFrameBatch',
-  full_name='ai.verta.monitoring.DataFrameBatch',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='dataFrames', full_name='ai.verta.monitoring.DataFrameBatch.dataFrames', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=652,
-  serialized_end=720,
-)
-
-
-_PARQUETDATAFRAME = _descriptor.Descriptor(
-  name='ParquetDataFrame',
-  full_name='ai.verta.monitoring.ParquetDataFrame',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=722,
-  serialized_end=740,
-)
-
-
-_PROFILEDDATAFRAME = _descriptor.Descriptor(
-  name='ProfiledDataFrame',
-  full_name='ai.verta.monitoring.ProfiledDataFrame',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='profilerId', full_name='ai.verta.monitoring.ProfiledDataFrame.profilerId', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='dataframe', full_name='ai.verta.monitoring.ProfiledDataFrame.dataframe', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='profiledDataFrame', full_name='ai.verta.monitoring.ProfiledDataFrame.profiledDataFrame', index=2,
+      name='lambdaClass', full_name='ai.verta.monitoring.Profiler.lambdaClass', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -382,20 +250,207 @@ _PROFILEDDATAFRAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=743,
-  serialized_end=899,
+  serialized_start=408,
+  serialized_end=492,
 )
 
 
-_PROFILEDDATAFRAMEBATCH = _descriptor.Descriptor(
-  name='ProfiledDataFrameBatch',
-  full_name='ai.verta.monitoring.ProfiledDataFrameBatch',
+_PROFILERINSTANCE = _descriptor.Descriptor(
+  name='ProfilerInstance',
+  full_name='ai.verta.monitoring.ProfilerInstance',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='dataFrames', full_name='ai.verta.monitoring.ProfiledDataFrameBatch.dataFrames', index=0,
+      name='id', full_name='ai.verta.monitoring.ProfilerInstance.id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='name', full_name='ai.verta.monitoring.ProfilerInstance.name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='profiler', full_name='ai.verta.monitoring.ProfilerInstance.profiler', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='arguments', full_name='ai.verta.monitoring.ProfilerInstance.arguments', index=3,
+      number=4, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=495,
+  serialized_end=634,
+)
+
+
+_PROFILEDENTITY = _descriptor.Descriptor(
+  name='ProfiledEntity',
+  full_name='ai.verta.monitoring.ProfiledEntity',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.monitoring.ProfiledEntity.id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='name', full_name='ai.verta.monitoring.ProfiledEntity.name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='entity_id', full_name='ai.verta.monitoring.ProfiledEntity.entity_id', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='endpoint_id', full_name='ai.verta.monitoring.ProfiledEntity.endpoint_id', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='metadata', full_name='ai.verta.monitoring.ProfiledEntity.metadata', index=4,
+      number=5, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='profilers', full_name='ai.verta.monitoring.ProfiledEntity.profilers', index=5,
+      number=6, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=637,
+  serialized_end=822,
+)
+
+
+_PROFILEDAGGREGATE = _descriptor.Descriptor(
+  name='ProfiledAggregate',
+  full_name='ai.verta.monitoring.ProfiledAggregate',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='profiled_entity', full_name='ai.verta.monitoring.ProfiledAggregate.profiled_entity', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='profiler_instance_id', full_name='ai.verta.monitoring.ProfiledAggregate.profiler_instance_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='count_per_ngram', full_name='ai.verta.monitoring.ProfiledAggregate.count_per_ngram', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='float_histogram', full_name='ai.verta.monitoring.ProfiledAggregate.float_histogram', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='discrete_histogram', full_name='ai.verta.monitoring.ProfiledAggregate.discrete_histogram', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='statistics', full_name='ai.verta.monitoring.ProfiledAggregate.statistics', index=5,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='aggregate', full_name='ai.verta.monitoring.ProfiledAggregate.aggregate',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=825,
+  serialized_end=1201,
+)
+
+
+_PROFILEDAGGREGATEBATCH = _descriptor.Descriptor(
+  name='ProfiledAggregateBatch',
+  full_name='ai.verta.monitoring.ProfiledAggregateBatch',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='aggregates', full_name='ai.verta.monitoring.ProfiledAggregateBatch.aggregates', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -413,8 +468,8 @@ _PROFILEDDATAFRAMEBATCH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=901,
-  serialized_end=985,
+  serialized_start=1203,
+  serialized_end=1287,
 )
 
 
@@ -444,8 +499,8 @@ _GETPROFILERREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1021,
-  serialized_end=1080,
+  serialized_start=1323,
+  serialized_end=1382,
 )
 
 _GETPROFILERREQUEST = _descriptor.Descriptor(
@@ -474,8 +529,8 @@ _GETPROFILERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=987,
-  serialized_end=1080,
+  serialized_start=1289,
+  serialized_end=1382,
 )
 
 
@@ -505,8 +560,8 @@ _CREATEPROFILERREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1021,
-  serialized_end=1080,
+  serialized_start=1323,
+  serialized_end=1382,
 )
 
 _CREATEPROFILERREQUEST = _descriptor.Descriptor(
@@ -524,8 +579,15 @@ _CREATEPROFILERREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='lambda', full_name='ai.verta.monitoring.CreateProfilerRequest.lambda', index=1,
-      number=2, type=11, cpp_type=10, label=1,
+      name='name', full_name='ai.verta.monitoring.CreateProfilerRequest.name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='lambda', full_name='ai.verta.monitoring.CreateProfilerRequest.lambda', index=2,
+      number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -542,8 +604,8 @@ _CREATEPROFILERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1083,
-  serialized_end=1222,
+  serialized_start=1385,
+  serialized_end=1538,
 )
 
 
@@ -573,8 +635,8 @@ _UPDATEPROFILERREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1021,
-  serialized_end=1080,
+  serialized_start=1323,
+  serialized_end=1382,
 )
 
 _UPDATEPROFILERREQUEST = _descriptor.Descriptor(
@@ -592,8 +654,15 @@ _UPDATEPROFILERREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='lambda', full_name='ai.verta.monitoring.UpdateProfilerRequest.lambda', index=1,
-      number=2, type=11, cpp_type=10, label=1,
+      name='name', full_name='ai.verta.monitoring.UpdateProfilerRequest.name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='lambda', full_name='ai.verta.monitoring.UpdateProfilerRequest.lambda', index=2,
+      number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -610,8 +679,8 @@ _UPDATEPROFILERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1225,
-  serialized_end=1364,
+  serialized_start=1541,
+  serialized_end=1694,
 )
 
 
@@ -634,8 +703,8 @@ _DELETEPROFILERREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1021,
-  serialized_end=1031,
+  serialized_start=1323,
+  serialized_end=1333,
 )
 
 _DELETEPROFILERREQUEST = _descriptor.Descriptor(
@@ -664,8 +733,8 @@ _DELETEPROFILERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1366,
-  serialized_end=1413,
+  serialized_start=1696,
+  serialized_end=1743,
 )
 
 
@@ -695,8 +764,8 @@ _LISTPROFILERSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1439,
-  serialized_end=1499,
+  serialized_start=1769,
+  serialized_end=1829,
 )
 
 _LISTPROFILERSREQUEST = _descriptor.Descriptor(
@@ -718,20 +787,20 @@ _LISTPROFILERSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1415,
-  serialized_end=1499,
+  serialized_start=1745,
+  serialized_end=1829,
 )
 
 
-_GETPROFILERSETREQUEST_RESPONSE = _descriptor.Descriptor(
+_GETPROFILERINSTANCEREQUEST_RESPONSE = _descriptor.Descriptor(
   name='Response',
-  full_name='ai.verta.monitoring.GetProfilerSetRequest.Response',
+  full_name='ai.verta.monitoring.GetProfilerInstanceRequest.Response',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='profilerSet', full_name='ai.verta.monitoring.GetProfilerSetRequest.Response.profilerSet', index=0,
+      name='profiler_set', full_name='ai.verta.monitoring.GetProfilerInstanceRequest.Response.profiler_set', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -749,19 +818,19 @@ _GETPROFILERSETREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1538,
-  serialized_end=1603,
+  serialized_start=1873,
+  serialized_end=1944,
 )
 
-_GETPROFILERSETREQUEST = _descriptor.Descriptor(
-  name='GetProfilerSetRequest',
-  full_name='ai.verta.monitoring.GetProfilerSetRequest',
+_GETPROFILERINSTANCEREQUEST = _descriptor.Descriptor(
+  name='GetProfilerInstanceRequest',
+  full_name='ai.verta.monitoring.GetProfilerInstanceRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='id', full_name='ai.verta.monitoring.GetProfilerSetRequest.id', index=0,
+      name='id', full_name='ai.verta.monitoring.GetProfilerInstanceRequest.id', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -770,7 +839,7 @@ _GETPROFILERSETREQUEST = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_GETPROFILERSETREQUEST_RESPONSE, ],
+  nested_types=[_GETPROFILERINSTANCEREQUEST_RESPONSE, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -779,20 +848,20 @@ _GETPROFILERSETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1501,
-  serialized_end=1603,
+  serialized_start=1831,
+  serialized_end=1944,
 )
 
 
-_CREATEPROFILERSETREQUEST_RESPONSE = _descriptor.Descriptor(
+_CREATEPROFILERINSTANCEREQUEST_RESPONSE = _descriptor.Descriptor(
   name='Response',
-  full_name='ai.verta.monitoring.CreateProfilerSetRequest.Response',
+  full_name='ai.verta.monitoring.CreateProfilerInstanceRequest.Response',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='profilerSet', full_name='ai.verta.monitoring.CreateProfilerSetRequest.Response.profilerSet', index=0,
+      name='profiler_instance', full_name='ai.verta.monitoring.CreateProfilerInstanceRequest.Response.profiler_instance', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -810,35 +879,42 @@ _CREATEPROFILERSETREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1538,
-  serialized_end=1603,
+  serialized_start=2027,
+  serialized_end=2103,
 )
 
-_CREATEPROFILERSETREQUEST = _descriptor.Descriptor(
-  name='CreateProfilerSetRequest',
-  full_name='ai.verta.monitoring.CreateProfilerSetRequest',
+_CREATEPROFILERINSTANCEREQUEST = _descriptor.Descriptor(
+  name='CreateProfilerInstanceRequest',
+  full_name='ai.verta.monitoring.CreateProfilerInstanceRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='id', full_name='ai.verta.monitoring.CreateProfilerSetRequest.id', index=0,
+      name='id', full_name='ai.verta.monitoring.CreateProfilerInstanceRequest.id', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='profilers', full_name='ai.verta.monitoring.CreateProfilerSetRequest.profilers', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='name', full_name='ai.verta.monitoring.CreateProfilerInstanceRequest.name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='profiler_id', full_name='ai.verta.monitoring.CreateProfilerInstanceRequest.profiler_id', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[_CREATEPROFILERSETREQUEST_RESPONSE, ],
+  nested_types=[_CREATEPROFILERINSTANCEREQUEST_RESPONSE, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -847,20 +923,20 @@ _CREATEPROFILERSETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1606,
-  serialized_end=1761,
+  serialized_start=1947,
+  serialized_end=2103,
 )
 
 
-_ADDPROFILERTOSETREQUEST_RESPONSE = _descriptor.Descriptor(
+_UPDATEPROFILERINSTANCEREQUEST_RESPONSE = _descriptor.Descriptor(
   name='Response',
-  full_name='ai.verta.monitoring.AddProfilerToSetRequest.Response',
+  full_name='ai.verta.monitoring.UpdateProfilerInstanceRequest.Response',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='profilerSet', full_name='ai.verta.monitoring.AddProfilerToSetRequest.Response.profilerSet', index=0,
+      name='profiler_instance', full_name='ai.verta.monitoring.UpdateProfilerInstanceRequest.Response.profiler_instance', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -878,26 +954,26 @@ _ADDPROFILERTOSETREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1538,
-  serialized_end=1603,
+  serialized_start=2027,
+  serialized_end=2103,
 )
 
-_ADDPROFILERTOSETREQUEST = _descriptor.Descriptor(
-  name='AddProfilerToSetRequest',
-  full_name='ai.verta.monitoring.AddProfilerToSetRequest',
+_UPDATEPROFILERINSTANCEREQUEST = _descriptor.Descriptor(
+  name='UpdateProfilerInstanceRequest',
+  full_name='ai.verta.monitoring.UpdateProfilerInstanceRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='profilerId', full_name='ai.verta.monitoring.AddProfilerToSetRequest.profilerId', index=0,
+      name='id', full_name='ai.verta.monitoring.UpdateProfilerInstanceRequest.id', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='profilerSetId', full_name='ai.verta.monitoring.AddProfilerToSetRequest.profilerSetId', index=1,
+      name='name', full_name='ai.verta.monitoring.UpdateProfilerInstanceRequest.name', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -906,7 +982,7 @@ _ADDPROFILERTOSETREQUEST = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_ADDPROFILERTOSETREQUEST_RESPONSE, ],
+  nested_types=[_UPDATEPROFILERINSTANCEREQUEST_RESPONSE, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -915,82 +991,14 @@ _ADDPROFILERTOSETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1764,
-  serialized_end=1899,
+  serialized_start=2106,
+  serialized_end=2241,
 )
 
 
-_REMOVEPROFILERFROMSETREQUEST_RESPONSE = _descriptor.Descriptor(
+_DELETEPROFILERINSTANCEREQUEST_RESPONSE = _descriptor.Descriptor(
   name='Response',
-  full_name='ai.verta.monitoring.RemoveProfilerFromSetRequest.Response',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='profilerSet', full_name='ai.verta.monitoring.RemoveProfilerFromSetRequest.Response.profilerSet', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1538,
-  serialized_end=1603,
-)
-
-_REMOVEPROFILERFROMSETREQUEST = _descriptor.Descriptor(
-  name='RemoveProfilerFromSetRequest',
-  full_name='ai.verta.monitoring.RemoveProfilerFromSetRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='profilerId', full_name='ai.verta.monitoring.RemoveProfilerFromSetRequest.profilerId', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='profilerSetId', full_name='ai.verta.monitoring.RemoveProfilerFromSetRequest.profilerSetId', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[_REMOVEPROFILERFROMSETREQUEST_RESPONSE, ],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1902,
-  serialized_end=2042,
-)
-
-
-_DELETEPROFILERSETREQUEST_RESPONSE = _descriptor.Descriptor(
-  name='Response',
-  full_name='ai.verta.monitoring.DeleteProfilerSetRequest.Response',
+  full_name='ai.verta.monitoring.DeleteProfilerInstanceRequest.Response',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
@@ -1007,19 +1015,19 @@ _DELETEPROFILERSETREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1021,
-  serialized_end=1031,
+  serialized_start=1323,
+  serialized_end=1333,
 )
 
-_DELETEPROFILERSETREQUEST = _descriptor.Descriptor(
-  name='DeleteProfilerSetRequest',
-  full_name='ai.verta.monitoring.DeleteProfilerSetRequest',
+_DELETEPROFILERINSTANCEREQUEST = _descriptor.Descriptor(
+  name='DeleteProfilerInstanceRequest',
+  full_name='ai.verta.monitoring.DeleteProfilerInstanceRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='id', full_name='ai.verta.monitoring.DeleteProfilerSetRequest.id', index=0,
+      name='id', full_name='ai.verta.monitoring.DeleteProfilerInstanceRequest.id', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -1028,7 +1036,7 @@ _DELETEPROFILERSETREQUEST = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_DELETEPROFILERSETREQUEST_RESPONSE, ],
+  nested_types=[_DELETEPROFILERINSTANCEREQUEST_RESPONSE, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -1037,20 +1045,20 @@ _DELETEPROFILERSETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2044,
-  serialized_end=2094,
+  serialized_start=2243,
+  serialized_end=2298,
 )
 
 
-_LISTPROFILERSETSREQUEST_RESPONSE = _descriptor.Descriptor(
+_LISTPROFILERINSTANCESREQUEST_RESPONSE = _descriptor.Descriptor(
   name='Response',
-  full_name='ai.verta.monitoring.ListProfilerSetsRequest.Response',
+  full_name='ai.verta.monitoring.ListProfilerInstancesRequest.Response',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='profilerSets', full_name='ai.verta.monitoring.ListProfilerSetsRequest.Response.profilerSets', index=0,
+      name='profiler_instances', full_name='ai.verta.monitoring.ListProfilerInstancesRequest.Response.profiler_instances', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1068,21 +1076,69 @@ _LISTPROFILERSETSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2123,
-  serialized_end=2189,
+  serialized_start=2386,
+  serialized_end=2463,
 )
 
-_LISTPROFILERSETSREQUEST = _descriptor.Descriptor(
-  name='ListProfilerSetsRequest',
-  full_name='ai.verta.monitoring.ListProfilerSetsRequest',
+_LISTPROFILERINSTANCESREQUEST = _descriptor.Descriptor(
+  name='ListProfilerInstancesRequest',
+  full_name='ai.verta.monitoring.ListProfilerInstancesRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
+    _descriptor.FieldDescriptor(
+      name='profiler_id', full_name='ai.verta.monitoring.ListProfilerInstancesRequest.profiler_id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='profiled_entity_id', full_name='ai.verta.monitoring.ListProfilerInstancesRequest.profiled_entity_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[_LISTPROFILERSETSREQUEST_RESPONSE, ],
+  nested_types=[_LISTPROFILERINSTANCESREQUEST_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='filterTo', full_name='ai.verta.monitoring.ListProfilerInstancesRequest.filterTo',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=2301,
+  serialized_end=2475,
+)
+
+
+_GETPROFILEDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.monitoring.GetProfiledEntityRequest.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='profiled_entity', full_name='ai.verta.monitoring.GetProfiledEntityRequest.Response.profiled_entity', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
   enum_types=[
   ],
   serialized_options=None,
@@ -1091,14 +1147,201 @@ _LISTPROFILERSETSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2096,
-  serialized_end=2189,
+  serialized_start=2532,
+  serialized_end=2604,
+)
+
+_GETPROFILEDENTITYREQUEST = _descriptor.Descriptor(
+  name='GetProfiledEntityRequest',
+  full_name='ai.verta.monitoring.GetProfiledEntityRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='profile_entity_id', full_name='ai.verta.monitoring.GetProfiledEntityRequest.profile_entity_id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_GETPROFILEDENTITYREQUEST_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2477,
+  serialized_end=2604,
 )
 
 
-_PROFILEBATCHREQUEST_RESPONSE = _descriptor.Descriptor(
+_CREATEPROFILEDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
   name='Response',
-  full_name='ai.verta.monitoring.ProfileBatchRequest.Response',
+  full_name='ai.verta.monitoring.CreateProfiledEntityRequest.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='profiled_entity', full_name='ai.verta.monitoring.CreateProfiledEntityRequest.Response.profiled_entity', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2532,
+  serialized_end=2604,
+)
+
+_CREATEPROFILEDENTITYREQUEST = _descriptor.Descriptor(
+  name='CreateProfiledEntityRequest',
+  full_name='ai.verta.monitoring.CreateProfiledEntityRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='ai.verta.monitoring.CreateProfiledEntityRequest.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='entity_id', full_name='ai.verta.monitoring.CreateProfiledEntityRequest.entity_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='endpoint_id', full_name='ai.verta.monitoring.CreateProfiledEntityRequest.endpoint_id', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='metadata', full_name='ai.verta.monitoring.CreateProfiledEntityRequest.metadata', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='profiler_instance_id', full_name='ai.verta.monitoring.CreateProfiledEntityRequest.profiler_instance_id', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_CREATEPROFILEDENTITYREQUEST_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2607,
+  serialized_end=2839,
+)
+
+
+_UPDATEPROFILEDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.monitoring.UpdateProfiledEntityRequest.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='profiled_entity', full_name='ai.verta.monitoring.UpdateProfiledEntityRequest.Response.profiled_entity', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2532,
+  serialized_end=2604,
+)
+
+_UPDATEPROFILEDENTITYREQUEST = _descriptor.Descriptor(
+  name='UpdateProfiledEntityRequest',
+  full_name='ai.verta.monitoring.UpdateProfiledEntityRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='profiled_entity_id', full_name='ai.verta.monitoring.UpdateProfiledEntityRequest.profiled_entity_id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='name', full_name='ai.verta.monitoring.UpdateProfiledEntityRequest.name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_UPDATEPROFILEDENTITYREQUEST_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2842,
+  serialized_end=2987,
+)
+
+
+_DELETEPROFILEDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.monitoring.DeleteProfiledEntityRequest.Response',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
@@ -1115,35 +1358,28 @@ _PROFILEBATCHREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1021,
-  serialized_end=1031,
+  serialized_start=1323,
+  serialized_end=1333,
 )
 
-_PROFILEBATCHREQUEST = _descriptor.Descriptor(
-  name='ProfileBatchRequest',
-  full_name='ai.verta.monitoring.ProfileBatchRequest',
+_DELETEPROFILEDENTITYREQUEST = _descriptor.Descriptor(
+  name='DeleteProfiledEntityRequest',
+  full_name='ai.verta.monitoring.DeleteProfiledEntityRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='profilerSetId', full_name='ai.verta.monitoring.ProfileBatchRequest.profilerSetId', index=0,
+      name='profiled_entity_id', full_name='ai.verta.monitoring.DeleteProfiledEntityRequest.profiled_entity_id', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='dataFrameBatch', full_name='ai.verta.monitoring.ProfileBatchRequest.dataFrameBatch', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[_PROFILEBATCHREQUEST_RESPONSE, ],
+  nested_types=[_DELETEPROFILEDENTITYREQUEST_RESPONSE, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -1152,8 +1388,90 @@ _PROFILEBATCHREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2191,
-  serialized_end=2308,
+  serialized_start=2989,
+  serialized_end=3058,
+)
+
+
+_LISTPROFILEDENTITIESREQUEST_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.monitoring.ListProfiledEntitiesRequest.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='profiled_entities', full_name='ai.verta.monitoring.ListProfiledEntitiesRequest.Response.profiled_entities', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=3191,
+  serialized_end=3265,
+)
+
+_LISTPROFILEDENTITIESREQUEST = _descriptor.Descriptor(
+  name='ListProfiledEntitiesRequest',
+  full_name='ai.verta.monitoring.ListProfiledEntitiesRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='ai.verta.monitoring.ListProfiledEntitiesRequest.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='entity_id', full_name='ai.verta.monitoring.ListProfiledEntitiesRequest.entity_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='endpoint_id', full_name='ai.verta.monitoring.ListProfiledEntitiesRequest.endpoint_id', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='metadata', full_name='ai.verta.monitoring.ListProfiledEntitiesRequest.metadata', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_LISTPROFILEDENTITIESREQUEST_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=3061,
+  serialized_end=3265,
 )
 
 
@@ -1165,21 +1483,21 @@ _GETAGGREGATEREQUEST_RESPONSE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='countPerNGram', full_name='ai.verta.monitoring.GetAggregateRequest.Response.countPerNGram', index=0,
+      name='count_per_ngram', full_name='ai.verta.monitoring.GetAggregateRequest.Response.count_per_ngram', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='floatHistogram', full_name='ai.verta.monitoring.GetAggregateRequest.Response.floatHistogram', index=1,
+      name='float_histogram', full_name='ai.verta.monitoring.GetAggregateRequest.Response.float_histogram', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='discreteHistogram', full_name='ai.verta.monitoring.GetAggregateRequest.Response.discreteHistogram', index=2,
+      name='discrete_histogram', full_name='ai.verta.monitoring.GetAggregateRequest.Response.discrete_histogram', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -1200,8 +1518,8 @@ _GETAGGREGATEREQUEST_RESPONSE = _descriptor.Descriptor(
       name='aggregate', full_name='ai.verta.monitoring.GetAggregateRequest.Response.aggregate',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=2407,
-  serialized_end=2623,
+  serialized_start=3393,
+  serialized_end=3613,
 )
 
 _GETAGGREGATEREQUEST = _descriptor.Descriptor(
@@ -1212,22 +1530,29 @@ _GETAGGREGATEREQUEST = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='profilerId', full_name='ai.verta.monitoring.GetAggregateRequest.profilerId', index=0,
+      name='profiled_entity_id', full_name='ai.verta.monitoring.GetAggregateRequest.profiled_entity_id', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='start_time_millis', full_name='ai.verta.monitoring.GetAggregateRequest.start_time_millis', index=1,
-      number=2, type=4, cpp_type=4, label=1,
+      name='profiler_id', full_name='ai.verta.monitoring.GetAggregateRequest.profiler_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='start_time_millis', full_name='ai.verta.monitoring.GetAggregateRequest.start_time_millis', index=2,
+      number=3, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='end_time_millis', full_name='ai.verta.monitoring.GetAggregateRequest.end_time_millis', index=2,
-      number=3, type=4, cpp_type=4, label=1,
+      name='end_time_millis', full_name='ai.verta.monitoring.GetAggregateRequest.end_time_millis', index=3,
+      number=4, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -1244,19 +1569,88 @@ _GETAGGREGATEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2311,
-  serialized_end=2623,
+  serialized_start=3268,
+  serialized_end=3613,
+)
+
+
+_STOREPROFILEDAGGREGATEBATCHREQUEST_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.monitoring.StoreProfiledAggregateBatchRequest.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1323,
+  serialized_end=1333,
+)
+
+_STOREPROFILEDAGGREGATEBATCHREQUEST = _descriptor.Descriptor(
+  name='StoreProfiledAggregateBatchRequest',
+  full_name='ai.verta.monitoring.StoreProfiledAggregateBatchRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='batch', full_name='ai.verta.monitoring.StoreProfiledAggregateBatchRequest.batch', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_STOREPROFILEDAGGREGATEBATCHREQUEST_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=3615,
+  serialized_end=3723,
 )
 
 _COUNTPERNGRAM.fields_by_name['keys'].message_type = _LISTSTRING
-_PROFILER.fields_by_name['lambda'].message_type = common_dot_CommonService__pb2._ARTIFACT
-_PROFILERSET.fields_by_name['profilers'].message_type = _PROFILER
-_DATAFRAME.fields_by_name['dataSetBlob'].message_type = modeldb_dot_versioning_dot_Dataset__pb2._DATASETBLOB
-_DATAFRAME.fields_by_name['metadata'].message_type = common_dot_CommonService__pb2._KEYVALUE
-_DATAFRAMEBATCH.fields_by_name['dataFrames'].message_type = _DATAFRAME
-_PROFILEDDATAFRAME.fields_by_name['dataframe'].message_type = _DATAFRAME
-_PROFILEDDATAFRAME.fields_by_name['profiledDataFrame'].message_type = _PARQUETDATAFRAME
-_PROFILEDDATAFRAMEBATCH.fields_by_name['dataFrames'].message_type = _PROFILEDDATAFRAME
+_PROFILER.fields_by_name['lambdaClass'].message_type = common_dot_CommonService__pb2._ARTIFACT
+_PROFILERINSTANCE.fields_by_name['profiler'].message_type = _PROFILER
+_PROFILERINSTANCE.fields_by_name['arguments'].message_type = common_dot_CommonService__pb2._KEYVALUE
+_PROFILEDENTITY.fields_by_name['metadata'].message_type = common_dot_CommonService__pb2._KEYVALUE
+_PROFILEDENTITY.fields_by_name['profilers'].message_type = _PROFILERINSTANCE
+_PROFILEDAGGREGATE.fields_by_name['profiled_entity'].message_type = _PROFILEDENTITY
+_PROFILEDAGGREGATE.fields_by_name['count_per_ngram'].message_type = _COUNTPERNGRAM
+_PROFILEDAGGREGATE.fields_by_name['float_histogram'].message_type = _FLOATHISTOGRAM
+_PROFILEDAGGREGATE.fields_by_name['discrete_histogram'].message_type = _DISCRETEHISTOGRAM
+_PROFILEDAGGREGATE.fields_by_name['statistics'].message_type = _STATISTICS
+_PROFILEDAGGREGATE.oneofs_by_name['aggregate'].fields.append(
+  _PROFILEDAGGREGATE.fields_by_name['count_per_ngram'])
+_PROFILEDAGGREGATE.fields_by_name['count_per_ngram'].containing_oneof = _PROFILEDAGGREGATE.oneofs_by_name['aggregate']
+_PROFILEDAGGREGATE.oneofs_by_name['aggregate'].fields.append(
+  _PROFILEDAGGREGATE.fields_by_name['float_histogram'])
+_PROFILEDAGGREGATE.fields_by_name['float_histogram'].containing_oneof = _PROFILEDAGGREGATE.oneofs_by_name['aggregate']
+_PROFILEDAGGREGATE.oneofs_by_name['aggregate'].fields.append(
+  _PROFILEDAGGREGATE.fields_by_name['discrete_histogram'])
+_PROFILEDAGGREGATE.fields_by_name['discrete_histogram'].containing_oneof = _PROFILEDAGGREGATE.oneofs_by_name['aggregate']
+_PROFILEDAGGREGATE.oneofs_by_name['aggregate'].fields.append(
+  _PROFILEDAGGREGATE.fields_by_name['statistics'])
+_PROFILEDAGGREGATE.fields_by_name['statistics'].containing_oneof = _PROFILEDAGGREGATE.oneofs_by_name['aggregate']
+_PROFILEDAGGREGATEBATCH.fields_by_name['aggregates'].message_type = _PROFILEDAGGREGATE
 _GETPROFILERREQUEST_RESPONSE.fields_by_name['profiler'].message_type = _PROFILER
 _GETPROFILERREQUEST_RESPONSE.containing_type = _GETPROFILERREQUEST
 _CREATEPROFILERREQUEST_RESPONSE.fields_by_name['profiler'].message_type = _PROFILER
@@ -1268,57 +1662,74 @@ _UPDATEPROFILERREQUEST.fields_by_name['lambda'].message_type = common_dot_Common
 _DELETEPROFILERREQUEST_RESPONSE.containing_type = _DELETEPROFILERREQUEST
 _LISTPROFILERSREQUEST_RESPONSE.fields_by_name['profilers'].message_type = _PROFILER
 _LISTPROFILERSREQUEST_RESPONSE.containing_type = _LISTPROFILERSREQUEST
-_GETPROFILERSETREQUEST_RESPONSE.fields_by_name['profilerSet'].message_type = _PROFILERSET
-_GETPROFILERSETREQUEST_RESPONSE.containing_type = _GETPROFILERSETREQUEST
-_CREATEPROFILERSETREQUEST_RESPONSE.fields_by_name['profilerSet'].message_type = _PROFILERSET
-_CREATEPROFILERSETREQUEST_RESPONSE.containing_type = _CREATEPROFILERSETREQUEST
-_CREATEPROFILERSETREQUEST.fields_by_name['profilers'].message_type = _PROFILER
-_ADDPROFILERTOSETREQUEST_RESPONSE.fields_by_name['profilerSet'].message_type = _PROFILERSET
-_ADDPROFILERTOSETREQUEST_RESPONSE.containing_type = _ADDPROFILERTOSETREQUEST
-_REMOVEPROFILERFROMSETREQUEST_RESPONSE.fields_by_name['profilerSet'].message_type = _PROFILERSET
-_REMOVEPROFILERFROMSETREQUEST_RESPONSE.containing_type = _REMOVEPROFILERFROMSETREQUEST
-_DELETEPROFILERSETREQUEST_RESPONSE.containing_type = _DELETEPROFILERSETREQUEST
-_LISTPROFILERSETSREQUEST_RESPONSE.fields_by_name['profilerSets'].message_type = _PROFILERSET
-_LISTPROFILERSETSREQUEST_RESPONSE.containing_type = _LISTPROFILERSETSREQUEST
-_PROFILEBATCHREQUEST_RESPONSE.containing_type = _PROFILEBATCHREQUEST
-_PROFILEBATCHREQUEST.fields_by_name['dataFrameBatch'].message_type = _DATAFRAMEBATCH
-_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['countPerNGram'].message_type = _COUNTPERNGRAM
-_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['floatHistogram'].message_type = _FLOATHISTOGRAM
-_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['discreteHistogram'].message_type = _DISCRETEHISTOGRAM
+_GETPROFILERINSTANCEREQUEST_RESPONSE.fields_by_name['profiler_set'].message_type = _PROFILERINSTANCE
+_GETPROFILERINSTANCEREQUEST_RESPONSE.containing_type = _GETPROFILERINSTANCEREQUEST
+_CREATEPROFILERINSTANCEREQUEST_RESPONSE.fields_by_name['profiler_instance'].message_type = _PROFILERINSTANCE
+_CREATEPROFILERINSTANCEREQUEST_RESPONSE.containing_type = _CREATEPROFILERINSTANCEREQUEST
+_UPDATEPROFILERINSTANCEREQUEST_RESPONSE.fields_by_name['profiler_instance'].message_type = _PROFILERINSTANCE
+_UPDATEPROFILERINSTANCEREQUEST_RESPONSE.containing_type = _UPDATEPROFILERINSTANCEREQUEST
+_DELETEPROFILERINSTANCEREQUEST_RESPONSE.containing_type = _DELETEPROFILERINSTANCEREQUEST
+_LISTPROFILERINSTANCESREQUEST_RESPONSE.fields_by_name['profiler_instances'].message_type = _PROFILERINSTANCE
+_LISTPROFILERINSTANCESREQUEST_RESPONSE.containing_type = _LISTPROFILERINSTANCESREQUEST
+_LISTPROFILERINSTANCESREQUEST.oneofs_by_name['filterTo'].fields.append(
+  _LISTPROFILERINSTANCESREQUEST.fields_by_name['profiler_id'])
+_LISTPROFILERINSTANCESREQUEST.fields_by_name['profiler_id'].containing_oneof = _LISTPROFILERINSTANCESREQUEST.oneofs_by_name['filterTo']
+_LISTPROFILERINSTANCESREQUEST.oneofs_by_name['filterTo'].fields.append(
+  _LISTPROFILERINSTANCESREQUEST.fields_by_name['profiled_entity_id'])
+_LISTPROFILERINSTANCESREQUEST.fields_by_name['profiled_entity_id'].containing_oneof = _LISTPROFILERINSTANCESREQUEST.oneofs_by_name['filterTo']
+_GETPROFILEDENTITYREQUEST_RESPONSE.fields_by_name['profiled_entity'].message_type = _PROFILEDENTITY
+_GETPROFILEDENTITYREQUEST_RESPONSE.containing_type = _GETPROFILEDENTITYREQUEST
+_CREATEPROFILEDENTITYREQUEST_RESPONSE.fields_by_name['profiled_entity'].message_type = _PROFILEDENTITY
+_CREATEPROFILEDENTITYREQUEST_RESPONSE.containing_type = _CREATEPROFILEDENTITYREQUEST
+_CREATEPROFILEDENTITYREQUEST.fields_by_name['metadata'].message_type = common_dot_CommonService__pb2._KEYVALUE
+_UPDATEPROFILEDENTITYREQUEST_RESPONSE.fields_by_name['profiled_entity'].message_type = _PROFILEDENTITY
+_UPDATEPROFILEDENTITYREQUEST_RESPONSE.containing_type = _UPDATEPROFILEDENTITYREQUEST
+_DELETEPROFILEDENTITYREQUEST_RESPONSE.containing_type = _DELETEPROFILEDENTITYREQUEST
+_LISTPROFILEDENTITIESREQUEST_RESPONSE.fields_by_name['profiled_entities'].message_type = _PROFILEDENTITY
+_LISTPROFILEDENTITIESREQUEST_RESPONSE.containing_type = _LISTPROFILEDENTITIESREQUEST
+_LISTPROFILEDENTITIESREQUEST.fields_by_name['metadata'].message_type = common_dot_CommonService__pb2._KEYVALUE
+_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['count_per_ngram'].message_type = _COUNTPERNGRAM
+_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['float_histogram'].message_type = _FLOATHISTOGRAM
+_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['discrete_histogram'].message_type = _DISCRETEHISTOGRAM
 _GETAGGREGATEREQUEST_RESPONSE.containing_type = _GETAGGREGATEREQUEST
 _GETAGGREGATEREQUEST_RESPONSE.oneofs_by_name['aggregate'].fields.append(
-  _GETAGGREGATEREQUEST_RESPONSE.fields_by_name['countPerNGram'])
-_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['countPerNGram'].containing_oneof = _GETAGGREGATEREQUEST_RESPONSE.oneofs_by_name['aggregate']
+  _GETAGGREGATEREQUEST_RESPONSE.fields_by_name['count_per_ngram'])
+_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['count_per_ngram'].containing_oneof = _GETAGGREGATEREQUEST_RESPONSE.oneofs_by_name['aggregate']
 _GETAGGREGATEREQUEST_RESPONSE.oneofs_by_name['aggregate'].fields.append(
-  _GETAGGREGATEREQUEST_RESPONSE.fields_by_name['floatHistogram'])
-_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['floatHistogram'].containing_oneof = _GETAGGREGATEREQUEST_RESPONSE.oneofs_by_name['aggregate']
+  _GETAGGREGATEREQUEST_RESPONSE.fields_by_name['float_histogram'])
+_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['float_histogram'].containing_oneof = _GETAGGREGATEREQUEST_RESPONSE.oneofs_by_name['aggregate']
 _GETAGGREGATEREQUEST_RESPONSE.oneofs_by_name['aggregate'].fields.append(
-  _GETAGGREGATEREQUEST_RESPONSE.fields_by_name['discreteHistogram'])
-_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['discreteHistogram'].containing_oneof = _GETAGGREGATEREQUEST_RESPONSE.oneofs_by_name['aggregate']
+  _GETAGGREGATEREQUEST_RESPONSE.fields_by_name['discrete_histogram'])
+_GETAGGREGATEREQUEST_RESPONSE.fields_by_name['discrete_histogram'].containing_oneof = _GETAGGREGATEREQUEST_RESPONSE.oneofs_by_name['aggregate']
+_STOREPROFILEDAGGREGATEBATCHREQUEST_RESPONSE.containing_type = _STOREPROFILEDAGGREGATEBATCHREQUEST
+_STOREPROFILEDAGGREGATEBATCHREQUEST.fields_by_name['batch'].message_type = _PROFILEDAGGREGATEBATCH
 DESCRIPTOR.message_types_by_name['CountPerNGram'] = _COUNTPERNGRAM
 DESCRIPTOR.message_types_by_name['ListString'] = _LISTSTRING
 DESCRIPTOR.message_types_by_name['FloatHistogram'] = _FLOATHISTOGRAM
 DESCRIPTOR.message_types_by_name['DiscreteHistogram'] = _DISCRETEHISTOGRAM
+DESCRIPTOR.message_types_by_name['Statistics'] = _STATISTICS
 DESCRIPTOR.message_types_by_name['Profiler'] = _PROFILER
-DESCRIPTOR.message_types_by_name['ProfilerSet'] = _PROFILERSET
-DESCRIPTOR.message_types_by_name['DataFrame'] = _DATAFRAME
-DESCRIPTOR.message_types_by_name['DataFrameBatch'] = _DATAFRAMEBATCH
-DESCRIPTOR.message_types_by_name['ParquetDataFrame'] = _PARQUETDATAFRAME
-DESCRIPTOR.message_types_by_name['ProfiledDataFrame'] = _PROFILEDDATAFRAME
-DESCRIPTOR.message_types_by_name['ProfiledDataFrameBatch'] = _PROFILEDDATAFRAMEBATCH
+DESCRIPTOR.message_types_by_name['ProfilerInstance'] = _PROFILERINSTANCE
+DESCRIPTOR.message_types_by_name['ProfiledEntity'] = _PROFILEDENTITY
+DESCRIPTOR.message_types_by_name['ProfiledAggregate'] = _PROFILEDAGGREGATE
+DESCRIPTOR.message_types_by_name['ProfiledAggregateBatch'] = _PROFILEDAGGREGATEBATCH
 DESCRIPTOR.message_types_by_name['GetProfilerRequest'] = _GETPROFILERREQUEST
 DESCRIPTOR.message_types_by_name['CreateProfilerRequest'] = _CREATEPROFILERREQUEST
 DESCRIPTOR.message_types_by_name['UpdateProfilerRequest'] = _UPDATEPROFILERREQUEST
 DESCRIPTOR.message_types_by_name['DeleteProfilerRequest'] = _DELETEPROFILERREQUEST
 DESCRIPTOR.message_types_by_name['ListProfilersRequest'] = _LISTPROFILERSREQUEST
-DESCRIPTOR.message_types_by_name['GetProfilerSetRequest'] = _GETPROFILERSETREQUEST
-DESCRIPTOR.message_types_by_name['CreateProfilerSetRequest'] = _CREATEPROFILERSETREQUEST
-DESCRIPTOR.message_types_by_name['AddProfilerToSetRequest'] = _ADDPROFILERTOSETREQUEST
-DESCRIPTOR.message_types_by_name['RemoveProfilerFromSetRequest'] = _REMOVEPROFILERFROMSETREQUEST
-DESCRIPTOR.message_types_by_name['DeleteProfilerSetRequest'] = _DELETEPROFILERSETREQUEST
-DESCRIPTOR.message_types_by_name['ListProfilerSetsRequest'] = _LISTPROFILERSETSREQUEST
-DESCRIPTOR.message_types_by_name['ProfileBatchRequest'] = _PROFILEBATCHREQUEST
+DESCRIPTOR.message_types_by_name['GetProfilerInstanceRequest'] = _GETPROFILERINSTANCEREQUEST
+DESCRIPTOR.message_types_by_name['CreateProfilerInstanceRequest'] = _CREATEPROFILERINSTANCEREQUEST
+DESCRIPTOR.message_types_by_name['UpdateProfilerInstanceRequest'] = _UPDATEPROFILERINSTANCEREQUEST
+DESCRIPTOR.message_types_by_name['DeleteProfilerInstanceRequest'] = _DELETEPROFILERINSTANCEREQUEST
+DESCRIPTOR.message_types_by_name['ListProfilerInstancesRequest'] = _LISTPROFILERINSTANCESREQUEST
+DESCRIPTOR.message_types_by_name['GetProfiledEntityRequest'] = _GETPROFILEDENTITYREQUEST
+DESCRIPTOR.message_types_by_name['CreateProfiledEntityRequest'] = _CREATEPROFILEDENTITYREQUEST
+DESCRIPTOR.message_types_by_name['UpdateProfiledEntityRequest'] = _UPDATEPROFILEDENTITYREQUEST
+DESCRIPTOR.message_types_by_name['DeleteProfiledEntityRequest'] = _DELETEPROFILEDENTITYREQUEST
+DESCRIPTOR.message_types_by_name['ListProfiledEntitiesRequest'] = _LISTPROFILEDENTITIESREQUEST
 DESCRIPTOR.message_types_by_name['GetAggregateRequest'] = _GETAGGREGATEREQUEST
+DESCRIPTOR.message_types_by_name['StoreProfiledAggregateBatchRequest'] = _STOREPROFILEDAGGREGATEBATCHREQUEST
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 CountPerNGram = _reflection.GeneratedProtocolMessageType('CountPerNGram', (_message.Message,), {
@@ -1349,6 +1760,13 @@ DiscreteHistogram = _reflection.GeneratedProtocolMessageType('DiscreteHistogram'
   })
 _sym_db.RegisterMessage(DiscreteHistogram)
 
+Statistics = _reflection.GeneratedProtocolMessageType('Statistics', (_message.Message,), {
+  'DESCRIPTOR' : _STATISTICS,
+  '__module__' : 'monitoring.DataMonitoringService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.Statistics)
+  })
+_sym_db.RegisterMessage(Statistics)
+
 Profiler = _reflection.GeneratedProtocolMessageType('Profiler', (_message.Message,), {
   'DESCRIPTOR' : _PROFILER,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
@@ -1356,47 +1774,33 @@ Profiler = _reflection.GeneratedProtocolMessageType('Profiler', (_message.Messag
   })
 _sym_db.RegisterMessage(Profiler)
 
-ProfilerSet = _reflection.GeneratedProtocolMessageType('ProfilerSet', (_message.Message,), {
-  'DESCRIPTOR' : _PROFILERSET,
+ProfilerInstance = _reflection.GeneratedProtocolMessageType('ProfilerInstance', (_message.Message,), {
+  'DESCRIPTOR' : _PROFILERINSTANCE,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ProfilerSet)
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ProfilerInstance)
   })
-_sym_db.RegisterMessage(ProfilerSet)
+_sym_db.RegisterMessage(ProfilerInstance)
 
-DataFrame = _reflection.GeneratedProtocolMessageType('DataFrame', (_message.Message,), {
-  'DESCRIPTOR' : _DATAFRAME,
+ProfiledEntity = _reflection.GeneratedProtocolMessageType('ProfiledEntity', (_message.Message,), {
+  'DESCRIPTOR' : _PROFILEDENTITY,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.DataFrame)
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ProfiledEntity)
   })
-_sym_db.RegisterMessage(DataFrame)
+_sym_db.RegisterMessage(ProfiledEntity)
 
-DataFrameBatch = _reflection.GeneratedProtocolMessageType('DataFrameBatch', (_message.Message,), {
-  'DESCRIPTOR' : _DATAFRAMEBATCH,
+ProfiledAggregate = _reflection.GeneratedProtocolMessageType('ProfiledAggregate', (_message.Message,), {
+  'DESCRIPTOR' : _PROFILEDAGGREGATE,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.DataFrameBatch)
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ProfiledAggregate)
   })
-_sym_db.RegisterMessage(DataFrameBatch)
+_sym_db.RegisterMessage(ProfiledAggregate)
 
-ParquetDataFrame = _reflection.GeneratedProtocolMessageType('ParquetDataFrame', (_message.Message,), {
-  'DESCRIPTOR' : _PARQUETDATAFRAME,
+ProfiledAggregateBatch = _reflection.GeneratedProtocolMessageType('ProfiledAggregateBatch', (_message.Message,), {
+  'DESCRIPTOR' : _PROFILEDAGGREGATEBATCH,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ParquetDataFrame)
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ProfiledAggregateBatch)
   })
-_sym_db.RegisterMessage(ParquetDataFrame)
-
-ProfiledDataFrame = _reflection.GeneratedProtocolMessageType('ProfiledDataFrame', (_message.Message,), {
-  'DESCRIPTOR' : _PROFILEDDATAFRAME,
-  '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ProfiledDataFrame)
-  })
-_sym_db.RegisterMessage(ProfiledDataFrame)
-
-ProfiledDataFrameBatch = _reflection.GeneratedProtocolMessageType('ProfiledDataFrameBatch', (_message.Message,), {
-  'DESCRIPTOR' : _PROFILEDDATAFRAMEBATCH,
-  '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ProfiledDataFrameBatch)
-  })
-_sym_db.RegisterMessage(ProfiledDataFrameBatch)
+_sym_db.RegisterMessage(ProfiledAggregateBatch)
 
 GetProfilerRequest = _reflection.GeneratedProtocolMessageType('GetProfilerRequest', (_message.Message,), {
 
@@ -1473,110 +1877,155 @@ ListProfilersRequest = _reflection.GeneratedProtocolMessageType('ListProfilersRe
 _sym_db.RegisterMessage(ListProfilersRequest)
 _sym_db.RegisterMessage(ListProfilersRequest.Response)
 
-GetProfilerSetRequest = _reflection.GeneratedProtocolMessageType('GetProfilerSetRequest', (_message.Message,), {
+GetProfilerInstanceRequest = _reflection.GeneratedProtocolMessageType('GetProfilerInstanceRequest', (_message.Message,), {
 
   'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
-    'DESCRIPTOR' : _GETPROFILERSETREQUEST_RESPONSE,
+    'DESCRIPTOR' : _GETPROFILERINSTANCEREQUEST_RESPONSE,
     '__module__' : 'monitoring.DataMonitoringService_pb2'
-    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.GetProfilerSetRequest.Response)
+    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.GetProfilerInstanceRequest.Response)
     })
   ,
-  'DESCRIPTOR' : _GETPROFILERSETREQUEST,
+  'DESCRIPTOR' : _GETPROFILERINSTANCEREQUEST,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.GetProfilerSetRequest)
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.GetProfilerInstanceRequest)
   })
-_sym_db.RegisterMessage(GetProfilerSetRequest)
-_sym_db.RegisterMessage(GetProfilerSetRequest.Response)
+_sym_db.RegisterMessage(GetProfilerInstanceRequest)
+_sym_db.RegisterMessage(GetProfilerInstanceRequest.Response)
 
-CreateProfilerSetRequest = _reflection.GeneratedProtocolMessageType('CreateProfilerSetRequest', (_message.Message,), {
+CreateProfilerInstanceRequest = _reflection.GeneratedProtocolMessageType('CreateProfilerInstanceRequest', (_message.Message,), {
 
   'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
-    'DESCRIPTOR' : _CREATEPROFILERSETREQUEST_RESPONSE,
+    'DESCRIPTOR' : _CREATEPROFILERINSTANCEREQUEST_RESPONSE,
     '__module__' : 'monitoring.DataMonitoringService_pb2'
-    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.CreateProfilerSetRequest.Response)
+    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.CreateProfilerInstanceRequest.Response)
     })
   ,
-  'DESCRIPTOR' : _CREATEPROFILERSETREQUEST,
+  'DESCRIPTOR' : _CREATEPROFILERINSTANCEREQUEST,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.CreateProfilerSetRequest)
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.CreateProfilerInstanceRequest)
   })
-_sym_db.RegisterMessage(CreateProfilerSetRequest)
-_sym_db.RegisterMessage(CreateProfilerSetRequest.Response)
+_sym_db.RegisterMessage(CreateProfilerInstanceRequest)
+_sym_db.RegisterMessage(CreateProfilerInstanceRequest.Response)
 
-AddProfilerToSetRequest = _reflection.GeneratedProtocolMessageType('AddProfilerToSetRequest', (_message.Message,), {
+UpdateProfilerInstanceRequest = _reflection.GeneratedProtocolMessageType('UpdateProfilerInstanceRequest', (_message.Message,), {
 
   'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
-    'DESCRIPTOR' : _ADDPROFILERTOSETREQUEST_RESPONSE,
+    'DESCRIPTOR' : _UPDATEPROFILERINSTANCEREQUEST_RESPONSE,
     '__module__' : 'monitoring.DataMonitoringService_pb2'
-    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.AddProfilerToSetRequest.Response)
+    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.UpdateProfilerInstanceRequest.Response)
     })
   ,
-  'DESCRIPTOR' : _ADDPROFILERTOSETREQUEST,
+  'DESCRIPTOR' : _UPDATEPROFILERINSTANCEREQUEST,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.AddProfilerToSetRequest)
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.UpdateProfilerInstanceRequest)
   })
-_sym_db.RegisterMessage(AddProfilerToSetRequest)
-_sym_db.RegisterMessage(AddProfilerToSetRequest.Response)
+_sym_db.RegisterMessage(UpdateProfilerInstanceRequest)
+_sym_db.RegisterMessage(UpdateProfilerInstanceRequest.Response)
 
-RemoveProfilerFromSetRequest = _reflection.GeneratedProtocolMessageType('RemoveProfilerFromSetRequest', (_message.Message,), {
+DeleteProfilerInstanceRequest = _reflection.GeneratedProtocolMessageType('DeleteProfilerInstanceRequest', (_message.Message,), {
 
   'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
-    'DESCRIPTOR' : _REMOVEPROFILERFROMSETREQUEST_RESPONSE,
+    'DESCRIPTOR' : _DELETEPROFILERINSTANCEREQUEST_RESPONSE,
     '__module__' : 'monitoring.DataMonitoringService_pb2'
-    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.RemoveProfilerFromSetRequest.Response)
+    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.DeleteProfilerInstanceRequest.Response)
     })
   ,
-  'DESCRIPTOR' : _REMOVEPROFILERFROMSETREQUEST,
+  'DESCRIPTOR' : _DELETEPROFILERINSTANCEREQUEST,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.RemoveProfilerFromSetRequest)
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.DeleteProfilerInstanceRequest)
   })
-_sym_db.RegisterMessage(RemoveProfilerFromSetRequest)
-_sym_db.RegisterMessage(RemoveProfilerFromSetRequest.Response)
+_sym_db.RegisterMessage(DeleteProfilerInstanceRequest)
+_sym_db.RegisterMessage(DeleteProfilerInstanceRequest.Response)
 
-DeleteProfilerSetRequest = _reflection.GeneratedProtocolMessageType('DeleteProfilerSetRequest', (_message.Message,), {
+ListProfilerInstancesRequest = _reflection.GeneratedProtocolMessageType('ListProfilerInstancesRequest', (_message.Message,), {
 
   'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
-    'DESCRIPTOR' : _DELETEPROFILERSETREQUEST_RESPONSE,
+    'DESCRIPTOR' : _LISTPROFILERINSTANCESREQUEST_RESPONSE,
     '__module__' : 'monitoring.DataMonitoringService_pb2'
-    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.DeleteProfilerSetRequest.Response)
+    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ListProfilerInstancesRequest.Response)
     })
   ,
-  'DESCRIPTOR' : _DELETEPROFILERSETREQUEST,
+  'DESCRIPTOR' : _LISTPROFILERINSTANCESREQUEST,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.DeleteProfilerSetRequest)
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ListProfilerInstancesRequest)
   })
-_sym_db.RegisterMessage(DeleteProfilerSetRequest)
-_sym_db.RegisterMessage(DeleteProfilerSetRequest.Response)
+_sym_db.RegisterMessage(ListProfilerInstancesRequest)
+_sym_db.RegisterMessage(ListProfilerInstancesRequest.Response)
 
-ListProfilerSetsRequest = _reflection.GeneratedProtocolMessageType('ListProfilerSetsRequest', (_message.Message,), {
+GetProfiledEntityRequest = _reflection.GeneratedProtocolMessageType('GetProfiledEntityRequest', (_message.Message,), {
 
   'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
-    'DESCRIPTOR' : _LISTPROFILERSETSREQUEST_RESPONSE,
+    'DESCRIPTOR' : _GETPROFILEDENTITYREQUEST_RESPONSE,
     '__module__' : 'monitoring.DataMonitoringService_pb2'
-    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ListProfilerSetsRequest.Response)
+    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.GetProfiledEntityRequest.Response)
     })
   ,
-  'DESCRIPTOR' : _LISTPROFILERSETSREQUEST,
+  'DESCRIPTOR' : _GETPROFILEDENTITYREQUEST,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ListProfilerSetsRequest)
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.GetProfiledEntityRequest)
   })
-_sym_db.RegisterMessage(ListProfilerSetsRequest)
-_sym_db.RegisterMessage(ListProfilerSetsRequest.Response)
+_sym_db.RegisterMessage(GetProfiledEntityRequest)
+_sym_db.RegisterMessage(GetProfiledEntityRequest.Response)
 
-ProfileBatchRequest = _reflection.GeneratedProtocolMessageType('ProfileBatchRequest', (_message.Message,), {
+CreateProfiledEntityRequest = _reflection.GeneratedProtocolMessageType('CreateProfiledEntityRequest', (_message.Message,), {
 
   'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
-    'DESCRIPTOR' : _PROFILEBATCHREQUEST_RESPONSE,
+    'DESCRIPTOR' : _CREATEPROFILEDENTITYREQUEST_RESPONSE,
     '__module__' : 'monitoring.DataMonitoringService_pb2'
-    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ProfileBatchRequest.Response)
+    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.CreateProfiledEntityRequest.Response)
     })
   ,
-  'DESCRIPTOR' : _PROFILEBATCHREQUEST,
+  'DESCRIPTOR' : _CREATEPROFILEDENTITYREQUEST,
   '__module__' : 'monitoring.DataMonitoringService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ProfileBatchRequest)
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.CreateProfiledEntityRequest)
   })
-_sym_db.RegisterMessage(ProfileBatchRequest)
-_sym_db.RegisterMessage(ProfileBatchRequest.Response)
+_sym_db.RegisterMessage(CreateProfiledEntityRequest)
+_sym_db.RegisterMessage(CreateProfiledEntityRequest.Response)
+
+UpdateProfiledEntityRequest = _reflection.GeneratedProtocolMessageType('UpdateProfiledEntityRequest', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _UPDATEPROFILEDENTITYREQUEST_RESPONSE,
+    '__module__' : 'monitoring.DataMonitoringService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.UpdateProfiledEntityRequest.Response)
+    })
+  ,
+  'DESCRIPTOR' : _UPDATEPROFILEDENTITYREQUEST,
+  '__module__' : 'monitoring.DataMonitoringService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.UpdateProfiledEntityRequest)
+  })
+_sym_db.RegisterMessage(UpdateProfiledEntityRequest)
+_sym_db.RegisterMessage(UpdateProfiledEntityRequest.Response)
+
+DeleteProfiledEntityRequest = _reflection.GeneratedProtocolMessageType('DeleteProfiledEntityRequest', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _DELETEPROFILEDENTITYREQUEST_RESPONSE,
+    '__module__' : 'monitoring.DataMonitoringService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.DeleteProfiledEntityRequest.Response)
+    })
+  ,
+  'DESCRIPTOR' : _DELETEPROFILEDENTITYREQUEST,
+  '__module__' : 'monitoring.DataMonitoringService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.DeleteProfiledEntityRequest)
+  })
+_sym_db.RegisterMessage(DeleteProfiledEntityRequest)
+_sym_db.RegisterMessage(DeleteProfiledEntityRequest.Response)
+
+ListProfiledEntitiesRequest = _reflection.GeneratedProtocolMessageType('ListProfiledEntitiesRequest', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _LISTPROFILEDENTITIESREQUEST_RESPONSE,
+    '__module__' : 'monitoring.DataMonitoringService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ListProfiledEntitiesRequest.Response)
+    })
+  ,
+  'DESCRIPTOR' : _LISTPROFILEDENTITIESREQUEST,
+  '__module__' : 'monitoring.DataMonitoringService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ListProfiledEntitiesRequest)
+  })
+_sym_db.RegisterMessage(ListProfiledEntitiesRequest)
+_sym_db.RegisterMessage(ListProfiledEntitiesRequest.Response)
 
 GetAggregateRequest = _reflection.GeneratedProtocolMessageType('GetAggregateRequest', (_message.Message,), {
 
@@ -1593,6 +2042,21 @@ GetAggregateRequest = _reflection.GeneratedProtocolMessageType('GetAggregateRequ
 _sym_db.RegisterMessage(GetAggregateRequest)
 _sym_db.RegisterMessage(GetAggregateRequest.Response)
 
+StoreProfiledAggregateBatchRequest = _reflection.GeneratedProtocolMessageType('StoreProfiledAggregateBatchRequest', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _STOREPROFILEDAGGREGATEBATCHREQUEST_RESPONSE,
+    '__module__' : 'monitoring.DataMonitoringService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.monitoring.StoreProfiledAggregateBatchRequest.Response)
+    })
+  ,
+  'DESCRIPTOR' : _STOREPROFILEDAGGREGATEBATCHREQUEST,
+  '__module__' : 'monitoring.DataMonitoringService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.StoreProfiledAggregateBatchRequest)
+  })
+_sym_db.RegisterMessage(StoreProfiledAggregateBatchRequest)
+_sym_db.RegisterMessage(StoreProfiledAggregateBatchRequest.Response)
+
 
 DESCRIPTOR._options = None
 
@@ -1602,8 +2066,8 @@ _DATAMONITORINGSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2626,
-  serialized_end=4195,
+  serialized_start=3726,
+  serialized_end=6678,
   methods=[
   _descriptor.MethodDescriptor(
     name='getProfiler',
@@ -1612,7 +2076,7 @@ _DATAMONITORINGSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_GETPROFILERREQUEST,
     output_type=_GETPROFILERREQUEST_RESPONSE,
-    serialized_options=None,
+    serialized_options=b'\202\323\344\223\002\032\022\030/v1/profiler/getProfiler',
   ),
   _descriptor.MethodDescriptor(
     name='createProfiler',
@@ -1621,7 +2085,7 @@ _DATAMONITORINGSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_CREATEPROFILERREQUEST,
     output_type=_CREATEPROFILERREQUEST_RESPONSE,
-    serialized_options=None,
+    serialized_options=b'\202\323\344\223\002 \032\033/v1/profiler/createProfiler:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='updateProfiler',
@@ -1630,7 +2094,7 @@ _DATAMONITORINGSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_UPDATEPROFILERREQUEST,
     output_type=_UPDATEPROFILERREQUEST_RESPONSE,
-    serialized_options=None,
+    serialized_options=b'\202\323\344\223\002\0362\031/v1/profile/updateProfile:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='deleteProfiler',
@@ -1639,7 +2103,7 @@ _DATAMONITORINGSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_DELETEPROFILERREQUEST,
     output_type=_DELETEPROFILERREQUEST_RESPONSE,
-    serialized_options=None,
+    serialized_options=b'\202\323\344\223\002\037*\032/v1/profile/deleteProfiler:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='listProfilers',
@@ -1648,79 +2112,115 @@ _DATAMONITORINGSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_LISTPROFILERSREQUEST,
     output_type=_LISTPROFILERSREQUEST_RESPONSE,
-    serialized_options=None,
+    serialized_options=b'\202\323\344\223\002\034\022\032/v1/profiler/listProfilers',
   ),
   _descriptor.MethodDescriptor(
-    name='getProfilerSet',
-    full_name='ai.verta.monitoring.DataMonitoringService.getProfilerSet',
+    name='getProfilerInstance',
+    full_name='ai.verta.monitoring.DataMonitoringService.getProfilerInstance',
     index=5,
     containing_service=None,
-    input_type=_GETPROFILERSETREQUEST,
-    output_type=_GETPROFILERSETREQUEST_RESPONSE,
-    serialized_options=None,
+    input_type=_GETPROFILERINSTANCEREQUEST,
+    output_type=_GETPROFILERINSTANCEREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002&\022$/v1/profiler-set/getProfilerInstance',
   ),
   _descriptor.MethodDescriptor(
-    name='createProfilerSet',
-    full_name='ai.verta.monitoring.DataMonitoringService.createProfilerSet',
+    name='createProfilerInstance',
+    full_name='ai.verta.monitoring.DataMonitoringService.createProfilerInstance',
     index=6,
     containing_service=None,
-    input_type=_CREATEPROFILERSETREQUEST,
-    output_type=_CREATEPROFILERSETREQUEST_RESPONSE,
-    serialized_options=None,
+    input_type=_CREATEPROFILERINSTANCEREQUEST,
+    output_type=_CREATEPROFILERINSTANCEREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002,\032\'/v1/profiler-set/createProfilerInstance:\001*',
   ),
   _descriptor.MethodDescriptor(
-    name='addProfilerToSet',
-    full_name='ai.verta.monitoring.DataMonitoringService.addProfilerToSet',
+    name='updateProfilerInstance',
+    full_name='ai.verta.monitoring.DataMonitoringService.updateProfilerInstance',
     index=7,
     containing_service=None,
-    input_type=_ADDPROFILERTOSETREQUEST,
-    output_type=_ADDPROFILERTOSETREQUEST_RESPONSE,
-    serialized_options=None,
+    input_type=_UPDATEPROFILERINSTANCEREQUEST,
+    output_type=_UPDATEPROFILERINSTANCEREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002%2 /v1/profile-set/updateProfileSet:\001*',
   ),
   _descriptor.MethodDescriptor(
-    name='removeProfilerFromSet',
-    full_name='ai.verta.monitoring.DataMonitoringService.removeProfilerFromSet',
+    name='deleteProfilerInstance',
+    full_name='ai.verta.monitoring.DataMonitoringService.deleteProfilerInstance',
     index=8,
     containing_service=None,
-    input_type=_REMOVEPROFILERFROMSETREQUEST,
-    output_type=_REMOVEPROFILERFROMSETREQUEST_RESPONSE,
-    serialized_options=None,
+    input_type=_DELETEPROFILERINSTANCEREQUEST,
+    output_type=_DELETEPROFILERREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002+*&/v1/profile-set/deleteProfilerInstance:\001*',
   ),
   _descriptor.MethodDescriptor(
-    name='deleteProfilerSet',
-    full_name='ai.verta.monitoring.DataMonitoringService.deleteProfilerSet',
+    name='listProfilerInstances',
+    full_name='ai.verta.monitoring.DataMonitoringService.listProfilerInstances',
     index=9,
     containing_service=None,
-    input_type=_DELETEPROFILERSETREQUEST,
-    output_type=_DELETEPROFILERREQUEST_RESPONSE,
-    serialized_options=None,
+    input_type=_LISTPROFILERINSTANCESREQUEST,
+    output_type=_LISTPROFILERINSTANCESREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002$\022\"/v1/profiler-set/listProfilersSets',
   ),
   _descriptor.MethodDescriptor(
-    name='listProfilerSets',
-    full_name='ai.verta.monitoring.DataMonitoringService.listProfilerSets',
+    name='getProfiledEntity',
+    full_name='ai.verta.monitoring.DataMonitoringService.getProfiledEntity',
     index=10,
     containing_service=None,
-    input_type=_LISTPROFILERSETSREQUEST,
-    output_type=_LISTPROFILERSETSREQUEST_RESPONSE,
-    serialized_options=None,
+    input_type=_GETPROFILEDENTITYREQUEST,
+    output_type=_GETPROFILEDENTITYREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002\'\022%/v1/profiled-entity/getProfiledEntity',
   ),
   _descriptor.MethodDescriptor(
-    name='profileBatch',
-    full_name='ai.verta.monitoring.DataMonitoringService.profileBatch',
+    name='createProfiledEntity',
+    full_name='ai.verta.monitoring.DataMonitoringService.createProfiledEntity',
     index=11,
     containing_service=None,
-    input_type=_PROFILEBATCHREQUEST,
-    output_type=_PROFILEBATCHREQUEST_RESPONSE,
-    serialized_options=None,
+    input_type=_CREATEPROFILEDENTITYREQUEST,
+    output_type=_CREATEPROFILEDENTITYREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002-\032(/v1/profiled-entity/createProfiledEntity:\001*',
+  ),
+  _descriptor.MethodDescriptor(
+    name='updateProfiledEntity',
+    full_name='ai.verta.monitoring.DataMonitoringService.updateProfiledEntity',
+    index=12,
+    containing_service=None,
+    input_type=_UPDATEPROFILEDENTITYREQUEST,
+    output_type=_UPDATEPROFILEDENTITYREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002-2(/v1/profiled-entity/updateProfiledEntity:\001*',
+  ),
+  _descriptor.MethodDescriptor(
+    name='deleteProfiledEntity',
+    full_name='ai.verta.monitoring.DataMonitoringService.deleteProfiledEntity',
+    index=13,
+    containing_service=None,
+    input_type=_DELETEPROFILEDENTITYREQUEST,
+    output_type=_DELETEPROFILEDENTITYREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002-*(/v1/profiled-entity/deleteProfiledEntity:\001*',
+  ),
+  _descriptor.MethodDescriptor(
+    name='listProfiledEntities',
+    full_name='ai.verta.monitoring.DataMonitoringService.listProfiledEntities',
+    index=14,
+    containing_service=None,
+    input_type=_LISTPROFILEDENTITIESREQUEST,
+    output_type=_LISTPROFILEDENTITIESREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002*\022(/v1/profiled-entity/listProfiledEntities',
   ),
   _descriptor.MethodDescriptor(
     name='getAggregate',
     full_name='ai.verta.monitoring.DataMonitoringService.getAggregate',
-    index=12,
+    index=15,
     containing_service=None,
     input_type=_GETAGGREGATEREQUEST,
     output_type=_GETAGGREGATEREQUEST_RESPONSE,
-    serialized_options=None,
+    serialized_options=b'\202\323\344\223\002\034\022\032/v1/aggregate/getAggregate',
+  ),
+  _descriptor.MethodDescriptor(
+    name='storeAggregateBatch',
+    full_name='ai.verta.monitoring.DataMonitoringService.storeAggregateBatch',
+    index=16,
+    containing_service=None,
+    input_type=_STOREPROFILEDAGGREGATEBATCHREQUEST,
+    output_type=_STOREPROFILEDAGGREGATEBATCHREQUEST_RESPONSE,
+    serialized_options=b'\202\323\344\223\002&\032!/v1/aggregate/storeAggregateBatch:\001*',
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_DATAMONITORINGSERVICE)
