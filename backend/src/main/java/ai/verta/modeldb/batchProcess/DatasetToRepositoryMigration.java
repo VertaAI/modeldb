@@ -452,5 +452,4 @@ public class DatasetToRepositoryMigration {
             newDatasetVersion, repositoryDAO, blobDAO, metadataDAO, repositoryEntity);
     return createCommitResponse.getCommit().getCommitSha();
   }
-
 }

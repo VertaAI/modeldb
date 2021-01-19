@@ -717,5 +717,4 @@ public class ModelDBHibernateUtil {
   public static Long getEntityCount(Class<?> klass) {
     return CommonUtils.getEntityCount(klass, new ModelDBHibernateConnection());
   }
-
 }

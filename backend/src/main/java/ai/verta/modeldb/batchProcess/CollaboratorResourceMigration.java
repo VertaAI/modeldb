@@ -83,7 +83,10 @@ public class CollaboratorResourceMigration extends CommonCollaboratorResourceMig
 
   private static void migrateProjects() {
     LOGGER.debug("Projects migration started");
-    migrateResources(() -> ModelDBHibernateUtil.getEntityCount(ProjectEntity.class), () -> ModelDBHibernateUtil.getSessionFactory().openSession(), ProjectEntity.class);
+    migrateResources(
+        () -> ModelDBHibernateUtil.getEntityCount(ProjectEntity.class),
+        () -> ModelDBHibernateUtil.getSessionFactory().openSession(),
+        ProjectEntity.class);
     Long count = getEntityCount(ProjectEntity.class);
 
     int lowerBound = 0;

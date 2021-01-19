@@ -179,14 +179,10 @@ public class ProjectEntity implements ResourceEntity {
   }
 
   @Override
-  public void setVisibility_migration(boolean visibilityMigration) {
-
-  }
+  public void setVisibility_migration(boolean visibilityMigration) {}
 
   @Override
-  public void deleteRoleBindings() {
-
-  }
+  public void deleteRoleBindings() {}
 
   public void setName(String name) {
     this.name = name;
