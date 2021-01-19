@@ -10,7 +10,6 @@ import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
 import ai.verta.uac.RoleScope;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
@@ -76,8 +75,6 @@ public interface RoleService {
           ModelDBServiceResourceTypes modelDBServiceResourceTypes,
           ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions);
 
-  RoleBinding getRoleBindingByName(String roleBindingName);
-
   List<String> getSelfDirectlyAllowedResources(
           ModelDBServiceResourceTypes modelDBServiceResourceTypes,
           ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions);
@@ -101,15 +98,7 @@ public interface RoleService {
           String resourceId,
           ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  String buildPublicRoleBindingName(
-          String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  void createPublicRoleBinding(
-          String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
   Role getRoleByName(String roleName, RoleScope roleScope);
-
-  boolean deleteRoleBinding(String roleBindingId);
 
   boolean deleteRoleBindings(List<String> roleBindingNames);
 

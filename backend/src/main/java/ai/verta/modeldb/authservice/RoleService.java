@@ -4,56 +4,23 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
-import ai.verta.uac.Actions;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
-import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Metadata;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 public interface RoleService extends ai.verta.modeldb.common.authservice.RoleService {
 
   boolean IsImplemented();
-
-  void createRoleBinding(
-      Role role,
-      CollaboratorBase collaborator,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  void createPublicRoleBinding(
-      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  String buildPublicRoleBindingName(
-      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  void isSelfAllowed(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      String resourceId);
-
-  Map<String, Actions> getSelfAllowedActionsBatch(
-      List<String> resourceIds, ModelDBServiceResourceTypes type);
-
-  Role getRoleByName(String roleName, RoleScope roleScope);
-
-  boolean deleteRoleBinding(String roleBindingId);
-
-  boolean deleteRoleBindings(List<String> roleBindingNames);
 
   List<GetCollaboratorResponseItem> getResourceCollaborators(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
@@ -79,39 +46,9 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
       CollaboratorBase collaborator,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  RoleBinding getRoleBindingByName(String roleBindingName);
-
-  List<String> getSelfAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions);
-
-  List<String> getSelfDirectlyAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions);
-
-  List<String> getAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      CollaboratorBase collaboratorBase);
-
   GeneratedMessageV3 getTeamById(String teamId);
 
-  GeneratedMessageV3 getTeamByName(String orgId, String teamName);
-
   GeneratedMessageV3 getOrgById(String orgId);
-
-  GeneratedMessageV3 getOrgByName(String name);
-
-  List<String> getAccessibleResourceIds(
-      CollaboratorBase hostUserInfo,
-      CollaboratorBase currentLoginUserInfo,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      List<String> requestedResourceIds);
-
-  List<String> getAccessibleResourceIdsByActions(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      List<String> requestedIdList);
 
   /**
    * from the name for workspace, get the workspace id and type. if no workspace is present assume
@@ -136,15 +73,8 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
   WorkspaceDTO getWorkspaceDTOByWorkspaceId(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
 
-  List<Organization> listMyOrganizations();
-
   GetResourcesResponseItem getEntityResource(
       String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  List<GetResourcesResponseItem> getResourceItems(
-      Workspace workspace,
-      Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   boolean deleteResources(Resources resources);
 

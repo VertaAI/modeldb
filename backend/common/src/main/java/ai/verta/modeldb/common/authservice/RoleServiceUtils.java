@@ -12,7 +12,6 @@ import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteResources;
-import ai.verta.uac.DeleteRoleBinding;
 import ai.verta.uac.DeleteRoleBindings;
 import ai.verta.uac.Entities;
 import ai.verta.uac.GetAllowedResources;
@@ -20,7 +19,6 @@ import ai.verta.uac.GetOrganizationById;
 import ai.verta.uac.GetOrganizationByName;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GetRoleBindingByName;
 import ai.verta.uac.GetRoleByName;
 import ai.verta.uac.GetSelfAllowedActionsBatch;
 import ai.verta.uac.GetSelfAllowedResources;
@@ -42,7 +40,6 @@ import ai.verta.uac.SetResource;
 import ai.verta.uac.SetRoleBinding;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
-import com.google.rpc.Code;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
@@ -556,41 +553,6 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public RoleBinding getRoleBindingByName(String roleBindingName) {
-    return getRoleBindingByName(true, roleBindingName);
-  }
-
-  private RoleBinding getRoleBindingByName(boolean retry, String roleBindingName) {
-    GetRoleBindingByName getRoleBindingByNameRequest =
-            GetRoleBindingByName.newBuilder().setName(roleBindingName).build();
-    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      GetRoleBindingByName.Response getRoleBindingByNameResponse =
-              authServiceChannel
-                      .getRoleServiceBlockingStub()
-                      .getRoleBindingByName(getRoleBindingByNameRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(
-              CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getRoleBindingByNameResponse);
-
-      return getRoleBindingByNameResponse.getRoleBinding();
-    } catch (StatusRuntimeException ex) {
-      LOGGER.info(roleBindingName + " : " + ex.getMessage());
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        return (RoleBinding)
-                CommonUtils.retryOrThrowException(
-                        ex,
-                        retry,
-                        (CommonUtils.RetryCallInterface<RoleBinding>)
-                                (retry1) -> getRoleBindingByName(retry1, roleBindingName), timeout);
-      } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
-        return RoleBinding.newBuilder().build();
-      }
-      throw ex;
-    }
-  }
-
-  @Override
   public List<String> getSelfDirectlyAllowedResources(
           ModelDBServiceResourceTypes modelDBServiceResourceTypes,
           ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
@@ -790,34 +752,6 @@ public class RoleServiceUtils implements RoleService {
     setRoleBindingOnAuthService(true, newRoleBinding);
   }
 
-  @Override
-  public String buildPublicRoleBindingName(
-          String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return buildRoleBindingName(
-            "PUBLIC_ROLE", resourceId, "PUBLIC", modelDBServiceResourceTypes.name());
-  }
-
-  @Override
-  public void createPublicRoleBinding(
-          String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    String roleBindingName = buildPublicRoleBindingName(resourceId, modelDBServiceResourceTypes);
-
-    RoleBinding newRoleBinding =
-            RoleBinding.newBuilder()
-                    .setName(roleBindingName)
-                    .setPublic(true)
-                    .addResources(
-                            Resources.newBuilder()
-                                    .setService(Service.MODELDB_SERVICE)
-                                    .setResourceType(
-                                            ResourceType.newBuilder()
-                                                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                                    .addResourceIds(resourceId)
-                                    .build())
-                    .build();
-    setRoleBindingOnAuthService(true, newRoleBinding);
-  }
-
   private void setRoleBindingOnAuthService(boolean retry, RoleBinding roleBinding) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
@@ -865,33 +799,6 @@ public class RoleServiceUtils implements RoleService {
                       ex,
                       retry,
                       (CommonUtils.RetryCallInterface<Role>) (retry1) -> getRoleByName(retry1, roleName, roleScope), timeout);
-    }
-  }
-
-  @Override
-  public boolean deleteRoleBinding(String roleBindingId) {
-    return deleteRoleBinding(true, roleBindingId);
-  }
-
-  private boolean deleteRoleBinding(boolean retry, String roleBindingId) {
-    DeleteRoleBinding deleteRoleBindingRequest =
-            DeleteRoleBinding.newBuilder().setId(roleBindingId).build();
-    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      DeleteRoleBinding.Response deleteRoleBindingResponse =
-              authServiceChannel
-                      .getRoleServiceBlockingStub()
-                      .deleteRoleBinding(deleteRoleBindingRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, deleteRoleBindingResponse);
-
-      return deleteRoleBindingResponse.getStatus();
-    } catch (StatusRuntimeException ex) {
-      return (Boolean)
-              CommonUtils.retryOrThrowException(
-                      ex,
-                      retry,
-                      (CommonUtils.RetryCallInterface<Boolean>) (retry1) -> deleteRoleBinding(retry1, roleBindingId), timeout);
     }
   }
 

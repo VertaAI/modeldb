@@ -20,7 +20,6 @@ import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import com.google.protobuf.GeneratedMessageV3;
 import com.google.rpc.Code;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
@@ -58,56 +57,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   @Override
   public boolean IsImplemented() {
     return true;
-  }
-
-  @Override
-  public void createRoleBinding(
-      Role role,
-      CollaboratorBase collaborator,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    super.createRoleBinding(role, collaborator, resourceId, modelDBServiceResourceTypes);
-  }
-
-  @Override
-  public void createPublicRoleBinding(
-      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    super.createPublicRoleBinding(resourceId, modelDBServiceResourceTypes);
-  }
-
-  @Override
-  public String buildPublicRoleBindingName(
-      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return super.buildPublicRoleBindingName(resourceId, modelDBServiceResourceTypes);
-  }
-
-  @Override
-  public void isSelfAllowed(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      String resourceId) {
-    super.isSelfAllowed(modelDBServiceResourceTypes, modelDBServiceActions, resourceId);
-  }
-
-  @Override
-  public Map<String, Actions> getSelfAllowedActionsBatch(
-      List<String> resourceIds, ModelDBServiceResourceTypes type) {
-    return super.getSelfAllowedActionsBatch(resourceIds, type);
-  }
-
-  @Override
-  public Role getRoleByName(String roleName, RoleScope roleScope) {
-    return super.getRoleByName(roleName, roleScope);
-  }
-
-  @Override
-  public boolean deleteRoleBinding(String roleBindingId) {
-    return super.deleteRoleBinding(roleBindingId);
-  }
-
-  @Override
-  public boolean deleteRoleBindings(List<String> roleBindingNames) {
-    return super.deleteRoleBindings(roleBindingNames);
   }
 
   @Override
@@ -373,64 +322,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
     }
   }
 
-  @Override
-  public RoleBinding getRoleBindingByName(String roleBindingName) {
-    return super.getRoleBindingByName(roleBindingName);
-  }
-
-  @Override
-  public List<String> getSelfAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions) {
-    return super.getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
-  }
-
-  @Override
-  public List<String> getSelfDirectlyAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions) {
-    return super.getSelfDirectlyAllowedResources(
-        modelDBServiceResourceTypes, modelDBServiceActions);
-  }
-
-  @Override
-  public List<String> getAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      CollaboratorBase collaboratorBase) {
-    return super.getAllowedResources(
-        modelDBServiceResourceTypes, modelDBServiceActions, collaboratorBase);
-  }
-
-  @Override
-  public GeneratedMessageV3 getTeamByName(String orgId, String teamName) {
-    return super.getTeamByName(orgId, teamName);
-  }
-
-  @Override
-  public GeneratedMessageV3 getOrgByName(String name) {
-    return super.getOrgByName(name);
-  }
-
-  @Override
-  public List<String> getAccessibleResourceIds(
-      CollaboratorBase hostUserInfo,
-      CollaboratorBase currentLoginUserInfo,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      List<String> requestedResourceIds) {
-    return super.getAccessibleResourceIds(
-        hostUserInfo, currentLoginUserInfo, modelDBServiceResourceTypes, requestedResourceIds);
-  }
-
-  @Override
-  public List<String> getAccessibleResourceIdsByActions(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      List<String> requestedIdList) {
-    return super.getAccessibleResourceIdsByActions(
-        modelDBServiceResourceTypes, modelDBServiceActions, requestedIdList);
-  }
-
   private Optional<Workspace> getWorkspaceByLegacyId(
       final String legacyWorkspaceId, final WorkspaceType workspaceType) {
     if (legacyWorkspaceId == null || legacyWorkspaceId.isEmpty()) {
@@ -549,28 +440,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       default:
         return null;
     }
-  }
-
-  @Override
-  public List<Organization> listMyOrganizations() {
-    return super.listMyOrganizations();
-  }
-
-  /**
-   * getResourceItems method is the main roleService method at MDB which actually call to the UAC
-   * using endpoint getResources
-   *
-   * @param workspace: workspace
-   * @param resourceIds: requested resource ids
-   * @param modelDBServiceResourceTypes: modelDBServiceResourceTypes like PROJECT, REPOSITORY
-   * @return {@link List}: list of the resource details
-   */
-  @Override
-  public List<GetResourcesResponseItem> getResourceItems(
-      Workspace workspace,
-      Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return super.getResourceItems(workspace, resourceIds, modelDBServiceResourceTypes);
   }
 
   @Override
