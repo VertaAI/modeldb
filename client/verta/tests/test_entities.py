@@ -44,7 +44,7 @@ class TestClient:
 
             assert client.set_project()
 
-            utils.delete_project(client.proj.id, client._conn)
+            client.proj.delete()
         finally:
             if EMAIL is not None:
                 os.environ[EMAIL_KEY] = EMAIL
@@ -152,7 +152,7 @@ class TestClient:
                         assert client.expt.name == EXPERIMENT_NAME
                     finally:
                         if client.proj is not None:
-                            utils.delete_project(client.proj.id, conn)
+                            client.proj.delete()
                     dataset = client.set_dataset()
                     try:
                         assert dataset.name == DATASET_NAME
@@ -435,6 +435,37 @@ class TestExperimentRun:
         assert old_run_msg.code_version_snapshot == new_run_art_code_msg.code_version_snapshot
 
         assert old_run_msg.datasets == new_run_art_code_data_msg.datasets
+
+    def test_clone_into_expt(self, client):
+        expt1 = client.set_experiment()
+
+        expt2 = client.set_experiment()
+        assert expt1.id != expt2.id  # of course, but just to be sure
+
+        old_run = client.set_experiment_run()
+        assert old_run._msg.experiment_id == expt2.id  # of course, but just to be sure
+
+        old_run.log_hyperparameters({"hpp1" : 1, "hpp2" : 2, "hpp3" : "hpp3"})
+        old_run.log_metrics({"metric1" : 0.5, "metric2" : 0.6})
+        old_run.log_tags(["tag1", "tag2"])
+        old_run.log_attributes({"attr1" : 10, "attr2" : {"abc": 1}})
+        old_run.log_artifact("my-artifact", "README.md")
+
+        new_run = old_run.clone(copy_artifacts=True, experiment_id=expt1.id)
+
+        old_run_msg = old_run._get_proto_by_id(old_run._conn, old_run.id)
+        new_run_msg = new_run._get_proto_by_id(new_run._conn, new_run.id)
+
+        assert old_run_msg.id != new_run_msg.id
+        assert new_run_msg.experiment_id == expt1.id
+
+        assert old_run_msg.description == new_run_msg.description
+        assert old_run_msg.tags == new_run_msg.tags
+        assert old_run_msg.metrics == new_run_msg.metrics
+        assert old_run_msg.hyperparameters == new_run_msg.hyperparameters
+        assert old_run_msg.observations == new_run_msg.observations
+        assert old_run_msg.artifacts == new_run_msg.artifacts
+
 
 class TestExperimentRuns:
     def test_getitem(self, client):

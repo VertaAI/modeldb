@@ -37,6 +37,15 @@ Release Notes
      <>`__
 
 
+v0.15.2 (2020-08-28)
+--------------------
+
+Enhancements
+^^^^^^^^^^^^
+- `add retries for all client connection errors
+  <https://github.com/VertaAI/modeldb/pull/1407>`__
+
+
 v0.15.1 (2020-08-24)
 --------------------
 
@@ -66,6 +75,8 @@ Bug Fixes
 - `fix bug where multipart upload loop may have an undefined variable in the
   event of connection errors
   <https://github.com/VertaAI/modeldb/pull/1362>`__
+- `fix bug where getting a dataset version from another workspace may fail
+  <https://github.com/VertaAI/modeldb/pull/1349>`__
 
 
 v0.14.17 (2020-08-13)

@@ -7,6 +7,8 @@ from .._protos.public.modeldb.versioning import VersioningService_pb2 as _Versio
 from .._internal_utils import _utils
 from . import commit
 
+import requests
+
 
 class Repository(object):
     """
@@ -157,3 +159,13 @@ class Repository(object):
 
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
         return commit.Commit._from_id(self._conn, self, response_msg.commit.commit_sha, branch_name=branch)
+
+    def delete(self):
+        """
+        Deletes this repository.
+
+        """
+        request_url = "{}://{}/api/v1/modeldb/versioning/repositories/{}".format(self._conn.scheme, self._conn.socket, self.id)
+        response = requests.delete(request_url, headers=self._conn.auth)
+        _utils.raise_for_http_error(response)
+

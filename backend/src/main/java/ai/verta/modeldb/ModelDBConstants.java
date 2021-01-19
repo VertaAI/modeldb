@@ -193,6 +193,7 @@ public interface ModelDBConstants {
   String DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE =
       "Can't add new versioning entry, because an existing one has different repository or commit";
   String REPOSITORY_ENTITY = "repositoryEntity";
+  String POPULATE_VERSION_MIGRATION = "POPULATE_VERSION_MIGRATION";
 
   enum UserIdentifier {
     VERTA_ID,

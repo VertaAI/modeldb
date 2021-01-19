@@ -39,7 +39,7 @@ class Project(_ModelDBEntity):
         ID of this Project.
     name : str
         Name of this Project.
-    expt_runs : :class:`ExperimentRuns`
+    expt_runs : :class:`~verta._tracking.ExperimentRuns`
         Experiment Runs under this Project.
 
     """

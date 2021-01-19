@@ -42,6 +42,48 @@
         ]
       }
     },
+    "/workspace/getWorkspaceByLegacyId": {
+      "get": {
+        "operationId": "WorkspaceService_getWorkspaceByLegacyId",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacWorkspace"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workspace_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ORGANIZATION",
+              "USER"
+            ],
+            "default": "UNKNOWN"
+          }
+        ],
+        "tags": [
+          "WorkspaceService"
+        ]
+      }
+    },
     "/workspace/getWorkspaceByName": {
       "get": {
         "operationId": "WorkspaceService_getWorkspaceByName",
@@ -74,6 +116,15 @@
     }
   },
   "definitions": {
+    "WorkspaceTypeEnumWorkspaceType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ORGANIZATION",
+        "USER"
+      ],
+      "default": "UNKNOWN"
+    },
     "protobufAny": {
       "type": "object",
       "properties": {

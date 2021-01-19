@@ -452,32 +452,45 @@ class ExperimentRun(_DeployableEntity):
         else:
             return dataset.path, dataset.path_only, dataset.linked_artifact_id
 
-    def clone(self, copy_artifacts=False, copy_code_version=False, copy_datasets=False):
+    def clone(self, copy_artifacts=False, copy_code_version=False, copy_datasets=False, experiment_id=None):
         """
-        Returns a newly-created copy of this Experiment Run.
+        Returns a newly-created copy of this experiment run.
 
         Parameters
         ----------
         copy_artifacts : bool, default False
-            Whether to also copy this Experiment Run's artifacts.
+            Whether to also copy this experiment run's artifacts.
         copy_code_version : bool, default False
-            Whether to also copy this Experiment Run's code version.
+            Whether to also copy this experiment run's code version.
         copy_datasets : bool, default False
-            Whether to also copy this Experiment Run's dataset versions.
+            Whether to also copy this experiment run's dataset versions.
+        experiment_id : str, optional
+            ID of experiment to clone this run into. If not provided, the new
+            run will be cloned into this run's experiment.
 
         Returns
         -------
-        :class:`ExperimentRun`
+        :class:`~verta._tracking.experimentrun.ExperimentRun`
 
         """
         # get info for the current run
         current_run = self._get_proto_by_id(self._conn, self.id)
 
+        # there's a circular import if `experiment` is imported at module-level
+        #     experimentrun <- experiment <- experimentruns <- experimentrun
+        # so this import is deferred to this function body to work in Py2
+        from .experiment import Experiment
+        if experiment_id is not None:
+            project_id = Experiment._get_proto_by_id(self._conn, experiment_id).project_id
+        else:
+            project_id = current_run.project_id
+            experiment_id = current_run.experiment_id
+
         # clone the current run
         Message = _ExperimentRunService.CreateExperimentRun
         msg = Message(
-            project_id=current_run.project_id,
-            experiment_id=current_run.experiment_id,
+            project_id=project_id,
+            experiment_id=experiment_id,
             name=ExperimentRun._generate_default_name(),
             description=current_run.description,
             tags=current_run.tags,
@@ -956,7 +969,7 @@ class ExperimentRun(_DeployableEntity):
         Alias for :meth:`~ExperimentRun.log_dataset_version`.
 
         .. deprecated:: 0.14.12
-            ``log_dataset()`` can no longer be used to log artifacts.
+            :meth:`~ExperimentRun.log_dataset` can no longer be used to log artifacts.
             :meth:`~ExperimentRun.log_artifact` should be used instead.
 
         """
@@ -981,7 +994,7 @@ class ExperimentRun(_DeployableEntity):
         Parameters
         ----------
         key : str
-        dataset_version : :class:`~verta._dataset.DatasetVersion`
+        dataset_version : `DatasetVersion <dataset.html>`_
         overwrite : bool, default False
             Whether to allow overwriting a dataset version.
 
@@ -1018,8 +1031,8 @@ class ExperimentRun(_DeployableEntity):
         Logs the filesystem path of an dataset to this Experiment Run.
 
         .. deprecated:: 0.13.0
-           The `log_dataset_path()` method will removed in v0.16.0; consider using
-           `client.set_dataset(…, type="local")` and `run.log_dataset_version()` instead.
+           The :meth:`~ExperimentRun.log_dataset_path` method will removed in v0.16.0; consider using
+           :meth:`client.set_dataset(…, type="local") <verta.client.Client.set_dataset>` and :meth:`~ExperimentRun.log_dataset_version` instead.
 
         This function makes no attempt to open a file at `dataset_path`. Only the path string itself
         is logged.
@@ -1090,7 +1103,7 @@ class ExperimentRun(_DeployableEntity):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             DatasetVersion associated with the given key.
 
         """
@@ -1239,7 +1252,7 @@ class ExperimentRun(_DeployableEntity):
                   be included.
                 - If not provided, all Python files located within `sys.path`—excluding virtual
                   environments—will be included.
-        model_api : :class:`~utils.ModelAPI`, optional
+        model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying details about the model and its deployment.
         artifacts : list of str, optional
             Keys of logged artifacts to be used by a class model.
@@ -2101,7 +2114,7 @@ class ExperimentRun(_DeployableEntity):
             downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 
-    def download_docker_context(self, download_to_path):
+    def download_docker_context(self, download_to_path, self_contained=False):
         """
         Downloads this Experiment Run's Docker context ``tgz``.
 
@@ -2109,6 +2122,8 @@ class ExperimentRun(_DeployableEntity):
         ----------
         download_to_path : str
             Path to download Docker context to.
+        self_contained : bool, default False
+            Whether the downloaded Docker context should be self-contained.
 
         Returns
         -------
@@ -2116,12 +2131,17 @@ class ExperimentRun(_DeployableEntity):
             Absolute path where Docker context was downloaded to. Matches `download_to_path`.
 
         """
-        endpoint = "{}://{}/api/v1/deployment/models/{}/dockercontext".format(
+        self._refresh_cache()
+        endpoint = "{}://{}/api/v1/deployment/builds/dockercontext".format(
             self._conn.scheme,
             self._conn.socket,
-            self.id,
         )
-        with _utils.make_request("GET", endpoint, self._conn, stream=True) as response:
+        body = {
+            "run_id": self.id,
+            "self_contained": self_contained,
+        }
+
+        with _utils.make_request("POST", endpoint, self._conn, json=body, stream=True) as response:
             try:
                 _utils.raise_for_http_error(response)
             except requests.HTTPError as e:
@@ -2263,3 +2283,12 @@ class ExperimentRun(_DeployableEntity):
         response_msg.url = url
 
         return response_msg
+
+    def delete(self):
+        """
+        Deletes this experiment run.
+
+        """
+        request_url = "{}://{}/api/v1/modeldb/experiment-run/deleteExperimentRun".format(self._conn.scheme, self._conn.socket)
+        response = requests.delete(request_url, json={'id': self.id}, headers=self._conn.auth)
+        _utils.raise_for_http_error(response)

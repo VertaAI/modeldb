@@ -74,6 +74,15 @@ class TestFind:
         result = proj.expt_runs.find("experiment_id == '{}'".format(expt.id))
         assert set(run.id for run in result) == set(run.id for run in runs)
 
+    def test_name(self, client):
+        proj = client.set_project()
+        run = client.set_experiment_run()
+
+        # no quotes around value!
+        result = proj.expt_runs.find("name == {}".format(run.name))
+        assert len(result) == 1
+        assert result[0].id == run.id
+
     @pytest.mark.skip(reason="not implemented")
     def test_date_created(self, client):
         key = "date_created"

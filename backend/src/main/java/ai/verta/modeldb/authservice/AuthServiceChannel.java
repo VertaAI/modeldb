@@ -68,10 +68,13 @@ public class AuthServiceChannel implements AutoCloseable {
       Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> dev_key =
           Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key<String> dev_key_hyphen =
+          Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
       requestHeaders.put(email_key, this.serviceUserEmail);
       requestHeaders.put(dev_key, this.serviceUserDevKey);
+      requestHeaders.put(dev_key_hyphen, this.serviceUserDevKey);
       requestHeaders.put(source_key, "PythonClient");
     } else {
       requestHeaders = ModelDBAuthInterceptor.METADATA_INFO.get();
@@ -128,7 +131,9 @@ public class AuthServiceChannel implements AutoCloseable {
   }
 
   private void initAuthzServiceStubChannel(Metadata requestHeaders) {
-    if (requestHeaders == null) requestHeaders = getMetadataHeaders();
+    if (requestHeaders == null) {
+      requestHeaders = getMetadataHeaders();
+    }
     LOGGER.trace("Header attaching with stub : {}", requestHeaders);
     ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
     authzServiceBlockingStub =

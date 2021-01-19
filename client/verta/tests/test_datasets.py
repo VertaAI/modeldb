@@ -266,6 +266,24 @@ class TestClientDatasetVersionFunctions:
         version = dataset.get_latest_version(ascending=True)
         assert version.id == version1.id
 
+    def test_dataset_version_info(self, client, created_datasets):
+        botocore = pytest.importorskip("botocore")
+        try:
+            s3_dataset = client.set_dataset(type="s3")
+            created_datasets.append(s3_dataset)
+            s3_version = s3_dataset.create_version("verta-starter", key="census-train.csv")
+        except botocore.exceptions.ClientError:
+            pytest.skip("insufficient AWS credentials")
+
+        local_dataset = client.set_dataset(type="local")
+        created_datasets.append(local_dataset)
+        local_version = local_dataset.create_version(__file__)
+
+        for retrieved, version in [(s3_dataset.get_latest_version(), s3_version),
+                                   (local_dataset.get_latest_version(), local_version)]:
+            assert retrieved.dataset_version_info is not None
+            assert retrieved.dataset_version_info == version.dataset_version_info
+
     @pytest.mark.skip(reason="functionality removed")
     def test_reincarnation(self, client, created_datasets):
         """Consecutive identical versions are assigned the same ID."""

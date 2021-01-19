@@ -273,7 +273,7 @@ class S3Dataset(PathDataset):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             Returns the newly created dataset version
         """
         if key is not None and key_prefix is not None:
@@ -310,7 +310,7 @@ class LocalDataset(PathDataset):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             Returns the newly created dataset version
         """
         version_info = FilesystemDatasetVersionInfo(path)
@@ -346,7 +346,7 @@ class BigQueryDataset(QueryDataset):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             Returns the newly created dataset version
         """
         version_info = BigQueryDatasetVersionInfo(job_id=job_id, location=location)
@@ -391,7 +391,7 @@ class RDBMSDataset(QueryDataset):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             Returns the newly created dataset version
         """
         version_info = RDBMSDatasetVersionInfo(
@@ -440,7 +440,7 @@ class AtlasHiveDataset(QueryDataset):
 
         Returns
         -------
-        DatasetVersion
+        `DatasetVersion <dataset.html>`_
             Returns the newly created dataset version
         """
         version_info = AtlasHiveDatasetVersionInfo(
@@ -513,7 +513,12 @@ class DatasetVersion(object):
         self.version = dataset_version.version
         self._dataset_type = dataset_version.dataset_type
         self.dataset_version = dataset_version
-        self.dataset_version_info = None
+
+        version_info_field = 'dataset_version_info'
+        if dataset_version.HasField(version_info_field):
+            self.dataset_version_info = getattr(dataset_version, dataset_version.WhichOneof(version_info_field))
+        else:
+            self.dataset_version_info = None
 
     def __repr__(self):
         if self.dataset_version:
