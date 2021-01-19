@@ -61,10 +61,13 @@ public class AuthServiceChannel implements AutoCloseable {
       Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> dev_key =
           Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key<String> dev_key_hyphen =
+          Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
       requestHeaders.put(email_key, this.serviceUserEmail);
       requestHeaders.put(dev_key, this.serviceUserDevKey);
+      requestHeaders.put(dev_key_hyphen, this.serviceUserDevKey);
       requestHeaders.put(source_key, "PythonClient");
     } else {
       requestHeaders = metadataInfo.get();
