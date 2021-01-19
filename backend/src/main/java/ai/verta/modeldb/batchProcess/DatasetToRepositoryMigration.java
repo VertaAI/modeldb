@@ -109,7 +109,7 @@ public class DatasetToRepositoryMigration {
     LOGGER.debug("created backup linked_artifact column");
     LOGGER.debug("created dataset_migration_status table");
 
-    Long count = getEntityCount(DatasetEntity.class);
+    Long count = ModelDBHibernateUtil.getEntityCount(DatasetEntity.class);
 
     int lowerBound = 0;
     final int pagesize = recordUpdateLimit;
@@ -453,18 +453,4 @@ public class DatasetToRepositoryMigration {
     return createCommitResponse.getCommit().getCommitSha();
   }
 
-  private static Long getEntityCount(Class<?> klass) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-      CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
-      countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
-      return session.createQuery(countQuery).getSingleResult();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return getEntityCount(klass);
-      } else {
-        throw ex;
-      }
-    }
-  }
 }

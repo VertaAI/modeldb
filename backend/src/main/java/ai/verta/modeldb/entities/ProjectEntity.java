@@ -6,6 +6,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.ResourceEntity;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,7 +34,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "project")
-public class ProjectEntity {
+public class ProjectEntity implements ResourceEntity {
 
   public ProjectEntity() {}
 
@@ -153,12 +155,37 @@ public class ProjectEntity {
     return id;
   }
 
+  @Override
+  public Optional<Long> getWorkspaceId() {
+    return Optional.ofNullable(workspaceServiceId);
+  }
+
+  @Override
+  public Optional<String> getWorkspaceName() {
+    return Optional.empty();
+  }
+
   public void setId(String id) {
     this.id = id;
   }
 
   public String getName() {
     return name;
+  }
+
+  @Override
+  public ResourceVisibility getResourceVisibility() {
+    return null;
+  }
+
+  @Override
+  public void setVisibility_migration(boolean visibilityMigration) {
+
+  }
+
+  @Override
+  public void deleteRoleBindings() {
+
   }
 
   public void setName(String name) {

@@ -61,7 +61,7 @@ public class OwnerRoleBindingUtils {
 
   private static void migrateExperiments() {
     LOGGER.debug("Experiments migration started");
-    Long count = getEntityCount(ExperimentEntity.class);
+    Long count = ModelDBHibernateUtil.getEntityCount(ExperimentEntity.class);
 
     int lowerBound = 0;
     final int pagesize = 5000;

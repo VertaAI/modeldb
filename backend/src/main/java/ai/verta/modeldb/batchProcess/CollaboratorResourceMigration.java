@@ -11,6 +11,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.batchProcess.CommonCollaboratorResourceMigration;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ProjectEntity;
@@ -21,7 +22,15 @@ import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -32,25 +41,32 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-public class CollaboratorResourceMigration {
+public class CollaboratorResourceMigration extends CommonCollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
   private static final String REPOSITORY_GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
   private static AuthService authService;
   private static RoleService roleService;
   private static int paginationSize;
 
-  public CollaboratorResourceMigration() {}
-
-  public static void execute() {
+  public static CollaboratorResourceMigration create() {
     CollaboratorResourceMigration.paginationSize = 100;
     if (Config.getInstance().hasAuth()) {
       authService = AuthServiceUtils.FromConfig(Config.getInstance());
       roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
-    } else {
+      return new CollaboratorResourceMigration(authService, roleService);
+    }
+    return new CollaboratorResourceMigration(null, null);
+  }
+
+  public CollaboratorResourceMigration(AuthService authService, RoleService roleService) {
+    super(authService, roleService);
+  }
+
+  public void execute() {
+    if (authService == null) {
       LOGGER.debug("AuthService Host & Port not found, OSS setup found");
       return;
     }
-
     LOGGER.info("Migration start");
     CommonUtils.registeredBackgroundUtilsCount();
     try {
@@ -67,6 +83,7 @@ public class CollaboratorResourceMigration {
 
   private static void migrateProjects() {
     LOGGER.debug("Projects migration started");
+    migrateResources(() -> ModelDBHibernateUtil.getEntityCount(ProjectEntity.class), () -> ModelDBHibernateUtil.getSessionFactory().openSession(), ProjectEntity.class);
     Long count = getEntityCount(ProjectEntity.class);
 
     int lowerBound = 0;

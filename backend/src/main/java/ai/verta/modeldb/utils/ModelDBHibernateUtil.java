@@ -61,11 +61,15 @@ import org.hibernate.query.Query;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+
 public class ModelDBHibernateUtil {
   private static final Logger LOGGER = LogManager.getLogger(ModelDBHibernateUtil.class);
   private static StandardServiceRegistry registry;
   private static SessionFactory sessionFactory;
   private static Boolean isReady = false;
+  private static CollaboratorResourceMigration collaboratorResourceMigration;
   public static DatabaseConfig config;
   private static Class[] entities = {
     ProjectEntity.class,
@@ -597,8 +601,8 @@ public class ModelDBHibernateUtil {
         }
       }
     }
-
-    CollaboratorResourceMigration.execute();
+    collaboratorResourceMigration = CollaboratorResourceMigration.create();
+    collaboratorResourceMigration.execute();
   }
 
   private static boolean checkMigrationLockedStatus(String migrationName, RdbConfig rdb)
@@ -709,4 +713,9 @@ public class ModelDBHibernateUtil {
     statement.executeUpdate("CREATE DATABASE " + quotedDBName);
     System.out.println("the database " + rdb.RdbDatabaseName + " created successfully");
   }
+
+  public static Long getEntityCount(Class<?> klass) {
+    return CommonUtils.getEntityCount(klass, new ModelDBHibernateConnection());
+  }
+
 }

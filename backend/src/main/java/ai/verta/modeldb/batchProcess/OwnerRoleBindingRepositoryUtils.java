@@ -49,7 +49,7 @@ public class OwnerRoleBindingRepositoryUtils {
 
   private static void migrateRepositories() {
     LOGGER.debug("Repositories migration started");
-    Long count = getEntityCount(RepositoryEntity.class);
+    Long count = ModelDBHibernateUtil.getEntityCount(RepositoryEntity.class);
 
     int lowerBound = 0;
     final int pagesize = 5000;
@@ -130,20 +130,5 @@ public class OwnerRoleBindingRepositoryUtils {
     }
 
     LOGGER.debug("Repositories migration finished");
-  }
-
-  private static Long getEntityCount(Class<?> klass) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-      CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
-      countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
-      return session.createQuery(countQuery).getSingleResult();
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return getEntityCount(klass);
-      } else {
-        throw ex;
-      }
-    }
   }
 }

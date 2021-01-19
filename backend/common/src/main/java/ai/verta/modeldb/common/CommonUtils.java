@@ -2,10 +2,16 @@ package ai.verta.modeldb.common;
 
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 
 public class CommonUtils {
   private static final Logger LOGGER = LogManager.getLogger(CommonUtils.class);
@@ -94,4 +100,20 @@ public class CommonUtils {
     }
     throw ex;
   }
+
+  public static Long getEntityCount(Class<?> klass, HibernateConnection hibernateConnection) {
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+      CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+      countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
+      return session.createQuery(countQuery).getSingleResult();
+    } catch (Exception ex) {
+      if (hibernateConnection.needToRetry(ex)) {
+        return getEntityCount(klass, hibernateConnection);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
 }
