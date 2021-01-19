@@ -72,7 +72,8 @@ public class DatasetContainer extends BlobContainer {
         blobHash = saveQueryDatasetBlob(session, dataset.getQuery(), blobHashes);
         break;
       default:
-        throw new ModelDBException("Unknown dataset blob type", Code.INVALID_ARGUMENT);
+        throw new ModelDBException(
+            "Unknown dataset blob type: " + dataset.getContentCase().name(), Code.INVALID_ARGUMENT);
     }
     if (blobHash != null) {
       rootTree.push(locationList, blobHash, blobType);
