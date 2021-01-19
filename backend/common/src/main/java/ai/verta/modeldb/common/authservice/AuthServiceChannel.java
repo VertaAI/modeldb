@@ -9,10 +9,9 @@ import ai.verta.uac.*;
 import ai.verta.uac.versioning.AuditLogServiceGrpc;
 import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
+import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.concurrent.TimeUnit;
 
 public class AuthServiceChannel implements AutoCloseable {
 

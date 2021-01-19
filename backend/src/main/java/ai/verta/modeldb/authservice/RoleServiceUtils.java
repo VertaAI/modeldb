@@ -17,11 +17,9 @@ import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
-import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ServiceEnum.Service;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.rpc.Code;
 import io.grpc.Metadata;
@@ -68,54 +66,19 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       CollaboratorBase collaborator,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    String roleBindingName =
-        buildRoleBindingName(
-            role.getName(), resourceId, collaborator, modelDBServiceResourceTypes.name());
-
-    RoleBinding newRoleBinding =
-        RoleBinding.newBuilder()
-            .setName(roleBindingName)
-            .setScope(role.getScope())
-            .setRoleId(role.getId())
-            .addEntities(collaborator.getEntities())
-            .addResources(
-                Resources.newBuilder()
-                    .setService(Service.MODELDB_SERVICE)
-                    .setResourceType(
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                    .addResourceIds(resourceId)
-                    .build())
-            .build();
-    setRoleBindingOnAuthService(true, newRoleBinding);
+    super.createRoleBinding(role, collaborator, resourceId, modelDBServiceResourceTypes);
   }
 
   @Override
   public void createPublicRoleBinding(
       String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    String roleBindingName = buildPublicRoleBindingName(resourceId, modelDBServiceResourceTypes);
-
-    RoleBinding newRoleBinding =
-        RoleBinding.newBuilder()
-            .setName(roleBindingName)
-            .setPublic(true)
-            .addResources(
-                Resources.newBuilder()
-                    .setService(Service.MODELDB_SERVICE)
-                    .setResourceType(
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                    .addResourceIds(resourceId)
-                    .build())
-            .build();
-    setRoleBindingOnAuthService(true, newRoleBinding);
+    super.createPublicRoleBinding(resourceId, modelDBServiceResourceTypes);
   }
 
   @Override
   public String buildPublicRoleBindingName(
       String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return buildRoleBindingName(
-        "PUBLIC_ROLE", resourceId, "PUBLIC", modelDBServiceResourceTypes.name());
+    return super.buildPublicRoleBindingName(resourceId, modelDBServiceResourceTypes);
   }
 
   @Override
@@ -123,205 +86,28 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
       String resourceId) {
-    isSelfAllowed(true, modelDBServiceResourceTypes, modelDBServiceActions, resourceId);
-  }
-
-  private void isSelfAllowed(
-      boolean retry,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      String resourceId) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Resources.Builder resourceBuilder =
-          Resources.newBuilder()
-              .setService(Service.MODELDB_SERVICE)
-              .setResourceType(
-                  ResourceType.newBuilder()
-                      .setModeldbServiceResourceType(modelDBServiceResourceTypes));
-      if (resourceId != null) {
-        resourceBuilder.addResourceIds(resourceId);
-      }
-      IsSelfAllowed isSelfAllowedRequest =
-          IsSelfAllowed.newBuilder()
-              .addResources(resourceBuilder.build())
-              .addActions(
-                  Action.newBuilder()
-                      .setService(Service.MODELDB_SERVICE)
-                      .setModeldbServiceAction(modelDBServiceActions)
-                      .build())
-              .build();
-
-      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
-      IsSelfAllowed.Response isSelfAllowedResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub(requestHeaders)
-              .isSelfAllowed(isSelfAllowedRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, isSelfAllowedResponse);
-
-      if (!isSelfAllowedResponse.getAllowed()) {
-        throw new PermissionDeniedException("Access Denied");
-      }
-    } catch (StatusRuntimeException ex) {
-      ModelDBUtils.retryOrThrowException(
-          ex,
-          retry,
-          (RetryCallInterface<Void>)
-              retry1 -> {
-                isSelfAllowed(
-                    retry1, modelDBServiceResourceTypes, modelDBServiceActions, resourceId);
-                return null;
-              });
-    }
+    super.isSelfAllowed(modelDBServiceResourceTypes, modelDBServiceActions, resourceId);
   }
 
   @Override
   public Map<String, Actions> getSelfAllowedActionsBatch(
       List<String> resourceIds, ModelDBServiceResourceTypes type) {
-    return getSelfAllowedActionsBatch(true, resourceIds, type);
-  }
-
-  private Map<String, Actions> getSelfAllowedActionsBatch(
-      boolean retry, List<String> resourceIds, ModelDBServiceResourceTypes type) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      GetSelfAllowedActionsBatch getSelfAllowedActionsBatch =
-          GetSelfAllowedActionsBatch.newBuilder()
-              .setResources(
-                  Resources.newBuilder()
-                      .setService(Service.MODELDB_SERVICE)
-                      .addAllResourceIds(resourceIds)
-                      .setResourceType(
-                          ResourceType.newBuilder().setModeldbServiceResourceType(type))
-                      .build())
-              .build();
-
-      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
-      GetSelfAllowedActionsBatch.Response getSelfAllowedActionsBatchResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub(requestHeaders)
-              .getSelfAllowedActionsBatch(getSelfAllowedActionsBatch);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(
-          CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getSelfAllowedActionsBatchResponse);
-      return getSelfAllowedActionsBatchResponse.getActionsMap();
-
-    } catch (StatusRuntimeException ex) {
-      return (Map<String, Actions>)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<Map<String, Actions>>)
-                  (retry1) -> getSelfAllowedActionsBatch(retry1, resourceIds, type));
-    }
+    return super.getSelfAllowedActionsBatch(resourceIds, type);
   }
 
   @Override
   public Role getRoleByName(String roleName, RoleScope roleScope) {
-    return getRoleByName(true, roleName, roleScope);
-  }
-
-  private Role getRoleByName(boolean retry, String roleName, RoleScope roleScope) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      GetRoleByName.Builder getRoleByNameRequest = GetRoleByName.newBuilder().setName(roleName);
-      if (roleScope != null) {
-        getRoleByNameRequest.setScope(roleScope);
-      }
-      GetRoleByName.Response getRoleByNameResponse =
-          authServiceChannel
-              .getRoleServiceBlockingStub()
-              .getRoleByName(getRoleByNameRequest.build());
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getRoleByNameResponse);
-
-      return getRoleByNameResponse.getRole();
-    } catch (StatusRuntimeException ex) {
-      return (Role)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<Role>) (retry1) -> getRoleByName(retry1, roleName, roleScope));
-    }
+    return super.getRoleByName(roleName, roleScope);
   }
 
   @Override
   public boolean deleteRoleBinding(String roleBindingId) {
-    return deleteRoleBinding(true, roleBindingId);
-  }
-
-  private boolean deleteRoleBinding(boolean retry, String roleBindingId) {
-    DeleteRoleBinding deleteRoleBindingRequest =
-        DeleteRoleBinding.newBuilder().setId(roleBindingId).build();
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      DeleteRoleBinding.Response deleteRoleBindingResponse =
-          authServiceChannel
-              .getRoleServiceBlockingStub()
-              .deleteRoleBinding(deleteRoleBindingRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, deleteRoleBindingResponse);
-
-      return deleteRoleBindingResponse.getStatus();
-    } catch (StatusRuntimeException ex) {
-      return (Boolean)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<Boolean>) (retry1) -> deleteRoleBinding(retry1, roleBindingId));
-    }
+    return super.deleteRoleBinding(roleBindingId);
   }
 
   @Override
   public boolean deleteRoleBindings(List<String> roleBindingNames) {
-    return deleteRoleBindings(true, roleBindingNames);
-  }
-
-  private boolean deleteRoleBindings(boolean retry, List<String> roleBindingNames) {
-    DeleteRoleBindings deleteRoleBindingRequest =
-        DeleteRoleBindings.newBuilder().addAllRoleBindingNames(roleBindingNames).build();
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-
-      // TODO: try using futur stub than blocking stub
-      DeleteRoleBindings.Response deleteRoleBindingResponse =
-          authServiceChannel
-              .getRoleServiceBlockingStub()
-              .deleteRoleBindings(deleteRoleBindingRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, deleteRoleBindingResponse);
-
-      return deleteRoleBindingResponse.getStatus();
-    } catch (StatusRuntimeException ex) {
-      return (Boolean)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<Boolean>)
-                  (retry1) -> deleteRoleBindings(retry1, roleBindingNames));
-    }
-  }
-
-  private void setRoleBindingOnAuthService(boolean retry, RoleBinding roleBinding) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      SetRoleBinding.Response setRoleBindingResponse =
-          authServiceChannel
-              .getRoleServiceBlockingStub()
-              .setRoleBinding(SetRoleBinding.newBuilder().setRoleBinding(roleBinding).build());
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, setRoleBindingResponse);
-    } catch (StatusRuntimeException ex) {
-      ModelDBUtils.retryOrThrowException(
-          ex,
-          retry,
-          (RetryCallInterface<Void>)
-              (retry1) -> {
-                setRoleBindingOnAuthService(retry1, roleBinding);
-                return null;
-              });
-    }
+    return super.deleteRoleBindings(roleBindingNames);
   }
 
   @Override
@@ -589,148 +375,22 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
 
   @Override
   public RoleBinding getRoleBindingByName(String roleBindingName) {
-    return getRoleBindingByName(true, roleBindingName);
-  }
-
-  private RoleBinding getRoleBindingByName(boolean retry, String roleBindingName) {
-    GetRoleBindingByName getRoleBindingByNameRequest =
-        GetRoleBindingByName.newBuilder().setName(roleBindingName).build();
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      GetRoleBindingByName.Response getRoleBindingByNameResponse =
-          authServiceChannel
-              .getRoleServiceBlockingStub()
-              .getRoleBindingByName(getRoleBindingByNameRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(
-          CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getRoleBindingByNameResponse);
-
-      return getRoleBindingByNameResponse.getRoleBinding();
-    } catch (StatusRuntimeException ex) {
-      LOGGER.info(roleBindingName + " : " + ex.getMessage());
-      if (ex.getStatus().getCode().value() == Code.UNAVAILABLE_VALUE) {
-        return (RoleBinding)
-            ModelDBUtils.retryOrThrowException(
-                ex,
-                retry,
-                (RetryCallInterface<RoleBinding>)
-                    (retry1) -> getRoleBindingByName(retry1, roleBindingName));
-      } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
-        return RoleBinding.newBuilder().build();
-      }
-      throw ex;
-    }
+    return super.getRoleBindingByName(roleBindingName);
   }
 
   @Override
   public List<String> getSelfAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions) {
-    return getSelfAllowedResources(true, modelDBServiceResourceTypes, modelDBServiceActions);
-  }
-
-  private List<String> getSelfAllowedResources(
-      boolean retry,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions) {
-    Action action =
-        Action.newBuilder()
-            .setService(Service.MODELDB_SERVICE)
-            .setModeldbServiceAction(modelDBServiceActions)
-            .build();
-    GetSelfAllowedResources getAllowedResourcesRequest =
-        GetSelfAllowedResources.newBuilder()
-            .addActions(action)
-            .setResourceType(
-                ResourceType.newBuilder()
-                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-            .setService(Service.MODELDB_SERVICE)
-            .build();
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
-      GetSelfAllowedResources.Response getAllowedResourcesResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub(requestHeaders)
-              .getSelfAllowedResources(getAllowedResourcesRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
-
-      if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
-        List<String> resourcesIds = new ArrayList<>();
-        for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
-          resourcesIds.addAll(resources.getResourceIdsList());
-        }
-        return resourcesIds;
-      } else {
-        return Collections.emptyList();
-      }
-    } catch (StatusRuntimeException ex) {
-      return (List<String>)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<List<String>>)
-                  (retry1) ->
-                      getSelfAllowedResources(
-                          retry1, modelDBServiceResourceTypes, modelDBServiceActions));
-    }
+    return super.getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
   }
 
   @Override
   public List<String> getSelfDirectlyAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions) {
-    return getSelfDirectlyAllowedResources(
-        true, modelDBServiceResourceTypes, modelDBServiceActions);
-  }
-
-  private List<String> getSelfDirectlyAllowedResources(
-      boolean retry,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions) {
-    Action action =
-        Action.newBuilder()
-            .setService(Service.MODELDB_SERVICE)
-            .setModeldbServiceAction(modelDBServiceActions)
-            .build();
-    GetSelfAllowedResources getAllowedResourcesRequest =
-        GetSelfAllowedResources.newBuilder()
-            .addActions(action)
-            .setResourceType(
-                ResourceType.newBuilder()
-                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-            .setService(Service.MODELDB_SERVICE)
-            .build();
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
-      GetSelfAllowedResources.Response getAllowedResourcesResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub(requestHeaders)
-              .getSelfDirectlyAllowedResources(getAllowedResourcesRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
-
-      if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
-        List<String> getSelfDirectlyAllowedResourceIds = new ArrayList<>();
-        for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
-          getSelfDirectlyAllowedResourceIds.addAll(resources.getResourceIdsList());
-        }
-        return getSelfDirectlyAllowedResourceIds;
-      } else {
-        return Collections.emptyList();
-      }
-    } catch (StatusRuntimeException ex) {
-      return (List<String>)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<List<String>>)
-                  (retry1) ->
-                      getSelfDirectlyAllowedResources(
-                          retry1, modelDBServiceResourceTypes, modelDBServiceActions));
-    }
+    return super.getSelfDirectlyAllowedResources(
+        modelDBServiceResourceTypes, modelDBServiceActions);
   }
 
   @Override
@@ -738,131 +398,18 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
       CollaboratorBase collaboratorBase) {
-    return getAllowedResources(
-        true, modelDBServiceResourceTypes, modelDBServiceActions, collaboratorBase);
-  }
-
-  private List<String> getAllowedResources(
-      boolean retry,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      CollaboratorBase collaboratorBase) {
-    Action action =
-        Action.newBuilder()
-            .setService(Service.MODELDB_SERVICE)
-            .setModeldbServiceAction(modelDBServiceActions)
-            .build();
-    Entities entity = collaboratorBase.getEntities();
-    GetAllowedResources getAllowedResourcesRequest =
-        GetAllowedResources.newBuilder()
-            .addActions(action)
-            .addEntities(entity)
-            .setResourceType(
-                ResourceType.newBuilder()
-                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-            .setService(Service.MODELDB_SERVICE)
-            .build();
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
-      GetAllowedResources.Response getAllowedResourcesResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub(requestHeaders)
-              .getAllowedResources(getAllowedResourcesRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
-
-      if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
-        List<String> resourcesIds = new ArrayList<>();
-        for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
-          resourcesIds.addAll(resources.getResourceIdsList());
-        }
-        return resourcesIds;
-      } else {
-        return Collections.emptyList();
-      }
-    } catch (StatusRuntimeException ex) {
-      return (List<String>)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<List<String>>)
-                  (retry1) ->
-                      getAllowedResources(
-                          retry1,
-                          modelDBServiceResourceTypes,
-                          modelDBServiceActions,
-                          collaboratorBase));
-    }
+    return super.getAllowedResources(
+        modelDBServiceResourceTypes, modelDBServiceActions, collaboratorBase);
   }
 
   @Override
   public GeneratedMessageV3 getTeamByName(String orgId, String teamName) {
-    return getTeamByName(true, orgId, teamName);
-  }
-
-  private GeneratedMessageV3 getTeamByName(boolean retry, String orgId, String teamName) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      GetTeamByName getTeamByName =
-          GetTeamByName.newBuilder().setTeamName(teamName).setOrgId(orgId).build();
-      GetTeamByName.Response getTeamByNameResponse =
-          authServiceChannel.getTeamServiceBlockingStub().getTeamByName(getTeamByName);
-      return getTeamByNameResponse.getTeam();
-    } catch (StatusRuntimeException ex) {
-      return (GeneratedMessageV3)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<GeneratedMessageV3>)
-                  (retry1) -> getTeamByName(retry1, orgId, teamName));
-    }
+    return super.getTeamByName(orgId, teamName);
   }
 
   @Override
   public GeneratedMessageV3 getOrgByName(String name) {
-    return getOrgByName(true, name);
-  }
-
-  private GeneratedMessageV3 getOrgByName(boolean retry, String name) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      GetOrganizationByName getOrgByName =
-          GetOrganizationByName.newBuilder().setOrgName(name).build();
-      GetOrganizationByName.Response getOrgByNameResponse =
-          authServiceChannel
-              .getOrganizationServiceBlockingStub()
-              .getOrganizationByName(getOrgByName);
-      return getOrgByNameResponse.getOrganization();
-    } catch (StatusRuntimeException ex) {
-      return (GeneratedMessageV3)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<GeneratedMessageV3>) (retry1) -> getOrgByName(retry1, name));
-    }
-  }
-
-  private List<String> getReadOnlyAccessibleResourceIds(
-      boolean isHostUser,
-      CollaboratorBase userInfo,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-
-    Set<String> resourceIdsSet = new HashSet<>();
-    if (userInfo != null && userInfo.getVertaId() != null) {
-      List<String> accessibleResourceIds;
-      if (isHostUser) {
-        accessibleResourceIds =
-            getAllowedResources(modelDBServiceResourceTypes, ModelDBServiceActions.READ, userInfo);
-      } else {
-        accessibleResourceIds =
-            getSelfAllowedResources(modelDBServiceResourceTypes, ModelDBServiceActions.READ);
-      }
-      resourceIdsSet.addAll(accessibleResourceIds);
-      LOGGER.debug(
-          "Accessible " + modelDBServiceResourceTypes + " Ids size is {}",
-          accessibleResourceIds.size());
-    }
-
-    return new ArrayList<>(resourceIdsSet);
+    return super.getOrgByName(name);
   }
 
   @Override
@@ -871,20 +418,8 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       CollaboratorBase currentLoginUserInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       List<String> requestedResourceIds) {
-    List<String> accessibleResourceIds;
-    if (hostUserInfo != null) {
-      accessibleResourceIds =
-          getReadOnlyAccessibleResourceIds(true, hostUserInfo, modelDBServiceResourceTypes);
-    } else {
-      accessibleResourceIds =
-          getReadOnlyAccessibleResourceIds(
-              false, currentLoginUserInfo, modelDBServiceResourceTypes);
-    }
-
-    if (requestedResourceIds != null && !requestedResourceIds.isEmpty()) {
-      accessibleResourceIds.retainAll(requestedResourceIds);
-    }
-    return accessibleResourceIds;
+    return super.getAccessibleResourceIds(
+        hostUserInfo, currentLoginUserInfo, modelDBServiceResourceTypes, requestedResourceIds);
   }
 
   @Override
@@ -892,16 +427,8 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
       List<String> requestedIdList) {
-    if (requestedIdList.size() == 1) {
-      isSelfAllowed(modelDBServiceResourceTypes, modelDBServiceActions, requestedIdList.get(0));
-      return requestedIdList;
-    } else {
-      List<String> allowedResourceIdList =
-          getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
-      // Validate if current user has access to the entity or not
-      allowedResourceIdList.retainAll(requestedIdList);
-      return allowedResourceIdList;
-    }
+    return super.getAccessibleResourceIdsByActions(
+        modelDBServiceResourceTypes, modelDBServiceActions, requestedIdList);
   }
 
   private Optional<Workspace> getWorkspaceByLegacyId(
@@ -1026,22 +553,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
 
   @Override
   public List<Organization> listMyOrganizations() {
-    return listMyOrganizations(true);
-  }
-
-  private List<Organization> listMyOrganizations(boolean retry) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      ListMyOrganizations listMyOrganizations = ListMyOrganizations.newBuilder().build();
-      ListMyOrganizations.Response listMyOrganizationsResponse =
-          authServiceChannel
-              .getOrganizationServiceBlockingStub()
-              .listMyOrganizations(listMyOrganizations);
-      return listMyOrganizationsResponse.getOrganizationsList();
-    } catch (StatusRuntimeException ex) {
-      return (List<Organization>)
-          ModelDBUtils.retryOrThrowException(
-              ex, retry, (RetryCallInterface<List<Organization>>) this::listMyOrganizations);
-    }
+    return super.listMyOrganizations();
   }
 
   /**
