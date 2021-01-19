@@ -32,7 +32,9 @@ public abstract class BlobContainer {
         return new ConfigContainer(blobExpanded);
       case CONTENT_NOT_SET:
       default:
-        throw new ModelDBException("Unknown blob type", Code.INVALID_ARGUMENT);
+        throw new ModelDBException(
+            "Unknown blob type: " + blobExpanded.getBlob().getContentCase().name(),
+            Code.INVALID_ARGUMENT);
     }
   }
 
