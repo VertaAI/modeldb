@@ -254,7 +254,7 @@ public class DatasetEntity {
     RepositoryVisibility visibility =
         (RepositoryVisibility)
             ModelDBUtils.getOldVisibility(
-                ModelDBServiceResourceTypes.REPOSITORY, repositoryResource.getVisibility());
+                ModelDBServiceResourceTypes.DATASET, repositoryResource.getVisibility());
     datasetBuilder.setDatasetVisibility(
         DatasetVisibilityEnum.DatasetVisibility.forNumber(visibility.getNumber()));
 

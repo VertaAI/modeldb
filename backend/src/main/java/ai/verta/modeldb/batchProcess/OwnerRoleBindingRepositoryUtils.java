@@ -93,11 +93,16 @@ public class OwnerRoleBindingRepositoryUtils {
             UserInfo userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
             if (userInfoValue != null) {
               try {
+                ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+                    ModelDBServiceResourceTypes.REPOSITORY;
+                if (repositoryEntity.isDataset()) {
+                  modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+                }
                 roleService.createRoleBinding(
                     ownerRole,
                     new CollaboratorUser(authService, userInfoValue),
                     String.valueOf(repositoryEntity.getId()),
-                    ModelDBServiceResourceTypes.REPOSITORY);
+                    modelDBServiceResourceTypes);
               } catch (Exception e) {
                 LOGGER.error(e.getMessage());
               }

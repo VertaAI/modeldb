@@ -206,9 +206,14 @@ public class RepositoryEntity {
         .addAllAttributes(
             RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
 
+    ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+        ModelDBServiceResourceTypes.REPOSITORY;
+    if (isDataset()) {
+      modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+    }
+
     GetResourcesResponseItem repositoryResource =
-        roleService.getEntityResource(
-            String.valueOf(this.id), ModelDBServiceResourceTypes.REPOSITORY);
+        roleService.getEntityResource(String.valueOf(this.id), modelDBServiceResourceTypes);
     builder.setVisibility(repositoryResource.getVisibility());
     builder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     builder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
@@ -217,7 +222,7 @@ public class RepositoryEntity {
     RepositoryVisibility visibility =
         (RepositoryVisibility)
             ModelDBUtils.getOldVisibility(
-                ModelDBServiceResourceTypes.REPOSITORY, repositoryResource.getVisibility());
+                modelDBServiceResourceTypes, repositoryResource.getVisibility());
     builder.setRepositoryVisibility(visibility);
 
     Workspace workspace = authService.workspaceById(false, repositoryResource.getWorkspaceId());

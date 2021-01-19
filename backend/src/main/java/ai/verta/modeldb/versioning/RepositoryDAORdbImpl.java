@@ -216,13 +216,19 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   private void checkIfEntityAlreadyExists(
       Session session, Workspace workspace, String name, RepositoryTypeEnum repositoryType) {
     List<Long> repositoryEntityIds = getRepositoryEntityIdsByName(session, name, repositoryType);
+    ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+        ModelDBServiceResourceTypes.REPOSITORY;
+    if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
+      modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+    }
+
     if (repositoryEntityIds != null && !repositoryEntityIds.isEmpty()) {
       ModelDBUtils.checkIfEntityAlreadyExists(
           roleService,
           workspace,
           name,
           repositoryEntityIds.stream().map(String::valueOf).collect(Collectors.toList()),
-          ModelDBServiceResourceTypes.REPOSITORY);
+          modelDBServiceResourceTypes);
     }
   }
 
@@ -310,16 +316,19 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             "Can't access repository because it's protected", Code.PERMISSION_DENIED);
       }
 
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+          ModelDBServiceResourceTypes.REPOSITORY;
+      if (repository.isDataset()) {
+        modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+      }
       if (checkWrite) {
         roleService.validateEntityUserWithUserInfo(
-            ModelDBServiceResourceTypes.REPOSITORY,
+            modelDBServiceResourceTypes,
             repository.getId().toString(),
             ModelDBServiceActions.UPDATE);
       } else {
         roleService.validateEntityUserWithUserInfo(
-            ModelDBServiceResourceTypes.REPOSITORY,
-            repository.getId().toString(),
-            ModelDBServiceActions.READ);
+            modelDBServiceResourceTypes, repository.getId().toString(), ModelDBServiceActions.READ);
       }
     } catch (InvalidProtocolBufferException e) {
       LOGGER.info(e.getMessage());
@@ -351,13 +360,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   private Optional<RepositoryEntity> getRepositoryByName(
       Session session, String name, Workspace workspace, RepositoryTypeEnum repositoryType) {
     List<Long> repositoryIds = getRepositoryEntityIdsByName(session, name, repositoryType);
+    ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+        ModelDBServiceResourceTypes.REPOSITORY;
+    if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
+      modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+    }
     List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
         roleService.getResourceItems(
             workspace,
             !repositoryIds.isEmpty()
                 ? repositoryIds.stream().map(String::valueOf).collect(Collectors.toSet())
                 : Collections.emptySet(),
-            ModelDBServiceResourceTypes.REPOSITORY);
+            modelDBServiceResourceTypes);
     Optional<Long> repoId =
         accessibleAllWorkspaceItems.stream()
             .map(
@@ -466,13 +480,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               ModelDBUtils.getResourceVisibility(
                   Optional.of(workspace), repository.getRepositoryVisibility());
         }
+        ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+            ModelDBServiceResourceTypes.REPOSITORY;
+        if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
+          modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+        }
         roleService.createWorkspacePermissions(
             workspace.getId(),
             Optional.empty(),
             String.valueOf(repositoryEntity.getId()),
             repositoryEntity.getName(),
             Optional.empty(), // UAC will populate the owner ID
-            ModelDBServiceResourceTypes.REPOSITORY,
+            modelDBServiceResourceTypes,
             repository.getCustomPermission(),
             resourceVisibility);
         LOGGER.debug("Project role bindings created successfully");
@@ -518,9 +537,14 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           getRepositoryById(
               session, request.getRepositoryId(), true, canNotOperateOnProtected, repositoryType);
       // Get self allowed resources id where user has delete permission
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+          ModelDBServiceResourceTypes.REPOSITORY;
+      if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
+        modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+      }
       List<String> allowedRepositoryIds =
           roleService.getAccessibleResourceIdsByActions(
-              ModelDBServiceResourceTypes.REPOSITORY,
+              modelDBServiceResourceTypes,
               ModelDBServiceActions.DELETE,
               Collections.singletonList(String.valueOf(repository.getId())));
       if (allowedRepositoryIds.isEmpty()) {
@@ -1337,7 +1361,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 !queryParameters.getDatasetIdsList().isEmpty()
                     ? new HashSet<>(queryParameters.getDatasetIdsList())
                     : Collections.emptySet(),
-                ModelDBServiceResourceTypes.REPOSITORY);
+                ModelDBServiceResourceTypes.DATASET);
         accessibleDatasetIds =
             accessibleAllWorkspaceItems.stream()
                 .map(GetResourcesResponseItem::getResourceId)
@@ -1364,7 +1388,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                     : Collections.emptySet(),
                 workspaceName,
                 currentLoginUserInfo,
-                ModelDBServiceResourceTypes.REPOSITORY);
+                ModelDBServiceResourceTypes.DATASET);
       }
 
       if (accessibleDatasetIds.isEmpty() && roleService.IsImplemented()) {
@@ -1402,7 +1426,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 repositoryRoot,
                 authService,
                 roleService,
-                ModelDBServiceResourceTypes.REPOSITORY);
+                ModelDBServiceResourceTypes.DATASET);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
         }
