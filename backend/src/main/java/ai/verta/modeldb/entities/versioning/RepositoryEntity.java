@@ -2,10 +2,13 @@ package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.ResourceEntity;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.batchProcess.CommonCollaboratorResourceMigration;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryModifierEnum;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
@@ -13,6 +16,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.Repository.Builder;
+import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
@@ -26,7 +30,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "repository")
-public class RepositoryEntity {
+public class RepositoryEntity implements ResourceEntity {
 
   public RepositoryEntity() {}
 
@@ -125,8 +129,40 @@ public class RepositoryEntity {
     return id;
   }
 
+  @Override
+  public Optional<Long> getWorkspaceId(Map<String, GetResourcesResponseItem> responseItemMap) {
+    if (owner != null && !owner.isEmpty()) {
+      return Optional.empty();
+    }
+    GetResourcesResponseItem resourceDetails = responseItemMap.get(String.valueOf(this.getId()));
+    return Optional.of(resourceDetails.getWorkspaceId());
+  }
+
+  @Override
+  public Integer getWorkspaceType() {
+    return workspace_type;
+  }
+
   public String getName() {
     return name;
+  }
+
+  @Override
+  public ResourceVisibility getResourceVisibility() {
+    return CommonCollaboratorResourceMigration.getResourceVisibility(
+        WorkspaceTypeEnum.WorkspaceType.forNumber(getWorkspaceType()),
+        VisibilityEnum.Visibility.forNumber(getRepository_visibility()));
+  }
+
+  @Override
+  public void setVisibilityMigration(boolean visibilityMigration) {
+    this.visibility_migration = visibilityMigration;
+  }
+
+  @Override
+  public void deleteRoleBindings(ai.verta.modeldb.common.authservice.RoleService roleService) {
+    RepositoryDAORdbImpl.deleteRoleBindingsForRepositories(
+        roleService, Collections.singletonList(this));
   }
 
   public String getDescription() {
@@ -153,16 +189,13 @@ public class RepositoryEntity {
     this.workspaceServiceId = workspaceServiceId;
   }
 
-  public String getWorkspace_id() {
+  @Override
+  public String getOldWorkspaceId() {
     return workspace_id;
   }
 
   public Set<CommitEntity> getCommits() {
     return commits;
-  }
-
-  public Integer getWorkspace_type() {
-    return workspace_type;
   }
 
   public Boolean getDeleted() {
@@ -252,6 +285,11 @@ public class RepositoryEntity {
 
   public String getOwner() {
     return owner;
+  }
+
+  @Override
+  public String getStringId() {
+    return String.valueOf(id);
   }
 
   public Integer getRepository_visibility() {

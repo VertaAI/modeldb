@@ -4,6 +4,7 @@ import static ai.verta.modeldb.metadata.IDTypeEnum.IDType.VERSIONING_REPOSITORY;
 
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum;
@@ -211,6 +212,46 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     this.roleService = roleService;
     this.commitDAO = commitDAO;
     this.metadataDAO = metadataDAO;
+  }
+
+  private static final String REPOSITORY_GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
+
+  public static void deleteRoleBindingsForRepositories(
+      ai.verta.modeldb.common.authservice.RoleService roleService,
+      List<RepositoryEntity> allowedResources) {
+    final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
+    for (RepositoryEntity repositoryEntity : allowedResources) {
+      String ownerRoleBindingName =
+          roleService.buildRoleBindingName(
+              ModelDBConstants.ROLE_REPOSITORY_OWNER,
+              String.valueOf(repositoryEntity.getId()),
+              repositoryEntity.getOwner(),
+              ModelDBServiceResourceTypes.REPOSITORY.name());
+      if (ownerRoleBindingName != null) {
+        roleBindingNames.add(ownerRoleBindingName);
+      }
+
+      // Delete workspace based roleBindings
+      List<String> repoOrgWorkspaceRoleBindings =
+          roleService.getWorkspaceRoleBindings(
+              repositoryEntity.getOldWorkspaceId(),
+              WorkspaceTypeEnum.WorkspaceType.forNumber(repositoryEntity.getWorkspaceType()),
+              String.valueOf(repositoryEntity.getId()),
+              ModelDBConstants.ROLE_REPOSITORY_ADMIN,
+              ModelDBServiceResourceTypes.REPOSITORY,
+              repositoryEntity
+                  .getRepository_visibility()
+                  .equals(DatasetVisibilityEnum.DatasetVisibility.ORG_SCOPED_PUBLIC_VALUE),
+              REPOSITORY_GLOBAL_SHARING);
+      if (!repoOrgWorkspaceRoleBindings.isEmpty()) {
+        roleBindingNames.addAll(repoOrgWorkspaceRoleBindings);
+      }
+    }
+
+    // Remove all role bindings
+    if (!roleBindingNames.isEmpty()) {
+      roleService.deleteRoleBindings(roleBindingNames);
+    }
   }
 
   private void checkIfEntityAlreadyExists(

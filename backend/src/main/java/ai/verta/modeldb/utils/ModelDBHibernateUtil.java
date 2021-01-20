@@ -61,9 +61,6 @@ import org.hibernate.query.Query;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-
 public class ModelDBHibernateUtil {
   private static final Logger LOGGER = LogManager.getLogger(ModelDBHibernateUtil.class);
   private static StandardServiceRegistry registry;

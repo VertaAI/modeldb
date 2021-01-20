@@ -270,7 +270,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
       projectEntity.setCreated(true);
-      projectEntity.setVisibility_migration(true);
+      projectEntity.setVisibilityMigration(true);
       transaction.commit();
       LOGGER.debug("Project created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
@@ -1230,6 +1230,52 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       } else {
         throw ex;
       }
+    }
+  }
+
+  public static void deleteRoleBindingsForProjects(
+      ai.verta.modeldb.common.authservice.RoleService roleService,
+      List<ProjectEntity> projectEntities) {
+    // set roleBindings name by accessible projects
+    List<String> roleBindingNames = new LinkedList<>();
+    setRoleBindingsNameOfAccessibleProjectsInRoleBindingNamesList(
+        roleService, projectEntities, roleBindingNames);
+    LOGGER.debug("num bindings after Projects {}", roleBindingNames.size());
+
+    // Remove all role bindings
+    if (!roleBindingNames.isEmpty()) {
+      roleService.deleteRoleBindings(roleBindingNames);
+    }
+  }
+
+  private static void setRoleBindingsNameOfAccessibleProjectsInRoleBindingNamesList(
+      ai.verta.modeldb.common.authservice.RoleService roleService,
+      List<ProjectEntity> allowedProjects,
+      List<String> roleBindingNames) {
+    for (ProjectEntity project : allowedProjects) {
+      String projectId = project.getId();
+
+      String ownerRoleBindingName =
+          roleService.buildRoleBindingName(
+              ModelDBConstants.ROLE_PROJECT_OWNER,
+              project.getId(),
+              project.getOwner(),
+              ModelDBServiceResourceTypes.PROJECT.name());
+      if (ownerRoleBindingName != null) {
+        roleBindingNames.add(ownerRoleBindingName);
+      }
+
+      // Delete workspace based roleBindings
+      List<String> workspaceRoleBindingNames =
+          roleService.getWorkspaceRoleBindings(
+              project.getWorkspace(),
+              WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspaceType()),
+              projectId,
+              ModelDBConstants.ROLE_PROJECT_ADMIN,
+              ModelDBServiceResourceTypes.PROJECT,
+              project.getProjectVisibility().equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
+              "_GLOBAL_SHARING");
+      roleBindingNames.addAll(workspaceRoleBindingNames);
     }
   }
 }

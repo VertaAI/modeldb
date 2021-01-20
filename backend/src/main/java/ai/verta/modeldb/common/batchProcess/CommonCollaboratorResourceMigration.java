@@ -6,29 +6,29 @@ import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.common.HibernateConnection;
 import ai.verta.modeldb.common.ResourceEntity;
-import ai.verta.modeldb.common.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.common.authservice.RoleService;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 public class CommonCollaboratorResourceMigration {
   private static final Logger LOGGER =
@@ -47,7 +47,8 @@ public class CommonCollaboratorResourceMigration {
       Supplier<Session> sessionSupplier,
       Class<T> clazz,
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType,
-      HibernateConnection hibernateConnection) {
+      HibernateConnection hibernateConnection,
+      BiFunction<Map<String, UserInfo>, T, Optional<String>> getWorkspaceName) {
     LOGGER.debug("Resource migration started");
 
     int lowerBound = 0;
@@ -85,7 +86,7 @@ public class CommonCollaboratorResourceMigration {
             if (owner != null && !owner.isEmpty()) {
               userIds.add(owner);
             } else {
-              newVisibilityresourceIds.add(resourceEntity.getId());
+              newVisibilityresourceIds.add(resourceEntity.getStringId());
             }
           }
           LOGGER.debug("resource userId list : " + userIds);
@@ -105,13 +106,15 @@ public class CommonCollaboratorResourceMigration {
           for (T resource : resourceEntities) {
             boolean migrated = false;
             String owner = resource.getOwner();
+            Optional<Long> workspaceId = resource.getWorkspaceId(responseItemMap);
+            Optional<String> workspaceName = getWorkspaceName.apply(userInfoMap, resource);
             if (owner != null && !owner.isEmpty()) {
               // if resourceVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
               // ignore the CollaboratorType
               roleService.createWorkspacePermissions(
-                  resource.getWorkspaceId(),
-                  resource.getWorkspaceName(),
-                  resource.getId(),
+                  workspaceId,
+                  workspaceName,
+                  resource.getStringId(),
                   resource.getName(),
                   Optional.of(Long.parseLong(resource.getOwner())),
                   resourceType,
@@ -120,12 +123,13 @@ public class CommonCollaboratorResourceMigration {
                       .build(),
                   resource.getResourceVisibility());
               migrated = true;
-            } else if (responseItemMap.containsKey(resource.getId())) {
-              GetResourcesResponseItem resourceDetails = responseItemMap.get(resource.getId());
+            } else if (responseItemMap.containsKey(resource.getStringId())) {
+              GetResourcesResponseItem resourceDetails =
+                  responseItemMap.get(resource.getStringId());
               roleService.createWorkspacePermissions(
-                  resource.getWorkspaceId(),
-                  resource.getWorkspaceName(),
-                  resource.getId(),
+                  workspaceId,
+                  workspaceName,
+                  resource.getStringId(),
                   resource.getName(),
                   Optional.of(resourceDetails.getOwnerId()),
                   resourceType,
@@ -136,9 +140,9 @@ public class CommonCollaboratorResourceMigration {
             if (migrated) {
               Transaction transaction = null;
               try {
-                resource.deleteRoleBindings();
+                resource.deleteRoleBindings(roleService);
                 transaction = session.beginTransaction();
-                resource.setVisibility_migration(true);
+                resource.setVisibilityMigration(true);
                 session.update(resource);
                 transaction.commit();
               } catch (Exception ex) {
@@ -155,7 +159,12 @@ public class CommonCollaboratorResourceMigration {
       } catch (Exception ex) {
         if (hibernateConnection.needToRetry(ex)) {
           migrateResources(
-              countSupplier, sessionSupplier, clazz, resourceType, hibernateConnection);
+              countSupplier,
+              sessionSupplier,
+              clazz,
+              resourceType,
+              hibernateConnection,
+              getWorkspaceName);
         } else {
           throw ex;
         }
@@ -163,5 +172,21 @@ public class CommonCollaboratorResourceMigration {
     }
 
     LOGGER.debug("resources migration finished");
+  }
+
+  public static ResourceVisibility getResourceVisibility(
+      WorkspaceTypeEnum.WorkspaceType workspaceType, VisibilityEnum.Visibility visibility) {
+    if (workspaceType == null) {
+      return ResourceVisibility.PRIVATE;
+    }
+    if (workspaceType == WorkspaceTypeEnum.WorkspaceType.ORGANIZATION) {
+      if (visibility == VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC) {
+        return ResourceVisibility.ORG_DEFAULT;
+      } else if (visibility == VisibilityEnum.Visibility.PRIVATE) {
+        return ResourceVisibility.PRIVATE;
+      }
+      return ResourceVisibility.ORG_DEFAULT;
+    }
+    return ResourceVisibility.PRIVATE;
   }
 }

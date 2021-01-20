@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
@@ -8,6 +9,8 @@ import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.ResourceEntity;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.batchProcess.CommonCollaboratorResourceMigration;
+import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
@@ -156,13 +159,22 @@ public class ProjectEntity implements ResourceEntity {
   }
 
   @Override
-  public Optional<Long> getWorkspaceId() {
-    return Optional.ofNullable(workspaceServiceId);
+  public String getStringId() {
+    return id;
   }
 
   @Override
-  public Optional<String> getWorkspaceName() {
-    return Optional.empty();
+  public Optional<Long> getWorkspaceId(Map<String, GetResourcesResponseItem> responseItemMap) {
+    if (owner != null && !owner.isEmpty()) {
+      return Optional.empty();
+    }
+    GetResourcesResponseItem resourceDetails = responseItemMap.get(String.valueOf(getId()));
+    return Optional.of(resourceDetails.getWorkspaceId());
+  }
+
+  @Override
+  public String getOldWorkspaceId() {
+    return workspace;
   }
 
   public void setId(String id) {
@@ -175,14 +187,20 @@ public class ProjectEntity implements ResourceEntity {
 
   @Override
   public ResourceVisibility getResourceVisibility() {
-    return null;
+    return CommonCollaboratorResourceMigration.getResourceVisibility(
+        WorkspaceTypeEnum.WorkspaceType.forNumber(getWorkspaceType()),
+        VisibilityEnum.Visibility.forNumber(getProject_visibility()));
   }
 
   @Override
-  public void setVisibility_migration(boolean visibilityMigration) {}
+  public void setVisibilityMigration(boolean visibilityMigration) {
+    this.visibility_migration = visibilityMigration;
+  }
 
   @Override
-  public void deleteRoleBindings() {}
+  public void deleteRoleBindings(ai.verta.modeldb.common.authservice.RoleService roleService) {
+    ProjectDAORdbImpl.deleteRoleBindingsForProjects(roleService, Collections.singletonList(this));
+  }
 
   public void setName(String name) {
     this.name = name;
@@ -332,7 +350,8 @@ public class ProjectEntity implements ResourceEntity {
     this.workspace = workspace;
   }
 
-  public Integer getWorkspace_type() {
+  @Override
+  public Integer getWorkspaceType() {
     return workspace_type;
   }
 
