@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities.versioning;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum;
+import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
@@ -219,10 +220,20 @@ public class RepositoryEntity {
     builder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
     builder.setCustomPermission(repositoryResource.getCustomPermission());
 
-    RepositoryVisibility visibility =
-        (RepositoryVisibility)
-            ModelDBUtils.getOldVisibility(
-                modelDBServiceResourceTypes, repositoryResource.getVisibility());
+    RepositoryVisibility visibility;
+    if (isDataset()) {
+      DatasetVisibility datasetVisibility =
+          (DatasetVisibility)
+              ModelDBUtils.getOldVisibility(
+                  modelDBServiceResourceTypes, repositoryResource.getVisibility());
+      visibility = RepositoryVisibility.forNumber(datasetVisibility.getNumber());
+    } else {
+      visibility =
+          (RepositoryVisibility)
+              ModelDBUtils.getOldVisibility(
+                  modelDBServiceResourceTypes, repositoryResource.getVisibility());
+    }
+
     builder.setRepositoryVisibility(visibility);
 
     Workspace workspace = authService.workspaceById(false, repositoryResource.getWorkspaceId());
