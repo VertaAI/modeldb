@@ -1,6 +1,6 @@
 import abc
 
-import six
+from ..external import six
 
 from .._protos.public.uac import Collaborator_pb2
 
