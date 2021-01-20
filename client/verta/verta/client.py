@@ -297,6 +297,32 @@ class Client(object):
                 print("setting {} from config file".format(resource_name))
         return var or None
 
+    @staticmethod
+    def _set_visibility_if_none(visibility):
+        """
+        Validates the value of `visibility`.
+
+        Parameters
+        ----------
+        visibility : :class:`~verta.visibility._visibility._Visibility` or None
+
+        Returns
+        -------
+        :class:`~verta.visibility._visibility._Visibility`
+            Returns ``_WorkspaceDefault()`` if `visibility` is None.
+
+        """
+        # TODO: consider a decorator for create_*()s that validates common params
+        if visibility is None:
+            visibility = _workspace_default._WorkspaceDefault()
+        elif not isinstance(visibility, _visibility._Visibility):
+            raise TypeError(
+                "`visibility` must be an object from `verta.visibility`,"
+                " not {}".format(type(visibility))
+            )
+
+        return visibility
+
     def get_project(self, name=None, workspace=None, id=None):
         """
         Retrieves an already created Project. Only one of `name` or `id` can be provided.
@@ -954,17 +980,9 @@ class Client(object):
             If a Project with `name` already exists.
 
         """
-        # TODO: maybe move this to parent class
-        if visibility is None:
-            visibility = _workspace_default._WorkspaceDefault()
-        elif not isinstance(visibility, _visibility._Visibility):
-            raise TypeError(
-                "`visibility` must be an object from `verta.visibility`,"
-                " not {}".format(type(visibility))
-            )
-
         name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
+        visibility = self._set_visibility_if_none(visibility)
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
