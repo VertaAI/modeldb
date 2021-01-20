@@ -1055,7 +1055,7 @@ public class DatasetVersionTest extends TestsInit {
               "Please refer shared dataset for your invention");
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
     }
@@ -1097,7 +1097,7 @@ public class DatasetVersionTest extends TestsInit {
               "Please refer shared dataset for your invention");
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
