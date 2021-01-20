@@ -1,7 +1,7 @@
 from .._protos.public.uac import Collaborator_pb2
 from .._protos.public.common import CommonService_pb2
 
-from ._resource_visibility import _Visibility
+from ._visibility import _Visibility
 
 
 class OrgCustom(_Visibility):
