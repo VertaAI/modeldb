@@ -599,6 +599,7 @@ public class ModelDBHibernateUtil {
     }
 
     CollaboratorResourceMigration.execute();
+    DatasetResourceTypeMigration.execute();
   }
 
   private static boolean checkMigrationLockedStatus(String migrationName, RdbConfig rdb)
