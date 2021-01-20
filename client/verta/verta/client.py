@@ -71,6 +71,10 @@ from ._dataset_versioning.dataset_version import DatasetVersion
 from .endpoint._endpoint import Endpoint
 from .endpoint._endpoints import Endpoints
 from .endpoint.update import DirectUpdateStrategy
+from .visibility import(
+    _visibility,
+    _workspace_default,
+)
 
 
 class Client(object):
@@ -915,7 +919,7 @@ class Client(object):
         """
         return self.get_or_create_endpoint(*args, **kwargs)
 
-    def create_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None):
+    def create_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, visibility=None):
         """
         Creates a new Project.
 
@@ -950,13 +954,22 @@ class Client(object):
             If a Project with `name` already exists.
 
         """
+        # TODO: maybe move this to parent class
+        if visibility is None:
+            visibility = _workspace_default._WorkspaceDefault()
+        elif not isinstance(visibility, _visibility._Visibility):
+            raise TypeError(
+                "`visibility` must be an object from `verta.visibility`,"
+                " not {}".format(type(visibility))
+            )
+
         name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
         self._ctx.proj = Project._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs,
-                        public_within_org=public_within_org)
+                        public_within_org=public_within_org, visibility=visibility)
         return self._ctx.proj
 
     def create_experiment(self, name=None, desc=None, tags=None, attrs=None):
