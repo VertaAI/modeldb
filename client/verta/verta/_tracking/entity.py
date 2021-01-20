@@ -13,6 +13,7 @@ from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 
 from ..external import six
 
+from ..visibility import _workspace_default
 from .._internal_utils import (
     _artifact_utils,
     _git_utils,
@@ -136,6 +137,8 @@ class _ModelDBEntity(object):
     def _create(cls, conn, conf, *args, **kwargs):
         if 'name' in kwargs and kwargs['name'] is None:
             kwargs['name'] = cls._generate_default_name()
+        if 'visibility' in kwargs and kwargs['visibility'] is None:
+            kwargs['visibility'] = _workspace_default._WorkspaceDefault()
 
         msg = cls._create_proto(conn, *args, **kwargs)
         if msg:

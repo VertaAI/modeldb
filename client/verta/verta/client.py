@@ -71,10 +71,7 @@ from ._dataset_versioning.dataset_version import DatasetVersion
 from .endpoint._endpoint import Endpoint
 from .endpoint._endpoints import Endpoints
 from .endpoint.update import DirectUpdateStrategy
-from .visibility import(
-    _visibility,
-    _workspace_default,
-)
+from .visibility import _visibility
 
 
 class Client(object):
@@ -298,7 +295,7 @@ class Client(object):
         return var or None
 
     @staticmethod
-    def _set_visibility_if_none(visibility):
+    def _validate_visibility(visibility):
         """
         Validates the value of `visibility`.
 
@@ -306,16 +303,10 @@ class Client(object):
         ----------
         visibility : :class:`~verta.visibility._visibility._Visibility` or None
 
-        Returns
-        -------
-        :class:`~verta.visibility._visibility._Visibility`
-            Returns ``_WorkspaceDefault()`` if `visibility` is None.
-
         """
         # TODO: consider a decorator for create_*()s that validates common params
-        if visibility is None:
-            visibility = _workspace_default._WorkspaceDefault()
-        elif not isinstance(visibility, _visibility._Visibility):
+        if (visibility is not None
+                and not isinstance(visibility, _visibility._Visibility)):
             raise TypeError(
                 "`visibility` must be an object from `verta.visibility`,"
                 " not {}".format(type(visibility))
@@ -980,9 +971,10 @@ class Client(object):
             If a Project with `name` already exists.
 
         """
+        self._validate_visibility(visibility)
+
         name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
-        visibility = self._set_visibility_if_none(visibility)
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
