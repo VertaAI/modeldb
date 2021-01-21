@@ -13,7 +13,10 @@ from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 
 from ..external import six
 
-from ..visibility import _workspace_default
+from ..visibility import (
+    _visibility,
+    _workspace_default,
+)
 from .._internal_utils import (
     _artifact_utils,
     _git_utils,
@@ -137,8 +140,27 @@ class _ModelDBEntity(object):
     def _create(cls, conn, conf, *args, **kwargs):
         if 'name' in kwargs and kwargs['name'] is None:
             kwargs['name'] = cls._generate_default_name()
+
+        # translate between `public_within_org` and `visibility`
+        VISIBILITY_KEY = "visibility"
+        PUBLIC_WITHIN_ORG_KEY = "public_within_org"
+        if VISIBILITY_KEY in kwargs and PUBLIC_WITHIN_ORG_KEY in kwargs:
+            visibility = kwargs.pop(VISIBILITY_KEY)
+            public_within_org = kwargs.pop(PUBLIC_WITHIN_ORG_KEY)
+
+            if visibility is None and public_within_org is None:
+                visibility = _workspace_default._WorkspaceDefault()
+            elif visibility is None:
+                visibility = _visibility._Visibility._from_public_within_org(public_within_org)
+            elif public_within_org is None:
+                public_within_org = visibility._to_public_within_org()
+
+            kwargs[VISIBILITY_KEY] = visibility
+            kwargs[PUBLIC_WITHIN_ORG_KEY] = public_within_org
         if 'visibility' in kwargs and kwargs['visibility'] is None:
-            kwargs['visibility'] = _workspace_default._WorkspaceDefault()
+            # this case shouldn't happen since `visibility` should be wherever
+            # `public_within_org` is, but just in case
+            kwargs[VISIBILITY_KEY] = _workspace_default._WorkspaceDefault()
 
         msg = cls._create_proto(conn, *args, **kwargs)
         if msg:
