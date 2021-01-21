@@ -282,16 +282,8 @@ public class FindRepositoriesQuery {
                 roleService,
                 ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
                 userInfoList);
-        Set<String> datasetIdSet =
-            RdbmsUtils.getResourceIdsFromUserWorkspaces(
-                authService,
-                roleService,
-                ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET,
-                userInfoList);
         List<Long> resourcesIds =
             repositoryIdSet.stream().map(Long::parseLong).collect(Collectors.toList());
-        resourcesIds.addAll(
-            datasetIdSet.stream().map(Long::parseLong).collect(Collectors.toList()));
         if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)
             || operator.equals(OperatorEnum.Operator.NE)) {
           String mapKey = "IN_VALUE_" + index;
