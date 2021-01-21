@@ -19,7 +19,6 @@ import warnings
 import zipfile
 
 import requests
-import yaml
 from verta._tracking.organization import Organization
 from ._internal_utils._utils import check_unnecessary_params_warning
 
