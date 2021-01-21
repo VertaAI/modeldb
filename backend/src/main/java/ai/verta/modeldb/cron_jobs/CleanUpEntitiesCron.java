@@ -167,22 +167,25 @@ public class CleanUpEntitiesCron extends TimerTask {
       cleanUpEntityBasedOnResourceType(
           session,
           repositoryEntities,
-          repositoryEntityMap,
+          datasetEntityMap,
           ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
     }
 
     LOGGER.debug(
         "Repository cleaned successfully : Cleaned repositories count {}",
         repositoryEntityMap.size());
+    LOGGER.debug(
+        "Dataset cleaned successfully : Cleaned datasets count {}", datasetEntityMap.size());
   }
 
   private void cleanUpEntityBasedOnResourceType(
       Session session,
       List<RepositoryEntity> repositoryEntities,
       Map<String, RepositoryEntity> repositoryEntityMap,
-      ModelDBResourceEnum.ModelDBServiceResourceTypes repository) {
+      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
     try {
-      roleService.deleteEntityResources(new ArrayList<>(repositoryEntityMap.keySet()), repository);
+      roleService.deleteEntityResources(
+          new ArrayList<>(repositoryEntityMap.keySet()), resourceType);
       for (RepositoryEntity repositoryEntity : repositoryEntities) {
         try {
           Transaction transaction = session.beginTransaction();
