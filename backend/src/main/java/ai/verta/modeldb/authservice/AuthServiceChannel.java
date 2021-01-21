@@ -197,7 +197,8 @@ public class AuthServiceChannel implements AutoCloseable {
     LOGGER.trace("Header attaching with stub : {}", requestHeaders);
     ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
     workspaceServiceBlockingStub =
-            WorkspaceServiceGrpc.newBlockingStub(authServiceChannel).withInterceptors(clientInterceptor);
+        WorkspaceServiceGrpc.newBlockingStub(authServiceChannel)
+            .withInterceptors(clientInterceptor);
     LOGGER.trace("Header attached with stub");
   }
 
