@@ -452,7 +452,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         throw new ModelDBException("Repository name should not be empty", Code.INVALID_ARGUMENT);
       }
 
-      Query deletedEntitiesQuery = session.createQuery(GET_DELETED_REPOSITORY_IDS_BY_NAME_HQL);
+      StringBuilder deletedQueryStringBuilder =
+          new StringBuilder(GET_DELETED_REPOSITORY_IDS_BY_NAME_HQL);
+      setRepositoryTypeInQueryBuilder(repositoryType, deletedQueryStringBuilder);
+      Query deletedEntitiesQuery = session.createQuery(deletedQueryStringBuilder.toString());
       deletedEntitiesQuery.setParameter("name", repoId.getNamedId().getName());
       List<Long> deletedEntityIds = deletedEntitiesQuery.list();
       if (!deletedEntityIds.isEmpty()) {
