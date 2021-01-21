@@ -6,22 +6,10 @@ import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterSetConfigBlobEntity;
 import ai.verta.modeldb.exceptions.ModelDBException;
-import ai.verta.modeldb.versioning.BlobExpanded;
-import ai.verta.modeldb.versioning.ConfigBlob;
-import ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob;
-import ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob;
-import ai.verta.modeldb.versioning.FileHasher;
-import ai.verta.modeldb.versioning.HyperparameterConfigBlob;
-import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
-import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
-import ai.verta.modeldb.versioning.TreeElem;
+import ai.verta.modeldb.versioning.*;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import org.hibernate.Session;
 
 public class ConfigContainer extends BlobContainer {
@@ -39,14 +27,12 @@ public class ConfigContainer extends BlobContainer {
       throws NoSuchAlgorithmException, ModelDBException {
     List<ConfigBlobEntity> hyperparameterBlobEntities = new LinkedList<>();
     List<ConfigBlobEntity> hyperparameterSetBlobEntities = new LinkedList<>();
-    Map<String, HyperparameterSetConfigBlobEntity> setConfigEntities = new HashMap<>();
-    Map<String, HyperparameterElementConfigBlobEntity> valueEntities = new HashMap<>();
     int index = 0;
     for (HyperparameterConfigBlob hyperparameterConfigBlob : config.getHyperparametersList()) {
       final String name = hyperparameterConfigBlob.getName();
       final HyperparameterValuesConfigBlob value = hyperparameterConfigBlob.getValue();
       final HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntity =
-          getValueBlob(session, name, value, valueEntities, blobHashes);
+          getValueBlob(session, name, value, blobHashes);
       final String valueBlobHash = hyperparameterElementConfigBlobEntity.getBlobHash();
       ConfigBlobEntity configBlobEntity =
           new ConfigBlobEntity(valueBlobHash, index++, hyperparameterElementConfigBlobEntity);
@@ -62,11 +48,11 @@ public class ConfigContainer extends BlobContainer {
           final ContinuousHyperparameterSetConfigBlob continuous =
               hyperparameterSetConfigBlob.getContinuous();
           HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntityBegin =
-              getValueBlob(session, "", continuous.getIntervalBegin(), valueEntities, blobHashes);
+              getValueBlob(session, "", continuous.getIntervalBegin(), blobHashes);
           HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntityEnd =
-              getValueBlob(session, "", continuous.getIntervalEnd(), valueEntities, blobHashes);
+              getValueBlob(session, "", continuous.getIntervalEnd(), blobHashes);
           HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntityStep =
-              getValueBlob(session, "", continuous.getIntervalStep(), valueEntities, blobHashes);
+              getValueBlob(session, "", continuous.getIntervalStep(), blobHashes);
           hyperparameterSetBlobHash =
               computeContinuousSHA(
                   name,
@@ -75,11 +61,7 @@ public class ConfigContainer extends BlobContainer {
                   hyperparameterElementConfigBlobEntityStep);
           hyperparameterSetConfigBlobEntity =
               getHyperparameterSetConfigBlobEntity(
-                  session,
-                  setConfigEntities,
-                  hyperparameterSetConfigBlob,
-                  hyperparameterSetBlobHash,
-                  blobHashes);
+                  session, hyperparameterSetConfigBlob, hyperparameterSetBlobHash, blobHashes);
           hyperparameterSetConfigBlobEntity.setInterval_begin_hash(
               hyperparameterElementConfigBlobEntityBegin);
           hyperparameterSetConfigBlobEntity.setInterval_end_hash(
@@ -95,8 +77,7 @@ public class ConfigContainer extends BlobContainer {
           for (HyperparameterValuesConfigBlob hyperparameterValuesConfigBlob :
               discrete.getValuesList()) {
             HyperparameterElementConfigBlobEntity valueBlobEntity =
-                getValueBlob(
-                    session, "", hyperparameterValuesConfigBlob, valueEntities, blobHashes);
+                getValueBlob(session, "", hyperparameterValuesConfigBlob, blobHashes);
             hyperparameterElementConfigBlobEntitySet.put(
                 valueBlobEntity.getBlobHash(), valueBlobEntity);
           }
@@ -104,11 +85,7 @@ public class ConfigContainer extends BlobContainer {
               computeContinuousSHA(name, hyperparameterElementConfigBlobEntitySet);
           hyperparameterSetConfigBlobEntity =
               getHyperparameterSetConfigBlobEntity(
-                  session,
-                  setConfigEntities,
-                  hyperparameterSetConfigBlob,
-                  hyperparameterSetBlobHash,
-                  blobHashes);
+                  session, hyperparameterSetConfigBlob, hyperparameterSetBlobHash, blobHashes);
 
           hyperparameterSetConfigBlobEntity.setHyperparameterSetConfigElementMapping(
               hyperparameterElementConfigBlobEntitySet.values());
@@ -170,18 +147,16 @@ public class ConfigContainer extends BlobContainer {
 
   HyperparameterSetConfigBlobEntity getHyperparameterSetConfigBlobEntity(
       Session session,
-      Map<String, HyperparameterSetConfigBlobEntity> setConfigEntities,
       HyperparameterSetConfigBlob hyperparameterSetConfigBlob,
       String hyperparameterSetBlobHash,
       Set<String> blobHashes)
       throws ModelDBException {
     HyperparameterSetConfigBlobEntity hyperparameterSetConfigBlobEntity =
-        setConfigEntities.get(hyperparameterSetBlobHash);
+        session.get(HyperparameterSetConfigBlobEntity.class, hyperparameterSetBlobHash);
     if (hyperparameterSetConfigBlobEntity == null) {
       hyperparameterSetConfigBlobEntity =
           new HyperparameterSetConfigBlobEntity(
               hyperparameterSetBlobHash, hyperparameterSetConfigBlob);
-      setConfigEntities.put(hyperparameterSetBlobHash, hyperparameterSetConfigBlobEntity);
       if (!blobHashes.contains(hyperparameterSetBlobHash)) {
         session.saveOrUpdate(hyperparameterSetConfigBlobEntity);
         blobHashes.add(hyperparameterSetBlobHash);
@@ -224,17 +199,16 @@ public class ConfigContainer extends BlobContainer {
       Session session,
       String name,
       HyperparameterValuesConfigBlob hyperparameterValuesConfigBlob,
-      Map<String, HyperparameterElementConfigBlobEntity> valueEntities,
       Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException {
     final String blobHash =
         FileHasher.getSha("name:" + name + ":value:" + computeSHA(hyperparameterValuesConfigBlob));
-    HyperparameterElementConfigBlobEntity entity = valueEntities.get(blobHash);
+    HyperparameterElementConfigBlobEntity entity =
+        session.get(HyperparameterElementConfigBlobEntity.class, blobHash);
     if (entity == null) {
       entity =
           new HyperparameterElementConfigBlobEntity(
               blobHash, null, name, hyperparameterValuesConfigBlob);
-      valueEntities.put(blobHash, entity);
       if (!blobHashes.contains(blobHash)) {
         session.saveOrUpdate(entity);
         blobHashes.add(blobHash);
