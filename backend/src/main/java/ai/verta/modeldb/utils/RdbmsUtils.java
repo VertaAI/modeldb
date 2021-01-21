@@ -129,9 +129,18 @@ public class RdbmsUtils {
     LOGGER.trace("Converting AttributeEntityListFromAttributes ");
     List<KeyValue> attributeList = new ArrayList<>();
     if (attributeEntityList != null) {
-      for (AttributeEntity attribute : attributeEntityList) {
-        attributeList.add(attribute.getProtoObj());
-      }
+      attributeList =
+          attributeEntityList.stream()
+              .map(
+                  attributeEntity -> {
+                    try {
+                      return attributeEntity.getProtoObj();
+                    } catch (InvalidProtocolBufferException e) {
+                      throw new RuntimeException(e);
+                    }
+                  })
+              .sorted(Comparator.comparing(KeyValue::getKey))
+              .collect(Collectors.toList());
     }
     LOGGER.trace("Converted AttributeEntityListFromAttributes ");
     return attributeList;
@@ -161,9 +170,18 @@ public class RdbmsUtils {
     LOGGER.trace("Converting KeyValueEntityListFromKeyValues ");
     List<KeyValue> attributeList = new ArrayList<>();
     if (keyValueEntityList != null) {
-      for (KeyValueEntity keyValue : keyValueEntityList) {
-        attributeList.add(keyValue.getProtoKeyValue());
-      }
+      attributeList =
+          keyValueEntityList.stream()
+              .map(
+                  keyValueEntity -> {
+                    try {
+                      return keyValueEntity.getProtoKeyValue();
+                    } catch (InvalidProtocolBufferException e) {
+                      throw new RuntimeException(e);
+                    }
+                  })
+              .sorted(Comparator.comparing(KeyValue::getKey))
+              .collect(Collectors.toList());
     }
     LOGGER.trace("Converted KeyValueEntityListFromKeyValues ");
     return attributeList;
@@ -190,6 +208,7 @@ public class RdbmsUtils {
     if (artifactEntityList != null) {
       return artifactEntityList.stream()
           .map(ArtifactEntity::getProtoObject)
+          .sorted(Comparator.comparing(Artifact::getKey))
           .collect(Collectors.toList());
     }
     return Collections.emptyList();
@@ -270,9 +289,26 @@ public class RdbmsUtils {
     List<Observation> observationList = new ArrayList<>();
     LOGGER.trace("Converting ObservationEntityListFromObservations");
     if (observationEntityList != null) {
-      for (ObservationEntity observation : observationEntityList) {
-        observationList.add(observation.getProtoObject());
-      }
+      observationList =
+          observationEntityList.stream()
+              .map(
+                  observationEntity -> {
+                    try {
+                      return observationEntity.getProtoObject();
+                    } catch (InvalidProtocolBufferException e) {
+                      throw new RuntimeException(e);
+                    }
+                  })
+              .sorted(
+                  Comparator.comparing(
+                      observation -> {
+                        if (observation.hasArtifact()) {
+                          return observation.getArtifact().getKey();
+                        } else {
+                          return observation.getAttribute().getKey();
+                        }
+                      }))
+              .collect(Collectors.toList());
     }
     LOGGER.trace("Converted ObservationEntityListFromObservations");
     return observationList;
@@ -314,6 +350,7 @@ public class RdbmsUtils {
     if (featureEntities != null) {
       return featureEntities.stream()
           .map(FeatureEntity::getProtoObject)
+          .sorted(Comparator.comparing(Feature::getName))
           .collect(Collectors.toList());
     }
     return Collections.emptyList();
