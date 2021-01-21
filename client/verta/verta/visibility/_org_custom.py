@@ -15,7 +15,7 @@ class OrgCustom(_Visibility):
         self._deploy = deploy
 
     @property
-    def custom_permission(self):
+    def _custom_permission(self):
         if self._write:
             collaborator_type = CommonService_pb2.CollaboratorTypeEnum.READ_WRITE
         else:
@@ -32,5 +32,5 @@ class OrgCustom(_Visibility):
         )
 
     @property
-    def visibility(self):
+    def _visibility(self):
         return Collaborator_pb2.ResourceVisibility.ORG_CUSTOM

@@ -5,5 +5,5 @@ from ._visibility import _Visibility
 
 class Private(_Visibility):
     @property
-    def visibility(self):
+    def _visibility(self):
         return Collaborator_pb2.ResourceVisibility.PRIVATE

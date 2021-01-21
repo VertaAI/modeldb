@@ -5,5 +5,5 @@ from ._visibility import _Visibility
 
 class OrgDefault(_Visibility):
     @property
-    def visibility(self):
+    def _visibility(self):
         return Collaborator_pb2.ResourceVisibility.ORG_DEFAULT
