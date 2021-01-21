@@ -14,6 +14,10 @@ class OrgCustom(_Visibility):
         self._write = write
         self._deploy = deploy
 
+    def _to_public_within_org(self):
+        # NOTE: old backends will unavoidably not receive `_write` and `_deploy`
+        return True
+
     @property
     def _custom_permission(self):
         if self._write:
