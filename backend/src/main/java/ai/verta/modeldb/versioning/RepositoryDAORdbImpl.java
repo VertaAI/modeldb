@@ -350,22 +350,32 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   private Optional<RepositoryEntity> getRepositoryByName(
       Session session, String name, Workspace workspace, RepositoryTypeEnum repositoryType) {
-    List<Long> repositoryIds = getRepositoryEntityIdsByName(session, name, repositoryType);
+    ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+        ModelDBServiceResourceTypes.REPOSITORY;
+    if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
+      modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+    }
     List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
         roleService.getResourceItems(
-            workspace,
-            !repositoryIds.isEmpty()
-                ? repositoryIds.stream().map(String::valueOf).collect(Collectors.toSet())
-                : Collections.emptySet(),
-            ModelDBServiceResourceTypes.REPOSITORY);
-    Optional<Long> repoId =
+            workspace, Collections.emptySet(), modelDBServiceResourceTypes);
+    Set<Long> repoIds =
         accessibleAllWorkspaceItems.stream()
+            .filter(
+                getResourcesResponseItem -> getResourcesResponseItem.getResourceName().equals(name))
             .map(
                 getResourcesResponseItem ->
                     Long.parseLong(getResourcesResponseItem.getResourceId()))
-            .findFirst();
-    if (repoId.isPresent()) {
-      return getRepositoryById(session, repoId.get());
+            .collect(Collectors.toSet());
+    if (!repoIds.isEmpty()) {
+      if (repoIds.size() > 1) {
+        throw new InternalErrorException(
+            "Multiple "
+                + modelDBServiceResourceTypes
+                + " found for the name '"
+                + name
+                + "' in the workspace");
+      }
+      return getRepositoryById(session, new ArrayList<>(repoIds).get(0));
     } else {
       return Optional.empty();
     }
