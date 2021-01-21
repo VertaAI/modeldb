@@ -152,6 +152,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.CREATED)
           .append(" = true")
           .toString();
+  private static final String GET_DELETED_PROJECTS_IDS_BY_NAME_HQL =
+      new StringBuilder("SELECT p.id From ProjectEntity p where p.")
+          .append(ModelDBConstants.NAME)
+          .append(" = :projectName ")
+          .append(" AND p.")
+          .append(ModelDBConstants.DELETED)
+          .append(" = true")
+          .toString();
 
   public ProjectDAORdbImpl(
       AuthService authService,
@@ -244,6 +252,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+
+      Query deletedEntitiesQuery = session.createQuery(GET_DELETED_PROJECTS_IDS_BY_NAME_HQL);
+      deletedEntitiesQuery.setParameter("projectName", project.getName());
+      List<String> deletedEntityIds = deletedEntitiesQuery.list();
+      if (!deletedEntityIds.isEmpty()) {
+        roleService.deleteEntityResources(deletedEntityIds, ModelDBServiceResourceTypes.PROJECT);
+      }
 
       Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);

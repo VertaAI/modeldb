@@ -11,7 +11,9 @@ import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimerTask;
 import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
@@ -145,32 +147,58 @@ public class CleanUpEntitiesCron extends TimerTask {
     repositoryDeleteQuery.setMaxResults(this.recordUpdateLimit);
     List<RepositoryEntity> repositoryEntities = repositoryDeleteQuery.list();
 
-    List<String> repositoryIds = new ArrayList<>();
+    Map<String, RepositoryEntity> repositoryEntityMap = new HashMap<>();
+    Map<String, RepositoryEntity> datasetEntityMap = new HashMap<>();
     if (!repositoryEntities.isEmpty()) {
       for (RepositoryEntity repositoryEntity : repositoryEntities) {
-        repositoryIds.add(String.valueOf(repositoryEntity.getId()));
+        if (repositoryEntity.isDataset()) {
+          datasetEntityMap.put(String.valueOf(repositoryEntity.getId()), repositoryEntity);
+        } else {
+          repositoryEntityMap.put(String.valueOf(repositoryEntity.getId()), repositoryEntity);
+        }
       }
 
-      try {
-        roleService.deleteEntityResources(
-            repositoryIds, ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
-        for (RepositoryEntity repositoryEntity : repositoryEntities) {
-          try {
-            Transaction transaction = session.beginTransaction();
-            session.delete(repositoryEntity);
-            transaction.commit();
-          } catch (OptimisticLockException ex) {
-            LOGGER.info("CleanUpEntitiesCron : cleanRepositories : Exception: {}", ex.getMessage());
-          }
-        }
-      } catch (OptimisticLockException ex) {
-        LOGGER.info("CleanUpEntitiesCron : cleanRepositories : Exception: {}", ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn("CleanUpEntitiesCron : cleanRepositories : Exception: ", ex);
-      }
+      cleanUpEntityBasedOnResourceType(
+          session,
+          repositoryEntities,
+          repositoryEntityMap,
+          ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+
+      cleanUpEntityBasedOnResourceType(
+          session,
+          repositoryEntities,
+          datasetEntityMap,
+          ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
     }
 
     LOGGER.debug(
-        "Repository cleaned successfully : Cleaned repositories count {}", repositoryIds.size());
+        "Repository cleaned successfully : Cleaned repositories count {}",
+        repositoryEntityMap.size());
+    LOGGER.debug(
+        "Dataset cleaned successfully : Cleaned datasets count {}", datasetEntityMap.size());
+  }
+
+  private void cleanUpEntityBasedOnResourceType(
+      Session session,
+      List<RepositoryEntity> repositoryEntities,
+      Map<String, RepositoryEntity> repositoryEntityMap,
+      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
+    try {
+      roleService.deleteEntityResources(
+          new ArrayList<>(repositoryEntityMap.keySet()), resourceType);
+      for (RepositoryEntity repositoryEntity : repositoryEntities) {
+        try {
+          Transaction transaction = session.beginTransaction();
+          session.delete(repositoryEntity);
+          transaction.commit();
+        } catch (OptimisticLockException ex) {
+          LOGGER.info("CleanUpEntitiesCron : cleanRepositories : Exception: {}", ex.getMessage());
+        }
+      }
+    } catch (OptimisticLockException ex) {
+      LOGGER.info("CleanUpEntitiesCron : cleanRepositories : Exception: {}", ex.getMessage());
+    } catch (Exception ex) {
+      LOGGER.warn("CleanUpEntitiesCron : cleanRepositories : Exception: ", ex);
+    }
   }
 }
