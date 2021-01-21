@@ -1169,6 +1169,16 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               accessibleAllWorkspaceItems.stream()
                   .map(GetResourcesResponseItem::getResourceId)
                   .collect(Collectors.toSet());
+
+          List<String> orgWorkspaceIds =
+              roleService.listMyOrganizations().stream()
+                  .map(Organization::getWorkspaceId)
+                  .collect(Collectors.toList());
+          for (GetResourcesResponseItem item : accessibleAllWorkspaceItems) {
+            if (orgWorkspaceIds.contains(String.valueOf(item.getWorkspaceId()))) {
+              accessibleResourceIdsWithCollaborator.remove(item.getResourceId());
+            }
+          }
         } else {
           accessibleResourceIdsWithCollaborator =
               ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
