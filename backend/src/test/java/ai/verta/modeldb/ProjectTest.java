@@ -2849,4 +2849,37 @@ public class ProjectTest extends TestsInit {
 
     LOGGER.info("Delete Project Artifacts test stop................................");
   }
+
+  @Test
+  public void createProjectWithDeletedProjectName() {
+    CreateProject createProjectRequest =
+        getCreateProjectRequest("test-" + Calendar.getInstance().getTimeInMillis());
+    CreateProject.Response createProjectResponse =
+        projectServiceStub.createProject(createProjectRequest);
+    Project testProj = createProjectResponse.getProject();
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected Project name",
+        createProjectRequest.getName(),
+        testProj.getName());
+
+    DeleteProject deleteProject = DeleteProject.newBuilder().setId(testProj.getId()).build();
+    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project delete successfully. Status : {}", deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+
+    createProjectRequest = getCreateProjectRequest(testProj.getName());
+    createProjectResponse = projectServiceStub.createProject(createProjectRequest);
+    testProj = createProjectResponse.getProject();
+    LOGGER.info("Project created successfully");
+    assertEquals(
+        "Project name not match with expected Project name",
+        createProjectRequest.getName(),
+        testProj.getName());
+
+    deleteProject = DeleteProject.newBuilder().setId(testProj.getId()).build();
+    deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
+    LOGGER.info("Project delete successfully. Status : {}", deleteProjectResponse.toString());
+    assertTrue(deleteProjectResponse.getStatus());
+  }
 }

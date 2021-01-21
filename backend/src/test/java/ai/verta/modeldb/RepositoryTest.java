@@ -1207,4 +1207,46 @@ public class RepositoryTest extends TestsInit {
 
     LOGGER.info("check repository name with colon and slashes test end....");
   }
+
+  @Test
+  public void createdRepositoryWithDeletedRepositoryName() {
+    LOGGER.info("createdRepositoryWithDeletedRepositoryName test start....");
+
+    Repository repository = createRepository("Test-" + Calendar.getInstance().getTimeInMillis());
+
+    CreateDataset createDatasetRequest = DatasetTest.getDatasetRequest(repository.getName());
+    CreateDataset.Response createDatasetResponse =
+        datasetServiceStub.createDataset(createDatasetRequest);
+    Dataset dataset = createDatasetResponse.getDataset();
+    LOGGER.info("Dataset created successfully");
+    assertEquals(
+        "Dataset name not match with expected dataset name",
+        createDatasetRequest.getName(),
+        dataset.getName());
+
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+            .build();
+    DeleteRepositoryRequest.Response response =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    assertTrue("Repository not delete", response.getStatus());
+
+    repository = createRepository(repository.getName());
+
+    deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+            .build();
+    response = versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    assertTrue("Repository not delete", response.getStatus());
+
+    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
+    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
+    LOGGER.info("Dataset deleted successfully");
+    LOGGER.info(deleteDatasetResponse.toString());
+    assertTrue(deleteDatasetResponse.getStatus());
+
+    LOGGER.info("createdRepositoryWithDeletedRepositoryName test end....");
+  }
 }

@@ -201,6 +201,27 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .append(ModelDBConstants.ID)
           .append(" = :repoId")
           .toString();
+  private static final String GET_DELETED_REPOSITORY_IDS_BY_NAME_HQL =
+      new StringBuilder("SELECT ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append(ModelDBConstants.ID)
+          .append(" FROM ")
+          .append(RepositoryEntity.class.getSimpleName())
+          .append(" ")
+          .append(SHORT_NAME)
+          .append(" where ")
+          .append(" ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append(ModelDBConstants.NAME)
+          .append(" = :name ")
+          .append(" AND ")
+          .append(SHORT_NAME)
+          .append(".")
+          .append(ModelDBConstants.DELETED)
+          .append(" = true ")
+          .toString();
 
   public RepositoryDAORdbImpl(
       AuthService authService,
@@ -430,6 +451,16 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       if (repoId.getNamedId().getName().isEmpty()) {
         throw new ModelDBException("Repository name should not be empty", Code.INVALID_ARGUMENT);
       }
+
+      Query deletedEntitiesQuery = session.createQuery(GET_DELETED_REPOSITORY_IDS_BY_NAME_HQL);
+      deletedEntitiesQuery.setParameter("name", repoId.getNamedId().getName());
+      List<Long> deletedEntityIds = deletedEntitiesQuery.list();
+      if (!deletedEntityIds.isEmpty()) {
+        roleService.deleteEntityResources(
+            deletedEntityIds.stream().map(String::valueOf).collect(Collectors.toList()),
+            ModelDBServiceResourceTypes.REPOSITORY);
+      }
+
       repositoryEntity = new RepositoryEntity(repository, repositoryType);
     } else {
       repositoryEntity =
