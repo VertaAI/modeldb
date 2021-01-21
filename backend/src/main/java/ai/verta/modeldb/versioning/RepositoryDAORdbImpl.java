@@ -357,6 +357,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   private Optional<RepositoryEntity> getRepositoryByName(
       Session session, String name, Workspace workspace, RepositoryTypeEnum repositoryType) {
     List<Long> repositoryIds = getRepositoryEntityIdsByName(session, name, repositoryType);
+    // TODO: replace with the helper function
     ModelDBServiceResourceTypes modelDBServiceResourceTypes =
         ModelDBServiceResourceTypes.REPOSITORY;
     if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
