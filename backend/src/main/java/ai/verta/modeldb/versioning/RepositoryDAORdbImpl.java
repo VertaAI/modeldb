@@ -317,10 +317,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
 
       ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-          ModelDBServiceResourceTypes.REPOSITORY;
-      if (repository.isDataset()) {
-        modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
-      }
+          ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
       if (checkWrite) {
         roleService.validateEntityUserWithUserInfo(
             modelDBServiceResourceTypes,
@@ -481,10 +478,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   Optional.of(workspace), repository.getRepositoryVisibility());
         }
         ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-            ModelDBServiceResourceTypes.REPOSITORY;
-        if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
-          modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
-        }
+            ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
         roleService.createWorkspacePermissions(
             workspace.getId(),
             Optional.empty(),
@@ -538,10 +532,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               session, request.getRepositoryId(), true, canNotOperateOnProtected, repositoryType);
       // Get self allowed resources id where user has delete permission
       ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-          ModelDBServiceResourceTypes.REPOSITORY;
-      if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
-        modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
-      }
+          ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
       List<String> allowedRepositoryIds =
           roleService.getAccessibleResourceIdsByActions(
               modelDBServiceResourceTypes,

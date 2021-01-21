@@ -258,10 +258,7 @@ public class CollaboratorResourceMigration {
           for (RepositoryEntity repository : repositoryEntities) {
             boolean migrated = false;
             ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-                ModelDBServiceResourceTypes.REPOSITORY;
-            if (repository.isDataset()) {
-              modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
-            }
+                ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
             if (repository.getOwner() != null && !repository.getOwner().isEmpty()) {
               WorkspaceDTO workspaceDTO =
                   roleService.getWorkspaceDTOByWorkspaceId(

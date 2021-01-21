@@ -17,6 +17,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
@@ -479,10 +480,7 @@ public class DeleteEntitiesCron extends TimerTask {
         Transaction transaction = null;
         try {
           ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-              ModelDBServiceResourceTypes.REPOSITORY;
-          if (repository.isDataset()) {
-            modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
-          }
+              ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
           roleService.deleteEntityResources(
               Collections.singletonList(String.valueOf(repository.getId())),
               modelDBServiceResourceTypes);

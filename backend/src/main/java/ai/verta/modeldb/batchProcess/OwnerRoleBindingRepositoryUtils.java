@@ -94,10 +94,7 @@ public class OwnerRoleBindingRepositoryUtils {
             if (userInfoValue != null) {
               try {
                 ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-                    ModelDBServiceResourceTypes.REPOSITORY;
-                if (repositoryEntity.isDataset()) {
-                  modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
-                }
+                    ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
                 roleService.createRoleBinding(
                     ownerRole,
                     new CollaboratorUser(authService, userInfoValue),

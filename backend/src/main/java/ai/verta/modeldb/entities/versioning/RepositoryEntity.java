@@ -208,10 +208,7 @@ public class RepositoryEntity {
             RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
 
     ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-        ModelDBServiceResourceTypes.REPOSITORY;
-    if (isDataset()) {
-      modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
-    }
+        ModelDBUtils.getModelDBServiceResourceTypesFromRepository(this);
 
     GetResourcesResponseItem repositoryResource =
         roleService.getEntityResource(String.valueOf(this.id), modelDBServiceResourceTypes);
