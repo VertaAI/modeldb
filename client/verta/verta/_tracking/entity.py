@@ -379,8 +379,8 @@ class _ModelDBEntity(object):
             Either:
                 - a dictionary containing Git snapshot information with at most the following items:
                     - **filepaths** (*list of str*)
-                    - **repo** (*str*) – Remote repository URL
-                    - **hash** (*str*) – Commit hash
+                    - **repo_url** (*str*) – Remote repository URL
+                    - **commit_hash** (*str*) – Commit hash
                     - **is_dirty** (*bool*)
                 - a `ZipFile <https://docs.python.org/3/library/zipfile.html#zipfile.ZipFile>`_
                   containing Python source code files
