@@ -60,11 +60,11 @@ class TestGit:
 
         refs = [arg for arg in (branch, tag, commit_hash) if arg]
         ref = refs[0] if refs else _git_utils.get_git_commit_hash("HEAD")
-        assert code_ver._msg.git.repo == (repo_url or _git_utils.get_git_remote_url())
-        assert code_ver._msg.git.branch == (branch or _git_utils.get_git_branch_name(ref))
-        assert code_ver._msg.git.tag == (tag or _git_utils.get_git_commit_tag(ref))
-        assert code_ver._msg.git.hash == (commit_hash or _git_utils.get_git_commit_hash(ref))
-        assert code_ver._msg.git.is_dirty == _git_utils.get_git_commit_dirtiness(ref)
+        assert code_ver.repo_url == (repo_url or _git_utils.get_git_remote_url())
+        assert code_ver.branch == (branch or _git_utils.get_git_branch_name(ref))
+        assert code_ver.tag == (tag or _git_utils.get_git_commit_tag(ref) or None)  # None if HEAD is not at a tag
+        assert code_ver.commit_hash == (commit_hash or _git_utils.get_git_commit_hash(ref))
+        assert code_ver.is_dirty == _git_utils.get_git_commit_dirtiness(ref)
 
     @hypothesis.given(
         repo_url=st.one_of(st.none(), st.emails()),
@@ -80,10 +80,10 @@ class TestGit:
             autocapture=False,
         )
 
-        assert code_ver._msg.git.repo == (repo_url or "")
-        assert code_ver._msg.git.branch == (branch or "")
-        assert code_ver._msg.git.tag == (tag or "")
-        assert code_ver._msg.git.hash == (commit_hash or "")
+        assert code_ver.repo_url == (repo_url or None)
+        assert code_ver.branch == (branch or None)
+        assert code_ver.tag == (tag or None)
+        assert code_ver.commit_hash == (commit_hash or None)
 
 
 class TestNotebook:
