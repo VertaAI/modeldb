@@ -919,18 +919,21 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       projectRoot.alias("pr");
       List<Predicate> finalPredicatesList = new ArrayList<>();
 
-      Set<String> accessibleProjectIds = new HashSet<>();
+      Set<String> accessibleResourceIdsWithCollaborator =
+          new HashSet<>(
+              roleService.getAccessibleResourceIds(
+                  null,
+                  new CollaboratorUser(authService, currentLoginUserInfo),
+                  ModelDBServiceResourceTypes.PROJECT,
+                  queryParameters.getProjectIdsList()));
+
       String workspaceName = queryParameters.getWorkspaceName();
       if (!workspaceName.isEmpty()
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             roleService.getResourceItems(
-                null,
-                !queryParameters.getProjectIdsList().isEmpty()
-                    ? new HashSet<>(queryParameters.getProjectIdsList())
-                    : Collections.emptySet(),
-                ModelDBServiceResourceTypes.PROJECT);
-        accessibleProjectIds =
+                null, accessibleResourceIdsWithCollaborator, ModelDBServiceResourceTypes.PROJECT);
+        accessibleResourceIdsWithCollaborator =
             accessibleAllWorkspaceItems.stream()
                 .map(GetResourcesResponseItem::getResourceId)
                 .collect(Collectors.toSet());
@@ -941,7 +944,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 .collect(Collectors.toList());
         for (GetResourcesResponseItem item : accessibleAllWorkspaceItems) {
           if (orgWorkspaceIds.contains(String.valueOf(item.getWorkspaceId()))) {
-            accessibleProjectIds.remove(item.getResourceId());
+            accessibleResourceIdsWithCollaborator.remove(item.getResourceId());
           }
         }
       } else {
@@ -950,19 +953,17 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 ? (UserInfo) host.getCollaboratorMessage()
                 : currentLoginUserInfo;
         if (userInfo != null) {
-          accessibleProjectIds =
+          accessibleResourceIdsWithCollaborator =
               ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
                   roleService,
-                  !queryParameters.getProjectIdsList().isEmpty()
-                      ? new HashSet<>(queryParameters.getProjectIdsList())
-                      : Collections.emptySet(),
+                  accessibleResourceIdsWithCollaborator,
                   workspaceName,
                   userInfo,
                   ModelDBServiceResourceTypes.PROJECT);
         }
       }
 
-      if (accessibleProjectIds.isEmpty() && roleService.IsImplemented()) {
+      if (accessibleResourceIdsWithCollaborator.isEmpty() && roleService.IsImplemented()) {
         LOGGER.debug("Accessible Project Ids not found, size 0");
         ProjectPaginationDTO projectPaginationDTO = new ProjectPaginationDTO();
         projectPaginationDTO.setProjects(Collections.emptyList());
@@ -975,14 +976,14 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         // Validate if current user has access to the entity or not where predicate key has an id
         RdbmsUtils.validatePredicates(
             ModelDBConstants.PROJECTS,
-            new ArrayList<>(accessibleProjectIds),
+            new ArrayList<>(accessibleResourceIdsWithCollaborator),
             predicate,
             roleService);
       }
 
-      if (!accessibleProjectIds.isEmpty()) {
+      if (!accessibleResourceIdsWithCollaborator.isEmpty()) {
         Expression<String> exp = projectRoot.get(ModelDBConstants.ID);
-        Predicate predicate2 = exp.in(accessibleProjectIds);
+        Predicate predicate2 = exp.in(accessibleResourceIdsWithCollaborator);
         finalPredicatesList.add(predicate2);
       }
 
