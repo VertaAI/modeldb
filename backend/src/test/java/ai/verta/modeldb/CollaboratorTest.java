@@ -584,7 +584,7 @@ public class CollaboratorTest extends TestsInit {
               createDatasetResponse.getDataset(), CollaboratorType.READ_WRITE);
 
       AddCollaboratorRequest.Response response =
-          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + response.getStatus());
       assertTrue(response.getStatus());
     } finally {
@@ -633,7 +633,7 @@ public class CollaboratorTest extends TestsInit {
       sharedUsers.add(authService.getVertaIdFromUserInfo(shareWithUserInfo));
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
@@ -648,7 +648,7 @@ public class CollaboratorTest extends TestsInit {
       sharedUsers.add("github|87654321");
 
       addCollaboratorResponse =
-          collaboratorServiceStub.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStub.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());*/
 
@@ -711,7 +711,7 @@ public class CollaboratorTest extends TestsInit {
               dataset, shareWithUserInfo.getEmail(), CollaboratorType.READ_WRITE);
 
       AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
       assertTrue(addCollaboratorResponse.getStatus());
 
@@ -766,7 +766,7 @@ public class CollaboratorTest extends TestsInit {
               datasetIds, CollaboratorType.READ_WRITE, authClientInterceptor);
 
       AddCollaboratorRequest.Response response =
-          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + response.getStatus());
       assertTrue(response.getStatus());
 
@@ -775,7 +775,7 @@ public class CollaboratorTest extends TestsInit {
               datasetIds.subList(1, 4), CollaboratorType.READ_ONLY, authClientInterceptor);
 
       response =
-          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+          collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
       LOGGER.info("Collaborator added in server : " + response.getStatus());
       assertTrue(response.getStatus());
     } finally {

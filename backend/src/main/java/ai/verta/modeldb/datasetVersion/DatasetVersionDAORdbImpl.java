@@ -225,14 +225,14 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     // Validate if current user has access to the entity or not
     if (datasetIdSet.size() == 1) {
       roleService.isSelfAllowed(
-          ModelDBServiceResourceTypes.REPOSITORY,
+          ModelDBServiceResourceTypes.DATASET,
           modelDBServiceActions,
           new ArrayList<>(datasetIdSet).get(0));
       accessibleDatasetVersionIds.addAll(requestedDatasetVersionIds);
     } else {
       allowedDatasetIds =
           roleService.getSelfAllowedResources(
-              ModelDBServiceResourceTypes.REPOSITORY, modelDBServiceActions);
+              ModelDBServiceResourceTypes.DATASET, modelDBServiceActions);
       // Validate if current user has access to the entity or not
       allowedDatasetIds.retainAll(datasetIdSet);
       for (Map.Entry<String, String> entry : datasetIdDatasetVersionIdMap.entrySet()) {
