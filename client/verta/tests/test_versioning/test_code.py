@@ -25,7 +25,7 @@ class TestGit:
         assert not json_format.MessageToDict(
             code_ver._msg,
             including_default_value_fields=False,
-        ).get('git')
+        ).get('git')  # may be {'git': {}} if fields are manually set to empty
 
     def test_repr(self):
         """Tests that __repr__() executes without error"""
