@@ -239,7 +239,7 @@ class _ModelDBEntity(object):
                 # training_pipeline.py        2019-05-31 10:34:44          964
 
         """
-        if self._conf.use_git and not autocapture:
+        if self._conf.use_git and autocapture:
             # verify Git
             try:
                 repo_root_dir = _git_utils.get_git_repo_root_dir()
