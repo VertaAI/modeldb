@@ -333,7 +333,7 @@
             </not>
         </preConditions>
         <addColumn tableName="project">
-            <column name="created" type="boolean" value="true" defaultValue="false"/>
+            <column name="created" type="boolean" defaultValue="false"/>
         </addColumn>
         <rollback>
             <dropColumn tableName="project" columnName="created"/>

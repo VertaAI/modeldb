@@ -15,9 +15,16 @@ import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateConnection;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.UserInfo;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -82,22 +89,84 @@ public class CollaboratorResourceMigration extends CommonCollaboratorResourceMig
         () -> ModelDBHibernateUtil.getEntityCount(ProjectEntity.class),
         () -> ModelDBHibernateUtil.getSessionFactory().openSession(),
         ProjectEntity.class,
-        ModelDBServiceResourceTypes.PROJECT,
+        project -> ModelDBServiceResourceTypes.PROJECT,
         hibernateConnection,
-        this::getWorkspaceName);
+        this::getWorkspaceName,
+        this::getResponseItemsProject);
     LOGGER.debug("Projects migration finished");
   }
 
   private void migrateRepositories() {
-    LOGGER.debug("Projects migration started");
+    LOGGER.debug("Repositories migration started");
     HibernateConnection hibernateConnection = new ModelDBHibernateConnection();
     migrateResources(
         () -> ModelDBHibernateUtil.getEntityCount(RepositoryEntity.class),
         () -> ModelDBHibernateUtil.getSessionFactory().openSession(),
         RepositoryEntity.class,
-        ModelDBServiceResourceTypes.REPOSITORY,
+        ModelDBUtils::getModelDBServiceResourceTypesFromRepository,
         hibernateConnection,
-        this::getWorkspaceName);
+        this::getWorkspaceName,
+        this::getResponseItems);
     LOGGER.debug("Repositories migration finished");
+  }
+
+  private Map.Entry<Map<String, UserInfo>, List<GetResourcesResponseItem>> getResponseItemsProject(
+      List<ProjectEntity> resourceEntities) {
+    Set<String> userIds = new HashSet<>();
+    Set<String> newVisibilityResourceIds = new HashSet<>();
+    for (ResourceEntity resourceEntity : resourceEntities) {
+      String owner = resourceEntity.getOwner();
+      if (owner != null && !owner.isEmpty()) {
+        userIds.add(owner);
+      } else {
+        newVisibilityResourceIds.add(resourceEntity.getStringId());
+      }
+    }
+    LOGGER.debug("resource userId list : " + userIds);
+
+    // Fetch the resource owners userInfo
+    Map<String, UserInfo> userInfoMap = new HashMap<>();
+    if (!userIds.isEmpty()) {
+      userInfoMap.putAll(authService.getUserInfoFromAuthServer(userIds, null, null));
+    }
+    List<GetResourcesResponseItem> responseItems =
+        roleService.getResourceItems(
+            null, newVisibilityResourceIds, ModelDBServiceResourceTypes.PROJECT);
+    return new AbstractMap.SimpleEntry<>(userInfoMap, responseItems);
+  }
+
+  private Map.Entry<Map<String, UserInfo>, List<GetResourcesResponseItem>> getResponseItems(
+      List<RepositoryEntity> repositoryEntities) {
+    Set<String> userIds = new HashSet<>();
+    Set<String> newVisibilityRepositoryIds = new HashSet<>();
+    Set<String> newVisibilityDatasetIds = new HashSet<>();
+    for (RepositoryEntity repositoryEntity : repositoryEntities) {
+      if (repositoryEntity.getOwner() != null && !repositoryEntity.getOwner().isEmpty()) {
+        userIds.add(repositoryEntity.getOwner());
+      } else {
+        if (repositoryEntity.isDataset()) {
+          newVisibilityDatasetIds.add(String.valueOf(repositoryEntity.getId()));
+        } else {
+          newVisibilityRepositoryIds.add(String.valueOf(repositoryEntity.getId()));
+        }
+      }
+    }
+    LOGGER.debug("Repository userId list : " + userIds);
+
+    // Fetch the repository owners userInfo
+    Map<String, UserInfo> userInfoMap = new HashMap<>();
+    if (!userIds.isEmpty()) {
+      userInfoMap.putAll(authService.getUserInfoFromAuthServer(userIds, null, null));
+    }
+
+    List<GetResourcesResponseItem> responseRepositoryItems =
+        roleService.getResourceItems(
+            null, newVisibilityRepositoryIds, ModelDBServiceResourceTypes.REPOSITORY);
+    List<GetResourcesResponseItem> responseDatasetItems =
+        roleService.getResourceItems(
+            null, newVisibilityDatasetIds, ModelDBServiceResourceTypes.DATASET);
+    Set<GetResourcesResponseItem> responseItems = new HashSet<>(responseRepositoryItems);
+    responseItems.addAll(responseDatasetItems);
+    return new AbstractMap.SimpleEntry<>(userInfoMap, responseDatasetItems);
   }
 }

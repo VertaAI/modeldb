@@ -12,13 +12,11 @@ import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.persistence.TypedQuery;
@@ -46,9 +44,11 @@ public class CommonCollaboratorResourceMigration {
       Supplier<Long> countSupplier,
       Supplier<Session> sessionSupplier,
       Class<T> clazz,
-      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType,
+      Function<T, ModelDBResourceEnum.ModelDBServiceResourceTypes> resourceTypesFunction,
       HibernateConnection hibernateConnection,
-      BiFunction<Map<String, UserInfo>, T, Optional<String>> getWorkspaceName) {
+      BiFunction<Map<String, UserInfo>, T, Optional<String>> getWorkspaceName,
+      Function<List<T>, Map.Entry<Map<String, UserInfo>, List<GetResourcesResponseItem>>>
+          getResponseItemsFunction) {
     LOGGER.debug("Resource migration started");
 
     int lowerBound = 0;
@@ -79,26 +79,12 @@ public class CommonCollaboratorResourceMigration {
         List<T> resourceEntities = typedQuery.getResultList();
 
         if (resourceEntities.size() > 0) {
-          Set<String> userIds = new HashSet<>();
-          Set<String> newVisibilityresourceIds = new HashSet<>();
-          for (T resourceEntity : resourceEntities) {
-            String owner = resourceEntity.getOwner();
-            if (owner != null && !owner.isEmpty()) {
-              userIds.add(owner);
-            } else {
-              newVisibilityresourceIds.add(resourceEntity.getStringId());
-            }
-          }
-          LOGGER.debug("resource userId list : " + userIds);
-
+          Map.Entry<Map<String, UserInfo>, List<GetResourcesResponseItem>> responseItemsData =
+              getResponseItemsFunction.apply(resourceEntities);
           // Fetch the resource owners userInfo
-          Map<String, UserInfo> userInfoMap = new HashMap<>();
-          if (!userIds.isEmpty()) {
-            userInfoMap.putAll(authService.getUserInfoFromAuthServer(userIds, null, null));
-          }
+          Map<String, UserInfo> userInfoMap = responseItemsData.getKey();
 
-          List<GetResourcesResponseItem> responseItems =
-              roleService.getResourceItems(null, newVisibilityresourceIds, resourceType);
+          List<GetResourcesResponseItem> responseItems = responseItemsData.getValue();
           Map<String, GetResourcesResponseItem> responseItemMap =
               responseItems.stream()
                   .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
@@ -117,7 +103,7 @@ public class CommonCollaboratorResourceMigration {
                   resource.getStringId(),
                   resource.getName(),
                   Optional.of(Long.parseLong(resource.getOwner())),
-                  resourceType,
+                  resourceTypesFunction.apply(resource),
                   CollaboratorPermissions.newBuilder()
                       .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
                       .build(),
@@ -132,7 +118,7 @@ public class CommonCollaboratorResourceMigration {
                   resource.getStringId(),
                   resource.getName(),
                   Optional.of(resourceDetails.getOwnerId()),
-                  resourceType,
+                  resourceTypesFunction.apply(resource),
                   resourceDetails.getCustomPermission(),
                   resourceDetails.getVisibility());
               migrated = true;
@@ -162,9 +148,10 @@ public class CommonCollaboratorResourceMigration {
               countSupplier,
               sessionSupplier,
               clazz,
-              resourceType,
+              resourceTypesFunction,
               hibernateConnection,
-              getWorkspaceName);
+              getWorkspaceName,
+              getResponseItemsFunction);
         } else {
           throw ex;
         }

@@ -74,16 +74,6 @@ public class PublicRoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
 
   @Override
-  public void createPublicRoleBinding(
-      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
-
-  @Override
-  public String buildPublicRoleBindingName(
-      String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return null;
-  }
-
-  @Override
   public void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
@@ -98,11 +88,6 @@ public class PublicRoleServiceUtils implements RoleService {
   @Override
   public Role getRoleByName(String roleName, RoleScope roleScope) {
     return null;
-  }
-
-  @Override
-  public boolean deleteRoleBinding(String roleBindingId) {
-    return true;
   }
 
   @Override
@@ -149,11 +134,6 @@ public class PublicRoleServiceUtils implements RoleService {
       String resourceId,
       CollaboratorBase collaborator,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return null;
-  }
-
-  @Override
-  public RoleBinding getRoleBindingByName(String roleBindingName) {
     return null;
   }
 

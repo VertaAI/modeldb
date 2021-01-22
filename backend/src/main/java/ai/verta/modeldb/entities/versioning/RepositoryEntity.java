@@ -4,6 +4,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
+import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.ResourceEntity;
@@ -239,18 +240,30 @@ public class RepositoryEntity implements ResourceEntity {
         .addAllAttributes(
             RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
 
+    ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+        ModelDBUtils.getModelDBServiceResourceTypesFromRepository(this);
+
     GetResourcesResponseItem repositoryResource =
-        roleService.getEntityResource(
-            String.valueOf(this.id), ModelDBServiceResourceTypes.REPOSITORY);
+        roleService.getEntityResource(String.valueOf(this.id), modelDBServiceResourceTypes);
     builder.setVisibility(repositoryResource.getVisibility());
     builder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     builder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
     builder.setCustomPermission(repositoryResource.getCustomPermission());
 
-    RepositoryVisibility visibility =
-        (RepositoryVisibility)
-            ModelDBUtils.getOldVisibility(
-                ModelDBServiceResourceTypes.REPOSITORY, repositoryResource.getVisibility());
+    RepositoryVisibility visibility;
+    if (isDataset()) {
+      DatasetVisibility datasetVisibility =
+          (DatasetVisibility)
+              ModelDBUtils.getOldVisibility(
+                  modelDBServiceResourceTypes, repositoryResource.getVisibility());
+      visibility = RepositoryVisibility.forNumber(datasetVisibility.getNumber());
+    } else {
+      visibility =
+          (RepositoryVisibility)
+              ModelDBUtils.getOldVisibility(
+                  modelDBServiceResourceTypes, repositoryResource.getVisibility());
+    }
+
     builder.setRepositoryVisibility(visibility);
 
     Workspace workspace = authService.workspaceById(false, repositoryResource.getWorkspaceId());

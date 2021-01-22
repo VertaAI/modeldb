@@ -785,7 +785,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           roleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
-              ModelDBServiceResourceTypes.REPOSITORY,
+              ModelDBServiceResourceTypes.DATASET,
               Collections.EMPTY_LIST);
 
       Set<String> accessibleResourceIds = new HashSet<>(accessibleDatasetIds);
@@ -796,7 +796,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         LOGGER.debug("Workspace and current login user match");
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             roleService.getResourceItems(
-                null, Collections.emptySet(), ModelDBServiceResourceTypes.REPOSITORY);
+                null, Collections.emptySet(), ModelDBServiceResourceTypes.DATASET);
         accessibleResourceIds.addAll(
             accessibleAllWorkspaceItems.stream()
                 .map(GetResourcesResponseItem::getResourceId)
@@ -809,7 +809,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
                 accessibleResourceIds,
                 workspaceName,
                 currentLoginUserInfo,
-                ModelDBServiceResourceTypes.REPOSITORY);
+                ModelDBServiceResourceTypes.DATASET);
       }
 
       LOGGER.debug("accessibleAllWorkspaceDatasetIds : {}", accessibleResourceIds);
