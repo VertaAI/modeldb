@@ -13,6 +13,7 @@ from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 
 from ..external import six
 
+from ..code import _git
 from .._internal_utils import (
     _artifact_utils,
     _git_utils,
@@ -164,7 +165,7 @@ class _ModelDBEntity(object):
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):  # recommended params
         raise NotImplementedError
 
-    def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False):
+    def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False, autocapture=True):
         """
         Logs the code version.
 
@@ -185,6 +186,8 @@ class _ModelDBEntity(object):
             make its best effort to find it.
         overwrite : bool, default False
             Whether to allow overwriting a code version.
+        autocapture : bool, default True
+            Whether to enable the automatic capturing behavior of parameters above.
 
         Examples
         --------
@@ -237,13 +240,16 @@ class _ModelDBEntity(object):
                 # training_pipeline.py        2019-05-31 10:34:44          964
 
         """
-        if self._conf.use_git:
+        if self._conf.use_git and not autocapture:
             # verify Git
             try:
                 repo_root_dir = _git_utils.get_git_repo_root_dir()
             except OSError:
                 # don't halt execution
-                print("unable to locate git repository; you may be in an unsupported environment")
+                print(
+                    "unable to locate git repository; you may be in an unsupported environment"
+                    " consider using `autocapture=False` to manually enter values"
+                )
                 return
                 # six.raise_from(OSError("failed to locate git repository; please check your working directory"),
                 #                None)
@@ -251,19 +257,20 @@ class _ModelDBEntity(object):
         elif repo_url is not None or commit_hash is not None:
             raise ValueError("`repo_url` and `commit_hash` can only be set if `use_git` was set to True in the Client")
 
-        if exec_path is None:
-            # find dynamically
-            try:
-                exec_path = _utils.get_notebook_filepath()
-            except (ImportError, OSError):  # notebook not found
+        if autocapture:
+            if exec_path is None:
+                # find dynamically
                 try:
-                    exec_path = _utils.get_script_filepath()
-                except OSError:  # script not found
-                    print("unable to find code file; skipping")
-        else:
-            exec_path = os.path.expanduser(exec_path)
-            if not os.path.isfile(exec_path):
-                raise ValueError("`exec_path` \"{}\" must be a valid filepath".format(exec_path))
+                    exec_path = _utils.get_notebook_filepath()
+                except (ImportError, OSError):  # notebook not found
+                    try:
+                        exec_path = _utils.get_script_filepath()
+                    except OSError:  # script not found
+                        print("unable to find code file; skipping")
+            else:
+                exec_path = os.path.expanduser(exec_path)
+                if not os.path.isfile(exec_path):
+                    raise ValueError("`exec_path` \"{}\" must be a valid filepath".format(exec_path))
 
         # TODO: remove this circular dependency
         from .project import Project
@@ -287,33 +294,23 @@ class _ModelDBEntity(object):
                 raise ValueError("`overwrite=True` is currently only supported for ExperimentRun")
 
         if self._conf.use_git:
-            try:
-                # adjust `exec_path` to be relative to repo root
-                exec_path = os.path.relpath(exec_path, _git_utils.get_git_repo_root_dir())
-            except OSError as e:
-                print("{}; logging absolute path to file instead")
-                exec_path = os.path.abspath(exec_path)
-            msg.code_version.git_snapshot.filepaths.append(exec_path)
+            if autocapture:
+                try:
+                    # adjust `exec_path` to be relative to repo root
+                    exec_path = os.path.relpath(exec_path, _git_utils.get_git_repo_root_dir())
+                except OSError as e:
+                    print("{}; logging absolute path to file instead".format(e))
+                    exec_path = os.path.abspath(exec_path)
+            if exec_path:
+                msg.code_version.git_snapshot.filepaths.append(exec_path)
 
-            try:
-                msg.code_version.git_snapshot.repo = repo_url or _git_utils.get_git_remote_url()
-            except OSError as e:
-                print("{}; skipping".format(e))
-
-            try:
-                msg.code_version.git_snapshot.hash = commit_hash or _git_utils.get_git_commit_hash()
-            except OSError as e:
-                print("{}; skipping".format(e))
-
-            try:
-                is_dirty = _git_utils.get_git_commit_dirtiness(commit_hash)
-            except OSError as e:
-                print("{}; skipping".format(e))
+            code_ver = _git.Git(repo_url=repo_url, commit_hash=commit_hash, autocapture=autocapture)
+            msg.code_version.git_snapshot.repo = code_ver.repo_url or ""
+            msg.code_version.git_snapshot.hash = code_ver.commit_hash or ""
+            if code_ver.is_dirty:
+                msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.TRUE
             else:
-                if is_dirty:
-                    msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.TRUE
-                else:
-                    msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.FALSE
+                msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.FALSE
         else:  # log code as Artifact
             if exec_path is None:
                 # don't halt execution
