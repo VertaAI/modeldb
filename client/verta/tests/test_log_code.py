@@ -70,7 +70,6 @@ class TestLogGit:
             assert code_version['repo_url'] == _git_utils.get_git_remote_url()
             assert code_version['commit_hash'] == _git_utils.get_git_commit_hash("HEAD")
 
-    @pytest.mark.skipif(not IN_GIT_REPO, reason="not in git repo")
     @pytest.mark.parametrize(
         ("exec_path", "repo_url", "commit_hash"),
         [
