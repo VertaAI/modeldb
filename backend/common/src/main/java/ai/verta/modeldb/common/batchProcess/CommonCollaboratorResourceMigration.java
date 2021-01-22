@@ -32,8 +32,8 @@ public class CommonCollaboratorResourceMigration {
   private static final Logger LOGGER =
       LogManager.getLogger(CommonCollaboratorResourceMigration.class);
   private static final int PAGINATION_SIZE = 100;
-  private final AuthService authService;
-  private final RoleService roleService;
+  protected final AuthService authService;
+  protected final RoleService roleService;
 
   public CommonCollaboratorResourceMigration(AuthService authService, RoleService roleService) {
     this.authService = authService;

@@ -30,15 +30,11 @@ import org.apache.logging.log4j.Logger;
 
 public class CollaboratorResourceMigration extends CommonCollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
-  private static AuthService authService;
-  private static RoleService roleService;
-  private static int paginationSize;
 
   public static CollaboratorResourceMigration create() {
-    CollaboratorResourceMigration.paginationSize = 100;
     if (Config.getInstance().hasAuth()) {
-      authService = AuthServiceUtils.FromConfig(Config.getInstance());
-      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
+      AuthService authService = AuthServiceUtils.FromConfig(Config.getInstance());
+      RoleService roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
       return new CollaboratorResourceMigration(authService, roleService);
     }
     return new CollaboratorResourceMigration(null, null);
@@ -72,10 +68,11 @@ public class CollaboratorResourceMigration extends CommonCollaboratorResourceMig
     String owner = resourceEntity.getOwner();
     if (owner != null && !owner.isEmpty()) {
       WorkspaceDTO workspaceDTO =
-          roleService.getWorkspaceDTOByWorkspaceId(
-              userInfoMap.get(resourceEntity.getOwner()),
-              resourceEntity.getOldWorkspaceId(),
-              resourceEntity.getWorkspaceType());
+          ((RoleService) roleService)
+              .getWorkspaceDTOByWorkspaceId(
+                  userInfoMap.get(resourceEntity.getOwner()),
+                  resourceEntity.getOldWorkspaceId(),
+                  resourceEntity.getWorkspaceType());
       return Optional.of(workspaceDTO.getWorkspaceName());
     } else {
       return Optional.empty();

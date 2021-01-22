@@ -4,6 +4,7 @@ import com.mysql.cj.exceptions.CJCommunicationsException;
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
 import org.hibernate.exception.LockAcquisitionException;
 
 import java.net.SocketException;
@@ -59,4 +60,5 @@ public abstract class HibernateConnection {
         return rootCause;
     }
 
+    public abstract Session openSession();
 }
