@@ -186,7 +186,7 @@ class _ModelDBEntity(object):
         overwrite : bool, default False
             Whether to allow overwriting a code version.
         autocapture : bool, default True
-            Whether to enable the automatic capturing behavior of parameters above.
+            Whether to enable the automatic capturing behavior of parameters above in git mode.
 
         Examples
         --------
@@ -253,8 +253,11 @@ class _ModelDBEntity(object):
                 # six.raise_from(OSError("failed to locate git repository; please check your working directory"),
                 #                None)
             print("Git repository successfully located at {}".format(repo_root_dir))
-        elif repo_url is not None or commit_hash is not None:
-            raise ValueError("`repo_url` and `commit_hash` can only be set if `use_git` was set to True in the Client")
+        if not self._conf.use_git:
+            if repo_url is not None or commit_hash is not None:
+                raise ValueError("`repo_url` and `commit_hash` can only be set if `use_git` was set to True in the Client")
+            if not autocapture:  # user passed `False`
+                raise ValueError("`autocapture` is only applicable if `use_git` was set to True in the Client")
 
         if autocapture:
             if exec_path is None:
