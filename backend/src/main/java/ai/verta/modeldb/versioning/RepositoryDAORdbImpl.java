@@ -391,14 +391,24 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 ? repositoryIds.stream().map(String::valueOf).collect(Collectors.toSet())
                 : Collections.emptySet(),
             modelDBServiceResourceTypes);
-    Optional<Long> repoId =
+    Set<Long> repoIds =
         accessibleAllWorkspaceItems.stream()
+            .filter(
+                getResourcesResponseItem -> getResourcesResponseItem.getResourceName().equals(name))
             .map(
                 getResourcesResponseItem ->
                     Long.parseLong(getResourcesResponseItem.getResourceId()))
-            .findFirst();
-    if (repoId.isPresent()) {
-      return getRepositoryById(session, repoId.get());
+            .collect(Collectors.toSet());
+    if (!repoIds.isEmpty()) {
+      if (repoIds.size() > 1) {
+        throw new InternalErrorException(
+            "Multiple "
+                + modelDBServiceResourceTypes
+                + " found for the name '"
+                + name
+                + "' in the workspace");
+      }
+      return getRepositoryById(session, new ArrayList<>(repoIds).get(0));
     } else {
       return Optional.empty();
     }
