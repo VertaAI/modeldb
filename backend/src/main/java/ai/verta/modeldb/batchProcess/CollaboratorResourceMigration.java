@@ -223,11 +223,16 @@ public class CollaboratorResourceMigration {
         if (repositoryEntities.size() > 0) {
           Set<String> userIds = new HashSet<>();
           Set<String> newVisibilityRepositoryIds = new HashSet<>();
+          Set<String> newVisibilityDatasetIds = new HashSet<>();
           for (RepositoryEntity repositoryEntity : repositoryEntities) {
             if (repositoryEntity.getOwner() != null && !repositoryEntity.getOwner().isEmpty()) {
               userIds.add(repositoryEntity.getOwner());
             } else {
-              newVisibilityRepositoryIds.add(String.valueOf(repositoryEntity.getId()));
+              if (repositoryEntity.isDataset()) {
+                newVisibilityDatasetIds.add(String.valueOf(repositoryEntity.getId()));
+              } else {
+                newVisibilityRepositoryIds.add(String.valueOf(repositoryEntity.getId()));
+              }
             }
           }
           LOGGER.debug("Repository userId list : " + userIds);
@@ -238,14 +243,22 @@ public class CollaboratorResourceMigration {
             userInfoMap.putAll(authService.getUserInfoFromAuthServer(userIds, null, null));
           }
 
-          List<GetResourcesResponseItem> responseItems =
+          List<GetResourcesResponseItem> responseRepositoryItems =
               roleService.getResourceItems(
                   null, newVisibilityRepositoryIds, ModelDBServiceResourceTypes.REPOSITORY);
+          List<GetResourcesResponseItem> responseDatasetItems =
+              roleService.getResourceItems(
+                  null, newVisibilityDatasetIds, ModelDBServiceResourceTypes.DATASET);
+          Set<GetResourcesResponseItem> responseItems = new HashSet<>(responseRepositoryItems);
+          responseItems.addAll(responseDatasetItems);
+
           Map<String, GetResourcesResponseItem> responseItemMap =
               responseItems.stream()
                   .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
           for (RepositoryEntity repository : repositoryEntities) {
             boolean migrated = false;
+            ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+                ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
             if (repository.getOwner() != null && !repository.getOwner().isEmpty()) {
               WorkspaceDTO workspaceDTO =
                   roleService.getWorkspaceDTOByWorkspaceId(
@@ -259,7 +272,7 @@ public class CollaboratorResourceMigration {
                   String.valueOf(repository.getId()),
                   repository.getName(),
                   Optional.of(Long.parseLong(repository.getOwner())),
-                  ModelDBServiceResourceTypes.REPOSITORY,
+                  modelDBServiceResourceTypes,
                   CollaboratorPermissions.newBuilder()
                       .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
                       .build(),
@@ -278,7 +291,7 @@ public class CollaboratorResourceMigration {
                   String.valueOf(repository.getId()),
                   repository.getName(),
                   Optional.of(resourceDetails.getOwnerId()),
-                  ModelDBServiceResourceTypes.REPOSITORY,
+                  modelDBServiceResourceTypes,
                   resourceDetails.getCustomPermission(),
                   resourceDetails.getVisibility());
               migrated = true;

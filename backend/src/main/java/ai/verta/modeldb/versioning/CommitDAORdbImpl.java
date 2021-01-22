@@ -1,7 +1,7 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.common.KeyValueQuery;
-import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
@@ -926,12 +926,18 @@ public class CommitDAORdbImpl implements CommitDAO {
         }
       }
 
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+          ModelDBServiceResourceTypes.REPOSITORY;
+      if (isDatasetVersion) {
+        modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+      }
+
       Set<String> accessibleResourceIds =
           new HashSet<>(
               roleService.getAccessibleResourceIds(
                   null,
                   new CollaboratorUser(authService, currentLoginUserInfo),
-                  ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
+                  modelDBServiceResourceTypes,
                   request.getRepoIdsList().stream()
                       .map(String::valueOf)
                       .collect(Collectors.toList())));
@@ -942,10 +948,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         LOGGER.debug("Workspace match with username of the login user");
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
-            roleService.getResourceItems(
-                null,
-                accessibleResourceIds,
-                ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+            roleService.getResourceItems(null, accessibleResourceIds, modelDBServiceResourceTypes);
         accessibleResourceIds =
             accessibleAllWorkspaceItems.stream()
                 .map(GetResourcesResponseItem::getResourceId)
@@ -957,7 +960,7 @@ public class CommitDAORdbImpl implements CommitDAO {
                 accessibleResourceIds,
                 workspaceName,
                 currentLoginUserInfo,
-                ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+                modelDBServiceResourceTypes);
       }
 
       if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {

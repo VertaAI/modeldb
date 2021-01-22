@@ -149,7 +149,6 @@ disable=print-statement,
         broad-except,
         bare-except,
         useless-else-on-loop,
-        abstract-method,
         superfluous-parens,
         deprecated-lambda,
 

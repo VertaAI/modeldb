@@ -1761,7 +1761,8 @@ public class RdbmsUtils {
               predicate = predicate.toBuilder().setOperator(operator).build();
               if (key.equalsIgnoreCase("owner")) {
                 if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)
-                    || modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)) {
+                    || modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)
+                    || modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
                   setFuzzyOwnerPredicateBasedOnUACWorkspace(
                       builder,
                       entityRootPath,
