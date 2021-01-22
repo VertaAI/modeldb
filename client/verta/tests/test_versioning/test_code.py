@@ -45,7 +45,7 @@ class TestGit:
             (None, None, None, None),
             ("git@github.com:VertaAI/modeldb.git", None, None, None),
             ("git@github.com:VertaAI/modeldb.git", _git_utils.get_git_branch_name("HEAD"), None, None),
-            ("git@github.com:VertaAI/modeldb.git", None, _git_utils.get_git_commit_tag("HEAD") or None, None),
+            ("git@github.com:VertaAI/modeldb.git", None, _git_utils.get_git_commit_tag("HEAD") or None, None),  # None if HEAD is not at a tag
             ("git@github.com:VertaAI/modeldb.git", None, None, _git_utils.get_git_commit_hash("HEAD")),
         ],
     )
