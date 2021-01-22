@@ -46,7 +46,7 @@ class Git(_code._Code):
 
     """
     def __init__(self, repo_url=None, branch=None, tag=None, commit_hash=None, autocapture=True, _autocapture=True):
-        # TODO: switch all similar blobs from _autocapture to _autocapture so they have the same API
+        # TODO: switch all similar blobs from _autocapture to autocapture so they have the same API
         if _autocapture is False:
             autocapture = False
 
