@@ -13,7 +13,6 @@ from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 
 from ..external import six
 
-from ..code import _git
 from .._internal_utils import (
     _artifact_utils,
     _git_utils,
@@ -304,6 +303,7 @@ class _ModelDBEntity(object):
             if exec_path:
                 msg.code_version.git_snapshot.filepaths.append(exec_path)
 
+            from ..code import _git  # avoid Python 2 top-level circular import
             code_ver = _git.Git(repo_url=repo_url, commit_hash=commit_hash, autocapture=autocapture)
             msg.code_version.git_snapshot.repo = code_ver.repo_url or ""
             msg.code_version.git_snapshot.hash = code_ver.commit_hash or ""
