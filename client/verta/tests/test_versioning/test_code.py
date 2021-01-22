@@ -9,9 +9,13 @@ from verta._internal_utils import _git_utils
 
 
 # check if in git repo
+import subprocess
 try:
-    _git_utils.get_git_repo_root_dir()
-except OSError:
+    print(subprocess.check_output(
+        ["git", "rev-parse", "--show-toplevel"],
+        stderr=subprocess.STDOUT,
+    ))
+except:
     IN_GIT_REPO = False
 else:
     IN_GIT_REPO = True
