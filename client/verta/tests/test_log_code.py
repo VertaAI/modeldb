@@ -36,6 +36,9 @@ class TestLogGit:
             assert len(code_version['filepaths']) == 1
             assert __file__.endswith(code_version['filepaths'][0])
 
+            assert code_version['repo_url'] == _git_utils.get_git_remote_url()
+            assert code_version['commit_hash'] == _git_utils.get_git_commit_hash("HEAD")
+
     def test_log_git_failure(self, client):
         """git mode fails outside git repo"""
         client.set_project()
@@ -63,6 +66,9 @@ class TestLogGit:
             assert 'filepaths' in code_version
             assert len(code_version['filepaths']) == 1
             assert os.path.abspath("conftest.py").endswith(code_version['filepaths'][0])
+
+            assert code_version['repo_url'] == _git_utils.get_git_remote_url()
+            assert code_version['commit_hash'] == _git_utils.get_git_commit_hash("HEAD")
 
     @pytest.mark.skipif(not IN_GIT_REPO, reason="not in git repo")
     @pytest.mark.parametrize(
