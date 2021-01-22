@@ -41,7 +41,7 @@ class Git(_code._Code):
     commit_hash : str or None
         Commit hash.
     is_dirty : bool
-        Whether git status is dirty relative to the captured commit.
+        Whether git status was dirty relative to the captured commit.
 
     Examples
     --------
