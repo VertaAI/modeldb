@@ -30,6 +30,19 @@ class Git(_code._Code):
     OSError
         If git information cannot automatically be determined.
 
+    Attributes
+    ----------
+    repo_url : str or None
+        Remote repository URL.
+    branch : str or None
+        Branch name.
+    tag : str or None
+        Commit tag.
+    commit_hash : str or None
+        Commit hash.
+    is_dirty : bool
+        Whether git status was dirty relative to the captured commit.
+
     Examples
     --------
     .. code-block:: python
@@ -106,3 +119,23 @@ class Git(_code._Code):
         blob_msg.code.CopyFrom(self._msg)
 
         return blob_msg
+
+    @property
+    def repo_url(self):
+        return self._msg.git.repo or None
+
+    @property
+    def branch(self):
+        return self._msg.git.branch or None
+
+    @property
+    def tag(self):
+        return self._msg.git.tag or None
+
+    @property
+    def commit_hash(self):
+        return self._msg.git.hash or None
+
+    @property
+    def is_dirty(self):
+        return self._msg.git.is_dirty
