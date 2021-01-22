@@ -64,6 +64,34 @@ class TestLogGit:
             assert len(code_version['filepaths']) == 1
             assert os.path.abspath("conftest.py").endswith(code_version['filepaths'][0])
 
+    @pytest.mark.skipif(not IN_GIT_REPO, reason="not in git repo")
+    @pytest.mark.parametrize(
+        ("exec_path", "repo_url", "commit_hash"),
+        [
+            (None, None, None),
+            ("foo", None, None),
+            (None, "bar", None),
+            (None, None, "baz"),
+        ],
+    )
+    def test_no_autocapture(self, experiment_run, exec_path, repo_url, commit_hash):
+        experiment_run._conf.use_git = True
+
+        experiment_run.log_code(
+            exec_path=exec_path, repo_url=repo_url, commit_hash=commit_hash,
+            autocapture=False,
+        )
+        code_version = experiment_run.get_code()
+
+        assert isinstance(code_version, dict)
+        if exec_path:
+            assert len(code_version['filepaths']) == 1
+            assert code_version['filepaths'][0] == exec_path
+        else:
+            assert not code_version.get('filepaths')
+        assert code_version.get('repo_url') == repo_url
+        assert code_version.get('commit_hash') == commit_hash
+
 
 class TestLogSource:
     def test_log_script(self, client):
@@ -94,6 +122,12 @@ class TestLogSource:
             assert len(zipf.namelist()) == 1
             assert os.path.abspath("conftest.py").endswith(zipf.namelist()[0])
             assert open("conftest.py", 'rb').read() == zipf.open(zipf.infolist()[0]).read()
+
+    def test_no_autocapture_error(self, experiment_run):
+        experiment_run._conf.use_git = False
+
+        with pytest.raises(ValueError, match="autocapture"):
+            experiment_run.log_code("conftest.py", autocapture=False)
 
 
 class TestConflict:
