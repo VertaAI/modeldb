@@ -24,6 +24,7 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.*;
@@ -684,5 +685,15 @@ public class ModelDBUtils {
       StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
     return CommonUtils.retryOrThrowException(
         ex, retry, retryCallInterface, Config.getInstance().grpcServer.requestTimeout);
+  }
+
+  public static ModelDBServiceResourceTypes getModelDBServiceResourceTypesFromRepository(
+      RepositoryEntity repository) {
+    ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+        ModelDBServiceResourceTypes.REPOSITORY;
+    if (repository.isDataset()) {
+      modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+    }
+    return modelDBServiceResourceTypes;
   }
 }

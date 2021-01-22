@@ -107,7 +107,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       CreateDataset request, StreamObserver<CreateDataset.Response> responseObserver) {
     try {
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
+          ModelDBServiceResourceTypes.DATASET, null, ModelDBServiceActions.CREATE);
 
       Dataset dataset = getDatasetFromRequest(request);
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
@@ -233,7 +233,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.READ);
 
       responseObserver.onNext(repositoryDAO.getDatasetById(metadataDAO, request.getId()));
       responseObserver.onCompleted();
@@ -343,7 +343,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
@@ -382,7 +382,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
@@ -433,7 +433,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       AddDatasetTags.Response updatedDataset =
           repositoryDAO.addDatasetTags(
@@ -489,7 +489,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       Dataset updatedDataset =
           repositoryDAO.deleteDatasetTags(
@@ -534,7 +534,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
@@ -586,7 +586,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
@@ -637,7 +637,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY, request.getId(), ModelDBServiceActions.UPDATE);
+          ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       repositoryDAO.deleteRepositoryAttributes(
           Long.parseLong(request.getId()),
@@ -714,9 +714,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY,
-          request.getDatasetId(),
-          ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
@@ -813,9 +811,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.REPOSITORY,
-          request.getDatasetId(),
-          ModelDBServiceActions.READ);
+          ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
 
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();

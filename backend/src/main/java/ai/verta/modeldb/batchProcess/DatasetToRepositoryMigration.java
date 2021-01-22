@@ -333,13 +333,13 @@ public class DatasetToRepositoryMigration {
               readOnlyRole,
               collaboratorBase,
               dataset.getId(),
-              ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+              ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
         } else {
           roleService.createRoleBinding(
               writeOnlyRole,
               collaboratorBase,
               dataset.getId(),
-              ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+              ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
         }
       }
     }

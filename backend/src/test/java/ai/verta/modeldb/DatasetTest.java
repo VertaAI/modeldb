@@ -423,13 +423,11 @@ public class DatasetTest extends TestsInit {
                 authClientInterceptor.getClient1Email(),
                 CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
 
-        AddCollaboratorRequest.Response addOrUpdateRepositoryCollaboratorResponse =
-            collaboratorServiceStubClient2.addOrUpdateRepositoryCollaborator(
-                addCollaboratorRequest);
+        AddCollaboratorRequest.Response addOrUpdateDatasetCollaboratorResponse =
+            collaboratorServiceStubClient2.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
         LOGGER.info(
-            "Collaborator added in server : "
-                + addOrUpdateRepositoryCollaboratorResponse.getStatus());
-        assertTrue(addOrUpdateRepositoryCollaboratorResponse.getStatus());
+            "Collaborator added in server : " + addOrUpdateDatasetCollaboratorResponse.getStatus());
+        assertTrue(addOrUpdateDatasetCollaboratorResponse.getStatus());
 
         GetDatasetByName.Response getDatasetByNameResponse =
             datasetServiceStub.getDatasetByName(getDataset);
@@ -534,12 +532,11 @@ public class DatasetTest extends TestsInit {
               authClientInterceptor.getClient1Email(),
               CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
 
-      AddCollaboratorRequest.Response addOrUpdateRepositoryCollaboratorResponse =
-          collaboratorServiceStubClient2.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+      AddCollaboratorRequest.Response addOrUpdateDatasetCollaboratorResponse =
+          collaboratorServiceStubClient2.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
       LOGGER.info(
-          "Collaborator added in server : "
-              + addOrUpdateRepositoryCollaboratorResponse.getStatus());
-      assertTrue(addOrUpdateRepositoryCollaboratorResponse.getStatus());
+          "Collaborator added in server : " + addOrUpdateDatasetCollaboratorResponse.getStatus());
+      assertTrue(addOrUpdateDatasetCollaboratorResponse.getStatus());
 
       // Create dataset
       createDatasetRequest = getDatasetRequest(dataset.getName());
