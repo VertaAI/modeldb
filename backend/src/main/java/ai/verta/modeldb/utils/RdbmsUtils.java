@@ -131,19 +131,20 @@ public class RdbmsUtils {
     if (attributeEntityList != null) {
       attributeList =
           attributeEntityList.stream()
-              .map(
-                  attributeEntity -> {
-                    try {
-                      return attributeEntity.getProtoObj();
-                    } catch (InvalidProtocolBufferException e) {
-                      throw new RuntimeException(e);
-                    }
-                  })
+              .map(RdbmsUtils::getKeyValueFromAttributeEntity)
               .sorted(Comparator.comparing(KeyValue::getKey))
               .collect(Collectors.toList());
     }
     LOGGER.trace("Converted AttributeEntityListFromAttributes ");
     return attributeList;
+  }
+
+  private static KeyValue getKeyValueFromAttributeEntity(AttributeEntity attributeEntity) {
+    try {
+      return attributeEntity.getProtoObj();
+    } catch (InvalidProtocolBufferException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static KeyValueEntity generateKeyValueEntity(
@@ -172,19 +173,20 @@ public class RdbmsUtils {
     if (keyValueEntityList != null) {
       attributeList =
           keyValueEntityList.stream()
-              .map(
-                  keyValueEntity -> {
-                    try {
-                      return keyValueEntity.getProtoKeyValue();
-                    } catch (InvalidProtocolBufferException e) {
-                      throw new RuntimeException(e);
-                    }
-                  })
+              .map(RdbmsUtils::getKeyValueFromKeyValueEntity)
               .sorted(Comparator.comparing(KeyValue::getKey))
               .collect(Collectors.toList());
     }
     LOGGER.trace("Converted KeyValueEntityListFromKeyValues ");
     return attributeList;
+  }
+
+  private static KeyValue getKeyValueFromKeyValueEntity(KeyValueEntity keyValueEntity) {
+    try {
+      return keyValueEntity.getProtoKeyValue();
+    } catch (InvalidProtocolBufferException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static ArtifactEntity generateArtifactEntity(
@@ -291,27 +293,29 @@ public class RdbmsUtils {
     if (observationEntityList != null) {
       observationList =
           observationEntityList.stream()
-              .map(
-                  observationEntity -> {
-                    try {
-                      return observationEntity.getProtoObject();
-                    } catch (InvalidProtocolBufferException e) {
-                      throw new RuntimeException(e);
-                    }
-                  })
-              .sorted(
-                  Comparator.comparing(
-                      observation -> {
-                        if (observation.hasArtifact()) {
-                          return observation.getArtifact().getKey();
-                        } else {
-                          return observation.getAttribute().getKey();
-                        }
-                      }))
+              .map(RdbmsUtils::getObservationFromObservationEntity)
+              .sorted(Comparator.comparing(RdbmsUtils::getObservationCompareKey))
               .collect(Collectors.toList());
     }
     LOGGER.trace("Converted ObservationEntityListFromObservations");
     return observationList;
+  }
+
+  private static String getObservationCompareKey(Observation observation) {
+    if (observation.hasArtifact()) {
+      return observation.getArtifact().getKey();
+    } else {
+      return observation.getAttribute().getKey();
+    }
+  }
+
+  private static Observation getObservationFromObservationEntity(
+      ObservationEntity observationEntity) {
+    try {
+      return observationEntity.getProtoObject();
+    } catch (InvalidProtocolBufferException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static List<TagsMapping> convertTagListFromTagMappingList(
