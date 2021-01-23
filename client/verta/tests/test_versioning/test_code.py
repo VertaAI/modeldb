@@ -2,6 +2,8 @@ import pytest
 import hypothesis
 import hypothesis.strategies as st
 
+import itertools
+
 from google.protobuf import json_format
 
 import verta.code
@@ -15,6 +17,34 @@ except OSError:
     IN_GIT_REPO = False
 else:
     IN_GIT_REPO = True
+
+def get_git_test_autocapture_cases():
+    """
+    Arguments to `Git()` with autocapture (default) must satisfy these conditions:
+
+        1) `repo_url` can be None or str
+        2) `branch`, `tag`, and `commit_hash` can each be None or str
+            a) but only one of the three can be non-None
+        3) `is_dirty` can be None, True, or False
+
+    """
+    if not IN_GIT_REPO:
+        return []
+
+    valid_values = [
+        [None, _git_utils.get_git_remote_url(), "foo"],  # repo_url
+        [None, _git_utils.get_git_branch_name("HEAD")],  # branch
+        [None, _git_utils.get_git_commit_tag("HEAD") or None],  # tag (None if HEAD is not at a tag)
+        [None, _git_utils.get_git_commit_hash("HEAD")],  # commit_hash
+        [None, True, False],  # is_dirty
+    ]
+    cases = set(itertools.product(*valid_values))
+    cases = [  # remove cases that do not satisfy (2a)
+        case for case in cases
+        if sum(val is not None for val in case[1:4]) <= 1
+    ]
+
+    return cases
 
 
 class TestGit:
@@ -39,18 +69,9 @@ class TestGit:
         assert code_ver.__repr__()
 
     @pytest.mark.skipif(not IN_GIT_REPO, reason="not in git repo")
-    @pytest.mark.parametrize(  # NOTE: these cases are not comprehensive
+    @pytest.mark.parametrize(
         ("repo_url", "branch", "tag", "commit_hash", "is_dirty"),
-        [
-            (None, None, None, None, None),
-            (None, _git_utils.get_git_branch_name("HEAD"), None, None, True),
-            (None, None, _git_utils.get_git_commit_tag("HEAD") or None, None, False),  # None if HEAD is not at a tag
-            (None, None, None, _git_utils.get_git_commit_hash("HEAD"), None),
-            ("git@github.com:VertaAI/modeldb.git", None, None, None, True),
-            ("git@github.com:VertaAI/modeldb.git", _git_utils.get_git_branch_name("HEAD"), None, None, False),
-            ("git@github.com:VertaAI/modeldb.git", None, _git_utils.get_git_commit_tag("HEAD") or None, None, None),
-            ("git@github.com:VertaAI/modeldb.git", None, None, _git_utils.get_git_commit_hash("HEAD"), True),
-        ],
+        get_git_test_autocapture_cases(),
     )
     def test_autocapture(self, repo_url, branch, tag, commit_hash, is_dirty):
         code_ver = verta.code.Git(
