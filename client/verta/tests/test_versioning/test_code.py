@@ -39,23 +39,23 @@ class TestGit:
         assert code_ver.__repr__()
 
     @pytest.mark.skipif(not IN_GIT_REPO, reason="not in git repo")
-    @pytest.mark.parametrize(
-        ("repo_url", "branch", "tag", "commit_hash"),
+    @pytest.mark.parametrize(  # NOTE: these cases are not comprehensive
+        ("repo_url", "branch", "tag", "commit_hash", "is_dirty"),
         [
-            (None, None, None, None),
-            (None, _git_utils.get_git_branch_name("HEAD"), None, None),
-            (None, None, _git_utils.get_git_commit_tag("HEAD") or None, None),  # None if HEAD is not at a tag
-            (None, None, None, _git_utils.get_git_commit_hash("HEAD")),
-            ("git@github.com:VertaAI/modeldb.git", None, None, None),
-            ("git@github.com:VertaAI/modeldb.git", _git_utils.get_git_branch_name("HEAD"), None, None),
-            ("git@github.com:VertaAI/modeldb.git", None, _git_utils.get_git_commit_tag("HEAD") or None, None),
-            ("git@github.com:VertaAI/modeldb.git", None, None, _git_utils.get_git_commit_hash("HEAD")),
+            (None, None, None, None, None),
+            (None, _git_utils.get_git_branch_name("HEAD"), None, None, True),
+            (None, None, _git_utils.get_git_commit_tag("HEAD") or None, None, False),  # None if HEAD is not at a tag
+            (None, None, None, _git_utils.get_git_commit_hash("HEAD"), None),
+            ("git@github.com:VertaAI/modeldb.git", None, None, None, True),
+            ("git@github.com:VertaAI/modeldb.git", _git_utils.get_git_branch_name("HEAD"), None, None, False),
+            ("git@github.com:VertaAI/modeldb.git", None, _git_utils.get_git_commit_tag("HEAD") or None, None, None),
+            ("git@github.com:VertaAI/modeldb.git", None, None, _git_utils.get_git_commit_hash("HEAD"), True),
         ],
     )
-    def test_autocapture(self, repo_url, branch, tag, commit_hash):
+    def test_autocapture(self, repo_url, branch, tag, commit_hash, is_dirty):
         code_ver = verta.code.Git(
             repo_url=repo_url,
-            branch=branch, tag=tag, commit_hash=commit_hash,
+            branch=branch, tag=tag, commit_hash=commit_hash, is_dirty=is_dirty,
         )
 
         refs = [arg for arg in (branch, tag, commit_hash) if arg]
@@ -64,19 +64,20 @@ class TestGit:
         assert code_ver.branch == (branch or _git_utils.get_git_branch_name(ref))
         assert code_ver.tag == (tag or _git_utils.get_git_commit_tag(ref) or None)  # None if HEAD is not at a tag
         assert code_ver.commit_hash == (commit_hash or _git_utils.get_git_commit_hash(ref))
-        assert code_ver.is_dirty == _git_utils.get_git_commit_dirtiness(ref)
+        assert code_ver.is_dirty == (is_dirty if is_dirty is not None else _git_utils.get_git_commit_dirtiness(ref))
 
     @hypothesis.given(
         repo_url=st.one_of(st.none(), st.emails()),
         branch=st.one_of(st.none(), st.text()),
         tag=st.one_of(st.none(), st.text()),
         commit_hash=st.one_of(st.none(), st.text()),
+        is_dirty=st.one_of(st.none(), st.booleans()),
     )
-    def test_user_no_autocapture(self, repo_url, branch, tag, commit_hash):
+    def test_user_no_autocapture(self, repo_url, branch, tag, commit_hash, is_dirty):
         """Like test_no_autocapture, but with the public `autocapture` param."""
         code_ver = verta.code.Git(
             repo_url=repo_url,
-            branch=branch, tag=tag, commit_hash=commit_hash,
+            branch=branch, tag=tag, commit_hash=commit_hash, is_dirty=is_dirty,
             autocapture=False,
         )
 
@@ -84,6 +85,7 @@ class TestGit:
         assert code_ver.branch == (branch or None)
         assert code_ver.tag == (tag or None)
         assert code_ver.commit_hash == (commit_hash or None)
+        assert code_ver.is_dirty == (is_dirty or False)
 
 
 class TestNotebook:
