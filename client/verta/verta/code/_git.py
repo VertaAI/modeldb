@@ -22,7 +22,7 @@ class Git(_code._Code):
         Commit tag. If not provided, it will automatically be determined.
     commit_hash : str, optional
         Commit hash. If not provided, it will automatically be determined.
-    _autocapture : bool, default True
+    autocapture : bool, default True
         Whether to enable the automatic capturing behavior of parameters above.
 
     Raises
@@ -58,25 +58,38 @@ class Git(_code._Code):
         )
 
     """
-    def __init__(self, repo_url=None, branch=None, tag=None, commit_hash=None, _autocapture=True):
-        passed_in_refs = [arg for arg in (branch, tag, commit_hash) if arg is not None]
-        if len(passed_in_refs) > 1:
-            raise ValueError("cannot specify more than one of `branch`, `tag`, and `commit_hash`")
-        elif len(passed_in_refs) == 1:
-            ref = passed_in_refs[0]
-        elif _autocapture:
-            ref = _git_utils.get_git_commit_hash()
+    def __init__(self, repo_url=None, branch=None, tag=None, commit_hash=None, autocapture=True, _autocapture=True):
+        # TODO: switch all similar blobs from _autocapture to autocapture so they have the same API
+        if _autocapture is False:
+            autocapture = False
+
+        if autocapture:
+            # need a unique commit ref, so only one of these params is allowed
+            passed_in_refs = [arg for arg in (branch, tag, commit_hash) if arg is not None]
+            if len(passed_in_refs) > 1:
+                raise ValueError("cannot specify more than one of `branch`, `tag`, and `commit_hash`")
+            elif len(passed_in_refs) == 1:
+                ref = passed_in_refs[0]
+            else:
+                ref = _git_utils.get_git_commit_hash()
         else:
+            # user can pass whatever they like
             ref = None
 
         super(Git, self).__init__()
 
-        if ref is not None:
+        if autocapture and ref:
             self._msg.git.repo = repo_url or _git_utils.get_git_remote_url()
             self._msg.git.branch = branch or _git_utils.get_git_branch_name(ref)
             self._msg.git.tag = tag or _git_utils.get_git_commit_tag(ref)
             self._msg.git.hash = _git_utils.get_git_commit_hash(ref)  # use full commit hash
             self._msg.git.is_dirty = _git_utils.get_git_commit_dirtiness(ref)
+        else:
+            self._msg.git.repo = repo_url or ""
+            self._msg.git.branch = branch or ""
+            self._msg.git.tag = tag or ""
+            self._msg.git.hash = commit_hash or ""
+            # self._msg.git.is_dirty  # TODO: expose as param
 
     def __repr__(self):
         lines = ["Git Version"]
