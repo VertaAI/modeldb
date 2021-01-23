@@ -39,7 +39,7 @@ def get_git_test_autocapture_cases():
         [None, True, False],  # is_dirty
     ]
     cases = set(itertools.product(*valid_values))
-    cases = [  # only keep cases that satisfy (2a)
+    cases = [  # only keep cases if they satisfy (2a)
         case for case in cases
         if sum(val is not None for val in case[1:4]) <= 1
     ]
