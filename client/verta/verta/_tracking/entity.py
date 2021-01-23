@@ -246,8 +246,8 @@ class _ModelDBEntity(object):
             except OSError:
                 # don't halt execution
                 print(
-                    "unable to locate git repository; you may be in an unsupported environment"
-                    " consider using `autocapture=False` to manually enter values"
+                    "unable to locate git repository; you may be in an unsupported environment;\n"
+                    "    consider using `autocapture=False` to manually enter values"
                 )
                 return
                 # six.raise_from(OSError("failed to locate git repository; please check your working directory"),
