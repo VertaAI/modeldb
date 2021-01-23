@@ -20,7 +20,7 @@ else:
 
 def get_git_test_autocapture_cases():
     """
-    Arguments to `Git()` with autocapture (default) must satisfy these conditions:
+    Arguments to `Git()` with autocapture on (default) must satisfy these conditions:
 
         1) `repo_url` can be None or str
         2) `branch`, `tag`, and `commit_hash` can each be None or str
@@ -39,7 +39,7 @@ def get_git_test_autocapture_cases():
         [None, True, False],  # is_dirty
     ]
     cases = set(itertools.product(*valid_values))
-    cases = [  # remove cases that do not satisfy (2a)
+    cases = [  # only keep cases that satisfy (2a)
         case for case in cases
         if sum(val is not None for val in case[1:4]) <= 1
     ]
