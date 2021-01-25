@@ -2,6 +2,8 @@ import pytest
 import hypothesis
 import hypothesis.strategies as st
 
+import itertools
+
 from google.protobuf import json_format
 
 import verta.code
@@ -15,6 +17,34 @@ except OSError:
     IN_GIT_REPO = False
 else:
     IN_GIT_REPO = True
+
+def get_git_test_autocapture_cases():
+    """
+    Arguments to `Git()` with autocapture on (default) must satisfy these conditions:
+
+        1) `repo_url` can be None or str
+        2) `branch`, `tag`, and `commit_hash` can each be None or str
+            a) but only one of the three can be non-None
+        3) `is_dirty` can be None, True, or False
+
+    """
+    if not IN_GIT_REPO:
+        return []
+
+    valid_values = [
+        [None, _git_utils.get_git_remote_url(), "foo"],  # repo_url
+        [None, _git_utils.get_git_branch_name("HEAD")],  # branch
+        [None, _git_utils.get_git_commit_tag("HEAD") or None],  # tag (None if HEAD is not at a tag)
+        [None, _git_utils.get_git_commit_hash("HEAD")],  # commit_hash
+        [None, True, False],  # is_dirty
+    ]
+    cases = set(itertools.product(*valid_values))
+    cases = [  # only keep cases if they satisfy (2a)
+        case for case in cases
+        if sum(val is not None for val in case[1:4]) <= 1
+    ]
+
+    return cases
 
 
 class TestGit:
@@ -40,22 +70,13 @@ class TestGit:
 
     @pytest.mark.skipif(not IN_GIT_REPO, reason="not in git repo")
     @pytest.mark.parametrize(
-        ("repo_url", "branch", "tag", "commit_hash"),
-        [
-            (None, None, None, None),
-            (None, _git_utils.get_git_branch_name("HEAD"), None, None),
-            (None, None, _git_utils.get_git_commit_tag("HEAD") or None, None),  # None if HEAD is not at a tag
-            (None, None, None, _git_utils.get_git_commit_hash("HEAD")),
-            ("git@github.com:VertaAI/modeldb.git", None, None, None),
-            ("git@github.com:VertaAI/modeldb.git", _git_utils.get_git_branch_name("HEAD"), None, None),
-            ("git@github.com:VertaAI/modeldb.git", None, _git_utils.get_git_commit_tag("HEAD") or None, None),
-            ("git@github.com:VertaAI/modeldb.git", None, None, _git_utils.get_git_commit_hash("HEAD")),
-        ],
+        ("repo_url", "branch", "tag", "commit_hash", "is_dirty"),
+        get_git_test_autocapture_cases(),
     )
-    def test_autocapture(self, repo_url, branch, tag, commit_hash):
+    def test_autocapture(self, repo_url, branch, tag, commit_hash, is_dirty):
         code_ver = verta.code.Git(
             repo_url=repo_url,
-            branch=branch, tag=tag, commit_hash=commit_hash,
+            branch=branch, tag=tag, commit_hash=commit_hash, is_dirty=is_dirty,
         )
 
         refs = [arg for arg in (branch, tag, commit_hash) if arg]
@@ -64,19 +85,20 @@ class TestGit:
         assert code_ver.branch == (branch or _git_utils.get_git_branch_name(ref))
         assert code_ver.tag == (tag or _git_utils.get_git_commit_tag(ref) or None)  # None if HEAD is not at a tag
         assert code_ver.commit_hash == (commit_hash or _git_utils.get_git_commit_hash(ref))
-        assert code_ver.is_dirty == _git_utils.get_git_commit_dirtiness(ref)
+        assert code_ver.is_dirty == (is_dirty if is_dirty is not None else _git_utils.get_git_commit_dirtiness(ref))
 
     @hypothesis.given(
         repo_url=st.one_of(st.none(), st.emails()),
         branch=st.one_of(st.none(), st.text()),
         tag=st.one_of(st.none(), st.text()),
         commit_hash=st.one_of(st.none(), st.text()),
+        is_dirty=st.one_of(st.none(), st.booleans()),
     )
-    def test_user_no_autocapture(self, repo_url, branch, tag, commit_hash):
+    def test_user_no_autocapture(self, repo_url, branch, tag, commit_hash, is_dirty):
         """Like test_no_autocapture, but with the public `autocapture` param."""
         code_ver = verta.code.Git(
             repo_url=repo_url,
-            branch=branch, tag=tag, commit_hash=commit_hash,
+            branch=branch, tag=tag, commit_hash=commit_hash, is_dirty=is_dirty,
             autocapture=False,
         )
 
@@ -84,6 +106,7 @@ class TestGit:
         assert code_ver.branch == (branch or None)
         assert code_ver.tag == (tag or None)
         assert code_ver.commit_hash == (commit_hash or None)
+        assert code_ver.is_dirty == (is_dirty or False)
 
 
 class TestNotebook:
