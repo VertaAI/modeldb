@@ -74,7 +74,7 @@ class TestLogGit:
 
     @pytest.mark.parametrize(
         ("exec_path", "repo_url", "commit_hash", "is_dirty"),
-        [  # NOTE: these cases are not comprehensive, since this test makes backend calls
+        [
             (None, None, None, None),
             ("foo", None, None, None),
             (None, "bar", None, None),
