@@ -960,6 +960,9 @@ class Client(object):
         public_within_org : bool, default False
             If creating a Project in an organization's workspace, whether to make this Project
             accessible to all members of that organization.
+        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+            Visibility to set when creating this project. If not provided, an
+            appropriate default will be used.
 
         Returns
         -------
@@ -978,8 +981,11 @@ class Client(object):
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
-        self._ctx.proj = Project._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs,
-                        public_within_org=public_within_org, visibility=visibility)
+        self._ctx.proj = Project._create(
+            self._conn, self._conf, self._ctx,
+            name=name, desc=desc, tags=tags, attrs=attrs,
+            public_within_org=public_within_org, visibility=visibility,
+        )
         return self._ctx.proj
 
     def create_experiment(self, name=None, desc=None, tags=None, attrs=None):
@@ -1059,7 +1065,7 @@ class Client(object):
         return self._ctx.expt_run
 
 
-    def create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None):
+    def create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None):
         """
         Creates a new Registered Model.
 
@@ -1079,6 +1085,9 @@ class Client(object):
         public_within_org : bool, default False
             If creating a registered_model in an organization's workspace, whether to make this registered_model
             accessible to all members of that organization.
+        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+            Visibility to set when creating this registered model. If not
+            provided, an appropriate default will be used.
 
         Returns
         -------
@@ -1090,6 +1099,8 @@ class Client(object):
             If a registered_model with `name` already exists.
 
         """
+        self._validate_visibility(visibility)
+
         name = self._set_from_config_if_none(name, "registered_model")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
@@ -1099,7 +1110,11 @@ class Client(object):
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
 
-        return RegisteredModel._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org)
+        return RegisteredModel._create(
+            self._conn, self._conf, ctx,
+            name=name, desc=desc, tags=labels,
+            public_within_org=public_within_org, visibility=visibility,
+        )
 
 
     def create_endpoint(self, path, description=None, workspace=None, public_within_org=False):
@@ -1278,7 +1293,7 @@ class Client(object):
         """
         return self.get_or_create_dataset(*args, **kwargs)
 
-    def create_dataset(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None):
+    def create_dataset(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, visibility=None):
         """
         Creates a dataset, initialized with specified metadata parameters.
 
@@ -1301,6 +1316,9 @@ class Client(object):
         public_within_org : bool, default False
             If creating a dataset in an organization's workspace, whether to make this dataset
             accessible to all members of that organization.
+        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+            Visibility to set when creating this dataset. If not provided, an
+            appropriate default will be used.
 
         Returns
         -------
@@ -1312,13 +1330,18 @@ class Client(object):
             If a dataset with `name` already exists.
 
         """
+        self._validate_visibility(visibility)
+
         name = self._set_from_config_if_none(name, "dataset")
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
-        return Dataset._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=tags, attrs=attrs,
-                               time_created=time_created, public_within_org=public_within_org)
+        return Dataset._create(
+            self._conn, self._conf, ctx,
+            name=name, desc=desc, tags=tags, attrs=attrs, time_created=time_created,
+            public_within_org=public_within_org, visibility=visibility,
+        )
 
     def get_dataset(self, name=None, workspace=None, id=None):
         """
