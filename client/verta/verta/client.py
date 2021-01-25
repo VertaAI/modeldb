@@ -354,7 +354,7 @@ class Client(object):
             raise ValueError("Project not found")
         return self._ctx.proj
 
-    def set_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, id=None):
+    def set_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, visibility=None, id=None):
         """
         Attaches a Project to this Client.
 
@@ -380,6 +380,9 @@ class Client(object):
         public_within_org : bool, default False
             If creating a Project in an organization's workspace, whether to make this Project
             accessible to all members of that organization.
+        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+            Visibility to set when creating this project. If not provided, an
+            appropriate default will be used.
         id : str, optional
             ID of the Project. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
@@ -396,6 +399,7 @@ class Client(object):
         """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
+        self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "project")
         workspace = self._set_from_config_if_none(workspace, "workspace")
@@ -404,8 +408,8 @@ class Client(object):
         self._ctx.workspace_name = workspace
 
         resource_name = "Project"
-        param_names = "`desc`, `tags`, `attrs`, or `public_within_org`"
-        params = (desc, tags, attrs, public_within_org)
+        param_names = "`desc`, `tags`, `attrs`, `public_within_org`, or `visibility`"
+        params = (desc, tags, attrs, public_within_org, visibility)
         if id is not None:
             self._ctx.proj = Project._get_by_id(self._conn, self._conf, id)
             check_unnecessary_params_warning(resource_name, "id {}".format(id),
@@ -414,7 +418,7 @@ class Client(object):
         else:
             self._ctx.proj = Project._get_or_create_by_name(self._conn, name,
                                                         lambda name: Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                        lambda name: Project._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org),
+                                                        lambda name: Project._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org, visibility=visibility),
                                                         lambda: check_unnecessary_params_warning(
                                                             resource_name, "name {}".format(name),
                                                             param_names, params))
@@ -614,7 +618,7 @@ class Client(object):
 
         return self._ctx.expt_run
 
-    def get_or_create_repository(self, name=None, workspace=None, id=None, public_within_org=None):
+    def get_or_create_repository(self, name=None, workspace=None, id=None, public_within_org=None, visibility=None):
         """
         Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
 
@@ -630,6 +634,9 @@ class Client(object):
         public_within_org : bool, default False
             If creating a Repository in an organization's workspace, whether to make this Repository
             accessible to all members of that organization.
+        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+            Visibility to set when creating this repository. If not provided,
+            an appropriate default will be used.
 
         Returns
         -------
@@ -637,6 +644,8 @@ class Client(object):
             Specified Repository.
 
         """
+        self._validate_visibility(visibility)
+
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
@@ -657,7 +666,7 @@ class Client(object):
             if not repo:  # not found
                 try:
                     repo = _repository.Repository._create(self._conn, name=name, workspace=workspace,
-                                                          public_within_org=public_within_org)
+                                                          public_within_org=public_within_org, visibility=visibility)
                 except requests.HTTPError as e:
                     if e.response.status_code == 409:  # already exists
                         raise RuntimeError("unable to get Repository from ModelDB;"
@@ -702,7 +711,7 @@ class Client(object):
         return self.get_or_create_repository(*args, **kwargs)
     # set aliases for get-or-create functions for API compatibility
 
-    def get_or_create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, id=None):
+    def get_or_create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None, id=None):
         """
         Attaches a registered_model to this Client.
 
@@ -724,6 +733,9 @@ class Client(object):
         public_within_org : bool, default False
             If creating a registered_model in an organization's workspace, whether to make this registered_model
             accessible to all members of that organization.
+        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+            Visibility to set when creating this registered model. If not
+            provided, an appropriate default will be used.
         id : str, optional
             ID of the registered_model. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
@@ -740,6 +752,7 @@ class Client(object):
         """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
+        self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "registered_model")
         workspace = self._set_from_config_if_none(workspace, "workspace")
@@ -751,8 +764,8 @@ class Client(object):
         ctx.workspace_name = workspace
 
         resource_name = "Registered Model"
-        param_names = "`desc`, `labels`, or `public_within_org`"
-        params = (desc, labels, public_within_org)
+        param_names = "`desc`, `labels`, `public_within_org`, or `visibility`"
+        params = (desc, labels, public_within_org, visibility)
         if id is not None:
             registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
             check_unnecessary_params_warning(resource_name, "id {}".format(id),
@@ -760,7 +773,7 @@ class Client(object):
         else:
             registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
                                                                   lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, ctx.workspace_name),
-                                                                  lambda name: RegisteredModel._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org),
+                                                                  lambda name: RegisteredModel._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org, visibility=visibility),
                                                                   lambda: check_unnecessary_params_warning(
                                                                       resource_name,
                                                                       "name {}".format(name),
@@ -1215,7 +1228,7 @@ class Client(object):
             downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 
-    def get_or_create_dataset(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, id=None):
+    def get_or_create_dataset(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, visibility=None, id=None):
         """
         Gets or creates a dataset.
 
@@ -1242,6 +1255,9 @@ class Client(object):
         public_within_org : bool, default False
             If creating a dataset in an organization's workspace, whether to make this dataset
             accessible to all members of that organization.
+        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+            Visibility to set when creating this dataset. If not provided, an
+            appropriate default will be used.
         id : str, optional
             ID of the dataset. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
@@ -1258,6 +1274,7 @@ class Client(object):
         """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
+        self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "dataset")
         workspace = self._set_from_config_if_none(workspace, "workspace")
@@ -1266,8 +1283,8 @@ class Client(object):
         ctx.workspace_name = workspace
 
         resource_name = "Dataset"
-        param_names = "`desc`, `tags`, `attrs`, `time_created`, or `public_within_org`"
-        params = (desc, tags, attrs, time_created, public_within_org)
+        param_names = "`desc`, `tags`, `attrs`, `time_created`, `public_within_org`, or `visibility`"
+        params = (desc, tags, attrs, time_created, public_within_org, visibility)
         if id is not None:
             dataset = Dataset._get_by_id(self._conn, self._conf, id)
             check_unnecessary_params_warning(resource_name, "id {}".format(id),
@@ -1275,7 +1292,7 @@ class Client(object):
         else:
             dataset = Dataset._get_or_create_by_name(self._conn, name,
                                                         lambda name: Dataset._get_by_name(self._conn, self._conf, name, ctx.workspace_name),
-                                                        lambda name: Dataset._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org),
+                                                        lambda name: Dataset._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org, visibility=visibility),
                                                         lambda: check_unnecessary_params_warning(
                                                          resource_name,
                                                          "name {}".format(name),
