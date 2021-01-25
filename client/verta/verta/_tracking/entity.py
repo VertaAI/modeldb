@@ -164,7 +164,7 @@ class _ModelDBEntity(object):
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):  # recommended params
         raise NotImplementedError
 
-    def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False, autocapture=True):
+    def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False, is_dirty=None, autocapture=True):
         """
         Logs the code version.
 
@@ -185,6 +185,9 @@ class _ModelDBEntity(object):
             make its best effort to find it.
         overwrite : bool, default False
             Whether to allow overwriting a code version.
+        is_dirty : bool, optional
+            Whether git status is dirty relative to `commit_hash`. If not provided, the Client will
+            make its best effort to find it.
         autocapture : bool, default True
             Whether to enable the automatic capturing behavior of parameters above in git mode.
 
@@ -307,7 +310,10 @@ class _ModelDBEntity(object):
                 msg.code_version.git_snapshot.filepaths.append(exec_path)
 
             from ..code import _git  # avoid Python 2 top-level circular import
-            code_ver = _git.Git(repo_url=repo_url, commit_hash=commit_hash, autocapture=autocapture)
+            code_ver = _git.Git(
+                repo_url=repo_url, commit_hash=commit_hash, is_dirty=is_dirty,
+                autocapture=autocapture,
+            )
             msg.code_version.git_snapshot.repo = code_ver.repo_url or ""
             msg.code_version.git_snapshot.hash = code_ver.commit_hash or ""
             if code_ver.is_dirty:
