@@ -222,19 +222,15 @@ class RegisteredModel(_ModelDBRegistryEntity):
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None, visibility=None):
         Message = _RegistryService.RegisteredModel
         msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created)
-        if public_within_org:
-            if ctx.workspace_name is None:
-                raise ValueError("cannot set `public_within_org` for personal workspace")
-            elif not _utils.is_org(ctx.workspace_name, conn):
-                raise ValueError(
-                    "cannot set `public_within_org`"
-                    " because workspace \"{}\" is not an organization".format(ctx.workspace_name)
-                )
-            else:
-                msg.visibility = _CommonCommonService.VisibilityEnum.ORG_SCOPED_PUBLIC
+        if (public_within_org
+                and ctx.workspace_name is not None  # not user's personal workspace
+                and _utils.is_org(ctx.workspace_name, conn)):  # not anyone's personal workspace
+            msg.visibility = _CommonCommonService.VisibilityEnum.ORG_SCOPED_PUBLIC
+        msg.custom_permission.CopyFrom(visibility._custom_permission)
+        msg.resource_visibility = visibility._visibility
 
         response = conn.make_proto_request("POST",
                                            "/api/v1/registry/workspaces/{}/registered_models".format(ctx.workspace_name),
