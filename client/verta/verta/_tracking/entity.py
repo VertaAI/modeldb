@@ -316,7 +316,9 @@ class _ModelDBEntity(object):
             )
             msg.code_version.git_snapshot.repo = code_ver.repo_url or ""
             msg.code_version.git_snapshot.hash = code_ver.commit_hash or ""
-            if code_ver.is_dirty:
+            if not autocapture and is_dirty is None:
+                msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.UNKNOWN
+            elif code_ver.is_dirty:
                 msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.TRUE
             else:
                 msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.FALSE
@@ -427,8 +429,8 @@ class _ModelDBEntity(object):
                 git_snapshot['repo_url'] = git_snapshot_msg.repo
             if git_snapshot_msg.hash:
                 git_snapshot['commit_hash'] = git_snapshot_msg.hash
-                if git_snapshot_msg.is_dirty != _CommonCommonService.TernaryEnum.UNKNOWN:
-                    git_snapshot['is_dirty'] = git_snapshot_msg.is_dirty == _CommonCommonService.TernaryEnum.TRUE
+            if git_snapshot_msg.is_dirty != _CommonCommonService.TernaryEnum.UNKNOWN:
+                git_snapshot['is_dirty'] = git_snapshot_msg.is_dirty == _CommonCommonService.TernaryEnum.TRUE
             return git_snapshot
         elif which_code == 'code_archive':
             # download artifact from artifact store
