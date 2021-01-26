@@ -164,7 +164,7 @@ class _ModelDBEntity(object):
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):  # recommended params
         raise NotImplementedError
 
-    def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False, autocapture=True):
+    def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False, is_dirty=None, autocapture=True):
         """
         Logs the code version.
 
@@ -185,6 +185,9 @@ class _ModelDBEntity(object):
             make its best effort to find it.
         overwrite : bool, default False
             Whether to allow overwriting a code version.
+        is_dirty : bool, optional
+            Whether git status is dirty relative to `commit_hash`. If not provided, the Client will
+            make its best effort to find it.
         autocapture : bool, default True
             Whether to enable the automatic capturing behavior of parameters above in git mode.
 
@@ -307,10 +310,15 @@ class _ModelDBEntity(object):
                 msg.code_version.git_snapshot.filepaths.append(exec_path)
 
             from ..code import _git  # avoid Python 2 top-level circular import
-            code_ver = _git.Git(repo_url=repo_url, commit_hash=commit_hash, autocapture=autocapture)
+            code_ver = _git.Git(
+                repo_url=repo_url, commit_hash=commit_hash, is_dirty=is_dirty,
+                autocapture=autocapture,
+            )
             msg.code_version.git_snapshot.repo = code_ver.repo_url or ""
             msg.code_version.git_snapshot.hash = code_ver.commit_hash or ""
-            if code_ver.is_dirty:
+            if not autocapture and is_dirty is None:
+                msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.UNKNOWN
+            elif code_ver.is_dirty:
                 msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.TRUE
             else:
                 msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.FALSE
@@ -421,8 +429,8 @@ class _ModelDBEntity(object):
                 git_snapshot['repo_url'] = git_snapshot_msg.repo
             if git_snapshot_msg.hash:
                 git_snapshot['commit_hash'] = git_snapshot_msg.hash
-                if git_snapshot_msg.is_dirty != _CommonCommonService.TernaryEnum.UNKNOWN:
-                    git_snapshot['is_dirty'] = git_snapshot_msg.is_dirty == _CommonCommonService.TernaryEnum.TRUE
+            if git_snapshot_msg.is_dirty != _CommonCommonService.TernaryEnum.UNKNOWN:
+                git_snapshot['is_dirty'] = git_snapshot_msg.is_dirty == _CommonCommonService.TernaryEnum.TRUE
             return git_snapshot
         elif which_code == 'code_archive':
             # download artifact from artifact store

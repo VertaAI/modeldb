@@ -38,6 +38,7 @@ class TestLogGit:
 
             assert code_version['repo_url'] == _git_utils.get_git_remote_url()
             assert code_version['commit_hash'] == _git_utils.get_git_commit_hash("HEAD")
+            assert code_version['is_dirty'] == _git_utils.get_git_commit_dirtiness("HEAD")
 
     def test_log_git_failure(self, client):
         """git mode fails outside git repo"""
@@ -69,21 +70,25 @@ class TestLogGit:
 
             assert code_version['repo_url'] == _git_utils.get_git_remote_url()
             assert code_version['commit_hash'] == _git_utils.get_git_commit_hash("HEAD")
+            assert code_version['is_dirty'] == _git_utils.get_git_commit_dirtiness("HEAD")
 
     @pytest.mark.parametrize(
-        ("exec_path", "repo_url", "commit_hash"),
+        ("exec_path", "repo_url", "commit_hash", "is_dirty"),
         [
-            (None, None, None),
-            ("foo", None, None),
-            (None, "bar", None),
-            (None, None, "baz"),
+            (None, None, None, None),
+            ("foo", None, None, None),
+            (None, "bar", None, None),
+            (None, None, "baz", None),
+            (None, None, None, True),
+            (None, None, None, False),
         ],
     )
-    def test_no_autocapture(self, experiment_run, exec_path, repo_url, commit_hash):
+    def test_no_autocapture(self, experiment_run, exec_path, repo_url, commit_hash, is_dirty):
         experiment_run._conf.use_git = True
 
         experiment_run.log_code(
-            exec_path=exec_path, repo_url=repo_url, commit_hash=commit_hash,
+            exec_path=exec_path,
+            repo_url=repo_url, commit_hash=commit_hash, is_dirty=is_dirty,
             autocapture=False,
         )
         code_version = experiment_run.get_code()
@@ -96,6 +101,7 @@ class TestLogGit:
             assert not code_version.get('filepaths')
         assert code_version.get('repo_url') == repo_url
         assert code_version.get('commit_hash') == commit_hash
+        assert code_version.get('is_dirty') == is_dirty
 
 
 class TestLogSource:
