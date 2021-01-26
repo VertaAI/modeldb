@@ -3,6 +3,9 @@ import abc
 from ..external import six
 
 from .._protos.public.uac import Collaborator_pb2
+from .._protos.public.common import CommonService_pb2
+
+from .._internal_utils import _utils
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -34,3 +37,17 @@ class _Visibility(object):
     @abc.abstractproperty
     def _visibility(self):
         raise NotImplementedError
+
+    @property
+    def _collaborator_type_str(self):
+        """Mainly for endpoint."""
+        return CommonService_pb2.CollaboratorTypeEnum.CollaboratorType.Name(
+            self._custom_permission.collaborator_type
+        )
+
+    @property
+    def _visibility_str(self):
+        """Mainly for endpoint."""
+        return Collaborator_pb2.ResourceVisibility.Name(
+            self._visibility
+        )
