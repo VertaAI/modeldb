@@ -459,7 +459,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     RepositoryEntity repositoryEntity;
     Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
     if (create) {
-      if (repoId.getNamedId().getName().isEmpty()) {
+      String name = repository.getName();
+      if (name.isEmpty()) {
         throw new ModelDBException("Repository name should not be empty", Code.INVALID_ARGUMENT);
       }
 
@@ -467,7 +468,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           new StringBuilder(GET_DELETED_REPOSITORY_IDS_BY_NAME_HQL);
       setRepositoryTypeInQueryBuilder(repositoryType, deletedQueryStringBuilder);
       Query deletedEntitiesQuery = session.createQuery(deletedQueryStringBuilder.toString());
-      deletedEntitiesQuery.setParameter("name", repoId.getNamedId().getName());
+      deletedEntitiesQuery.setParameter("name", name);
       List<Long> deletedEntityIds = deletedEntitiesQuery.list();
       if (!deletedEntityIds.isEmpty()) {
         roleService.deleteEntityResources(
