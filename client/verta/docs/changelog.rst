@@ -37,6 +37,26 @@ Release Notes
      <>`__
 
 
+v0.16.5 (2021-01-26)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add parameter to disable autocapture in Git() and run.log_code()
+  <https://github.com/VertaAI/modeldb/pull/1897>`__
+- `add is_dirty parameter to Git()
+  <https://github.com/VertaAI/modeldb/pull/1900>`__
+- `add is_dirty parameter to run.log_code()
+  <https://github.com/VertaAI/modeldb/pull/1901>`__
+- `add public attributes to Git() objects
+  <https://github.com/VertaAI/modeldb/pull/1899>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `constrain pyyaml to <5.4 to avoid build dependency on C
+  <https://github.com/VertaAI/modeldb/pull/1895>`__
+
+
 v0.16.4 (2021-01-14)
 --------------------
 
