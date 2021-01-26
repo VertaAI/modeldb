@@ -21,6 +21,9 @@ from verta.visibility import (
 
 
 def assert_visibility(entity, visibility, entity_name):
+    if not entity._msg.HasField('custom_permission'):
+        pytest.skip("backend does not support new visibility")
+
     assert entity._msg.custom_permission == visibility._custom_permission
     if entity_name == "registered_model":
         assert entity._msg.resource_visibility == visibility._visibility
@@ -28,18 +31,25 @@ def assert_visibility(entity, visibility, entity_name):
         assert entity._msg.visibility == visibility._visibility
 
 
+def assert_endpoint_visibility(endpoint, visibility):
+    endpoint_json = endpoint._get_json_by_id(endpoint._conn, endpoint.workspace, endpoint.id)
+    if 'custom_permission' not in endpoint_json['creator_request']:
+        pytest.skip("backend does not support new visibility")
+
+    assert endpoint_json['creator_request']['custom_permission']['collaborator_type'] == visibility._collaborator_type_str
+    assert endpoint_json['creator_request']['visibility'] == visibility._visibility_str
+
+
 class TestCreate:
     @pytest.mark.parametrize(
         ("entity_name", "visibility"),
         [
             ("dataset", OrgCustom(write=True)),
-            # ("endpoint", OrgCustom(write=True)),  # not implemented yet
             ("project", OrgCustom(write=True, deploy=True)),
             ("registered_model", OrgCustom(write=True, deploy=True)),
-            # ("repository", OrgCustom(write=True)),  # no create_repository()
         ]
     )
-    def test_create(self, client, organization, entity_name, visibility):
+    def test_mdb_entity(self, client, organization, entity_name, visibility):
         create_entity = getattr(client, "create_{}".format(entity_name))
 
         entity = create_entity(
@@ -47,13 +57,26 @@ class TestCreate:
             workspace=organization.name, visibility=visibility,
         )
         try:
-            if not entity._msg.HasField('custom_permission'):
-                pytest.skip("backend does not support new visibility")
-
             assert_visibility(entity, visibility, entity_name)
         finally:
             entity.delete()
             client._ctx.proj = None  # otherwise client teardown tries to delete
+
+    def test_endpoint(self, client, organization):
+        visibility = OrgCustom(write=True)
+
+        endpoint = client.create_endpoint(
+            path=_utils.generate_default_name(),
+            workspace=organization.name, visibility=visibility,
+        )
+        try:
+            assert_endpoint_visibility(endpoint, visibility)
+        finally:
+            endpoint.delete()
+
+    @pytest.mark.skip(reason="client.create_repository() does not yet exist")
+    def test_repository(self, client, organization):
+        raise NotImplementedError
 
 
 class TestSet:
@@ -61,13 +84,11 @@ class TestSet:
         ("entity_name", "visibility"),
         [
             ("dataset", OrgCustom(write=True)),
-            # ("endpoint", OrgCustom(write=True)),  # not implemented yet
             ("project", OrgCustom(write=True, deploy=True)),
             ("registered_model", OrgCustom(write=True, deploy=True)),
-            ("repository", OrgCustom(write=True)),
         ]
     )
-    def test_set(self, client, organization, entity_name, visibility):
+    def test_mdb_entity(self, client, organization, entity_name, visibility):
         set_entity = getattr(client, "set_{}".format(entity_name))
 
         entity = set_entity(
@@ -75,9 +96,6 @@ class TestSet:
             workspace=organization.name, visibility=visibility,
         )
         try:
-            if not entity._msg.HasField('custom_permission'):
-                pytest.skip("backend does not support new visibility")
-
             assert_visibility(entity, visibility, entity_name)
 
             # second set ignores visibility
@@ -87,6 +105,29 @@ class TestSet:
         finally:
             entity.delete()
             client._ctx.proj = None  # otherwise client teardown tries to delete
+
+    def test_endpoint(self, client, organization):
+        visibility = OrgCustom(write=True)
+
+        endpoint = client.set_endpoint(
+            path=_utils.generate_default_name(),
+            workspace=organization.name, visibility=visibility,
+        )
+        try:
+            assert_endpoint_visibility(endpoint, visibility)
+
+            # second set ignores visibility
+            with pytest.warns(UserWarning, match="cannot set"):
+                endpoint = client.set_endpoint(
+                    path=_utils.generate_default_name(),
+                    workspace=organization.name, visibility=Private(),
+                )
+            assert_endpoint_visibility(endpoint, visibility)
+        finally:
+            endpoint.delete()
+
+    def test_repository(self, client, organization):
+        raise NotImplementedError
 
 
 class TestPublicWithinOrg:
@@ -106,9 +147,20 @@ class TestPublicWithinOrg:
         finally:
             entity.delete()
 
-    @pytest.mark.skip(reason="not implemented yet")
     def test_endpoint(self, client, organization):
-        raise NotImplementedError
+        visibility = OrgCustom(write=True)
+        endpoint = client.set_endpoint(
+            path=_utils.generate_default_name(),
+            workspace=organization.name, visibility=visibility,
+        )
+        try:
+            endpoint_json = endpoint._get_json_by_id(endpoint._conn, endpoint.workspace, endpoint.id)
+            if visibility._to_public_within_org():
+                assert endpoint_json['visibility'] == "ORG_SCOPED_PUBLIC"
+            else:
+                assert endpoint_json['visibility'] == "PRIVATE"
+        finally:
+            entity.delete()
 
     def test_project(self, client, organization):
         visibility = OrgCustom(write=True)
