@@ -88,8 +88,8 @@ class Endpoint(object):
         return data['date_updated']
 
     @classmethod
-    def _create(cls, conn, conf, workspace, path, description=None, public_within_org=None):
-        endpoint_json = cls._create_json(conn, workspace, path, description, public_within_org)
+    def _create(cls, conn, conf, workspace, path, description=None, public_within_org=None, visibility=None):
+        endpoint_json = cls._create_json(conn, workspace, path, description, public_within_org, visibility)
         if endpoint_json:
             endpoint = cls(conn, conf, workspace, endpoint_json['id'])
             endpoint._create_stage()  # an endpoint needs a stage to function, so might as well create it here
@@ -98,7 +98,7 @@ class Endpoint(object):
             return None
 
     @classmethod
-    def _create_json(cls, conn, workspace, path, description=None, public_within_org=None):
+    def _create_json(cls, conn, workspace, path, description=None, public_within_org=None, visibility=None):
         data = {}
         if description:
             data["description"] = description
