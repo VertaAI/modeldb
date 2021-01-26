@@ -108,20 +108,15 @@ class Dataset(entity._ModelDBEntity):
             return None
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, time_created=None, public_within_org=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, time_created=None, public_within_org=None, visibility=None):
         Message = _DatasetService.CreateDataset
         msg = Message(name=name, description=desc, tags=tags, attributes=attrs, workspace_name=ctx.workspace_name, time_created=time_created)
-
-        if public_within_org:
-            if ctx.workspace_name is None:
-                raise ValueError("cannot set `public_within_org` for personal workspace")
-            elif not _utils.is_org(ctx.workspace_name, conn):
-                raise ValueError(
-                    "cannot set `public_within_org`"
-                    " because workspace \"{}\" is not an organization".format(ctx.workspace_name)
-                )
-            else:
-                msg.dataset_visibility = _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
+        if (public_within_org
+                and ctx.workspace_name is not None  # not user's personal workspace
+                and _utils.is_org(ctx.workspace_name, conn)):  # not anyone's personal workspace
+            msg.dataset_visibility = _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
+        msg.custom_permission.CopyFrom(visibility._custom_permission)
+        msg.visibility = visibility._visibility
 
         endpoint = "/api/v1/modeldb/dataset/createDataset"
         response = conn.make_proto_request("POST", endpoint, body=msg)

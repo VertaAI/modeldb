@@ -55,19 +55,15 @@ class Repository(object):
         raise NotImplementedError
 
     @classmethod
-    def _create(cls, conn, name, workspace, public_within_org):
+    def _create(cls, conn, name, workspace, public_within_org, visibility):
         msg = _VersioningService.Repository()
         msg.name = name
-        if public_within_org:
-            if workspace is None:
-                raise ValueError("cannot set `public_within_org` for personal workspace")
-            elif not _utils.is_org(workspace, conn):
-                raise ValueError(
-                    "cannot set `public_within_org`"
-                    " because workspace \"{}\" is not an organization".format(workspace)
-                )
-            else:
-                msg.repository_visibility = _VersioningService.RepositoryVisibilityEnum.ORG_SCOPED_PUBLIC
+        if (public_within_org
+                and workspace is not None  # not user's personal workspace
+                and _utils.is_org(workspace, conn)):  # not anyone's personal workspace
+            msg.repository_visibility = _VersioningService.RepositoryVisibilityEnum.ORG_SCOPED_PUBLIC
+        msg.custom_permission.CopyFrom(visibility._custom_permission)
+        msg.visibility = visibility._visibility
 
         data = _utils.proto_to_json(msg)
         endpoint = "{}://{}/api/v1/modeldb/versioning/workspaces/{}/repositories".format(
@@ -178,4 +174,3 @@ class Repository(object):
         request_url = "{}://{}/api/v1/modeldb/versioning/repositories/{}".format(self._conn.scheme, self._conn.socket, self.id)
         response = requests.delete(request_url, headers=self._conn.auth)
         _utils.raise_for_http_error(response)
-

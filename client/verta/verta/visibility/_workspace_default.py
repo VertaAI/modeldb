@@ -4,6 +4,9 @@ from ._visibility import _Visibility
 
 
 class _WorkspaceDefault(_Visibility):
+    def _to_public_within_org(self):
+        return None
+
     @property
     def _visibility(self):
         return Collaborator_pb2.ResourceVisibility.WORKSPACE_DEFAULT
