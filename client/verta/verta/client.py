@@ -845,7 +845,7 @@ class Client(object):
     def registered_model_versions(self):
         return RegisteredModelVersions(self._conn, self._conf)
 
-    def get_or_create_endpoint(self, path=None, description=None, workspace=None, public_within_org=False, visibility=None, id=None):
+    def get_or_create_endpoint(self, path=None, description=None, workspace=None, public_within_org=None, visibility=None, id=None):
         """
         Attaches an endpoint to this Client.
 
@@ -1133,7 +1133,7 @@ class Client(object):
         )
 
 
-    def create_endpoint(self, path, description=None, workspace=None, public_within_org=False, visibility=None):
+    def create_endpoint(self, path, description=None, workspace=None, public_within_org=None, visibility=None):
         """
         Attaches an endpoint to this Client.
 
