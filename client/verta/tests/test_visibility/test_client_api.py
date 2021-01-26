@@ -6,6 +6,8 @@ Basic tests to make sure the client passes `visibility` without errors.
 
 import pytest
 
+import requests
+
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from verta._protos.public.modeldb import ProjectService_pb2 as _ProjectService
@@ -45,6 +47,9 @@ class TestCreate:
             workspace=organization.name, visibility=visibility,
         )
         try:
+            if not entity._msg.HasField('custom_permission'):
+                pytest.skip("backend does not support new visibility")
+
             assert_visibility(entity, visibility, entity_name)
         finally:
             entity.delete()
@@ -70,6 +75,9 @@ class TestSet:
             workspace=organization.name, visibility=visibility,
         )
         try:
+            if not entity._msg.HasField('custom_permission'):
+                pytest.skip("backend does not support new visibility")
+
             assert_visibility(entity, visibility, entity_name)
 
             # second set ignores visibility
@@ -79,6 +87,7 @@ class TestSet:
         finally:
             entity.delete()
             client._ctx.proj = None  # otherwise client teardown tries to delete
+
 
 class TestPublicWithinOrg:
     """
