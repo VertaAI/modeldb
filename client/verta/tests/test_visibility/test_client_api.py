@@ -40,7 +40,11 @@ class TestCreate:
             name=_utils.generate_default_name(),
             workspace=organization.name, visibility=visibility,
         )
-        assert_visibility(entity, visibility, entity_name)
+        try:
+            assert_visibility(entity, visibility, entity_name)
+        finally:
+            entity.delete()
+            client._ctx.proj = None  # otherwise client teardown tries to delete
 
 
 class TestSet:
@@ -61,12 +65,16 @@ class TestSet:
             name=_utils.generate_default_name(),
             workspace=organization.name, visibility=visibility,
         )
-        assert_visibility(entity, visibility, entity_name)
+        try:
+            assert_visibility(entity, visibility, entity_name)
 
-        # second set ignores visibility
-        with pytest.warns(UserWarning, match="cannot set"):
-            entity = set_entity(entity.name, workspace=organization.name, visibility=Private())
-        assert_visibility(entity, visibility, entity_name)
+            # second set ignores visibility
+            with pytest.warns(UserWarning, match="cannot set"):
+                entity = set_entity(entity.name, workspace=organization.name, visibility=Private())
+            assert_visibility(entity, visibility, entity_name)
+        finally:
+            entity.delete()
+            client._ctx.proj = None  # otherwise client teardown tries to delete
 
 class TestPublicWithinOrg:
     """
@@ -77,9 +85,11 @@ class TestPublicWithinOrg:
     def test_dataset(self, client, organization):
         visibility = OrgCustom(write=True)
         entity = client.set_dataset(workspace=organization.name, visibility=visibility)
-
-        if visibility._to_public_within_org():
-            assert entity._msg.dataset_visibility == _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
-        else:
-            assert entity._msg.dataset_visibility == _DatasetService.DatasetVisibilityEnum.PRIVATE
+        try:
+            if visibility._to_public_within_org():
+                assert entity._msg.dataset_visibility == _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
+            else:
+                assert entity._msg.dataset_visibility == _DatasetService.DatasetVisibilityEnum.PRIVATE
+        finally:
+            entity.delete()
     # TODO: the other entities
