@@ -76,6 +76,8 @@ public class CollaboratorResourceMigration {
     final int pagesize = CollaboratorResourceMigration.paginationSize;
     LOGGER.debug("Total Projects to migrate {}", count);
 
+    Set<String> knownMissingUsers = new HashSet<>();
+
     while (lowerBound < count) {
       LOGGER.debug("Migrated Projects: {}/{}", lowerBound, count);
 
@@ -129,6 +131,10 @@ public class CollaboratorResourceMigration {
             boolean migrated = false;
             if (project.getOwner() != null && !project.getOwner().isEmpty()) {
               WorkspaceDTO workspaceDTO;
+              if (knownMissingUsers.contains(project.getOwner())) {
+                LOGGER.warn("User {} is known to be missing (skipping)", project.getOwner());
+                continue;
+              }
               try {
                 workspaceDTO =
                     roleService.getWorkspaceDTOByWorkspaceId(
@@ -137,6 +143,7 @@ public class CollaboratorResourceMigration {
                         project.getWorkspace_type());
               } catch (StatusRuntimeException ex) {
                 if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
+                  knownMissingUsers.add(project.getOwner());
                   LOGGER.warn("Failed to get workspace (skipping) : " + ex.toString());
                   continue;
                 }
