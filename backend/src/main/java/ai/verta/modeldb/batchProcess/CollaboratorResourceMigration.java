@@ -143,31 +143,49 @@ public class CollaboratorResourceMigration {
               }
               // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
               // ignore the CollaboratorType
-              roleService.createWorkspacePermissions(
-                  workspaceDTO.getWorkspaceName(),
-                  project.getId(),
-                  project.getName(),
-                  Optional.of(Long.parseLong(project.getOwner())),
-                  ModelDBServiceResourceTypes.PROJECT,
-                  CollaboratorPermissions.newBuilder()
-                      .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
-                      .build(),
-                  getResourceVisibility(
-                      Optional.ofNullable(
-                          WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
-                      VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
+              try {
+                roleService.createWorkspacePermissions(
+                    workspaceDTO.getWorkspaceName(),
+                    project.getId(),
+                    project.getName(),
+                    Optional.of(Long.parseLong(project.getOwner())),
+                    ModelDBServiceResourceTypes.PROJECT,
+                    CollaboratorPermissions.newBuilder()
+                        .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                        .build(),
+                    getResourceVisibility(
+                        Optional.ofNullable(
+                            WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
+                        VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
+              } catch (StatusRuntimeException ex) {
+                if (ex.getStatus().getCode() == Status.Code.ALREADY_EXISTS) {
+                  LOGGER.info(
+                      "Resource seem to have already been created (ignoring) : " + ex.toString());
+                } else {
+                  throw ex;
+                }
+              }
               migrated = true;
             } else if (responseItemMap.containsKey(project.getId())) {
               GetResourcesResponseItem resourceDetails = responseItemMap.get(project.getId());
-              roleService.createWorkspacePermissions(
-                  resourceDetails.getWorkspaceId(),
-                  Optional.empty(),
-                  project.getId(),
-                  project.getName(),
-                  Optional.of(resourceDetails.getOwnerId()),
-                  ModelDBServiceResourceTypes.PROJECT,
-                  resourceDetails.getCustomPermission(),
-                  resourceDetails.getVisibility());
+              try {
+                roleService.createWorkspacePermissions(
+                    resourceDetails.getWorkspaceId(),
+                    Optional.empty(),
+                    project.getId(),
+                    project.getName(),
+                    Optional.of(resourceDetails.getOwnerId()),
+                    ModelDBServiceResourceTypes.PROJECT,
+                    resourceDetails.getCustomPermission(),
+                    resourceDetails.getVisibility());
+              } catch (StatusRuntimeException ex) {
+                if (ex.getStatus().getCode() == Status.Code.ALREADY_EXISTS) {
+                  LOGGER.info(
+                      "Resource seem to have already been created (ignoring) : " + ex.toString());
+                } else {
+                  throw ex;
+                }
+              }
               migrated = true;
             }
             if (migrated) {
