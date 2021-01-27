@@ -21,16 +21,19 @@ import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class CollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
@@ -124,11 +127,20 @@ public class CollaboratorResourceMigration {
           for (ProjectEntity project : projectEntities) {
             boolean migrated = false;
             if (project.getOwner() != null && !project.getOwner().isEmpty()) {
-              WorkspaceDTO workspaceDTO =
-                  roleService.getWorkspaceDTOByWorkspaceId(
-                      userInfoMap.get(project.getOwner()),
-                      project.getWorkspace(),
-                      project.getWorkspace_type());
+              WorkspaceDTO workspaceDTO;
+              try {
+                workspaceDTO =
+                    roleService.getWorkspaceDTOByWorkspaceId(
+                        userInfoMap.get(project.getOwner()),
+                        project.getWorkspace(),
+                        project.getWorkspace_type());
+              } catch (StatusRuntimeException ex) {
+                if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
+                  LOGGER.warn("Failed to get workspace (skipping) : " + ex.toString());
+                  continue;
+                }
+                throw ex;
+              }
               // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
               // ignore the CollaboratorType
               roleService.createWorkspacePermissions(
