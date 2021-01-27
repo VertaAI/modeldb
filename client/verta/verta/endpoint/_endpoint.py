@@ -24,6 +24,7 @@ from .._internal_utils import (
 )
 from .._tracking import experimentrun
 from .._registry import RegisteredModelVersion
+from ..visibility import _visibility
 
 
 def merge_dicts(a, b):
@@ -88,8 +89,8 @@ class Endpoint(object):
         return data['date_updated']
 
     @classmethod
-    def _create(cls, conn, conf, workspace, public_within_org, path, description=None):
-        endpoint_json = cls._create_json(conn, workspace, public_within_org, path, description)
+    def _create(cls, conn, conf, workspace, path, description=None, public_within_org=None, visibility=None):
+        endpoint_json = cls._create_json(conn, workspace, path, description, public_within_org, visibility)
         if endpoint_json:
             endpoint = cls(conn, conf, workspace, endpoint_json['id'])
             endpoint._create_stage()  # an endpoint needs a stage to function, so might as well create it here
@@ -98,14 +99,18 @@ class Endpoint(object):
             return None
 
     @classmethod
-    def _create_json(cls, conn, workspace, public_within_org, path, description=None):
-        data = {}
-        if description:
-            data["description"] = description
+    def _create_json(cls, conn, workspace, path, description=None, public_within_org=None, visibility=None):
         if not path.startswith('/'):
             path = '/' + path
-        data["path"] = path
-        data["visibility"] = "ORG_SCOPED_PUBLIC" if public_within_org else "PRIVATE"  # TODO: raise if workspace is personal
+        visibility, public_within_org = _visibility._Visibility.translate_public_within_org(visibility, public_within_org)
+
+        data = {
+            'path': path,
+            'description': description,
+            'custom_permission': {'collaborator_type': visibility._collaborator_type_str},
+            'visibility': "ORG_SCOPED_PUBLIC" if public_within_org else "PRIVATE",  # TODO: raise if workspace is personal
+            'resource_visibility': visibility._visibility_str,
+        }
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
         response = _utils.make_request("POST", url, conn, json=data)
         _utils.raise_for_http_error(response)
