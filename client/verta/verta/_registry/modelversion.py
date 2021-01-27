@@ -26,7 +26,7 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 from .. import utils
 
-from .._tracking.entity import _OSS_DEFAULT_WORKSPACE, _MODEL_ARTIFACTS_ATTR_KEY
+from .._tracking.entity import _MODEL_ARTIFACTS_ATTR_KEY
 from .._tracking.deployable_entity import _DeployableEntity
 from ..environment import _Environment, Python
 
@@ -116,7 +116,7 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         if registered_model_msg.workspace_id:
             return self._get_workspace_name_by_id(registered_model_msg.workspace_id)
         else:
-            return _OSS_DEFAULT_WORKSPACE
+            return self._conn._OSS_DEFAULT_WORKSPACE
 
     def get_artifact_keys(self):
         """

@@ -24,7 +24,6 @@ from .._internal_utils import (
 )
 
 
-_OSS_DEFAULT_WORKSPACE = "personal"
 _MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
 
 

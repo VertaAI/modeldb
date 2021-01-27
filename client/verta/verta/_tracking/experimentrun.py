@@ -17,7 +17,7 @@ import zipfile
 
 import requests
 
-from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE, _MODEL_ARTIFACTS_ATTR_KEY
+from .entity import _ModelDBEntity, _MODEL_ARTIFACTS_ATTR_KEY
 from .deployable_entity import _DeployableEntity
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -103,7 +103,7 @@ class ExperimentRun(_DeployableEntity):
         project_json = _utils.body_to_json(response)['project']
         if 'workspace_id' not in project_json:
             # workspace is OSS default
-            return _OSS_DEFAULT_WORKSPACE
+            return self._conn._OSS_DEFAULT_WORKSPACE
         else:
             return self._get_workspace_name_by_id(project_json['workspace_id'])
 

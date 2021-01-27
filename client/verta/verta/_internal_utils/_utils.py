@@ -50,6 +50,8 @@ HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
 
 
 class Connection:
+    _OSS_DEFAULT_WORKSPACE = "personal"
+
     def __init__(self, scheme=None, socket=None, auth=None, max_retries=0, ignore_conn_err=False):
         """
         HTTP connection configuration utility struct.

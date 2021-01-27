@@ -280,7 +280,7 @@ class Client(object):
                     pass
                 else:
                     _utils.raise_for_http_error(response)
-        return entity._OSS_DEFAULT_WORKSPACE
+        return self._conn._OSS_DEFAULT_WORKSPACE
 
     def _load_config(self):
         with _config_utils.read_merged_config() as config:

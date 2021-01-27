@@ -5,7 +5,6 @@ import requests
 
 from .entity_registry import _ModelDBRegistryEntity
 from .._internal_utils._utils import NoneProtoResponse, check_unnecessary_params_warning
-from .._tracking.entity import _OSS_DEFAULT_WORKSPACE
 from .._tracking.context import _Context
 from .._internal_utils import _utils
 
@@ -63,7 +62,7 @@ class RegisteredModel(_ModelDBRegistryEntity):
         if self._msg.workspace_id:
             return self._get_workspace_name_by_id(self._msg.workspace_id)
         else:
-            return _OSS_DEFAULT_WORKSPACE
+            return self._conn._OSS_DEFAULT_WORKSPACE
 
     def get_or_create_version(self, name=None, desc=None, labels=None, attrs=None, id=None, time_created=None):
         """

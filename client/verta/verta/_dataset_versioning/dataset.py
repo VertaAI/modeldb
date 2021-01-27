@@ -74,7 +74,7 @@ class Dataset(entity._ModelDBEntity):
         if self._msg.workspace_id:
             return self._get_workspace_name_by_id(self._msg.workspace_id)
         else:
-            return entity._OSS_DEFAULT_WORKSPACE
+            return self._conn._OSS_DEFAULT_WORKSPACE
 
     @property
     def versions(self):
