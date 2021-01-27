@@ -66,20 +66,12 @@ public class ModelDBUtils {
 
   public static Map<String, Object> readYamlProperties(String filePath) throws IOException {
     LOGGER.info("Reading File {} as YAML", filePath);
-    filePath = appendOptionalTelepresencePath(filePath);
+    filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
     InputStream inputStream = new FileInputStream(new File(filePath));
     Yaml yaml = new Yaml();
     @SuppressWarnings("unchecked")
     Map<String, Object> prop = (Map<String, Object>) yaml.load(inputStream);
     return prop;
-  }
-
-  public static String appendOptionalTelepresencePath(String filePath) {
-    String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
-    if (telepresenceRoot != null) {
-      filePath = telepresenceRoot + filePath;
-    }
-    return filePath;
   }
 
   public static String getStringFromProtoObject(MessageOrBuilder object)

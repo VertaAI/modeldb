@@ -1,8 +1,7 @@
 package ai.verta.modeldb.config;
 
-import static ai.verta.modeldb.utils.ModelDBUtils.appendOptionalTelepresencePath;
-
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -28,7 +27,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
       try {
         Yaml yaml = new Yaml(new Constructor(Config.class));
         String filePath = System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG);
-        filePath = appendOptionalTelepresencePath(filePath);
+        filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
         InputStream inputStream = new FileInputStream(filePath);
         config = yaml.loadAs(inputStream, Config.class);
         config.Validate();

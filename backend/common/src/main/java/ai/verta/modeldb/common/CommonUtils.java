@@ -10,6 +10,14 @@ import org.apache.logging.log4j.Logger;
 public class CommonUtils {
   private static final Logger LOGGER = LogManager.getLogger(CommonUtils.class);
 
+  public static String appendOptionalTelepresencePath(String filePath) {
+    String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
+    if (telepresenceRoot != null) {
+      filePath = telepresenceRoot + filePath;
+    }
+    return filePath;
+  }
+
   public static Integer getRegisteredBackgroundUtilsCount() {
     try {
       Integer backgroundUtilsCount =
