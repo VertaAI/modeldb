@@ -336,7 +336,9 @@ public class CommitDAORdbImpl implements CommitDAO {
             .build();
     CommitEntity commitEntity =
         new CommitEntity(repositoryEntity, parentOrderMap, internalCommit, rootSha);
-    session.saveOrUpdate(commitEntity);
+    if (!session.contains(commitEntity)) {
+      session.saveOrUpdate(commitEntity);
+    }
     return commitEntity;
   }
 
