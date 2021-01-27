@@ -1,9 +1,10 @@
-package ai.verta.modeldb.config;
+package ai.verta.modeldb.common.config;
 
-public class GrpcServerConfig {
+import ai.verta.modeldb.config.Config;
+
+public class SpringServerConfig {
   public int port;
-  public int requestTimeout = 30;
-  public int metrics_port = 8087;
+  public Long shutdownTimeout = 30L;
 
   public void Validate(String base) throws InvalidConfigException {
     if (port == 0) throw new InvalidConfigException(base + ".port", Config.MISSING_REQUIRED);

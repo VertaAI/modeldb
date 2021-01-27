@@ -1,4 +1,6 @@
-package ai.verta.modeldb.config;
+package ai.verta.modeldb.common.config;
+
+import ai.verta.modeldb.config.Config;
 
 public class TestConfig {
   public DatabaseConfig database;

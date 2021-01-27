@@ -1,6 +1,7 @@
-package ai.verta.modeldb.config;
+package ai.verta.modeldb.common.config;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.config.Config;
 
 public class DatabaseConfig {
   public String DBType;
