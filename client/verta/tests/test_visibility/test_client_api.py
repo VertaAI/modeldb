@@ -2,8 +2,6 @@
 Basic tests to make sure the client passes `visibility` without errors.
 
 """
-
-
 import pytest
 
 import requests
@@ -18,6 +16,9 @@ from verta.visibility import (
     OrgCustom,
     Private,
 )
+
+
+pytestmark = pytest.mark.not_oss
 
 
 def assert_visibility(entity, visibility, entity_name):
