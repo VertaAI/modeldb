@@ -37,7 +37,7 @@ def assert_endpoint_visibility(endpoint, visibility):
         pytest.skip("backend does not support new visibility")
 
     assert endpoint_json['creator_request']['custom_permission']['collaborator_type'] == visibility._collaborator_type_str
-    assert endpoint_json['creator_request']['visibility'] == visibility._visibility_str
+    assert endpoint_json['creator_request']['resource_visibility'] == visibility._visibility_str
 
 
 class TestCreate:
@@ -156,9 +156,9 @@ class TestPublicWithinOrg:
         try:
             endpoint_json = endpoint._get_json_by_id(endpoint._conn, endpoint.workspace, endpoint.id)
             if visibility._to_public_within_org():
-                assert endpoint_json['visibility'] == "ORG_SCOPED_PUBLIC"
+                assert endpoint_json['creator_request']['visibility'] == "ORG_SCOPED_PUBLIC"
             else:
-                assert endpoint_json['visibility'] == "PRIVATE"
+                assert endpoint_json['creator_request']['visibility'] == "PRIVATE"
         finally:
             endpoint.delete()
 
