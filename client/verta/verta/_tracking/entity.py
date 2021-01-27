@@ -148,12 +148,7 @@ class _ModelDBEntity(object):
             visibility = kwargs.pop(VISIBILITY_KEY)
             public_within_org = kwargs.pop(PUBLIC_WITHIN_ORG_KEY)
 
-            if visibility is None and public_within_org is None:
-                visibility = _workspace_default._WorkspaceDefault()
-            elif visibility is None:
-                visibility = _visibility._Visibility._from_public_within_org(public_within_org)
-            elif public_within_org is None:
-                public_within_org = visibility._to_public_within_org()
+            visibility, public_within_org = _visibility._Visibility.translate_public_within_org(visibility, public_within_org)
 
             kwargs[VISIBILITY_KEY] = visibility
             kwargs[PUBLIC_WITHIN_ORG_KEY] = public_within_org

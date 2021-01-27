@@ -24,6 +24,7 @@ from .._internal_utils import (
 )
 from .._tracking import experimentrun
 from .._registry import RegisteredModelVersion
+from ..visibility import _visibility
 
 
 def merge_dicts(a, b):
@@ -101,6 +102,8 @@ class Endpoint(object):
     def _create_json(cls, conn, workspace, path, description=None, public_within_org=None, visibility=None):
         if not path.startswith('/'):
             path = '/' + path
+        visibility, public_within_org = _visibility._Visibility.translate_public_within_org(visibility, public_within_org)
+
         data = {
             'path': path,
             'description': description,
