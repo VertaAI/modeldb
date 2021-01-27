@@ -1,7 +1,5 @@
 package ai.verta.modeldb.common.config;
 
-import ai.verta.modeldb.config.Config;
-
 public class ServiceUserConfig {
   public String email;
   public String devKey;

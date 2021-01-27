@@ -1,7 +1,5 @@
 package ai.verta.modeldb.common.config;
 
-import ai.verta.modeldb.config.Config;
-
 public class RdbConfig {
   public String RdbDatabaseName;
   // TODO: replace driver with "io.opentracing.contrib.jdbc.TracingDriver" if tracing is enabled

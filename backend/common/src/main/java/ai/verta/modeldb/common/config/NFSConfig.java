@@ -1,7 +1,5 @@
 package ai.verta.modeldb.common.config;
 
-import ai.verta.modeldb.config.Config;
-
 public class NFSConfig {
   public String nfsUrlProtocol = "https";
   public String nfsRootPath;

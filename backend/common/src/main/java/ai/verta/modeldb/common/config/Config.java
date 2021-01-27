@@ -42,7 +42,7 @@ public abstract class Config {
     springServer.Validate("springServer");
 
     if (test != null) {
-      test.Validate("test");
+      test.Validate(this, "test");
     }
   }
 

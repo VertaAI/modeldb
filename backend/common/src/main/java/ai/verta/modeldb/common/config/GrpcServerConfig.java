@@ -1,7 +1,5 @@
 package ai.verta.modeldb.common.config;
 
-import ai.verta.modeldb.config.Config;
-
 public class GrpcServerConfig {
   public int port;
   public int requestTimeout = 30;
