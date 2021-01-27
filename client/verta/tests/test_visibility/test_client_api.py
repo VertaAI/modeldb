@@ -122,10 +122,7 @@ class TestSet:
 
             # second set ignores visibility
             with pytest.warns(UserWarning, match="cannot set"):
-                endpoint = client.set_endpoint(
-                    path=_utils.generate_default_name(),
-                    workspace=organization.name, visibility=Private(),
-                )
+                endpoint = client.set_endpoint(path=endpoint.path, workspace=organization.name, visibility=Private())
             assert_endpoint_visibility(endpoint, visibility)
         finally:
             endpoint.delete()
