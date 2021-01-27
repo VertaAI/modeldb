@@ -16,7 +16,6 @@ public class Config extends ai.verta.modeldb.common.config.Config {
 
   private static Config config = null;
   public ServiceUserConfig mdb_service_user;
-  public boolean populateConnectionsBasedOnPrivileges = false;
   public String starterProject;
   public TelemetryConfig telemetry;
   public TrialConfig trial;

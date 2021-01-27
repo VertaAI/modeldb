@@ -11,6 +11,7 @@ public abstract class Config {
   public ArtifactStoreConfig artifactStoreConfig;
   public ServiceConfig authService;
   public Map<String, CronJobConfig> cron_job = new HashMap<>();
+  public boolean populateConnectionsBasedOnPrivileges = false;
   public DatabaseConfig database;
   public boolean enableTrace = false;
   public GrpcServerConfig grpcServer;
