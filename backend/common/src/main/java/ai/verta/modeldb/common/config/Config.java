@@ -1,7 +1,5 @@
 package ai.verta.modeldb.common.config;
 
-import ai.verta.modeldb.config.ArtifactStoreConfig;
-
 import java.util.HashMap;
 import java.util.Map;
 
