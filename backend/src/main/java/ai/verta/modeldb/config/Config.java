@@ -17,6 +17,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
   private static Config config = null;
   public ServiceUserConfig mdb_service_user;
   public String starterProject;
+  public ArtifactStoreConfig artifactStoreConfig;
   public TelemetryConfig telemetry;
   public TrialConfig trial;
   public List<MigrationConfig> migrations;
@@ -43,6 +44,10 @@ public class Config extends ai.verta.modeldb.common.config.Config {
 
   public void Validate() throws InvalidConfigException {
     super.Validate();
+
+    if (artifactStoreConfig == null)
+      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
+    artifactStoreConfig.Validate("artifactStoreConfig");
 
     if (mdb_service_user != null) {
       mdb_service_user.Validate("mdb_service_user");

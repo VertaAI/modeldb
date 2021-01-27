@@ -6,7 +6,6 @@ import java.util.Map;
 public abstract class Config {
   public static String MISSING_REQUIRED = "required field is missing";
 
-  public ArtifactStoreConfig artifactStoreConfig;
   public ServiceConfig authService;
   public Map<String, CronJobConfig> cron_job = new HashMap<>();
   public boolean populateConnectionsBasedOnPrivileges = false;
@@ -17,9 +16,6 @@ public abstract class Config {
   public TestConfig test;
 
   public void Validate() throws InvalidConfigException {
-    if (artifactStoreConfig == null)
-      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
-    artifactStoreConfig.Validate("artifactStoreConfig");
 
     if (authService != null) {
       authService.Validate("authService");
