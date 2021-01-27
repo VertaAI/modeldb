@@ -108,7 +108,7 @@ class Endpoint(object):
             'path': path,
             'description': description,
             'custom_permission': {'collaborator_type': visibility._collaborator_type_str},
-            'visibility': "ORG_SCOPED_PUBLIC" if public_within_org is False else "PRIVATE",  # TODO: raise if workspace is personal
+            'visibility': "ORG_SCOPED_PUBLIC" if public_within_org else "PRIVATE",  # TODO: raise if workspace is personal
             'resource_visibility': visibility._visibility_str,
         }
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints".format(conn.scheme, conn.socket, workspace)
