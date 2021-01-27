@@ -74,9 +74,10 @@ public class CollaboratorResourceMigration {
 
     int lowerBound = 0;
     final int pagesize = CollaboratorResourceMigration.paginationSize;
-    LOGGER.debug("Total Projects {}", count);
+    LOGGER.debug("Total Projects to migrate {}", count);
 
     while (lowerBound < count) {
+      LOGGER.debug("Migrated Projects: {}/{}", lowerBound, count);
 
       try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
@@ -141,6 +142,13 @@ public class CollaboratorResourceMigration {
                 }
                 throw ex;
               }
+              Long owner;
+              try {
+                owner = Long.parseLong(project.getOwner());
+              } catch (NumberFormatException ex) {
+                LOGGER.warn("Failed to convert owner (skipping) : " + ex.toString());
+                continue;
+              }
               // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
               // ignore the CollaboratorType
               try {
@@ -148,7 +156,7 @@ public class CollaboratorResourceMigration {
                     workspaceDTO.getWorkspaceName(),
                     project.getId(),
                     project.getName(),
-                    Optional.of(Long.parseLong(project.getOwner())),
+                    Optional.of(owner),
                     ModelDBServiceResourceTypes.PROJECT,
                     CollaboratorPermissions.newBuilder()
                         .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
@@ -357,11 +365,18 @@ public class CollaboratorResourceMigration {
     LOGGER.debug("Repositories migration finished");
   }
 
-  private static Long getEntityCount(Class<?> klass) {
+  private static <T> Long getEntityCount(Class<T> klass) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
-      countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
+      Root<T> root = countQuery.from(klass);
+      countQuery
+          .select(criteriaBuilder.count(root))
+          .where(
+              criteriaBuilder.and(
+                  criteriaBuilder.equal(root.get("visibility_migration"), false),
+                  criteriaBuilder.equal(root.get("created"), true)));
+
       return session.createQuery(countQuery).getSingleResult();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
