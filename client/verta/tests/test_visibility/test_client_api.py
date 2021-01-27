@@ -160,7 +160,7 @@ class TestPublicWithinOrg:
             else:
                 assert endpoint_json['visibility'] == "PRIVATE"
         finally:
-            entity.delete()
+            endpoint.delete()
 
     def test_project(self, client, organization):
         visibility = OrgCustom(write=True)
