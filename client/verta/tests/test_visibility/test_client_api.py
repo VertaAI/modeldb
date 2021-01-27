@@ -40,6 +40,16 @@ def assert_endpoint_visibility(endpoint, visibility):
     assert endpoint_json['creator_request']['resource_visibility'] == visibility._visibility_str
 
 
+def assert_repository_visibility(repo, visibility):
+    repo_msg = repo._get_proto_by_id(repo._conn, repo.id)
+
+    if not repo_msg.HasField('custom_permission'):
+        pytest.skip("backend does not support new visibility")
+
+    assert repo_msg.custom_permission == visibility._custom_permission
+    assert repo_msg.visibility == visibility._visibility
+
+
 class TestCreate:
     @pytest.mark.parametrize(
         ("entity_name", "visibility"),
@@ -52,10 +62,7 @@ class TestCreate:
     def test_mdb_entity(self, client, organization, entity_name, visibility):
         create_entity = getattr(client, "create_{}".format(entity_name))
 
-        entity = create_entity(
-            name=_utils.generate_default_name(),
-            workspace=organization.name, visibility=visibility,
-        )
+        entity = create_entity(workspace=organization.name, visibility=visibility)
         try:
             assert_visibility(entity, visibility, entity_name)
         finally:
@@ -91,10 +98,7 @@ class TestSet:
     def test_mdb_entity(self, client, organization, entity_name, visibility):
         set_entity = getattr(client, "set_{}".format(entity_name))
 
-        entity = set_entity(
-            name=_utils.generate_default_name(),
-            workspace=organization.name, visibility=visibility,
-        )
+        entity = set_entity(workspace=organization.name, visibility=visibility)
         try:
             assert_visibility(entity, visibility, entity_name)
 
@@ -124,7 +128,20 @@ class TestSet:
             endpoint.delete()
 
     def test_repository(self, client, organization):
-        raise NotImplementedError
+        visibility = OrgCustom(write=True)
+
+        repo = client.set_repository(
+            name=_utils.generate_default_name(),
+            workspace=organization.name, visibility=visibility,
+        )
+        try:
+            assert_repository_visibility(repo, visibility)
+
+            # second set ignores visibility
+            repo = client.set_repository(name=repo.name, workspace=organization.name, visibility=Private())
+            assert_repository_visibility(repo, visibility)
+        finally:
+            repo.delete()
 
 
 class TestPublicWithinOrg:
@@ -184,14 +201,15 @@ class TestPublicWithinOrg:
 
     def test_repository(self, client, organization):
         visibility = OrgCustom(write=True)
-        entity = client.set_repository(
+        repo = client.set_repository(
             name=_utils.generate_default_name(),
             workspace=organization.name, visibility=visibility,
         )
         try:
+            retrieved_visibility = repo._get_proto_by_id(repo._conn, repo.id).repository_visibility
             if visibility._to_public_within_org():
-                assert entity._msg.repository_visibility == _VersioningService.RepositoryVisibilityEnum.ORG_SCOPED_PUBLIC
+                assert retrieved_visibility == _VersioningService.RepositoryVisibilityEnum.ORG_SCOPED_PUBLIC
             else:
-                assert entity._msg.repository_visibility == _VersioningService.RepositoryVisibilityEnum.PRIVATE
+                assert retrieved_visibility == _VersioningService.RepositoryVisibilityEnum.PRIVATE
         finally:
-            entity.delete()
+            repo.delete()

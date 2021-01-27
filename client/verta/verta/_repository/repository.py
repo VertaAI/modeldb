@@ -5,6 +5,7 @@ from __future__ import print_function
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
 from .._internal_utils import _utils
+from ..visibility import _visibility
 from . import commit
 
 import requests
@@ -56,6 +57,8 @@ class Repository(object):
 
     @classmethod
     def _create(cls, conn, name, workspace, public_within_org, visibility):
+        visibility, public_within_org = _visibility._Visibility.translate_public_within_org(visibility, public_within_org)
+
         msg = _VersioningService.Repository()
         msg.name = name
         if (public_within_org
@@ -79,35 +82,32 @@ class Repository(object):
         return cls(conn, response_msg.repository.id)
 
     @classmethod
+    def _get_proto_by_id(cls, conn, id):
+        Message = _VersioningService.GetRepositoryRequest
+        response = conn.make_proto_request("GET",
+                                           "/api/v1/modeldb/versioning/repositories/{}".format(id))
+        return conn.maybe_proto_response(response, Message.Response).repository
+
+    @classmethod
+    def _get_proto_by_name(cls, conn, name, workspace):
+        Message = _VersioningService.GetRepositoryRequest
+        response = conn.make_proto_request("GET",
+                                           "/api/v1/modeldb/versioning/workspaces/{}/repositories/{}".format(workspace, name))
+        return conn.maybe_proto_response(response, Message.Response).repository
+
+    @classmethod
     def _get(cls, conn, name=None, workspace=None, id_=None):
         if name and workspace and not id_:
-            endpoint = "{}://{}/api/v1/modeldb/versioning/workspaces/{}/repositories/{}".format(
-                conn.scheme,
-                conn.socket,
-                workspace,
-                name,
-            )
+            msg = cls._get_proto_by_name(conn, name, workspace)
         elif not name and not workspace and id_:
-            endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}".format(
-                conn.scheme,
-                conn.socket,
-                id_,
-            )
+            msg = cls._get_proto_by_id(conn, id_)
         else:
             raise RuntimeError("the Client has encountered an error;"
                                " please notify the Verta development team")
-        response = _utils.make_request("GET", endpoint, conn)
 
-        if not response.ok:
-            if ((response.status_code == 403 and _utils.body_to_json(response)['code'] == 7)
-                    or (response.status_code == 404 and _utils.body_to_json(response)['code'] == 5)):
-                return None
-            else:
-                _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
-                                            _VersioningService.GetRepositoryRequest.Response)
-        return cls(conn, response_msg.repository.id)
+        if not msg:
+            return None
+        return cls(conn, msg.id)
 
     def get_commit(self, branch=None, tag=None, id=None):
         """
