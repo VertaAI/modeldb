@@ -1,7 +1,6 @@
 package ai.verta.modeldb.common.config;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.S3Config;
 import com.google.rpc.Code;
 
 public class ArtifactStoreConfig {

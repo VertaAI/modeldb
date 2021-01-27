@@ -17,9 +17,6 @@ public interface ModelDBConstants {
   String MIN_CONNECTION_POOL_SIZE = "minConnectionPoolSize";
   String MAX_CONNECTION_POOL_SIZE = "maxConnectionPoolSize";
   String CONNECTION_TIMEOUT = "connectionTimeout";
-  Integer MIN_CONNECTION_SIZE_DEFAULT = 5;
-  Integer MAX_CONNECTION_SIZE_DEFAULT = 20;
-  Integer CONNECTION_TIMEOUT_DEFAULT = 300;
   String FEATURE_FLAG = "feature-flag";
   String GET_ARTIFACT_ENDPOINT = "getArtifact";
   String GRPC_SERVER = "grpcServer";

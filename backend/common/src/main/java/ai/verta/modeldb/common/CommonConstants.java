@@ -6,6 +6,9 @@ public interface CommonConstants {
   String STRING_COLON = ":";
   String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
   String UNSIGNED_USER = "unsigned_user";
+  Integer MIN_CONNECTION_SIZE_DEFAULT = 5;
+  Integer MAX_CONNECTION_SIZE_DEFAULT = 20;
+  Integer CONNECTION_TIMEOUT_DEFAULT = 300;
 
   enum UserIdentifier {
     VERTA_ID,
