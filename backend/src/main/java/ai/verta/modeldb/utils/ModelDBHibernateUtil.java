@@ -30,6 +30,11 @@ import ai.verta.modeldb.entities.versioning.*;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import com.google.common.base.Joiner;
 import io.grpc.health.v1.HealthCheckResponse;
+import java.sql.*;
+import java.util.Calendar;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Properties;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -58,12 +63,6 @@ import org.hibernate.exception.JDBCConnectionException;
 import org.hibernate.query.Query;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
-
-import java.sql.*;
-import java.util.Calendar;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Properties;
 
 public class ModelDBHibernateUtil {
   private static final Logger LOGGER = LogManager.getLogger(ModelDBHibernateUtil.class);
