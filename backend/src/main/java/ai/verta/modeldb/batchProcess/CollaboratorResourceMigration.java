@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -199,8 +200,11 @@ public class CollaboratorResourceMigration {
             Transaction transaction = null;
             try {
               transaction = session1.beginTransaction();
-              project.setVisibility_migration(true);
-              session.update(project);
+              Query query =
+                  session1.createSQLQuery(
+                      "UPDATE project p SET p.visibility_migration=true WHERE p.id=:id");
+              query.setParameter("id", project.getId());
+              query.executeUpdate();
               transaction.commit();
             } catch (Exception ex) {
               if (transaction != null && transaction.getStatus().canRollback()) {
