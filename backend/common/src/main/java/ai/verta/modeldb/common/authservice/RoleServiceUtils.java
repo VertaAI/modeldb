@@ -8,52 +8,16 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.uac.Action;
-import ai.verta.uac.Actions;
-import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.DeleteResources;
-import ai.verta.uac.DeleteRoleBindings;
-import ai.verta.uac.Entities;
-import ai.verta.uac.GetAllowedResources;
-import ai.verta.uac.GetOrganizationById;
-import ai.verta.uac.GetOrganizationByName;
-import ai.verta.uac.GetResources;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GetRoleByName;
-import ai.verta.uac.GetSelfAllowedActionsBatch;
-import ai.verta.uac.GetSelfAllowedResources;
-import ai.verta.uac.GetTeamById;
-import ai.verta.uac.GetTeamByName;
-import ai.verta.uac.IsSelfAllowed;
-import ai.verta.uac.ListMyOrganizations;
-import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.Organization;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
-import ai.verta.uac.Role;
-import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.ServiceEnum;
+import ai.verta.uac.*;
 import ai.verta.uac.ServiceEnum.Service;
-import ai.verta.uac.SetResource;
-import ai.verta.uac.SetRoleBinding;
-import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.*;
 
 public class RoleServiceUtils implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
@@ -93,7 +57,7 @@ public class RoleServiceUtils implements RoleService {
       CollaboratorPermissions permissions,
       ResourceVisibility resourceVisibility) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info("Calling CollaboratorService to create resources");
+      LOGGER.trace("Calling CollaboratorService to create resources");
       ResourceType modeldbServiceResourceType =
           ResourceType.newBuilder().setModeldbServiceResourceType(resourceType).build();
       SetResource.Builder setResourcesBuilder =
@@ -125,7 +89,7 @@ public class RoleServiceUtils implements RoleService {
               .getCollaboratorServiceBlockingStub()
               .setResource(setResourcesBuilder.build());
 
-      LOGGER.info("SetResources message sent.  Response: " + setResourcesResponse);
+      LOGGER.trace("SetResources message sent.  Response: " + setResourcesResponse);
       return true;
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
@@ -140,12 +104,12 @@ public class RoleServiceUtils implements RoleService {
 
   public boolean deleteResources(Resources resources) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info("Calling CollaboratorService to delete resources");
+      LOGGER.trace("Calling CollaboratorService to delete resources");
       DeleteResources deleteResources =
           DeleteResources.newBuilder().setResources(resources).build();
       DeleteResources.Response response =
           authServiceChannel.getCollaboratorServiceBlockingStub().deleteResources(deleteResources);
-      LOGGER.info("DeleteResources message sent.  Response: " + response);
+      LOGGER.trace("DeleteResources message sent.  Response: " + response);
       return true;
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
@@ -282,18 +246,18 @@ public class RoleServiceUtils implements RoleService {
    */
   @Override
   public List<GetResourcesResponseItem> getResourceItems(
-          Workspace workspace,
-          Set<String> resourceIds,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       ResourceType resourceType =
-              ResourceType.newBuilder()
-                      .setModeldbServiceResourceType(modelDBServiceResourceTypes)
-                      .build();
+          ResourceType.newBuilder()
+              .setModeldbServiceResourceType(modelDBServiceResourceTypes)
+              .build();
       Resources.Builder resources =
-              Resources.newBuilder()
-                      .setResourceType(resourceType)
-                      .setService(ServiceEnum.Service.MODELDB_SERVICE);
+          Resources.newBuilder()
+              .setResourceType(resourceType)
+              .setService(ServiceEnum.Service.MODELDB_SERVICE);
 
       if (resourceIds != null && !resourceIds.isEmpty()) {
         resources.addAllResourceIds(resourceIds);
@@ -304,7 +268,7 @@ public class RoleServiceUtils implements RoleService {
         builder.setWorkspaceId(workspace.getId());
       }
       final GetResources.Response response =
-              authServiceChannel.getCollaboratorServiceBlockingStub().getResources(builder.build());
+          authServiceChannel.getCollaboratorServiceBlockingStub().getResources(builder.build());
       return response.getItemList();
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
@@ -314,13 +278,13 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public List<String> getWorkspaceRoleBindings(
-          String workspaceId,
-          WorkspaceTypeEnum.WorkspaceType workspaceType,
-          String resourceId,
-          String roleName,
-          ModelDBServiceResourceTypes resourceTypes,
-          boolean orgScopedPublic,
-          String globalSharing) {
+      String workspaceId,
+      WorkspaceTypeEnum.WorkspaceType workspaceType,
+      String resourceId,
+      String roleName,
+      ModelDBServiceResourceTypes resourceTypes,
+      boolean orgScopedPublic,
+      String globalSharing) {
     List<String> workspaceRoleBindingList = new ArrayList<>();
     if (workspaceId != null && !workspaceId.isEmpty()) {
       try {
@@ -329,18 +293,18 @@ public class RoleServiceUtils implements RoleService {
           case ORGANIZATION:
             if (orgScopedPublic) {
               String globalSharingRoleName =
-                      new StringBuilder()
-                              .append("O_")
-                              .append(workspaceId)
-                              .append(globalSharing)
-                              .toString();
+                  new StringBuilder()
+                      .append("O_")
+                      .append(workspaceId)
+                      .append(globalSharing)
+                      .toString();
 
               String globalSharingRoleBindingName =
-                      buildRoleBindingName(
-                              globalSharingRoleName,
-                              resourceId,
-                              new CollaboratorOrg(workspaceId),
-                              resourceTypes.name());
+                  buildRoleBindingName(
+                      globalSharingRoleName,
+                      resourceId,
+                      new CollaboratorOrg(workspaceId),
+                      resourceTypes.name());
               if (globalSharingRoleBindingName != null) {
                 workspaceRoleBindingList.add(globalSharingRoleBindingName);
               }
@@ -355,7 +319,7 @@ public class RoleServiceUtils implements RoleService {
             return null;
         }
         String roleBindingName =
-                buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
+            buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
         if (roleBindingName != null) {
           workspaceRoleBindingList.add(roleBindingName);
         }
@@ -371,37 +335,37 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public String buildRoleBindingName(
-          String roleName, String resourceId, String userId, String resourceTypeName) {
+      String roleName, String resourceId, String userId, String resourceTypeName) {
     return buildRoleBindingName(
-            roleName, resourceId, new CollaboratorUser(authService, userId), resourceTypeName);
+        roleName, resourceId, new CollaboratorUser(authService, userId), resourceTypeName);
   }
 
   @Override
   public String buildRoleBindingName(
-          String roleName, String resourceId, CollaboratorBase collaborator, String resourceTypeName) {
+      String roleName, String resourceId, CollaboratorBase collaborator, String resourceTypeName) {
     return roleName
-            + "_"
-            + resourceTypeName
-            + "_"
-            + resourceId
-            + "_"
-            + collaborator.getNameForBinding();
+        + "_"
+        + resourceTypeName
+        + "_"
+        + resourceId
+        + "_"
+        + collaborator.getNameForBinding();
   }
 
   @Override
   public List<String> getAccessibleResourceIds(
-          CollaboratorBase hostUserInfo,
-          CollaboratorBase currentLoginUserInfo,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          List<String> requestedResourceIds) {
+      CollaboratorBase hostUserInfo,
+      CollaboratorBase currentLoginUserInfo,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      List<String> requestedResourceIds) {
     List<String> accessibleResourceIds;
     if (hostUserInfo != null) {
       accessibleResourceIds =
-              getReadOnlyAccessibleResourceIds(true, hostUserInfo, modelDBServiceResourceTypes);
+          getReadOnlyAccessibleResourceIds(true, hostUserInfo, modelDBServiceResourceTypes);
     } else {
       accessibleResourceIds =
-              getReadOnlyAccessibleResourceIds(
-                      false, currentLoginUserInfo, modelDBServiceResourceTypes);
+          getReadOnlyAccessibleResourceIds(
+              false, currentLoginUserInfo, modelDBServiceResourceTypes);
     }
 
     if (requestedResourceIds != null && !requestedResourceIds.isEmpty()) {
@@ -411,24 +375,28 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private List<String> getReadOnlyAccessibleResourceIds(
-          boolean isHostUser,
-          CollaboratorBase userInfo,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      boolean isHostUser,
+      CollaboratorBase userInfo,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
 
     Set<String> resourceIdsSet = new HashSet<>();
     if (userInfo != null && userInfo.getVertaId() != null) {
       List<String> accessibleResourceIds;
       if (isHostUser) {
         accessibleResourceIds =
-                getAllowedResources(modelDBServiceResourceTypes, ModelDBActionEnum.ModelDBServiceActions.READ, userInfo);
+            getAllowedResources(
+                modelDBServiceResourceTypes,
+                ModelDBActionEnum.ModelDBServiceActions.READ,
+                userInfo);
       } else {
         accessibleResourceIds =
-                getSelfAllowedResources(modelDBServiceResourceTypes, ModelDBActionEnum.ModelDBServiceActions.READ);
+            getSelfAllowedResources(
+                modelDBServiceResourceTypes, ModelDBActionEnum.ModelDBServiceActions.READ);
       }
       resourceIdsSet.addAll(accessibleResourceIds);
       LOGGER.debug(
-              "Accessible " + modelDBServiceResourceTypes + " Ids size is {}",
-              accessibleResourceIds.size());
+          "Accessible " + modelDBServiceResourceTypes + " Ids size is {}",
+          accessibleResourceIds.size());
     }
 
     return new ArrayList<>(resourceIdsSet);
@@ -436,41 +404,41 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public List<String> getAllowedResources(
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
-          CollaboratorBase collaboratorBase) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      CollaboratorBase collaboratorBase) {
     return getAllowedResources(
-            true, modelDBServiceResourceTypes, modelDBServiceActions, collaboratorBase);
+        true, modelDBServiceResourceTypes, modelDBServiceActions, collaboratorBase);
   }
 
   private List<String> getAllowedResources(
-          boolean retry,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
-          CollaboratorBase collaboratorBase) {
+      boolean retry,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      CollaboratorBase collaboratorBase) {
     Action action =
-            Action.newBuilder()
-                    .setService(Service.MODELDB_SERVICE)
-                    .setModeldbServiceAction(modelDBServiceActions)
-                    .build();
+        Action.newBuilder()
+            .setService(Service.MODELDB_SERVICE)
+            .setModeldbServiceAction(modelDBServiceActions)
+            .build();
     Entities entity = collaboratorBase.getEntities();
     GetAllowedResources getAllowedResourcesRequest =
-            GetAllowedResources.newBuilder()
-                    .addActions(action)
-                    .addEntities(entity)
-                    .setResourceType(
-                            ResourceType.newBuilder()
-                                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                    .setService(Service.MODELDB_SERVICE)
-                    .build();
+        GetAllowedResources.newBuilder()
+            .addActions(action)
+            .addEntities(entity)
+            .setResourceType(
+                ResourceType.newBuilder()
+                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+            .setService(Service.MODELDB_SERVICE)
+            .build();
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       GetAllowedResources.Response getAllowedResourcesResponse =
-              authServiceChannel
-                      .getAuthzServiceBlockingStub(requestHeaders)
-                      .getAllowedResources(getAllowedResourcesRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+          authServiceChannel
+              .getAuthzServiceBlockingStub(requestHeaders)
+              .getAllowedResources(getAllowedResourcesRequest);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
 
       if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
@@ -484,51 +452,52 @@ public class RoleServiceUtils implements RoleService {
       }
     } catch (StatusRuntimeException ex) {
       return (List<String>)
-              CommonUtils.retryOrThrowException(
-                      ex,
-                      retry,
-                      (CommonUtils.RetryCallInterface<List<String>>)
-                              (retry1) ->
-                                      getAllowedResources(
-                                              retry1,
-                                              modelDBServiceResourceTypes,
-                                              modelDBServiceActions,
-                                              collaboratorBase), timeout);
+          CommonUtils.retryOrThrowException(
+              ex,
+              retry,
+              (CommonUtils.RetryCallInterface<List<String>>)
+                  (retry1) ->
+                      getAllowedResources(
+                          retry1,
+                          modelDBServiceResourceTypes,
+                          modelDBServiceActions,
+                          collaboratorBase),
+              timeout);
     }
   }
 
   @Override
   public List<String> getSelfAllowedResources(
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
     return getSelfAllowedResources(true, modelDBServiceResourceTypes, modelDBServiceActions);
   }
 
   private List<String> getSelfAllowedResources(
-          boolean retry,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
+      boolean retry,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
     Action action =
-            Action.newBuilder()
-                    .setService(Service.MODELDB_SERVICE)
-                    .setModeldbServiceAction(modelDBServiceActions)
-                    .build();
+        Action.newBuilder()
+            .setService(Service.MODELDB_SERVICE)
+            .setModeldbServiceAction(modelDBServiceActions)
+            .build();
     GetSelfAllowedResources getAllowedResourcesRequest =
-            GetSelfAllowedResources.newBuilder()
-                    .addActions(action)
-                    .setResourceType(
-                            ResourceType.newBuilder()
-                                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                    .setService(Service.MODELDB_SERVICE)
-                    .build();
+        GetSelfAllowedResources.newBuilder()
+            .addActions(action)
+            .setResourceType(
+                ResourceType.newBuilder()
+                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+            .setService(Service.MODELDB_SERVICE)
+            .build();
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
-              authServiceChannel
-                      .getAuthzServiceBlockingStub(requestHeaders)
-                      .getSelfAllowedResources(getAllowedResourcesRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+          authServiceChannel
+              .getAuthzServiceBlockingStub(requestHeaders)
+              .getSelfAllowedResources(getAllowedResourcesRequest);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
 
       if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
@@ -542,49 +511,50 @@ public class RoleServiceUtils implements RoleService {
       }
     } catch (StatusRuntimeException ex) {
       return (List<String>)
-              CommonUtils.retryOrThrowException(
-                      ex,
-                      retry,
-                      (CommonUtils.RetryCallInterface<List<String>>)
-                              (retry1) ->
-                                      getSelfAllowedResources(
-                                              retry1, modelDBServiceResourceTypes, modelDBServiceActions), timeout);
+          CommonUtils.retryOrThrowException(
+              ex,
+              retry,
+              (CommonUtils.RetryCallInterface<List<String>>)
+                  (retry1) ->
+                      getSelfAllowedResources(
+                          retry1, modelDBServiceResourceTypes, modelDBServiceActions),
+              timeout);
     }
   }
 
   @Override
   public List<String> getSelfDirectlyAllowedResources(
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
     return getSelfDirectlyAllowedResources(
-            true, modelDBServiceResourceTypes, modelDBServiceActions);
+        true, modelDBServiceResourceTypes, modelDBServiceActions);
   }
 
   private List<String> getSelfDirectlyAllowedResources(
-          boolean retry,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
+      boolean retry,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
     Action action =
-            Action.newBuilder()
-                    .setService(Service.MODELDB_SERVICE)
-                    .setModeldbServiceAction(modelDBServiceActions)
-                    .build();
+        Action.newBuilder()
+            .setService(Service.MODELDB_SERVICE)
+            .setModeldbServiceAction(modelDBServiceActions)
+            .build();
     GetSelfAllowedResources getAllowedResourcesRequest =
-            GetSelfAllowedResources.newBuilder()
-                    .addActions(action)
-                    .setResourceType(
-                            ResourceType.newBuilder()
-                                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                    .setService(Service.MODELDB_SERVICE)
-                    .build();
+        GetSelfAllowedResources.newBuilder()
+            .addActions(action)
+            .setResourceType(
+                ResourceType.newBuilder()
+                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+            .setService(Service.MODELDB_SERVICE)
+            .build();
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
-              authServiceChannel
-                      .getAuthzServiceBlockingStub(requestHeaders)
-                      .getSelfDirectlyAllowedResources(getAllowedResourcesRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+          authServiceChannel
+              .getAuthzServiceBlockingStub(requestHeaders)
+              .getSelfDirectlyAllowedResources(getAllowedResourcesRequest);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
 
       if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
@@ -598,56 +568,57 @@ public class RoleServiceUtils implements RoleService {
       }
     } catch (StatusRuntimeException ex) {
       return (List<String>)
-              CommonUtils.retryOrThrowException(
-                      ex,
-                      retry,
-                      (CommonUtils.RetryCallInterface<List<String>>)
-                              (retry1) ->
-                                      getSelfDirectlyAllowedResources(
-                                              retry1, modelDBServiceResourceTypes, modelDBServiceActions), timeout);
+          CommonUtils.retryOrThrowException(
+              ex,
+              retry,
+              (CommonUtils.RetryCallInterface<List<String>>)
+                  (retry1) ->
+                      getSelfDirectlyAllowedResources(
+                          retry1, modelDBServiceResourceTypes, modelDBServiceActions),
+              timeout);
     }
   }
 
   @Override
   public void isSelfAllowed(
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
-          String resourceId) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      String resourceId) {
     isSelfAllowed(true, modelDBServiceResourceTypes, modelDBServiceActions, resourceId);
   }
 
   private void isSelfAllowed(
-          boolean retry,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
-          String resourceId) {
+      boolean retry,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      String resourceId) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       Resources.Builder resourceBuilder =
-              Resources.newBuilder()
-                      .setService(Service.MODELDB_SERVICE)
-                      .setResourceType(
-                              ResourceType.newBuilder()
-                                      .setModeldbServiceResourceType(modelDBServiceResourceTypes));
+          Resources.newBuilder()
+              .setService(Service.MODELDB_SERVICE)
+              .setResourceType(
+                  ResourceType.newBuilder()
+                      .setModeldbServiceResourceType(modelDBServiceResourceTypes));
       if (resourceId != null) {
         resourceBuilder.addResourceIds(resourceId);
       }
       IsSelfAllowed isSelfAllowedRequest =
-              IsSelfAllowed.newBuilder()
-                      .addResources(resourceBuilder.build())
-                      .addActions(
-                              Action.newBuilder()
-                                      .setService(Service.MODELDB_SERVICE)
-                                      .setModeldbServiceAction(modelDBServiceActions)
-                                      .build())
-                      .build();
+          IsSelfAllowed.newBuilder()
+              .addResources(resourceBuilder.build())
+              .addActions(
+                  Action.newBuilder()
+                      .setService(Service.MODELDB_SERVICE)
+                      .setModeldbServiceAction(modelDBServiceActions)
+                      .build())
+              .build();
 
       Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       IsSelfAllowed.Response isSelfAllowedResponse =
-              authServiceChannel
-                      .getAuthzServiceBlockingStub(requestHeaders)
-                      .isSelfAllowed(isSelfAllowedRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+          authServiceChannel
+              .getAuthzServiceBlockingStub(requestHeaders)
+              .isSelfAllowed(isSelfAllowedRequest);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, isSelfAllowedResponse);
 
       if (!isSelfAllowedResponse.getAllowed()) {
@@ -655,28 +626,29 @@ public class RoleServiceUtils implements RoleService {
       }
     } catch (StatusRuntimeException ex) {
       CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<Void>)
-                      retry1 -> {
-                        isSelfAllowed(
-                                retry1, modelDBServiceResourceTypes, modelDBServiceActions, resourceId);
-                        return null;
-                      }, timeout);
+          ex,
+          retry,
+          (CommonUtils.RetryCallInterface<Void>)
+              retry1 -> {
+                isSelfAllowed(
+                    retry1, modelDBServiceResourceTypes, modelDBServiceActions, resourceId);
+                return null;
+              },
+          timeout);
     }
   }
 
   @Override
   public List<String> getAccessibleResourceIdsByActions(
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
-          List<String> requestedIdList) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      List<String> requestedIdList) {
     if (requestedIdList.size() == 1) {
       isSelfAllowed(modelDBServiceResourceTypes, modelDBServiceActions, requestedIdList.get(0));
       return requestedIdList;
     } else {
       List<String> allowedResourceIdList =
-              getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
+          getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
       // Validate if current user has access to the entity or not
       allowedResourceIdList.retainAll(requestedIdList);
       return allowedResourceIdList;
@@ -685,91 +657,93 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public Map<String, Actions> getSelfAllowedActionsBatch(
-          List<String> resourceIds, ModelDBServiceResourceTypes type) {
+      List<String> resourceIds, ModelDBServiceResourceTypes type) {
     return getSelfAllowedActionsBatch(true, resourceIds, type);
   }
 
   private Map<String, Actions> getSelfAllowedActionsBatch(
-          boolean retry, List<String> resourceIds, ModelDBServiceResourceTypes type) {
+      boolean retry, List<String> resourceIds, ModelDBServiceResourceTypes type) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       GetSelfAllowedActionsBatch getSelfAllowedActionsBatch =
-              GetSelfAllowedActionsBatch.newBuilder()
-                      .setResources(
-                              Resources.newBuilder()
-                                      .setService(Service.MODELDB_SERVICE)
-                                      .addAllResourceIds(resourceIds)
-                                      .setResourceType(
-                                              ResourceType.newBuilder().setModeldbServiceResourceType(type))
-                                      .build())
-                      .build();
+          GetSelfAllowedActionsBatch.newBuilder()
+              .setResources(
+                  Resources.newBuilder()
+                      .setService(Service.MODELDB_SERVICE)
+                      .addAllResourceIds(resourceIds)
+                      .setResourceType(
+                          ResourceType.newBuilder().setModeldbServiceResourceType(type))
+                      .build())
+              .build();
 
       Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       GetSelfAllowedActionsBatch.Response getSelfAllowedActionsBatchResponse =
-              authServiceChannel
-                      .getAuthzServiceBlockingStub(requestHeaders)
-                      .getSelfAllowedActionsBatch(getSelfAllowedActionsBatch);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+          authServiceChannel
+              .getAuthzServiceBlockingStub(requestHeaders)
+              .getSelfAllowedActionsBatch(getSelfAllowedActionsBatch);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(
-              CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getSelfAllowedActionsBatchResponse);
+          CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getSelfAllowedActionsBatchResponse);
       return getSelfAllowedActionsBatchResponse.getActionsMap();
 
     } catch (StatusRuntimeException ex) {
       return (Map<String, Actions>)
-              CommonUtils.retryOrThrowException(
-                      ex,
-                      retry,
-                      (CommonUtils.RetryCallInterface<Map<String, Actions>>)
-                              (retry1) -> getSelfAllowedActionsBatch(retry1, resourceIds, type), timeout);
+          CommonUtils.retryOrThrowException(
+              ex,
+              retry,
+              (CommonUtils.RetryCallInterface<Map<String, Actions>>)
+                  (retry1) -> getSelfAllowedActionsBatch(retry1, resourceIds, type),
+              timeout);
     }
   }
 
   @Override
   public void createRoleBinding(
-          Role role,
-          CollaboratorBase collaborator,
-          String resourceId,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      Role role,
+      CollaboratorBase collaborator,
+      String resourceId,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     String roleBindingName =
-            buildRoleBindingName(
-                    role.getName(), resourceId, collaborator, modelDBServiceResourceTypes.name());
+        buildRoleBindingName(
+            role.getName(), resourceId, collaborator, modelDBServiceResourceTypes.name());
 
     RoleBinding newRoleBinding =
-            RoleBinding.newBuilder()
-                    .setName(roleBindingName)
-                    .setScope(role.getScope())
-                    .setRoleId(role.getId())
-                    .addEntities(collaborator.getEntities())
-                    .addResources(
-                            Resources.newBuilder()
-                                    .setService(Service.MODELDB_SERVICE)
-                                    .setResourceType(
-                                            ResourceType.newBuilder()
-                                                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                                    .addResourceIds(resourceId)
-                                    .build())
-                    .build();
+        RoleBinding.newBuilder()
+            .setName(roleBindingName)
+            .setScope(role.getScope())
+            .setRoleId(role.getId())
+            .addEntities(collaborator.getEntities())
+            .addResources(
+                Resources.newBuilder()
+                    .setService(Service.MODELDB_SERVICE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                    .addResourceIds(resourceId)
+                    .build())
+            .build();
     setRoleBindingOnAuthService(true, newRoleBinding);
   }
 
   private void setRoleBindingOnAuthService(boolean retry, RoleBinding roleBinding) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       SetRoleBinding.Response setRoleBindingResponse =
-              authServiceChannel
-                      .getRoleServiceBlockingStub()
-                      .setRoleBinding(SetRoleBinding.newBuilder().setRoleBinding(roleBinding).build());
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+          authServiceChannel
+              .getRoleServiceBlockingStub()
+              .setRoleBinding(SetRoleBinding.newBuilder().setRoleBinding(roleBinding).build());
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, setRoleBindingResponse);
     } catch (StatusRuntimeException ex) {
       CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<Void>)
-                      (retry1) -> {
-                        setRoleBindingOnAuthService(retry1, roleBinding);
-                        return null;
-                      }, timeout);
+          ex,
+          retry,
+          (CommonUtils.RetryCallInterface<Void>)
+              (retry1) -> {
+                setRoleBindingOnAuthService(retry1, roleBinding);
+                return null;
+              },
+          timeout);
     }
   }
 
@@ -780,25 +754,27 @@ public class RoleServiceUtils implements RoleService {
 
   private Role getRoleByName(boolean retry, String roleName, RoleScope roleScope) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       GetRoleByName.Builder getRoleByNameRequest = GetRoleByName.newBuilder().setName(roleName);
       if (roleScope != null) {
         getRoleByNameRequest.setScope(roleScope);
       }
       GetRoleByName.Response getRoleByNameResponse =
-              authServiceChannel
-                      .getRoleServiceBlockingStub()
-                      .getRoleByName(getRoleByNameRequest.build());
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+          authServiceChannel
+              .getRoleServiceBlockingStub()
+              .getRoleByName(getRoleByNameRequest.build());
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getRoleByNameResponse);
 
       return getRoleByNameResponse.getRole();
     } catch (StatusRuntimeException ex) {
       return (Role)
-              CommonUtils.retryOrThrowException(
-                      ex,
-                      retry,
-                      (CommonUtils.RetryCallInterface<Role>) (retry1) -> getRoleByName(retry1, roleName, roleScope), timeout);
+          CommonUtils.retryOrThrowException(
+              ex,
+              retry,
+              (CommonUtils.RetryCallInterface<Role>)
+                  (retry1) -> getRoleByName(retry1, roleName, roleScope),
+              timeout);
     }
   }
 
@@ -809,26 +785,27 @@ public class RoleServiceUtils implements RoleService {
 
   private boolean deleteRoleBindings(boolean retry, List<String> roleBindingNames) {
     DeleteRoleBindings deleteRoleBindingRequest =
-            DeleteRoleBindings.newBuilder().addAllRoleBindingNames(roleBindingNames).build();
+        DeleteRoleBindings.newBuilder().addAllRoleBindingNames(roleBindingNames).build();
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
 
       // TODO: try using futur stub than blocking stub
       DeleteRoleBindings.Response deleteRoleBindingResponse =
-              authServiceChannel
-                      .getRoleServiceBlockingStub()
-                      .deleteRoleBindings(deleteRoleBindingRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+          authServiceChannel
+              .getRoleServiceBlockingStub()
+              .deleteRoleBindings(deleteRoleBindingRequest);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, deleteRoleBindingResponse);
 
       return deleteRoleBindingResponse.getStatus();
     } catch (StatusRuntimeException ex) {
       return (Boolean)
-              CommonUtils.retryOrThrowException(
-                      ex,
-                      retry,
-                      (CommonUtils.RetryCallInterface<Boolean>)
-                              (retry1) -> deleteRoleBindings(retry1, roleBindingNames), timeout);
+          CommonUtils.retryOrThrowException(
+              ex,
+              retry,
+              (CommonUtils.RetryCallInterface<Boolean>)
+                  (retry1) -> deleteRoleBindings(retry1, roleBindingNames),
+              timeout);
     }
   }
 
@@ -840,17 +817,18 @@ public class RoleServiceUtils implements RoleService {
   private GeneratedMessageV3 getTeamByName(boolean retry, String orgId, String teamName) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       GetTeamByName getTeamByName =
-              GetTeamByName.newBuilder().setTeamName(teamName).setOrgId(orgId).build();
+          GetTeamByName.newBuilder().setTeamName(teamName).setOrgId(orgId).build();
       GetTeamByName.Response getTeamByNameResponse =
-              authServiceChannel.getTeamServiceBlockingStub().getTeamByName(getTeamByName);
+          authServiceChannel.getTeamServiceBlockingStub().getTeamByName(getTeamByName);
       return getTeamByNameResponse.getTeam();
     } catch (StatusRuntimeException ex) {
       return (GeneratedMessageV3)
-              CommonUtils.retryOrThrowException(
-                      ex,
-                      retry,
-                      (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
-                              (retry1) -> getTeamByName(retry1, orgId, teamName), timeout);
+          CommonUtils.retryOrThrowException(
+              ex,
+              retry,
+              (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
+                  (retry1) -> getTeamByName(retry1, orgId, teamName),
+              timeout);
     }
   }
 
@@ -862,18 +840,20 @@ public class RoleServiceUtils implements RoleService {
   private GeneratedMessageV3 getOrgByName(boolean retry, String name) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       GetOrganizationByName getOrgByName =
-              GetOrganizationByName.newBuilder().setOrgName(name).build();
+          GetOrganizationByName.newBuilder().setOrgName(name).build();
       GetOrganizationByName.Response getOrgByNameResponse =
-              authServiceChannel
-                      .getOrganizationServiceBlockingStub()
-                      .getOrganizationByName(getOrgByName);
+          authServiceChannel
+              .getOrganizationServiceBlockingStub()
+              .getOrganizationByName(getOrgByName);
       return getOrgByNameResponse.getOrganization();
     } catch (StatusRuntimeException ex) {
       return (GeneratedMessageV3)
-              CommonUtils.retryOrThrowException(
-                      ex,
-                      retry,
-                      (CommonUtils.RetryCallInterface<GeneratedMessageV3>) (retry1) -> getOrgByName(retry1, name), timeout);
+          CommonUtils.retryOrThrowException(
+              ex,
+              retry,
+              (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
+                  (retry1) -> getOrgByName(retry1, name),
+              timeout);
     }
   }
 
@@ -886,14 +866,17 @@ public class RoleServiceUtils implements RoleService {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       ListMyOrganizations listMyOrganizations = ListMyOrganizations.newBuilder().build();
       ListMyOrganizations.Response listMyOrganizationsResponse =
-              authServiceChannel
-                      .getOrganizationServiceBlockingStub()
-                      .listMyOrganizations(listMyOrganizations);
+          authServiceChannel
+              .getOrganizationServiceBlockingStub()
+              .listMyOrganizations(listMyOrganizations);
       return listMyOrganizationsResponse.getOrganizationsList();
     } catch (StatusRuntimeException ex) {
       return (List<Organization>)
-              CommonUtils.retryOrThrowException(
-                      ex, retry, (CommonUtils.RetryCallInterface<List<Organization>>) this::listMyOrganizations, timeout);
+          CommonUtils.retryOrThrowException(
+              ex,
+              retry,
+              (CommonUtils.RetryCallInterface<List<Organization>>) this::listMyOrganizations,
+              timeout);
     }
   }
 }

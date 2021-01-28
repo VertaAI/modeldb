@@ -48,10 +48,10 @@ public class AuthServiceUtils implements AuthService {
   private UserInfo getCurrentLoginUserInfo(boolean retry) {
     try (ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel =
         getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
       UserInfo userInfo =
           authServiceChannel.getUacServiceBlockingStub().getCurrentUser(Empty.newBuilder().build());
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
         throw new NotFoundException("Current user could not be resolved.");
@@ -73,12 +73,12 @@ public class AuthServiceUtils implements AuthService {
   private UserInfo getUnsignedUser(boolean retry) {
     try (ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel =
         getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
       GetUser getUserRequest =
           GetUser.newBuilder().setUsername(CommonConstants.UNSIGNED_USER).build();
       // Get the user info by vertaId form the AuthService
       UserInfo userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
         throw new NotFoundException("Unsigned user not found with the provided metadata");
@@ -110,10 +110,10 @@ public class AuthServiceUtils implements AuthService {
         getUserRequest = GetUser.newBuilder().setUserId(vertaId).build();
       }
 
-      LOGGER.info(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
       // Get the user info by vertaId form the AuthService
       UserInfo userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
         throw new NotFoundException("User not found with the provided metadata");
@@ -160,7 +160,7 @@ public class AuthServiceUtils implements AuthService {
       // Get the user info from the Context
       GetUsers.Response response =
           authServiceChannel.getUacServiceBlockingStub().getUsers(getUserRequestBuilder.build());
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       List<UserInfo> userInfoList = response.getUserInfosList();
 
       Map<String, UserInfo> useInfoMap = new HashMap<>();
@@ -236,7 +236,7 @@ public class AuthServiceUtils implements AuthService {
           authServiceChannel
               .getUacServiceBlockingStub()
               .getUsersFuzzy(getUserRequestBuilder.build());
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
       paginationDTO.setUserInfoList(response.getUserInfosList());
@@ -255,8 +255,7 @@ public class AuthServiceUtils implements AuthService {
 
   @Override
   public Workspace workspaceIdByName(boolean retry, String workspaceName) {
-    try (AuthServiceChannel authServiceChannel =
-        getAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       GetWorkspaceByName.Builder getWorkspaceByName =
           GetWorkspaceByName.newBuilder().setName(workspaceName);
 
@@ -266,7 +265,7 @@ public class AuthServiceUtils implements AuthService {
           authServiceChannel
               .getWorkspaceServiceBlockingStub()
               .getWorkspaceByName(getWorkspaceByName.build());
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       return workspace;
     } catch (StatusRuntimeException ex) {
       return (Workspace)
@@ -280,8 +279,7 @@ public class AuthServiceUtils implements AuthService {
 
   @Override
   public Workspace workspaceById(boolean retry, Long workspaceId) {
-    try (AuthServiceChannel authServiceChannel =
-                 getAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       GetWorkspaceById.Builder getWorkspaceById = GetWorkspaceById.newBuilder().setId(workspaceId);
 
       LOGGER.trace("get workspaceById: ID : {}", workspaceId);
@@ -290,7 +288,7 @@ public class AuthServiceUtils implements AuthService {
           authServiceChannel
               .getWorkspaceServiceBlockingStub()
               .getWorkspaceById(getWorkspaceById.build());
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       return workspace;
     } catch (StatusRuntimeException ex) {
       return (Workspace)
