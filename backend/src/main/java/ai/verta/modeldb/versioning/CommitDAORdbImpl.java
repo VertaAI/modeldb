@@ -33,6 +33,9 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.UserInfo;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolStringList;
 import com.google.protobuf.Value;
@@ -48,6 +51,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
@@ -68,6 +76,28 @@ public class CommitDAORdbImpl implements CommitDAO {
     this.roleService = roleService;
   }
 
+  private static final long CACHE_SIZE = 1000;
+  private static final int DURATION = 10;
+
+  private LoadingCache<String, ReadWriteLock> locks =
+      CacheBuilder.newBuilder()
+          .maximumSize(CACHE_SIZE)
+          .expireAfterWrite(DURATION, TimeUnit.MINUTES)
+          .build(
+              new CacheLoader<String, ReadWriteLock>() {
+                public ReadWriteLock load(String lockKey) {
+                  return new ReentrantReadWriteLock() {};
+                }
+              });
+
+  protected AutoCloseable acquireWriteLock(String lockKey) throws ExecutionException {
+    LOGGER.debug("acquireWriteLock for key: {}", lockKey);
+    ReadWriteLock lock = locks.get(lockKey);
+    Lock writeLock = lock.writeLock();
+    writeLock.lock();
+    return writeLock::unlock;
+  }
+
   /**
    * commit : details of the commit and the blobs to be added setBlobs : recursively creates trees
    * and blobs in top down fashion and generates SHAs in bottom up fashion getRepository : fetches
@@ -81,22 +111,24 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryFunction getRepository)
       throws ModelDBException, NoSuchAlgorithmException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      session.beginTransaction();
-      final String rootSha = setBlobs.apply(session);
-      RepositoryEntity repositoryEntity = getRepository.apply(session);
+      try (AutoCloseable ignored = acquireWriteLock(commit.getCommitSha())) {
+        session.beginTransaction();
+        final String rootSha = setBlobs.apply(session);
+        RepositoryEntity repositoryEntity = getRepository.apply(session);
 
-      CommitEntity commitEntity =
-          saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
-      setBlobsAttributes.apply(session, repositoryEntity.getId(), commitEntity.getCommit_hash());
-      session.getTransaction().commit();
-      return CreateCommitRequest.Response.newBuilder()
-          .setCommit(commitEntity.toCommitProto())
-          .build();
+        CommitEntity commitEntity =
+            saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
+        setBlobsAttributes.apply(session, repositoryEntity.getId(), commitEntity.getCommit_hash());
+        session.getTransaction().commit();
+        return CreateCommitRequest.Response.newBuilder()
+            .setCommit(commitEntity.toCommitProto())
+            .build();
+      }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setCommit(author, commit, setBlobs, setBlobsAttributes, getRepository);
       } else {
-        throw ex;
+        throw new ModelDBException(ex);
       }
     }
   }
@@ -336,9 +368,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             .build();
     CommitEntity commitEntity =
         new CommitEntity(repositoryEntity, parentOrderMap, internalCommit, rootSha);
-    if (!session.contains(commitEntity)) {
-      session.saveOrUpdate(commitEntity);
-    }
+    session.saveOrUpdate(commitEntity);
     return commitEntity;
   }
 

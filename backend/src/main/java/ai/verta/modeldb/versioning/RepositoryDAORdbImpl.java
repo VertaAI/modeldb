@@ -1027,9 +1027,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
 
     branchEntity = new BranchEntity(repository.getId(), commitSHA, branch);
-    if (!session.contains(branchEntity)) {
-      session.save(branchEntity);
-    }
+    session.save(branchEntity);
   }
 
   @Override
