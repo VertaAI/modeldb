@@ -158,6 +158,10 @@ class Connection:
 
         print(curl)
 
+    @staticmethod
+    def is_html_response(response):
+        return response.text.strip().endswith("</html>")
+
     def is_workspace(self, workspace_name):
         msg = Workspace_pb2.GetWorkspaceByName(name=workspace_name)
         response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getWorkspaceByName", params=msg)
@@ -192,22 +196,25 @@ class Connection:
         if email is not None:
             msg = UACService_pb2.GetUser(email=email)
             response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getUser", params=msg)
-            if response.ok:
-                return self.must_proto_response(response, UACService_pb2.UserInfo).verta_info.username
-            elif response.status_code == 404:  # UAC not found
-                pass
+
+            if ((response.ok and self.is_html_response(response))  # fetched webapp
+                    or response.status_code == 404):  # UAC not found
+                pass  # fall through to OSS default workspace
             else:
-                raise_for_http_error(response)
+                return self.must_proto_response(response, UACService_pb2.UserInfo).verta_info.username
         return self._OSS_DEFAULT_WORKSPACE
 
     def get_default_workspace(self):
-        # TODO: verify this works in OSS
         response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getCurrentUser")
-        user_info = self.must_proto_response(response, UACService_pb2.UserInfo)
 
+        if ((response.ok and self.is_html_response(response))  # fetched webapp
+                or response.status_code == 404):  # UAC not found
+            return self._OSS_DEFAULT_WORKSPACE
+
+        user_info = self.must_proto_response(response, UACService_pb2.UserInfo)
         workspace_id = user_info.verta_info.default_workspace_id
         if workspace_id:
-            # TODO: verify this is new vs legacy
+            # TODO: verify this is new, not legacy
             return self.get_workspace_name_from_id(workspace_id)
         else:  # old backend
             return self.get_personal_workspace()
