@@ -313,7 +313,7 @@ class Client(object):
             workspace = self._config.get("workspace")
 
         if not workspace:
-            self._conn.get_default_workspace()
+            workspace = self._conn.get_default_workspace()
 
         return workspace
 
