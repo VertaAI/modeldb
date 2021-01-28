@@ -7,7 +7,7 @@ import re
 import requests
 import warnings
 
-from .entity import _ModelDBEntity, _OSS_DEFAULT_WORKSPACE
+from .entity import _ModelDBEntity
 from .experimentruns import ExperimentRuns
 from .experiments import Experiments
 
@@ -74,9 +74,9 @@ class Project(_ModelDBEntity):
         self._refresh_cache()
 
         if self._msg.workspace_id:
-            return self._get_workspace_name_by_id(self._msg.workspace_id)
+            return self._conn.get_workspace_name_from_legacy_id(self._msg.workspace_id)
         else:
-            return _OSS_DEFAULT_WORKSPACE
+            return self._conn._OSS_DEFAULT_WORKSPACE
 
     @classmethod
     def _generate_default_name(cls):

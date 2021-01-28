@@ -3,10 +3,9 @@
 from __future__ import print_function
 import requests
 
-from .entity_registry import _ModelDBRegistryEntity
 from .._internal_utils._utils import NoneProtoResponse, check_unnecessary_params_warning
-from .._tracking.entity import _OSS_DEFAULT_WORKSPACE
 from .._tracking.context import _Context
+from .._tracking.entity import _ModelDBEntity
 from .._internal_utils import _utils
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -16,7 +15,7 @@ from .modelversion import RegisteredModelVersion
 from .modelversions import RegisteredModelVersions
 
 
-class RegisteredModel(_ModelDBRegistryEntity):
+class RegisteredModel(_ModelDBEntity):
     """
     Object representing a registered model.
 
@@ -61,9 +60,9 @@ class RegisteredModel(_ModelDBRegistryEntity):
         self._refresh_cache()
 
         if self._msg.workspace_id:
-            return self._get_workspace_name_by_id(self._msg.workspace_id)
+            return self._conn.get_workspace_name_from_id(self._msg.workspace_id)
         else:
-            return _OSS_DEFAULT_WORKSPACE
+            return self._conn._OSS_DEFAULT_WORKSPACE
 
     def get_or_create_version(self, name=None, desc=None, labels=None, attrs=None, id=None, time_created=None):
         """

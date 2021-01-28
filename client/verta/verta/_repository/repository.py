@@ -53,7 +53,13 @@ class Repository(object):
 
     @property
     def workspace(self):
-        raise NotImplementedError
+        # TODO: replace with self._msg when refactor to subclass _ModelDBEntity
+        msg = self._get_proto_by_id(self._conn, self.id)
+
+        if msg.workspace_id:
+            return self._conn.get_workspace_name_from_legacy_id(msg.workspace_id)
+        else:
+            return self._conn._OSS_DEFAULT_WORKSPACE
 
     @classmethod
     def _create(cls, conn, name, workspace, public_within_org, visibility):

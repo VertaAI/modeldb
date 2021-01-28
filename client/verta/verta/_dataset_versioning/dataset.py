@@ -72,9 +72,9 @@ class Dataset(entity._ModelDBEntity):
         self._refresh_cache()
 
         if self._msg.workspace_id:
-            return self._get_workspace_name_by_id(self._msg.workspace_id)
+            return self._conn.get_workspace_name_from_legacy_id(self._msg.workspace_id)
         else:
-            return entity._OSS_DEFAULT_WORKSPACE
+            return self._conn._OSS_DEFAULT_WORKSPACE
 
     @property
     def versions(self):
