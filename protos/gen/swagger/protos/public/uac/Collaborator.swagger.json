@@ -436,6 +436,13 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "resource_name",
+            "description": "Optional. If Provided, workspace, resource service, type should be provided.",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
