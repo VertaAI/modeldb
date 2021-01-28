@@ -34,6 +34,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
@@ -78,155 +79,135 @@ public class CollaboratorResourceMigration {
 
     Set<String> knownMissingUsers = new HashSet<>();
 
-    while (lowerBound < count) {
-      LOGGER.debug("Migrated Projects: {}/{}", lowerBound, count);
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+      CriteriaQuery<ProjectEntity> criteriaQuery = criteriaBuilder.createQuery(ProjectEntity.class);
+      Root<ProjectEntity> root = criteriaQuery.from(ProjectEntity.class);
 
-        CriteriaQuery<ProjectEntity> criteriaQuery =
-            criteriaBuilder.createQuery(ProjectEntity.class);
-        Root<ProjectEntity> root = criteriaQuery.from(ProjectEntity.class);
+      CriteriaQuery<ProjectEntity> selectQuery =
+          criteriaQuery
+              .select(root)
+              .where(
+                  criteriaBuilder.and(
+                      criteriaBuilder.equal(root.get("visibility_migration"), false),
+                      criteriaBuilder.equal(root.get("created"), true)));
 
-        CriteriaQuery<ProjectEntity> selectQuery =
-            criteriaQuery
-                .select(root)
-                .where(
-                    criteriaBuilder.and(
-                        criteriaBuilder.equal(root.get("visibility_migration"), false),
-                        criteriaBuilder.equal(root.get("created"), true)));
+      TypedQuery<ProjectEntity> typedQuery = session.createQuery(selectQuery);
+      Stream<ProjectEntity> projectEntities = typedQuery.getResultStream();
+      Iterator<ProjectEntity> iterator = projectEntities.iterator();
 
-        TypedQuery<ProjectEntity> typedQuery = session.createQuery(selectQuery);
+      Map<String, UserInfo> userInfoMap = new HashMap<>();
 
-        typedQuery.setFirstResult(lowerBound);
-        typedQuery.setMaxResults(pagesize);
-        List<ProjectEntity> projectEntities = typedQuery.getResultList();
+      int counter = 0;
+      while (iterator.hasNext()) {
+        LOGGER.debug("Migrated Projects: {}/{}", counter, count);
+        counter++;
 
-        if (projectEntities.size() > 0) {
-          Set<String> userIds = new HashSet<>();
-          Set<String> newVisibilityProjectIds = new HashSet<>();
-          for (ProjectEntity projectEntity : projectEntities) {
-            if (projectEntity.getOwner() != null && !projectEntity.getOwner().isEmpty()) {
-              userIds.add(projectEntity.getOwner());
+        ProjectEntity project = iterator.next();
+
+        boolean migrated = false;
+        if (project.getOwner() != null && !project.getOwner().isEmpty()) {
+          WorkspaceDTO workspaceDTO;
+          if (knownMissingUsers.contains(project.getOwner())) {
+            LOGGER.warn("User {} is known to be missing (skipping)", project.getOwner());
+            continue;
+          }
+          if (!userInfoMap.containsKey(project.getOwner())) {
+            try {
+              userInfoMap.putAll(
+                  authService.getUserInfoFromAuthServer(
+                      Collections.singleton(project.getOwner()), null, null));
+            } catch (StatusRuntimeException ex) {
+              if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
+                knownMissingUsers.add(project.getOwner());
+                LOGGER.warn("Failed to get user info (skipping) : " + ex.toString());
+                continue;
+              }
+              throw ex;
+            }
+          }
+          try {
+            workspaceDTO =
+                roleService.getWorkspaceDTOByWorkspaceId(
+                    userInfoMap.get(project.getOwner()),
+                    project.getWorkspace(),
+                    project.getWorkspace_type());
+          } catch (StatusRuntimeException ex) {
+            if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
+              knownMissingUsers.add(project.getOwner());
+              LOGGER.warn("Failed to get workspace (skipping) : " + ex.toString());
+              continue;
+            }
+            throw ex;
+          }
+          Long owner;
+          try {
+            owner = Long.parseLong(project.getOwner());
+          } catch (NumberFormatException ex) {
+            LOGGER.warn("Failed to convert owner (skipping) : " + ex.toString());
+            continue;
+          }
+          // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
+          // ignore the CollaboratorType
+          try {
+            roleService.createWorkspacePermissions(
+                workspaceDTO.getWorkspaceName(),
+                project.getId(),
+                project.getName(),
+                Optional.of(owner),
+                ModelDBServiceResourceTypes.PROJECT,
+                CollaboratorPermissions.newBuilder()
+                    .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                    .build(),
+                getResourceVisibility(
+                    Optional.ofNullable(
+                        WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
+                    VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
+          } catch (StatusRuntimeException ex) {
+            if (ex.getStatus().getCode() == Status.Code.ALREADY_EXISTS) {
+              LOGGER.info(
+                  "Resource seem to have already been created (ignoring) : " + ex.toString());
             } else {
-              newVisibilityProjectIds.add(projectEntity.getId());
+              throw ex;
             }
           }
-          LOGGER.debug("Project userId list : " + userIds);
-
-          // Fetch the project owners userInfo
-          Map<String, UserInfo> userInfoMap = new HashMap<>();
-          if (!userIds.isEmpty()) {
-            userInfoMap.putAll(authService.getUserInfoFromAuthServer(userIds, null, null));
-          }
-
-          List<GetResourcesResponseItem> responseItems =
+          migrated = true;
+        } else {
+          List<GetResourcesResponseItem> resources =
               roleService.getResourceItems(
-                  null, newVisibilityProjectIds, ModelDBServiceResourceTypes.PROJECT);
-          Map<String, GetResourcesResponseItem> responseItemMap =
-              responseItems.stream()
-                  .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
-
-          for (ProjectEntity project : projectEntities) {
-            boolean migrated = false;
-            if (project.getOwner() != null && !project.getOwner().isEmpty()) {
-              WorkspaceDTO workspaceDTO;
-              if (knownMissingUsers.contains(project.getOwner())) {
-                LOGGER.warn("User {} is known to be missing (skipping)", project.getOwner());
-                continue;
-              }
-              try {
-                workspaceDTO =
-                    roleService.getWorkspaceDTOByWorkspaceId(
-                        userInfoMap.get(project.getOwner()),
-                        project.getWorkspace(),
-                        project.getWorkspace_type());
-              } catch (StatusRuntimeException ex) {
-                if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
-                  knownMissingUsers.add(project.getOwner());
-                  LOGGER.warn("Failed to get workspace (skipping) : " + ex.toString());
-                  continue;
-                }
-                throw ex;
-              }
-              Long owner;
-              try {
-                owner = Long.parseLong(project.getOwner());
-              } catch (NumberFormatException ex) {
-                LOGGER.warn("Failed to convert owner (skipping) : " + ex.toString());
-                continue;
-              }
-              // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
-              // ignore the CollaboratorType
-              try {
-                roleService.createWorkspacePermissions(
-                    workspaceDTO.getWorkspaceName(),
-                    project.getId(),
-                    project.getName(),
-                    Optional.of(owner),
-                    ModelDBServiceResourceTypes.PROJECT,
-                    CollaboratorPermissions.newBuilder()
-                        .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
-                        .build(),
-                    getResourceVisibility(
-                        Optional.ofNullable(
-                            WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
-                        VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
-              } catch (StatusRuntimeException ex) {
-                if (ex.getStatus().getCode() == Status.Code.ALREADY_EXISTS) {
-                  LOGGER.info(
-                      "Resource seem to have already been created (ignoring) : " + ex.toString());
-                } else {
-                  throw ex;
-                }
-              }
-              migrated = true;
-            } else if (responseItemMap.containsKey(project.getId())) {
-              GetResourcesResponseItem resourceDetails = responseItemMap.get(project.getId());
-              try {
-                roleService.createWorkspacePermissions(
-                    resourceDetails.getWorkspaceId(),
-                    Optional.empty(),
-                    project.getId(),
-                    project.getName(),
-                    Optional.of(resourceDetails.getOwnerId()),
-                    ModelDBServiceResourceTypes.PROJECT,
-                    resourceDetails.getCustomPermission(),
-                    resourceDetails.getVisibility());
-              } catch (StatusRuntimeException ex) {
-                if (ex.getStatus().getCode() == Status.Code.ALREADY_EXISTS) {
-                  LOGGER.info(
-                      "Resource seem to have already been created (ignoring) : " + ex.toString());
-                } else {
-                  throw ex;
-                }
-              }
-              migrated = true;
-            }
-            if (migrated) {
-              Transaction transaction = null;
-              try {
-                deleteRoleBindingsForProjects(Collections.singletonList(project));
-                transaction = session.beginTransaction();
-                project.setVisibility_migration(true);
-                session.update(project);
-                transaction.commit();
-              } catch (Exception ex) {
-                if (transaction != null && transaction.getStatus().canRollback()) {
-                  transaction.rollback();
-                }
+                  null,
+                  Collections.singleton(project.getId()),
+                  ModelDBServiceResourceTypes.PROJECT);
+          if (!resources.isEmpty()) {
+            GetResourcesResponseItem resourceDetails = resources.get(0);
+            roleService.createWorkspacePermissions(
+                resourceDetails.getWorkspaceId(),
+                Optional.empty(),
+                project.getId(),
+                project.getName(),
+                Optional.of(resourceDetails.getOwnerId()),
+                ModelDBServiceResourceTypes.PROJECT,
+                resourceDetails.getCustomPermission(),
+                resourceDetails.getVisibility());
+            migrated = true;
+          }
+        }
+        if (migrated) {
+          deleteRoleBindingsForProjects(Collections.singletonList(project));
+          try (Session session1 = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = null;
+            try {
+              transaction = session1.beginTransaction();
+              project.setVisibility_migration(true);
+              session.update(project);
+              transaction.commit();
+            } catch (Exception ex) {
+              if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
               }
             }
           }
-        } else {
-          LOGGER.debug("Total projects count 0");
-        }
-        lowerBound += pagesize;
-      } catch (Exception ex) {
-        if (ModelDBUtils.needToRetry(ex)) {
-          migrateProjects();
-        } else {
-          throw ex;
         }
       }
     }
