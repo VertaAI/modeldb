@@ -250,15 +250,15 @@ class Client(object):
 
     @property
     def projects(self):
-        return Projects(self._conn, self._conf)
+        return Projects(self._conn, self._conf).with_workspace(self.get_workspace())
 
     @property
     def experiments(self):
-        return Experiments(self._conn, self._conf)
+        return Experiments(self._conn, self._conf).with_workspace(self.get_workspace())
 
     @property
     def expt_runs(self):
-        return ExperimentRuns(self._conn, self._conf)
+        return ExperimentRuns(self._conn, self._conf).with_workspace(self.get_workspace())
 
     def _load_config(self):
         with _config_utils.read_merged_config() as config:
@@ -857,11 +857,11 @@ class Client(object):
 
     @property
     def registered_models(self):
-        return RegisteredModels(self._conn, self._conf)
+        return RegisteredModels(self._conn, self._conf).with_workspace(self.get_workspace())
 
     @property
     def registered_model_versions(self):
-        return RegisteredModelVersions(self._conn, self._conf)
+        return RegisteredModelVersions(self._conn, self._conf).with_workspace(self.get_workspace())
 
     def get_or_create_endpoint(self, path=None, description=None, workspace=None, public_within_org=None, visibility=None, id=None):
         """
@@ -1428,7 +1428,7 @@ class Client(object):
 
     @property
     def datasets(self):
-        return Datasets(self._conn, self._conf)
+        return Datasets(self._conn, self._conf).with_workspace(self.get_workspace())
 
     def get_dataset_version(self, id):
         """

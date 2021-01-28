@@ -50,3 +50,9 @@ class Experiments(_utils.LazyList):
         else:
             new_list._msg.project_id = ''
         return new_list
+
+    def with_workspace(self, workspace_name=None):
+        new_list = copy.deepcopy(self)
+        new_list._msg.ClearField('project_id')
+        new_list._msg.workspace_name = workspace_name or ''
+        return new_list
