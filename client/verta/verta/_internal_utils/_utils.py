@@ -208,7 +208,6 @@ class Connection:
         user_info = self.must_proto_response(response, UACService_pb2.UserInfo)
         workspace_id = user_info.verta_info.default_workspace_id
         if workspace_id:
-            # TODO: verify this is new, not legacy
             return self.get_workspace_name_from_id(workspace_id)
         else:  # old backend
             return self.get_personal_workspace()
