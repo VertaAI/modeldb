@@ -2,7 +2,6 @@
 Original collaboration/sharing tests, before the visibility overhaul.
 
 """
-
 import pytest
 
 from verta._internal_utils import _utils
