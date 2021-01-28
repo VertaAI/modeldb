@@ -10,6 +10,10 @@ from .._internal_utils import _utils
 
 @six.add_metaclass(abc.ABCMeta)
 class _Visibility(object):
+    """
+    Base class for visibility. Not for human consumption.
+
+    """
     def __repr__(self):
         return "<{} visibility>".format(self.__class__.__name__)
 

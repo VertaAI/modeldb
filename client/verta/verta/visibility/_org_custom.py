@@ -5,6 +5,27 @@ from ._visibility import _Visibility
 
 
 class OrgCustom(_Visibility):
+    """
+    Organization-wide access with manually-specified permissions.
+
+    Parameters
+    ----------
+    write : bool, default False
+        Whether to allow organization members to write. ``False`` gives
+        read-only access.
+    deploy : bool, default False
+        Whether to allow organization members to deploy. Only applicable to
+        projects and registered models.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.visibility import OrgCustom
+        visibility = OrgCustom(write=True, deploy=True)
+        client.create_project("My Project", workspace="my-org", visibility=visibility)
+
+    """
     def __init__(self, write=False, deploy=False):
         if not isinstance(write, bool):
             raise TypeError("`write` must be of type bool, not {}".format(type(write)))

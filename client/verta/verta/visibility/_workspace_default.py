@@ -4,6 +4,10 @@ from ._visibility import _Visibility
 
 
 class _WorkspaceDefault(_Visibility):
+    """
+    Default for the workspace. Not for human consumption.
+
+    """
     def _to_public_within_org(self):
         return None
 
