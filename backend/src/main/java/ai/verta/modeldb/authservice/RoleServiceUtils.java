@@ -23,11 +23,12 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.rpc.Code;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleServiceUtils
     implements RoleService {
@@ -122,12 +123,12 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
                             .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                     .build())
             .build();
-    LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+    LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
     GetAllowedEntities.Response getAllowedEntitiesResponse =
         authServiceChannel
             .getAuthzServiceBlockingStub(requestHeaders)
             .getAllowedEntities(getAllowedEntitiesRequest);
-    LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+    LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
     LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedEntitiesResponse);
 
     Set<CollaboratorBase> collaborators = new HashSet<>();
@@ -328,7 +329,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       return Optional.empty();
     }
     try (final AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info("Fetching workspace " + legacyWorkspaceId);
+      LOGGER.trace("Fetching workspace " + legacyWorkspaceId);
       final Workspace workspace =
           authServiceChannel
               .getWorkspaceServiceBlockingStub()
@@ -337,7 +338,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
                       .setId(legacyWorkspaceId)
                       .setWorkspaceType(workspaceType)
                       .build());
-      LOGGER.info("Got workspace " + workspace);
+      LOGGER.trace("Got workspace " + workspace);
       return Optional.of(workspace);
     } catch (StatusRuntimeException ex) {
       ModelDBUtils.retryOrThrowException(ex, false, (RetryCallInterface<Void>) (retry1) -> null);
@@ -542,13 +543,13 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
                     .build())
             .build();
     try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.info(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
 
       RemoveResources.Response removeAllCollaboratorResponse =
           authServiceChannel
               .getRoleServiceBlockingStub()
               .removeResources(removeAllCollaboratorsRequest);
-      LOGGER.info(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(
           CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, removeAllCollaboratorResponse);
 
