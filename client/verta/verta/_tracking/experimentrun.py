@@ -105,7 +105,7 @@ class ExperimentRun(_DeployableEntity):
             # workspace is OSS default
             return self._conn._OSS_DEFAULT_WORKSPACE
         else:
-            return self._get_workspace_name_by_id(project_json['workspace_id'])
+            return self._conn.get_workspace_name_from_legacy_id(project_json['workspace_id'])
 
     @property
     def name(self):

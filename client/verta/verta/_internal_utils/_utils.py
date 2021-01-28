@@ -30,6 +30,7 @@ from ..external import six
 from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
+from .._protos.public.uac import Organization_pb2, UACService_pb2, Workspace_pb2
 
 from . import importer
 
@@ -157,6 +158,29 @@ class Connection:
 
         print(curl)
 
+    def get_workspace_name_from_legacy_id(self, workspace_id):
+        """For project and dataset, which were pre-workspace service."""
+        # try getting organization
+        msg = Organization_pb2.GetOrganizationById(org_id=workspace_id)
+        response = self.make_proto_request("GET", "/api/v1/uac-proxy/organization/getOrganizationById", params=msg)
+        if not response.ok:
+            # try getting user
+            msg = UACService_pb2.GetUser(user_id=workspace_id)
+            response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getUser", params=msg)
+            # workspace is user
+            return self.must_proto_response(response, UACService_pb2.UserInfo).verta_info.username
+        else:
+            # workspace is organization
+            return self.must_proto_response(response, msg.Response).organization.name
+
+    def get_workspace_name_from_id(self, workspace_id):
+        """For registry, which uses workspace service."""
+        msg = Workspace_pb2.GetWorkspaceById(id=int(workspace_id))
+        response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getWorkspaceById", params=msg)
+
+        workspace = self.must_proto_response(response, Workspace_pb2.Workspace)
+        return workspace.username or workspace.org_name
+
 
 class NoneProtoResponse(object):
     def __init__(self):
@@ -200,7 +224,7 @@ class LazyList(object):
     _VALID_QUERY_KEYS = None  # NOTE: must be overridden by subclasses
 
     def __init__(self, conn, conf, msg):
-        self._conn = conn
+        self = conn
         self._conf = conf
         self._msg = msg  # protobuf msg used to make back end calls
 
