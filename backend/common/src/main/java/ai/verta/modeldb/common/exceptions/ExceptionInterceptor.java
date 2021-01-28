@@ -1,7 +1,12 @@
 package ai.verta.modeldb.common.exceptions;
 
-import ai.verta.modeldb.utils.ModelDBUtils;
-import io.grpc.*;
+import ai.verta.modeldb.common.CommonUtils;
+import io.grpc.ForwardingServerCallListener;
+import io.grpc.Metadata;
+import io.grpc.ServerCall;
+import io.grpc.ServerCallHandler;
+import io.grpc.ServerInterceptor;
+import io.grpc.StatusRuntimeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -52,7 +57,7 @@ public class ExceptionInterceptor implements ServerInterceptor {
 
     private void handleException(
         RuntimeException exception, ServerCall<ReqT, RespT> serverCall, Metadata metadata) {
-      StatusRuntimeException status = ModelDBUtils.logError(exception);
+      StatusRuntimeException status = CommonUtils.logError(exception);
       serverCall.close(status.getStatus(), metadata);
     }
   }

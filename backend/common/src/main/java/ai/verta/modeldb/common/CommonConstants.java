@@ -9,6 +9,7 @@ public interface CommonConstants {
   Integer MIN_CONNECTION_SIZE_DEFAULT = 5;
   Integer MAX_CONNECTION_SIZE_DEFAULT = 20;
   Integer CONNECTION_TIMEOUT_DEFAULT = 300;
+  String INTERNAL_ERROR = "Internal server error";
 
   enum UserIdentifier {
     VERTA_ID,

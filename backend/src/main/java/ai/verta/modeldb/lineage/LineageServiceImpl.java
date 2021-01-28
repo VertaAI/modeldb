@@ -8,9 +8,9 @@ import ai.verta.modeldb.FindAllInputsOutputs;
 import ai.verta.modeldb.FindAllOutputs;
 import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CommitDAO;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
@@ -47,7 +47,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, AddLineage.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, AddLineage.Response.getDefaultInstance());
     }
   }
 
@@ -68,7 +68,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, DeleteLineage.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, DeleteLineage.Response.getDefaultInstance());
     }
   }
 
@@ -83,7 +83,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, FindAllInputs.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, FindAllInputs.Response.getDefaultInstance());
     }
   }
 
@@ -98,7 +98,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, FindAllOutputs.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, FindAllOutputs.Response.getDefaultInstance());
     }
   }
 
@@ -114,7 +114,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, FindAllInputsOutputs.Response.getDefaultInstance());
     }
   }

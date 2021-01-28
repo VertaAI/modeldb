@@ -9,6 +9,7 @@ import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceImplBase;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -197,7 +198,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, CreateExperimentRun.Response.getDefaultInstance());
     }
   }
@@ -219,7 +220,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteExperimentRun.Response.getDefaultInstance());
     }
   }
@@ -256,7 +257,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetExperimentRunsInProject.Response.getDefaultInstance());
     }
   }
@@ -301,7 +302,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetExperimentRunsInExperiment.Response.getDefaultInstance());
     }
   }
@@ -339,7 +340,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetExperimentRunById.Response.getDefaultInstance());
     }
   }
@@ -401,7 +402,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetExperimentRunByName.Response.getDefaultInstance());
     }
   }
@@ -441,7 +442,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateExperimentRunDescription.Response.getDefaultInstance());
     }
   }
@@ -488,7 +489,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateExperimentRunName.Response.getDefaultInstance());
     }
   }
@@ -536,7 +537,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AddExperimentRunTags.Response.getDefaultInstance());
     }
   }
@@ -578,7 +579,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AddExperimentRunTag.Response.getDefaultInstance());
     }
   }
@@ -602,7 +603,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
     }
   }
 
@@ -649,7 +650,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteExperimentRunTags.Response.getDefaultInstance());
     }
   }
@@ -694,7 +695,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteExperimentRunTag.Response.getDefaultInstance());
     }
   }
@@ -738,7 +739,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AddExperimentRunAttributes.Response.getDefaultInstance());
     }
   }
@@ -785,7 +786,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteExperimentRunAttributes.Response.getDefaultInstance());
     }
   }
@@ -830,7 +831,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogObservation.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogObservation.Response.getDefaultInstance());
     }
   }
 
@@ -870,7 +871,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogObservations.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogObservations.Response.getDefaultInstance());
     }
   }
 
@@ -903,7 +904,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetObservations.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetObservations.Response.getDefaultInstance());
     }
   }
 
@@ -944,7 +945,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogMetric.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogMetric.Response.getDefaultInstance());
     }
   }
 
@@ -983,7 +984,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogMetrics.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogMetrics.Response.getDefaultInstance());
     }
   }
 
@@ -1005,7 +1006,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetMetrics.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetMetrics.Response.getDefaultInstance());
     }
   }
 
@@ -1029,7 +1030,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -1113,7 +1114,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetUrlForArtifact.Response.getDefaultInstance());
     }
   }
@@ -1221,7 +1222,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogArtifact.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogArtifact.Response.getDefaultInstance());
     }
   }
 
@@ -1264,7 +1265,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogArtifacts.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogArtifacts.Response.getDefaultInstance());
     }
   }
 
@@ -1288,7 +1289,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetArtifacts.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetArtifacts.Response.getDefaultInstance());
     }
   }
 
@@ -1347,7 +1348,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, LogExperimentRunCodeVersion.Response.getDefaultInstance());
     }
   }
@@ -1379,7 +1380,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetExperimentRunCodeVersion.Response.getDefaultInstance());
     }
   }
@@ -1422,7 +1423,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, LogHyperparameter.Response.getDefaultInstance());
     }
   }
@@ -1464,7 +1465,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, LogHyperparameters.Response.getDefaultInstance());
     }
   }
@@ -1492,7 +1493,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetHyperparameters.Response.getDefaultInstance());
     }
   }
@@ -1532,7 +1533,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogAttribute.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogAttribute.Response.getDefaultInstance());
     }
   }
 
@@ -1572,7 +1573,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogAttributes.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -1608,7 +1609,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetAttributes.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetAttributes.Response.getDefaultInstance());
     }
   }
 
@@ -1643,7 +1644,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, FindExperimentRuns.Response.getDefaultInstance());
     }
   }
@@ -1675,7 +1676,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, SortExperimentRuns.Response.getDefaultInstance());
     }
   }
@@ -1710,7 +1711,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, TopExperimentRunsSelector.Response.getDefaultInstance());
     }
   }
@@ -1746,7 +1747,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogJobId.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogJobId.Response.getDefaultInstance());
     }
   }
 
@@ -1768,7 +1769,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetJobId.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetJobId.Response.getDefaultInstance());
     }
   }
 
@@ -1805,7 +1806,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetChildrenExperimentRuns.Response.getDefaultInstance());
     }
   }
@@ -1857,7 +1858,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, SetParentExperimentRunId.Response.getDefaultInstance());
     }
   }
@@ -1900,7 +1901,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogDataset.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogDataset.Response.getDefaultInstance());
     }
   }
 
@@ -1937,7 +1938,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -1974,7 +1975,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, DeleteArtifact.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, DeleteArtifact.Response.getDefaultInstance());
     }
   }
 
@@ -1998,7 +1999,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteExperimentRuns.Response.getDefaultInstance());
     }
   }
@@ -2030,7 +2031,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(LogVersionedInput.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, LogVersionedInput.Response.getDefaultInstance());
     }
   }
@@ -2052,7 +2053,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetVersionedInput.Response.getDefaultInstance());
     }
   }
@@ -2096,7 +2097,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, CommitArtifactPart.Response.getDefaultInstance());
     }
   }
@@ -2127,7 +2128,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetCommittedArtifactParts.Response.getDefaultInstance());
     }
   }
@@ -2176,7 +2177,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, CommitMultipartArtifact.Response.getDefaultInstance());
     }
   }
@@ -2217,7 +2218,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(DeleteHyperparameters.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteHyperparameters.Response.getDefaultInstance());
     }
   }
@@ -2257,7 +2258,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(DeleteMetrics.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, DeleteMetrics.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, DeleteMetrics.Response.getDefaultInstance());
     }
   }
 
@@ -2293,7 +2294,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(DeleteObservations.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteObservations.Response.getDefaultInstance());
     }
   }
@@ -2317,7 +2318,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, ListCommitExperimentRunsRequest.Response.getDefaultInstance());
     }
   }
@@ -2341,7 +2342,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, ListBlobExperimentRunsRequest.Response.getDefaultInstance());
     }
   }
@@ -2365,7 +2366,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetExperimentRunsByDatasetVersionId.Response.getDefaultInstance());
     }
   }
@@ -2391,7 +2392,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, CloneExperimentRun.Response.getDefaultInstance());
     }
   }
@@ -2422,7 +2423,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       responseObserver.onNext(LogEnvironment.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, LogEnvironment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, LogEnvironment.Response.getDefaultInstance());
     }
   }
 }
