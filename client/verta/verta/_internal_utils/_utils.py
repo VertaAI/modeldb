@@ -181,6 +181,19 @@ class Connection:
         workspace = self.must_proto_response(response, Workspace_pb2.Workspace)
         return workspace.username or workspace.org_name
 
+    def get_personal_workspace(self):
+        email = self.auth.get('Grpc-Metadata-email')
+        if email is not None:
+            msg = UACService_pb2.GetUser(email=email)
+            response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getUser", params=msg)
+            if response.ok:
+                return self.must_proto_response(response, UACService_pb2.UserInfo).verta_info.username
+            elif response.status_code == 404:  # UAC not found
+                pass
+            else:
+                raise_for_http_error(response)
+        return self._OSS_DEFAULT_WORKSPACE
+
 
 class NoneProtoResponse(object):
     def __init__(self):
