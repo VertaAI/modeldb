@@ -158,6 +158,12 @@ class Connection:
 
         print(curl)
 
+    def is_workspace(self, workspace_name):
+        msg = Workspace_pb2.GetWorkspaceByName(name=workspace_name)
+        response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getWorkspaceByName", params=msg)
+
+        return response.ok
+
     def get_workspace_name_from_legacy_id(self, workspace_id):
         """For project, dataset, and repository, which were pre-workspace service."""
         # try getting organization
