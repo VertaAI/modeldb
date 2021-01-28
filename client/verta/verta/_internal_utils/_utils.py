@@ -224,7 +224,7 @@ class LazyList(object):
     _VALID_QUERY_KEYS = None  # NOTE: must be overridden by subclasses
 
     def __init__(self, conn, conf, msg):
-        self = conn
+        self._conn = conn
         self._conf = conf
         self._msg = msg  # protobuf msg used to make back end calls
 
