@@ -2,7 +2,7 @@ API Reference
 =============
 
 All Verta functionality can be accessed via our APIs.
-The Verta API  functionality can be broken into four parts:
+The Verta API functionality can be broken into four parts:
 
 * Core APIs: used to establish connections to the Verta servers and manage authentication
 * Versioning and Metadata APIs: used to version models and manage metadata

@@ -1,3 +1,5 @@
+.. _sharing-tutorial:
+
 Sharing and collaboration
 =========================
 
