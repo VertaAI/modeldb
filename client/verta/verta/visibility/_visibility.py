@@ -10,6 +10,9 @@ from .._internal_utils import _utils
 
 @six.add_metaclass(abc.ABCMeta)
 class _Visibility(object):
+    def __repr__(self):
+        return "<{} visibility>".format(self.__class__.__name__)
+
     @staticmethod
     def _from_public_within_org(public_within_org):
         # imports here to avoid circular import in Python 2

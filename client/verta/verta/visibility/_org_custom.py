@@ -14,6 +14,9 @@ class OrgCustom(_Visibility):
         self._write = write
         self._deploy = deploy
 
+    def __repr__(self):
+        return "<{}(write={}, deploy={}) visibility>".format(self.__class__.__name__, self._write, self._deploy)
+
     def _to_public_within_org(self):
         # NOTE: old backends will unavoidably not receive `_write` and `_deploy`
         return True
