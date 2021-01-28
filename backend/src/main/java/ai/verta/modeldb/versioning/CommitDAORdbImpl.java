@@ -110,20 +110,19 @@ public class CommitDAORdbImpl implements CommitDAO {
       BlobFunction.BlobFunctionAttribute setBlobsAttributes,
       RepositoryFunction getRepository)
       throws ModelDBException, NoSuchAlgorithmException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      try (AutoCloseable ignored = acquireWriteLock(commit.getCommitSha())) {
-        session.beginTransaction();
-        final String rootSha = setBlobs.apply(session);
-        RepositoryEntity repositoryEntity = getRepository.apply(session);
+    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession();
+        AutoCloseable ignored = acquireWriteLock(commit.getCommitSha())) {
+      session.beginTransaction();
+      final String rootSha = setBlobs.apply(session);
+      RepositoryEntity repositoryEntity = getRepository.apply(session);
 
-        CommitEntity commitEntity =
-            saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
-        setBlobsAttributes.apply(session, repositoryEntity.getId(), commitEntity.getCommit_hash());
-        session.getTransaction().commit();
-        return CreateCommitRequest.Response.newBuilder()
-            .setCommit(commitEntity.toCommitProto())
-            .build();
-      }
+      CommitEntity commitEntity =
+          saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
+      setBlobsAttributes.apply(session, repositoryEntity.getId(), commitEntity.getCommit_hash());
+      session.getTransaction().commit();
+      return CreateCommitRequest.Response.newBuilder()
+          .setCommit(commitEntity.toCommitProto())
+          .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setCommit(author, commit, setBlobs, setBlobsAttributes, getRepository);
