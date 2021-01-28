@@ -148,7 +148,7 @@ class _ModelDBEntity(object):
             visibility = kwargs.pop(VISIBILITY_KEY)
             public_within_org = kwargs.pop(PUBLIC_WITHIN_ORG_KEY)
 
-            visibility, public_within_org = _visibility._Visibility.translate_public_within_org(visibility, public_within_org)
+            visibility, public_within_org = _visibility._Visibility._translate_public_within_org(visibility, public_within_org)
 
             kwargs[VISIBILITY_KEY] = visibility
             kwargs[PUBLIC_WITHIN_ORG_KEY] = public_within_org

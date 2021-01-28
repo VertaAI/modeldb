@@ -34,7 +34,7 @@ class _Visibility(object):
         raise NotImplementedError
 
     @staticmethod
-    def translate_public_within_org(visibility, public_within_org):
+    def _translate_public_within_org(visibility, public_within_org):
         """
         Helper that combines _from_public_within_org() and _to_public_within_org().
 

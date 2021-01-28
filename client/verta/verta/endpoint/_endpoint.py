@@ -102,7 +102,7 @@ class Endpoint(object):
     def _create_json(cls, conn, workspace, path, description=None, public_within_org=None, visibility=None):
         if not path.startswith('/'):
             path = '/' + path
-        visibility, public_within_org = _visibility._Visibility.translate_public_within_org(visibility, public_within_org)
+        visibility, public_within_org = _visibility._Visibility._translate_public_within_org(visibility, public_within_org)
 
         data = {
             'path': path,

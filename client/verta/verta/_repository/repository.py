@@ -57,7 +57,7 @@ class Repository(object):
 
     @classmethod
     def _create(cls, conn, name, workspace, public_within_org, visibility):
-        visibility, public_within_org = _visibility._Visibility.translate_public_within_org(visibility, public_within_org)
+        visibility, public_within_org = _visibility._Visibility._translate_public_within_org(visibility, public_within_org)
 
         msg = _VersioningService.Repository()
         msg.name = name
