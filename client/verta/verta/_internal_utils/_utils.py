@@ -159,7 +159,7 @@ class Connection:
         print(curl)
 
     def get_workspace_name_from_legacy_id(self, workspace_id):
-        """For project and dataset, which were pre-workspace service."""
+        """For project, dataset, and repository, which were pre-workspace service."""
         # try getting organization
         msg = Organization_pb2.GetOrganizationById(org_id=workspace_id)
         response = self.make_proto_request("GET", "/api/v1/uac-proxy/organization/getOrganizationById", params=msg)
