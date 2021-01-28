@@ -1,4 +1,4 @@
-package ai.verta.modeldb.common.exceptions;
+package ai.verta.modeldb.exceptions;
 
 import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.*;
