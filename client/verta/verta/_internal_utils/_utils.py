@@ -194,6 +194,18 @@ class Connection:
                 raise_for_http_error(response)
         return self._OSS_DEFAULT_WORKSPACE
 
+    def get_default_workspace(self):
+        # TODO: verify this works in OSS
+        response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getCurrentUser")
+        user_info = self.must_proto_response(response, UACService_pb2.UserInfo)
+
+        workspace_id = user_info.verta_info.default_workspace_id
+        if workspace_id:
+            # TODO: verify this is new vs legacy
+            return self.get_workspace_name_from_id(workspace_id)
+        else:  # old backend
+            return self.get_personal_workspace()
+
 
 class NoneProtoResponse(object):
     def __init__(self):
