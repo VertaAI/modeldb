@@ -450,6 +450,135 @@
         ]
       }
     },
+    "/collaborator/getResourcesInPersonalWorkspace": {
+      "get": {
+        "summary": "The caller must have permission to GET the resource accordingly",
+        "operationId": "CollaboratorService_getResourcesInPersonalWorkspace",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetResourcesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "resources.service",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ROLE_SERVICE",
+              "AUTHZ_SERVICE",
+              "MODELDB_SERVICE",
+              "DEPLOYMENT_SERVICE"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resources.resource_ids",
+            "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "resources.resource_type.role_service_resource_type",
+            "description": "Separate based on the service itself.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ROLE",
+              "ROLE_BINDING"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resources.resource_type.authz_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ORGANIZATION",
+              "TEAM"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resources.resource_type.modeldb_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "PROJECT",
+              "EXPERIMENT",
+              "EXPERIMENT_RUN",
+              "DATASET",
+              "DATASET_VERSION",
+              "DASHBOARD",
+              "REPOSITORY",
+              "REGISTERED_MODEL"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resources.resource_type.deployment_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ENDPOINT"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resource_name",
+            "description": "Optional. If Provided, workspace, resource service, type should be provided.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
     "/collaborator/removeDatasetCollaborator": {
       "delete": {
         "operationId": "CollaboratorService_removeDatasetCollaborator",
