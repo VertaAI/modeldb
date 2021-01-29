@@ -78,8 +78,6 @@ public class CollaboratorResourceMigration {
     final int pagesize = CollaboratorResourceMigration.paginationSize;
     LOGGER.debug("Total Projects to migrate {}", count);
 
-    //    Set<String> knownMissingUsers = new HashSet<>();
-
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
@@ -110,11 +108,6 @@ public class CollaboratorResourceMigration {
         boolean migrated = false;
         if (project.getOwner() != null && !project.getOwner().isEmpty()) {
           WorkspaceDTO workspaceDTO;
-          //          if (knownMissingUsers.contains(project.getOwner())) {
-          //            LOGGER.warn("User {} is known to be missing (skipping)",
-          // project.getOwner());
-          //            continue;
-          //          }
           if (!userInfoMap.containsKey(project.getOwner())) {
             try {
               userInfoMap.putAll(
@@ -122,7 +115,6 @@ public class CollaboratorResourceMigration {
                       Collections.singleton(project.getOwner()), null, null));
             } catch (StatusRuntimeException ex) {
               if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
-                //                knownMissingUsers.add(project.getOwner());
                 LOGGER.warn("Failed to get user info (skipping) : " + ex.toString());
                 continue;
               }
@@ -137,7 +129,6 @@ public class CollaboratorResourceMigration {
                     project.getWorkspace_type());
           } catch (StatusRuntimeException ex) {
             if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
-              //              knownMissingUsers.add(project.getOwner());
               LOGGER.warn("Failed to get workspace (skipping) : " + ex.toString());
               continue;
             }
@@ -226,8 +217,6 @@ public class CollaboratorResourceMigration {
 
     LOGGER.debug("Total Repositories to migrate {}", count);
 
-    //    Set<String> knownMissingUsers = new HashSet<>();
-
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
@@ -263,11 +252,6 @@ public class CollaboratorResourceMigration {
 
         if (repository.getOwner() != null && !repository.getOwner().isEmpty()) {
           WorkspaceDTO workspaceDTO;
-          //          if (knownMissingUsers.contains(repository.getOwner())) {
-          //            LOGGER.warn("User {} is known to be missing (skipping)",
-          // repository.getOwner());
-          //            continue;
-          //          }
           if (!userInfoMap.containsKey(repository.getOwner())) {
             try {
               userInfoMap.putAll(
@@ -275,7 +259,6 @@ public class CollaboratorResourceMigration {
                       Collections.singleton(repository.getOwner()), null, null));
             } catch (StatusRuntimeException ex) {
               if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
-                //                knownMissingUsers.add(repository.getOwner());
                 LOGGER.warn("Failed to get user info (skipping) : " + ex.toString());
                 continue;
               }
@@ -290,7 +273,6 @@ public class CollaboratorResourceMigration {
                     repository.getWorkspace_type());
           } catch (StatusRuntimeException ex) {
             if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
-              //              knownMissingUsers.add(repository.getOwner());
               LOGGER.warn("Failed to get workspace (skipping) : " + ex.toString());
               continue;
             }
