@@ -7,7 +7,7 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceImplBase;
-import ai.verta.modeldb.authservice.AuthInterceptor;
+import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.common.CommonConstants;

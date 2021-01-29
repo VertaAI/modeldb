@@ -1,5 +1,6 @@
 package ai.verta.modeldb.authservice;
 
+import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.config.Config;
 
 public class AuthServiceChannel extends ai.verta.modeldb.common.authservice.AuthServiceChannel {
