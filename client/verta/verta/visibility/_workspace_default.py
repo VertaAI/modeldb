@@ -5,7 +5,7 @@ from ._visibility import _Visibility
 
 class _WorkspaceDefault(_Visibility):
     """
-    Default for the workspace. Not for human consumption.
+    Default for the workspace. Not for external use.
 
     """
     def _to_public_within_org(self):
