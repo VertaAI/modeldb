@@ -275,9 +275,15 @@ def in_tempdir(tempdir_root):
         shutil.rmtree(dirpath)
 
 
+@pytest.fixture(autouse=True)
+def mark_time():
+    print("\n[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
+    yield
+    print("\n[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
+
+
 @pytest.fixture
 def client(host, port, email, dev_key):
-    print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
     client = Client(host, port, email, dev_key, debug=True)
 
     yield client
@@ -285,8 +291,6 @@ def client(host, port, email, dev_key):
     proj = client._ctx.proj
     if proj is not None:
         proj.delete()
-
-    print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
 
 
 @pytest.fixture
