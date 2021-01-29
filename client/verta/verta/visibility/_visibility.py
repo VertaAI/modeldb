@@ -11,7 +11,7 @@ from .._internal_utils import _utils
 @six.add_metaclass(abc.ABCMeta)
 class _Visibility(object):
     """
-    Base class for visibility. Not for human consumption.
+    Base class for visibility. Not for external use.
 
     """
     def __repr__(self):
