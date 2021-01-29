@@ -161,6 +161,13 @@ service CollaboratorService {
         };
     };
 
+    // The caller must have permission to GET the resource accordingly
+    rpc getResourcesInPersonalWorkspace (GetResources) returns (GetResources.Response) {
+        option (google.api.http) = {
+            get: "/v1/collaborator/getResourcesInPersonalWorkspace"
+        };
+    };
+
     // The caller must have permission to CREATE or UPDATE the resource accordingly
     rpc setResource (SetResource) returns (SetResource.Response) {
         option (google.api.http) = {
