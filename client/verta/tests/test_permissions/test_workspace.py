@@ -61,7 +61,7 @@ class TestClientGetWorkspace:
     def test_client_get_workspace(self, create_client, create_organization, created_entities, in_tempdir):
         client = create_client()
 
-        WEBAPP_WORKSPACE = client._conn.get_default_workspace()
+        WEBAPP_WORKSPACE = client._conn.get_default_workspace()  # TODO: first change default workspace
         CONFIG_WORKSPACE = create_organization().name
         CLIENT_WORKSPACE = create_organization().name
         PARAM_WORKSPACE = create_organization().name
