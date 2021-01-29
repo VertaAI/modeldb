@@ -259,29 +259,6 @@ class Client(object):
     def expt_runs(self):
         return ExperimentRuns(self._conn, self._conf)
 
-    def _get_personal_workspace(self):
-        email = self._conn.auth.get('Grpc-Metadata-email')
-        if email is not None:
-            response = _utils.make_request(
-                "GET",
-                "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
-                self._conn, params={'email': email},
-            )
-
-            if response.ok:
-                try:
-                    response_json = _utils.body_to_json(response)
-                except ValueError:  # not JSON response
-                    pass
-                else:
-                    return response_json['verta_info']['username']
-            else:
-                if response.status_code == 404:  # UAC not found
-                    pass
-                else:
-                    _utils.raise_for_http_error(response)
-        return self._conn._OSS_DEFAULT_WORKSPACE
-
     def _load_config(self):
         with _config_utils.read_merged_config() as config:
             self._config = config
@@ -655,10 +632,8 @@ class Client(object):
             return repo
         elif name is not None:
             if workspace is None:
-                workspace_str = "personal workspace"
-                workspace = self._get_personal_workspace()
-            else:
-                workspace_str = "workspace {}".format(workspace)
+                workspace = self._conn.get_default_workspace()
+            workspace_str = "workspace {}".format(workspace)
 
             repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
 
@@ -757,7 +732,7 @@ class Client(object):
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self._conn.get_default_workspace()
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
@@ -803,7 +778,7 @@ class Client(object):
             raise ValueError("must specify either `name` or `id`")
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self._conn.get_default_workspace()
 
         if id is not None:
             registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
@@ -890,7 +865,7 @@ class Client(object):
 
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self._conn.get_default_workspace()
         resource_name = "Endpoint"
         param_names = "`description`, `public_within_org`, or `visibility`"
         params = [description, public_within_org, visibility]
@@ -934,7 +909,7 @@ class Client(object):
 
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self._conn.get_default_workspace()
 
         if id is not None:
             endpoint = Endpoint._get_by_id(self._conn, self._conf, workspace, id)
@@ -1121,7 +1096,7 @@ class Client(object):
         workspace = self._set_from_config_if_none(workspace, "workspace")
 
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self._conn.get_default_workspace()
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
@@ -1171,12 +1146,12 @@ class Client(object):
 
         workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self._conn.get_default_workspace()
         return Endpoint._create(self._conn, self._conf, workspace, path, description, public_within_org, visibility)
 
     @property
     def endpoints(self):
-        return Endpoints(self._conn, self._conf, self._get_personal_workspace())
+        return Endpoints(self._conn, self._conf, self._conn.get_default_workspace())
 
     def download_endpoint_manifest(
             self, download_to_path, path, name, strategy=None,
@@ -1221,7 +1196,7 @@ class Client(object):
             'endpoint': {'path': path},
             'name': name,
             'update': Endpoint._create_update_body(strategy, resources, autoscaling, env_vars),
-            'workspace_name': workspace or self._get_personal_workspace(),
+            'workspace_name': workspace or self._conn.get_default_workspace(),
         }
 
         endpoint = "{}://{}/api/v1/deployment/operations/manifest".format(
