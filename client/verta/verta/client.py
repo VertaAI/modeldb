@@ -259,6 +259,29 @@ class Client(object):
     def expt_runs(self):
         return ExperimentRuns(self._conn, self._conf)
 
+    def _get_personal_workspace(self):
+        email = self._conn.auth.get('Grpc-Metadata-email')
+        if email is not None:
+            response = _utils.make_request(
+                "GET",
+                "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
+                self._conn, params={'email': email},
+            )
+
+            if response.ok:
+                try:
+                    response_json = _utils.body_to_json(response)
+                except ValueError:  # not JSON response
+                    pass
+                else:
+                    return response_json['verta_info']['username']
+            else:
+                if response.status_code == 404:  # UAC not found
+                    pass
+                else:
+                    _utils.raise_for_http_error(response)
+        return self._conn._OSS_DEFAULT_WORKSPACE
+
     def _load_config(self):
         with _config_utils.read_merged_config() as config:
             self._config = config
