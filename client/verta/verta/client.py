@@ -278,7 +278,7 @@ class Client(object):
 
         Parameters
         ----------
-        visibility : :class:`~verta.visibility._visibility._Visibility` or None
+        visibility : :ref:`visibility <visibility-api>` or None
 
         """
         # TODO: consider a decorator for create_*()s that validates common params
@@ -401,7 +401,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a Project in an organization's workspace, whether to make this Project
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this project. If not provided, an
             appropriate default will be used.
         id : str, optional
@@ -656,7 +656,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a Repository in an organization's workspace, whether to make this Repository
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this repository. If not provided,
             an appropriate default will be used.
 
@@ -753,7 +753,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a registered_model in an organization's workspace, whether to make this registered_model
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this registered model. If not
             provided, an appropriate default will be used.
         id : str, optional
@@ -883,7 +883,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating an endpoint in an organization's workspace, whether to make this endpoint
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this endpoint. If not provided, an
             appropriate default will be used.
         id : str, optional
@@ -992,7 +992,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a Project in an organization's workspace, whether to make this Project
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this project. If not provided, an
             appropriate default will be used.
 
@@ -1118,7 +1118,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a registered_model in an organization's workspace, whether to make this registered_model
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this registered model. If not
             provided, an appropriate default will be used.
 
@@ -1167,7 +1167,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating an endpoint in an organization's workspace, whether to make this endpoint
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this endpoint. If not provided, an
             appropriate default will be used.
 
@@ -1279,7 +1279,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a dataset in an organization's workspace, whether to make this dataset
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this dataset. If not provided, an
             appropriate default will be used.
         id : str, optional
@@ -1358,7 +1358,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a dataset in an organization's workspace, whether to make this dataset
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this dataset. If not provided, an
             appropriate default will be used.
 

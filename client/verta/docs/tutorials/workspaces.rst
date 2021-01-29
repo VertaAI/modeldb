@@ -1,3 +1,5 @@
+.. _workspaces-tutorial:
+
 Working in workspaces
 =====================
 
