@@ -34,6 +34,8 @@ public class OwnerRoleBindingUtils {
   private OwnerRoleBindingUtils() {}
 
   private static final Logger LOGGER = LogManager.getLogger(OwnerRoleBindingUtils.class);
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
   private static AuthService authService;
   private static RoleService roleService;
 
@@ -70,7 +72,7 @@ public class OwnerRoleBindingUtils {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         Transaction transaction = session.beginTransaction();
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
@@ -156,7 +158,7 @@ public class OwnerRoleBindingUtils {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         Transaction transaction = session.beginTransaction();
 
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
@@ -237,7 +239,7 @@ public class OwnerRoleBindingUtils {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         Transaction transaction = session.beginTransaction();
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
@@ -324,7 +326,7 @@ public class OwnerRoleBindingUtils {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         Transaction transaction = session.beginTransaction();
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
@@ -402,7 +404,7 @@ public class OwnerRoleBindingUtils {
   }
 
   private static Long getEntityCount(Class<?> klass) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
       countQuery.select(criteriaBuilder.count(countQuery.from(klass)));

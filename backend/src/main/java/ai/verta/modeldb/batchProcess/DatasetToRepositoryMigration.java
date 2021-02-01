@@ -50,6 +50,8 @@ public class DatasetToRepositoryMigration {
   private DatasetToRepositoryMigration() {}
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetToRepositoryMigration.class);
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
   private static AuthService authService;
   private static RoleService roleService;
   private static CommitDAO commitDAO;
@@ -83,7 +85,7 @@ public class DatasetToRepositoryMigration {
     LOGGER.debug("Datasets To Repositories migration started");
     LOGGER.debug("using batch size {}", recordUpdateLimit);
 
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       try {
         String addBackupLinkedArtifactId =
@@ -117,7 +119,7 @@ public class DatasetToRepositoryMigration {
 
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         LOGGER.debug("starting Dataset Processing for batch starting with {}", lowerBound);
         Transaction transaction = session.beginTransaction();
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
@@ -197,7 +199,7 @@ public class DatasetToRepositoryMigration {
 
   private static void deleteAlreadyMigratedEntities(DatasetEntity datasetEntity) {
     LOGGER.debug("Dataset {} already started", datasetEntity.getId());
-    try (Session innerSession = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session innerSession = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Long repoId =
           getRepoIdFromDatasetMigrationStatus(innerSession, datasetEntity.getId(), "started");
       repositoryDAO.deleteRepositories(
@@ -231,7 +233,7 @@ public class DatasetToRepositoryMigration {
   }
 
   private static void markStartedDatasetMigration(String datasetId, Long repoId, String status) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String updateStatusToStarted =
           "INSERT dataset_migration_status VALUES(:datasetId, :repoId, :status)";
       Query query = session.createSQLQuery(updateStatusToStarted);
@@ -246,7 +248,7 @@ public class DatasetToRepositoryMigration {
   }
 
   private static void updateDatasetMigrationStatus(String datasetId, Long repoId, String status) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String updateStatusToStarted =
           "UPDATE dataset_migration_status SET status = :status WHERE dataset_id = :datasetId AND repo_id = :repoId";
       Query query = session.createSQLQuery(updateStatusToStarted);
@@ -365,7 +367,7 @@ public class DatasetToRepositoryMigration {
 
     while (lowerBound < count) {
 
-      try (Session session1 = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session1 = modelDBHibernateUtil.getSessionFactory().openSession()) {
         LOGGER.debug("starting Dataset Version Processing for batch starting with {}", lowerBound);
         Transaction transaction = session1.beginTransaction();
         CriteriaBuilder criteriaBuilder = session1.getCriteriaBuilder();
@@ -454,7 +456,7 @@ public class DatasetToRepositoryMigration {
   }
 
   private static Long getEntityCount(Class<?> klass) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
       countQuery.select(criteriaBuilder.count(countQuery.from(klass)));

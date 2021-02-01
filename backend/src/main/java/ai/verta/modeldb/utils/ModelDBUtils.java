@@ -21,6 +21,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
@@ -374,10 +375,11 @@ public class ModelDBUtils {
       LOGGER.warn(
           "Detected communication exception of type {}",
           communicationsException.getCause().getClass());
-      if (ModelDBHibernateUtil.checkDBConnection()) {
+      ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
+      if (modelDBHibernateUtil.checkDBConnection()) {
         LOGGER.info("Resetting session Factory");
 
-        ModelDBHibernateUtil.resetSessionFactory();
+        modelDBHibernateUtil.resetSessionFactory();
         LOGGER.info("Resetted session Factory");
       } else {
         LOGGER.warn("DB could not be reached");

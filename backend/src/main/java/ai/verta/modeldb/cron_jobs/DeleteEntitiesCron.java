@@ -38,6 +38,7 @@ import org.hibernate.query.Query;
 
 public class DeleteEntitiesCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(DeleteEntitiesCron.class);
+  private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private final AuthService authService;
   private final RoleService roleService;
   private final Integer recordUpdateLimit;
@@ -55,7 +56,7 @@ public class DeleteEntitiesCron extends TimerTask {
     LOGGER.info("DeleteEntitiesCron wakeup");
 
     CommonUtils.registeredBackgroundUtilsCount();
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       // Update project timestamp
       deleteProjects(session);
 

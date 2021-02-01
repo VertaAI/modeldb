@@ -8,6 +8,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
@@ -716,7 +717,7 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (ModelDBHibernateUtil.config.RdbConfiguration.isPostgres()) {
+        if (Config.getInstance().database.RdbConfiguration.isPostgres()) {
           if (stringColumn) {
 
             return getOperatorPredicate(

@@ -51,6 +51,7 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
    * putting two keys with a colliding hashCode into the map.*/
   private final Map<String, ServingStatus> statusMap = new ConcurrentHashMap<>();
   private static final Logger LOGGER = LogManager.getLogger(HealthServiceImpl.class);
+  private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
 
   public HealthServiceImpl() {
     setStatus("", ServingStatus.NOT_SERVING);
@@ -77,13 +78,13 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       globalStatus = getStatus("");
       if (request.getService().equals("ready")) {
         if (globalStatus == ServingStatus.SERVING) {
-          setStatus("ready", ModelDBHibernateUtil.checkReady());
+          setStatus("ready", modelDBHibernateUtil.checkReady());
         } else {
           // Return default NOT_SERVING status
           return globalStatus;
         }
       } else if (request.getService().equals("live")) {
-        setStatus("live", ModelDBHibernateUtil.checkLive());
+        setStatus("live", modelDBHibernateUtil.checkLive());
       }
     }
     return getStatus(request.getService());
