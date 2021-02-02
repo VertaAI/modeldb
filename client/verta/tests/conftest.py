@@ -399,6 +399,12 @@ def organization(client):
 
     yield org
 
+    # clear client.proj, in case it's in the to-be-deleted org
+    proj = client._ctx.proj
+    if proj is not None:
+        proj.delete()
+        client._ctx.proj = None
+
     org.delete()
 
 
