@@ -1,8 +1,10 @@
 from __future__ import division
 
 import six
+from six.moves import filterfalse
 
 import datetime
+import itertools
 import os
 import random
 import shutil
@@ -283,13 +285,14 @@ def mark_time():
 
 
 @pytest.fixture
-def client(host, port, email, dev_key):
+def client(host, port, email, dev_key, created_entities):
     client = Client(host, port, email, dev_key, debug=True)
 
     yield client
 
     proj = client._ctx.proj
-    if proj is not None:
+    if (proj is not None
+            and proj.id not in {entity.id for entity in created_entities}):
         proj.delete()
 
 
@@ -373,6 +376,15 @@ def created_entities():
 
     yield to_delete
 
+    # move orgs to the end
+    from verta._tracking.organization import Organization
+    is_org = lambda entity: entity.__class__ is Organization
+    to_delete = itertools.chain(
+        filterfalse(is_org, to_delete),
+        filter(is_org, to_delete),
+    )
+
+    # TODO: avoid duplicates
     for entity in to_delete:
         entity.delete()
 
@@ -397,13 +409,7 @@ def organization(client, created_entities):
     org = client._create_organization(workspace_name)
     created_entities.append(org)
 
-    yield org
-
-    # clear client.proj, in case it's in the to-be-deleted org
-    proj = client._ctx.proj
-    if proj is not None:
-        proj.delete()
-        client._ctx.proj = None
+    return org
 
 
 @pytest.fixture
