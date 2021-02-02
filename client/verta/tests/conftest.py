@@ -1,8 +1,10 @@
 from __future__ import division
 
 import six
+from six.moves import filterfalse
 
 import datetime
+import itertools
 import os
 import random
 import shutil
@@ -283,13 +285,14 @@ def mark_time():
 
 
 @pytest.fixture
-def client(host, port, email, dev_key):
+def client(host, port, email, dev_key, created_entities):
     client = Client(host, port, email, dev_key, debug=True)
 
     yield client
 
     proj = client._ctx.proj
-    if proj is not None:
+    if (proj is not None
+            and proj.id not in {entity.id for entity in created_entities}):
         proj.delete()
 
 
@@ -343,27 +346,27 @@ def model_for_deployment(strs):
 
 
 @pytest.fixture
-def repository(client):
+def repository(client, created_entities):
     name = _utils.generate_default_name()
     repo = client.get_or_create_repository(name)
+    created_entities.append(repo)
 
-    yield repo
-
-    repo.delete()
+    return repo
 
 
 @pytest.fixture
 def commit(repository):
     commit = repository.get_commit()
 
-    yield commit
+    return commit
 
 
 @pytest.fixture
-def registered_model(client):
+def registered_model(client, created_entities):
     model = client.get_or_create_registered_model()
-    yield model
-    model.delete()
+    created_entities.append(model)
+
+    return model
 
 
 @pytest.fixture
@@ -373,6 +376,15 @@ def created_entities():
 
     yield to_delete
 
+    # move orgs to the end
+    from verta._tracking.organization import Organization
+    is_org = lambda entity: entity.__class__ is Organization
+    to_delete = itertools.chain(
+        filterfalse(is_org, to_delete),
+        filter(is_org, to_delete),
+    )
+
+    # TODO: avoid duplicates
     for entity in to_delete:
         entity.delete()
 
@@ -383,29 +395,21 @@ def model_version(registered_model):
 
 
 @pytest.fixture
-def endpoint(client):
+def endpoint(client, created_entities):
     path = _utils.generate_default_name()
     endpoint = client.create_endpoint(path)
+    created_entities.append(endpoint)
 
-    yield endpoint
-
-    endpoint.delete()
+    return endpoint
 
 
 @pytest.fixture
-def organization(client):
+def organization(client, created_entities):
     workspace_name = _utils.generate_default_name()
     org = client._create_organization(workspace_name)
+    created_entities.append(org)
 
-    yield org
-
-    # clear client.proj, in case it's in the to-be-deleted org
-    proj = client._ctx.proj
-    if proj is not None:
-        proj.delete()
-        client._ctx.proj = None
-
-    org.delete()
+    return org
 
 
 @pytest.fixture

@@ -162,6 +162,18 @@ class Connection:
     def is_html_response(response):
         return response.text.strip().endswith("</html>")
 
+    def _set_default_workspace(self, name):
+        msg = Workspace_pb2.GetWorkspaceByName(name=name)
+        response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getWorkspaceByName", params=msg)
+        workspace = self.must_proto_response(response, Workspace_pb2.Workspace)
+
+        response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getCurrentUser")
+        user_info = self.must_proto_response(response, UACService_pb2.UserInfo)
+
+        msg = UACService_pb2.UpdateUser(info=user_info, default_workspace_id=workspace.id)
+        response = self.make_proto_request("POST", "/api/v1/uac-proxy/uac/updateUser", body=msg)
+        raise_for_http_error(response)
+
     def is_workspace(self, workspace_name):
         msg = Workspace_pb2.GetWorkspaceByName(name=workspace_name)
         response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getWorkspaceByName", params=msg)
