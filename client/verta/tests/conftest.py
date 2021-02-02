@@ -343,27 +343,27 @@ def model_for_deployment(strs):
 
 
 @pytest.fixture
-def repository(client):
+def repository(client, created_entities):
     name = _utils.generate_default_name()
     repo = client.get_or_create_repository(name)
+    created_entities.append(repo)
 
-    yield repo
-
-    repo.delete()
+    return repo
 
 
 @pytest.fixture
 def commit(repository):
     commit = repository.get_commit()
 
-    yield commit
+    return commit
 
 
 @pytest.fixture
-def registered_model(client):
+def registered_model(client, created_entities):
     model = client.get_or_create_registered_model()
-    yield model
-    model.delete()
+    created_entities.append(model)
+
+    return model
 
 
 @pytest.fixture
@@ -383,19 +383,19 @@ def model_version(registered_model):
 
 
 @pytest.fixture
-def endpoint(client):
+def endpoint(client, created_entities):
     path = _utils.generate_default_name()
     endpoint = client.create_endpoint(path)
+    created_entities.append(endpoint)
 
-    yield endpoint
-
-    endpoint.delete()
+    return endpoint
 
 
 @pytest.fixture
-def organization(client):
+def organization(client, created_entities):
     workspace_name = _utils.generate_default_name()
     org = client._create_organization(workspace_name)
+    created_entities.append(org)
 
     yield org
 
@@ -404,8 +404,6 @@ def organization(client):
     if proj is not None:
         proj.delete()
         client._ctx.proj = None
-
-    org.delete()
 
 
 @pytest.fixture
