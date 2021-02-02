@@ -67,6 +67,42 @@ func local_request_CollaboratorService_GetResources_0(ctx context.Context, marsh
 
 }
 
+var (
+	filter_CollaboratorService_GetResourcesInPersonalWorkspace_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_CollaboratorService_GetResourcesInPersonalWorkspace_0(ctx context.Context, marshaler runtime.Marshaler, client CollaboratorServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetResources
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_GetResourcesInPersonalWorkspace_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.GetResourcesInPersonalWorkspace(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_CollaboratorService_GetResourcesInPersonalWorkspace_0(ctx context.Context, marshaler runtime.Marshaler, server CollaboratorServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetResources
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_GetResourcesInPersonalWorkspace_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.GetResourcesInPersonalWorkspace(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 func request_CollaboratorService_SetResource_0(ctx context.Context, marshaler runtime.Marshaler, client CollaboratorServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq SetResource
 	var metadata runtime.ServerMetadata
@@ -656,6 +692,26 @@ func RegisterCollaboratorServiceHandlerServer(ctx context.Context, mux *runtime.
 
 	})
 
+	mux.Handle("GET", pattern_CollaboratorService_GetResourcesInPersonalWorkspace_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CollaboratorService_GetResourcesInPersonalWorkspace_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_CollaboratorService_GetResourcesInPersonalWorkspace_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("POST", pattern_CollaboratorService_SetResource_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1037,6 +1093,26 @@ func RegisterCollaboratorServiceHandlerClient(ctx context.Context, mux *runtime.
 
 	})
 
+	mux.Handle("GET", pattern_CollaboratorService_GetResourcesInPersonalWorkspace_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CollaboratorService_GetResourcesInPersonalWorkspace_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_CollaboratorService_GetResourcesInPersonalWorkspace_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("POST", pattern_CollaboratorService_SetResource_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1363,6 +1439,8 @@ func RegisterCollaboratorServiceHandlerClient(ctx context.Context, mux *runtime.
 var (
 	pattern_CollaboratorService_GetResources_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "collaborator", "getResources"}, "", runtime.AssumeColonVerbOpt(true)))
 
+	pattern_CollaboratorService_GetResourcesInPersonalWorkspace_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "collaborator", "getResourcesInPersonalWorkspace"}, "", runtime.AssumeColonVerbOpt(true)))
+
 	pattern_CollaboratorService_SetResource_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "collaborator", "setResource"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_CollaboratorService_AddOrUpdateProjectCollaborator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "collaborator", "addOrUpdateProjectCollaborator"}, "", runtime.AssumeColonVerbOpt(true)))
@@ -1398,6 +1476,8 @@ var (
 
 var (
 	forward_CollaboratorService_GetResources_0 = runtime.ForwardResponseMessage
+
+	forward_CollaboratorService_GetResourcesInPersonalWorkspace_0 = runtime.ForwardResponseMessage
 
 	forward_CollaboratorService_SetResource_0 = runtime.ForwardResponseMessage
 
