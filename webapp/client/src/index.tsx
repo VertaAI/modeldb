@@ -21,14 +21,16 @@ cleanLocalStorageForNewVersion(localStorageVersion);
 
 const apolloClient = new ApolloClient({
   cache: apollo.makeCache(),
-  uri: `${process.env.BACKEND_API_BASE_PATH}/api/v1/graphql/query`,
+  uri: `${process.env.REACT_APP_PUBLIC_URL || '/'}api/v1/graphql/query`,
 });
 apolloClient.defaultOptions.watchQuery = {
   ...(apolloClient.defaultOptions.watchQuery || {}),
   ...apollo.defaultOptions.watchQuery,
 };
 
-const history = createBrowserHistory({ basename: process.env.PUBLIC_URL });
+const history = createBrowserHistory({
+  basename: process.env.REACT_APP_PUBLIC_URL || '/',
+});
 
 const store = configureStore(history, undefined, [], apolloClient);
 

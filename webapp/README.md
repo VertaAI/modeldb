@@ -80,3 +80,17 @@ See the section about [running tests](https://facebook.github.io/create-react-ap
 ### `yarn pretty`
 
 Run `prettier` for code formatting.
+
+# Iterating in Docker Compose
+
+When running as part of the [docker-compose-all.yaml](../docker-compose-all.yaml), the image entry for the `modeldb-frontend` must be changed to `vertaaiofficial/modeldb-frontend:latest`. Running `./build.sh` will rebuild the container and update the local docker context with a new latest.
+
+# Working behind a path proxy
+
+The following variables need to be set, and probably to the same path.
+
+ - `BACKEND_API_BASE_PATH` in [.env.default](../.env.default)
+ - `REACT_APP_PUBLIC_URL` in [Dockerfile](Dockerfile)
+ - `"homepage"` in [package.json](package.json) 
+
+Rebuild the modeldb-frontend container and restart.
