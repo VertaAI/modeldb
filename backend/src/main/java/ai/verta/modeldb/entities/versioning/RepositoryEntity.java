@@ -33,7 +33,7 @@ public class RepositoryEntity {
 
   public RepositoryEntity(Repository repository, RepositoryTypeEnum repositoryTypeEnum)
       throws InvalidProtocolBufferException {
-    this.name = repository.getName();
+    this.name = ModelDBUtils.checkEntityNameLength(repository.getName());
     this.description = repository.getDescription();
     if (repository.getDateCreated() != 0L) {
       this.date_created = repository.getDateCreated();
@@ -66,7 +66,7 @@ public class RepositoryEntity {
   @Column(name = "id", updatable = false, nullable = false, columnDefinition = "UNSIGNED")
   private Long id;
 
-  @Column(name = "name", columnDefinition = "varchar", length = 50)
+  @Column(name = "name", columnDefinition = "varchar", length = 256)
   private String name;
 
   @Column(name = "description", columnDefinition = "TEXT")
@@ -252,7 +252,7 @@ public class RepositoryEntity {
   }
 
   public void update(Repository repository) throws InvalidProtocolBufferException {
-    this.name = repository.getName();
+    this.name = ModelDBUtils.checkEntityNameLength(repository.getName());
     this.description = repository.getDescription();
     this.repositoryVisibility = repository.getVisibility();
     update();

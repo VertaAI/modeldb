@@ -460,4 +460,11 @@
         </update>
     </changeSet>
 
+    <changeSet id="modify-name-length-repository" author="anandJ">
+        <modifyDataType
+                columnName="name"
+                newDataType="varchar(256)"
+                tableName="repository"/>
+    </changeSet>
+
 </databaseChangeLog>
