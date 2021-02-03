@@ -1422,14 +1422,9 @@ class ExperimentRun(_DeployableEntity):
         _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
-        try:
-            extension = _artifact_utils.get_file_ext(artifact)
-        except (TypeError, ValueError):
-            extension = None
-
         # zip if `artifact` is directory path
         if isinstance(artifact, six.string_types) and os.path.isdir(artifact):
-            tempf = tempfile.TemporaryFile()
+            tempf = tempfile.NamedTemporaryFile(suffix=".zip")
 
             with zipfile.ZipFile(tempf, 'w') as zipf:
                 for root, _, files in os.walk(artifact):
@@ -1439,7 +1434,11 @@ class ExperimentRun(_DeployableEntity):
             tempf.seek(0)
 
             artifact = tempf
-            extension = 'zip'
+
+        try:
+            extension = _artifact_utils.get_file_ext(artifact)
+        except (TypeError, ValueError):
+            extension = None
 
         self._log_artifact(key, artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, extension, overwrite=overwrite)
 
