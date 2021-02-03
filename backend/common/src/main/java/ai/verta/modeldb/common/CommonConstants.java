@@ -10,6 +10,10 @@ public interface CommonConstants {
   Integer MAX_CONNECTION_SIZE_DEFAULT = 20;
   Integer CONNECTION_TIMEOUT_DEFAULT = 300;
   String INTERNAL_ERROR = "Internal server error";
+  // Set to true to export the liquibase schema as sql statements
+  Boolean EXPORT_SCHEMA = false;
+  String userDir = "user.dir";
+  String DELETED = "deleted";
 
   enum UserIdentifier {
     VERTA_ID,

@@ -26,6 +26,7 @@ import org.hibernate.query.Query;
 
 public class TelemetryCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(TelemetryCron.class);
+  private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private TelemetryUtils telemetryUtils;
 
   public TelemetryCron(String consumerURL) throws FileNotFoundException, InvalidConfigException {
@@ -93,7 +94,7 @@ public class TelemetryCron extends TimerTask {
   private List<KeyValue> collectTelemetryDataFromDB() {
     // Get new telemetry data from database
     List<KeyValue> telemetryDataList = new ArrayList<>();
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery("select count(*) from ProjectEntity");
       Long projectCount = (Long) query.uniqueResult();
       KeyValue projectCountKeyValue =

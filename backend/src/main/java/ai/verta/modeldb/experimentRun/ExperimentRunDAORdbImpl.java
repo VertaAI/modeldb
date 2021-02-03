@@ -9,6 +9,7 @@ import ai.verta.modeldb.CommitArtifactPart.Response;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
@@ -65,6 +66,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private static final Logger LOGGER =
       LogManager.getLogger(ExperimentRunDAORdbImpl.class.getName());
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
   private static final boolean OVERWRITE_VERSION_MAP = false;
   private App app = App.getInstance();
   private ai.verta.modeldb.config.Config config = ai.verta.modeldb.config.Config.getInstance();
@@ -225,7 +228,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private void checkIfEntityAlreadyExists(ExperimentRun experimentRun, Boolean isInsert) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = null;
       if (isInsert) {
         query = session.createQuery(CHECK_EXP_RUN_EXISTS_AT_INSERT_HQL);
@@ -316,7 +319,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException, ModelDBException {
     checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       TrialUtils.validateExperimentRunPerWorkspaceForTrial(
           config.trial, projectDAO, roleService, this, experimentRun.getProjectId(), userInfo);
       TrialUtils.validateMaxArtifactsForTrial(config.trial, experimentRun.getArtifactsCount(), 0);
@@ -398,7 +401,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<String> deleteExperimentRuns(List<String> experimentRunIds) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       List<String> accessibleExperimentRunIds =
           getAccessibleExperimentRunIDs(
@@ -464,7 +467,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<ExperimentRun> getExperimentRuns(String key, String value, UserInfo userInfo)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<ExperimentRun> experimentRuns = new ArrayList<>();
 
       Map<String, Object[]> whereClauseParamMap = new HashMap<>();
@@ -515,7 +518,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<ExperimentRun> getExperimentRunsByBatchIds(List<String> experimentRunIds)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery(GET_EXP_RUN_BY_IDS_HQL);
       query.setParameterList("ids", experimentRunIds);
 
@@ -535,7 +538,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun getExperimentRun(String experimentRunId)
       throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntity == null) {
@@ -644,7 +647,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void updateExperimentRunName(String experimentRunId, String experimentRunName) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntity.setName(experimentRunName);
@@ -667,7 +670,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public ExperimentRun updateExperimentRunDescription(
       String experimentRunId, String experimentRunDescription)
       throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntity.setDescription(experimentRunDescription);
@@ -691,7 +694,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void logExperimentRunCodeVersion(String experimentRunId, CodeVersion updatedCodeVersion)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
 
@@ -723,7 +726,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void setParentExperimentRunId(String experimentRunId, String parentExperimentRunId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntity.setParent_id(parentExperimentRunId);
@@ -745,7 +748,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun addExperimentRunTags(String experimentRunId, List<String> tagsList)
       throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunObj == null) {
@@ -784,7 +787,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public ExperimentRun deleteExperimentRunTags(
       String experimentRunId, List<String> experimentRunTagList, Boolean deleteAll)
       throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       if (deleteAll) {
         Query query =
@@ -823,7 +826,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
@@ -857,7 +860,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public List<Observation> getObservationByKey(String experimentRunId, String observationKey)
       throws InvalidProtocolBufferException {
 
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntityObj == null) {
@@ -885,7 +888,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void logMetrics(String experimentRunId, List<KeyValue> newMetrics)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
@@ -923,7 +926,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<KeyValue> getExperimentRunMetrics(String experimentRunId)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
@@ -943,7 +946,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<Artifact> getExperimentRunDatasets(String experimentRunId)
       throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
@@ -965,7 +968,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void logDatasets(String experimentRunId, List<Artifact> newDatasets, boolean overwrite)
       throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
@@ -1018,7 +1021,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void logArtifacts(String experimentRunId, List<Artifact> newArtifacts)
       throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
@@ -1060,7 +1063,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<Artifact> getExperimentRunArtifacts(String experimentRunId)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
@@ -1098,7 +1101,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void deleteArtifacts(String experimentRunId, String artifactKey) {
     Transaction transaction = null;
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
 
       if (false) { // Change it with parameter for support to delete all artifacts
@@ -1133,7 +1136,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void logHyperparameters(String experimentRunId, List<KeyValue> newHyperparameters)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
@@ -1173,7 +1176,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<KeyValue> getExperimentRunHyperparameters(String experimentRunId)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
@@ -1193,7 +1196,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void logAttributes(String experimentRunId, List<KeyValue> newAttributes)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
@@ -1234,7 +1237,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public List<KeyValue> getExperimentRunAttributes(
       String experimentRunId, List<String> attributeKeyList, Boolean getAll)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
@@ -1318,7 +1321,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException, PermissionDeniedException {
 
     LOGGER.trace("trying to open session");
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       LOGGER.trace("Starting to find experimentRuns");
 
       List<String> accessibleExperimentRunIds = new ArrayList<>();
@@ -1818,7 +1821,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<String> getExperimentRunTags(String experimentRunId)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       LOGGER.debug("Got ExperimentRun Tags");
@@ -1835,7 +1838,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void addExperimentRunAttributes(String experimentRunId, List<KeyValue> attributesList)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       List<AttributeEntity> newAttributeList =
@@ -1859,7 +1862,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void deleteExperimentRunAttributes(
       String experimentRunId, List<String> attributeKeyList, Boolean deleteAll) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       if (deleteAll) {
         Query query =
@@ -1897,7 +1900,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logJobId(String experimentRunId, String jobId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntityObj.setJob_id(jobId);
@@ -1918,7 +1921,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public String getJobId(String experimentRunId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       LOGGER.debug("Got ExperimentRun JobID");
@@ -1955,7 +1958,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<ExperimentRun> getExperimentRuns(List<KeyValue> keyValues)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       StringBuilder stringQueryBuilder = new StringBuilder("From ExperimentRunEntity er where ");
       Map<String, Object> paramMap = new HashMap<>();
       for (int index = 0; index < keyValues.size(); index++) {
@@ -2001,7 +2004,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public String getProjectIdByExperimentRunId(String experimentRunId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj != null) {
@@ -2022,7 +2025,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public Map<String, String> getProjectIdsFromExperimentRunIds(List<String> experimentRunIds) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery(GET_EXP_RUN_BY_IDS_HQL);
       query.setParameterList("ids", experimentRunIds);
 
@@ -2048,7 +2051,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public List<?> getSelectedFieldsByExperimentRunIds(
       List<String> experimentRunIds, List<String> selectedFields)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String alias = "exr";
       StringBuilder queryBuilder = new StringBuilder("Select ");
       if (selectedFields != null && !selectedFields.isEmpty()) {
@@ -2080,7 +2083,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<String> getExperimentRunIdsByProjectIds(List<String> projectIds)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query experimentRunQuery = session.createQuery(GET_EXPERIMENT_RUN_BY_PROJECT_ID_HQL);
       experimentRunQuery.setParameterList("projectIds", projectIds);
       List<ExperimentRunEntity> experimentRunEntities = experimentRunQuery.list();
@@ -2102,7 +2105,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<String> getExperimentRunIdsByExperimentIds(List<String> experimentIds)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query experimentRunQuery = session.createQuery(GET_EXPERIMENT_RUN_BY_EXPERIMENT_ID_HQL);
       experimentRunQuery.setParameterList("experimentIds", experimentIds);
       List<ExperimentRunEntity> experimentRunEntities = experimentRunQuery.list();
@@ -2124,7 +2127,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void logVersionedInput(LogVersionedInput request)
       throws InvalidProtocolBufferException, ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       VersioningEntry versioningEntry = request.getVersionedInputs();
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
           validateVersioningEntity(session, versioningEntry);
@@ -2259,7 +2262,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public GetVersionedInput.Response getVersionedInputs(GetVersionedInput request)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, request.getId());
       if (experimentRunObj != null) {
@@ -2294,7 +2297,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException, InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
 
@@ -2360,7 +2363,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException, InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
 
@@ -2461,7 +2464,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
       String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ArtifactEntity artifactEntity = getArtifactEntity(session, experimentRunId, key);
       try (AutoCloseable ignored = acquireWriteLock(buildArtifactLockKey(experimentRunId, key))) {
         return getS3PathAndMultipartUploadId(
@@ -2531,7 +2534,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public Response commitArtifactPart(CommitArtifactPart request) throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ArtifactEntity artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
       try (AutoCloseable ignored =
           acquireWriteLock(
@@ -2553,7 +2556,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public GetCommittedArtifactParts.Response getCommittedArtifactParts(
       GetCommittedArtifactParts request) throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       try (AutoCloseable ignored =
           acquireReadLock(buildArtifactLockKey(request.getId(), request.getKey()))) {
         Set<ArtifactPartEntity> artifactPartEntities =
@@ -2592,7 +2595,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       CommitMultipartArtifact request, CommitMultipartFunction commitMultipartFunction)
       throws ModelDBException {
     List<PartETag> partETags;
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       try (AutoCloseable ignored =
           acquireWriteLock(buildArtifactLockKey(request.getId(), request.getKey()))) {
         ArtifactEntity artifactEntity =
@@ -2662,7 +2665,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         projectId,
         ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       if (deleteAll) {
         deleteAllKeyValueEntities(session, experimentRunId, fieldType);
@@ -2697,7 +2700,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         projectId,
         ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       Query query =
           session
@@ -2746,7 +2749,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public ExperimentRunPaginationDTO getExperimentRunsByDatasetVersionId(
       ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request)
       throws ModelDBException, InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CommitEntity commitEntity = session.get(CommitEntity.class, request.getDatasetVersionId());
       if (commitEntity == null) {
         throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
@@ -2820,7 +2823,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
 
     if (!cloneExperimentRun.getDestExperimentId().isEmpty()) {
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         ExperimentEntity destExperimentEntity =
             session.get(ExperimentEntity.class, cloneExperimentRun.getDestExperimentId());
         if (destExperimentEntity == null) {
@@ -2846,7 +2849,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void logEnvironment(String experimentRunId, EnvironmentBlob environmentBlob)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       ExperimentRunEntity experimentRunEntity =
           session.get(ExperimentRunEntity.class, experimentRunId);
