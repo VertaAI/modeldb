@@ -975,23 +975,25 @@ public class CommitDAORdbImpl implements CommitDAO {
 
       String workspaceName = request.getWorkspaceName();
       LOGGER.debug("Workspace is : '{}'", workspaceName);
-      if (!workspaceName.isEmpty()
-          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
-        LOGGER.debug("Workspace match with username of the login user");
-        List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
-            roleService.getResourceItems(null, accessibleResourceIds, modelDBServiceResourceTypes);
-        accessibleResourceIds =
-            accessibleAllWorkspaceItems.stream()
-                .map(GetResourcesResponseItem::getResourceId)
-                .collect(Collectors.toSet());
-      } else {
-        accessibleResourceIds =
-            ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
-                roleService,
-                accessibleResourceIds,
-                workspaceName,
-                currentLoginUserInfo,
-                modelDBServiceResourceTypes);
+      if (!workspaceName.isEmpty()) {
+        if (workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          LOGGER.debug("Workspace match with username of the login user");
+          List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+              roleService.getResourceItems(
+                  null, accessibleResourceIds, modelDBServiceResourceTypes);
+          accessibleResourceIds =
+              accessibleAllWorkspaceItems.stream()
+                  .map(GetResourcesResponseItem::getResourceId)
+                  .collect(Collectors.toSet());
+        } else {
+          accessibleResourceIds =
+              ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
+                  roleService,
+                  accessibleResourceIds,
+                  workspaceName,
+                  currentLoginUserInfo,
+                  modelDBServiceResourceTypes);
+        }
       }
 
       if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
