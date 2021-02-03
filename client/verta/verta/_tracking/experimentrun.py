@@ -1187,15 +1187,10 @@ class ExperimentRun(_DeployableEntity):
             self._log_artifact("train_data", train_data, _CommonCommonService.ArtifactTypeEnum.DATA, 'csv')
 
     def log_tf_saved_model(self, export_dir):
-        with tempfile.TemporaryFile() as tempf:
-            with zipfile.ZipFile(tempf, 'w') as zipf:
-                for root, _, files in os.walk(export_dir):
-                    for filename in files:
-                        filepath = os.path.join(root, filename)
-                        zipf.write(filepath, os.path.relpath(filepath, export_dir))
-            tempf.seek(0)
-            # TODO: change _log_artifact() to not read file into memory
-            self._log_artifact("tf_saved_model", tempf, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
+        tempf = _artifact_utils.zip_dir(export_dir)
+
+        # TODO: change _log_artifact() to not read file into memory
+        self._log_artifact("tf_saved_model", tempf, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
 
     def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
         """
