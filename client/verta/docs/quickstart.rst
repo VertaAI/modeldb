@@ -20,7 +20,11 @@ The Verta client supports Python 2.7 & 3.5–3.8!
   .. code-block:: shell
 
     # via pip
-    pip install verta
+    python -m pip install verta
+
+Python 2.7 & 3.6–3.8 is supported through conda, as well!
+    
+  .. code-block:: shell
 
     # via conda
     conda install verta -c conda-forge
