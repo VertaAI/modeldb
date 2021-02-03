@@ -117,7 +117,8 @@ public class DeleteEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteEntityResources(projectIds, ModelDBServiceResourceTypes.PROJECT);
+        roleService.deleteEntityResourcesWithServiceUser(
+            projectIds, ModelDBServiceResourceTypes.PROJECT);
         Transaction transaction = session.beginTransaction();
         String updateDeletedStatusExperimentQueryString =
             new StringBuilder("UPDATE ")
@@ -373,7 +374,8 @@ public class DeleteEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteEntityResources(datasetIds, ModelDBServiceResourceTypes.DATASET);
+        roleService.deleteEntityResourcesWithServiceUser(
+            datasetIds, ModelDBServiceResourceTypes.DATASET);
         Transaction transaction = session.beginTransaction();
         String updateDeletedStatusDatasetVersionQueryString =
             new StringBuilder("UPDATE ")
@@ -431,7 +433,7 @@ public class DeleteEntitiesCron extends TimerTask {
 
     if (!datasetVersionEntities.isEmpty()) {
       try {
-        roleService.deleteEntityResources(
+        roleService.deleteEntityResourcesWithServiceUser(
             datasetVersionEntities.stream()
                 .map(DatasetVersionEntity::getId)
                 .collect(Collectors.toList()),
@@ -481,7 +483,7 @@ public class DeleteEntitiesCron extends TimerTask {
         try {
           ModelDBServiceResourceTypes modelDBServiceResourceTypes =
               ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
-          roleService.deleteEntityResources(
+          roleService.deleteEntityResourcesWithServiceUser(
               Collections.singletonList(String.valueOf(repository.getId())),
               modelDBServiceResourceTypes);
 

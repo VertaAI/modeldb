@@ -102,8 +102,12 @@ public class RoleServiceUtils implements RoleService {
     return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey, metadataInfo);
   }
 
-  public boolean deleteResources(Resources resources) {
-    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
+  private AuthServiceChannel getAuthServiceChannelWithServiceUser() {
+    return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey, null);
+  }
+
+  public boolean deleteResourcesWithServiceUser(Resources resources) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannelWithServiceUser()) {
       LOGGER.trace("Calling CollaboratorService to delete resources");
       DeleteResources deleteResources =
           DeleteResources.newBuilder().setResources(resources).build();
@@ -119,7 +123,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean deleteEntityResources(
+  public boolean deleteEntityResourcesWithServiceUser(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     ResourceType modeldbServiceResourceType =
         ResourceType.newBuilder()
@@ -131,7 +135,7 @@ public class RoleServiceUtils implements RoleService {
             .setService(Service.MODELDB_SERVICE)
             .addAllResourceIds(entityIds)
             .build();
-    return deleteResources(resources);
+    return deleteResourcesWithServiceUser(resources);
   }
 
   @Override

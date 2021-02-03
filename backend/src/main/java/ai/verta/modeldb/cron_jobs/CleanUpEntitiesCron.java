@@ -97,7 +97,7 @@ public class CleanUpEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteEntityResources(
+        roleService.deleteEntityResourcesWithServiceUser(
             projectIds, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
         for (ProjectEntity projectEntity : projectEntities) {
           try {
@@ -184,7 +184,7 @@ public class CleanUpEntitiesCron extends TimerTask {
       Map<String, RepositoryEntity> repositoryEntityMap,
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
     try {
-      roleService.deleteEntityResources(
+      roleService.deleteEntityResourcesWithServiceUser(
           new ArrayList<>(repositoryEntityMap.keySet()), resourceType);
       for (RepositoryEntity repositoryEntity : repositoryEntities) {
         try {

@@ -30,7 +30,7 @@ public interface RoleService {
       CollaboratorPermissions permissions,
       ResourceVisibility resourceVisibility);
 
-  boolean deleteEntityResources(
+  boolean deleteEntityResourcesWithServiceUser(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   GetResourcesResponseItem getEntityResource(

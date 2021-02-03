@@ -471,7 +471,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       deletedEntitiesQuery.setParameter("name", name);
       List<Long> deletedEntityIds = deletedEntitiesQuery.list();
       if (!deletedEntityIds.isEmpty()) {
-        roleService.deleteEntityResources(
+        roleService.deleteEntityResourcesWithServiceUser(
             deletedEntityIds.stream().map(String::valueOf).collect(Collectors.toList()),
             ModelDBServiceResourceTypes.REPOSITORY);
       }

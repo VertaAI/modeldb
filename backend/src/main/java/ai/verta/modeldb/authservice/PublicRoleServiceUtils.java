@@ -231,11 +231,6 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean deleteResources(Resources resources) {
-    return true;
-  }
-
-  @Override
   public boolean createWorkspacePermissions(
       Optional<Long> workspaceId,
       Optional<String> workspaceName,
@@ -249,7 +244,7 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean deleteEntityResources(
+  public boolean deleteEntityResourcesWithServiceUser(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return true;
   }
