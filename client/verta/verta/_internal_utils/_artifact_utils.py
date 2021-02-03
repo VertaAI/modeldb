@@ -3,6 +3,7 @@
 import hashlib
 import os
 import tempfile
+import zipfile
 
 import cloudpickle
 
@@ -437,3 +438,37 @@ def calc_sha256(bytestream, chunk_size=CHUNK_SIZE):
         reset_stream(bytestream)  # reset cursor to beginning as a courtesy
 
     return checksum.hexdigest()
+
+
+def zip_dir(dirpath):
+    """
+    ZIPs a directory.
+
+    Parameters
+    ----------
+    dirpath : str
+        Directory path.
+
+    Returns
+    -------
+    tempf : :class:`tempfile.NamedTemporaryFile`
+        ZIP file handle.
+
+    """
+    e_msg = "{} is not a directory".format(str(dirpath))
+    if not isinstance(dirpath, six.string_types):
+        raise TypeError(e_msg)
+    if not os.path.isdir(dirpath):
+        raise ValueError(e_msg)
+
+    os.path.expanduser(dirpath)
+
+    tempf = tempfile.NamedTemporaryFile(suffix=".zip")
+    with zipfile.ZipFile(tempf, 'w') as zipf:
+        for root, _, files in os.walk(dirpath):
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                zipf.write(filepath, os.path.relpath(filepath, dirpath))
+    tempf.seek(0)
+
+    return tempf

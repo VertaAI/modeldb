@@ -1424,16 +1424,7 @@ class ExperimentRun(_DeployableEntity):
 
         # zip if `artifact` is directory path
         if isinstance(artifact, six.string_types) and os.path.isdir(artifact):
-            tempf = tempfile.NamedTemporaryFile(suffix=".zip")
-
-            with zipfile.ZipFile(tempf, 'w') as zipf:
-                for root, _, files in os.walk(artifact):
-                    for filename in files:
-                        filepath = os.path.join(root, filename)
-                        zipf.write(filepath, os.path.relpath(filepath, artifact))
-            tempf.seek(0)
-
-            artifact = tempf
+            artifact = _artifact_utils.zip_dir(artifact)
 
         try:
             extension = _artifact_utils.get_file_ext(artifact)
