@@ -21,8 +21,11 @@ import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -31,6 +34,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 public class CollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
@@ -73,117 +77,134 @@ public class CollaboratorResourceMigration {
 
     int lowerBound = 0;
     final int pagesize = CollaboratorResourceMigration.paginationSize;
-    LOGGER.debug("Total Projects {}", count);
+    LOGGER.debug("Total Projects to migrate {}", count);
 
-    while (lowerBound < count) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+      CriteriaQuery<ProjectEntity> criteriaQuery = criteriaBuilder.createQuery(ProjectEntity.class);
+      Root<ProjectEntity> root = criteriaQuery.from(ProjectEntity.class);
 
-        CriteriaQuery<ProjectEntity> criteriaQuery =
-            criteriaBuilder.createQuery(ProjectEntity.class);
-        Root<ProjectEntity> root = criteriaQuery.from(ProjectEntity.class);
+      CriteriaQuery<ProjectEntity> selectQuery =
+          criteriaQuery
+              .select(root)
+              .where(
+                  criteriaBuilder.and(
+                      criteriaBuilder.equal(root.get("visibility_migration"), false),
+                      criteriaBuilder.equal(root.get("created"), true)));
 
-        CriteriaQuery<ProjectEntity> selectQuery =
-            criteriaQuery
-                .select(root)
-                .where(
-                    criteriaBuilder.and(
-                        criteriaBuilder.equal(root.get("visibility_migration"), false),
-                        criteriaBuilder.equal(root.get("created"), true)));
+      TypedQuery<ProjectEntity> typedQuery = session.createQuery(selectQuery);
+      Stream<ProjectEntity> projectEntities = typedQuery.getResultStream();
+      Iterator<ProjectEntity> iterator = projectEntities.iterator();
 
-        TypedQuery<ProjectEntity> typedQuery = session.createQuery(selectQuery);
+      Map<String, UserInfo> userInfoMap = new HashMap<>();
 
-        typedQuery.setFirstResult(lowerBound);
-        typedQuery.setMaxResults(pagesize);
-        List<ProjectEntity> projectEntities = typedQuery.getResultList();
+      int counter = 0;
+      while (iterator.hasNext()) {
+        LOGGER.debug("Migrated Projects: {}/{}", counter, count);
+        counter++;
 
-        if (projectEntities.size() > 0) {
-          Set<String> userIds = new HashSet<>();
-          Set<String> newVisibilityProjectIds = new HashSet<>();
-          for (ProjectEntity projectEntity : projectEntities) {
-            if (projectEntity.getOwner() != null && !projectEntity.getOwner().isEmpty()) {
-              userIds.add(projectEntity.getOwner());
+        ProjectEntity project = iterator.next();
+
+        boolean migrated = false;
+        if (project.getOwner() != null && !project.getOwner().isEmpty()) {
+          WorkspaceDTO workspaceDTO;
+          if (!userInfoMap.containsKey(project.getOwner())) {
+            try {
+              userInfoMap.putAll(
+                  authService.getUserInfoFromAuthServer(
+                      Collections.singleton(project.getOwner()), null, null));
+            } catch (StatusRuntimeException ex) {
+              if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
+                LOGGER.warn("Failed to get user info (skipping) : " + ex.toString());
+                continue;
+              }
+              throw ex;
+            }
+          }
+          try {
+            workspaceDTO =
+                roleService.getWorkspaceDTOByWorkspaceId(
+                    userInfoMap.get(project.getOwner()),
+                    project.getWorkspace(),
+                    project.getWorkspace_type());
+          } catch (StatusRuntimeException ex) {
+            if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
+              LOGGER.warn("Failed to get workspace (skipping) : " + ex.toString());
+              continue;
+            }
+            throw ex;
+          }
+          Long owner;
+          try {
+            owner = Long.parseLong(project.getOwner());
+          } catch (NumberFormatException ex) {
+            LOGGER.warn("Failed to convert owner (skipping) : " + ex.toString());
+            continue;
+          }
+          // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
+          // ignore the CollaboratorType
+          try {
+            roleService.createWorkspacePermissions(
+                workspaceDTO.getWorkspaceName(),
+                project.getId(),
+                project.getName(),
+                Optional.of(owner),
+                ModelDBServiceResourceTypes.PROJECT,
+                CollaboratorPermissions.newBuilder()
+                    .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                    .build(),
+                getResourceVisibility(
+                    Optional.ofNullable(
+                        WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
+                    VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
+          } catch (StatusRuntimeException ex) {
+            if (ex.getStatus().getCode() == Status.Code.ALREADY_EXISTS) {
+              LOGGER.info(
+                  "Resource seem to have already been created (ignoring) : " + ex.toString());
             } else {
-              newVisibilityProjectIds.add(projectEntity.getId());
+              throw ex;
             }
           }
-          LOGGER.debug("Project userId list : " + userIds);
-
-          // Fetch the project owners userInfo
-          Map<String, UserInfo> userInfoMap = new HashMap<>();
-          if (!userIds.isEmpty()) {
-            userInfoMap.putAll(authService.getUserInfoFromAuthServer(userIds, null, null));
-          }
-
-          List<GetResourcesResponseItem> responseItems =
+          migrated = true;
+        } else {
+          List<GetResourcesResponseItem> resources =
               roleService.getResourceItems(
-                  null, newVisibilityProjectIds, ModelDBServiceResourceTypes.PROJECT);
-          Map<String, GetResourcesResponseItem> responseItemMap =
-              responseItems.stream()
-                  .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
-
-          for (ProjectEntity project : projectEntities) {
-            boolean migrated = false;
-            if (project.getOwner() != null && !project.getOwner().isEmpty()) {
-              WorkspaceDTO workspaceDTO =
-                  roleService.getWorkspaceDTOByWorkspaceId(
-                      userInfoMap.get(project.getOwner()),
-                      project.getWorkspace(),
-                      project.getWorkspace_type());
-              // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
-              // ignore the CollaboratorType
-              roleService.createWorkspacePermissions(
-                  workspaceDTO.getWorkspaceName(),
-                  project.getId(),
-                  project.getName(),
-                  Optional.of(Long.parseLong(project.getOwner())),
-                  ModelDBServiceResourceTypes.PROJECT,
-                  CollaboratorPermissions.newBuilder()
-                      .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
-                      .build(),
-                  getResourceVisibility(
-                      Optional.ofNullable(
-                          WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
-                      VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
-              migrated = true;
-            } else if (responseItemMap.containsKey(project.getId())) {
-              GetResourcesResponseItem resourceDetails = responseItemMap.get(project.getId());
-              roleService.createWorkspacePermissions(
-                  resourceDetails.getWorkspaceId(),
-                  Optional.empty(),
-                  project.getId(),
-                  project.getName(),
-                  Optional.of(resourceDetails.getOwnerId()),
-                  ModelDBServiceResourceTypes.PROJECT,
-                  resourceDetails.getCustomPermission(),
-                  resourceDetails.getVisibility());
-              migrated = true;
-            }
-            if (migrated) {
-              Transaction transaction = null;
-              try {
-                deleteRoleBindingsForProjects(Collections.singletonList(project));
-                transaction = session.beginTransaction();
-                project.setVisibility_migration(true);
-                session.update(project);
-                transaction.commit();
-              } catch (Exception ex) {
-                if (transaction != null && transaction.getStatus().canRollback()) {
-                  transaction.rollback();
-                }
+                  null,
+                  Collections.singleton(project.getId()),
+                  ModelDBServiceResourceTypes.PROJECT);
+          if (!resources.isEmpty()) {
+            GetResourcesResponseItem resourceDetails = resources.get(0);
+            roleService.createWorkspacePermissions(
+                resourceDetails.getWorkspaceId(),
+                Optional.empty(),
+                project.getId(),
+                project.getName(),
+                Optional.of(resourceDetails.getOwnerId()),
+                ModelDBServiceResourceTypes.PROJECT,
+                resourceDetails.getCustomPermission(),
+                resourceDetails.getVisibility());
+            migrated = true;
+          }
+        }
+        if (migrated) {
+          deleteRoleBindingsForProjects(Collections.singletonList(project));
+          try (Session session1 = modelDBHibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = null;
+            try {
+              transaction = session1.beginTransaction();
+              Query query =
+                  session1.createSQLQuery(
+                      "UPDATE project p SET p.visibility_migration=true WHERE p.id=:id");
+              query.setParameter("id", project.getId());
+              query.executeUpdate();
+              transaction.commit();
+            } catch (Exception ex) {
+              if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
               }
             }
           }
-        } else {
-          LOGGER.debug("Total projects count 0");
-        }
-        lowerBound += pagesize;
-      } catch (Exception ex) {
-        if (ModelDBUtils.needToRetry(ex)) {
-          migrateProjects();
-        } else {
-          throw ex;
         }
       }
     }
@@ -195,56 +216,109 @@ public class CollaboratorResourceMigration {
     LOGGER.debug("Repositories migration started");
     Long count = getEntityCount(RepositoryEntity.class);
 
-    int lowerBound = 0;
-    final int pagesize = CollaboratorResourceMigration.paginationSize;
-    LOGGER.debug("Total Repositories {}", count);
+    LOGGER.debug("Total Repositories to migrate {}", count);
 
-    while (lowerBound < count) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+      CriteriaQuery<RepositoryEntity> criteriaQuery =
+          criteriaBuilder.createQuery(RepositoryEntity.class);
+      Root<RepositoryEntity> root = criteriaQuery.from(RepositoryEntity.class);
 
-        CriteriaQuery<RepositoryEntity> criteriaQuery =
-            criteriaBuilder.createQuery(RepositoryEntity.class);
-        Root<RepositoryEntity> root = criteriaQuery.from(RepositoryEntity.class);
+      CriteriaQuery<RepositoryEntity> selectQuery =
+          criteriaQuery
+              .select(root)
+              .where(
+                  criteriaBuilder.and(
+                      criteriaBuilder.equal(root.get("visibility_migration"), false),
+                      criteriaBuilder.equal(root.get("created"), true)));
 
-        CriteriaQuery<RepositoryEntity> selectQuery =
-            criteriaQuery
-                .select(root)
-                .where(
-                    criteriaBuilder.and(
-                        criteriaBuilder.equal(root.get("visibility_migration"), false),
-                        criteriaBuilder.equal(root.get("created"), true)));
+      TypedQuery<RepositoryEntity> typedQuery = session.createQuery(selectQuery);
+      List<RepositoryEntity> repositoryEntities = typedQuery.getResultList();
+      Iterator<RepositoryEntity> iterator = repositoryEntities.iterator();
 
-        TypedQuery<RepositoryEntity> typedQuery = session.createQuery(selectQuery);
+      Map<String, UserInfo> userInfoMap = new HashMap<>();
 
-        typedQuery.setFirstResult(lowerBound);
-        typedQuery.setMaxResults(pagesize);
-        List<RepositoryEntity> repositoryEntities = typedQuery.getResultList();
+      int counter = 0;
+      while (iterator.hasNext()) {
+        LOGGER.debug("Migrated Repositories: {}/{}", counter, count);
+        counter++;
 
-        if (repositoryEntities.size() > 0) {
-          Set<String> userIds = new HashSet<>();
-          Set<String> newVisibilityRepositoryIds = new HashSet<>();
-          Set<String> newVisibilityDatasetIds = new HashSet<>();
-          for (RepositoryEntity repositoryEntity : repositoryEntities) {
-            if (repositoryEntity.getOwner() != null && !repositoryEntity.getOwner().isEmpty()) {
-              userIds.add(repositoryEntity.getOwner());
-            } else {
-              if (repositoryEntity.isDataset()) {
-                newVisibilityDatasetIds.add(String.valueOf(repositoryEntity.getId()));
-              } else {
-                newVisibilityRepositoryIds.add(String.valueOf(repositoryEntity.getId()));
+        RepositoryEntity repository = iterator.next();
+
+        boolean migrated = false;
+
+        ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+            ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
+
+        if (repository.getOwner() != null && !repository.getOwner().isEmpty()) {
+          WorkspaceDTO workspaceDTO;
+          if (!userInfoMap.containsKey(repository.getOwner())) {
+            try {
+              userInfoMap.putAll(
+                  authService.getUserInfoFromAuthServer(
+                      Collections.singleton(repository.getOwner()), null, null));
+            } catch (StatusRuntimeException ex) {
+              if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
+                LOGGER.warn("Failed to get user info (skipping) : " + ex.toString());
+                continue;
               }
+              throw ex;
             }
           }
-          LOGGER.debug("Repository userId list : " + userIds);
-
-          // Fetch the repository owners userInfo
-          Map<String, UserInfo> userInfoMap = new HashMap<>();
-          if (!userIds.isEmpty()) {
-            userInfoMap.putAll(authService.getUserInfoFromAuthServer(userIds, null, null));
+          try {
+            workspaceDTO =
+                roleService.getWorkspaceDTOByWorkspaceId(
+                    userInfoMap.get(repository.getOwner()),
+                    repository.getWorkspace_id(),
+                    repository.getWorkspace_type());
+          } catch (StatusRuntimeException ex) {
+            if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
+              LOGGER.warn("Failed to get workspace (skipping) : " + ex.toString());
+              continue;
+            }
+            throw ex;
           }
-
+          Long owner;
+          try {
+            owner = Long.parseLong(repository.getOwner());
+          } catch (NumberFormatException ex) {
+            LOGGER.warn("Failed to convert owner (skipping) : " + ex.toString());
+            continue;
+          }
+          // if repositoryVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
+          // ignore the CollaboratorType
+          try {
+            roleService.createWorkspacePermissions(
+                workspaceDTO.getWorkspaceName(),
+                String.valueOf(repository.getId()),
+                repository.getName(),
+                Optional.of(Long.parseLong(repository.getOwner())),
+                modelDBServiceResourceTypes,
+                CollaboratorPermissions.newBuilder()
+                    .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                    .build(),
+                getResourceVisibility(
+                    Optional.ofNullable(
+                        WorkspaceTypeEnum.WorkspaceType.forNumber(repository.getWorkspace_type())),
+                    VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())));
+          } catch (StatusRuntimeException ex) {
+            if (ex.getStatus().getCode() == Status.Code.ALREADY_EXISTS) {
+              LOGGER.info(
+                  "Resource seem to have already been created (ignoring) : " + ex.toString());
+            } else {
+              throw ex;
+            }
+          }
+          migrated = true;
+        } else {
+          Set<String> newVisibilityRepositoryIds = new HashSet<>();
+          Set<String> newVisibilityDatasetIds = new HashSet<>();
+          if (repository.isDataset()) {
+            newVisibilityDatasetIds.add(String.valueOf(repository.getId()));
+          } else {
+            newVisibilityRepositoryIds.add(String.valueOf(repository.getId()));
+          }
           List<GetResourcesResponseItem> responseRepositoryItems =
               roleService.getResourceItems(
                   null, newVisibilityRepositoryIds, ModelDBServiceResourceTypes.REPOSITORY);
@@ -253,75 +327,42 @@ public class CollaboratorResourceMigration {
                   null, newVisibilityDatasetIds, ModelDBServiceResourceTypes.DATASET);
           Set<GetResourcesResponseItem> responseItems = new HashSet<>(responseRepositoryItems);
           responseItems.addAll(responseDatasetItems);
-
           Map<String, GetResourcesResponseItem> responseItemMap =
               responseItems.stream()
                   .collect(Collectors.toMap(GetResourcesResponseItem::getResourceId, item -> item));
-          for (RepositoryEntity repository : repositoryEntities) {
-            boolean migrated = false;
-            ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-                ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
-            if (repository.getOwner() != null && !repository.getOwner().isEmpty()) {
-              WorkspaceDTO workspaceDTO =
-                  roleService.getWorkspaceDTOByWorkspaceId(
-                      userInfoMap.get(repository.getOwner()),
-                      repository.getWorkspace_id(),
-                      repository.getWorkspace_type());
-              // if repositoryVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
-              // ignore the CollaboratorType
-              roleService.createWorkspacePermissions(
-                  workspaceDTO.getWorkspaceName(),
-                  String.valueOf(repository.getId()),
-                  repository.getName(),
-                  Optional.of(Long.parseLong(repository.getOwner())),
-                  modelDBServiceResourceTypes,
-                  CollaboratorPermissions.newBuilder()
-                      .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
-                      .build(),
-                  getResourceVisibility(
-                      Optional.ofNullable(
-                          WorkspaceTypeEnum.WorkspaceType.forNumber(
-                              repository.getWorkspace_type())),
-                      VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())));
-              migrated = true;
-            } else if (responseItemMap.containsKey(String.valueOf(repository.getId()))) {
-              GetResourcesResponseItem resourceDetails =
-                  responseItemMap.get(String.valueOf(repository.getId()));
-              roleService.createWorkspacePermissions(
-                  resourceDetails.getWorkspaceId(),
-                  Optional.empty(),
-                  String.valueOf(repository.getId()),
-                  repository.getName(),
-                  Optional.of(resourceDetails.getOwnerId()),
-                  modelDBServiceResourceTypes,
-                  resourceDetails.getCustomPermission(),
-                  resourceDetails.getVisibility());
-              migrated = true;
-            }
-            if (migrated) {
-              Transaction transaction = null;
-              try {
-                deleteRoleBindingsOfRepositories(Collections.singletonList(repository));
-                transaction = session.beginTransaction();
-                repository.setVisibility_migration(true);
-                session.update(repository);
-                transaction.commit();
-              } catch (Exception ex) {
-                if (transaction != null && transaction.getStatus().canRollback()) {
-                  transaction.rollback();
-                }
+          if (responseItemMap.containsKey(String.valueOf(repository.getId()))) {
+            GetResourcesResponseItem resourceDetails =
+                responseItemMap.get(String.valueOf(repository.getId()));
+            roleService.createWorkspacePermissions(
+                resourceDetails.getWorkspaceId(),
+                Optional.empty(),
+                String.valueOf(repository.getId()),
+                repository.getName(),
+                Optional.of(resourceDetails.getOwnerId()),
+                modelDBServiceResourceTypes,
+                resourceDetails.getCustomPermission(),
+                resourceDetails.getVisibility());
+            migrated = true;
+          }
+        }
+        if (migrated) {
+          deleteRoleBindingsOfRepositories(Collections.singletonList(repository));
+          try (Session session1 = modelDBHibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = null;
+            try {
+              transaction = session1.beginTransaction();
+              Query query =
+                  session1.createSQLQuery(
+                      "UPDATE repository r SET r.visibility_migration=true WHERE r.id=:id");
+              query.setParameter("id", repository.getId());
+              query.executeUpdate();
+              transaction.commit();
+            } catch (Exception ex) {
+              if (transaction != null && transaction.getStatus().canRollback()) {
+                transaction.rollback();
               }
             }
           }
-        } else {
-          LOGGER.debug("Total repositories count 0");
-        }
-        lowerBound += pagesize;
-      } catch (Exception ex) {
-        if (ModelDBUtils.needToRetry(ex)) {
-          migrateRepositories();
-        } else {
-          throw ex;
         }
       }
     }
@@ -329,11 +370,18 @@ public class CollaboratorResourceMigration {
     LOGGER.debug("Repositories migration finished");
   }
 
-  private static Long getEntityCount(Class<?> klass) {
+  private static <T> Long getEntityCount(Class<T> klass) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
-      countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
+      Root<T> root = countQuery.from(klass);
+      countQuery
+          .select(criteriaBuilder.count(root))
+          .where(
+              criteriaBuilder.and(
+                  criteriaBuilder.equal(root.get("visibility_migration"), false),
+                  criteriaBuilder.equal(root.get("created"), true)));
+
       return session.createQuery(countQuery).getSingleResult();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {

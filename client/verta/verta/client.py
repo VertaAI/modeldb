@@ -205,6 +205,7 @@ class Client(object):
         self._conf = _utils.Configuration(use_git, debug)
 
         self._ctx = _Context(self._conn, self._conf)
+        self._workspace = None
 
     @property
     def proj(self):
@@ -249,38 +250,15 @@ class Client(object):
 
     @property
     def projects(self):
-        return Projects(self._conn, self._conf)
+        return Projects(self._conn, self._conf).with_workspace(self.get_workspace())
 
     @property
     def experiments(self):
-        return Experiments(self._conn, self._conf)
+        return Experiments(self._conn, self._conf).with_workspace(self.get_workspace())
 
     @property
     def expt_runs(self):
-        return ExperimentRuns(self._conn, self._conf)
-
-    def _get_personal_workspace(self):
-        email = self._conn.auth.get('Grpc-Metadata-email')
-        if email is not None:
-            response = _utils.make_request(
-                "GET",
-                "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
-                self._conn, params={'email': email},
-            )
-
-            if response.ok:
-                try:
-                    response_json = _utils.body_to_json(response)
-                except ValueError:  # not JSON response
-                    pass
-                else:
-                    return response_json['verta_info']['username']
-            else:
-                if response.status_code == 404:  # UAC not found
-                    pass
-                else:
-                    _utils.raise_for_http_error(response)
-        return entity._OSS_DEFAULT_WORKSPACE
+        return ExperimentRuns(self._conn, self._conf).with_workspace(self.get_workspace())
 
     def _load_config(self):
         with _config_utils.read_merged_config() as config:
@@ -300,7 +278,7 @@ class Client(object):
 
         Parameters
         ----------
-        visibility : :class:`~verta.visibility._visibility._Visibility` or None
+        visibility : :ref:`visibility <visibility-api>` or None
 
         """
         # TODO: consider a decorator for create_*()s that validates common params
@@ -312,6 +290,49 @@ class Client(object):
             )
 
         return visibility
+
+    def get_workspace(self):
+        """
+        Gets the active workspace for this client instance.
+
+        The active workspace is determined by this order of precedence:
+
+        1) value set in :meth:`~Client.set_workspace`
+        2) value set in :ref:`client config file <client-config-file>`
+        3) default workspace set in web app.
+
+        Returns
+        -------
+        workspace : str
+            Verta workspace.
+
+        """
+        workspace = self._workspace
+
+        if not workspace:
+            workspace = self._config.get("workspace")
+
+        if not workspace:
+            workspace = self._conn.get_default_workspace()
+
+        return workspace
+
+    def set_workspace(self, workspace):
+        """
+        Sets the active workspace for this client instance.
+
+        Parameters
+        ----------
+        workspace : str
+            Verta workspace.
+
+        """
+        if not isinstance(workspace, six.string_types):
+            raise TypeError("`workspace` must be a string")
+        if not self._conn.is_workspace(workspace):
+            raise ValueError("workspace \"{}\" not found".format(workspace))
+
+        self._workspace = workspace
 
     def get_project(self, name=None, workspace=None, id=None):
         """
@@ -338,7 +359,8 @@ class Client(object):
         name = self._set_from_config_if_none(name, "project")
         if name is None and id is None:
             raise ValueError("must specify either `name` or `id`")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self.get_workspace()
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
@@ -379,7 +401,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a Project in an organization's workspace, whether to make this Project
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this project. If not provided, an
             appropriate default will be used.
         id : str, optional
@@ -401,7 +423,8 @@ class Client(object):
         self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "project")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self.get_workspace()
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
@@ -633,7 +656,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a Repository in an organization's workspace, whether to make this Repository
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this repository. If not provided,
             an appropriate default will be used.
 
@@ -655,10 +678,8 @@ class Client(object):
             return repo
         elif name is not None:
             if workspace is None:
-                workspace_str = "personal workspace"
-                workspace = self._get_personal_workspace()
-            else:
-                workspace_str = "workspace {}".format(workspace)
+                workspace = self.get_workspace()
+            workspace_str = "workspace {}".format(workspace)
 
             repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
 
@@ -732,7 +753,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a registered_model in an organization's workspace, whether to make this registered_model
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this registered model. If not
             provided, an appropriate default will be used.
         id : str, optional
@@ -754,10 +775,8 @@ class Client(object):
         self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "registered_model")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
-
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self.get_workspace()
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
@@ -801,9 +820,8 @@ class Client(object):
         name = self._set_from_config_if_none(name, "registered_model")
         if name is None and id is None:
             raise ValueError("must specify either `name` or `id`")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self.get_workspace()
 
         if id is not None:
             registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
@@ -839,11 +857,11 @@ class Client(object):
 
     @property
     def registered_models(self):
-        return RegisteredModels(self._conn, self._conf)
+        return RegisteredModels(self._conn, self._conf).with_workspace(self.get_workspace())
 
     @property
     def registered_model_versions(self):
-        return RegisteredModelVersions(self._conn, self._conf)
+        return RegisteredModelVersions(self._conn, self._conf).with_workspace(self.get_workspace())
 
     def get_or_create_endpoint(self, path=None, description=None, workspace=None, public_within_org=None, visibility=None, id=None):
         """
@@ -865,7 +883,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating an endpoint in an organization's workspace, whether to make this endpoint
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this endpoint. If not provided, an
             appropriate default will be used.
         id : str, optional
@@ -888,9 +906,8 @@ class Client(object):
             raise ValueError("must specify either `path` or `id`")
         self._validate_visibility(visibility)
 
-        workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self.get_workspace()
         resource_name = "Endpoint"
         param_names = "`description`, `public_within_org`, or `visibility`"
         params = [description, public_within_org, visibility]
@@ -932,9 +949,8 @@ class Client(object):
         if path is None and id is None:
             raise ValueError("must specify either `path` or `id`")
 
-        workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self.get_workspace()
 
         if id is not None:
             endpoint = Endpoint._get_by_id(self._conn, self._conf, workspace, id)
@@ -976,7 +992,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a Project in an organization's workspace, whether to make this Project
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this project. If not provided, an
             appropriate default will be used.
 
@@ -993,7 +1009,8 @@ class Client(object):
         self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "project")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self.get_workspace()
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
@@ -1101,7 +1118,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a registered_model in an organization's workspace, whether to make this registered_model
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this registered model. If not
             provided, an appropriate default will be used.
 
@@ -1118,10 +1135,9 @@ class Client(object):
         self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "registered_model")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
 
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self.get_workspace()
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
@@ -1151,7 +1167,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating an endpoint in an organization's workspace, whether to make this endpoint
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this endpoint. If not provided, an
             appropriate default will be used.
 
@@ -1169,14 +1185,13 @@ class Client(object):
             raise ValueError("Must specify `path`")
         self._validate_visibility(visibility)
 
-        workspace = self._set_from_config_if_none(workspace, "workspace")
         if workspace is None:
-            workspace = self._get_personal_workspace()
+            workspace = self.get_workspace()
         return Endpoint._create(self._conn, self._conf, workspace, path, description, public_within_org, visibility)
 
     @property
     def endpoints(self):
-        return Endpoints(self._conn, self._conf, self._get_personal_workspace())
+        return Endpoints(self._conn, self._conf, self.get_workspace())
 
     def download_endpoint_manifest(
             self, download_to_path, path, name, strategy=None,
@@ -1216,12 +1231,14 @@ class Client(object):
 
         if not strategy:
             strategy = DirectUpdateStrategy()
+        if not workspace:
+            workspace = self.get_workspace()
 
         data = {
             'endpoint': {'path': path},
             'name': name,
             'update': Endpoint._create_update_body(strategy, resources, autoscaling, env_vars),
-            'workspace_name': workspace or self._get_personal_workspace(),
+            'workspace_name': workspace,
         }
 
         endpoint = "{}://{}/api/v1/deployment/operations/manifest".format(
@@ -1262,7 +1279,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a dataset in an organization's workspace, whether to make this dataset
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this dataset. If not provided, an
             appropriate default will be used.
         id : str, optional
@@ -1284,7 +1301,8 @@ class Client(object):
         self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "dataset")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self.get_workspace()
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
@@ -1340,7 +1358,7 @@ class Client(object):
         public_within_org : bool, default False
             If creating a dataset in an organization's workspace, whether to make this dataset
             accessible to all members of that organization.
-        visibility : :class:`~verta.visibility._visibility._Visibility`, optional
+        visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this dataset. If not provided, an
             appropriate default will be used.
 
@@ -1357,7 +1375,8 @@ class Client(object):
         self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "dataset")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self.get_workspace()
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
@@ -1395,7 +1414,8 @@ class Client(object):
         name = self._set_from_config_if_none(name, "dataset")
         if name is None and id is None:
             raise ValueError("must specify either `name` or `id`")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self.get_workspace()
 
         if id is not None:
             dataset = Dataset._get_by_id(self._conn, self._conf, id)
@@ -1408,7 +1428,7 @@ class Client(object):
 
     @property
     def datasets(self):
-        return Datasets(self._conn, self._conf)
+        return Datasets(self._conn, self._conf).with_workspace(self.get_workspace())
 
     def get_dataset_version(self, id):
         """

@@ -1,3 +1,5 @@
+.. _organizations-tutorial:
+
 Organizations
 =============
 

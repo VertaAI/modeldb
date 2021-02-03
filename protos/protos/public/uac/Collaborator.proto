@@ -93,6 +93,8 @@ message GetResources {
         uint64 workspace_id = 2;
         string workspace_name = 3;
     }
+    // Optional. If Provided, workspace, resource service, type should be provided
+    string resource_name = 4;
 
     message Response {
         repeated GetResourcesResponseItem item = 1;
@@ -156,6 +158,13 @@ service CollaboratorService {
     rpc getResources (GetResources) returns (GetResources.Response) {
         option (google.api.http) = {
             get: "/v1/collaborator/getResources"
+        };
+    };
+
+    // The caller must have permission to GET the resource accordingly
+    rpc getResourcesInPersonalWorkspace (GetResources) returns (GetResources.Response) {
+        option (google.api.http) = {
+            get: "/v1/collaborator/getResourcesInPersonalWorkspace"
         };
     };
 

@@ -1,3 +1,5 @@
+.. _client-config-file:
+
 Client config file
 ==================
 The Client config file allows you to define settings that are easily repeatable and sharable. This

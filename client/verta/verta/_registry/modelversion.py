@@ -8,7 +8,7 @@ from google.protobuf.struct_pb2 import Value
 
 import requests
 
-from .entity_registry import _ModelDBRegistryEntity
+from .._tracking.entity import _ModelDBEntity
 from .._protos.public.registry import RegistryService_pb2 as _RegistryService
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
@@ -26,12 +26,12 @@ from .._internal_utils import (
 from .._internal_utils._utils import NoneProtoResponse
 from .. import utils
 
-from .._tracking.entity import _OSS_DEFAULT_WORKSPACE, _MODEL_ARTIFACTS_ATTR_KEY
+from .._tracking.entity import _MODEL_ARTIFACTS_ATTR_KEY
 from .._tracking.deployable_entity import _DeployableEntity
 from ..environment import _Environment, Python
 
 
-class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
+class RegisteredModelVersion(_DeployableEntity):
     """
     Object representing a version of a Registered Model.
 
@@ -114,9 +114,9 @@ class RegisteredModelVersion(_ModelDBRegistryEntity, _DeployableEntity):
         registered_model_msg = self._conn.maybe_proto_response(response, Message.Response).registered_model
 
         if registered_model_msg.workspace_id:
-            return self._get_workspace_name_by_id(registered_model_msg.workspace_id)
+            return self._conn.get_workspace_name_from_id(registered_model_msg.workspace_id)
         else:
-            return _OSS_DEFAULT_WORKSPACE
+            return self._conn._OSS_DEFAULT_WORKSPACE
 
     def get_artifact_keys(self):
         """

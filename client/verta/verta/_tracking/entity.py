@@ -24,7 +24,6 @@ from .._internal_utils import (
 )
 
 
-_OSS_DEFAULT_WORKSPACE = "personal"
 _MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
 
 
@@ -148,7 +147,7 @@ class _ModelDBEntity(object):
             visibility = kwargs.pop(VISIBILITY_KEY)
             public_within_org = kwargs.pop(PUBLIC_WITHIN_ORG_KEY)
 
-            visibility, public_within_org = _visibility._Visibility.translate_public_within_org(visibility, public_within_org)
+            visibility, public_within_org = _visibility._Visibility._translate_public_within_org(visibility, public_within_org)
 
             kwargs[VISIBILITY_KEY] = visibility
             kwargs[PUBLIC_WITHIN_ORG_KEY] = public_within_org
@@ -465,27 +464,3 @@ class _ModelDBEntity(object):
             return zipfile.ZipFile(code_archive, 'r')  # TODO: return a util class instead, maybe
         else:
             raise RuntimeError("unable find code in response")
-
-    def _get_workspace_name_by_id(self, workspace_id):
-        # try getting organization
-        response = _utils.make_request(
-            "GET",
-            "{}://{}/api/v1/uac-proxy/organization/getOrganizationById".format(self._conn.scheme, self._conn.socket),
-            self._conn, params={'org_id': workspace_id},
-        )
-        try:
-            _utils.raise_for_http_error(response)
-        except requests.HTTPError:
-            # try getting user
-            response = _utils.make_request(
-                "GET",
-                "{}://{}/api/v1/uac-proxy/uac/getUser".format(self._conn.scheme, self._conn.socket),
-                self._conn, params={'user_id': workspace_id},
-            )
-            _utils.raise_for_http_error(response)
-
-            # workspace is user
-            return _utils.body_to_json(response)['verta_info']['username']
-        else:
-            # workspace is organization
-            return _utils.body_to_json(response)['organization']['name']

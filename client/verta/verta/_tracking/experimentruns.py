@@ -237,3 +237,10 @@ class ExperimentRuns(_utils.LazyList):
         new_runs._msg.experiment_run_ids.extend(record.id for record in records)
 
         return new_runs
+
+    def with_workspace(self, workspace_name=None):
+        new_list = copy.deepcopy(self)
+        new_list._msg.ClearField('project_id')
+        new_list._msg.ClearField('experiment_id')
+        new_list._msg.workspace_name = workspace_name or ''
+        return new_list

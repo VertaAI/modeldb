@@ -19,6 +19,11 @@ class CollaboratorServiceStub(object):
         request_serializer=uac_dot_Collaborator__pb2.GetResources.SerializeToString,
         response_deserializer=uac_dot_Collaborator__pb2.GetResources.Response.FromString,
         )
+    self.getResourcesInPersonalWorkspace = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/getResourcesInPersonalWorkspace',
+        request_serializer=uac_dot_Collaborator__pb2.GetResources.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.GetResources.Response.FromString,
+        )
     self.setResource = channel.unary_unary(
         '/ai.verta.uac.CollaboratorService/setResource',
         request_serializer=uac_dot_Collaborator__pb2.SetResource.SerializeToString,
@@ -111,6 +116,13 @@ class CollaboratorServiceServicer(object):
   pass
 
   def getResources(self, request, context):
+    """The caller must have permission to GET the resource accordingly
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getResourcesInPersonalWorkspace(self, request, context):
     """The caller must have permission to GET the resource accordingly
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -241,6 +253,11 @@ def add_CollaboratorServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'getResources': grpc.unary_unary_rpc_method_handler(
           servicer.getResources,
+          request_deserializer=uac_dot_Collaborator__pb2.GetResources.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.GetResources.Response.SerializeToString,
+      ),
+      'getResourcesInPersonalWorkspace': grpc.unary_unary_rpc_method_handler(
+          servicer.getResourcesInPersonalWorkspace,
           request_deserializer=uac_dot_Collaborator__pb2.GetResources.FromString,
           response_serializer=uac_dot_Collaborator__pb2.GetResources.Response.SerializeToString,
       ),
