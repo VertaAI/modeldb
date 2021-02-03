@@ -14,6 +14,8 @@ public class ArtifactPathMigrationUtils {
   private ArtifactPathMigrationUtils() {}
 
   private static final Logger LOGGER = LogManager.getLogger(ArtifactPathMigrationUtils.class);
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
 
   public static void migration(Map<String, Object> propertiesMap) {
     LOGGER.debug("Artifact path migration start");
@@ -45,7 +47,7 @@ public class ArtifactPathMigrationUtils {
 
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         Transaction transaction = session.beginTransaction();
         String queryString =
             "FROM ArtifactEntity ae WHERE ae."
@@ -72,7 +74,7 @@ public class ArtifactPathMigrationUtils {
   }
 
   private static Long getArtifactEntityCount() {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query =
           session.createQuery(
               "SELECT count(*) FROM ArtifactEntity ae WHERE ae."

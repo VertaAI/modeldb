@@ -140,15 +140,16 @@ public class App implements ApplicationContextAware {
         Boolean.parseBoolean(
             Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
                 .orElse("false"));
+    ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
-      ModelDBHibernateUtil.runLiquibaseMigration(config.database);
+      modelDBHibernateUtil.runLiquibaseMigration(config.database);
       LOGGER.info("Liquibase migration done");
 
-      ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
+      modelDBHibernateUtil.createOrGetSessionFactory(config.database);
 
       LOGGER.info("Code migration starting");
-      ModelDBHibernateUtil.runMigration(config);
+      modelDBHibernateUtil.runMigration(config);
       LOGGER.info("Code migration done");
 
       boolean runLiquibaseSeparate =
@@ -160,7 +161,7 @@ public class App implements ApplicationContextAware {
       }
     }
 
-    ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
+    modelDBHibernateUtil.createOrGetSessionFactory(config.database);
 
     return false;
   }
