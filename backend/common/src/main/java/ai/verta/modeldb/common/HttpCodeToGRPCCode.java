@@ -1,4 +1,4 @@
-package ai.verta.modeldb;
+package ai.verta.modeldb.common;
 
 import com.google.rpc.Code;
 

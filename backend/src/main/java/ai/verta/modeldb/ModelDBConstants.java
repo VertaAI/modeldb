@@ -40,7 +40,6 @@ public interface ModelDBConstants {
   String STARTER_PROJECT = "starterProject";
   String STARTER_PROJECT_ID = "starterProjectId";
   String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
-  String userDir = "user.dir";
   String MDB_SERVICE_USER = "mdb_service_user";
   String POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES = "populateConnectionsBasedOnPrivileges";
   String LIQUIBASE_MIGRATION = "LIQUIBASE_MIGRATION";
@@ -172,12 +171,8 @@ public interface ModelDBConstants {
   String DEV_KEY = "devKey";
   String REQUEST_TIMEOUT = "requestTimeout";
 
-  // Set to true to export the liquibase schema as sql statements
-  Boolean EXPORT_SCHEMA = false;
-
   // Common error messages
   String ACCESS_DENIED_EXPERIMENT_RUN = "User does not have access to the ExperimentRun.";
-  String INTERNAL_ERROR = "Internal server error";
   String NON_EQ_ID_PRED_ERROR_MESSAGE =
       "Only equality predicates supported on ids. Use EQ Operator.";
   String INTERNAL_MSG_USERS_NOT_FOUND = "MDB Users not found.";
