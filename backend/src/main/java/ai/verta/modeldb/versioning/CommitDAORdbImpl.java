@@ -31,7 +31,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
-import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.UserInfo;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -975,16 +974,7 @@ public class CommitDAORdbImpl implements CommitDAO {
 
       String workspaceName = request.getWorkspaceName();
       LOGGER.debug("Workspace is : '{}'", workspaceName);
-      if (!workspaceName.isEmpty()
-          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
-        LOGGER.debug("Workspace match with username of the login user");
-        List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
-            roleService.getResourceItems(null, accessibleResourceIds, modelDBServiceResourceTypes);
-        accessibleResourceIds =
-            accessibleAllWorkspaceItems.stream()
-                .map(GetResourcesResponseItem::getResourceId)
-                .collect(Collectors.toSet());
-      } else {
+      if (!workspaceName.isEmpty()) {
         accessibleResourceIds =
             ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
                 roleService,
