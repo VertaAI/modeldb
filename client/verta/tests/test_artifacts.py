@@ -434,6 +434,37 @@ class TestModels:
         assert experiment_run.get_model().__dict__ == custom.__dict__
         assert experiment_run.get_model().predict(strs) == custom.predict(strs)
 
+    def test_pyspark(self, experiment_run, in_tempdir):
+        data_filename = "census-train.csv"
+        spark_model_dir = "spark-model"
+
+        pytest.importorskip("boto3").client("s3").download_file("verta-starter", data_filename, data_filename)
+        SparkSession = pytest.importorskip("pyspark.sql").SparkSession
+        col = pytest.importorskip("pyspark.sql.functions").col
+        LogisticRegression = pytest.importorskip("pyspark.ml.classification").LogisticRegression
+        LogisticRegressionModel = pytest.importorskip("pyspark.ml.classification").LogisticRegressionModel
+        VectorAssembler = pytest.importorskip("pyspark.ml.feature").VectorAssembler
+
+        spark = SparkSession.builder.master("local").appName("parquet_example").getOrCreate()
+
+        df = spark.read.csv(data_filename, header=True, inferSchema=True)
+        df.repartition(5).write.mode("overwrite").parquet("datasets/census-train-parquet")
+        df = VectorAssembler(
+            inputCols=[c for c in df.columns if c != ">50k"],
+            outputCol="features",
+        ).transform(df)
+        df = df.withColumn("label", col(">50k"))
+        df = df["features", "label"]
+
+        # log model
+        model = LogisticRegression().fit(df)
+        experiment_run.log_model(model, custom_modules=[])
+
+        # get model
+        with zipfile.ZipFile(experiment_run.get_model()) as zipf:
+            zipf.extractall(spark_model_dir)
+        assert LogisticRegressionModel.load(spark_model_dir).params == model.params
+
 
 class TestImages:
     @staticmethod
