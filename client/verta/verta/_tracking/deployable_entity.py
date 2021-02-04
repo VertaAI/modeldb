@@ -18,6 +18,7 @@ import requests
 
 from .entity import _ModelDBEntity
 from .._internal_utils import (
+    _artifact_utils,
     _histogram_utils,
     _utils,
 )
@@ -292,12 +293,15 @@ class _DeployableEntity(_ModelDBEntity):
                 except:
                     # maybe file has corrupt metadata; try reading then writing contents
                     with open(filepath, 'rb') as f:
-                        zipf.writestr(arcname, f.read())
+                        zipf.writestr(
+                            _artifact_utils.global_read_zipinfo(arcname),
+                            f.read(),
+                        )
 
             # add verta config file for sys.path and chdir
             working_dir = os.path.join(_CUSTOM_MODULES_DIR, os.path.relpath(curr_dir, common_dir))
             zipf.writestr(
-                "_verta_config.py",
+                _artifact_utils.global_read_zipinfo("_verta_config.py"),
                 six.ensure_binary('\n'.join([
                     "import os, sys",
                     "",
@@ -315,7 +319,10 @@ class _DeployableEntity(_ModelDBEntity):
             # add __init__.py
             init_filename = "__init__.py"
             if init_filename not in zipf.namelist():
-                zipf.writestr(init_filename, b"")
+                zipf.writestr(
+                    _artifact_utils.global_read_zipinfo(init_filename),
+                    b"",
+                )
 
         bytestream.seek(0)
 
