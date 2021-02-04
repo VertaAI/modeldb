@@ -37,8 +37,9 @@ message AuditLog {
     //When: timestamp
     int64 ts_nano = 4;
 
-    //other metadata, this is free formed.
-    string metadata_blob = 5;
+    // IO of the request
+    google.protobuf.Value request = 5;
+    google.protobuf.Value response = 6;
 
     //local id, used for consistency
     string local_id = 6;
