@@ -37,6 +37,9 @@ message AuditLog {
     // How : the action the user performed
     uac.Action action = 3;
 
+    // Unique identifier for the method, like the fully qualified method name in grpc
+    string method_name = 8;
+
     //When: timestamp
     int64 ts_nano = 4;
 
@@ -45,7 +48,7 @@ message AuditLog {
     google.protobuf.Value response = 6;
 
     //local id, used for consistency
-    string local_id = 6;
+    string local_id = 7;
 }
 
 message BatchResponseRow {
