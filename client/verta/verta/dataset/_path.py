@@ -62,6 +62,10 @@ class Path(_dataset._Dataset):
             paths = [paths]
         paths = map(os.path.expanduser, paths)
 
+        # remove "file:" scheme
+        paths = map(lambda path: _file_utils.remove_prefix(path, "file://"), paths)
+        paths = map(lambda path: _file_utils.remove_prefix(path, "file:"), paths)
+
         filepaths = _file_utils.flatten_file_trees(paths)
         components = list(map(self._file_to_component, filepaths))
 
