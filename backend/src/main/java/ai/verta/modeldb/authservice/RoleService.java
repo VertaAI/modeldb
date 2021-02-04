@@ -9,7 +9,6 @@ import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
@@ -75,11 +74,6 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
 
   GetResourcesResponseItem getEntityResource(
       String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  boolean deleteResources(Resources resources);
-
-  boolean deleteEntityResources(
-      List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   boolean createWorkspacePermissions(
       String workspaceName,

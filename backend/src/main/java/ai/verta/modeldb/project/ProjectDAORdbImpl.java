@@ -257,7 +257,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       deletedEntitiesQuery.setParameter("projectName", project.getName());
       List<String> deletedEntityIds = deletedEntitiesQuery.list();
       if (!deletedEntityIds.isEmpty()) {
-        roleService.deleteEntityResources(deletedEntityIds, ModelDBServiceResourceTypes.PROJECT);
+        roleService.deleteEntityResourcesWithServiceUser(
+            deletedEntityIds, ModelDBServiceResourceTypes.PROJECT);
       }
 
       Transaction transaction = session.beginTransaction();
