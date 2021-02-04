@@ -7,10 +7,11 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceImplBase;
-import ai.verta.modeldb.authservice.AuthInterceptor;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
@@ -178,7 +179,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetHydratedProjects.Response.getDefaultInstance());
     }
   }
@@ -204,7 +205,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetHydratedProjectById.Response.getDefaultInstance());
     }
   }
@@ -246,7 +247,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetHydratedExperimentsByProjectId.Response.getDefaultInstance());
     }
   }
@@ -291,7 +292,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetHydratedExperimentRunsByProjectId.Response.getDefaultInstance());
     }
   }
@@ -444,7 +445,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetHydratedExperimentRunById.Response.getDefaultInstance());
     }
   }
@@ -500,7 +501,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AdvancedQueryExperimentRunsResponse.getDefaultInstance());
     }
   }
@@ -542,7 +543,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AdvancedQueryExperimentRunsResponse.getDefaultInstance());
     }
   }
@@ -584,7 +585,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AdvancedQueryExperimentRunsResponse.getDefaultInstance());
     }
   }
@@ -681,7 +682,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AdvancedQueryExperimentsResponse.getDefaultInstance());
     }
   }
@@ -715,7 +716,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AdvancedQueryProjectsResponse.getDefaultInstance());
     }
   }
@@ -832,7 +833,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AdvancedQueryDatasetsResponse.getDefaultInstance());
     }
   }
@@ -919,7 +920,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AdvancedQueryDatasetVersionsResponse.getDefaultInstance());
     }
   }
@@ -987,7 +988,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetHydratedDatasetByName.Response.getDefaultInstance());
     }
   }
@@ -1054,7 +1055,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AdvancedQueryProjectsResponse.getDefaultInstance());
     }
   }
@@ -1088,7 +1089,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AdvancedQueryProjectsResponse.getDefaultInstance());
     }
   }
@@ -1123,7 +1124,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AdvancedQueryProjectsResponse.getDefaultInstance());
     }
   }
@@ -1218,7 +1219,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetHydratedDatasetsByProjectId.Response.getDefaultInstance());
     }
   }

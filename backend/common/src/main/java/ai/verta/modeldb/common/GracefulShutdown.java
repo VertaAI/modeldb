@@ -1,4 +1,4 @@
-package ai.verta.modeldb;
+package ai.verta.modeldb.common;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;

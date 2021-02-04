@@ -1,4 +1,4 @@
-package ai.verta.modeldb.config;
+package ai.verta.modeldb.common.config;
 
 public class RdbConfig {
   public String RdbDatabaseName;

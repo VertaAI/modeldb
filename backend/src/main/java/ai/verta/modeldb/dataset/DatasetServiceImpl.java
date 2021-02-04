@@ -11,6 +11,7 @@ import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -121,7 +122,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, CreateDataset.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, CreateDataset.Response.getDefaultInstance());
     }
   }
 
@@ -194,7 +195,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetAllDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetAllDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -214,7 +215,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, DeleteDataset.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, DeleteDataset.Response.getDefaultInstance());
     }
   }
 
@@ -239,7 +240,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetDatasetById.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetDatasetById.Response.getDefaultInstance());
     }
   }
 
@@ -259,7 +260,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, FindDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, FindDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -318,8 +319,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, GetDatasetByName.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetDatasetByName.Response.getDefaultInstance());
     }
   }
 
@@ -364,7 +364,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateDatasetName.Response.getDefaultInstance());
     }
   }
@@ -408,7 +408,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateDatasetDescription.Response.getDefaultInstance());
     }
   }
@@ -453,7 +453,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, AddDatasetTags.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, AddDatasetTags.Response.getDefaultInstance());
     }
   }
 
@@ -465,7 +465,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       throw new ModelDBException("Not supported", Code.UNIMPLEMENTED);
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
     }
   }
 
@@ -508,7 +508,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetTags.Response.getDefaultInstance());
     }
   }
@@ -560,7 +560,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AddDatasetAttributes.Response.getDefaultInstance());
     }
   }
@@ -608,7 +608,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateDatasetAttributes.Response.getDefaultInstance());
     }
   }
@@ -665,7 +665,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetAttributes.Response.getDefaultInstance());
     }
   }
@@ -685,7 +685,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, DeleteDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, DeleteDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -795,7 +795,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, LastExperimentByDatasetId.Response.getDefaultInstance());
     }
   }
@@ -869,7 +869,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetExperimentRunByDataset.Response.getDefaultInstance());
     }
   }

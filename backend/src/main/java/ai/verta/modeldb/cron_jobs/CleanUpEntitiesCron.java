@@ -24,6 +24,7 @@ import org.hibernate.query.Query;
 
 public class CleanUpEntitiesCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(CleanUpEntitiesCron.class);
+  private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private final RoleService roleService;
   private final Integer recordUpdateLimit;
 
@@ -38,7 +39,7 @@ public class CleanUpEntitiesCron extends TimerTask {
     LOGGER.info("CleanUpEntitiesCron wakeup");
 
     CommonUtils.registeredBackgroundUtilsCount();
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       // Clean up projects
       cleanProjects(session);
 

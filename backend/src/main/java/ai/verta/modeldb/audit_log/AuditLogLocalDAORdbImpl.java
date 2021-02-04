@@ -13,9 +13,11 @@ public class AuditLogLocalDAORdbImpl implements AuditLogLocalDAO {
 
   private static final Logger LOGGER =
       LogManager.getLogger(AuditLogLocalDAORdbImpl.class.getName());
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
 
   public void saveAuditLogs(List<AuditLogLocalEntity> auditLogEntities) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       saveAuditLogs(session, auditLogEntities);
       transaction.commit();

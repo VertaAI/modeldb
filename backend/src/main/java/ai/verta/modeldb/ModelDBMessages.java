@@ -28,7 +28,6 @@ public interface ModelDBMessages {
       "Dataset version type does not match containing dataset type";
   String ACCESSIBLE_DATASET_IN_SERVICE = "Accessible datasets in service : {}";
   String DATSET_ALREADY_EXISTS_IN_DATABASE = "Dataset already exists in database";
-  String READY_STATUS = "Setting isReady to true, was {}";
   String MODIFICATION_OF_ORG_ADMIN_COLLABORATOR_DENIED =
       "Can not modify collaboration settings of organization admin user.";
   String PROJECT_NOT_FOUND_FOR_ID = "Project not found for given ID";

@@ -84,6 +84,8 @@ import org.hibernate.query.Query;
 public class BlobDAORdbImpl implements BlobDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(BlobDAORdbImpl.class);
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
 
   public static final String TREE = "TREE";
   private final AuthService authService;
@@ -139,7 +141,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<KeyValue> attributes,
       boolean addAttribute)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity;
 
       RepositoryIdentification.Builder repositoryIdentification =
@@ -186,7 +188,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<KeyValue> attributes,
       boolean addAttribute)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Blob.Builder blobBuilder = Blob.newBuilder();
       List<String> locations =
           Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION);
@@ -228,7 +230,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<String> location,
       boolean deleteAll)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity;
 
       RepositoryIdentification.Builder repositoryIdentification =
@@ -285,7 +287,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<String> location,
       boolean deleteAll)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       CommitEntity commitEntity =
           commitDAO.getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
@@ -330,7 +332,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<String> location,
       List<String> attributeKeysList)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CommitEntity commitEntity = null;
       RepositoryEntity repositoryEntity;
 
@@ -379,7 +381,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   public List<KeyValue> getBlobAttributes(
       Long repositoryId, String commitHash, List<String> location, List<String> attributeKeysList)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       return VersioningUtils.getAttributes(
           session, repositoryId, commitHash, location, attributeKeysList);
     } catch (Exception ex) {
@@ -435,7 +437,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   public GetCommitComponentRequest.Response getCommitComponent(
       RepositoryFunction repositoryFunction, String commitHash, ProtocolStringList locationList)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
       return getCommitComponent(session, repository.getId(), commit, locationList);
@@ -524,7 +526,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       String commitHash,
       boolean checkWrite)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       if (repositoryEntity == null) {
         repositoryEntity =
             VersioningUtils.getDatasetRepositoryEntity(
@@ -848,7 +850,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   public ListCommitBlobsRequest.Response getCommitBlobsList(
       RepositoryFunction repositoryFunction, String commitHash, List<String> locationList)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
       if (commit == null) {
@@ -887,7 +889,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   @Override
   public ComputeRepositoryDiffRequest.Response computeRepositoryDiff(
       RepositoryDAO repositoryDAO, ComputeRepositoryDiffRequest request) throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       // validating request
       validateDiffMergeRequest(
@@ -1077,7 +1079,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     String branchOrCommitA = null;
     String branchOrCommitB = null;
     RepositoryEntity repositoryEntity = null;
-    try (Session readSession = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session readSession = modelDBHibernateUtil.getSessionFactory().openSession()) {
       repositoryEntity = repositoryDAO.getRepositoryById(readSession, request.getRepositoryId());
 
       if (!request.getBranchA().isEmpty()) {
@@ -1166,7 +1168,7 @@ public class BlobDAORdbImpl implements BlobDAO {
           getCommitBlobMapWithHash(
               readSession, parentCommit.getRootSha(), new ArrayList<>(), Collections.emptyList());
     }
-    try (Session writeSession = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session writeSession = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<ai.verta.modeldb.versioning.BlobDiff> diffB =
           computeDiffFromCommitMaps(locationBlobsMapParentCommit, locationBlobsMapCommitB)
               .getDiffsList();
@@ -1278,7 +1280,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     RepositoryEntity repositoryEntity;
     CommitEntity baseCommitEntity;
     CommitEntity commitToRevertEntity;
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       repositoryEntity = repositoryDAO.getRepositoryById(session, request.getRepositoryId());
 
       if (!VersioningUtils.commitRepositoryMappingExists(
@@ -1348,7 +1350,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
     }
 
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<String> parentSHAs = Collections.singletonList(request.getBaseCommitSha());
       Map<Integer, CommitEntity> parentCommits = new HashMap<>();
       parentCommits.put(0, baseCommitEntity);
@@ -1571,7 +1573,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
       Map<String, BlobExpanded> locationBlobsMap =
@@ -1654,7 +1656,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   @Override
   public FindRepositoriesBlobs.Response findRepositoriesBlobs(
       CommitDAO commitDAO, FindRepositoriesBlobs request) throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       CommitPaginationDTO commitPaginationDTO =
@@ -1741,7 +1743,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       CommitFunction commitFunction,
       GetUrlForBlobVersioned request)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
 
@@ -1993,7 +1995,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       String pathDatasetComponentBlobPath,
       ArtifactPart artifactPart)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repository);
       session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
@@ -2053,7 +2055,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<String> location,
       String pathDatasetComponentBlobPath)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repository);
 
@@ -2115,7 +2117,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       CommitMultipartFunction commitMultipartFunction)
       throws ModelDBException {
     List<PartETag> partETags;
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repository);
       session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);

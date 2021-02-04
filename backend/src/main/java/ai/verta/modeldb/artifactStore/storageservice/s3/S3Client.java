@@ -2,6 +2,7 @@ package ai.verta.modeldb.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.S3Config;
@@ -123,7 +124,7 @@ public class S3Client {
           new String(
               Files.readAllBytes(
                   Paths.get(
-                      ModelDBUtils.appendOptionalTelepresencePath(
+                      CommonUtils.appendOptionalTelepresencePath(
                           System.getenv(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))));
 
       // Obtain credentials for the IAM role. Note that you cannot assume the role of

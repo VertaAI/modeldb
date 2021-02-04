@@ -1,4 +1,4 @@
-package ai.verta.modeldb.exceptions;
+package ai.verta.modeldb.common.exceptions;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.rpc.Code;
