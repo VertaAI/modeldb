@@ -124,12 +124,14 @@ public class CommitDAORdbImpl implements CommitDAO {
       return CreateCommitRequest.Response.newBuilder()
           .setCommit(commitEntity.toCommitProto())
           .build();
-    } catch (Exception ex) {
+    } catch (ModelDBException ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return setCommit(author, commit, setBlobs, setBlobsAttributes, getRepository);
       } else {
-        throw new ModelDBException(ex);
+        throw ex;
       }
+    } catch (Exception ex) {
+      throw new ModelDBException(ex);
     }
   }
 
