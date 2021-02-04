@@ -77,52 +77,6 @@
     }
   },
   "definitions": {
-    "AuthzActionEnumAuthzServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "IS_ALLOWED",
-        "GET",
-        "CREATE",
-        "READ",
-        "UPDATE",
-        "DELETE"
-      ],
-      "default": "UNKNOWN"
-    },
-    "AuthzResourceEnumAuthzServiceResourceTypes": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "ORGANIZATION",
-        "TEAM"
-      ],
-      "default": "UNKNOWN"
-    },
-    "DeploymentActionEnumDeploymentServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "CREATE",
-        "READ",
-        "UPDATE",
-        "DELETE",
-        "UPDATE_PERMISSIONS"
-      ],
-      "default": "UNKNOWN"
-    },
-    "DeploymentResourceEnumDeploymentServiceResourceTypes": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "ENDPOINT"
-      ],
-      "default": "UNKNOWN"
-    },
     "ModelDBActionEnumModelDBServiceActions": {
       "type": "string",
       "enum": [
@@ -133,8 +87,7 @@
         "UPDATE",
         "DELETE",
         "DEPLOY",
-        "PUBLIC_READ",
-        "UPDATE_PERMISSIONS"
+        "PUBLIC_READ"
       ],
       "default": "UNKNOWN"
     },
@@ -154,39 +107,12 @@
       ],
       "default": "UNKNOWN"
     },
-    "RoleActionEnumRoleServiceActions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "GET_BY_ID",
-        "GET_BY_NAME",
-        "CREATE",
-        "UPDATE",
-        "LIST",
-        "DELETE"
-      ],
-      "default": "UNKNOWN"
-    },
-    "RoleResourceEnumRoleServiceResourceTypes": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ALL",
-        "ROLE",
-        "ROLE_BINDING"
-      ],
-      "default": "UNKNOWN"
-    },
     "ServiceEnumService": {
       "type": "string",
       "enum": [
         "UNKNOWN",
         "ALL",
-        "ROLE_SERVICE",
-        "AUTHZ_SERVICE",
-        "MODELDB_SERVICE",
-        "DEPLOYMENT_SERVICE"
+        "MODELDB_SERVICE"
       ],
       "default": "UNKNOWN"
     },
@@ -243,17 +169,8 @@
         "service": {
           "$ref": "#/definitions/ServiceEnumService"
         },
-        "role_service_action": {
-          "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
-        },
-        "authz_service_action": {
-          "$ref": "#/definitions/AuthzActionEnumAuthzServiceActions"
-        },
         "modeldb_service_action": {
           "$ref": "#/definitions/ModelDBActionEnumModelDBServiceActions"
-        },
-        "deployment_service_action": {
-          "$ref": "#/definitions/DeploymentActionEnumDeploymentServiceActions"
         }
       },
       "title": "An action describes a specific operation that can be performed on a service"
@@ -261,18 +178,8 @@
     "uacResourceType": {
       "type": "object",
       "properties": {
-        "role_service_resource_type": {
-          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
-          "title": "Separate based on the service itself"
-        },
-        "authz_service_resource_type": {
-          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
-        },
         "modeldb_service_resource_type": {
           "$ref": "#/definitions/ModelDBResourceEnumModelDBServiceResourceTypes"
-        },
-        "deployment_service_resource_type": {
-          "$ref": "#/definitions/DeploymentResourceEnumDeploymentServiceResourceTypes"
         }
       }
     },
