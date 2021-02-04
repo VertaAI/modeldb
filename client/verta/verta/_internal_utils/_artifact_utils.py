@@ -2,7 +2,9 @@
 
 import hashlib
 import os
+import shutil
 import tempfile
+import zipfile
 
 import cloudpickle
 
@@ -114,6 +116,8 @@ def ext_from_method(method):
         return 'hdf5'
     elif method in ("joblib", "cloudpickle", "pickle"):
         return 'pkl'
+    elif method == "zip":
+        return "zip"
     elif method is None:
         return None
     else:
@@ -248,8 +252,8 @@ def serialize_model(model):
         try:  # attempt to deserialize
             reset_stream(model)  # reset cursor to beginning in case user forgot
             model = deserialize_model(model.read())
-        except pickle.UnpicklingError:  # unrecognized model
-            bytestream, _ = ensure_bytestream(model)  # pass along file-like
+        except (TypeError, pickle.UnpicklingError):  # unrecognized model
+            bytestream = model
             method = None
             model_type = "custom"
         finally:
@@ -262,6 +266,24 @@ def serialize_model(model):
         return bytestream, method, model_type
 
     # `model` is an instance
+    pyspark_ml_base = maybe_dependency("pyspark.ml.base")
+    if pyspark_ml_base:
+        # https://spark.apache.org/docs/latest/api/python/_modules/pyspark/ml/base.html
+        pyspark_base_classes = (
+            pyspark_ml_base.Estimator,
+            pyspark_ml_base.Model,
+            pyspark_ml_base.Transformer,
+        )
+        if isinstance(model, pyspark_base_classes):
+            temp_dir = tempfile.mkdtemp()
+            try:
+                spark_model_dir = os.path.join(temp_dir, "spark-model")
+                model.save(spark_model_dir)
+                bytestream = zip_dir(spark_model_dir)
+            finally:
+                shutil.rmtree(temp_dir)
+            # TODO: see if more info would be needed to deserialize in model service
+            return bytestream, "zip", "pyspark"
     for class_obj in model.__class__.__mro__:
         module_name = class_obj.__module__
         if not module_name:
@@ -437,3 +459,37 @@ def calc_sha256(bytestream, chunk_size=CHUNK_SIZE):
         reset_stream(bytestream)  # reset cursor to beginning as a courtesy
 
     return checksum.hexdigest()
+
+
+def zip_dir(dirpath):
+    """
+    ZIPs a directory.
+
+    Parameters
+    ----------
+    dirpath : str
+        Directory path.
+
+    Returns
+    -------
+    tempf : :class:`tempfile.NamedTemporaryFile`
+        ZIP file handle.
+
+    """
+    e_msg = "{} is not a directory".format(str(dirpath))
+    if not isinstance(dirpath, six.string_types):
+        raise TypeError(e_msg)
+    if not os.path.isdir(dirpath):
+        raise ValueError(e_msg)
+
+    os.path.expanduser(dirpath)
+
+    tempf = tempfile.NamedTemporaryFile(suffix=".zip")
+    with zipfile.ZipFile(tempf, 'w') as zipf:
+        for root, _, files in os.walk(dirpath):
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                zipf.write(filepath, os.path.relpath(filepath, dirpath))
+
+    tempf.seek(0)
+    return tempf

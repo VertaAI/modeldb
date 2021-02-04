@@ -1187,15 +1187,10 @@ class ExperimentRun(_DeployableEntity):
             self._log_artifact("train_data", train_data, _CommonCommonService.ArtifactTypeEnum.DATA, 'csv')
 
     def log_tf_saved_model(self, export_dir):
-        with tempfile.TemporaryFile() as tempf:
-            with zipfile.ZipFile(tempf, 'w') as zipf:
-                for root, _, files in os.walk(export_dir):
-                    for filename in files:
-                        filepath = os.path.join(root, filename)
-                        zipf.write(filepath, os.path.relpath(filepath, export_dir))
-            tempf.seek(0)
-            # TODO: change _log_artifact() to not read file into memory
-            self._log_artifact("tf_saved_model", tempf, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
+        tempf = _artifact_utils.zip_dir(export_dir)
+
+        # TODO: change _log_artifact() to not read file into memory
+        self._log_artifact("tf_saved_model", tempf, _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
 
     def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
         """
@@ -1422,24 +1417,14 @@ class ExperimentRun(_DeployableEntity):
         _artifact_utils.validate_key(key)
         _utils.validate_flat_key(key)
 
+        # zip if `artifact` is directory path
+        if isinstance(artifact, six.string_types) and os.path.isdir(artifact):
+            artifact = _artifact_utils.zip_dir(artifact)
+
         try:
             extension = _artifact_utils.get_file_ext(artifact)
         except (TypeError, ValueError):
             extension = None
-
-        # zip if `artifact` is directory path
-        if isinstance(artifact, six.string_types) and os.path.isdir(artifact):
-            tempf = tempfile.TemporaryFile()
-
-            with zipfile.ZipFile(tempf, 'w') as zipf:
-                for root, _, files in os.walk(artifact):
-                    for filename in files:
-                        filepath = os.path.join(root, filename)
-                        zipf.write(filepath, os.path.relpath(filepath, artifact))
-            tempf.seek(0)
-
-            artifact = tempf
-            extension = 'zip'
 
         self._log_artifact(key, artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, extension, overwrite=overwrite)
 
