@@ -77,6 +77,45 @@
     }
   },
   "definitions": {
+    "ModelDBActionEnumModelDBServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "CREATE",
+        "READ",
+        "UPDATE",
+        "DELETE",
+        "DEPLOY",
+        "PUBLIC_READ"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ModelDBResourceEnumModelDBServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "PROJECT",
+        "EXPERIMENT",
+        "EXPERIMENT_RUN",
+        "DATASET",
+        "DATASET_VERSION",
+        "DASHBOARD",
+        "REPOSITORY",
+        "REGISTERED_MODEL"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ServiceEnumService": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "MODELDB_SERVICE"
+      ],
+      "default": "UNKNOWN"
+    },
     "commonPagination": {
       "type": "object",
       "properties": {
@@ -124,6 +163,26 @@
         }
       }
     },
+    "uacAction": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
+        },
+        "modeldb_service_action": {
+          "$ref": "#/definitions/ModelDBActionEnumModelDBServiceActions"
+        }
+      },
+      "title": "An action describes a specific operation that can be performed on a service"
+    },
+    "uacResourceType": {
+      "type": "object",
+      "properties": {
+        "modeldb_service_resource_type": {
+          "$ref": "#/definitions/ModelDBResourceEnumModelDBServiceResourceTypes"
+        }
+      }
+    },
     "versioningAddAuditLogBatch": {
       "type": "object",
       "properties": {
@@ -158,7 +217,7 @@
           "title": "What"
         },
         "action": {
-          "type": "string",
+          "$ref": "#/definitions/uacAction",
           "title": "How : the action the user performed"
         },
         "ts_nano": {
@@ -199,11 +258,11 @@
           "title": "id of the resource"
         },
         "resource_type": {
-          "type": "string",
+          "$ref": "#/definitions/uacResourceType",
           "title": "the tyep of the resource"
         },
         "resource_service": {
-          "type": "string",
+          "$ref": "#/definitions/ServiceEnumService",
           "title": "the service the resource belongs to"
         }
       },
@@ -291,7 +350,7 @@
       "properties": {
         "user": {
           "$ref": "#/definitions/versioningAuditUser",
-          "title": "the query could be with the user id or with the service the service account belongs to\nExample \nlog for user with id \"123\""
+          "title": "the query could be with the user id or with the service the service account belongs to\nExample\nlog for user with id \"123\""
         }
       }
     }
