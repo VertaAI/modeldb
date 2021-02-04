@@ -2,6 +2,7 @@
 
 import hashlib
 import os
+import shutil
 import tempfile
 import zipfile
 
@@ -115,6 +116,8 @@ def ext_from_method(method):
         return 'hdf5'
     elif method in ("joblib", "cloudpickle", "pickle"):
         return 'pkl'
+    elif method == "zip":
+        return "zip"
     elif method is None:
         return None
     else:
@@ -263,6 +266,16 @@ def serialize_model(model):
         return bytestream, method, model_type
 
     # `model` is an instance
+    pyspark_ml_base = maybe_dependency("pyspark.ml.base")
+    if pyspark_ml_base and isinstance(model, pyspark_ml_base.Model):
+        temp_dir = tempfile.mkdtemp()
+        try:
+            spark_model_dir = os.path.join(temp_dir, "spark-model")
+            model.save(spark_model_dir)
+            bytestream = zip_dir(spark_model_dir)
+        finally:
+            shutil.rmtree(temp_dir)
+        return bytestream, "zip", "pyspark"
     for class_obj in model.__class__.__mro__:
         module_name = class_obj.__module__
         if not module_name:
