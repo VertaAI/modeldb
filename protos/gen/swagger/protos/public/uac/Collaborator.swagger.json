@@ -1190,10 +1190,6 @@
         "shared_users": {
           "type": "array",
           "items": {
-<<<<<<< HEAD
-            "$ref": "#/definitions/uacGetCollaboratorResponse"
-          }
-=======
             "$ref": "#/definitions/uacGetCollaboratorResponseItem"
           }
         }
@@ -1267,7 +1263,6 @@
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
           "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
->>>>>>> master
         }
       }
     },
