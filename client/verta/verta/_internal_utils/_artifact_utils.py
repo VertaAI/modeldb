@@ -282,7 +282,7 @@ def serialize_model(model):
                 bytestream = zip_dir(spark_model_dir)
             finally:
                 shutil.rmtree(temp_dir)
-            # TODO: see if more info would be needed to handle in model service
+            # TODO: see if more info would be needed to deserialize in model service
             return bytestream, "zip", "pyspark"
     for class_obj in model.__class__.__mro__:
         module_name = class_obj.__module__
