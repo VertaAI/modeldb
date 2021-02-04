@@ -493,3 +493,34 @@ def zip_dir(dirpath):
 
     tempf.seek(0)
     return tempf
+
+
+def global_read_zipinfo(filename):
+    """
+    Returns a :class:`zipfile.ZipInfo` with ``644`` permissions.
+
+    :meth:`zipfile.ZipFile.writestr` creates files with ``600`` [1]_ [2]_,
+    which means non-owners are unable to read the file, which can be
+    problematic for custom modules in deployment.
+
+    Parameters
+    ----------
+    filename : str
+        Name to assign to the file in the ZIP archive.
+
+    Returns
+    -------
+    zip_info : :class:`zipfile.ZipInfo`
+        File metadata; the first arg to :meth:`zipfile.ZipFile.writestr`.
+
+    References
+    ----------
+    .. [1] https://github.com/python/cpython/blob/2.7/Lib/zipfile.py#L1244
+
+    .. [2] https://bugs.python.org/msg69937
+
+    """
+    zip_info = zipfile.ZipInfo(filename)
+    zip_info.external_attr = 0o644 << 16  # ?rw-r--r--
+
+    return zip_info
