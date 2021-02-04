@@ -450,10 +450,10 @@
         ]
       }
     },
-    "/collaborator/getResourcesInPersonalWorkspace": {
+    "/collaborator/getResourcesExcludingOrganizationWorkspaces": {
       "get": {
-        "summary": "The caller must have permission to GET the resource accordingly",
-        "operationId": "CollaboratorService_getResourcesInPersonalWorkspace",
+        "summary": "The caller must have permission to GET the resource accordingly\ngets resources that is available in personal workspace (all except organization workspace resources)",
+        "operationId": "CollaboratorService_getResourcesExcludingOrganizationWorkspaces",
         "responses": {
           "200": {
             "description": "A successful response.",
