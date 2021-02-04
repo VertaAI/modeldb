@@ -2054,6 +2054,7 @@ type CollaboratorServiceClient interface {
 	// The caller must have permission to GET the resource accordingly
 	GetResources(ctx context.Context, in *GetResources, opts ...grpc.CallOption) (*GetResources_Response, error)
 	// The caller must have permission to GET the resource accordingly
+	// gets resources that is available in personal workspace (all except organization workspace resources)
 	GetResourcesInPersonalWorkspace(ctx context.Context, in *GetResources, opts ...grpc.CallOption) (*GetResources_Response, error)
 	// The caller must have permission to CREATE or UPDATE the resource accordingly
 	SetResource(ctx context.Context, in *SetResource, opts ...grpc.CallOption) (*SetResource_Response, error)
@@ -2260,6 +2261,7 @@ type CollaboratorServiceServer interface {
 	// The caller must have permission to GET the resource accordingly
 	GetResources(context.Context, *GetResources) (*GetResources_Response, error)
 	// The caller must have permission to GET the resource accordingly
+	// gets resources that is available in personal workspace (all except organization workspace resources)
 	GetResourcesInPersonalWorkspace(context.Context, *GetResources) (*GetResources_Response, error)
 	// The caller must have permission to CREATE or UPDATE the resource accordingly
 	SetResource(context.Context, *SetResource) (*SetResource_Response, error)

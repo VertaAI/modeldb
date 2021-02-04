@@ -124,6 +124,7 @@ class CollaboratorServiceServicer(object):
 
   def getResourcesInPersonalWorkspace(self, request, context):
     """The caller must have permission to GET the resource accordingly
+    gets resources that is available in personal workspace (all except organization workspace resources)
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
