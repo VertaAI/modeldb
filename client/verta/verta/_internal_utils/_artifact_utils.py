@@ -267,15 +267,22 @@ def serialize_model(model):
 
     # `model` is an instance
     pyspark_ml_base = maybe_dependency("pyspark.ml.base")
-    if pyspark_ml_base and isinstance(model, pyspark_ml_base.Model):
-        temp_dir = tempfile.mkdtemp()
-        try:
-            spark_model_dir = os.path.join(temp_dir, "spark-model")
-            model.save(spark_model_dir)
-            bytestream = zip_dir(spark_model_dir)
-        finally:
-            shutil.rmtree(temp_dir)
-        return bytestream, "zip", "pyspark"
+    if pyspark_ml_base:
+        # https://spark.apache.org/docs/latest/api/python/_modules/pyspark/ml/base.html
+        pyspark_base_classes = (
+            pyspark_ml_base.Estimator,
+            pyspark_ml_base.Model,
+            pyspark_ml_base.Transformer,
+        )
+        if isinstance(model, pyspark_base_classes):
+            temp_dir = tempfile.mkdtemp()
+            try:
+                spark_model_dir = os.path.join(temp_dir, "spark-model")
+                model.save(spark_model_dir)
+                bytestream = zip_dir(spark_model_dir)
+            finally:
+                shutil.rmtree(temp_dir)
+            return bytestream, "zip", "pyspark"
     for class_obj in model.__class__.__mro__:
         module_name = class_obj.__module__
         if not module_name:
