@@ -484,7 +484,7 @@ public class ProjectTest extends TestsInit {
 
     LOGGER.info("Project Id : " + project.getId());
     updateProjectNameRequest =
-        UpdateProjectName.newBuilder().setId(project.getId()).setName(project.getName()).build();
+        UpdateProjectName.newBuilder().setId(project.getId()).setName(project2.getName()).build();
     try {
       projectServiceStub.updateProjectName(updateProjectNameRequest);
       fail();

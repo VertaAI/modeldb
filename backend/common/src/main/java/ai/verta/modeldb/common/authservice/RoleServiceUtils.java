@@ -7,8 +7,8 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.uac.*;
 import ai.verta.uac.ServiceEnum.Service;
 import com.google.protobuf.GeneratedMessageV3;
@@ -174,13 +174,17 @@ public class RoleServiceUtils implements RoleService {
       if (responseItem.isPresent()){
         return responseItem.get();
       } else {
-        throw new InvalidArgumentException(
-                "Failed to locate "
-                        + modelDBServiceResourceTypes.name()
-                        + " resources in UAC for "
-                        + modelDBServiceResourceTypes.name()
-                        + " ID "
-                        + entityId);
+        StringBuilder errorMessage =
+                new StringBuilder("Failed to locate ")
+                        .append(modelDBServiceResourceTypes.name())
+                        .append(" resources in UAC for ")
+                        .append(modelDBServiceResourceTypes.name());
+        if (entityName.isPresent()){
+          errorMessage.append(" Name ").append(entityName);
+        } else {
+          errorMessage.append(" ID ").append(entityId);
+        }
+        throw new NotFoundException(errorMessage.toString());
       }
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
