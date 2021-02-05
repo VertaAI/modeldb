@@ -435,6 +435,16 @@ class TestPath:
         with pytest.raises(ValueError):
             dataset.add("test_versioning/test_dataset.py")
 
+    def test_with_spark(self, with_boto3, in_tempdir):
+        data_filename = "census-train.csv"
+
+        pytest.importorskip("boto3").client("s3").download_file("verta-starter", data_filename, data_filename)
+        SparkContext = pytest.importorskip("pyspark").SparkContext
+
+        sc = SparkContext("local")
+        dataset = verta.dataset.Path.with_spark(sc, [data_filename])
+        # TODO: assert contents
+
 
 @pytest.mark.usefixtures("with_boto3", "in_tempdir")
 class TestS3ManagedVersioning:
