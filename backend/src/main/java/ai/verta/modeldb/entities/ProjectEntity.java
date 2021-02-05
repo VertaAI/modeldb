@@ -367,6 +367,7 @@ public class ProjectEntity {
             Optional.of(this.id),
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
             ModelDBServiceResourceTypes.PROJECT);
     projectBuilder.setVisibility(projectResource.getVisibility());
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());

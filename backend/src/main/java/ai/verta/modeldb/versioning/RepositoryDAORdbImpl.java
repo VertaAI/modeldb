@@ -76,46 +76,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   private static final String SHORT_NAME = "repo";
 
-  private static final String GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL =
-      new StringBuilder("Select count(*) From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(" where ")
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.NAME)
-          .append(" = :repositoryName ")
-          .toString();
-
-  private static final String GET_REPOSITORY_IDS_BY_NAME_HQL =
-      new StringBuilder("SELECT ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.ID)
-          .append(" FROM ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(" where ")
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.NAME)
-          .append(" = :repositoryName ")
-          .append(" AND ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.DELETED)
-          .append(" = false ")
-          .append(" AND ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.CREATED)
-          .append(" = true")
-          .toString();
-
   private static final String GET_TAG_HQL =
       new StringBuilder("From ")
           .append(TagsEntity.class.getSimpleName())
@@ -237,35 +197,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     this.metadataDAO = metadataDAO;
   }
 
-  private void checkIfEntityAlreadyExists(
-      Session session, Workspace workspace, String name, RepositoryTypeEnum repositoryType) {
-    List<Long> repositoryEntityIds = getRepositoryEntityIdsByName(session, name, repositoryType);
-    ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-        ModelDBServiceResourceTypes.REPOSITORY;
-    if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
-      modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
-    }
-
-    if (repositoryEntityIds != null && !repositoryEntityIds.isEmpty()) {
-      ModelDBUtils.checkIfEntityAlreadyExists(
-          roleService,
-          workspace,
-          name,
-          repositoryEntityIds.stream().map(String::valueOf).collect(Collectors.toList()),
-          modelDBServiceResourceTypes);
-    }
-  }
-
-  private List<Long> getRepositoryEntityIdsByName(
-      Session session, String name, RepositoryTypeEnum repositoryType) {
-    StringBuilder getRepoCountByNamePrefixHQL = new StringBuilder(GET_REPOSITORY_IDS_BY_NAME_HQL);
-    setRepositoryTypeInQueryBuilder(repositoryType, getRepoCountByNamePrefixHQL);
-    Query query = session.createQuery(getRepoCountByNamePrefixHQL.toString());
-    query.setParameter("repositoryName", name);
-    List<Long> repositoryEntityIds = query.list();
-    return repositoryEntityIds;
-  }
-
   @Override
   public GetRepositoryRequest.Response getRepository(GetRepositoryRequest request)
       throws Exception {
@@ -380,41 +311,20 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   private Optional<RepositoryEntity> getRepositoryByName(
       Session session, String name, Workspace workspace, RepositoryTypeEnum repositoryType) {
-    List<Long> repositoryIds = getRepositoryEntityIdsByName(session, name, repositoryType);
     // TODO: replace with the helper function
     ModelDBServiceResourceTypes modelDBServiceResourceTypes =
         ModelDBServiceResourceTypes.REPOSITORY;
     if (repositoryType.equals(RepositoryTypeEnum.DATASET)) {
       modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
     }
-    List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
-        roleService.getResourceItems(
-            workspace,
-            !repositoryIds.isEmpty()
-                ? repositoryIds.stream().map(String::valueOf).collect(Collectors.toSet())
-                : Collections.emptySet(),
+    GetResourcesResponseItem responseItem =
+        roleService.getEntityResource(
+            Optional.empty(),
+            Optional.of(name),
+            Optional.empty(),
+            Optional.of(workspace.getId()),
             modelDBServiceResourceTypes);
-    Set<Long> repoIds =
-        accessibleAllWorkspaceItems.stream()
-            .filter(
-                getResourcesResponseItem -> getResourcesResponseItem.getResourceName().equals(name))
-            .map(
-                getResourcesResponseItem ->
-                    Long.parseLong(getResourcesResponseItem.getResourceId()))
-            .collect(Collectors.toSet());
-    if (!repoIds.isEmpty()) {
-      if (repoIds.size() > 1) {
-        throw new InternalErrorException(
-            "Multiple "
-                + modelDBServiceResourceTypes
-                + " found for the name '"
-                + name
-                + "' in the workspace");
-      }
-      return getRepositoryById(session, new ArrayList<>(repoIds).get(0));
-    } else {
-      return Optional.empty();
-    }
+    return getRepositoryById(session, Long.parseLong(responseItem.getResourceId()));
   }
 
   @Override
@@ -491,8 +401,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       session.lock(repositoryEntity, LockMode.PESSIMISTIC_WRITE);
       if (!repository.getName().isEmpty()
           && !repositoryEntity.getName().equals(repository.getName())) {
-        // TODO: Remove this after UAC support update entity name using SetResource
-        checkIfEntityAlreadyExists(session, workspace, repository.getName(), repositoryType);
+        ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+            ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
+        roleService.createWorkspacePermissions(
+            workspace.getId(),
+            Optional.empty(),
+            String.valueOf(repositoryEntity.getId()),
+            repository.getName(),
+            Optional.empty(), // UAC will populate the owner ID
+            modelDBServiceResourceTypes,
+            repository.getCustomPermission(),
+            repository.getVisibility());
       }
       repositoryEntity.update(repository);
     }

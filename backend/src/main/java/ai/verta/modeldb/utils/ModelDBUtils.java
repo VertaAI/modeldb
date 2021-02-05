@@ -21,7 +21,6 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
-import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
@@ -426,25 +425,6 @@ public class ModelDBUtils {
         && !workspaceId.equals(userInfo.getVertaInfo().getUserId())) {
       throw new PermissionDeniedException(
           "Creation of " + resourceNameString + " in other user's workspace is not permitted");
-    }
-  }
-
-  public static void checkIfEntityAlreadyExists(
-      RoleService roleService,
-      Workspace workspace,
-      String name,
-      List<String> projectEntityIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    List<GetResourcesResponseItem> responseItems =
-        roleService.getResourceItems(
-            workspace, new HashSet<>(projectEntityIds), modelDBServiceResourceTypes);
-    for (GetResourcesResponseItem item : responseItems) {
-      if (workspace.getId() == item.getWorkspaceId()) {
-        // Throw error if it is an insert request and project with same name already exists
-        LOGGER.info("{} with name {} already exists", modelDBServiceResourceTypes, name);
-        throw new AlreadyExistsException(
-            modelDBServiceResourceTypes + " already exists in database");
-      }
     }
   }
 

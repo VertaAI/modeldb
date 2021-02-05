@@ -679,6 +679,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               Optional.empty(),
               Optional.of(request.getName()),
               Optional.of(workspaceName),
+              Optional.empty(),
               ModelDBServiceResourceTypes.PROJECT);
 
       FindProjects.Builder findProjects =

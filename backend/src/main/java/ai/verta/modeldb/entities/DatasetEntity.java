@@ -248,6 +248,7 @@ public class DatasetEntity {
             Optional.ofNullable(String.valueOf(this.id)),
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
             ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
     datasetBuilder.setVisibility(repositoryResource.getVisibility());
     datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());

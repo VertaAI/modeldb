@@ -229,6 +229,7 @@ public class PublicRoleServiceUtils implements RoleService {
       Optional<String> entityId,
       Optional<String> entityName,
       Optional<String> workspaceName,
+      Optional<Long> workspaceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build();
   }

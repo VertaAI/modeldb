@@ -215,6 +215,7 @@ public class RepositoryEntity {
             Optional.of(String.valueOf(this.id)),
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
             modelDBServiceResourceTypes);
     builder.setVisibility(repositoryResource.getVisibility());
     builder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
