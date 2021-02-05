@@ -11,6 +11,7 @@ import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.GetDatasetById;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -473,9 +474,14 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       deletedEntitiesQuery.setParameter("name", name);
       List<Long> deletedEntityIds = deletedEntitiesQuery.list();
       if (!deletedEntityIds.isEmpty()) {
-        roleService.deleteEntityResourcesWithServiceUser(
-            deletedEntityIds.stream().map(String::valueOf).collect(Collectors.toList()),
-            ModelDBServiceResourceTypes.REPOSITORY);
+        try {
+          CommonUtils.registeredBackgroundUtilsCount();
+          roleService.deleteEntityResourcesWithServiceUser(
+              deletedEntityIds.stream().map(String::valueOf).collect(Collectors.toList()),
+              ModelDBServiceResourceTypes.REPOSITORY);
+        } finally {
+          CommonUtils.unregisteredBackgroundUtilsCount();
+        }
       }
 
       repositoryEntity = new RepositoryEntity(repository, repositoryType);

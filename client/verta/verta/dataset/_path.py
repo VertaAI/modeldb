@@ -62,6 +62,8 @@ class Path(_dataset._Dataset):
             paths = [paths]
         paths = map(os.path.expanduser, paths)
 
+        paths = map(self._remove_file_scheme, paths)
+
         filepaths = _file_utils.flatten_file_trees(paths)
         components = list(map(self._file_to_component, filepaths))
 
@@ -113,6 +115,31 @@ class Path(_dataset._Dataset):
             last_modified=_utils.timestamp_to_ms(os.stat(filepath).st_mtime),
             md5=self._hash_file(filepath),
         )
+
+    @staticmethod
+    def _remove_file_scheme(path):
+        """
+        Removes the "file" scheme from `path`, if present.
+
+        Parameters
+        ----------
+        path : str
+            Filepath.
+
+        Returns
+        -------
+        str
+            `path` without "file" scheme.
+
+        References
+        ----------
+        .. [1] https://en.wikipedia.org/wiki/File_URI_scheme
+
+        """
+        path = _file_utils.remove_prefix(path, "file://")
+        path = _file_utils.remove_prefix(path, "file:")
+
+        return path
 
     # TODO: move to _file_utils.calc_md5()
     def _hash_file(self, filepath):
