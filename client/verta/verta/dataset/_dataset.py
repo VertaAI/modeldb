@@ -262,19 +262,19 @@ class _Dataset(blob.Blob):
     @classmethod
     def with_spark(cls, sc, paths):
         """
-        Creates an HDFSPath blob with a SparkContext instance.
+        Creates a dataset blob with a SparkContext instance.
 
         Parameters
         ----------
         sc : pyspark.SparkContext
             SparkContext instance.
         paths : list of strs
-            List of paths to binary input data file(s) from HDFS.
+            List of paths to binary input data file(s).
 
         Returns
         -------
-        :class:`~verta.dataset.HDFSPath`
-            HDFSPath blob capturing the metadata of the binary files.
+        dataset :ref:blob <blobs>`
+            Dataset blob capturing the metadata of the binary files.
 
         """
         if isinstance(paths, six.string_types):
@@ -285,7 +285,6 @@ class _Dataset(blob.Blob):
 
         def get_component(entry):
             filepath, content = entry
-            h = hashlib.md5(content).hexdigest()
             return Component(
                 path=filepath,
                 size=len(content),
