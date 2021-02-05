@@ -83,19 +83,17 @@ class Path(_dataset._Dataset):
                 # track base path
                 component.base_path = base_path
 
-        self._components_map.update({
-            component.path: component
-            for component
-            in components
-        })
+        self._add_components(components)
 
     @classmethod
     def _from_proto(cls, blob_msg):
         obj = cls._create_empty()
 
-        for component_msg in blob_msg.dataset.path.components:
-            component = _dataset.Component._from_proto(component_msg)
-            obj._components_map[component.path] = component
+        obj._add_components(
+            _dataset.Component._from_proto(component_msg)
+            for component_msg
+            in blob_msg.dataset.path.components
+        )
 
         return obj
 

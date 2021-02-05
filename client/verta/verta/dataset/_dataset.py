@@ -81,12 +81,19 @@ class _Dataset(blob.Blob):
         if self._mdb_versioned != other._mdb_versioned:
             raise ValueError("datasets must have same value for `enable_mdb_versioning`")
 
-        self._components_map.update(other._components_map)
+        self._add_components(other._components_map.values())
         return self
 
     @classmethod
     def _create_empty(cls):
         return cls([])
+
+    def _add_components(self, components):
+        self._components_map.update({
+            component.path: component
+            for component
+            in components
+        })
 
     @abc.abstractmethod
     def _prepare_components_to_upload(self):
@@ -295,11 +302,7 @@ class _Dataset(blob.Blob):
         result = rdd.map(get_component)
         result = result.collect()
         obj = cls._create_empty()
-        obj._components_map.update({
-            component.path: component
-            for component
-            in result
-        })
+        obj._add_components(result)
         return obj
 
     @abc.abstractmethod
