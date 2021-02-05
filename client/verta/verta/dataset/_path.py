@@ -121,6 +121,16 @@ class Path(_dataset._Dataset):
         """
         Removes the "file" scheme from `path`, if present.
 
+        Parameters
+        ----------
+        path : str
+            Filepath.
+
+        Returns
+        -------
+        str
+            `path` without "file" scheme.
+
         References
         ----------
         .. [1] https://en.wikipedia.org/wiki/File_URI_scheme
