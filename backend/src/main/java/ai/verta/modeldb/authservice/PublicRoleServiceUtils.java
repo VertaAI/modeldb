@@ -226,7 +226,10 @@ public class PublicRoleServiceUtils implements RoleService {
 
   @Override
   public GetResourcesResponseItem getEntityResource(
-      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      Optional<String> entityId,
+      Optional<String> entityName,
+      Optional<String> workspaceName,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build();
   }
 

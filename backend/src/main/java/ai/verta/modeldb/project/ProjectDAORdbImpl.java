@@ -257,18 +257,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
 
-      Query deletedEntitiesQuery = session.createQuery(GET_DELETED_PROJECTS_IDS_BY_NAME_HQL);
-      deletedEntitiesQuery.setParameter("projectName", project.getName());
-      List<String> deletedEntityIds = deletedEntitiesQuery.list();
-      if (!deletedEntityIds.isEmpty()) {
-        try {
-          CommonUtils.registeredBackgroundUtilsCount();
-          roleService.deleteEntityResourcesWithServiceUser(
-              deletedEntityIds, ModelDBServiceResourceTypes.PROJECT);
-        } finally {
-          CommonUtils.unregisteredBackgroundUtilsCount();
-        }
-      }
+      removeDeletedProjectByNameFromUAC(project.getName(), session);
 
       Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);
@@ -309,16 +298,44 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     }
   }
 
+  private void removeDeletedProjectByNameFromUAC(String projectName, Session session) {
+    Query deletedEntitiesQuery = session.createQuery(GET_DELETED_PROJECTS_IDS_BY_NAME_HQL);
+    deletedEntitiesQuery.setParameter("projectName", projectName);
+    List<String> deletedEntityIds = deletedEntitiesQuery.list();
+    if (!deletedEntityIds.isEmpty()) {
+      try {
+        CommonUtils.registeredBackgroundUtilsCount();
+        roleService.deleteEntityResourcesWithServiceUser(
+            deletedEntityIds, ModelDBServiceResourceTypes.PROJECT);
+      } finally {
+        CommonUtils.unregisteredBackgroundUtilsCount();
+      }
+    }
+  }
+
   @Override
   public Project updateProjectName(UserInfo userInfo, String projectId, String projectName)
       throws InvalidProtocolBufferException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      // TODO: Remove this after UAC support update entity name using SetResource
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, null);
-      checkIfEntityAlreadyExists(session, workspace, projectName);
+      removeDeletedProjectByNameFromUAC(projectName, session);
 
       ProjectEntity projectEntity =
           session.load(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
+      Project project = projectEntity.getProtoObject(roleService, authService);
+      if (projectEntity.getName().equals(projectName)) {
+        return project;
+      }
+      roleService.createWorkspacePermissions(
+          workspace.getId(),
+          Optional.empty(),
+          projectId,
+          projectName,
+          Optional.empty(), // UAC will populate the owner ID
+          ModelDBServiceResourceTypes.PROJECT,
+          project.getCustomPermission(),
+          project.getVisibility());
+
       projectEntity.setName(projectName);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       Transaction transaction = session.beginTransaction();

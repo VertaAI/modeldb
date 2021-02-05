@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -362,7 +363,11 @@ public class ProjectEntity {
     }
 
     GetResourcesResponseItem projectResource =
-        roleService.getEntityResource(this.id, ModelDBServiceResourceTypes.PROJECT);
+        roleService.getEntityResource(
+            Optional.of(this.id),
+            Optional.empty(),
+            Optional.empty(),
+            ModelDBServiceResourceTypes.PROJECT);
     projectBuilder.setVisibility(projectResource.getVisibility());
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
     projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));

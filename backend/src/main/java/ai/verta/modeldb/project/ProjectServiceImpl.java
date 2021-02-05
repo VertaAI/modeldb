@@ -19,13 +19,13 @@ import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Value;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -670,20 +670,21 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      String workspaceName =
+          request.getWorkspaceName().isEmpty()
+              ? authService.getUsernameFromUserInfo(userInfo)
+              : request.getWorkspaceName();
+      GetResourcesResponseItem responseItem =
+          roleService.getEntityResource(
+              Optional.empty(),
+              Optional.of(request.getName()),
+              Optional.of(workspaceName),
+              ModelDBServiceResourceTypes.PROJECT);
 
       FindProjects.Builder findProjects =
           FindProjects.newBuilder()
-              .addPredicates(
-                  KeyValueQuery.newBuilder()
-                      .setKey(ModelDBConstants.NAME)
-                      .setValue(Value.newBuilder().setStringValue(request.getName()).build())
-                      .setOperator(OperatorEnum.Operator.EQ)
-                      .setValueType(ValueTypeEnum.ValueType.STRING)
-                      .build())
-              .setWorkspaceName(
-                  request.getWorkspaceName().isEmpty()
-                      ? authService.getUsernameFromUserInfo(userInfo)
-                      : request.getWorkspaceName());
+              .addProjectIds(responseItem.getResourceId())
+              .setWorkspaceName(workspaceName);
 
       ProjectPaginationDTO projectPaginationDTO =
           projectDAO.findProjects(findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);

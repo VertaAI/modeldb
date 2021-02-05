@@ -8,6 +8,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.uac.*;
 import ai.verta.uac.ServiceEnum.Service;
 import com.google.protobuf.GeneratedMessageV3;
@@ -140,56 +141,47 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public GetResourcesResponseItem getEntityResource(
-      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    ResourceType resourceType =
-        ResourceType.newBuilder()
-            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
-            .build();
-    Resources resources =
-        Resources.newBuilder()
-            .setResourceType(resourceType)
-            .setService(Service.MODELDB_SERVICE)
-            .addResourceIds(entityId)
-            .build();
-    List<GetResourcesResponseItem> responseItems = getResourceItems(Optional.of(resources));
-    if (responseItems.size() > 1) {
-      LOGGER.warn(
-          "Role service returned {}"
-              + " resource response items fetching {} resource, but only expected 1. ID: {}",
-          responseItems.size(),
-          modelDBServiceResourceTypes.name(),
-          entityId);
-    }
-    final Optional<GetResourcesResponseItem> responseItem =
-        responseItems.stream()
-            .filter(
-                item ->
-                    item.getResourceType().getModeldbServiceResourceType()
-                            == modelDBServiceResourceTypes
-                        && item.getService() == Service.MODELDB_SERVICE)
-            .findFirst();
-    if (responseItem.isPresent()) {
-      return responseItem.get();
-    }
-    throw new IllegalArgumentException(
-        "Failed to locate "
-            + modelDBServiceResourceTypes.name()
-            + " resources in UAC for "
-            + modelDBServiceResourceTypes.name()
-            + " ID "
-            + entityId);
-  }
-
-  public List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo) {
+      Optional<String> entityId, Optional<String> entityName, Optional<String> workspaceName, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      final GetResources.Builder getResourcesBuilder = GetResources.newBuilder();
-      filterTo.ifPresent(getResourcesBuilder::setResources);
+      ResourceType resourceType =
+              ResourceType.newBuilder()
+                      .setModeldbServiceResourceType(modelDBServiceResourceTypes)
+                      .build();
+      Resources.Builder resources =
+              Resources.newBuilder()
+                      .setResourceType(resourceType)
+                      .setService(Service.MODELDB_SERVICE);
+      entityId.ifPresent(resources::addResourceIds);
+
+      final GetResources.Builder getResourcesBuilder = GetResources.newBuilder().setResources(resources);
+      entityName.ifPresent(getResourcesBuilder::setResourceName);
+      workspaceName.ifPresent(getResourcesBuilder::setWorkspaceName);
 
       final GetResources.Response response =
-          authServiceChannel
-              .getCollaboratorServiceBlockingStub()
-              .getResources(getResourcesBuilder.build());
-      return response.getItemList();
+              authServiceChannel
+                      .getCollaboratorServiceBlockingStub()
+                      .getResources(getResourcesBuilder.build());
+      List<GetResourcesResponseItem> responseItems = response.getItemList();
+      if (responseItems.size() > 1) {
+        LOGGER.warn(
+                "Role service returned {}"
+                        + " resource response items fetching {} resource, but only expected 1. ID: {}",
+                responseItems.size(),
+                modelDBServiceResourceTypes.name(),
+                entityId);
+      }
+      Optional<GetResourcesResponseItem> responseItem = responseItems.stream().findFirst();
+      if (responseItem.isPresent()){
+        return responseItem.get();
+      } else {
+        throw new InvalidArgumentException(
+                "Failed to locate "
+                        + modelDBServiceResourceTypes.name()
+                        + " resources in UAC for "
+                        + modelDBServiceResourceTypes.name()
+                        + " ID "
+                        + entityId);
+      }
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
       throw ex;

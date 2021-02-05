@@ -6,7 +6,6 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetCollaboratorResponseItem;
-import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
@@ -71,9 +70,6 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
 
   WorkspaceDTO getWorkspaceDTOByWorkspaceId(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
-
-  GetResourcesResponseItem getEntityResource(
-      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   boolean createWorkspacePermissions(
       String workspaceName,

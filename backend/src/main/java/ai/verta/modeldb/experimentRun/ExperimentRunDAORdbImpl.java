@@ -2331,7 +2331,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       } else {
         GetResourcesResponseItem entityResource =
             roleService.getEntityResource(
-                String.valueOf(request.getRepositoryId().getRepoId()),
+                Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
+                Optional.empty(),
+                Optional.empty(),
                 ModelDBServiceResourceTypes.REPOSITORY);
         Workspace workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
         if (workspace != null) {
@@ -2410,7 +2412,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       } else {
         GetResourcesResponseItem entityResource =
             roleService.getEntityResource(
-                String.valueOf(request.getRepositoryId().getRepoId()),
+                Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
+                Optional.empty(),
+                Optional.empty(),
                 ModelDBServiceResourceTypes.REPOSITORY);
         Workspace workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
         if (workspace != null) {

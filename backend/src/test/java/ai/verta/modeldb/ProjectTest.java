@@ -439,6 +439,15 @@ public class ProjectTest extends TestsInit {
     project = response.getProject();
     projectMap.put(project.getId(), project);
 
+    GetProjectByName getProject = GetProjectByName.newBuilder().setName(project.getName()).build();
+
+    GetProjectByName.Response getProjectByNameResponse =
+        projectServiceStub.getProjectByName(getProject);
+    assertEquals(
+        "Project name not match with expected project name",
+        project.getName(),
+        getProjectByNameResponse.getProjectByUser().getName());
+
     updateProjectNameRequest =
         UpdateProjectName.newBuilder()
             .setId(project.getId())
