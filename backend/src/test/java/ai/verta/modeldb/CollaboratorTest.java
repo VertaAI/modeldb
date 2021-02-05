@@ -655,7 +655,7 @@ public class CollaboratorTest extends TestsInit {
       GetCollaborator getCollaboratorRequest =
           GetCollaborator.newBuilder().setEntityId(dataset.getId()).build();
       GetCollaborator.Response getCollaboratorResponse =
-          collaboratorServiceStubClient1.getRepositoryCollaborators(getCollaboratorRequest);
+          collaboratorServiceStubClient1.getDatasetCollaborators(getCollaboratorRequest);
 
       List<GetCollaboratorResponseItem> sharedUserList =
           getCollaboratorResponse.getSharedUsersList();
@@ -724,7 +724,7 @@ public class CollaboratorTest extends TestsInit {
               .build();
 
       RemoveCollaborator.Response response =
-          collaboratorServiceStubClient1.removeRepositoryCollaborator(removeRepositoryCollaborator);
+          collaboratorServiceStubClient1.removeDatasetCollaborator(removeRepositoryCollaborator);
 
       LOGGER.info("Collaborator remove in server : " + response.getStatus());
       assertTrue(response.getStatus());
