@@ -449,15 +449,17 @@ class TestPath:
 
         assert set(dataset1.list_paths()) == set(dataset2.list_paths())
 
-    def test_with_spark(self, with_boto3, in_tempdir):
-        data_filename = "census-train.csv"
+    def test_with_spark(self):
+        filenames = _file_utils.flatten_file_trees(os.listdir("."))
+        filenames = list(map(os.path.abspath, filenames))
 
-        pytest.importorskip("boto3").client("s3").download_file("verta-starter", data_filename, data_filename)
         SparkContext = pytest.importorskip("pyspark").SparkContext
-
         sc = SparkContext("local")
-        dataset = verta.dataset.Path.with_spark(sc, [data_filename])
-        # TODO: assert contents
+
+        dataset1 = verta.dataset.Path.with_spark(sc, filenames)
+        dataset2 = verta.dataset.Path(filenames)
+
+        assert set(dataset1.list_paths()) == set(dataset2.list_paths())
 
 
 @pytest.mark.usefixtures("with_boto3", "in_tempdir")
