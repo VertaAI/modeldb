@@ -84,6 +84,10 @@ class _Dataset(blob.Blob):
         self._components_map.update(other._components_map)
         return self
 
+    @classmethod
+    def _create_empty(cls):
+        return cls([])
+
     @abc.abstractmethod
     def _prepare_components_to_upload(self):
         pass
@@ -291,7 +295,7 @@ class _Dataset(blob.Blob):
 
         result = rdd.map(get_component)
         result = result.collect()
-        obj = cls(None, [])
+        obj = cls._create_empty()
         obj._components_map.update({
             component.path: component
             for component

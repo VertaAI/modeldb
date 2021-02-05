@@ -52,6 +52,10 @@ class HDFSPath(Path):
 
         super(HDFSPath, self).__init__(paths, base_path)
 
+    @classmethod
+    def _create_empty(cls):
+        return cls(None, [])
+
     def _file_to_component(self, filepath):
         original_filepath = filepath
         filepath = filepath[len(_HDFS_PREFIX):]  # prefix prepended in init
