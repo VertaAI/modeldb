@@ -280,7 +280,7 @@ class _Dataset(blob.Blob):
 
         Returns
         -------
-        dataset :ref:blob <blobs>`
+        dataset :ref:`blob <blobs>`
             Dataset blob capturing the metadata of the binary files.
 
         """
