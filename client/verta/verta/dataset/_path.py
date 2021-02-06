@@ -196,6 +196,14 @@ class Path(_dataset._Dataset):
         """
         return
 
+    @classmethod
+    def with_spark(cls, sc, paths):
+        if all(map(os.path.exists, paths)):
+            # PySpark won't traverse directories, so we have to
+            paths = _file_utils.flatten_file_trees(paths)
+
+        super(Path, cls).with_spark(sc, paths)
+
     def add(self, paths, base_path=None):
         """
         Adds `paths` to this dataset.

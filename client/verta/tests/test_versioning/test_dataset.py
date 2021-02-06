@@ -450,8 +450,7 @@ class TestPath:
         assert set(dataset1.list_paths()) == set(dataset2.list_paths())
 
     def test_with_spark(self):
-        filenames = _file_utils.flatten_file_trees(os.listdir("."))
-        filenames = list(map(os.path.abspath, filenames))
+        filenames = ["test_versioning/"]
 
         SparkContext = pytest.importorskip("pyspark").SparkContext
         sc = SparkContext("local")
