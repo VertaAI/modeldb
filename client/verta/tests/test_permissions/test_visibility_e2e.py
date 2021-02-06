@@ -14,6 +14,7 @@ from verta.visibility import (
 from verta.dataset import Path
 from verta.environment import Python
 
+
 pytestmark = pytest.mark.not_oss
 
 
