@@ -844,6 +844,10 @@
           },
           "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
         },
+        "all_resource_ids": {
+          "type": "boolean",
+          "format": "boolean"
+        },
         "resource_type": {
           "$ref": "#/definitions/uacResourceType"
         }
