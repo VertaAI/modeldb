@@ -112,138 +112,143 @@ class TestAccess:
 
 
 class TestLink:
-    def test_run_log_commit(self, client, client_2, organization, created_entities):
+    def test_run_log_commit(self, client_2, client_3, organization, created_entities):
         """Log someone else's commit to my run."""
         organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
-        client.set_workspace(organization.name)
+        organization.add_member(client_3._conn.auth['Grpc-Metadata-email'])
         client_2.set_workspace(organization.name)
+        client_3.set_workspace(organization.name)
 
-        created_entities.append(client.create_project())
-        run = client.create_experiment_run()
+        created_entities.append(client_2.create_project())
+        run = client_2.create_experiment_run()
 
         # private commit
-        repo = client_2.set_repository(_utils.generate_default_name(), visibility=Private())
+        repo = client_3.set_repository(_utils.generate_default_name(), visibility=Private())
         created_entities.append(repo)
         commit = repo.get_commit()
-        with pytest.raises(requests.HTTPError, match="Access Denied"):
+        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
             run.log_commit(commit)
 
         # org commit
-        repo = client_2.set_repository(_utils.generate_default_name())
+        repo = client_3.set_repository(_utils.generate_default_name())
         created_entities.append(repo)
         commit = repo.get_commit()
         run.log_commit(commit)
         assert run.get_commit()[0].id == commit.id
 
-    def test_run_log_dataset_version(self, client, client_2, organization, created_entities):
+    def test_run_log_dataset_version(self, client_2, client_3, organization, created_entities):
         """Log someone else's dataset version to my run."""
         organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
-        client.set_workspace(organization.name)
+        organization.add_member(client_3._conn.auth['Grpc-Metadata-email'])
         client_2.set_workspace(organization.name)
+        client_3.set_workspace(organization.name)
 
-        created_entities.append(client.create_project())
-        run = client.create_experiment_run()
+        created_entities.append(client_2.create_project())
+        run = client_2.create_experiment_run()
 
         # private dataset version
-        dataset = client_2.create_dataset(visibility=Private())
+        dataset = client_3.create_dataset(visibility=Private())
         created_entities.append(dataset)
         dataver = dataset.create_version(Path(__file__))
-        with pytest.raises(requests.HTTPError, match="Access Denied"):
+        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
             run.log_dataset_version("train", dataver)
 
         # org dataset version
-        dataset = client_2.create_dataset()
+        dataset = client_3.create_dataset()
         created_entities.append(dataset)
         dataver = dataset.create_version(Path(__file__))
         run.log_dataset_version("train", dataver)
         assert run.get_dataset_version("train").id == dataver.id
 
-    def test_model_version_from_run(self, client, client_2, organization, created_entities):
+    def test_model_version_from_run(self, client_2, client_3, organization, created_entities):
         """Create model version from someone else's run."""
         organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
-        client.set_workspace(organization.name)
+        organization.add_member(client_3._conn.auth['Grpc-Metadata-email'])
         client_2.set_workspace(organization.name)
+        client_3.set_workspace(organization.name)
 
-        reg_model = client.create_registered_model()
+        reg_model = client_2.create_registered_model()
         created_entities.append(reg_model)
 
         # private run
-        created_entities.append(client_2.create_project(visibility=Private()))
-        run = client_2.create_experiment_run()
-        with pytest.raises(requests.HTTPError, match="Access Denied"):
+        created_entities.append(client_3.create_project(visibility=Private()))
+        run = client_3.create_experiment_run()
+        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
             reg_model.create_version_from_run(run.id)
 
         # org run
-        created_entities.append(client_2.create_project())
-        run = client_2.create_experiment_run()
+        created_entities.append(client_3.create_project())
+        run = client_3.create_experiment_run()
         model_ver = reg_model.create_version_from_run(run.id)
         assert model_ver._msg.experiment_run_id == run.id
 
-    def test_endpoint_update_run(self, client, client_2, organization, created_entities):
+    def test_endpoint_update_run(self, client_2, client_3, organization, created_entities):
         """Update endpoint from someone else's run."""
         LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
 
         organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
-        client.set_workspace(organization.name)
+        organization.add_member(client_3._conn.auth['Grpc-Metadata-email'])
         client_2.set_workspace(organization.name)
+        client_3.set_workspace(organization.name)
 
-        endpoint = client.create_endpoint(_utils.generate_default_name())
+        endpoint = client_2.create_endpoint(_utils.generate_default_name())
         created_entities.append(endpoint)
 
         # private run
-        created_entities.append(client_2.create_project(visibility=Private()))
-        run = client_2.create_experiment_run()
+        created_entities.append(client_3.create_project(visibility=Private()))
+        run = client_3.create_experiment_run()
         run.log_model(LogisticRegression(), custom_modules=[])
         run.log_requirements(["scikit-learn"])
-        with pytest.raises(requests.HTTPError, match="Access Denied"):
+        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
             endpoint.update(run)
 
         # org run, deploy=False
-        created_entities.append(client_2.create_project(visibility=OrgCustom(deploy=False)))
-        run = client_2.create_experiment_run()
+        created_entities.append(client_3.create_project(visibility=OrgCustom(deploy=False)))
+        run = client_3.create_experiment_run()
         run.log_model(LogisticRegression(), custom_modules=[])
         run.log_requirements(["scikit-learn"])
-        with pytest.raises(requests.HTTPError, match="Access Denied"):
+        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
             endpoint.update(run)
 
         # org run, deploy=True
-        created_entities.append(client_2.create_project(visibility=OrgCustom(deploy=True)))
-        run = client_2.create_experiment_run()
+        created_entities.append(client_3.create_project(visibility=OrgCustom(deploy=True)))
+        run = client_3.create_experiment_run()
         run.log_model(LogisticRegression(), custom_modules=[])
         run.log_requirements(["scikit-learn"])
         assert endpoint.update(run)
 
-    def test_endpoint_update_model_version(self, client, client_2, organization, created_entities):
+    def test_endpoint_update_model_version(self, client_2, client_3, organization, created_entities):
         """Update endpoint from someone else's model version."""
         LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
 
         organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
-        client.set_workspace(organization.name)
+        organization.add_member(client_3._conn.auth['Grpc-Metadata-email'])
         client_2.set_workspace(organization.name)
+        client_3.set_workspace(organization.name)
 
-        endpoint = client.create_endpoint(_utils.generate_default_name())
+        endpoint = client_2.create_endpoint(_utils.generate_default_name())
         created_entities.append(endpoint)
 
         # private model version
-        reg_model = client_2.create_registered_model(visibility=Private())
+        reg_model = client_3.create_registered_model(visibility=Private())
         created_entities.append(reg_model)
         model_ver = reg_model.create_version()
         model_ver.log_model(LogisticRegression(), custom_modules=[])
         model_ver.log_environment(Python(["scikit-learn"]))
-        with pytest.raises(requests.HTTPError, match="Access Denied"):
+        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
             endpoint.update(model_ver)
 
         # org model version, deploy=False
-        reg_model = client_2.create_registered_model(visibility=OrgCustom(deploy=False))
+        reg_model = client_3.create_registered_model(visibility=OrgCustom(deploy=False))
         created_entities.append(reg_model)
         model_ver = reg_model.create_version()
         model_ver.log_model(LogisticRegression(), custom_modules=[])
         model_ver.log_environment(Python(["scikit-learn"]))
-        with pytest.raises(requests.HTTPError, match="Access Denied"):
+        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
             endpoint.update(model_ver)
 
         # org model version, deploy=True
-        reg_model = client_2.create_registered_model(visibility=OrgCustom(deploy=True))
+        reg_model = client_3.create_registered_model(visibility=OrgCustom(deploy=True))
         created_entities.append(reg_model)
         model_ver = reg_model.create_version()
         model_ver.log_model(LogisticRegression(), custom_modules=[])
