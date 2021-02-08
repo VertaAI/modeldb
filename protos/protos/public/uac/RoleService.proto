@@ -100,7 +100,6 @@ message AuthzResourceEnum {
         ALL = 1;
         ORGANIZATION = 2;
         TEAM = 3;
-        WORKSPACE = 4;
     }
 };
 
