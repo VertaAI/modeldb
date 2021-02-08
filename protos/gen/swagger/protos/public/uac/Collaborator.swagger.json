@@ -357,7 +357,7 @@
           },
           {
             "name": "resources.resource_ids",
-            "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources.",
+            "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services.",
             "in": "query",
             "required": false,
             "type": "array",
@@ -365,6 +365,13 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          },
+          {
+            "name": "resources.all_resource_ids",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
           },
           {
             "name": "resources.resource_type.role_service_resource_type",
@@ -487,7 +494,7 @@
           },
           {
             "name": "resources.resource_ids",
-            "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources.",
+            "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services.",
             "in": "query",
             "required": false,
             "type": "array",
@@ -495,6 +502,13 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          },
+          {
+            "name": "resources.all_resource_ids",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
           },
           {
             "name": "resources.resource_type.role_service_resource_type",
@@ -1376,7 +1390,11 @@
           "items": {
             "type": "string"
           },
-          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
+          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services"
+        },
+        "all_resource_ids": {
+          "type": "boolean",
+          "format": "boolean"
         },
         "resource_type": {
           "$ref": "#/definitions/uacResourceType"

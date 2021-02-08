@@ -126,8 +126,8 @@ message ResourceType {
 message Resources {
     ServiceEnum.Service service = 1;
     // Internal ID for the resource in the service, whose meaning doesn't matter for other services
-    // This is optional. If empty, means all resources
     repeated string resource_ids = 2;
+    bool all_resource_ids = 3;
     ResourceType resource_type = 6;
 };
 
