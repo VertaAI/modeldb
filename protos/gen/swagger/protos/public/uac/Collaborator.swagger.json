@@ -389,7 +389,8 @@
               "UNKNOWN",
               "ALL",
               "ORGANIZATION",
-              "TEAM"
+              "TEAM",
+              "WORKSPACE"
             ],
             "default": "UNKNOWN"
           },
@@ -518,7 +519,8 @@
               "UNKNOWN",
               "ALL",
               "ORGANIZATION",
-              "TEAM"
+              "TEAM",
+              "WORKSPACE"
             ],
             "default": "UNKNOWN"
           },
@@ -914,7 +916,8 @@
         "UNKNOWN",
         "ALL",
         "ORGANIZATION",
-        "TEAM"
+        "TEAM",
+        "WORKSPACE"
       ],
       "default": "UNKNOWN"
     },
