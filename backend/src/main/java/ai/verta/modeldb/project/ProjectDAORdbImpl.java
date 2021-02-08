@@ -284,11 +284,11 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
 
       roleService.createWorkspacePermissions(
-          workspace.getId(),
+          Optional.of(workspace.getId()),
           Optional.empty(),
           project.getId(),
           project.getName(),
-          Optional.empty(), // UAC will populate the owner ID
+          Optional.empty(),
           ModelDBServiceResourceTypes.PROJECT,
           project.getCustomPermission(),
           resourceVisibility);
