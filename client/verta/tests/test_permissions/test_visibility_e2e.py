@@ -133,7 +133,7 @@ class TestLink:
         created_entities.append(repo)
         commit = repo.get_commit()
         run.log_commit(commit)
-        assert run.get_commit().id == commit.id
+        assert run.get_commit()[0].id == commit.id
 
     def test_run_log_dataset_version(self, client, client_2, organization, created_entities):
         """Log someone else's dataset version to my run."""
