@@ -1039,7 +1039,6 @@ type Resources struct {
 
 	Service ServiceEnum_Service `protobuf:"varint,1,opt,name=service,proto3,enum=ai.verta.uac.ServiceEnum_Service" json:"service,omitempty"`
 	// Internal ID for the resource in the service, whose meaning doesn't matter for other services
-	// This is optional. If empty, means all resources
 	ResourceIds    []string      `protobuf:"bytes,2,rep,name=resource_ids,json=resourceIds,proto3" json:"resource_ids,omitempty"`
 	AllResourceIds bool          `protobuf:"varint,3,opt,name=all_resource_ids,json=allResourceIds,proto3" json:"all_resource_ids,omitempty"`
 	ResourceType   *ResourceType `protobuf:"bytes,6,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
