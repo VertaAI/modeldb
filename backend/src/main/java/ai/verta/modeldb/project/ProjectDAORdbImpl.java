@@ -52,11 +52,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   private final AuthService authService;
   private final RoleService roleService;
 
-  private static final String GET_PROJECT_COUNT_BY_NAME_PREFIX_HQL =
-      new StringBuilder("Select count(*) From ProjectEntity p where p.")
-          .append(ModelDBConstants.NAME)
-          .append(" = :projectName ")
-          .toString();
   private static final String GET_PROJECT_ATTR_BY_KEYS_HQL =
       new StringBuilder("From AttributeEntity kv where kv.")
           .append(ModelDBConstants.KEY)
@@ -146,16 +141,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           .append(ModelDBConstants.ID)
           .append(" IN (:projectIds)")
           .toString();
-  private static final String GET_PROJECT_IDS_BY_NAME_HQL =
-      new StringBuilder("SELECT p.id From ProjectEntity p where p.")
-          .append(ModelDBConstants.NAME)
-          .append(" = :projectName ")
-          .append(" AND p.")
-          .append(ModelDBConstants.DELETED)
-          .append(" = false AND p.")
-          .append(ModelDBConstants.CREATED)
-          .append(" = true")
-          .toString();
   private static final String GET_DELETED_PROJECTS_IDS_BY_NAME_HQL =
       new StringBuilder("SELECT p.id From ProjectEntity p where p.")
           .append(ModelDBConstants.NAME)
@@ -176,25 +161,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     this.experimentRunDAO = experimentRunDAO;
     App app = App.getInstance();
     this.starterProjectID = Config.getInstance().starterProject;
-  }
-
-  private void checkIfEntityAlreadyExists(
-      Session session, Workspace workspace, String projectName) {
-    List<String> projectEntityIds = getProjectIdsByName(session, projectName);
-    if (projectEntityIds != null && !projectEntityIds.isEmpty()) {
-      ModelDBUtils.checkIfEntityAlreadyExists(
-          roleService,
-          workspace,
-          projectName,
-          projectEntityIds,
-          ModelDBServiceResourceTypes.PROJECT);
-    }
-  }
-
-  public List<String> getProjectIdsByName(Session session, String name) {
-    Query query = session.createQuery(GET_PROJECT_IDS_BY_NAME_HQL);
-    query.setParameter("projectName", name);
-    return query.list();
   }
 
   /**
@@ -303,32 +269,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return insertProject(project, workspaceName, userInfo);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  @Override
-  public Project updateProjectName(UserInfo userInfo, String projectId, String projectName)
-      throws InvalidProtocolBufferException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      // TODO: Remove this after UAC support update entity name using SetResource
-      Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, null);
-      checkIfEntityAlreadyExists(session, workspace, projectName);
-
-      ProjectEntity projectEntity =
-          session.load(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
-      projectEntity.setName(projectName);
-      projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
-      Transaction transaction = session.beginTransaction();
-      session.update(projectEntity);
-      transaction.commit();
-      LOGGER.debug("Project name updated successfully");
-      return projectEntity.getProtoObject(roleService, authService);
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return updateProjectName(userInfo, projectId, projectName);
       } else {
         throw ex;
       }
