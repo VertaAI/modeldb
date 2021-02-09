@@ -90,9 +90,11 @@ public class AuditLogLocalEntity {
   }
 
   public AuditLog toProto() {
-    final AuditResource.Builder resource = AuditResource.newBuilder().setResourceId(resourceId).setWorkspaceId(workspaceId);
+    final AuditResource.Builder resource =
+        AuditResource.newBuilder().setResourceId(resourceId).setWorkspaceId(workspaceId);
     if (resourceType != null) {
-      resource.setResourceType(ResourceType.newBuilder().setModeldbServiceResourceTypeValue(resourceType).build());
+      resource.setResourceType(
+          ResourceType.newBuilder().setModeldbServiceResourceTypeValue(resourceType).build());
     }
     if (resourceService != null) {
       resource.setResourceServiceValue(resourceService);
@@ -105,7 +107,7 @@ public class AuditLogLocalEntity {
                 Action.newBuilder()
                     .setModeldbServiceAction(
                         ModelDBActionEnum.ModelDBServiceActions.forNumber(action))
-                        .setServiceValue(resourceService)
+                    .setServiceValue(resourceService)
                     .build())
             .setResource(resource);
     if (tsNano != null) {
