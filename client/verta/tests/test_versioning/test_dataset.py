@@ -1,7 +1,9 @@
+import itertools
 import os
 import shutil
 import pathlib2
-import tempfile
+
+from six.moves import filterfalse
 
 import pytest
 from .. import utils
@@ -434,6 +436,31 @@ class TestPath:
 
         with pytest.raises(ValueError):
             dataset.add("test_versioning/test_dataset.py")
+
+    def test_file_scheme(self):
+        filepaths = list(map(os.path.abspath, os.listdir(".")))
+        prefixes = itertools.cycle({"file://", "file:", ""})
+        prefixed_filepaths = (
+            prefix + filepath
+            for prefix, filepath
+            in zip(prefixes, filepaths)
+        )
+
+        dataset1 = verta.dataset.Path(filepaths)
+        dataset2 = verta.dataset.Path(prefixed_filepaths)
+
+        assert set(dataset1.list_paths()) == set(dataset2.list_paths())
+
+    def test_with_spark(self):
+        filenames = list(map(os.path.abspath, ["test_versioning/"]))
+
+        SparkContext = pytest.importorskip("pyspark").SparkContext
+        sc = SparkContext("local")
+
+        dataset1 = verta.dataset.Path.with_spark(sc, filenames)
+        dataset2 = verta.dataset.Path(filenames)
+
+        assert set(dataset1.list_paths()) == set(filterfalse(dataset2._is_hidden_to_spark, dataset2.list_paths()))
 
 
 @pytest.mark.usefixtures("with_boto3", "in_tempdir")

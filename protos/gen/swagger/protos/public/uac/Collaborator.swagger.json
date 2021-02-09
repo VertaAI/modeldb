@@ -357,7 +357,7 @@
           },
           {
             "name": "resources.resource_ids",
-            "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources.",
+            "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services.",
             "in": "query",
             "required": false,
             "type": "array",
@@ -365,6 +365,13 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          },
+          {
+            "name": "resources.all_resource_ids",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
           },
           {
             "name": "resources.resource_type.role_service_resource_type",
@@ -389,7 +396,8 @@
               "UNKNOWN",
               "ALL",
               "ORGANIZATION",
-              "TEAM"
+              "TEAM",
+              "WORKSPACE"
             ],
             "default": "UNKNOWN"
           },
@@ -450,10 +458,10 @@
         ]
       }
     },
-    "/collaborator/getResourcesExcludingOrganizationWorkspaces": {
+    "/collaborator/getResourcesSpecialPersonalWorkspace": {
       "get": {
         "summary": "The caller must have permission to GET the resource accordingly\ngets resources that is available in personal workspace (all except organization workspace resources)",
-        "operationId": "CollaboratorService_getResourcesExcludingOrganizationWorkspaces",
+        "operationId": "CollaboratorService_getResourcesSpecialPersonalWorkspace",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -486,7 +494,7 @@
           },
           {
             "name": "resources.resource_ids",
-            "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources.",
+            "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services.",
             "in": "query",
             "required": false,
             "type": "array",
@@ -494,6 +502,13 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          },
+          {
+            "name": "resources.all_resource_ids",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
           },
           {
             "name": "resources.resource_type.role_service_resource_type",
@@ -518,7 +533,8 @@
               "UNKNOWN",
               "ALL",
               "ORGANIZATION",
-              "TEAM"
+              "TEAM",
+              "WORKSPACE"
             ],
             "default": "UNKNOWN"
           },
@@ -914,7 +930,8 @@
         "UNKNOWN",
         "ALL",
         "ORGANIZATION",
-        "TEAM"
+        "TEAM",
+        "WORKSPACE"
       ],
       "default": "UNKNOWN"
     },
@@ -1373,7 +1390,11 @@
           "items": {
             "type": "string"
           },
-          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
+          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services"
+        },
+        "all_resource_ids": {
+          "type": "boolean",
+          "format": "boolean"
         },
         "resource_type": {
           "$ref": "#/definitions/uacResourceType"
