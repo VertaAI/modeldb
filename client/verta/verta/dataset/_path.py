@@ -68,6 +68,7 @@ class Path(_dataset._Dataset):
         components = list(map(self._file_to_component, filepaths))
 
         # remove `base_path` from the beginning of component paths
+        # TODO: move this into _add_components()
         if base_path is not None:
             for component in components:
                 path = _file_utils.remove_prefix_dir(component.path, prefix_dir=base_path)
@@ -83,19 +84,17 @@ class Path(_dataset._Dataset):
                 # track base path
                 component.base_path = base_path
 
-        self._components_map.update({
-            component.path: component
-            for component
-            in components
-        })
+        self._add_components(components)
 
     @classmethod
     def _from_proto(cls, blob_msg):
-        obj = cls(paths=[])
+        obj = cls._create_empty()
 
-        for component_msg in blob_msg.dataset.path.components:
-            component = _dataset.Component._from_proto(component_msg)
-            obj._components_map[component.path] = component
+        obj._add_components(
+            _dataset.Component._from_proto(component_msg)
+            for component_msg
+            in blob_msg.dataset.path.components
+        )
 
         return obj
 
@@ -115,6 +114,12 @@ class Path(_dataset._Dataset):
             last_modified=_utils.timestamp_to_ms(os.stat(filepath).st_mtime),
             md5=self._hash_file(filepath),
         )
+
+    def _add_components(self, components):
+        for component in components:
+            component.path = self._remove_file_scheme(component.path)
+
+        super(Path, self)._add_components(components)
 
     @staticmethod
     def _remove_file_scheme(path):
@@ -190,6 +195,24 @@ class Path(_dataset._Dataset):
 
         """
         return
+
+    @classmethod
+    def with_spark(cls, sc, paths):
+        if all(map(os.path.exists, paths)):
+            # This `if` is a slight hack to check for local files,
+            # because we don't want this behavior in the HDFS subclass.
+            # TODO: maybe have an abstract base class for filesystem datasets
+
+            # PySpark won't traverse directories, so we have to
+            paths = _file_utils.flatten_file_trees(paths)
+
+            # PySpark won't see hidden files, so we have filter them out
+            removed_paths = list(filter(cls._is_hidden_to_spark, paths))
+            for removed_path in removed_paths:
+                print("ignored by Spark: {}".format(removed_path))
+                paths.remove(removed_path)
+
+        return super(Path, cls).with_spark(sc, paths)
 
     def add(self, paths, base_path=None):
         """

@@ -3,6 +3,8 @@ import os
 import shutil
 import pathlib2
 
+from six.moves import filterfalse
+
 import pytest
 from .. import utils
 
@@ -448,6 +450,17 @@ class TestPath:
         dataset2 = verta.dataset.Path(prefixed_filepaths)
 
         assert set(dataset1.list_paths()) == set(dataset2.list_paths())
+
+    def test_with_spark(self):
+        filenames = list(map(os.path.abspath, ["test_versioning/"]))
+
+        SparkContext = pytest.importorskip("pyspark").SparkContext
+        sc = SparkContext("local")
+
+        dataset1 = verta.dataset.Path.with_spark(sc, filenames)
+        dataset2 = verta.dataset.Path(filenames)
+
+        assert set(dataset1.list_paths()) == set(filterfalse(dataset2._is_hidden_to_spark, dataset2.list_paths()))
 
 
 @pytest.mark.usefixtures("with_boto3", "in_tempdir")
