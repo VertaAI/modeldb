@@ -46,6 +46,18 @@ public class RoleServiceUtils implements RoleService {
     this.metadataInfo = metadataInfo;
   }
 
+  /**
+   *
+   * @param workspaceId workspace.id
+   * @param workspaceName workspace.name
+   * @param resourceId project.id, repository.id etc.
+   * @param resourceName project.name, repository.name etc.
+   * @param ownerId: parameter added for migration where we should have to populate entity owner.For other UAC will populate the owner ID
+   * @param resourceType PROJECT, REPOSITORY, DATASET
+   * @param permissions CollaboratorPermissions.
+   * @param resourceVisibility ResourceVisibility
+   * @return {@link Boolean} true, false based on success call
+   */
   @Override
   public boolean createWorkspacePermissions(
       Optional<Long> workspaceId,

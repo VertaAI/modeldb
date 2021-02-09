@@ -134,11 +134,11 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             ModelDBUtils.getResourceVisibility(Optional.empty(), dataset.getDatasetVisibility());
       }
       roleService.createWorkspacePermissions(
-          dataset.getWorkspaceServiceId(),
-          Optional.of(dataset.getWorkspaceType()),
+          Optional.of(dataset.getWorkspaceServiceId()),
+          Optional.empty(),
           dataset.getId(),
           datasetEntity.getName(),
-          Optional.empty(), // UAC will populate the owner ID
+          Optional.empty(),
           ModelDBServiceResourceTypes.DATASET,
           dataset.getCustomPermission(),
           resourceVisibility);

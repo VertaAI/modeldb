@@ -146,7 +146,8 @@ public class CollaboratorResourceMigration {
           // ignore the CollaboratorType
           try {
             roleService.createWorkspacePermissions(
-                workspaceDTO.getWorkspaceName(),
+                Optional.empty(),
+                Optional.of(workspaceDTO.getWorkspaceName()),
                 project.getId(),
                 project.getName(),
                 Optional.of(owner),
@@ -176,7 +177,7 @@ public class CollaboratorResourceMigration {
           if (!resources.isEmpty()) {
             GetResourcesResponseItem resourceDetails = resources.get(0);
             roleService.createWorkspacePermissions(
-                resourceDetails.getWorkspaceId(),
+                Optional.of(resourceDetails.getWorkspaceId()),
                 Optional.empty(),
                 project.getId(),
                 project.getName(),
@@ -290,7 +291,8 @@ public class CollaboratorResourceMigration {
           // ignore the CollaboratorType
           try {
             roleService.createWorkspacePermissions(
-                workspaceDTO.getWorkspaceName(),
+                Optional.empty(),
+                Optional.of(workspaceDTO.getWorkspaceName()),
                 String.valueOf(repository.getId()),
                 repository.getName(),
                 Optional.of(Long.parseLong(repository.getOwner())),
@@ -334,7 +336,7 @@ public class CollaboratorResourceMigration {
             GetResourcesResponseItem resourceDetails =
                 responseItemMap.get(String.valueOf(repository.getId()));
             roleService.createWorkspacePermissions(
-                resourceDetails.getWorkspaceId(),
+                Optional.of(resourceDetails.getWorkspaceId()),
                 Optional.empty(),
                 String.valueOf(repository.getId()),
                 repository.getName(),
