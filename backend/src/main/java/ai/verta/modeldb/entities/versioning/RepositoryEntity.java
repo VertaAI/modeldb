@@ -211,7 +211,11 @@ public class RepositoryEntity {
         ModelDBUtils.getModelDBServiceResourceTypesFromRepository(this);
 
     GetResourcesResponseItem repositoryResource =
-        roleService.getEntityResource(String.valueOf(this.id), modelDBServiceResourceTypes);
+        roleService.getEntityResource(
+            Optional.of(String.valueOf(this.id)),
+            Optional.empty(),
+            Optional.empty(),
+            modelDBServiceResourceTypes);
     builder.setVisibility(repositoryResource.getVisibility());
     builder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     builder.setOwner(String.valueOf(repositoryResource.getOwnerId()));

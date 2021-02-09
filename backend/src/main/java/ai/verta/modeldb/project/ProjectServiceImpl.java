@@ -19,13 +19,13 @@ import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Value;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -100,47 +100,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e, CreateProject.Response.getDefaultInstance());
-    }
-  }
-
-  /**
-   * Update project name in Project Entity. Create project object with updated data from
-   * UpdateProjectName request and update in database.
-   *
-   * @param UpdateProjectName request, UpdateProjectName.Response response
-   * @return void
-   */
-  @Override
-  public void updateProjectName(
-      UpdateProjectName request, StreamObserver<UpdateProjectName.Response> responseObserver) {
-    try {
-      // Request Parameter Validation
-      if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in UpdateProjectName request";
-        throw new InvalidArgumentException(errorMessage);
-      }
-
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
-
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      Project updatedProject =
-          projectDAO.updateProjectName(
-              userInfo, request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
-      saveAuditLogs(
-          userInfo,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "update", "name", updatedProject.getName()));
-      responseObserver.onNext(
-          UpdateProjectName.Response.newBuilder().setProject(updatedProject).build());
-      responseObserver.onCompleted();
-
-    } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, UpdateProjectName.Response.getDefaultInstance());
     }
   }
 
@@ -670,20 +629,21 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       // Get the user info from the Context
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      String workspaceName =
+          request.getWorkspaceName().isEmpty()
+              ? authService.getUsernameFromUserInfo(userInfo)
+              : request.getWorkspaceName();
+      GetResourcesResponseItem responseItem =
+          roleService.getEntityResource(
+              Optional.empty(),
+              Optional.of(request.getName()),
+              Optional.of(workspaceName),
+              ModelDBServiceResourceTypes.PROJECT);
 
       FindProjects.Builder findProjects =
           FindProjects.newBuilder()
-              .addPredicates(
-                  KeyValueQuery.newBuilder()
-                      .setKey(ModelDBConstants.NAME)
-                      .setValue(Value.newBuilder().setStringValue(request.getName()).build())
-                      .setOperator(OperatorEnum.Operator.EQ)
-                      .setValueType(ValueTypeEnum.ValueType.STRING)
-                      .build())
-              .setWorkspaceName(
-                  request.getWorkspaceName().isEmpty()
-                      ? authService.getUsernameFromUserInfo(userInfo)
-                      : request.getWorkspaceName());
+              .addProjectIds(responseItem.getResourceId())
+              .setWorkspaceName(workspaceName);
 
       ProjectPaginationDTO projectPaginationDTO =
           projectDAO.findProjects(findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);

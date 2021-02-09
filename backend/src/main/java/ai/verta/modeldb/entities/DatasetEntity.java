@@ -13,6 +13,7 @@ import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -244,7 +245,10 @@ public class DatasetEntity {
 
     GetResourcesResponseItem repositoryResource =
         roleService.getEntityResource(
-            String.valueOf(this.id), ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
+            Optional.ofNullable(String.valueOf(this.id)),
+            Optional.empty(),
+            Optional.empty(),
+            ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
     datasetBuilder.setVisibility(repositoryResource.getVisibility());
     datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));

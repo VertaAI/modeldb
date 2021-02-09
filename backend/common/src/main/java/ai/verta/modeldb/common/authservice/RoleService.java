@@ -34,7 +34,7 @@ public interface RoleService {
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   GetResourcesResponseItem getEntityResource(
-      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+          Optional<String> entityId, Optional<String> entityName, Optional<String> workspaceName, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   GeneratedMessageV3 getOrgById(String orgId);
 
