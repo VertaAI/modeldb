@@ -198,11 +198,19 @@ class Path(_dataset._Dataset):
 
     @classmethod
     def with_spark(cls, sc, paths):
-        if all(map(os.path.exists, paths)):
-            # PySpark won't traverse directories, so we have to
-            paths = _file_utils.flatten_file_trees(paths)
+        # TODO: only do this for `Path`, not `HDFSPath`
+        # PySpark won't traverse directories, so we have to
+        paths = _file_utils.flatten_file_trees(paths)
 
-        super(Path, cls).with_spark(sc, paths)
+        # PySpark won't see hidden files, so we have to filter them out first
+        # https://stackoverflow.com/a/38479545
+        is_hidden_to_spark = lambda path: os.path.basename(path).startswith(('_', '.'))
+        removed_paths = list(filter(is_hidden_to_spark, paths))
+        for removed_path in removed_paths:
+            print("ignored by Spark: {}".format(removed_path))
+            paths.remove(removed_path)
+
+        return super(Path, cls).with_spark(sc, paths)
 
     def add(self, paths, base_path=None):
         """
