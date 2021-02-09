@@ -104,47 +104,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   /**
-   * Update project name in Project Entity. Create project object with updated data from
-   * UpdateProjectName request and update in database.
-   *
-   * @param UpdateProjectName request, UpdateProjectName.Response response
-   * @return void
-   */
-  @Override
-  public void updateProjectName(
-      UpdateProjectName request, StreamObserver<UpdateProjectName.Response> responseObserver) {
-    try {
-      // Request Parameter Validation
-      if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in UpdateProjectName request";
-        throw new InvalidArgumentException(errorMessage);
-      }
-
-      // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
-          ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
-
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      Project updatedProject =
-          projectDAO.updateProjectName(
-              userInfo, request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
-      saveAuditLogs(
-          userInfo,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "update", "name", updatedProject.getName()));
-      responseObserver.onNext(
-          UpdateProjectName.Response.newBuilder().setProject(updatedProject).build());
-      responseObserver.onCompleted();
-
-    } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, UpdateProjectName.Response.getDefaultInstance());
-    }
-  }
-
-  /**
    * Update project Description in Project Entity. Create project object with updated data from
    * UpdateProjectDescription request and update in database.
    *
