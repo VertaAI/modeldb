@@ -89,6 +89,10 @@ public class AuditLogLocalEntity {
     this.workspaceId = workspaceId;
   }
 
+  public String getLocalId() {
+    return localId;
+  }
+
   public AuditLog toProto() {
     final AuditResource.Builder resource = AuditResource.newBuilder().setResourceId(resourceId).setWorkspaceId(workspaceId);
     if (resourceType != null) {

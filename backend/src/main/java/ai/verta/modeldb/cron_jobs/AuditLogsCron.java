@@ -128,24 +128,7 @@ public class AuditLogsCron extends TimerTask {
       LOGGER.info(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
       List<AuditLog> auditLogs =
           auditLogLocalEntities.stream()
-              .map(
-                  auditLogLocalEntity ->
-                      AuditLog.newBuilder()
-                          .setLocalId(auditLogLocalEntity.getLocalId())
-                          .setUser(
-                              AuditUser.newBuilder()
-                                  .setUserId(auditLogLocalEntity.getUserId())
-                                  .build())
-                          .setAction(auditLogLocalEntity.getAction())
-                          .setResource(
-                              AuditResource.newBuilder()
-                                  .setResourceId(auditLogLocalEntity.getResourceId())
-                                  .setResourceService(auditLogLocalEntity.getResourceService())
-                                  .setResourceType(auditLogLocalEntity.getResourceType())
-                                  .build())
-                          .setMetadataBlob(auditLogLocalEntity.getMetadataBlob())
-                          .setTsNano(auditLogLocalEntity.getTsNano())
-                          .build())
+              .map(AuditLogLocalEntity::toProto)
               .collect(Collectors.toList());
 
       AddAuditLogBatch addAuditLogBatch =
