@@ -268,7 +268,7 @@ class _Dataset(blob.Blob):
 
     @staticmethod
     def _is_hidden_to_spark(path):
-        # PySpark ignores certain files, and may complain that they do not exist
+        # PySpark ignores certain files and raises a "does not exist" error
         # https://stackoverflow.com/a/38479545
         return os.path.basename(path).startswith(('_', '.'))
 
