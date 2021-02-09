@@ -266,6 +266,12 @@ class _Dataset(blob.Blob):
 
         return (components_to_download, os.path.abspath(downloaded_to_path))
 
+    @staticmethod
+    def _is_hidden_to_spark(path):
+        # PySpark ignores certain files, and may complain that they do not exist
+        # https://stackoverflow.com/a/38479545
+        return os.path.basename(path).startswith(('_', '.'))
+
     @classmethod
     def with_spark(cls, sc, paths):
         """

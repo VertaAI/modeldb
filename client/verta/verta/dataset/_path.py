@@ -202,10 +202,7 @@ class Path(_dataset._Dataset):
         # PySpark won't traverse directories, so we have to
         paths = _file_utils.flatten_file_trees(paths)
 
-        # PySpark won't see hidden files, so we have to filter them out first
-        # https://stackoverflow.com/a/38479545
-        is_hidden_to_spark = lambda path: os.path.basename(path).startswith(('_', '.'))
-        removed_paths = list(filter(is_hidden_to_spark, paths))
+        removed_paths = list(filter(cls._is_hidden_to_spark, paths))
         for removed_path in removed_paths:
             print("ignored by Spark: {}".format(removed_path))
             paths.remove(removed_path)
