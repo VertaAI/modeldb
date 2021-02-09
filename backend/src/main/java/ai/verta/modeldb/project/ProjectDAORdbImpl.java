@@ -223,7 +223,18 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
 
-      removeDeletedProjectByNameFromUAC(project.getName(), session);
+      Query deletedEntitiesQuery = session.createQuery(GET_DELETED_PROJECTS_IDS_BY_NAME_HQL);
+      deletedEntitiesQuery.setParameter("projectName", project.getName());
+      List<String> deletedEntityIds = deletedEntitiesQuery.list();
+      if (!deletedEntityIds.isEmpty()) {
+        try {
+          CommonUtils.registeredBackgroundUtilsCount();
+          roleService.deleteEntityResourcesWithServiceUser(
+              deletedEntityIds, ModelDBServiceResourceTypes.PROJECT);
+        } finally {
+          CommonUtils.unregisteredBackgroundUtilsCount();
+        }
+      }
 
       Transaction transaction = session.beginTransaction();
       ProjectEntity projectEntity = RdbmsUtils.generateProjectEntity(project);
@@ -239,11 +250,11 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
 
       roleService.createWorkspacePermissions(
-          workspace.getId(),
+          Optional.of(workspace.getId()),
           Optional.empty(),
           project.getId(),
           project.getName(),
-          Optional.empty(), // UAC will populate the owner ID
+          Optional.empty(),
           ModelDBServiceResourceTypes.PROJECT,
           project.getCustomPermission(),
           resourceVisibility);
@@ -258,57 +269,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return insertProject(project, workspaceName, userInfo);
-      } else {
-        throw ex;
-      }
-    }
-  }
-
-  private void removeDeletedProjectByNameFromUAC(String projectName, Session session) {
-    Query deletedEntitiesQuery = session.createQuery(GET_DELETED_PROJECTS_IDS_BY_NAME_HQL);
-    deletedEntitiesQuery.setParameter("projectName", projectName);
-    List<String> deletedEntityIds = deletedEntitiesQuery.list();
-    if (!deletedEntityIds.isEmpty()) {
-      try {
-        CommonUtils.registeredBackgroundUtilsCount();
-        roleService.deleteEntityResourcesWithServiceUser(
-            deletedEntityIds, ModelDBServiceResourceTypes.PROJECT);
-      } finally {
-        CommonUtils.unregisteredBackgroundUtilsCount();
-      }
-    }
-  }
-
-  @Override
-  public Project updateProjectName(UserInfo userInfo, String projectId, String projectName)
-      throws InvalidProtocolBufferException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, null);
-      removeDeletedProjectByNameFromUAC(projectName, session);
-
-      ProjectEntity projectEntity =
-          session.load(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
-      Project project = projectEntity.getProtoObject(roleService, authService);
-      roleService.createWorkspacePermissions(
-          workspace.getId(),
-          Optional.empty(),
-          projectId,
-          projectName,
-          Optional.empty(), // UAC will populate the owner ID
-          ModelDBServiceResourceTypes.PROJECT,
-          project.getCustomPermission(),
-          project.getVisibility());
-
-      projectEntity.setName(projectName);
-      projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
-      Transaction transaction = session.beginTransaction();
-      session.update(projectEntity);
-      transaction.commit();
-      LOGGER.debug("Project name updated successfully");
-      return projectEntity.getProtoObject(roleService, authService);
-    } catch (Exception ex) {
-      if (ModelDBUtils.needToRetry(ex)) {
-        return updateProjectName(userInfo, projectId, projectName);
       } else {
         throw ex;
       }

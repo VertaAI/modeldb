@@ -404,11 +404,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         ModelDBServiceResourceTypes modelDBServiceResourceTypes =
             ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
         roleService.createWorkspacePermissions(
-            workspace.getId(),
+            Optional.of(workspace.getId()),
             Optional.empty(),
             String.valueOf(repositoryEntity.getId()),
             repository.getName(),
-            Optional.empty(), // UAC will populate the owner ID
+            Optional.empty(),
             modelDBServiceResourceTypes,
             repository.getCustomPermission(),
             repository.getVisibility());
@@ -453,11 +453,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         ModelDBServiceResourceTypes modelDBServiceResourceTypes =
             ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
         roleService.createWorkspacePermissions(
-            workspace.getId(),
+            Optional.of(workspace.getId()),
             Optional.empty(),
             String.valueOf(repositoryEntity.getId()),
             repositoryEntity.getName(),
-            Optional.empty(), // UAC will populate the owner ID
+            Optional.empty(),
             modelDBServiceResourceTypes,
             repository.getCustomPermission(),
             resourceVisibility);

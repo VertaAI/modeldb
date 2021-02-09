@@ -163,9 +163,9 @@ service CollaboratorService {
 
     // The caller must have permission to GET the resource accordingly
     // gets resources that is available in personal workspace (all except organization workspace resources)
-    rpc getResourcesExcludingOrganizationWorkspaces (GetResources) returns (GetResources.Response) {
+    rpc getResourcesSpecialPersonalWorkspace (GetResources) returns (GetResources.Response) {
         option (google.api.http) = {
-            get: "/v1/collaborator/getResourcesExcludingOrganizationWorkspaces"
+            get: "/v1/collaborator/getResourcesSpecialPersonalWorkspace"
         };
     };
 

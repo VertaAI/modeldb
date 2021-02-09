@@ -75,16 +75,25 @@ def dev_key():
     return os.environ.get("VERTA_DEV_KEY", DEFAULT_DEV_KEY)
 
 
+# for collaboration tests
 @pytest.fixture(scope='session')
 def email_2():
-    # For collaboration tests
     return os.environ.get("VERTA_EMAIL_2")
 
 
 @pytest.fixture(scope='session')
 def dev_key_2():
-    # For collaboration tests
     return os.environ.get("VERTA_DEV_KEY_2")
+
+
+@pytest.fixture(scope='session')
+def email_3():
+    return os.environ.get("VERTA_EMAIL_3")
+
+
+@pytest.fixture(scope='session')
+def dev_key_3():
+    return os.environ.get("VERTA_DEV_KEY_3")
 
 
 @pytest.fixture
@@ -297,17 +306,35 @@ def client(host, port, email, dev_key, created_entities):
 
 
 @pytest.fixture
-def client_2(host, port, email_2, dev_key_2):
+def client_2(host, port, email_2, dev_key_2, created_entities):
     """For collaboration tests."""
     if not (email_2 and dev_key_2):
         pytest.skip("second account credentials not present")
-    print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
 
     client = Client(host, port, email_2, dev_key_2, debug=True)
 
     yield client
 
-    print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
+    proj = client._ctx.proj
+    if (proj is not None
+            and proj.id not in {entity.id for entity in created_entities}):
+        proj.delete()
+
+
+@pytest.fixture
+def client_3(host, port, email_3, dev_key_3, created_entities):
+    """For collaboration tests."""
+    if not (email_3 and dev_key_3):
+        pytest.skip("second account credentials not present")
+
+    client = Client(host, port, email_3, dev_key_3, debug=True)
+
+    yield client
+
+    proj = client._ctx.proj
+    if (proj is not None
+            and proj.id not in {entity.id for entity in created_entities}):
+        proj.delete()
 
 
 @pytest.fixture

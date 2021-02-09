@@ -245,7 +245,7 @@ public class DatasetEntity {
 
     GetResourcesResponseItem repositoryResource =
         roleService.getEntityResource(
-            Optional.ofNullable(String.valueOf(this.id)),
+            Optional.of(String.valueOf(this.id)),
             Optional.empty(),
             Optional.empty(),
             Optional.empty(),

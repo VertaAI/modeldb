@@ -27,16 +27,6 @@ public interface ProjectDAO {
       throws InvalidProtocolBufferException;
 
   /**
-   * @param userInfo : current login userInfo
-   * @param projectId : project.id
-   * @param projectName : updated project name from client request
-   * @return {@link Project} : updated project
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
-   */
-  Project updateProjectName(UserInfo userInfo, String projectId, String projectName)
-      throws InvalidProtocolBufferException;
-
-  /**
    * @param projectId : project.id
    * @param projectDescription : updated project description from client request
    * @return {@link Project} : updated project
