@@ -198,14 +198,19 @@ class Path(_dataset._Dataset):
 
     @classmethod
     def with_spark(cls, sc, paths):
-        # TODO: only do this for `Path`, not `HDFSPath`
-        # PySpark won't traverse directories, so we have to
-        paths = _file_utils.flatten_file_trees(paths)
+        if all(map(os.path.exists, paths)):
+            # This `if` is a slight hack to check for local files,
+            # because we don't want this behavior in the HDFS subclass.
+            # TODO: maybe have an abstract base class for filesystem datasets
 
-        removed_paths = list(filter(cls._is_hidden_to_spark, paths))
-        for removed_path in removed_paths:
-            print("ignored by Spark: {}".format(removed_path))
-            paths.remove(removed_path)
+            # PySpark won't traverse directories, so we have to
+            paths = _file_utils.flatten_file_trees(paths)
+
+            # PySpark won't see hidden files, so we have filter them out
+            removed_paths = list(filter(cls._is_hidden_to_spark, paths))
+            for removed_path in removed_paths:
+                print("ignored by Spark: {}".format(removed_path))
+                paths.remove(removed_path)
 
         return super(Path, cls).with_spark(sc, paths)
 
