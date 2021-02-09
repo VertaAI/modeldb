@@ -84,11 +84,11 @@ class S3(_dataset._Dataset):
     def _from_proto(cls, blob_msg):
         obj = cls._create_empty()
 
-        obj._add_components(
+        obj._add_components([
             _dataset.S3Component._from_proto(component_msg)
             for component_msg
             in blob_msg.dataset.s3.components
-        )
+        ])
 
         return obj
 

@@ -90,11 +90,11 @@ class Path(_dataset._Dataset):
     def _from_proto(cls, blob_msg):
         obj = cls._create_empty()
 
-        obj._add_components(
+        obj._add_components([
             _dataset.Component._from_proto(component_msg)
             for component_msg
             in blob_msg.dataset.path.components
-        )
+        ])
 
         return obj
 
