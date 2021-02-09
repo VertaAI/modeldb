@@ -321,7 +321,8 @@
         "UNKNOWN",
         "ALL",
         "ORGANIZATION",
-        "TEAM"
+        "TEAM",
+        "WORKSPACE"
       ],
       "default": "UNKNOWN"
     },
@@ -746,7 +747,11 @@
           "items": {
             "type": "string"
           },
-          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
+          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services"
+        },
+        "all_resource_ids": {
+          "type": "boolean",
+          "format": "boolean"
         },
         "resource_type": {
           "$ref": "#/definitions/uacResourceType"

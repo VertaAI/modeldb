@@ -19,8 +19,8 @@ class CollaboratorServiceStub(object):
         request_serializer=uac_dot_Collaborator__pb2.GetResources.SerializeToString,
         response_deserializer=uac_dot_Collaborator__pb2.GetResources.Response.FromString,
         )
-    self.getResourcesInPersonalWorkspace = channel.unary_unary(
-        '/ai.verta.uac.CollaboratorService/getResourcesInPersonalWorkspace',
+    self.getResourcesSpecialPersonalWorkspace = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/getResourcesSpecialPersonalWorkspace',
         request_serializer=uac_dot_Collaborator__pb2.GetResources.SerializeToString,
         response_deserializer=uac_dot_Collaborator__pb2.GetResources.Response.FromString,
         )
@@ -122,7 +122,7 @@ class CollaboratorServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getResourcesInPersonalWorkspace(self, request, context):
+  def getResourcesSpecialPersonalWorkspace(self, request, context):
     """The caller must have permission to GET the resource accordingly
     gets resources that is available in personal workspace (all except organization workspace resources)
     """
@@ -257,8 +257,8 @@ def add_CollaboratorServiceServicer_to_server(servicer, server):
           request_deserializer=uac_dot_Collaborator__pb2.GetResources.FromString,
           response_serializer=uac_dot_Collaborator__pb2.GetResources.Response.SerializeToString,
       ),
-      'getResourcesInPersonalWorkspace': grpc.unary_unary_rpc_method_handler(
-          servicer.getResourcesInPersonalWorkspace,
+      'getResourcesSpecialPersonalWorkspace': grpc.unary_unary_rpc_method_handler(
+          servicer.getResourcesSpecialPersonalWorkspace,
           request_deserializer=uac_dot_Collaborator__pb2.GetResources.FromString,
           response_serializer=uac_dot_Collaborator__pb2.GetResources.Response.SerializeToString,
       ),

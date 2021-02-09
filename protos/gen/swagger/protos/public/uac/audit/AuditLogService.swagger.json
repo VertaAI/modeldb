@@ -97,7 +97,8 @@
         "UNKNOWN",
         "ALL",
         "ORGANIZATION",
-        "TEAM"
+        "TEAM",
+        "WORKSPACE"
       ],
       "default": "UNKNOWN"
     },
