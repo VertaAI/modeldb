@@ -98,7 +98,8 @@
         "ALL",
         "ORGANIZATION",
         "TEAM",
-        "WORKSPACE"
+        "WORKSPACE",
+        "USER"
       ],
       "default": "UNKNOWN"
     },
