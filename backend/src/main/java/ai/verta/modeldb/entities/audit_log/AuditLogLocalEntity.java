@@ -5,22 +5,19 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ResourceType;
-import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.versioning.AuditLog;
-import ai.verta.uac.versioning.AuditLog.Builder;
 import ai.verta.uac.versioning.AuditResource;
 import ai.verta.uac.versioning.AuditUser;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import io.grpc.Status;
-
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.UUID;
 
 @Entity
 @Table(name = "audit_service_local_audit_log")
