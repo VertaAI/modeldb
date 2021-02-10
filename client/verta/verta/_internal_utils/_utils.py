@@ -162,6 +162,14 @@ class Connection:
     def is_html_response(response):
         return response.text.strip().endswith("</html>")
 
+    def _get_visible_orgs(self):
+        response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces")
+        response = self.must_proto_response(response, Workspace_pb2.Workspaces)
+
+        org_names = map(lambda workspace: workspace.org_name, response.workspace)
+        org_names = filter(None, org_names)
+        return list(org_names)
+
     def _set_default_workspace(self, name):
         msg = Workspace_pb2.GetWorkspaceByName(name=name)
         response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getWorkspaceByName", params=msg)
