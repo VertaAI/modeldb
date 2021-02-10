@@ -1,11 +1,54 @@
 package ai.verta.modeldb.project;
 
-import ai.verta.common.*;
+import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
+import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.*;
+import ai.verta.common.OperatorEnum;
+import ai.verta.common.ValueTypeEnum;
+import ai.verta.modeldb.AddProjectAttributes;
+import ai.verta.modeldb.AddProjectTag;
+import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CreateProject;
+import ai.verta.modeldb.DAOSet;
+import ai.verta.modeldb.DeepCopyProject;
+import ai.verta.modeldb.DeleteProject;
+import ai.verta.modeldb.DeleteProjectArtifact;
+import ai.verta.modeldb.DeleteProjectAttributes;
+import ai.verta.modeldb.DeleteProjectTag;
+import ai.verta.modeldb.DeleteProjectTags;
+import ai.verta.modeldb.DeleteProjects;
+import ai.verta.modeldb.Empty;
+import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.FindProjects;
+import ai.verta.modeldb.GetArtifacts;
+import ai.verta.modeldb.GetAttributes;
+import ai.verta.modeldb.GetProjectById;
+import ai.verta.modeldb.GetProjectByName;
+import ai.verta.modeldb.GetProjectCodeVersion;
+import ai.verta.modeldb.GetProjectReadme;
+import ai.verta.modeldb.GetProjectShortName;
+import ai.verta.modeldb.GetProjects;
+import ai.verta.modeldb.GetSummary;
+import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.LastModifiedExperimentRunSummary;
+import ai.verta.modeldb.LogProjectArtifacts;
+import ai.verta.modeldb.LogProjectCodeVersion;
 import ai.verta.modeldb.LogProjectCodeVersion.Response;
+import ai.verta.modeldb.MetricsSummary;
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
+import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.SetProjectReadme;
+import ai.verta.modeldb.SetProjectShortName;
+import ai.verta.modeldb.UpdateProjectAttributes;
+import ai.verta.modeldb.UpdateProjectDescription;
+import ai.verta.modeldb.UpdateProjectName;
+import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
@@ -17,16 +60,23 @@ import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
-import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import io.grpc.stub.StreamObserver;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,7 +103,12 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   private void saveAuditLogs(
-      UserInfo userInfo, String action, List<String> resourceIds, String metadataBlob) {
+      UserInfo userInfo,
+      ModelDBServiceActions action,
+      List<String> resourceIds,
+      String request,
+      String response,
+      Long workspaceId) {
     List<AuditLogLocalEntity> auditLogLocalEntities =
         resourceIds.stream()
             .map(
@@ -64,9 +119,12 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                             userInfo == null ? authService.getCurrentLoginUserInfo() : userInfo),
                         action,
                         resourceId,
-                        ModelDBConstants.PROJECT,
-                        Service.MODELDB_SERVICE.name(),
-                        metadataBlob))
+                        ModelDBServiceResourceTypes.PROJECT,
+                        Service.MODELDB_SERVICE,
+                        MonitoringInterceptor.METHOD_NAME.get(),
+                        request,
+                        response,
+                        workspaceId))
             .collect(Collectors.toList());
     if (!auditLogLocalEntities.isEmpty()) {
       auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
@@ -91,10 +149,17 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       Project project = projectDAO.insertProject(request, userInfo);
 
+      CreateProject.Response response =
+          CreateProject.Response.newBuilder().setProject(project).build();
       saveAuditLogs(
-          userInfo, ModelDBConstants.CREATE, Collections.singletonList(project.getId()), "");
+          userInfo,
+          ModelDBServiceActions.CREATE,
+          Collections.singletonList(project.getId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          project.getWorkspaceServiceId());
 
-      responseObserver.onNext(CreateProject.Response.newBuilder().setProject(project).build());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -127,14 +192,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       Project updatedProject =
           projectDAO.updateProjectName(
               userInfo, request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
+      UpdateProjectName.Response response =
+          UpdateProjectName.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
           userInfo,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "update", "name", updatedProject.getName()));
-      responseObserver.onNext(
-          UpdateProjectName.Response.newBuilder().setProject(updatedProject).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -167,17 +234,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       Project updatedProject =
           projectDAO.updateProjectDescription(request.getId(), request.getDescription());
+      UpdateProjectDescription.Response response =
+          UpdateProjectDescription.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "update",
-              "description",
-              updatedProject.getDescription()));
-      responseObserver.onNext(
-          UpdateProjectDescription.Response.newBuilder().setProject(updatedProject).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -211,17 +277,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       Project updatedProject =
           projectDAO.addProjectAttributes(request.getId(), request.getAttributesList());
+      AddProjectAttributes.Response response =
+          AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "attribute",
-              new Gson().toJson(request.getAttributesList())));
-      responseObserver.onNext(
-          AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -261,17 +326,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       Project updatedProject =
           projectDAO.updateProjectAttributes(request.getId(), request.getAttribute());
+      UpdateProjectAttributes.Response response =
+          UpdateProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "update",
-              "attribute",
-              new Gson().toJson(request.getAttribute())));
-      responseObserver.onNext(
-          UpdateProjectAttributes.Response.newBuilder().setProject(updatedProject).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -352,19 +416,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       Project updatedProject =
           projectDAO.deleteProjectAttributes(
               request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
+      DeleteProjectAttributes.Response response =
+          DeleteProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "delete",
-              "attribute",
-              request.getDeleteAll()
-                  ? "deleteAll"
-                  : new Gson().toJson(request.getAttributeKeysList())));
-      responseObserver.onNext(
-          DeleteProjectAttributes.Response.newBuilder().setProject(updatedProject).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -396,17 +457,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       Project updatedProject =
           projectDAO.addProjectTags(
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+      AddProjectTags.Response response =
+          AddProjectTags.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "tags",
-              new Gson().toJson(request.getTagsList())));
-      responseObserver.onNext(
-          AddProjectTags.Response.newBuilder().setProject(updatedProject).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -467,17 +527,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       Project updatedProject =
           projectDAO.deleteProjectTags(
               request.getId(), request.getTagsList(), request.getDeleteAll());
+      DeleteProjectTags.Response response =
+          DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "delete",
-              "tags",
-              request.getDeleteAll() ? "deleteAll" : new Gson().toJson(request.getTagsList())));
-      responseObserver.onNext(
-          DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -512,13 +571,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.addProjectTags(
               request.getId(),
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
+      AddProjectTag.Response response =
+          AddProjectTag.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "tag", request.getTag()));
-      responseObserver.onNext(
-          AddProjectTag.Response.newBuilder().setProject(updatedProject).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -550,14 +612,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       Project updatedProject =
           projectDAO.deleteProjectTags(request.getId(), Arrays.asList(request.getTag()), false);
+      DeleteProjectTag.Response response =
+          DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "delete", "tag", request.getTag()));
-      responseObserver.onNext(
-          DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -584,9 +648,17 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       List<String> deletedProjectIds =
           projectDAO.deleteProjects(Collections.singletonList(request.getId()));
-      saveAuditLogs(null, ModelDBConstants.DELETE, Collections.singletonList(request.getId()), "");
-      responseObserver.onNext(
-          DeleteProject.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build());
+      DeleteProject.Response response =
+          DeleteProject.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      saveAuditLogs(
+          userInfo,
+          ModelDBServiceActions.DELETE,
+          Collections.singletonList(request.getId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          authService.getWorkspaceIdFromUserInfo(userInfo));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -740,8 +812,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
 
       Project project = projectDAO.deepCopyProjectForUser(request.getId(), userInfo);
-      saveAuditLogs(null, ModelDBConstants.CREATE, Collections.singletonList(request.getId()), "");
-      responseObserver.onNext(DeepCopyProject.Response.newBuilder().setProject(project).build());
+      DeepCopyProject.Response response =
+          DeepCopyProject.Response.newBuilder().setProject(project).build();
+      saveAuditLogs(
+          userInfo,
+          ModelDBServiceActions.CREATE,
+          Collections.singletonList(project.getId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          project.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -888,17 +968,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       Project updatedProject =
           projectDAO.updateProjectReadme(request.getId(), request.getReadmeText());
+      SetProjectReadme.Response response =
+          SetProjectReadme.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "update",
-              "readme",
-              request.getReadmeText()));
-      responseObserver.onNext(
-          SetProjectReadme.Response.newBuilder().setProject(updatedProject).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -963,17 +1042,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       Project project =
           projectDAO.setProjectShortName(request.getId(), request.getShortName(), userInfo);
+      SetProjectShortName.Response response =
+          SetProjectShortName.Response.newBuilder().setProject(project).build();
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(project.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "update",
-              "short_name",
-              project.getShortName()));
-      responseObserver.onNext(
-          SetProjectShortName.Response.newBuilder().setProject(project).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          project.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -1043,13 +1121,11 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           LogProjectCodeVersion.Response.newBuilder().setProject(updatedProject);
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "log",
-              "code_version",
-              new Gson().toJson(request.getCodeVersion())));
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(responseBuilder.build()),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -1195,13 +1271,11 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           LogProjectArtifacts.Response.newBuilder().setProject(updatedProject);
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "artifacts",
-              new Gson().toJson(request.getArtifactsList())));
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(responseBuilder.build()),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -1252,14 +1326,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       Project updatedProject = projectDAO.deleteArtifacts(request.getId(), request.getKey());
+      DeleteProjectArtifact.Response response =
+          DeleteProjectArtifact.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
           null,
-          ModelDBConstants.UPDATE,
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "delete", "artifacts", request.getKey()));
-      responseObserver.onNext(
-          DeleteProjectArtifact.Response.newBuilder().setProject(updatedProject).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1278,10 +1354,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       List<String> deletedProjectIds = projectDAO.deleteProjects(request.getIdsList());
-      saveAuditLogs(null, ModelDBConstants.DELETE, deletedProjectIds, "");
-
-      responseObserver.onNext(
-          DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build());
+      DeleteProjects.Response response =
+          DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
+      saveAuditLogs(
+          null,
+          ModelDBServiceActions.DELETE,
+          deletedProjectIds,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {

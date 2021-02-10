@@ -1,10 +1,12 @@
 package ai.verta.modeldb.entities.audit_log;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
-import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceType;
+import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.versioning.AuditLog;
 import ai.verta.uac.versioning.AuditResource;
 import ai.verta.uac.versioning.AuditUser;
@@ -60,15 +62,15 @@ public class AuditLogLocalEntity {
   @Column(name = "workspace_id")
   private Long workspaceId;
 
-  public AuditLogLocalEntity() {}
+  private AuditLogLocalEntity() {}
 
   public AuditLogLocalEntity(
       String serviceName,
       String userId,
-      int action,
+      ModelDBServiceActions action,
       String resourceId,
-      int resourceType,
-      int resourceService,
+      ModelDBServiceResourceTypes resourceType,
+      Service resourceService,
       String methodName,
       String request,
       String response,
@@ -76,10 +78,10 @@ public class AuditLogLocalEntity {
     tsNano = System.currentTimeMillis() * 1000000;
     localId = String.format("%s_%s", serviceName, UUID.randomUUID());
     this.userId = userId;
-    this.action = action;
+    this.action = action.getNumber();
     this.resourceId = resourceId;
-    this.resourceType = resourceType;
-    this.resourceService = resourceService;
+    this.resourceType = resourceType.getNumber();
+    this.resourceService = resourceService.getNumber();
     this.methodName = methodName;
     this.request = request;
     this.response = response;
@@ -102,8 +104,7 @@ public class AuditLogLocalEntity {
             .setUser(AuditUser.newBuilder().setUserId(userId))
             .setAction(
                 Action.newBuilder()
-                    .setModeldbServiceAction(
-                        ModelDBActionEnum.ModelDBServiceActions.forNumber(action))
+                    .setModeldbServiceAction(ModelDBServiceActions.forNumber(action))
                     .setServiceValue(resourceService)
                     .build())
             .setResource(resource);
