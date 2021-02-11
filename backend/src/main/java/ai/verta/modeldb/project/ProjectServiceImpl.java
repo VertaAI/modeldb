@@ -76,6 +76,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -103,7 +104,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   private void saveAuditLogs(
-      UserInfo userInfo,
+      Optional<UserInfo> userInfo,
       ModelDBServiceActions action,
       List<String> resourceIds,
       String request,
@@ -116,7 +117,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                     new AuditLogLocalEntity(
                         SERVICE_NAME,
                         authService.getVertaIdFromUserInfo(
-                            userInfo == null ? authService.getCurrentLoginUserInfo() : userInfo),
+                            userInfo.isPresent()
+                                ? authService.getCurrentLoginUserInfo()
+                                : userInfo.get()),
                         action,
                         resourceId,
                         ModelDBServiceResourceTypes.PROJECT,
@@ -152,7 +155,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       CreateProject.Response response =
           CreateProject.Response.newBuilder().setProject(project).build();
       saveAuditLogs(
-          userInfo,
+          Optional.of(userInfo),
           ModelDBServiceActions.CREATE,
           Collections.singletonList(project.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -195,7 +198,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       UpdateProjectName.Response response =
           UpdateProjectName.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
-          userInfo,
+          Optional.of(userInfo),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -237,7 +240,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       UpdateProjectDescription.Response response =
           UpdateProjectDescription.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -280,7 +283,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       AddProjectAttributes.Response response =
           AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -329,7 +332,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       UpdateProjectAttributes.Response response =
           UpdateProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -419,7 +422,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       DeleteProjectAttributes.Response response =
           DeleteProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -460,7 +463,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       AddProjectTags.Response response =
           AddProjectTags.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -530,7 +533,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       DeleteProjectTags.Response response =
           DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -574,7 +577,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       AddProjectTag.Response response =
           AddProjectTag.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -615,7 +618,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       DeleteProjectTag.Response response =
           DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -652,7 +655,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           DeleteProject.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       saveAuditLogs(
-          userInfo,
+          Optional.of(userInfo),
           ModelDBServiceActions.DELETE,
           Collections.singletonList(request.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -815,7 +818,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       DeepCopyProject.Response response =
           DeepCopyProject.Response.newBuilder().setProject(project).build();
       saveAuditLogs(
-          userInfo,
+          Optional.of(userInfo),
           ModelDBServiceActions.CREATE,
           Collections.singletonList(project.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -971,7 +974,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       SetProjectReadme.Response response =
           SetProjectReadme.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -1045,7 +1048,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       SetProjectShortName.Response response =
           SetProjectShortName.Response.newBuilder().setProject(project).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(project.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -1120,7 +1123,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       LogProjectCodeVersion.Response.Builder responseBuilder =
           LogProjectCodeVersion.Response.newBuilder().setProject(updatedProject);
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -1270,7 +1273,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       LogProjectArtifacts.Response.Builder responseBuilder =
           LogProjectArtifacts.Response.newBuilder().setProject(updatedProject);
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -1329,7 +1332,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       DeleteProjectArtifact.Response response =
           DeleteProjectArtifact.Response.newBuilder().setProject(updatedProject).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedProject.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -1357,7 +1360,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       DeleteProjects.Response response =
           DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
       saveAuditLogs(
-          null,
+          Optional.empty(),
           ModelDBServiceActions.DELETE,
           deletedProjectIds,
           ModelDBUtils.getStringFromProtoObject(request),
