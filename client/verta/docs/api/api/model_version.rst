@@ -8,4 +8,11 @@ Registered Model Version
     :members:
     :inherited-members:
 
+Collections
+-----------
+
+.. autoclass:: verta._registry.modelversions.RegisteredModelVersions()
+    :inherited-members:
+    :members:
+
 
