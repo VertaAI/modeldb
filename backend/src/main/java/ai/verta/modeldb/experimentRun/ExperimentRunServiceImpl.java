@@ -84,7 +84,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                             userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
                         action,
                         resourceId,
-                        ModelDBServiceResourceTypes.PROJECT,
+                        ModelDBServiceResourceTypes.EXPERIMENT_RUN,
                         Service.MODELDB_SERVICE,
                         MonitoringInterceptor.METHOD_NAME.get(),
                         request,
