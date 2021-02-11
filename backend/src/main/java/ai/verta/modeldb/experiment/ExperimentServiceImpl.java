@@ -70,7 +70,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
                             userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
                         action,
                         resourceId,
-                        ModelDBServiceResourceTypes.PROJECT,
+                        ModelDBServiceResourceTypes.EXPERIMENT,
                         Service.MODELDB_SERVICE,
                         MonitoringInterceptor.METHOD_NAME.get(),
                         request,
