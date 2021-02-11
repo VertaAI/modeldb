@@ -17,12 +17,12 @@ import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
+import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
-import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
@@ -54,7 +54,12 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
   }
 
   private void saveAuditLogs(
-      UserInfo userInfo, String action, List<String> resourceIds, String metadataBlob) {
+      Optional<UserInfo> userInfo,
+      ModelDBServiceActions action,
+      List<String> resourceIds,
+      String request,
+      String response,
+      Long workspaceId) {
     List<AuditLogLocalEntity> auditLogLocalEntities =
         resourceIds.stream()
             .map(
@@ -62,12 +67,17 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
                     new AuditLogLocalEntity(
                         SERVICE_NAME,
                         authService.getVertaIdFromUserInfo(
-                            userInfo == null ? authService.getCurrentLoginUserInfo() : userInfo),
+                            userInfo.isPresent()
+                                ? authService.getCurrentLoginUserInfo()
+                                : userInfo.get()),
                         action,
                         resourceId,
-                        ModelDBConstants.EXPERIMENT,
-                        Service.MODELDB_SERVICE.name(),
-                        metadataBlob))
+                        ModelDBServiceResourceTypes.PROJECT,
+                        Service.MODELDB_SERVICE,
+                        MonitoringInterceptor.METHOD_NAME.get(),
+                        request,
+                        response,
+                        workspaceId))
             .collect(Collectors.toList());
     if (!auditLogLocalEntities.isEmpty()) {
       auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
@@ -148,10 +158,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE);
 
       experiment = experimentDAO.insertExperiment(experiment, userInfo);
+      CreateExperiment.Response response =
+          CreateExperiment.Response.newBuilder().setExperiment(experiment).build();
       saveAuditLogs(
-          userInfo, ModelDBConstants.CREATE, Collections.singletonList(experiment.getId()), "");
-      responseObserver.onNext(
-          CreateExperiment.Response.newBuilder().setExperiment(experiment).build());
+          Optional.of(userInfo),
+          ModelDBServiceActions.CREATE,
+          Collections.singletonList(experiment.getId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -319,19 +335,18 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
       }
 
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "update",
-              "name|description",
-              request.getName() + "|" + request.getDescription()));
-      responseObserver.onNext(
+      UpdateExperimentNameOrDescription.Response response =
           UpdateExperimentNameOrDescription.Response.newBuilder()
               .setExperiment(updatedExperiment)
-              .build());
+              .build();
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(request.getId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -370,14 +385,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.updateExperimentName(
               request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
 
+      UpdateExperimentName.Response response =
+          UpdateExperimentName.Response.newBuilder().setExperiment(updatedExperiment).build();
       saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedExperiment.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "update", "name", request.getName()));
-      responseObserver.onNext(
-          UpdateExperimentName.Response.newBuilder().setExperiment(updatedExperiment).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -412,19 +429,18 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       Experiment updatedExperiment =
           experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(updatedExperiment.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "update",
-              "description",
-              updatedExperiment.getDescription()));
-      responseObserver.onNext(
+      UpdateExperimentDescription.Response response =
           UpdateExperimentDescription.Response.newBuilder()
               .setExperiment(updatedExperiment)
-              .build());
+              .build();
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(updatedExperiment.getId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -461,17 +477,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Experiment updatedExperiment =
           experimentDAO.addExperimentTags(
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+      AddExperimentTags.Response response =
+          AddExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
       saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedExperiment.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "tags",
-              new Gson().toJsonTree(request.getTagsList())));
-      responseObserver.onNext(
-          AddExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -509,13 +524,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.addExperimentTags(
               request.getId(),
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
+      AddExperimentTag.Response response =
+          AddExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build();
       saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedExperiment.getId()),
-          String.format(ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "tag", request.getTag()));
-      responseObserver.onNext(
-          AddExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -578,17 +596,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Experiment updatedExperiment =
           experimentDAO.deleteExperimentTags(
               request.getId(), request.getTagsList(), request.getDeleteAll());
+      DeleteExperimentTags.Response response =
+          DeleteExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
       saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedExperiment.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "delete",
-              "tags",
-              request.getDeleteAll() ? "deleteAll" : new Gson().toJsonTree(request.getTagsList())));
-      responseObserver.onNext(
-          DeleteExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -625,14 +642,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Experiment updatedExperiment =
           experimentDAO.deleteExperimentTags(
               request.getId(), Collections.singletonList(request.getTag()), false);
+      DeleteExperimentTag.Response response =
+          DeleteExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build();
       saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedExperiment.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "delete", "tag", request.getTag()));
-      responseObserver.onNext(
-          DeleteExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -664,16 +683,15 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       experimentDAO.addExperimentAttributes(
           request.getId(), Collections.singletonList(request.getAttribute()));
+      AddAttributes.Response response = AddAttributes.Response.newBuilder().setStatus(true).build();
       saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "attributes",
-              new Gson().toJsonTree(request.getAttribute())));
-      responseObserver.onNext(AddAttributes.Response.newBuilder().setStatus(true).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -710,17 +728,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       Experiment experiment =
           experimentDAO.addExperimentAttributes(request.getId(), request.getAttributesList());
+      AddExperimentAttributes.Response response =
+          AddExperimentAttributes.Response.newBuilder().setExperiment(experiment).build();
       saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(experiment.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "attributes",
-              new Gson().toJsonTree(request.getAttributesList())));
-      responseObserver.onNext(
-          AddExperimentAttributes.Response.newBuilder().setExperiment(experiment).build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -803,21 +820,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Experiment updatedExperiment =
           experimentDAO.deleteExperimentAttributes(
               request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
+      DeleteExperimentAttributes.Response response =
+          DeleteExperimentAttributes.Response.newBuilder().setExperiment(updatedExperiment).build();
       saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
           Collections.singletonList(updatedExperiment.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "delete",
-              "attributes",
-              request.getDeleteAll()
-                  ? "deleteAll"
-                  : new Gson().toJsonTree(request.getAttributeKeysList())));
-      responseObserver.onNext(
-          DeleteExperimentAttributes.Response.newBuilder()
-              .setExperiment(updatedExperiment)
-              .build());
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -838,9 +850,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       List<String> deletedIds =
           experimentDAO.deleteExperiments(Collections.singletonList(request.getId()));
-      saveAuditLogs(null, ModelDBConstants.DELETE, deletedIds, "");
-      responseObserver.onNext(
-          DeleteExperiment.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build());
+      DeleteExperiment.Response response =
+          DeleteExperiment.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.DELETE,
+          Collections.singletonList(request.getId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -888,19 +907,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         errorMessage = "Code version already logged for experiment " + existingExperiment.getId();
         throw new AlreadyExistsException(errorMessage);
       }
+      LogExperimentCodeVersion.Response response =
+          LogExperimentCodeVersion.Response.newBuilder().setExperiment(updatedExperiment).build();
       saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(updatedExperiment.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "log",
-              "code_version",
-              new Gson().toJsonTree(request.getCodeVersion())));
-      /*Build response*/
-      LogExperimentCodeVersion.Response.Builder responseBuilder =
-          LogExperimentCodeVersion.Response.newBuilder().setExperiment(updatedExperiment);
-      responseObserver.onNext(responseBuilder.build());
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(request.getId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1077,18 +1093,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
 
       Experiment updatedExperiment = experimentDAO.logArtifacts(request.getId(), artifactList);
+      LogExperimentArtifacts.Response response =
+          LogExperimentArtifacts.Response.newBuilder().setExperiment(updatedExperiment).build();
       saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(updatedExperiment.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "artifacts",
-              new Gson().toJsonTree(request.getArtifactsList())));
-      LogExperimentArtifacts.Response.Builder responseBuilder =
-          LogExperimentArtifacts.Response.newBuilder().setExperiment(updatedExperiment);
-      responseObserver.onNext(responseBuilder.build());
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(request.getId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1155,14 +1169,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       Experiment updatedExperiment =
           experimentDAO.deleteArtifacts(request.getId(), request.getKey());
+      DeleteExperimentArtifact.Response response =
+          DeleteExperimentArtifact.Response.newBuilder().setExperiment(updatedExperiment).build();
       saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(updatedExperiment.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "delete", "artifacts", request.getKey()));
-      responseObserver.onNext(
-          DeleteExperimentArtifact.Response.newBuilder().setExperiment(updatedExperiment).build());
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(request.getId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1180,9 +1196,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       List<String> deletedIds = experimentDAO.deleteExperiments(request.getIdsList());
-      saveAuditLogs(null, ModelDBConstants.DELETE, deletedIds, "");
-      responseObserver.onNext(
-          DeleteExperiments.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build());
+      DeleteExperiments.Response response =
+          DeleteExperiments.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.DELETE,
+          request.getIdsList(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          null);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
