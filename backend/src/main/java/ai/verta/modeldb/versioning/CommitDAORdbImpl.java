@@ -641,6 +641,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         DeleteEntitiesCron.deleteAttribute(session, compositeId);
         session.delete(commitEntity);
         session.getTransaction().commit();
+        session.clear();
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
