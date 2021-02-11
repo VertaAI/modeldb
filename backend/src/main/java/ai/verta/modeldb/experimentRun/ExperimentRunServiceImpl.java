@@ -81,9 +81,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                     new AuditLogLocalEntity(
                         SERVICE_NAME,
                         authService.getVertaIdFromUserInfo(
-                            userInfo.isPresent()
-                                ? authService.getCurrentLoginUserInfo()
-                                : userInfo.get()),
+                            userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
                         action,
                         resourceId,
                         ModelDBServiceResourceTypes.PROJECT,
