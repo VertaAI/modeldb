@@ -88,7 +88,6 @@ migrations:
     record_update_limit: 100
   - name: BASE_PATH_DATASET_VERSION_MIGRATION
     enabled: true
-    record_update_limit: 100
     parameters:
       datasetIds: #[1,2,3]
   #xyz :
