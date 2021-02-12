@@ -82,15 +82,15 @@ authService:
   host: uacservice # Docker container name OR docker IP
   port: 50051
 
-migration:
-  DATASET_VERSIONING_MIGRATION:
-    enable: true
+migrations:
+  - name: COLLABORATOR_RESOURCE_MIGRATION
+    enabled: true
     record_update_limit: 100
-  SUB_ENTITIES_OWNERS_RBAC_MIGRATION:
-    enable: true
-  POPULATE_VERSION_MIGRATION:
-    enable: true
+  - name: BASE_PATH_DATASET_VERSION_MIGRATION
+    enabled: true
     record_update_limit: 100
+    parameters:
+      datasetIds: #[1,2,3]
   #xyz :
   #  enable: true
 

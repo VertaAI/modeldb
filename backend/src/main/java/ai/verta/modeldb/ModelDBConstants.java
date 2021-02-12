@@ -201,6 +201,7 @@ public interface ModelDBConstants {
       "Can't add new versioning entry, because an existing one has different repository or commit";
   String REPOSITORY_ENTITY = "repositoryEntity";
   String POPULATE_VERSION_MIGRATION = "POPULATE_VERSION_MIGRATION";
+  String BASE_PATH_DATASET_VERSION_MIGRATION = "BASE_PATH_DATASET_VERSION_MIGRATION";
 
   // Role name
   String ROLE_DATASET_CREATE = "DATASET_CREATE";

@@ -1,6 +1,7 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.batchProcess.BasePathDatasetVersionMigration;
 import ai.verta.modeldb.batchProcess.CollaboratorResourceMigration;
 import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
@@ -65,6 +66,9 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import liquibase.exception.DatabaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -262,6 +266,20 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
               DatasetToRepositoryMigration.execute(migrationConfig.record_update_limit);
             } else {
               LOGGER.debug("Migration already locked");
+            }
+            break;
+          case ModelDBConstants.BASE_PATH_DATASET_VERSION_MIGRATION:
+            List<Integer> datasetIds = null;
+            if (migrationConfig.parameters != null) {
+              Map<String, Object> parameters = (Map<String, Object>) migrationConfig.parameters;
+              if (!parameters.isEmpty() && parameters.containsKey("datasetIds")) {
+                datasetIds = ((List<Integer>) parameters.get("datasetIds"));
+              }
+            }
+            if (datasetIds != null && !datasetIds.isEmpty()) {
+              List<Long> datasetIdList =
+                  datasetIds.stream().map(Long::valueOf).collect(Collectors.toList());
+              BasePathDatasetVersionMigration.execute(datasetIdList);
             }
             break;
         }

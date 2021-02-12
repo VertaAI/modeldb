@@ -41,7 +41,7 @@ public class VersioningUtils {
    * @param repositoryId : id of the repository
    * @return
    */
-  static boolean commitRepositoryMappingExists(
+  public static boolean commitRepositoryMappingExists(
       Session session, String commitHash, Long repositoryId) {
     Query query = session.createQuery(COMMIT_BELONGS_TO_REPO_QUERY);
     query.setParameter("commitHash", commitHash);
