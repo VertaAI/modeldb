@@ -2,6 +2,8 @@ package ai.verta.modeldb.reconcilers;
 
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -21,15 +23,26 @@ public abstract class Reconciler<T> {
     this.config = config;
 
     startResync();
+    startWorkers();
   }
 
   private void startResync() {
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    executor.scheduleAtFixedRate(
-        this::resync, 0, this.config.resyncPeriodSeconds, TimeUnit.SECONDS);
+    executor.scheduleAtFixedRate(this::resync, 0, config.resyncPeriodSeconds, TimeUnit.SECONDS);
   }
 
-  private void startWorkers() {}
+  private void startWorkers() {
+    ExecutorService executor = Executors.newFixedThreadPool(config.workerCount);
+    for (int i = 0; i < config.workerCount; i++) {
+      Runnable runnable =
+          () -> {
+            while (true) {
+              reconcile(pop());
+            }
+          };
+      executor.execute(runnable);
+    }
+  }
 
   public void insert(T element) {
     lock.lock();
@@ -65,5 +78,5 @@ public abstract class Reconciler<T> {
 
   public abstract void resync();
 
-  protected abstract void reconcile(T obj);
+  protected abstract void reconcile(Set<T> objs);
 }

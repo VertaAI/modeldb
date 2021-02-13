@@ -6,6 +6,8 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import java.util.Set;
+
 public class DeletedProjects extends Reconciler<String> {
   private static final Logger LOGGER = LogManager.getLogger(DeletedProjects.class);
 
@@ -26,5 +28,5 @@ public class DeletedProjects extends Reconciler<String> {
   }
 
   @Override
-  protected void reconcile(String id) {}
+  protected void reconcile(Set<String> ids) {}
 }
