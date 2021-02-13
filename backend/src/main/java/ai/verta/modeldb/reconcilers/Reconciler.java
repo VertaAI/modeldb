@@ -1,5 +1,8 @@
 package ai.verta.modeldb.reconcilers;
 
+import ai.verta.modeldb.common.CommonUtils;
+import org.apache.logging.log4j.Logger;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -12,14 +15,16 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class Reconciler<T> {
-  private final HashSet<T> elements = new HashSet<>();
-  private final LinkedList<T> order = new LinkedList<>();
+  final Logger logger;
+  protected final HashSet<T> elements = new HashSet<>();
+  protected final LinkedList<T> order = new LinkedList<>();
   final Lock lock = new ReentrantLock();
   final Condition notEmpty = lock.newCondition();
 
-  private final ReconcilerConfig config;
+  protected final ReconcilerConfig config;
 
-  protected Reconciler(ReconcilerConfig config) {
+  protected Reconciler(ReconcilerConfig config, Logger logger) {
+    this.logger = logger;
     this.config = config;
 
     startResync();
@@ -27,8 +32,19 @@ public abstract class Reconciler<T> {
   }
 
   private void startResync() {
+    Runnable runnable =
+        () -> {
+          CommonUtils.registeredBackgroundUtilsCount();
+          try {
+            this.resync();
+          } catch (Exception ex) {
+            logger.error("Resync: ", ex);
+          }
+          CommonUtils.unregisteredBackgroundUtilsCount();
+        };
+
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    executor.scheduleAtFixedRate(this::resync, 0, config.resyncPeriodSeconds, TimeUnit.SECONDS);
+    executor.scheduleAtFixedRate(runnable, 0, config.resyncPeriodSeconds, TimeUnit.SECONDS);
   }
 
   private void startWorkers() {
@@ -37,7 +53,13 @@ public abstract class Reconciler<T> {
       Runnable runnable =
           () -> {
             while (true) {
-              reconcile(pop());
+              CommonUtils.registeredBackgroundUtilsCount();
+              try {
+                reconcile(pop());
+              } catch (Exception ex) {
+                logger.error("Worker reconcile: ", ex);
+              }
+              CommonUtils.unregisteredBackgroundUtilsCount();
             }
           };
       executor.execute(runnable);
@@ -50,8 +72,8 @@ public abstract class Reconciler<T> {
       if (!elements.contains(element)) {
         elements.add(element);
         order.push(element);
-        notEmpty.signal();
       }
+      notEmpty.signal();
     } finally {
       lock.unlock();
     }

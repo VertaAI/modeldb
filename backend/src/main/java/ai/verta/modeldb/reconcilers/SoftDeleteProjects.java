@@ -16,11 +16,12 @@ import java.util.Set;
 
 public class SoftDeleteProjects extends Reconciler<String> {
   private static final Logger LOGGER = LogManager.getLogger(SoftDeleteProjects.class);
-  private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
   private final RoleService roleService;
 
   public SoftDeleteProjects(ReconcilerConfig config, RoleService roleService) {
-    super(config);
+    super(config, LOGGER);
     this.roleService = roleService;
   }
 
@@ -33,12 +34,17 @@ public class SoftDeleteProjects extends Reconciler<String> {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query deletedQuery = session.createQuery(queryString);
       deletedQuery.setParameter("deleted", true);
+      deletedQuery.setMaxResults(config.maxSync);
       deletedQuery.stream().forEach(id -> this.insert((String) id));
     }
+
+    LOGGER.debug("Projects to reconcile " + elements.toString());
   }
 
   @Override
   protected void reconcile(Set<String> ids) {
+    LOGGER.debug("Reconciling projects " + ids.toString());
+
     roleService.deleteEntityResourcesWithServiceUser(
         new ArrayList<>(ids), ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
 
