@@ -37,8 +37,6 @@ public class SoftDeleteProjects extends Reconciler<String> {
       deletedQuery.setMaxResults(config.maxSync);
       deletedQuery.stream().forEach(id -> this.insert((String) id));
     }
-
-    LOGGER.debug("Projects to reconcile " + elements.toString());
   }
 
   @Override
@@ -68,7 +66,7 @@ public class SoftDeleteProjects extends Reconciler<String> {
       deleteQuery.executeUpdate();
       transaction.commit();
     } catch (Exception ex) {
-      LOGGER.error("SoftDeleteProjects : reconcile : Exception: ", ex);
+      LOGGER.error("reconcile: ", ex);
     }
   }
 }
