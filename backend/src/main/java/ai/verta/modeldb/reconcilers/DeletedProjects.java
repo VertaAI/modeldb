@@ -24,4 +24,7 @@ public class DeletedProjects extends Reconciler<String> {
     Query projectDeleteQuery = session.createQuery(deleteProjectsQueryString);
     projectDeleteQuery.stream().forEach(id -> this.insert((String) id));
   }
+
+  @Override
+  protected void reconcile(String id) {}
 }
