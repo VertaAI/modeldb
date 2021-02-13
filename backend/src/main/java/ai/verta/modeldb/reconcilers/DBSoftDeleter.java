@@ -1,5 +1,6 @@
 package ai.verta.modeldb.reconcilers;
 
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -10,6 +11,7 @@ import java.util.Set;
 
 public abstract class DBSoftDeleter extends Reconciler<String> {
   private static final Logger LOGGER = LogManager.getLogger(SoftDeleteProjects.class);
+  private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
 
   protected DBSoftDeleter(ReconcilerConfig config) {
     super(config);
@@ -25,18 +27,16 @@ public abstract class DBSoftDeleter extends Reconciler<String> {
   public void resync() {
     String queryString = String.format("select id from %s where deleted=:deleted", selfTableName());
 
-    Session session;
-
-    Query deletedQuery = session.createQuery(queryString);
-    deletedQuery.setParameter("deleted", true);
-    deletedQuery.stream().forEach(id -> this.insert((String) id));
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      Query deletedQuery = session.createQuery(queryString);
+      deletedQuery.setParameter("deleted", true);
+      deletedQuery.stream().forEach(id -> this.insert((String) id));
+    }
   }
 
   @Override
   protected void reconcile(Set<String> ids) {
-    Session session;
-
-    try {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       deleteExternal(ids);
 
       for (String childTable : childrenTableName()) {
