@@ -16,6 +16,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -444,35 +445,68 @@ public class BasePathDatasetVersionMigration {
     CommitEntity commitEntity =
         commitDAO.saveCommitEntity(
             session, commit, rootSha, datasetVersion.getOwner(), repositoryEntity);
-    blobDAO.setBlobsAttributes(
-        session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList, true);
+    try {
+      blobDAO.setBlobsAttributes(
+          session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList, true);
+    } catch (StatusRuntimeException ex) {
+      if (ex.getStatus().getCode() == Status.ALREADY_EXISTS.getCode()) {
+        LOGGER.warn("skipping already exists: {}", ex.getMessage());
+      } else {
+        throw ex;
+      }
+    }
     String compositeId =
         VersioningUtils.getVersioningCompositeId(
             repositoryEntity.getId(), commitEntity.getCommit_hash(), location);
-    metadataDAO.addProperty(
-        session,
-        IdentificationType.newBuilder()
-            .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-            .setStringId(compositeId)
-            .build(),
-        "description",
-        datasetVersion.getDescription());
-    metadataDAO.addLabels(
-        session,
-        IdentificationType.newBuilder()
-            .setStringId(compositeId)
-            .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-            .build(),
-        datasetVersion.getTagsList());
+    try {
+      metadataDAO.addProperty(
+          session,
+          IdentificationType.newBuilder()
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+              .setStringId(compositeId)
+              .build(),
+          "description",
+          datasetVersion.getDescription());
+    } catch (StatusRuntimeException ex) {
+      if (ex.getStatus().getCode() == Status.ALREADY_EXISTS.getCode()) {
+        LOGGER.warn("skipping already exists: {}", ex.getMessage());
+      } else {
+        throw ex;
+      }
+    }
 
-    metadataDAO.addProperty(
-        session,
-        IdentificationType.newBuilder()
-            .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
-            .setStringId(compositeId)
-            .build(),
-        ModelDBConstants.VERSION,
-        String.valueOf(datasetVersion.getVersion()));
+    try {
+      metadataDAO.addLabels(
+          session,
+          IdentificationType.newBuilder()
+              .setStringId(compositeId)
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+              .build(),
+          datasetVersion.getTagsList());
+    } catch (StatusRuntimeException ex) {
+      if (ex.getStatus().getCode() == Status.ALREADY_EXISTS.getCode()) {
+        LOGGER.warn("skipping already exists: {}", ex.getMessage());
+      } else {
+        throw ex;
+      }
+    }
+
+    try {
+      metadataDAO.addProperty(
+          session,
+          IdentificationType.newBuilder()
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+              .setStringId(compositeId)
+              .build(),
+          ModelDBConstants.VERSION,
+          String.valueOf(datasetVersion.getVersion()));
+    } catch (StatusRuntimeException ex) {
+      if (ex.getStatus().getCode() == Status.ALREADY_EXISTS.getCode()) {
+        LOGGER.warn("skipping already exists: {}", ex.getMessage());
+      } else {
+        throw ex;
+      }
+    }
 
     saveBranch(
         session, commitEntity.getCommit_hash(), ModelDBConstants.MASTER_BRANCH, repositoryEntity);
