@@ -357,7 +357,8 @@ public class BasePathDatasetVersionMigration {
                   .map(BasePathDatasetVersionMigration::populateBasePathInComponentPath)
                   .collect(Collectors.toList());
           pathDatasetBlob =
-              pathDatasetBlob.toBuilder()
+              pathDatasetBlob
+                  .toBuilder()
                   .clearComponents()
                   .addAllComponents(convertedDatasetComponentBlobs)
                   .build();
@@ -369,13 +370,15 @@ public class BasePathDatasetVersionMigration {
               s3DatasetBlob.getComponentsList().stream()
                   .map(
                       s3DatasetComponentBlob ->
-                          s3DatasetComponentBlob.toBuilder()
+                          s3DatasetComponentBlob
+                              .toBuilder()
                               .setPath(
                                   populateBasePathInComponentPath(s3DatasetComponentBlob.getPath()))
                               .build())
                   .collect(Collectors.toList());
           s3DatasetBlob =
-              s3DatasetBlob.toBuilder()
+              s3DatasetBlob
+                  .toBuilder()
                   .clearComponents()
                   .addAllComponents(s3DatasetComponentBlobs)
                   .build();
