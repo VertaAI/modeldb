@@ -279,7 +279,19 @@ public class App implements ApplicationContextAware {
 
       serverBuilder.intercept(new ModelDBAuthInterceptor());
 
-      BasePathDatasetVersionMigration.run(authService, getInstance().roleService);
+      AuthService finalAuthService = authService;
+      Runnable runnable =
+          () -> {
+            try {
+              BasePathDatasetVersionMigration.run(finalAuthService, getInstance().roleService);
+            } catch (Exception ex) {
+              ex.printStackTrace();
+              initiateShutdown(0);
+              System.exit(0);
+            }
+          };
+      Thread thread = new Thread(runnable);
+      thread.start();
 
       Server server = serverBuilder.build();
       // --------------- Finish Initialize modelDB gRPC server --------------------------
