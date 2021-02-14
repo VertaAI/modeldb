@@ -3,12 +3,7 @@ package ai.verta.modeldb.versioning;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.DatasetPartInfo;
-import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBException;
-import ai.verta.modeldb.PathDatasetVersionInfo;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
 import ai.verta.modeldb.authservice.AuthService;
 import ai.verta.modeldb.authservice.RoleService;
@@ -18,12 +13,7 @@ import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
-import ai.verta.modeldb.entities.versioning.BranchEntity;
-import ai.verta.modeldb.entities.versioning.CommitEntity;
-import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
-import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.entities.versioning.RepositoryEnums;
-import ai.verta.modeldb.entities.versioning.TagsEntity;
+import ai.verta.modeldb.entities.versioning.*;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataDAO;
@@ -38,22 +28,15 @@ import com.google.protobuf.ProtocolStringList;
 import com.google.protobuf.Value;
 import io.grpc.Status;
 import io.grpc.Status.Code;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CommitDAORdbImpl implements CommitDAO {
 
@@ -119,8 +102,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             false,
             RepositoryEnums.RepositoryTypeEnum.DATASET);
     datasetVersion =
-        datasetVersion
-            .toBuilder()
+        datasetVersion.toBuilder()
             .setParentId(getBranchResponse.getCommit().getCommitSha())
             .build();
 
@@ -302,8 +284,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryEntity repositoryEntity)
       throws ModelDBException, NoSuchAlgorithmException {
     long timeCreated = new Date().getTime();
-    if (App.getInstance().getStoreClientCreationTimestamp() && commit.getDateCreated() != 0L) {
+    long timeUpdated = timeCreated;
+    if (commit.getDateCreated() != 0L) {
       timeCreated = commit.getDateCreated();
+    }
+    if (commit.getDateUpdated() != 0L) {
+      timeUpdated = commit.getDateUpdated();
     }
 
     Map<String, CommitEntity> parentCommitEntities = new HashMap<>();
@@ -327,7 +313,7 @@ public class CommitDAORdbImpl implements CommitDAO {
     Commit internalCommit =
         Commit.newBuilder()
             .setDateCreated(timeCreated)
-            .setDateUpdated(timeCreated)
+            .setDateUpdated(timeUpdated)
             .setAuthor(author)
             .setMessage(commit.getMessage())
             .setCommitSha(generateCommitSHA(rootSha, commit, timeCreated))

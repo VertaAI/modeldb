@@ -17,18 +17,14 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class VersioningUtils {
   private static final Logger LOGGER = LogManager.getLogger(VersioningUtils.class);
@@ -46,7 +42,7 @@ public class VersioningUtils {
    * @param repositoryId : id of the repository
    * @return
    */
-  static boolean commitRepositoryMappingExists(
+  public static boolean commitRepositoryMappingExists(
       Session session, String commitHash, Long repositoryId) {
     Query query = session.createQuery(COMMIT_BELONGS_TO_REPO_QUERY);
     query.setParameter("commitHash", commitHash);
