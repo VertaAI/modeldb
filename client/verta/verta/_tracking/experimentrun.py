@@ -43,6 +43,7 @@ from .. import _repository
 from .._repository import commit as commit_module
 from .. import deployment
 from .. import utils
+from ..environment import _Environment, Python
 
 
 class ExperimentRun(_DeployableEntity):
@@ -1768,13 +1769,21 @@ class ExperimentRun(_DeployableEntity):
         if self._conf.debug:
             print("[DEBUG] requirements are:")
             print(requirements)
-
+        python_env = Python(copy.copy(requirements))
         requirements = six.BytesIO(six.ensure_binary('\n'.join(requirements)))  # as file-like
         self._log_artifact("requirements.txt", requirements, _CommonCommonService.ArtifactTypeEnum.BLOB, 'txt', overwrite=overwrite)
+        try:
+            self.log_environment(python_env, overwrite=overwrite)
+        except ValueError as ve:
+            six.raise_from(ve, None)
+        except TypeError as te:
+            six.raise_from(te, None)
+        except requests.HTTPError as he:
+            pass # Note: HTTP errors are silently ignored for compatibility with older services
 
     def log_environment(self, env, overwrite=False):
         """
-        Logs an environment to this Experiment Run.
+        Logs a Python environment to this Experiment Run.
 
         Parameters
         ----------
@@ -1784,7 +1793,21 @@ class ExperimentRun(_DeployableEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
-        pass # TODO
+        if not isinstance(env, Python):
+            raise TypeError("`env` must be of type Python, not {}".format(type(env)))
+
+        if self.has_environment and not overwrite:
+            raise ValueError("environment already exists; consider setting overwrite=True")
+
+        msg = _ExperimentRunService.LogEnvironment(id=self.id, environment=env._as_proto())
+        data = _utils.proto_to_json(msg)
+        response = _utils.make_request("POST",
+                                       "{}://{}/api/v1/modeldb/experiment-run/logEnvironment".format(self._conn.scheme, self._conn.socket),
+                                       self._conn, json=data)
+        if not response.ok:
+            _utils.raise_for_http_error(response)
+        else:
+            self._clear_cache()
 
     def get_environment(self):
         """
@@ -1793,7 +1816,7 @@ class ExperimentRun(_DeployableEntity):
         Returns
         -------
         :class:`~verta.environment.Python`
-            Environment of this ModelVersion.
+            Environment of this ExperimentRun.
 
         """
         self._refresh_cache()
