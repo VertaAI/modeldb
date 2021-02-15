@@ -51,7 +51,8 @@ public class SoftDeleteExperiments extends Reconciler<String> {
       String experimentQueryString =
           String.format("from %s where id in (:ids)", ExperimentEntity.class.getSimpleName());
 
-      Query<ExperimentEntity> experimentDeleteQuery = session.createQuery(experimentQueryString, ExperimentEntity.class);
+      Query<ExperimentEntity> experimentDeleteQuery =
+          session.createQuery(experimentQueryString, ExperimentEntity.class);
       experimentDeleteQuery.setParameter("ids", ids);
       List<ExperimentEntity> experimentEntities = experimentDeleteQuery.list();
 
@@ -81,7 +82,8 @@ public class SoftDeleteExperiments extends Reconciler<String> {
       String deleteExperimentQueryString =
           String.format("FROM %s WHERE id IN (:ids)", ExperimentEntity.class.getSimpleName());
 
-      Query<ExperimentEntity> experimentDeleteQuery = session.createQuery(deleteExperimentQueryString, ExperimentEntity.class);
+      Query<ExperimentEntity> experimentDeleteQuery =
+          session.createQuery(deleteExperimentQueryString, ExperimentEntity.class);
       experimentDeleteQuery.setParameter("ids", ids);
       List<ExperimentEntity> experimentEntities = experimentDeleteQuery.list();
 
