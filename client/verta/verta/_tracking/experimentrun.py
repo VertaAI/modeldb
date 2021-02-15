@@ -60,6 +60,8 @@ class ExperimentRun(_DeployableEntity):
         ID of this Experiment Run.
     name : str
         Name of this Experiment Run.
+    has_environment : bool
+        Whether there is an environment associated with this Experiment Run.
 
     """
     def __init__(self, conn, conf, msg):
@@ -111,6 +113,11 @@ class ExperimentRun(_DeployableEntity):
     def name(self):
         self._refresh_cache()
         return self._msg.name
+
+    @property
+    def has_environment(self):
+        self._refresh_cache()
+        return self._msg.environment.HasField("python") or self._msg.environment.HasField("docker")
 
     @classmethod
     def _generate_default_name(cls):
@@ -1764,6 +1771,36 @@ class ExperimentRun(_DeployableEntity):
 
         requirements = six.BytesIO(six.ensure_binary('\n'.join(requirements)))  # as file-like
         self._log_artifact("requirements.txt", requirements, _CommonCommonService.ArtifactTypeEnum.BLOB, 'txt', overwrite=overwrite)
+
+    def log_environment(self, env, overwrite=False):
+        """
+        Logs an environment to this Experiment Run.
+
+        Parameters
+        ----------
+        env : :class:`~verta.environment.Python`
+            Environment to log.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
+
+        """
+        pass # TODO
+
+    def get_environment(self):
+        """
+        Gets the environment of this Experiment Run.
+
+        Returns
+        -------
+        :class:`~verta.environment.Python`
+            Environment of this ModelVersion.
+
+        """
+        self._refresh_cache()
+        if not self.has_environment:
+            raise RuntimeError("environment was not previously set.")
+
+        return Python._from_proto(self._msg)
 
     def log_modules(self, paths, search_path=None):
         """
