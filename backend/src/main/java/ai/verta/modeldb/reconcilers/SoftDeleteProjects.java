@@ -12,6 +12,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class SoftDeleteProjects extends Reconciler<String> {
@@ -47,6 +48,13 @@ public class SoftDeleteProjects extends Reconciler<String> {
         new ArrayList<>(ids), ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
 
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      String projectsQueryString =
+          String.format("from %s where id=:ids", ProjectEntity.class.getSimpleName());
+
+      Query projectDeleteQuery = session.createQuery(projectsQueryString);
+      projectDeleteQuery.setParameter("ids", ids);
+      List<ProjectEntity> projectEntities = projectDeleteQuery.list();
+
       Transaction transaction = session.beginTransaction();
       String updateDeletedChildren =
           String.format(
@@ -58,13 +66,12 @@ public class SoftDeleteProjects extends Reconciler<String> {
       updateDeletedChildrenQuery.executeUpdate();
       transaction.commit();
 
-      transaction = session.beginTransaction();
-      String delete =
-          String.format("DELETE FROM %s WHERE id IN (:ids)", ProjectEntity.class.getSimpleName());
-      Query deleteQuery = session.createQuery(delete);
-      deleteQuery.setParameter("ids", ids);
-      deleteQuery.executeUpdate();
-      transaction.commit();
+      // TODO: figure out if doing a single query to delete all projects
+      for (ProjectEntity projectEntity : projectEntities) {
+        transaction = session.beginTransaction();
+        session.delete(projectEntity);
+        transaction.commit();
+      }
     } catch (Exception ex) {
       LOGGER.error("reconcile: ", ex);
     }

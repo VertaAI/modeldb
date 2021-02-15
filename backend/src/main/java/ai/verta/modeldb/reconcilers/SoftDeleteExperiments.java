@@ -48,6 +48,13 @@ public class SoftDeleteExperiments extends Reconciler<String> {
     deleteRoleBindings(ids);
 
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      String experimentQueryString =
+          String.format("from %s where id=:ids", ExperimentEntity.class.getSimpleName());
+
+      Query experimentDeleteQuery = session.createQuery(experimentQueryString);
+      experimentDeleteQuery.setParameter("ids", ids);
+      List<ExperimentEntity> experimentEntities = experimentDeleteQuery.list();
+
       Transaction transaction = session.beginTransaction();
       String updateDeletedChildren =
           String.format(
@@ -59,14 +66,11 @@ public class SoftDeleteExperiments extends Reconciler<String> {
       updateDeletedChildrenQuery.executeUpdate();
       transaction.commit();
 
-      transaction = session.beginTransaction();
-      String delete =
-          String.format(
-              "DELETE FROM %s WHERE id IN (:ids)", ExperimentEntity.class.getSimpleName());
-      Query deleteQuery = session.createQuery(delete);
-      deleteQuery.setParameter("ids", ids);
-      deleteQuery.executeUpdate();
-      transaction.commit();
+      for (ExperimentEntity experimentEntity : experimentEntities) {
+        transaction = session.beginTransaction();
+        session.delete(experimentEntity);
+        transaction.commit();
+      }
     } catch (Exception ex) {
       LOGGER.error("reconcile: ", ex);
     }
