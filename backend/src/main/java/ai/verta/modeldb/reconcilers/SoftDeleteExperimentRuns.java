@@ -34,7 +34,7 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
             "select id from %s where deleted=:deleted", ExperimentRunEntity.class.getSimpleName());
 
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query deletedQuery = session.createQuery(queryString);
+      Query<String> deletedQuery = session.createQuery(queryString, String.class);
       deletedQuery.setParameter("deleted", true);
       deletedQuery.setMaxResults(config.maxSync);
       deletedQuery.stream().forEach(id -> this.insert((String) id));
@@ -49,9 +49,9 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
 
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String experimentRunQueryString =
-          String.format("from %s where id=:ids", ExperimentRunEntity.class.getSimpleName());
+          String.format("from %s where id in (:ids)", ExperimentRunEntity.class.getSimpleName());
 
-      Query experimentRunDeleteQuery = session.createQuery(experimentRunQueryString);
+      Query<ExperimentRunEntity> experimentRunDeleteQuery = session.createQuery(experimentRunQueryString, ExperimentRunEntity.class);
       experimentRunDeleteQuery.setParameter("ids", ids);
       List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
 
@@ -79,7 +79,7 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
       String deleteExperimentRunQueryString =
           String.format("FROM %s WHERE id IN (:ids)", ExperimentRunEntity.class.getSimpleName());
 
-      Query experimentRunDeleteQuery = session.createQuery(deleteExperimentRunQueryString);
+      Query<ExperimentRunEntity> experimentRunDeleteQuery = session.createQuery(deleteExperimentRunQueryString, ExperimentRunEntity.class);
       experimentRunDeleteQuery.setParameter("ids", ids);
       List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
 

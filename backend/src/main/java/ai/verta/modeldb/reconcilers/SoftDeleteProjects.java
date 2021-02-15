@@ -49,7 +49,7 @@ public class SoftDeleteProjects extends Reconciler<String> {
 
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String projectsQueryString =
-          String.format("from %s where id=:ids", ProjectEntity.class.getSimpleName());
+          String.format("from %s where id in (:ids)", ProjectEntity.class.getSimpleName());
 
       Query projectDeleteQuery = session.createQuery(projectsQueryString);
       projectDeleteQuery.setParameter("ids", ids);
