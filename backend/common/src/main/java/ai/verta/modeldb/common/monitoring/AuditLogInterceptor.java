@@ -19,7 +19,6 @@ public class AuditLogInterceptor implements ServerInterceptor {
 
   private static final Logger LOGGER = LogManager.getLogger(AuditLogInterceptor.class);
   public static final Context.Key<AtomicInteger> CALL_COUNT = Context.key("audit_count");
-  public static final AtomicInteger auditLogCount = new AtomicInteger(0);
   public static final String AUDIT_WAS_NOT_CALLED = "Audit was not called for method %s";
 
   private static final Counter failed_audit_logging =
@@ -47,7 +46,7 @@ public class AuditLogInterceptor implements ServerInterceptor {
       ServerCall<R, S> call, Metadata requestHeaders, ServerCallHandler<R, S> next) {
     String methodName = call.getMethodDescriptor().getFullMethodName();
 
-    Context context = Context.current().withValue(CALL_COUNT, auditLogCount);
+    Context context = Context.current().withValue(CALL_COUNT, new AtomicInteger(0));
     ServerCall<R, S> wrappedCall =
         new ForwardingServerCall.SimpleForwardingServerCall<R, S>(call) {
           @Override
