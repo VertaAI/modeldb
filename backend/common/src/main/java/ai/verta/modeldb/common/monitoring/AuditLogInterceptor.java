@@ -71,7 +71,11 @@ public class AuditLogInterceptor implements ServerInterceptor {
     return new ForwardingServerCallListener.SimpleForwardingServerCallListener<R>(delegate) {};
   }
 
-  public static void increaseAuditCount() {
+  public void increaseAuditCount() {
+    increaseAuditCountStatic();
+  }
+
+  public static void increaseAuditCountStatic() {
     CALL_COUNT.get().getAndIncrement();
   }
 }

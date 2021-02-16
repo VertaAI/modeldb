@@ -32,6 +32,6 @@ public class AuditLogLocalDAORdbImpl implements AuditLogLocalDAO {
 
   private void saveAuditLogs(Session session, List<AuditLogLocalEntity> auditLogEntities) {
     auditLogEntities.forEach(session::save);
-    AuditLogInterceptor.increaseAuditCount();
+    AuditLogInterceptor.increaseAuditCountStatic();
   }
 }
