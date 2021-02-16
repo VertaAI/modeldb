@@ -1,4 +1,4 @@
-package ai.verta.modeldb.monitoring;
+package ai.verta.modeldb.common.monitoring;
 
 import io.grpc.Context;
 import io.grpc.Contexts;
@@ -28,8 +28,11 @@ public class AuditLogInterceptor implements ServerInterceptor {
           .name("verta_backend_failed_audit_logging_total")
           .help("Total failed requests to logging audit on the UAC server.")
           .register();
+  private final boolean shouldQuitOnAuditMissing;
 
-  public AuditLogInterceptor() {}
+  public AuditLogInterceptor(boolean shouldQuitOnAuditMissing) {
+    this.shouldQuitOnAuditMissing = shouldQuitOnAuditMissing;
+  }
 
   /**
    * @param call: ServerCall
@@ -55,7 +58,9 @@ public class AuditLogInterceptor implements ServerInterceptor {
                 String message = String.format(AUDIT_WAS_NOT_CALLED, methodName);
                 LOGGER.error(message);
                 failed_audit_logging.labels(methodName).inc();
-                status = Status.INTERNAL.withDescription(message);
+                if (shouldQuitOnAuditMissing) {
+                  status = Status.INTERNAL.withDescription(message);
+                }
               }
             }
             LOGGER.trace("close");

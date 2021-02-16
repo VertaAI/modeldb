@@ -6,6 +6,7 @@ import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.authservice.AuthInterceptor;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.InvalidConfigException;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
@@ -18,7 +19,6 @@ import ai.verta.modeldb.health.HealthServiceImpl;
 import ai.verta.modeldb.health.HealthStatusManager;
 import ai.verta.modeldb.lineage.LineageServiceImpl;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.ProjectServiceImpl;
 import ai.verta.modeldb.telemetry.TelemetryCron;
@@ -215,7 +215,7 @@ public class App implements ApplicationContextAware {
       serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());
       serverBuilder.intercept(new AuthInterceptor());
-      serverBuilder.intercept(new AuditLogInterceptor());
+      serverBuilder.intercept(new AuditLogInterceptor(true));
 
       // Add APIs
       initializeBackendServices(serverBuilder, services, daos);
