@@ -294,6 +294,8 @@ class Client(object):
     def get_workspace(self):
         """
         Gets the active workspace for this client instance.
+        
+        .. versionadded:: 0.17.0
 
         The active workspace is determined by this order of precedence:
 
@@ -320,6 +322,8 @@ class Client(object):
     def set_workspace(self, workspace):
         """
         Sets the active workspace for this client instance.
+        
+        .. versionadded:: 0.17.0
 
         Parameters
         ----------
