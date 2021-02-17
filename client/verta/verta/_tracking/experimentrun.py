@@ -1245,8 +1245,8 @@ class ExperimentRun(_DeployableEntity):
             serialized_model, method, model_type = _artifact_utils.serialize_model(model)
         finally:
             _utils.THREAD_LOCALS.active_experiment_run = None
-        if method is None:
-            raise ValueError("will not be able to deploy model due to unknown serialization method")
+        # if method is None:
+        #     raise ValueError("will not be able to deploy model due to unknown serialization method")
         if extension is None:
             extension = _artifact_utils.ext_from_method(method)
         if self._conf.debug:
