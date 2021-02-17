@@ -37,6 +37,37 @@ Release Notes
      <>`__
 
 
+v0.17.0 (2021-02-16)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add client.set_workspace() and client.get_workspace()
+  <https://github.com/VertaAI/modeldb/pull/1916>`__
+- `enable new visibility values for newer backends
+  <https://github.com/VertaAI/modeldb/pull/1896>`__
+- `enable passing PySpark models to run.log_model()
+  <https://github.com/VertaAI/modeldb/pull/1935>`__
+- `add Path.with_spark()
+  <https://github.com/VertaAI/modeldb/pull/1941>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `for custom modules files, grant non-owners read access
+  <https://github.com/VertaAI/modeldb/pull/1939>`__
+- `remove "file:" prefix from path datasets
+  <https://github.com/VertaAI/modeldb/pull/1940>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `consolidate workspace helper methods into Connection
+  <https://github.com/VertaAI/modeldb/pull/1914>`__
+- `add Connection methods for personal and default workspace
+  <https://github.com/VertaAI/modeldb/pull/1915>`__
+- `prevent test teardowns from resulting in 403s
+  <https://github.com/VertaAI/modeldb/pull/1930>`__
+
+
 v0.16.5 (2021-01-26)
 --------------------
 
