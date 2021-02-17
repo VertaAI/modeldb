@@ -3,6 +3,9 @@
 Visibility
 ==========
 
+.. note::
+    .. versionadded:: 0.17.0
+
 .. autoclass:: verta.visibility.OrgCustom
     :members:
     :inherited-members:
