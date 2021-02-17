@@ -330,7 +330,9 @@ def serialize_model(model):
             model_type = "callable"
             bytestream, method = ensure_bytestream(model)
         else:
-            raise TypeError("cannot determine the type for model argument")
+            # raise TypeError("cannot determine the type for model argument")
+            model_type = method = "unknown"
+            bytestream = model
     return bytestream, method, model_type
 
 
