@@ -86,6 +86,11 @@ public class AuditLogInterceptor implements ServerInterceptor {
   }
 
   public static void increaseAuditCountStatic() {
-    CALL_COUNT.get().getAndIncrement();
+    AtomicInteger atomicInteger = CALL_COUNT.get();
+    if (atomicInteger == null) {
+      LOGGER.warn("Non grpc call to increaseAuditCount");
+    } else {
+      atomicInteger.getAndIncrement();
+    }
   }
 }
