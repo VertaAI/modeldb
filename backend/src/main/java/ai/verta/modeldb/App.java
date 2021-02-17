@@ -215,7 +215,7 @@ public class App implements ApplicationContextAware {
       serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());
       serverBuilder.intercept(new AuthInterceptor());
-      serverBuilder.intercept(new AuditLogInterceptor(true));
+      serverBuilder.intercept(new AuditLogInterceptor(config.grpcServer.quitOnAuditMissing));
 
       // Add APIs
       initializeBackendServices(serverBuilder, services, daos);

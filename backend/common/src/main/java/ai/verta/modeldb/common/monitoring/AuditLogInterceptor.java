@@ -20,6 +20,7 @@ public class AuditLogInterceptor implements ServerInterceptor {
   private static final Logger LOGGER = LogManager.getLogger(AuditLogInterceptor.class);
   public static final Context.Key<AtomicInteger> CALL_COUNT = Context.key("audit_count");
   public static final String AUDIT_WAS_NOT_CALLED = "Audit was not called for method %s";
+  public static final String AUDIT_WAS_CALLED_WRONG = "Audit was not called %d times for method %s";
 
   private static final Counter failed_audit_logging =
       Counter.build()
@@ -53,8 +54,14 @@ public class AuditLogInterceptor implements ServerInterceptor {
           public void close(Status status, Metadata trailers) {
             if (status.getCode() == Status.Code.OK) {
               AtomicInteger getCallCount = CALL_COUNT.get(context);
-              if (getCallCount.get() == 0) {
-                String message = String.format(AUDIT_WAS_NOT_CALLED, methodName);
+              int callCount = getCallCount.get();
+              if (callCount != 1) {
+                final String message;
+                if (callCount == 0) {
+                  message = String.format(AUDIT_WAS_NOT_CALLED, methodName);
+                } else {
+                  message = String.format(AUDIT_WAS_CALLED_WRONG, callCount, methodName);
+                }
                 LOGGER.error(message);
                 failed_audit_logging.labels(methodName).inc();
                 if (shouldQuitOnAuditMissing) {

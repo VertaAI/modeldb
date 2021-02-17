@@ -80,7 +80,7 @@ public class TestsInit {
 
     App.initializeBackendServices(serverBuilder, services, daos);
     serverBuilder.intercept(new AuthInterceptor());
-    serverBuilder.intercept(new AuditLogInterceptor(false));
+    serverBuilder.intercept(new AuditLogInterceptor(true));
 
     if (config.test != null) {
       authClientInterceptor = new AuthClientInterceptor(config.test);
