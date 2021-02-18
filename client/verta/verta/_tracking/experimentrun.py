@@ -1918,7 +1918,8 @@ class ExperimentRun(_DeployableEntity):
                                            self._conn.scheme, self._conn.socket),
                                        self._conn, json=data)
         if response.ok:
-            self._clear_cache()
+            # self._refresh_cache()
+            self._fetch_with_no_cache()
         else:
             _utils.raise_for_http_error(response)
 
