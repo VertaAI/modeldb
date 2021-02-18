@@ -455,6 +455,31 @@ class TestModels:
             zipf.extractall(spark_model_dir)
         assert LogisticRegressionModel.load(spark_model_dir).params == model.params
 
+class TestArbitraryModels:
+    def test_arbitrary_file(self, experiment_run, random_data):
+        with tempfile.TemporaryFile() as f:
+            f.write(random_data)
+            f.seek(0)
+
+            experiment_run.log_model(f, custom_modules=[])
+
+        assert experiment_run.get_model().read() == random_data
+
+    def test_arbitrary_directory(self, experiment_run, dir_and_files):
+        dirpath, filepaths = dir_and_files
+
+        experiment_run.log_model(dirpath, custom_modules=[])
+
+        with zipfile.ZipFile(experiment_run.get_model(), 'r') as zipf:
+            assert set(zipf.namelist()) == filepaths
+
+    def test_arbitrary_object(self, experiment_run):
+        model = {'a': 1}
+
+        experiment_run.log_model(model, custom_modules=[])
+
+        assert experiment_run.get_model().__dict__ == model.__dict__
+
 
 class TestImages:
     @staticmethod
