@@ -3,6 +3,7 @@
 import os
 import shutil
 import tempfile
+import zipfile
 
 from . import _file_utils
 
@@ -49,8 +50,8 @@ def download_file(response, filepath, overwrite_ok=False):
     filepath : str
         Path to download `response`'s contents to.
     overwrite_ok : bool, default False
-        Whether to download to `filepath`-as-passed, even if that file already exists. If
-        ``False``, `filepath` will be changed to avoid an overwrite.
+        Whether to download to `filepath`-as-passed, even if that file already
+        exists. If ``False``, `filepath` will be changed to avoid an overwrite.
 
     Returns
     -------
@@ -58,13 +59,13 @@ def download_file(response, filepath, overwrite_ok=False):
         Path where `response`'s contents were downloaded to.
 
     """
-    if not overwrite_ok:
-        # prevent overwrite in case `filepath` was taken during download
-        filepath = _file_utils.without_collision(filepath)
-
-    # move written contents to `filepath`
     temp_filepath = download_response(response)
     try:
+        if not overwrite_ok:
+            # prevent overwrite in case `filepath` was taken during download
+            filepath = _file_utils.without_collision(filepath)
+
+        # move request contents to `filepath`
         shutil.move(temp_filepath, filepath)
     except Exception as e:
         os.remove(temp_filepath.name)
@@ -72,3 +73,41 @@ def download_file(response, filepath, overwrite_ok=False):
     print("download complete; file written to {}".format(filepath))
 
     return filepath
+
+
+def download_zipped_dir(response, dirpath, overwrite_ok=False):
+    """
+    Downloads and unzips the contents of `response` into `dirpath`.
+
+    Parameters
+    ----------
+    response : :class:`requests.Response`
+        HTTP response. May or may not be streamed.
+    dirpath : str
+        Path to download and unzip `response`'s contents into.
+    overwrite_ok : bool, default False
+        Whether to extract into `dirpath`-as-passed, even if that directory
+        already exists. If ``False``, `dirpath` will be changed to avoid an
+        overwrite.
+
+    Returns
+    -------
+    dirpath : str
+        Path where `response`'s contents were unzipped into.
+
+    """
+    # move written contents to `dirpath`
+    temp_filepath = download_response(response)
+    try:
+        if not overwrite_ok:
+            # prevent overwrite in case `dirpath` was taken during download
+            dirpath = _file_utils.without_collision(dirpath)
+
+        # extract request contents to `dirpath`
+        with zipfile.ZipFile(temp_filepath, 'r') as zipf:
+            zipf.extractall(dirpath)
+    finally:
+        os.remove(temp_filepath.name)
+    print("download complete; directory extracted to {}".format(dirpath))
+
+    return dirpath
