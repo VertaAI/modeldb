@@ -1581,6 +1581,7 @@ class ExperimentRun(_DeployableEntity):
 
                         with zipfile.ZipFile(tempf, 'r') as zipf:
                             zipf.extractall(download_to_path)
+                    print("download complete; directory extracted to {}".format(download_to_path))
                 else:
                     # user-specified filepath, so overwrite
                     _request_utils.download(response, download_to_path, overwrite_ok=True)
