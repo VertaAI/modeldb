@@ -6,6 +6,7 @@ from six.moves import filterfalse
 import datetime
 import itertools
 import os
+import pickle
 import random
 import shutil
 import string
@@ -268,6 +269,22 @@ def dir_and_files(strs, tmp_path):
         p.touch()
 
     return str(tmp_path), filepaths
+
+
+@pytest.fixture
+def random_data():
+    """
+    Returns random bytes that cannot be unpickled,
+    which is sometimes the case by chance.
+
+    """
+    while True:
+        data = os.urandom(2 ** 16)
+        bytestream = six.BytesIO(data)
+        try:
+            pickle.load(bytestream)
+        except:
+            return data
 
 
 @pytest.fixture
