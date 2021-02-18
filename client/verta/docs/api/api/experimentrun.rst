@@ -81,6 +81,7 @@ General
 .. automethod:: ExperimentRun.log_artifact_path
 .. automethod:: ExperimentRun.get_artifact
 .. automethod:: ExperimentRun.download_artifact
+.. automethod:: ExperimentRun.get_environment
 
 Images
 ^^^^^^
@@ -117,6 +118,7 @@ Logging
 .. automethod:: ExperimentRun.log_model
 .. automethod:: ExperimentRun.get_model
 .. automethod:: ExperimentRun.log_requirements
+.. automethod:: ExperimentRun.log_environment
 .. automethod:: ExperimentRun.log_setup_script
 .. automethod:: ExperimentRun.log_training_data
 .. automethod:: ExperimentRun.fetch_artifacts
