@@ -28,13 +28,16 @@ def download_response(response, chunk_size=32*(10**6)):
         Path to temporary file where `responsne`'s contents were downloaded to.
 
     """
-    with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
-        try:
+    tempf = None
+    try:
+        with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 tempf.write(chunk)
-        except Exception as e:
+    except Exception as e:
+        # delete partially-downloaded file
+        if tempf is not None and os.path.isfile(tempf.name):
             os.remove(tempf.name)
-            raise e
+        raise e
 
     return tempf.name
 
