@@ -478,7 +478,7 @@ class TestArbitraryModels:
 
         experiment_run.log_model(model, custom_modules=[])
 
-        assert experiment_run.get_model().__dict__ == model.__dict__
+        assert experiment_run.get_model() == model
 
 
 class TestImages:
