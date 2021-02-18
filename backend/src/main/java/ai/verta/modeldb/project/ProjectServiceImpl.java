@@ -62,6 +62,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum.Service;
@@ -647,6 +648,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.PROJECT);
       List<String> deletedProjectIds =
           projectDAO.deleteProjects(Collections.singletonList(request.getId()));
       DeleteProject.Response response =
@@ -658,7 +661,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           Collections.singletonList(request.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
-          authService.getWorkspaceIdFromUserInfo(userInfo));
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1354,16 +1357,23 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw new InvalidArgumentException("Project IDs not found in DeleteProjects request");
       }
 
+      List<GetResourcesResponseItem> responseItems =
+          roleService.getResourceItems(
+              null, new HashSet<>(request.getIdsList()), ModelDBServiceResourceTypes.PROJECT);
       List<String> deletedProjectIds = projectDAO.deleteProjects(request.getIdsList());
       DeleteProjects.Response response =
           DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
+      Long workspaceId =
+          responseItems.stream().findFirst().isPresent()
+              ? responseItems.stream().findFirst().get().getWorkspaceId()
+              : null;
       saveAuditLogs(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
           deletedProjectIds,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()));
+          workspaceId);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
