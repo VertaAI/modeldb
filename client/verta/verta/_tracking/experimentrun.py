@@ -1574,17 +1574,10 @@ class ExperimentRun(_DeployableEntity):
                 _utils.raise_for_http_error(response)
 
                 if artifact.filename_extension == "dir.zip":  # verta-created ZIP
-                    with tempfile.NamedTemporaryFile('w+b', delete=False) as tempf:
-                        for chunk in response.iter_content(chunk_size=32*(10**6)):
-                            tempf.write(chunk)
-                        tempf.seek(0)
-
-                        with zipfile.ZipFile(tempf, 'r') as zipf:
-                            zipf.extractall(download_to_path)
-                    print("download complete; directory extracted to {}".format(download_to_path))
+                    downloader = _request_utils.download_zipped_dir
                 else:
-                    # user-specified filepath, so overwrite
-                    _request_utils.download_file(response, download_to_path, overwrite_ok=True)
+                    downloader = _request_utils.download_file
+                downloader(response, download_to_path, overwrite_ok=True)
 
         return download_to_path
 
