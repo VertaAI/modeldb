@@ -1550,10 +1550,6 @@ class ExperimentRun(_DeployableEntity):
         if artifact is None:
             raise KeyError("no artifact found with key {}".format(key))
 
-        # TODO: unpack dirs logged as artifacts
-        #     But we can't distinguish if a ZIP artifact is a directory we've compressed, or if it
-        #     was a ZIP file the user already had.
-
         # create parent dirs
         pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
         # TODO: clean up empty parent dirs if something later fails
@@ -1577,8 +1573,17 @@ class ExperimentRun(_DeployableEntity):
             with _utils.make_request("GET", url, self._conn, stream=True) as response:
                 _utils.raise_for_http_error(response)
 
-                # user-specified filepath, so overwrite
-                _request_utils.download(response, download_to_path, overwrite_ok=True)
+                if artifact.filename_extension == "dir.zip":  # verta-created ZIP
+                    with tempfile.NamedTemporaryFile('w+b', delete=False) as tempf:
+                        for chunk in response.iter_content(chunk_size=32*(10**6)):
+                            tempf.write(chunk)
+                        tempf.seek(0)
+
+                        with zipfile.ZipFile(tempf, 'r') as zipf:
+                            zipf.extractall(download_to_path)
+                else:
+                    # user-specified filepath, so overwrite
+                    _request_utils.download(response, download_to_path, overwrite_ok=True)
 
         return download_to_path
 
