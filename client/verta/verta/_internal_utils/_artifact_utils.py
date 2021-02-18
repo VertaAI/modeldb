@@ -484,7 +484,7 @@ def zip_dir(dirpath):
 
     os.path.expanduser(dirpath)
 
-    tempf = tempfile.NamedTemporaryFile(suffix=".zip")
+    tempf = tempfile.NamedTemporaryFile(suffix=".dir.zip")
     with zipfile.ZipFile(tempf, 'w') as zipf:
         for root, _, files in os.walk(dirpath):
             for filename in files:
