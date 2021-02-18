@@ -1584,7 +1584,7 @@ class ExperimentRun(_DeployableEntity):
                     print("download complete; directory extracted to {}".format(download_to_path))
                 else:
                     # user-specified filepath, so overwrite
-                    _request_utils.download(response, download_to_path, overwrite_ok=True)
+                    _request_utils.download_file(response, download_to_path, overwrite_ok=True)
 
         return download_to_path
 
@@ -2072,7 +2072,7 @@ class ExperimentRun(_DeployableEntity):
                 else:
                     raise e
 
-            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            downloaded_to_path = _request_utils.download_file(response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 
     def download_docker_context(self, download_to_path, self_contained=False):
@@ -2114,7 +2114,7 @@ class ExperimentRun(_DeployableEntity):
                 else:
                     raise e
 
-            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            downloaded_to_path = _request_utils.download_file(response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 
     def log_commit(self, commit, key_paths=None):

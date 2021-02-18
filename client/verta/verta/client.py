@@ -294,7 +294,7 @@ class Client(object):
     def get_workspace(self):
         """
         Gets the active workspace for this client instance.
-        
+
         .. versionadded:: 0.17.0
 
         The active workspace is determined by this order of precedence:
@@ -322,7 +322,7 @@ class Client(object):
     def set_workspace(self, workspace):
         """
         Sets the active workspace for this client instance.
-        
+
         .. versionadded:: 0.17.0
 
         Parameters
@@ -1253,7 +1253,7 @@ class Client(object):
         with _utils.make_request("POST", endpoint, self._conn, json=data, stream=True) as response:
             _utils.raise_for_http_error(response)
 
-            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            downloaded_to_path = _request_utils.download_file(response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 
     def get_or_create_dataset(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, visibility=None, id=None):
