@@ -25,7 +25,7 @@ def download_response(response, chunk_size=32*(10**6)):
     Returns
     -------
     filepath : str
-        Path to temporary file where `responsne`'s contents were downloaded to.
+        Path to temporary file where `response`'s contents were downloaded to.
 
     """
     tempf = None
