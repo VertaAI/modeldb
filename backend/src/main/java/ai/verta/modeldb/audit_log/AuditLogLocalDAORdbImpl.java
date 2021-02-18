@@ -1,7 +1,7 @@
 package ai.verta.modeldb.audit_log;
 
+import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
-import ai.verta.modeldb.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.List;
@@ -32,6 +32,6 @@ public class AuditLogLocalDAORdbImpl implements AuditLogLocalDAO {
 
   private void saveAuditLogs(Session session, List<AuditLogLocalEntity> auditLogEntities) {
     auditLogEntities.forEach(session::save);
-    AuditLogInterceptor.increaseAuditCount();
+    AuditLogInterceptor.increaseAuditCountStatic();
   }
 }
