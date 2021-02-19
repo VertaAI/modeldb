@@ -31,6 +31,7 @@ message KeyValue {
     *   For enums, the default value is the first defined enum value, which must be 0.
     */
     ValueTypeEnum.ValueType value_type = 3;
+    string udf_type = 4; // If value is not present then it is optional
 }
 
 message ValueTypeEnum {
