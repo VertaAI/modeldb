@@ -134,3 +134,8 @@ class TestLogRequirements:
             "requirements.txt").read().decode()
         reqs = set(req.split('==')[0].strip() for req in reqs_txt.splitlines())
         assert set(self.VALID_REQS) == reqs
+
+    def test_implicit_log_environment(self, experiment_run):
+        assert not experiment_run.has_environment
+        experiment_run.log_requirements(self.VALID_REQS)
+        assert experiment_run.has_environment
