@@ -1912,11 +1912,9 @@ class ExperimentRun(_DeployableEntity):
         # ai.verta.modeldb.versioning.Blob, not ai.verta.modeldb.versioning.EnvironmentBlob
         msg = _ExperimentRunService.LogEnvironment(
             id=self.id, environment=env._as_proto().environment)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("POST",
-                                       "{}://{}/api/v1/modeldb/experiment-run/logEnvironment".format(
-                                           self._conn.scheme, self._conn.socket),
-                                       self._conn, json=data)
+        response = self._conn.make_proto_request(
+            "POST", "/api/v1/modeldb/experiment-run/logEnvironment", body=msg,
+        )
         if response.ok:
             # self._refresh_cache()
             self._fetch_with_no_cache()
