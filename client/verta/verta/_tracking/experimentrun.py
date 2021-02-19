@@ -1573,7 +1573,7 @@ class ExperimentRun(_DeployableEntity):
             with _utils.make_request("GET", url, self._conn, stream=True) as response:
                 _utils.raise_for_http_error(response)
 
-                if artifact.filename_extension == "dir.zip":  # verta-created ZIP
+                if artifact.filename_extension == _artifact_utils.ZIP_EXTENSION:  # verta-created ZIP
                     downloader = _request_utils.download_zipped_dir
                 else:
                     downloader = _request_utils.download_file
