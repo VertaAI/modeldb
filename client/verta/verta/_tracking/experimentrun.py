@@ -1933,7 +1933,7 @@ class ExperimentRun(_DeployableEntity):
         """
         self._refresh_cache()
         if not self.has_environment:
-            raise RuntimeError("environment was not previously set.")
+            raise RuntimeError("environment was not previously set")
 
         return Python._from_proto(self._msg)
 
