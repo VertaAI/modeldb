@@ -553,7 +553,7 @@ Bug Fixes
   <https://github.com/VertaAI/modeldb/pull/631>`__
 - `inject verta and cloudpickle into Python environment Blobs
   <https://github.com/VertaAI/modeldb/pull/644>`__
-- `blacklist deployment artifact keys
+- `blocklist deployment artifact keys
   <https://github.com/VertaAI/modeldb/pull/648>`__
 
 Internal Changes
