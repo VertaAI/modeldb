@@ -226,7 +226,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       GetResourcesResponseItem entityResource =
-              roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.DATASET);
+          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.DATASET);
       deleteRepositoriesByDatasetIds(Collections.singletonList(request.getId()));
       DeleteDataset.Response response = DeleteDataset.Response.newBuilder().setStatus(true).build();
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
@@ -699,33 +699,33 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       Map<String, Long> workspaceIdByDatasetId =
-              request.getIdsList().stream()
-                      .collect(
-                              Collectors.toMap(
-                                      id -> id,
-                                      id ->
-                                              roleService
-                                                      .getEntityResource(id, ModelDBServiceResourceTypes.DATASET)
-                                                      .getWorkspaceId()));
+          request.getIdsList().stream()
+              .collect(
+                  Collectors.toMap(
+                      id -> id,
+                      id ->
+                          roleService
+                              .getEntityResource(id, ModelDBServiceResourceTypes.DATASET)
+                              .getWorkspaceId()));
       deleteRepositoriesByDatasetIds(request.getIdsList());
       DeleteDatasets.Response response =
           DeleteDatasets.Response.newBuilder().setStatus(true).build();
       List<AuditLogLocalEntity> auditLogLocalEntities =
-              workspaceIdByDatasetId.entrySet().stream()
-                      .map(
-                              entry ->
-                                      new AuditLogLocalEntity(
-                                              SERVICE_NAME,
-                                              authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-                                              ModelDBServiceActions.DELETE,
-                                              entry.getKey(),
-                                              ModelDBServiceResourceTypes.DATASET,
-                                              Service.MODELDB_SERVICE,
-                                              MonitoringInterceptor.METHOD_NAME.get(),
-                                              ModelDBUtils.getStringFromProtoObjectSilent(request),
-                                              ModelDBUtils.getStringFromProtoObjectSilent(response),
-                                              entry.getValue()))
-                      .collect(Collectors.toList());
+          workspaceIdByDatasetId.entrySet().stream()
+              .map(
+                  entry ->
+                      new AuditLogLocalEntity(
+                          SERVICE_NAME,
+                          authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                          ModelDBServiceActions.DELETE,
+                          entry.getKey(),
+                          ModelDBServiceResourceTypes.DATASET,
+                          Service.MODELDB_SERVICE,
+                          MonitoringInterceptor.METHOD_NAME.get(),
+                          ModelDBUtils.getStringFromProtoObjectSilent(request),
+                          ModelDBUtils.getStringFromProtoObjectSilent(response),
+                          entry.getValue()))
+              .collect(Collectors.toList());
       if (!auditLogLocalEntities.isEmpty()) {
         auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
       }
