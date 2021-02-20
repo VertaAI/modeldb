@@ -24,6 +24,7 @@ import ai.verta.modeldb.versioning.blob.visitors.Validator;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UserInfo;
+import com.google.protobuf.Message;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.Collections;
@@ -104,6 +105,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       }
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       Response response = repositoryDAO.listRepositories(request, userInfo);
+
+      saveAuditList(request, response.getRepositoriesList(), response);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -118,6 +122,13 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       StreamObserver<GetRepositoryRequest.Response> responseObserver) {
     try {
       GetRepositoryRequest.Response response = repositoryDAO.getRepository(request);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(response.getRepository().getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          response.getRepository().getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -242,11 +253,23 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void listCommits(
       ListCommitsRequest request, StreamObserver<ListCommitsRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       ListCommitsRequest.Response response =
           commitDAO.listCommits(
               request,
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               false);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -259,11 +282,25 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void getCommit(
       GetCommitRequest request, StreamObserver<GetCommitRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       Commit commit =
           commitDAO.getCommit(
               request.getCommitSha(),
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()));
-      responseObserver.onNext(GetCommitRequest.Response.newBuilder().setCommit(commit).build());
+      GetCommitRequest.Response response =
+          GetCommitRequest.Response.newBuilder().setCommit(commit).build();
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -288,6 +325,11 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       if (request.getCommit().getMessage().isEmpty()) {
         throw new ModelDBException("Commit message should not be empty", Code.INVALID_ARGUMENT);
       }
+      Repository repository1 =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
 
       List<BlobContainer> blobContainers;
       final RepositoryFunction repositoryFunction =
@@ -316,6 +358,13 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                   blobDAO.setBlobsAttributes(session, repoId, commitHash, blobContainers, true),
               repositoryFunction);
 
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(String.valueOf(repository1.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository1.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -352,11 +401,24 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void deleteCommit(
       DeleteCommitRequest request, StreamObserver<DeleteCommitRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       commitDAO.deleteCommits(
           request.getRepositoryId(),
           Collections.singletonList(request.getCommitSha()),
           repositoryDAO);
-      responseObserver.onNext(DeleteCommitRequest.Response.newBuilder().build());
+      DeleteCommitRequest.Response response = DeleteCommitRequest.Response.newBuilder().build();
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -373,11 +435,23 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
       }
 
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       ListCommitBlobsRequest.Response response =
           blobDAO.getCommitBlobsList(
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               request.getCommitSha(),
               request.getLocationPrefixList());
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -395,11 +469,23 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
       }
 
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       GetCommitComponentRequest.Response response =
           blobDAO.getCommitComponent(
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               request.getCommitSha(),
               request.getLocationList());
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -413,8 +499,20 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ComputeRepositoryDiffRequest request,
       StreamObserver<ComputeRepositoryDiffRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       ComputeRepositoryDiffRequest.Response response =
           blobDAO.computeRepositoryDiff(repositoryDAO, request);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -429,8 +527,20 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       StreamObserver<ai.verta.modeldb.versioning.MergeRepositoryCommitsRequest.Response>
           responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       MergeRepositoryCommitsRequest.Response mergeResponse =
           blobDAO.mergeCommit(repositoryDAO, request);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(mergeResponse),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(mergeResponse);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -444,8 +554,20 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       RevertRepositoryCommitsRequest request,
       StreamObserver<RevertRepositoryCommitsRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       RevertRepositoryCommitsRequest.Response mergeResponse =
           blobDAO.revertCommit(repositoryDAO, request);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(mergeResponse),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(mergeResponse);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -458,7 +580,19 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void listBranches(
       ListBranchesRequest request, StreamObserver<ListBranchesRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       ListBranchesRequest.Response response = repositoryDAO.listBranches(request);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -471,8 +605,20 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void getBranch(
       GetBranchRequest request, StreamObserver<GetBranchRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       GetBranchRequest.Response response =
           repositoryDAO.getBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -485,8 +631,20 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void setBranch(
       SetBranchRequest request, StreamObserver<SetBranchRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       SetBranchRequest.Response response =
           repositoryDAO.setBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -503,7 +661,19 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         throw new ModelDBException(
             "Branch not found in the DeleteBranchRequest", Code.INVALID_ARGUMENT);
       }
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       DeleteBranchRequest.Response response = repositoryDAO.deleteBranch(request);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -517,7 +687,19 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ListCommitsLogRequest request,
       StreamObserver<ListCommitsLogRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       ListCommitsLogRequest.Response response = repositoryDAO.listCommitsLog(request);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -530,7 +712,19 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void listTags(
       ListTagsRequest request, StreamObserver<ListTagsRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       ListTagsRequest.Response response = repositoryDAO.listTags(request);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -542,7 +736,19 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void getTag(
       GetTagRequest request, StreamObserver<GetTagRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       GetTagRequest.Response response = repositoryDAO.getTag(request);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -554,7 +760,19 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void setTag(
       SetTagRequest request, StreamObserver<SetTagRequest.Response> responseObserver) {
     try {
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       SetTagRequest.Response response = repositoryDAO.setTag(request);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -569,7 +787,19 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       if (request.getTag().isEmpty()) {
         throw new ModelDBException("Tag not found in the DeleteTagRequest", Code.INVALID_ARGUMENT);
       }
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
       DeleteTagRequest.Response response = repositoryDAO.deleteTag(request);
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -583,6 +813,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       FindRepositories request, StreamObserver<FindRepositories.Response> responseObserver) {
     try {
       FindRepositories.Response response = repositoryDAO.findRepositories(request);
+      saveAuditList(request, response.getRepositoriesList(), response);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -596,12 +827,39 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       FindRepositoriesBlobs request,
       StreamObserver<FindRepositoriesBlobs.Response> responseObserver) {
     try {
-      FindRepositoriesBlobs.Response response = blobDAO.findRepositoriesBlobs(commitDAO, request);
+      List<Repository> repositories = new LinkedList<>();
+      FindRepositoriesBlobs.Response response =
+          blobDAO.findRepositoriesBlobs(commitDAO, request, repositories);
+      saveAuditList(request, repositories, response);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, FindRepositoriesBlobs.Response.getDefaultInstance());
+    }
+  }
+
+  private void saveAuditList(Message request, List<Repository> repositories, Message response) {
+    String vertaIdFromUserInfo =
+        authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo());
+    List<AuditLogLocalEntity> auditLogLocalEntities =
+        repositories.stream()
+            .map(
+                repository ->
+                    new AuditLogLocalEntity(
+                        SERVICE_NAME,
+                        vertaIdFromUserInfo,
+                        ModelDBServiceActions.READ,
+                        String.valueOf(repository.getId()),
+                        ModelDBServiceResourceTypes.DATASET,
+                        ServiceEnum.Service.MODELDB_SERVICE,
+                        MonitoringInterceptor.METHOD_NAME.get(),
+                        ModelDBUtils.getStringFromProtoObjectSilent(request),
+                        ModelDBUtils.getStringFromProtoObjectSilent(response),
+                        Long.valueOf(repository.getWorkspaceId())))
+            .collect(Collectors.toList());
+    if (!auditLogLocalEntities.isEmpty()) {
+      auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
     }
   }
 
@@ -620,6 +878,18 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
               request);
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -684,6 +954,18 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               request.getLocationList(),
               request.getPathDatasetComponentBlobPath(),
               request.getArtifactPart());
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -719,6 +1001,18 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
               request.getLocationList(),
               request.getPathDatasetComponentBlobPath());
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -761,6 +1055,18 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               request.getLocationList(),
               request.getPathDatasetComponentBlobPath(),
               artifactStoreDAO::commitMultipart);
+      Repository repository =
+          repositoryDAO
+              .getRepository(
+                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
+              .getRepository();
+      saveAuditLogs(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonList(String.valueOf(repository.getId())),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
