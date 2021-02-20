@@ -722,8 +722,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                                               ModelDBServiceResourceTypes.DATASET,
                                               Service.MODELDB_SERVICE,
                                               MonitoringInterceptor.METHOD_NAME.get(),
-                                              ModelDBUtils.getStringFromProtoObjectWithoutException(request),
-                                              ModelDBUtils.getStringFromProtoObjectWithoutException(response),
+                                              ModelDBUtils.getStringFromProtoObjectSilent(request),
+                                              ModelDBUtils.getStringFromProtoObjectSilent(response),
                                               entry.getValue()))
                       .collect(Collectors.toList());
       if (!auditLogLocalEntities.isEmpty()) {

@@ -87,7 +87,7 @@ public class ModelDBUtils {
     return JsonFormat.printer().preservingProtoFieldNames().print(object);
   }
 
-  public static String getStringFromProtoObjectWithoutException(MessageOrBuilder object) {
+  public static String getStringFromProtoObjectSilent(MessageOrBuilder object) {
     try {
       return JsonFormat.printer().preservingProtoFieldNames().print(object);
     } catch (InvalidProtocolBufferException e) {
