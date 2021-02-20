@@ -87,6 +87,14 @@ public class ModelDBUtils {
     return JsonFormat.printer().preservingProtoFieldNames().print(object);
   }
 
+  public static String getStringFromProtoObjectWithoutException(MessageOrBuilder object) {
+    try {
+      return JsonFormat.printer().preservingProtoFieldNames().print(object);
+    } catch (InvalidProtocolBufferException e) {
+        throw new ModelDBException(e);
+    }
+  }
+
   public static Message.Builder getProtoObjectFromString(String jsonString, Message.Builder builder)
       throws InvalidProtocolBufferException {
     JsonFormat.parser().merge(jsonString, builder);
