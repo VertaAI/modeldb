@@ -325,13 +325,11 @@ def serialize_model(model):
     else:
         if hasattr(model, 'predict'):
             model_type = "custom"
-            bytestream, method = ensure_bytestream(model)
         elif callable(model):
             model_type = "callable"
-            bytestream, method = ensure_bytestream(model)
         else:
-            model_type = method = None
-            bytestream = model
+            model_type = None
+        bytestream, method = ensure_bytestream(model)
     return bytestream, method, model_type
 
 
