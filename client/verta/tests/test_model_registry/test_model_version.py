@@ -8,6 +8,7 @@ import zipfile
 import glob
 import shutil
 import sys
+import tempfile
 import json
 
 import cloudpickle
@@ -562,3 +563,30 @@ class TestDeployability:
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
         assert val == endpoint.get_deployed_model().predict(val)
+
+
+class TestArbitraryModels:
+    """Analogous to test_artifacts.TestArbitraryModels."""
+    def test_arbitrary_file(self, model_version, random_data):
+        with tempfile.TemporaryFile() as f:
+            f.write(random_data)
+            f.seek(0)
+
+            model_version.log_model(f, custom_modules=[])
+
+        assert model_version.get_model().read() == random_data
+
+    def test_arbitrary_directory(self, model_version, dir_and_files):
+        dirpath, filepaths = dir_and_files
+
+        model_version.log_model(dirpath, custom_modules=[])
+
+        with zipfile.ZipFile(model_version.get_model(), 'r') as zipf:
+            assert set(zipf.namelist()) == filepaths
+
+    def test_arbitrary_object(self, model_version):
+        model = {'a': 1}
+
+        model_version.log_model(model, custom_modules=[])
+
+        assert model_version.get_model() == model
