@@ -2065,15 +2065,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             "ExperimentRun IDs not found in DeleteExperimentRuns request");
       }
 
-      Map<String, Long> workspaceIdByExperimentId =
+      Map<String, Long> workspaceIdByExperimentRunId =
           request.getIdsList().stream()
-              .map(experimentRunDAO::getProjectIdByExperimentRunId)
               .collect(
                   Collectors.toMap(
                       id -> id,
                       id ->
                           roleService
-                              .getEntityResource(id, ModelDBServiceResourceTypes.PROJECT)
+                              .getEntityResource(
+                                  experimentRunDAO.getProjectIdByExperimentRunId(id),
+                                  ModelDBServiceResourceTypes.PROJECT)
                               .getWorkspaceId()));
       List<String> deleteExperimentRunsIds =
           experimentRunDAO.deleteExperimentRuns(request.getIdsList());
@@ -2090,7 +2091,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             }
           };
       List<AuditLogLocalEntity> auditLogLocalEntities =
-          workspaceIdByExperimentId.entrySet().stream()
+          workspaceIdByExperimentRunId.entrySet().stream()
               .map(
                   entry ->
                       new AuditLogLocalEntity(
