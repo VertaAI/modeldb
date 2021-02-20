@@ -651,7 +651,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       GetResourcesResponseItem entityResource =
-              roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.PROJECT);
+          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.PROJECT);
       List<String> deletedProjectIds =
           projectDAO.deleteProjects(Collections.singletonList(request.getId()));
       DeleteProject.Response response =
@@ -1360,33 +1360,33 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       Map<String, Long> workspaceIdByProjectId =
-              request.getIdsList().stream()
-                      .collect(
-                              Collectors.toMap(
-                                      id -> id,
-                                      id ->
-                                              roleService
-                                                      .getEntityResource(id, ModelDBServiceResourceTypes.PROJECT)
-                                                      .getWorkspaceId()));
+          request.getIdsList().stream()
+              .collect(
+                  Collectors.toMap(
+                      id -> id,
+                      id ->
+                          roleService
+                              .getEntityResource(id, ModelDBServiceResourceTypes.PROJECT)
+                              .getWorkspaceId()));
       List<String> deletedProjectIds = projectDAO.deleteProjects(request.getIdsList());
       DeleteProjects.Response response =
           DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
       List<AuditLogLocalEntity> auditLogLocalEntities =
-              workspaceIdByProjectId.entrySet().stream()
-                      .map(
-                              entry ->
-                                      new AuditLogLocalEntity(
-                                              SERVICE_NAME,
-                                              authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-                                              ModelDBServiceActions.DELETE,
-                                              entry.getKey(),
-                                              ModelDBServiceResourceTypes.PROJECT,
-                                              Service.MODELDB_SERVICE,
-                                              MonitoringInterceptor.METHOD_NAME.get(),
-                                              ModelDBUtils.getStringFromProtoObjectWithoutException(request),
-                                              ModelDBUtils.getStringFromProtoObjectWithoutException(response),
-                                              entry.getValue()))
-                      .collect(Collectors.toList());
+          workspaceIdByProjectId.entrySet().stream()
+              .map(
+                  entry ->
+                      new AuditLogLocalEntity(
+                          SERVICE_NAME,
+                          authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+                          ModelDBServiceActions.DELETE,
+                          entry.getKey(),
+                          ModelDBServiceResourceTypes.PROJECT,
+                          Service.MODELDB_SERVICE,
+                          MonitoringInterceptor.METHOD_NAME.get(),
+                          ModelDBUtils.getStringFromProtoObjectWithoutException(request),
+                          ModelDBUtils.getStringFromProtoObjectWithoutException(response),
+                          entry.getValue()))
+              .collect(Collectors.toList());
       if (!auditLogLocalEntities.isEmpty()) {
         auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
       }
