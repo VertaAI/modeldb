@@ -91,7 +91,7 @@ public class ModelDBUtils {
     try {
       return JsonFormat.printer().preservingProtoFieldNames().print(object);
     } catch (InvalidProtocolBufferException e) {
-        throw new ModelDBException(e);
+      throw new ModelDBException(e);
     }
   }
 
