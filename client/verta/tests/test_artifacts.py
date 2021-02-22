@@ -478,6 +478,26 @@ class TestModels:
         assert LogisticRegressionModel.load(spark_model_dir).params == model.params
 
 
+class TestDownloadModels:
+    def test_download_sklearn(self, experiment_run, in_tempdir):
+        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+
+        upload_filepath = "model.pkl"
+        download_filepath = "retrieved_model.pkl"
+
+        model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
+        with open(upload_filepath, 'wb') as f:
+            pickle.dump(model, f)
+
+        experiment_run.log_model(model, custom_modules=[])
+        experiment_run.download_model(download_filepath)
+
+        with open(download_filepath, 'rb') as f:
+            downloaded_model = pickle.load(f)
+
+        assert downloaded_model.get_params() == model.get_params()
+
+
 class TestImages:
     @staticmethod
     def matplotlib_to_pil(fig):

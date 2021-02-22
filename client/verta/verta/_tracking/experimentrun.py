@@ -1581,6 +1581,23 @@ class ExperimentRun(_DeployableEntity):
 
         return download_to_path
 
+    def download_model(self, download_to_path):
+        """
+        Downloads the model logged with :meth:`log_model` to path `download_to_path`.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where artifact was downloaded to. Matches `download_to_path`.
+
+        """
+        self.download_artifact("model.pkl", download_to_path)
+
     def get_artifact_parts(self, key):
         endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
             self._conn.scheme,
