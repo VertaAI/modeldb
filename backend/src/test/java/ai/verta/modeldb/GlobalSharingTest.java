@@ -309,12 +309,7 @@ public class GlobalSharingTest extends TestsInit {
             .setWorkspaceName(organization.getName())
             .setResourceId(orgResourceId)
             .setResourceType(
-                ResourceType.newBuilder()
-                    .setModeldbServiceResourceType(
-                        resourceType == ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET
-                            ? ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY
-                            : resourceType)
-                    .build())
+                ResourceType.newBuilder().setModeldbServiceResourceType(resourceType).build())
             .setService(ServiceEnum.Service.MODELDB_SERVICE)
             .setResourceName(orgResourceName)
             .setVisibility(resourceVisibility)

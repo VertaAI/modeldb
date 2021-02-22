@@ -26,7 +26,7 @@ ZIP_EXTENSION = "dir.zip"
 
 
 # NOTE: keep up-to-date with Deployment API
-BLACKLISTED_KEYS = {
+BLOCKLISTED_KEYS = {
     'model_api.json',
     'model.pkl',
     'requirements.txt',
@@ -55,10 +55,10 @@ def validate_key(key):
     Raises
     ------
     ValueError
-        If `key` is blacklisted.
+        If `key` is blocklisted.
 
     """
-    if key in BLACKLISTED_KEYS:
+    if key in BLOCKLISTED_KEYS:
         msg = "\"{}\" is reserved for internal use; please use a different key".format(key)
         raise ValueError(msg)
 
