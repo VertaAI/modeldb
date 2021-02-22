@@ -1256,7 +1256,7 @@ class ExperimentRun(_DeployableEntity):
         self._log_artifact(
             "model.pkl", model, _CommonCommonService.ArtifactTypeEnum.MODEL, model_extension, method)
         self._log_artifact("model_api.json", model_api,
-                           _CommonCommonService.ArtifactTypeEnum.BLOB, 'json')
+                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'json')
         if train_data is not None:
             self._log_artifact("train_data", train_data,
                                _CommonCommonService.ArtifactTypeEnum.DATA, 'csv')
@@ -1295,6 +1295,9 @@ class ExperimentRun(_DeployableEntity):
             Whether to allow overwriting existing artifacts.
 
         """
+        if model_api and not isinstance(model_api, utils.ModelAPI):
+            raise ValueError(
+                "`model_api` must be `verta.utils.ModelAPI`, not {}".format(type(model_api)))
         if (artifacts is not None
                 and not (isinstance(artifacts, list)
                          and all(isinstance(artifact_key, six.string_types) for artifact_key in artifacts))):
@@ -1332,36 +1335,37 @@ class ExperimentRun(_DeployableEntity):
             raise ValueError(
                 "`artifacts` can only be provided if `model` is a class")
 
-        # build model API
-        if model_api is None:
-            model_api = utils.ModelAPI()
-        elif not isinstance(model_api, utils.ModelAPI):
-            raise ValueError(
-                "`model_api` must be `verta.utils.ModelAPI`, not {}".format(type(model_api)))
-        if 'model_packaging' not in model_api:
-            # add model serialization info to model_api
-            model_api['model_packaging'] = {
-                'python_version': _utils.get_python_version(),
-                'type': model_type,
-                'deserialization': method,
-            }
-        if self._conf.debug:
-            print("[DEBUG] model API is:")
-            pprint.pprint(model_api.to_dict())
-
         # associate artifact dependencies
         if artifacts:
             self.log_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite)
 
-        custom_modules_artifact = self._custom_modules_as_artifact(
-            custom_modules)
-        self._log_artifact("custom_modules", custom_modules_artifact,
-                           _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
+        # create and upload model API
+        if model_type or model_api:  # only if provided or model is deployable
+            if model_api is None:
+                model_api = utils.ModelAPI()
+            if 'model_packaging' not in model_api:
+                # add model serialization info to model_api
+                model_api['model_packaging'] = {
+                    'python_version': _utils.get_python_version(),
+                    'type': model_type,
+                    'deserialization': method,
+                }
+            if self._conf.debug:
+                print("[DEBUG] model API is:")
+                pprint.pprint(model_api.to_dict())
 
+            self._log_artifact("model_api.json", model_api,
+                               _CommonCommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
+
+        # create and upload custom modules
+        if model_type or custom_modules:  # only if provided or model is deployable
+            custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
+            self._log_artifact("custom_modules", custom_modules_artifact,
+                               _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
+
+        # upload model
         self._log_artifact("model.pkl", serialized_model,
                            _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
-        self._log_artifact("model_api.json", model_api,
-                           _CommonCommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
 
     def get_model(self):
         """

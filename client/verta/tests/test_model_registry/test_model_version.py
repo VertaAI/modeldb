@@ -567,6 +567,12 @@ class TestDeployability:
 
 class TestArbitraryModels:
     """Analogous to test_artifacts.TestArbitraryModels."""
+    @staticmethod
+    def _assert_no_deployment_artifacts(model_version):
+        artifact_keys = model_version.get_artifact_keys()
+        assert 'custom_modules' not in artifact_keys
+        assert 'model_api.json' not in artifact_keys
+
     def test_arbitrary_file(self, model_version, random_data):
         with tempfile.TemporaryFile() as f:
             f.write(random_data)
@@ -576,6 +582,8 @@ class TestArbitraryModels:
 
         assert model_version.get_model().read() == random_data
 
+        self._assert_no_deployment_artifacts(model_version)
+
     def test_arbitrary_directory(self, model_version, dir_and_files):
         dirpath, filepaths = dir_and_files
 
@@ -584,9 +592,13 @@ class TestArbitraryModels:
         with zipfile.ZipFile(model_version.get_model(), 'r') as zipf:
             assert set(zipf.namelist()) == filepaths
 
+        self._assert_no_deployment_artifacts(model_version)
+
     def test_arbitrary_object(self, model_version):
         model = {'a': 1}
 
         model_version.log_model(model, custom_modules=[])
 
         assert model_version.get_model() == model
+
+        self._assert_no_deployment_artifacts(model_version)
