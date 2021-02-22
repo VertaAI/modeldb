@@ -5,16 +5,14 @@ import six
 import hashlib
 import os
 import pickle
-import shutil
 import tempfile
 import zipfile
 
-import requests
-
-from verta._internal_utils import _artifact_utils
-from verta._internal_utils import _utils
-
-from . import utils
+from verta._internal_utils import (
+    _artifact_utils,
+    _file_utils,
+    _utils,
+)
 
 
 class TestUtils:
@@ -235,6 +233,20 @@ class TestArtifacts:
         new_filepath = experiment_run.download_artifact(key, new_filename)
         with open(new_filepath, 'rb') as f:
             assert pickle.load(f) == obj
+
+    def test_download_directory(self, experiment_run, strs, dir_and_files, in_tempdir):
+        key, download_path = strs[:2]
+        dirpath, filepaths = dir_and_files
+
+        experiment_run.log_artifact(key, dirpath)
+        experiment_run.download_artifact(key, download_path)
+
+        downloaded_filepaths = _file_utils.walk_files(download_path)
+        downloaded_filepaths = set(
+            _file_utils.remove_prefix(filepath, download_path+'/')
+            for filepath in downloaded_filepaths
+        )
+        assert downloaded_filepaths == set(filepaths)
 
     def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
         key = strs[0]
