@@ -15,6 +15,8 @@ def download_response(response, chunk_size=32*(10**6)):
     """
     Downloads the contents of `response` to a temporary file.
 
+    The caller is responsible for deleting the file if needed.
+
     Parameters
     ----------
     response : :class:`requests.Response`
@@ -68,10 +70,10 @@ def download_file(response, filepath, overwrite_ok=False):
             # prevent overwrite in case `filepath` was taken during download
             filepath = _file_utils.without_collision(filepath)
 
-        # move request contents to `filepath`
+        # move written contents to `filepath`
         shutil.move(temp_filepath, filepath)
     except Exception as e:
-        os.remove(temp_filepath.name)
+        os.remove(temp_filepath)
         raise e
     print("download complete; file written to {}".format(filepath))
 
@@ -90,8 +92,8 @@ def download_zipped_dir(response, dirpath, overwrite_ok=False):
         Path to download and unzip `response`'s contents into.
     overwrite_ok : bool, default False
         Whether to extract into `dirpath`-as-passed, even if that directory
-        already exists. If ``False``, `dirpath` will be changed to avoid an
-        overwrite.
+        already exists. If ``False``, `dirpath` will be changed to avoid
+        collisions.
 
     Returns
     -------
@@ -110,7 +112,7 @@ def download_zipped_dir(response, dirpath, overwrite_ok=False):
         with zipfile.ZipFile(temp_filepath, 'r') as zipf:
             zipf.extractall(dirpath)
     finally:
-        os.remove(temp_filepath.name)
+        os.remove(temp_filepath)
     print("download complete; directory extracted to {}".format(dirpath))
 
     return dirpath
