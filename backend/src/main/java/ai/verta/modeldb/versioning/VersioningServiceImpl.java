@@ -92,6 +92,35 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     }
   }
 
+  private void saveAuditList(
+      Optional<UserInfo> userInfo,
+      Message request,
+      List<Repository> repositories,
+      Message response) {
+    String vertaIdFromUserInfo =
+        authService.getVertaIdFromUserInfo(
+            userInfo.orElseGet(authService::getCurrentLoginUserInfo));
+    List<AuditLogLocalEntity> auditLogLocalEntities =
+        repositories.stream()
+            .map(
+                repository ->
+                    new AuditLogLocalEntity(
+                        SERVICE_NAME,
+                        vertaIdFromUserInfo,
+                        ModelDBServiceActions.READ,
+                        String.valueOf(repository.getId()),
+                        ModelDBServiceResourceTypes.DATASET,
+                        ServiceEnum.Service.MODELDB_SERVICE,
+                        MonitoringInterceptor.METHOD_NAME.get(),
+                        ModelDBUtils.getStringFromProtoObjectSilent(request),
+                        ModelDBUtils.getStringFromProtoObjectSilent(response),
+                        Long.valueOf(repository.getWorkspaceId())))
+            .collect(Collectors.toList());
+    if (!auditLogLocalEntities.isEmpty()) {
+      auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
+    }
+  }
+
   @Override
   public void listRepositories(
       ListRepositoriesRequest request, StreamObserver<Response> responseObserver) {
@@ -106,7 +135,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       Response response = repositoryDAO.listRepositories(request, userInfo);
 
-      saveAuditList(request, response.getRepositoriesList(), response);
+      saveAuditList(Optional.of(userInfo), request, response.getRepositoriesList(), response);
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -813,7 +842,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       FindRepositories request, StreamObserver<FindRepositories.Response> responseObserver) {
     try {
       FindRepositories.Response response = repositoryDAO.findRepositories(request);
-      saveAuditList(request, response.getRepositoriesList(), response);
+      saveAuditList(Optional.empty(), request, response.getRepositoriesList(), response);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -830,36 +859,12 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       List<Repository> repositories = new LinkedList<>();
       FindRepositoriesBlobs.Response response =
           blobDAO.findRepositoriesBlobs(commitDAO, request, repositories);
-      saveAuditList(request, repositories, response);
+      saveAuditList(Optional.empty(), request, repositories, response);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, FindRepositoriesBlobs.Response.getDefaultInstance());
-    }
-  }
-
-  private void saveAuditList(Message request, List<Repository> repositories, Message response) {
-    String vertaIdFromUserInfo =
-        authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo());
-    List<AuditLogLocalEntity> auditLogLocalEntities =
-        repositories.stream()
-            .map(
-                repository ->
-                    new AuditLogLocalEntity(
-                        SERVICE_NAME,
-                        vertaIdFromUserInfo,
-                        ModelDBServiceActions.READ,
-                        String.valueOf(repository.getId()),
-                        ModelDBServiceResourceTypes.DATASET,
-                        ServiceEnum.Service.MODELDB_SERVICE,
-                        MonitoringInterceptor.METHOD_NAME.get(),
-                        ModelDBUtils.getStringFromProtoObjectSilent(request),
-                        ModelDBUtils.getStringFromProtoObjectSilent(response),
-                        Long.valueOf(repository.getWorkspaceId())))
-            .collect(Collectors.toList());
-    if (!auditLogLocalEntities.isEmpty()) {
-      auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
     }
   }
 
