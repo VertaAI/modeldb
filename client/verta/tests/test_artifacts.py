@@ -2,15 +2,19 @@ import pytest
 
 import six
 
+import filecmp
 import hashlib
 import os
 import pickle
 import tempfile
 import zipfile
 
+import requests
+
 from verta._internal_utils import (
     _artifact_utils,
     _file_utils,
+    _request_utils,
     _utils,
 )
 
@@ -31,6 +35,54 @@ class TestUtils:
             whole_checksum = hashlib.sha256(tempf.read()).hexdigest()
 
             assert piecewise_checksum == whole_checksum
+
+    def test_download_file_no_collision(self, experiment_run, dir_and_files, in_tempdir):
+        source_dirpath, _ = dir_and_files
+        key = "artifact"
+
+        # create archive and move into cwd so it's deleted on teardown
+        filepath = os.path.abspath("archive.zip")
+        temp_zip = _artifact_utils.zip_dir(source_dirpath)
+        os.rename(temp_zip.name, filepath)
+
+        # upload and download file
+        experiment_run.log_artifact(key, filepath)
+        download_url = experiment_run._get_url_for_artifact(key, "GET").url
+        response = requests.get(download_url)
+        downloaded_filepath = _request_utils.download_file(
+            response, filepath, overwrite_ok=False,
+        )
+        downloaded_filepath = os.path.abspath(downloaded_filepath)
+
+        # different names
+        assert filepath != downloaded_filepath
+        # contents match
+        assert filecmp.cmp(filepath, downloaded_filepath)
+
+    def test_download_zipped_dir_no_collision(self, experiment_run, dir_and_files, in_tempdir):
+        source_dirpath, _ = dir_and_files
+        key = "artifact"
+
+        # move directory into cwd so it's deleted on teardown
+        dirpath = os.path.abspath("directory")
+        os.rename(source_dirpath, dirpath)
+
+        # upload and download directory
+        experiment_run.log_artifact(key, dirpath)
+        download_url = experiment_run._get_url_for_artifact(key, "GET").url
+        response = requests.get(download_url)
+        downloaded_dirpath = _request_utils.download_zipped_dir(
+            response, dirpath, overwrite_ok=False,
+        )
+        downloaded_dirpath = os.path.abspath(downloaded_dirpath)
+
+        # different names
+        assert dirpath != downloaded_dirpath
+        # contents match
+        dircmp = filecmp.dircmp(dirpath, downloaded_dirpath)
+        assert not dircmp.diff_files
+        assert not dircmp.left_only
+        assert not dircmp.right_only
 
 
 class TestArtifacts:
@@ -236,17 +288,15 @@ class TestArtifacts:
 
     def test_download_directory(self, experiment_run, strs, dir_and_files, in_tempdir):
         key, download_path = strs[:2]
-        dirpath, filepaths = dir_and_files
+        dirpath, _ = dir_and_files
 
         experiment_run.log_artifact(key, dirpath)
         experiment_run.download_artifact(key, download_path)
 
-        downloaded_filepaths = _file_utils.walk_files(download_path)
-        downloaded_filepaths = set(
-            _file_utils.remove_prefix(filepath, download_path+'/')
-            for filepath in downloaded_filepaths
-        )
-        assert downloaded_filepaths == set(filepaths)
+        dircmp = filecmp.dircmp(dirpath, download_path)
+        assert not dircmp.diff_files
+        assert not dircmp.left_only
+        assert not dircmp.right_only
 
     def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
         key = strs[0]
