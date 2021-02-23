@@ -248,6 +248,13 @@ def serialize_model(model):
         Framework with which the model was built.
 
     """
+    if isinstance(model, six.string_types):  # filesystem path
+        if os.path.isdir(model):
+            return zip_dir(model), "zip", None
+        else:  # filepath
+            # open and continue
+            model = open(model, 'rb')
+
     if hasattr(model, 'read'):  # if `model` is file-like
         try:  # attempt to deserialize
             reset_stream(model)  # reset cursor to beginning in case user forgot
@@ -325,12 +332,11 @@ def serialize_model(model):
     else:
         if hasattr(model, 'predict'):
             model_type = "custom"
-            bytestream, method = ensure_bytestream(model)
         elif callable(model):
             model_type = "callable"
-            bytestream, method = ensure_bytestream(model)
         else:
-            raise TypeError("cannot determine the type for model argument")
+            model_type = None
+        bytestream, method = ensure_bytestream(model)
     return bytestream, method, model_type
 
 

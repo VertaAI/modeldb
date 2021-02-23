@@ -1188,8 +1188,6 @@ class ExperimentRun(_DeployableEntity):
                 "`train_features` and `train_targets` must be provided together")
 
         # open files
-        if isinstance(model, six.string_types):
-            model = open(model, 'rb')
         if isinstance(model_api, six.string_types):
             model_api = open(model_api, 'rb')
         if isinstance(requirements, six.string_types):
@@ -1212,10 +1210,6 @@ class ExperimentRun(_DeployableEntity):
             model, method, model_type = _artifact_utils.serialize_model(model)
         finally:
             _utils.THREAD_LOCALS.active_experiment_run = None
-        # check serialization method
-        if method is None:
-            raise ValueError(
-                "will not be able to deploy model due to unknown serialization method")
         if model_extension is None:
             model_extension = _artifact_utils.ext_from_method(method)
 
@@ -1324,16 +1318,11 @@ class ExperimentRun(_DeployableEntity):
         except (TypeError, ValueError):
             extension = None
         _utils.THREAD_LOCALS.active_experiment_run = self
-        if isinstance(model, six.string_types):  # filepath
-            model = open(model, 'rb')
         try:
             serialized_model, method, model_type = _artifact_utils.serialize_model(
                 model)
         finally:
             _utils.THREAD_LOCALS.active_experiment_run = None
-        if method is None:
-            raise ValueError(
-                "will not be able to deploy model due to unknown serialization method")
         if extension is None:
             extension = _artifact_utils.ext_from_method(method)
         if self._conf.debug:

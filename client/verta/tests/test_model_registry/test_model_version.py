@@ -8,6 +8,7 @@ import zipfile
 import glob
 import shutil
 import sys
+import tempfile
 import json
 
 import cloudpickle
@@ -22,7 +23,6 @@ from verta.environment import Python
 from verta._tracking.deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
 from verta._internal_utils import _utils
-from ..test_artifacts import TestArtifacts
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
@@ -162,9 +162,9 @@ class TestModelVersion:
 
         assert "The key has been set" in str(excinfo.value)
 
-    def test_add_artifact_file(self, model_version, in_tempdir):
+    def test_add_artifact_file(self, model_version, in_tempdir, random_data):
         filename = "tiny1.bin"
-        FILE_CONTENTS = TestArtifacts.generate_random_data()
+        FILE_CONTENTS = random_data
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
         model_version.log_artifact("file", filename)
@@ -563,3 +563,30 @@ class TestDeployability:
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
         assert val == endpoint.get_deployed_model().predict(val)
+
+
+class TestArbitraryModels:
+    """Analogous to test_artifacts.TestArbitraryModels."""
+    def test_arbitrary_file(self, model_version, random_data):
+        with tempfile.TemporaryFile() as f:
+            f.write(random_data)
+            f.seek(0)
+
+            model_version.log_model(f, custom_modules=[])
+
+        assert model_version.get_model().read() == random_data
+
+    def test_arbitrary_directory(self, model_version, dir_and_files):
+        dirpath, filepaths = dir_and_files
+
+        model_version.log_model(dirpath, custom_modules=[])
+
+        with zipfile.ZipFile(model_version.get_model(), 'r') as zipf:
+            assert set(zipf.namelist()) == filepaths
+
+    def test_arbitrary_object(self, model_version):
+        model = {'a': 1}
+
+        model_version.log_model(model, custom_modules=[])
+
+        assert model_version.get_model() == model

@@ -160,20 +160,10 @@ class TestArtifacts:
             with pytest.raises(ValueError):
                 experiment_run.log_artifact_path(key, artifact)
 
-    @staticmethod
-    def generate_random_data():
-        while True:
-            data = os.urandom(2 ** 16)
-            bytestream = six.BytesIO(data)
-            try:
-                pickle.load(bytestream)
-            except:
-                return data
-
-    def test_clientside_storage(self, experiment_run, strs, in_tempdir):
+    def test_clientside_storage(self, experiment_run, strs, in_tempdir, random_data):
         key = strs[0]
         filename = strs[1]
-        FILE_CONTENTS = self.generate_random_data()
+        FILE_CONTENTS = random_data
 
         # TODO: be able to use existing env var for debugging
         # NOTE: there is an assertion of `== 1` artifact that would need to be changed
@@ -211,11 +201,11 @@ class TestArtifacts:
             else:
                 del os.environ[VERTA_ARTIFACT_DIR_KEY]
 
-    def test_download(self, experiment_run, strs, in_tempdir):
+    def test_download(self, experiment_run, strs, in_tempdir, random_data):
         key = strs[0]
         filename = strs[1]
         new_filename = strs[2]
-        FILE_CONTENTS = self.generate_random_data()
+        FILE_CONTENTS = random_data
 
         # create file and upload as artifact
         with open(filename, 'wb') as f:
@@ -464,6 +454,31 @@ class TestModels:
         with zipfile.ZipFile(experiment_run.get_model()) as zipf:
             zipf.extractall(spark_model_dir)
         assert LogisticRegressionModel.load(spark_model_dir).params == model.params
+
+class TestArbitraryModels:
+    def test_arbitrary_file(self, experiment_run, random_data):
+        with tempfile.TemporaryFile() as f:
+            f.write(random_data)
+            f.seek(0)
+
+            experiment_run.log_model(f, custom_modules=[])
+
+        assert experiment_run.get_model().read() == random_data
+
+    def test_arbitrary_directory(self, experiment_run, dir_and_files):
+        dirpath, filepaths = dir_and_files
+
+        experiment_run.log_model(dirpath, custom_modules=[])
+
+        with zipfile.ZipFile(experiment_run.get_model(), 'r') as zipf:
+            assert set(zipf.namelist()) == filepaths
+
+    def test_arbitrary_object(self, experiment_run):
+        model = {'a': 1}
+
+        experiment_run.log_model(model, custom_modules=[])
+
+        assert experiment_run.get_model() == model
 
 
 class TestImages:
