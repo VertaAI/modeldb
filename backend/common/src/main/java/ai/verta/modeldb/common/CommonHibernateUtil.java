@@ -34,12 +34,7 @@ import org.hibernate.exception.JDBCConnectionException;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.Properties;
@@ -62,8 +57,7 @@ public abstract class CommonHibernateUtil {
         .getConnection();
   }
 
-  public SessionFactory createOrGetSessionFactory(DatabaseConfig config)
-      throws ModelDBException {
+  public SessionFactory createOrGetSessionFactory(DatabaseConfig config) throws ModelDBException {
     if (sessionFactory == null) {
       LOGGER.info("Fetching sessionFactory");
       try {
@@ -146,15 +140,16 @@ public abstract class CommonHibernateUtil {
 
   private SessionFactory loopBack(SessionFactory sessionFactory) {
     try {
-      LOGGER.debug("CommonHibernateUtil checking DB connection");
-      boolean dbConnectionLive = checkDBConnection(databaseConfig.RdbConfiguration, databaseConfig.timeout);
+      LOGGER.trace("CommonHibernateUtil checking DB connection");
+      boolean dbConnectionLive =
+          checkDBConnection(databaseConfig.RdbConfiguration, databaseConfig.timeout);
       if (dbConnectionLive) {
         return sessionFactory;
       }
       // Check DB connection based on the periodic time logic
       checkDBConnectionInLoop(false);
       sessionFactory = resetSessionFactory();
-      LOGGER.debug("CommonHibernateUtil getSessionFactory() DB connection got successfully");
+      LOGGER.trace("CommonHibernateUtil getSessionFactory() DB connection got successfully");
       return sessionFactory;
     } catch (Exception ex) {
       LOGGER.warn("CommonHibernateUtil loopBack() getting error ", ex);
@@ -180,7 +175,8 @@ public abstract class CommonHibernateUtil {
             loopBackTime);
         loopBackTime = loopBackTime * 2;
         loopIndex = loopIndex + 1;
-        dbConnectionLive = checkDBConnection(databaseConfig.RdbConfiguration, databaseConfig.timeout);
+        dbConnectionLive =
+            checkDBConnection(databaseConfig.RdbConfiguration, databaseConfig.timeout);
         if (isStartUpTime && loopBackTime >= 2560) {
           loopBackTime = 2560;
         }
@@ -316,8 +312,7 @@ public abstract class CommonHibernateUtil {
     return checkDBConnection(databaseConfig.RdbConfiguration, databaseConfig.timeout);
   }
 
-  public Connection getDBConnection(RdbConfig rdb)
-      throws SQLException, ClassNotFoundException {
+  public Connection getDBConnection(RdbConfig rdb) throws SQLException, ClassNotFoundException {
     String connectionString =
         rdb.RdbUrl
             + "/"
@@ -355,8 +350,7 @@ public abstract class CommonHibernateUtil {
         return valid[0];
       } catch (JDBCConnectionException ex) {
         LOGGER.error(
-            "CommonHibernateUtil ping() : DB connection not found, got error: {}",
-            ex.getMessage());
+            "CommonHibernateUtil ping() : DB connection not found, got error: {}", ex.getMessage());
         // CommonHibernateUtil.sessionFactory = null;
       }
     }
