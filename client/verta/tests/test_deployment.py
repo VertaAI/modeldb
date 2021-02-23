@@ -19,8 +19,11 @@ import yaml
 
 import verta
 from verta._tracking.deployable_entity import _CACHE_DIR
-from verta._internal_utils import _histogram_utils
-from verta._internal_utils import _utils
+from verta._internal_utils import (
+    _artifact_utils,
+    _histogram_utils,
+    _utils,
+)
 from verta.endpoint.update import DirectUpdateStrategy
 
 pytestmark = pytest.mark.not_oss
