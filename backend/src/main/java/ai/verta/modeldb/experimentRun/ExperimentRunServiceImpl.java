@@ -29,14 +29,12 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -2082,32 +2080,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           DeleteExperimentRuns.Response.newBuilder()
               .setStatus(!deleteExperimentRunsIds.isEmpty())
               .build();
-      Function<MessageOrBuilder, String> getStringFromProtoObject =
-          messageOrBuilder -> {
-            try {
-              return ModelDBUtils.getStringFromProtoObject(messageOrBuilder);
-            } catch (InvalidProtocolBufferException e) {
-              throw new ModelDBException(e);
-            }
-          };
-      List<AuditLogLocalEntity> auditLogLocalEntities =
-          workspaceIdByExperimentRunId.entrySet().stream()
-              .map(
-                  entry ->
-                      new AuditLogLocalEntity(
-                          SERVICE_NAME,
-                          authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-                          ModelDBServiceActions.DELETE,
-                          entry.getKey(),
-                          ModelDBServiceResourceTypes.EXPERIMENT_RUN,
-                          Service.MODELDB_SERVICE,
-                          MonitoringInterceptor.METHOD_NAME.get(),
-                          getStringFromProtoObject.apply(request),
-                          getStringFromProtoObject.apply(response),
-                          entry.getValue()))
-              .collect(Collectors.toList());
-      if (!auditLogLocalEntities.isEmpty()) {
-        auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
+
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      for (Entry<String, Long> entry : workspaceIdByExperimentRunId.entrySet()) {
+        saveAuditLogs(
+            Optional.of(currentLoginUserInfo),
+            ModelDBServiceActions.DELETE,
+            Collections.singletonList(entry.getKey()),
+            ModelDBUtils.getStringFromProtoObject(request),
+            ModelDBUtils.getStringFromProtoObject(response),
+            entry.getValue());
       }
       responseObserver.onNext(response);
       responseObserver.onCompleted();
