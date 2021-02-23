@@ -1259,7 +1259,7 @@ class ExperimentRun(_DeployableEntity):
         self._log_artifact(
             "model.pkl", model, _CommonCommonService.ArtifactTypeEnum.MODEL, model_extension, method)
         self._log_artifact("model_api.json", model_api,
-                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'json')
+                           _CommonCommonService.ArtifactTypeEnum.BLOB, 'json')
         if train_data is not None:
             self._log_artifact("train_data", train_data,
                                _CommonCommonService.ArtifactTypeEnum.DATA, 'csv')
