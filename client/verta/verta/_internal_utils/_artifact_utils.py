@@ -278,7 +278,6 @@ def serialize_model(model):
             return model, None, None  # return bytestream
         finally:
             reset_stream(model)  # reset cursor to beginning as a courtesy
-        # here, `model` is either still a stream, or an deserialized object
 
     # if `model` is a class
     if isinstance(model, six.class_types):
