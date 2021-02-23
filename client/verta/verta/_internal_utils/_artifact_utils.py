@@ -260,14 +260,16 @@ def serialize_model(model):
         Framework with which the model was built.
 
     """
-    if isinstance(model, six.string_types):  # filesystem path
+    # if `model` is filesystem path
+    if isinstance(model, six.string_types):
         if os.path.isdir(model):
             return zip_dir(model), "zip", None
         else:  # filepath
             # open and continue
             model = open(model, 'rb')
 
-    if hasattr(model, 'read'):  # if `model` is file-like
+    # if `model` is file-like
+    if hasattr(model, 'read'):
         try:  # attempt to deserialize
             reset_stream(model)  # reset cursor to beginning in case user forgot
             model = deserialize_model(model.read())
@@ -278,13 +280,13 @@ def serialize_model(model):
             reset_stream(model)  # reset cursor to beginning as a courtesy
         # here, `model` is either still a stream, or an deserialized object
 
-    # `model` is a class
+    # if `model` is a class
     if isinstance(model, six.class_types):
         model_type = "class"
         bytestream, method = ensure_bytestream(model)
         return bytestream, method, model_type
 
-    # `model` is an instance
+    # if`model` is an instance
     pyspark_ml_base = maybe_dependency("pyspark.ml.base")
     if pyspark_ml_base:
         # https://spark.apache.org/docs/latest/api/python/_modules/pyspark/ml/base.html
