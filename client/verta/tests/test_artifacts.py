@@ -529,7 +529,7 @@ class TestArbitraryModels:
             f.write(random_data)
             f.seek(0)
 
-            experiment_run.log_model(f, custom_modules=[])
+            experiment_run.log_model(f)
 
         assert experiment_run.get_model().read() == random_data
 
@@ -538,7 +538,7 @@ class TestArbitraryModels:
     def test_arbitrary_directory(self, experiment_run, dir_and_files):
         dirpath, filepaths = dir_and_files
 
-        experiment_run.log_model(dirpath, custom_modules=[])
+        experiment_run.log_model(dirpath)
 
         with zipfile.ZipFile(experiment_run.get_model(), 'r') as zipf:
             assert set(zipf.namelist()) == filepaths
@@ -548,7 +548,7 @@ class TestArbitraryModels:
     def test_arbitrary_object(self, experiment_run):
         model = {'a': 1}
 
-        experiment_run.log_model(model, custom_modules=[])
+        experiment_run.log_model(model)
 
         assert experiment_run.get_model() == model
 
