@@ -361,12 +361,12 @@ class _Dataset(blob.Blob):
                 if (implicit_download_to_path
                         and len(components_to_download) == 1):  # single file download
                     # update `downloaded_to_path` in case changed to avoid overwrite
-                    downloaded_to_path = _request_utils.download(response, local_path, overwrite_ok=False)
+                    downloaded_to_path = _request_utils.download_file(response, local_path, overwrite_ok=False)
                 else:
                     # don't update `downloaded_to_path` here because we are either downloading:
                     #     - single file with an explicit destination, so `local_path` won't change
                     #     - directory, so individual path's `local_path` isn't important
-                    _request_utils.download(response, local_path, overwrite_ok=True)
+                    _request_utils.download_file(response, local_path, overwrite_ok=True)
 
         return os.path.abspath(downloaded_to_path)
 

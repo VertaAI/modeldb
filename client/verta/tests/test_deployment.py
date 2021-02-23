@@ -19,8 +19,11 @@ import yaml
 
 import verta
 from verta._tracking.deployable_entity import _CACHE_DIR
-from verta._internal_utils import _histogram_utils
-from verta._internal_utils import _utils
+from verta._internal_utils import (
+    _artifact_utils,
+    _histogram_utils,
+    _utils,
+)
 from verta.endpoint.update import DirectUpdateStrategy
 
 pytestmark = pytest.mark.not_oss
@@ -798,13 +801,13 @@ class TestDeploy:
             "DELETE",
             "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(experiment_run._conn.scheme,
                                                               experiment_run._conn.socket),
-            experiment_run._conn, json={'id': experiment_run.id, 'key': "model.pkl"}
+            experiment_run._conn, json={'id': experiment_run.id, 'key': _artifact_utils.MODEL_KEY}
         )
         _utils.raise_for_http_error(response)
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert "model.pkl" in str(excinfo.value)
+        assert _artifact_utils.MODEL_KEY in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(

@@ -117,6 +117,7 @@ Logging
 """""""
 .. automethod:: ExperimentRun.log_model
 .. automethod:: ExperimentRun.get_model
+.. automethod:: ExperimentRun.download_model
 .. automethod:: ExperimentRun.log_requirements
 .. automethod:: ExperimentRun.log_environment
 .. automethod:: ExperimentRun.log_setup_script
