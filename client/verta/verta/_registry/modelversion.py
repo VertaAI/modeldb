@@ -216,6 +216,9 @@ class RegisteredModelVersion(_DeployableEntity):
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
 
+        if model_api and not isinstance(model_api, utils.ModelAPI):
+            raise ValueError(
+                "`model_api` must be `verta.utils.ModelAPI`, not {}".format(type(model_api)))
         if (artifacts is not None
                 and not (isinstance(artifacts, list)
                          and all(isinstance(artifact_key, six.string_types) for artifact_key in artifacts))):
@@ -242,8 +245,10 @@ class RegisteredModelVersion(_DeployableEntity):
             extension = _artifact_utils.ext_from_method(method)
 
         # Create artifact message and update ModelVersion's message:
-        model_msg = self._create_artifact_msg("model", serialized_model,
-                                        artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension)
+        model_msg = self._create_artifact_msg(
+            "model", serialized_model,
+            artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension,
+        )
         model_version_update = self.ModelVersionMessage(model=model_msg)
         self._update(model_version_update)
 
@@ -253,23 +258,25 @@ class RegisteredModelVersion(_DeployableEntity):
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
 
-        # Log modules:
-        custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
-        self.log_artifact("custom_modules", custom_modules_artifact, overwrite, 'zip')
+        # create and upload model API
+        if model_type or model_api:  # only if provided or model is deployable
+            if model_api is None:
+                model_api = utils.ModelAPI()
+            if 'model_packaging' not in model_api:
+                # add model serialization info to model_api
+                model_api['model_packaging'] = {
+                    'python_version': _utils.get_python_version(),
+                    'type': model_type,
+                    'deserialization': method,
+                }
+            self.log_artifact(_artifact_utils.MODEL_API_KEY, model_api, overwrite, "json")
 
-        # build model API
-        if model_api is None:
-            model_api = utils.ModelAPI()
-        elif not isinstance(model_api, utils.ModelAPI):
-            raise ValueError("`model_api` must be `verta.utils.ModelAPI`, not {}".format(type(model_api)))
-        if 'model_packaging' not in model_api:
-            # add model serialization info to model_api
-            model_api['model_packaging'] = {
-                'python_version': _utils.get_python_version(),
-                'type': model_type,
-                'deserialization': method,
-            }
-        self.log_artifact("model_api.json", model_api, overwrite, "json")
+        # create and upload custom modules
+        if model_type or custom_modules:  # only if provided or model is deployable
+            # Log modules:
+            custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
+            self.log_artifact(_artifact_utils.CUSTOM_MODULES_KEY, custom_modules_artifact,
+                              overwrite, 'zip')
 
     def get_model(self):
         """

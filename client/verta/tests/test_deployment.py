@@ -49,7 +49,7 @@ class TestLogModelForDeployment:
     def test_model_api(self, experiment_run, model_for_deployment):
         experiment_run.log_model_for_deployment(**model_for_deployment)
         retrieved_model_api = verta.utils.ModelAPI.from_file(
-            experiment_run.get_artifact("model_api.json"))
+            experiment_run.get_artifact(_artifact_utils.MODEL_API_KEY))
 
         assert all(item in six.viewitems(retrieved_model_api.to_dict())
                    for item in six.viewitems(model_for_deployment['model_api'].to_dict()))
@@ -90,7 +90,8 @@ class TestLogModel:
 
             custom_module_filenames.update(map(os.path.basename, filenames))
 
-        with zipfile.ZipFile(experiment_run.get_artifact("custom_modules"), 'r') as zipf:
+        custom_modules = experiment_run.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        with zipfile.ZipFile(custom_modules, 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
     def test_no_custom_modules(self, experiment_run, model_for_deployment):
@@ -113,7 +114,8 @@ class TestLogModel:
                     continue
                 custom_module_filenames.update(map(os.path.basename, filenames))
 
-        with zipfile.ZipFile(experiment_run.get_artifact("custom_modules"), 'r') as zipf:
+        custom_modules = experiment_run.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        with zipfile.ZipFile(custom_modules, 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
     def test_model_api(self, experiment_run, model_for_deployment, model_packaging):
@@ -126,7 +128,8 @@ class TestLogModel:
         model_api.update({
             'model_packaging': model_packaging,
         })
-        assert model_api == json.loads(six.ensure_str(experiment_run.get_artifact('model_api.json').read()))
+        assert model_api == json.loads(six.ensure_str(
+            experiment_run.get_artifact(_artifact_utils.MODEL_API_KEY).read()))
 
     def test_no_model_api(self, experiment_run, model_for_deployment, model_packaging):
         experiment_run.log_model(model_for_deployment['model'])
@@ -135,14 +138,16 @@ class TestLogModel:
             'version': "v1",
             'model_packaging': model_packaging,
         }
-        assert model_api == json.loads(six.ensure_str(experiment_run.get_artifact('model_api.json').read()))
+        assert model_api == json.loads(six.ensure_str(
+            experiment_run.get_artifact(_artifact_utils.MODEL_API_KEY).read()))
 
     def test_model_class(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'].__class__)
 
         assert model_for_deployment['model'].__class__ == experiment_run.get_model()
 
-        retrieved_model_api = verta.utils.ModelAPI.from_file(experiment_run.get_artifact("model_api.json"))
+        retrieved_model_api = verta.utils.ModelAPI.from_file(
+            experiment_run.get_artifact(_artifact_utils.MODEL_API_KEY))
         assert retrieved_model_api.to_dict()['model_packaging']['type'] == "class"
 
     def test_artifacts(self, experiment_run, model_for_deployment, strs, flat_dicts):
@@ -824,13 +829,13 @@ class TestDeploy:
             "DELETE",
             "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(experiment_run._conn.scheme,
                                                               experiment_run._conn.socket),
-            experiment_run._conn, json={'id': experiment_run.id, 'key': "model_api.json"}
+            experiment_run._conn, json={'id': experiment_run.id, 'key': _artifact_utils.MODEL_API_KEY}
         )
         _utils.raise_for_http_error(response)
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert "model_api.json" in str(excinfo.value)
+        assert _artifact_utils.MODEL_API_KEY in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(

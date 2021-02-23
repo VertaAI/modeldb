@@ -518,29 +518,41 @@ class TestModels:
         assert LogisticRegressionModel.load(spark_model_dir).params == model.params
 
 class TestArbitraryModels:
+    @staticmethod
+    def _assert_no_deployment_artifacts(experiment_run):
+        artifact_keys = experiment_run.get_artifact_keys()
+        assert _artifact_utils.CUSTOM_MODULES_KEY not in artifact_keys
+        assert _artifact_utils.MODEL_API_KEY not in artifact_keys
+
     def test_arbitrary_file(self, experiment_run, random_data):
         with tempfile.TemporaryFile() as f:
             f.write(random_data)
             f.seek(0)
 
-            experiment_run.log_model(f, custom_modules=[])
+            experiment_run.log_model(f)
 
         assert experiment_run.get_model().read() == random_data
+
+        self._assert_no_deployment_artifacts(experiment_run)
 
     def test_arbitrary_directory(self, experiment_run, dir_and_files):
         dirpath, filepaths = dir_and_files
 
-        experiment_run.log_model(dirpath, custom_modules=[])
+        experiment_run.log_model(dirpath)
 
         with zipfile.ZipFile(experiment_run.get_model(), 'r') as zipf:
             assert set(zipf.namelist()) == filepaths
 
+        self._assert_no_deployment_artifacts(experiment_run)
+
     def test_arbitrary_object(self, experiment_run):
         model = {'a': 1}
 
-        experiment_run.log_model(model, custom_modules=[])
+        experiment_run.log_model(model)
 
         assert experiment_run.get_model() == model
+
+        self._assert_no_deployment_artifacts(experiment_run)
 
 
 class TestDownloadModels:

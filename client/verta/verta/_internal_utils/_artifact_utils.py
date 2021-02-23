@@ -29,15 +29,17 @@ ZIP_EXTENSION = "dir.zip"
 
 
 # NOTE: keep up-to-date with Deployment API
+CUSTOM_MODULES_KEY = "custom_modules"
 MODEL_KEY = "model.pkl"
+MODEL_API_KEY = "model_api.json"
 # TODO: maybe bind constants for other keys used throughout client
 BLOCKLISTED_KEYS = {
+    CUSTOM_MODULES_KEY,
     MODEL_KEY,
-    'model_api.json',
+    MODEL_API_KEY,
     'requirements.txt',
     'train_data',
     'tf_saved_model',
-    'custom_modules',
     'setup_script',
 }
 
