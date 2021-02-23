@@ -613,7 +613,7 @@ class TestOverwrite:
         experiment_run.log_model(model)
         experiment_run.log_model(new_model, overwrite=True)
 
-        assert experiment_run.get_artifact("model.pkl") == new_model
+        assert experiment_run.get_artifact(_artifact_utils.MODEL_KEY) == new_model
 
     def test_requirements(self, experiment_run):
         requirements = ["banana==1"]

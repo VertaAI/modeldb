@@ -798,13 +798,13 @@ class TestDeploy:
             "DELETE",
             "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(experiment_run._conn.scheme,
                                                               experiment_run._conn.socket),
-            experiment_run._conn, json={'id': experiment_run.id, 'key': "model.pkl"}
+            experiment_run._conn, json={'id': experiment_run.id, 'key': _artifact_utils.MODEL_KEY}
         )
         _utils.raise_for_http_error(response)
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy()
-        assert "model.pkl" in str(excinfo.value)
+        assert _artifact_utils.MODEL_KEY in str(excinfo.value)
 
         conn = experiment_run._conn
         requests.delete(

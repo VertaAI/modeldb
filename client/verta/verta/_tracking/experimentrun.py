@@ -1260,7 +1260,7 @@ class ExperimentRun(_DeployableEntity):
             train_data = None
 
         self._log_artifact(
-            "model.pkl", model, _CommonCommonService.ArtifactTypeEnum.MODEL, model_extension, method)
+            _artifact_utils.MODEL_KEY, model, _CommonCommonService.ArtifactTypeEnum.MODEL, model_extension, method)
         self._log_artifact("model_api.json", model_api,
                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'json')
         if train_data is not None:
@@ -1369,7 +1369,7 @@ class ExperimentRun(_DeployableEntity):
         self._log_artifact("custom_modules", custom_modules_artifact,
                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
-        self._log_artifact("model.pkl", serialized_model,
+        self._log_artifact(_artifact_utils.MODEL_KEY, serialized_model,
                            _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
         self._log_artifact("model_api.json", model_api,
                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
@@ -1384,7 +1384,7 @@ class ExperimentRun(_DeployableEntity):
             Model for deployment.
 
         """
-        model, _ = self._get_artifact("model.pkl")
+        model, _ = self._get_artifact(_artifact_utils.MODEL_KEY)
         return _artifact_utils.deserialize_model(model)
 
     def log_image(self, key, image, overwrite=False):
@@ -1697,7 +1697,7 @@ class ExperimentRun(_DeployableEntity):
             Absolute path where artifact was downloaded to. Matches `download_to_path`.
 
         """
-        self.download_artifact("model.pkl", download_to_path)
+        self.download_artifact(_artifact_utils.MODEL_KEY, download_to_path)
 
     def get_artifact_parts(self, key):
         endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
