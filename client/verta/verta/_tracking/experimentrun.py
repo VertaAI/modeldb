@@ -365,7 +365,7 @@ class ExperimentRun(_DeployableEntity):
                     "PUT", url_for_artifact.url, self._conn, data=artifact_stream)
             _utils.raise_for_http_error(response)
 
-        print("upload complete")
+        print("upload complete ({})".format(key))
 
     def _log_artifact_path(self, key, artifact_path, artifact_type, overwrite=False):
         """
@@ -1253,14 +1253,11 @@ class ExperimentRun(_DeployableEntity):
         else:
             train_data = None
 
-        print("uploading model")
         self._log_artifact(
             "model.pkl", model, _CommonCommonService.ArtifactTypeEnum.MODEL, model_extension, method)
-        print("uploading model API")
         self._log_artifact("model_api.json", model_api,
                             _CommonCommonService.ArtifactTypeEnum.BLOB, 'json')
         if train_data is not None:
-            print("uploading training data")
             self._log_artifact("train_data", train_data,
                                _CommonCommonService.ArtifactTypeEnum.DATA, 'csv')
 
@@ -1268,7 +1265,6 @@ class ExperimentRun(_DeployableEntity):
         tempf = _artifact_utils.zip_dir(export_dir)
 
         # TODO: change _log_artifact() to not read file into memory
-        print("uploading {}".format(export_dir))
         self._log_artifact("tf_saved_model", tempf,
                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
 
@@ -1358,19 +1354,16 @@ class ExperimentRun(_DeployableEntity):
                 print("[DEBUG] model API is:")
                 pprint.pprint(model_api.to_dict())
 
-            print("uploading model API")
             self._log_artifact("model_api.json", model_api,
                                _CommonCommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
 
         # create and upload custom modules
         if model_type or custom_modules:  # only if provided or model is deployable
             custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
-            print("uploading custom modules")
             self._log_artifact("custom_modules", custom_modules_artifact,
                                _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
         # upload model
-        print("uploading model")
         self._log_artifact("model.pkl", serialized_model,
                            _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
 
@@ -1433,7 +1426,6 @@ class ExperimentRun(_DeployableEntity):
             bytestream.seek(0)
             image = bytestream
 
-        print("uploading {}".format(key))
         self._log_artifact(
             key, image, _CommonCommonService.ArtifactTypeEnum.IMAGE, extension, overwrite=overwrite)
 
@@ -1522,7 +1514,6 @@ class ExperimentRun(_DeployableEntity):
         except (TypeError, ValueError):
             extension = None
 
-        print("uploading {}".format(key))
         self._log_artifact(
             key, artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, extension, overwrite=overwrite)
 
@@ -1879,7 +1870,6 @@ class ExperimentRun(_DeployableEntity):
         python_env = Python(copy.copy(requirements))
         requirements = six.BytesIO(six.ensure_binary(
             '\n'.join(requirements)))  # as file-like
-        print("uploading requirements")
         self._log_artifact("requirements.txt", requirements,
                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'txt', overwrite=overwrite)
         try:
@@ -1967,7 +1957,6 @@ class ExperimentRun(_DeployableEntity):
                           category=FutureWarning)
 
         custom_modules_artifact = self._custom_modules_as_artifact(paths)
-        print("uploading custom modules")
         self._log_artifact("custom_modules", custom_modules_artifact,
                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
 
@@ -2009,7 +1998,6 @@ class ExperimentRun(_DeployableEntity):
         # convert to file-like for `_log_artifact()`
         script = six.BytesIO(script)
 
-        print("uploading setup script")
         self._log_artifact(
             "setup_script", script, _CommonCommonService.ArtifactTypeEnum.BLOB, 'py', overwrite=overwrite)
 

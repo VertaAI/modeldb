@@ -253,7 +253,6 @@ class RegisteredModelVersion(_DeployableEntity):
         self._update(model_version_update)
 
         # Upload the artifact to ModelDB:
-        print("uploading model")
         self._upload_artifact(
             "model", serialized_model,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
@@ -356,7 +355,6 @@ class RegisteredModelVersion(_DeployableEntity):
             self._msg.artifacts[same_key_ind].CopyFrom(artifact_msg)
 
         self._update(self._msg, method="PUT")
-        print("uploading {}".format(key))
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
     def get_artifact(self, key):
@@ -513,6 +511,7 @@ class RegisteredModelVersion(_DeployableEntity):
         # check if multipart upload ok
         url_for_artifact = self._get_url_for_artifact(key, "PUT", artifact_type, part_num=1)
 
+        print("uploading {} to Registry".format(key))
         if url_for_artifact.multipart_upload_ok:
             # TODO: parallelize this
             file_parts = iter(lambda: file_handle.read(part_size), b'')
