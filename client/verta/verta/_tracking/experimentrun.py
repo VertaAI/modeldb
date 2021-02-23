@@ -1188,11 +1188,6 @@ class ExperimentRun(_DeployableEntity):
                 "`train_features` and `train_targets` must be provided together")
 
         # open files
-        if isinstance(model, six.string_types):
-            if os.path.isdir(model):
-                model = _artifact_utils.zip_dir(model)
-            else:  # filepath
-                model = open(model, 'rb')
         if isinstance(model_api, six.string_types):
             model_api = open(model_api, 'rb')
         if isinstance(requirements, six.string_types):
@@ -1323,11 +1318,6 @@ class ExperimentRun(_DeployableEntity):
         except (TypeError, ValueError):
             extension = None
         _utils.THREAD_LOCALS.active_experiment_run = self
-        if isinstance(model, six.string_types):
-            if os.path.isdir(model):
-                model = _artifact_utils.zip_dir(model)
-            else:  # filepath
-                model = open(model, 'rb')
         try:
             serialized_model, method, model_type = _artifact_utils.serialize_model(
                 model)
