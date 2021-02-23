@@ -16,8 +16,11 @@ from .. import __about__
 from .importer import maybe_dependency, get_tensorflow_major_version
 
 
-# default for chunked utils
-CHUNK_SIZE = 5*10**6
+# default chunk sizes
+# these values were all chosen arbitrarily at different times
+_64MB = 64*(10**6)  # used for artifact uploads
+_32MB = 32*(10**6)  # used in _request_utils
+_5MB = 5*(10**6)  # used in this module
 
 
 # for zip_dir()
@@ -403,7 +406,7 @@ def deserialize_model(bytestring):
     return bytestream
 
 
-def get_stream_length(stream, chunk_size=CHUNK_SIZE):
+def get_stream_length(stream, chunk_size=_5MB):
     """
     Get the length of the contents of a stream.
 
@@ -440,7 +443,7 @@ def get_stream_length(stream, chunk_size=CHUNK_SIZE):
     return length
 
 
-def calc_sha256(bytestream, chunk_size=CHUNK_SIZE):
+def calc_sha256(bytestream, chunk_size=_5MB):
     """
     Calculates the SHA-256 checksum of a bytestream.
 

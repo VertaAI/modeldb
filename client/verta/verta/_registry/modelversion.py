@@ -499,7 +499,7 @@ class RegisteredModelVersion(_DeployableEntity):
         _utils.raise_for_http_error(response)
         return _utils.json_to_proto(response.json(), Message.Response)
 
-    def _upload_artifact(self, key, file_handle, artifact_type, part_size=64*(10**6)):
+    def _upload_artifact(self, key, file_handle, artifact_type, part_size=_artifact_utils._64MB):
         file_handle.seek(0)
 
         # check if multipart upload ok

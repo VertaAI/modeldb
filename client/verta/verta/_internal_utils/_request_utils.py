@@ -5,13 +5,16 @@ import shutil
 import tempfile
 import zipfile
 
-from . import _file_utils
+from . import (
+    _artifact_utils,
+    _file_utils,
+)
 
 
 # TODO: migrate request utils from _utils
 
 
-def download_response(response, chunk_size=32*(10**6)):
+def download_response(response, chunk_size=_artifact_utils._32MB):
     """
     Downloads the contents of `response` to a temporary file.
 

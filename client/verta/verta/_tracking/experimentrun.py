@@ -269,7 +269,7 @@ class ExperimentRun(_DeployableEntity):
 
         self._clear_cache()
 
-    def _upload_artifact(self, key, artifact_stream, part_size=64*(10**6)):
+    def _upload_artifact(self, key, artifact_stream, part_size=_artifact_utils._64MB):
         """
         Uploads `artifact_stream` to ModelDB artifact store.
 
