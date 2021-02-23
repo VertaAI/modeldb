@@ -354,7 +354,7 @@ def serialize_model(model):
     return bytestream, method, model_type
 
 
-def deserialize_model(bytestring):
+def deserialize_model(bytestring, error_ok=False):
     """
     Deserializes a model from a bytestring, attempting various methods.
 
@@ -364,11 +364,20 @@ def deserialize_model(bytestring):
     ----------
     bytestring : bytes
         Bytes representing the model.
+    error_ok : bool, default False
+        Whether to return the serialized bytes if the model cannot be
+        deserialized. If False, an ``UnpicklingError`` is raised instead.
 
     Returns
     -------
     model : obj or file-like
         Model or buffered bytestream representing the model.
+
+    Raises
+    ------
+    pickle.UnpicklingError
+        If `bytestring` cannot be deserialized into an object, and `error_ok`
+        is False.
 
     """
     keras = maybe_dependency("tensorflow.keras")
@@ -407,7 +416,10 @@ def deserialize_model(bytestring):
     except:  # not a pickled object
         bytestream.seek(0)
 
-    return bytestream
+    if error_ok:
+        return bytestream
+    else:
+        raise pickle.UnpicklingError("unable to deserialize model")
 
 
 def get_stream_length(stream, chunk_size=_5MB):

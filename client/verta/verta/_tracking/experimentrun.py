@@ -1378,7 +1378,7 @@ class ExperimentRun(_DeployableEntity):
 
         """
         model, _ = self._get_artifact(_artifact_utils.MODEL_KEY)
-        return _artifact_utils.deserialize_model(model)
+        return _artifact_utils.deserialize_model(model, error_ok=True)
 
     def log_image(self, key, image, overwrite=False):
         """
