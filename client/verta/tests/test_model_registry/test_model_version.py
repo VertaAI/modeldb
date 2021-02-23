@@ -440,9 +440,9 @@ class TestDeployability:
         assert np.array_equal(retrieved_classfier.coef_, original_coef)
 
         # check model api:
-        assert "model_api.json" in model_version.get_artifact_keys()
+        assert _artifact_utils.MODEL_API_KEY in model_version.get_artifact_keys()
         for artifact in model_version._msg.artifacts:
-            if artifact.key == "model_api.json":
+            if artifact.key == _artifact_utils.MODEL_API_KEY:
                 assert artifact.filename_extension == "json"
 
         # overwrite should work:

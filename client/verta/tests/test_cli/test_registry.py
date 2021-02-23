@@ -254,7 +254,7 @@ class TestCreate:
                 "type": "torch",
                 "python_version": "2.7.17"
             }
-            model_version.log_artifact("model_api.json", model_api, True, "json")
+            model_version.log_artifact(_artifact_utils.MODEL_API_KEY, model_api, True, "json")
 
             path = _utils.generate_default_name()
             endpoint = client.set_endpoint(path)

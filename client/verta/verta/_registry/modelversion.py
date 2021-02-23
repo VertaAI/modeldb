@@ -269,7 +269,7 @@ class RegisteredModelVersion(_DeployableEntity):
                     'type': model_type,
                     'deserialization': method,
                 }
-            self.log_artifact("model_api.json", model_api, overwrite, "json")
+            self.log_artifact(_artifact_utils.MODEL_API_KEY, model_api, overwrite, "json")
 
         # create and upload custom modules
         if model_type or custom_modules:  # only if provided or model is deployable

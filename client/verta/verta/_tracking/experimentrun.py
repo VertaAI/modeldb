@@ -1255,7 +1255,7 @@ class ExperimentRun(_DeployableEntity):
 
         self._log_artifact(
             _artifact_utils.MODEL_KEY, model, _CommonCommonService.ArtifactTypeEnum.MODEL, model_extension, method)
-        self._log_artifact("model_api.json", model_api,
+        self._log_artifact(_artifact_utils.MODEL_API_KEY, model_api,
                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'json')
         if train_data is not None:
             self._log_artifact("train_data", train_data,
@@ -1354,7 +1354,7 @@ class ExperimentRun(_DeployableEntity):
                 print("[DEBUG] model API is:")
                 pprint.pprint(model_api.to_dict())
 
-            self._log_artifact("model_api.json", model_api,
+            self._log_artifact(_artifact_utils.MODEL_API_KEY, model_api,
                                _CommonCommonService.ArtifactTypeEnum.BLOB, 'json', overwrite=overwrite)
 
         # create and upload custom modules
