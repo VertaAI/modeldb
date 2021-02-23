@@ -275,7 +275,8 @@ class RegisteredModelVersion(_DeployableEntity):
         if model_type or custom_modules:  # only if provided or model is deployable
             # Log modules:
             custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
-            self.log_artifact("custom_modules", custom_modules_artifact, overwrite, 'zip')
+            self.log_artifact(_artifact_utils.CUSTOM_MODULES_KEY, custom_modules_artifact,
+                              overwrite, 'zip')
 
     def get_model(self):
         """

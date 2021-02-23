@@ -22,7 +22,10 @@ import verta.dataset
 from verta.environment import Python
 from verta._tracking.deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
-from verta._internal_utils import _utils
+from verta._internal_utils import (
+    _artifact_utils,
+    _utils,
+)
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
@@ -473,7 +476,8 @@ class TestDeployability:
                     continue
                 custom_module_filenames.update(map(os.path.basename, filenames))
 
-        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+        custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        with zipfile.ZipFile(custom_modules, 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
     def test_log_model_with_custom_modules(self, model_version, model_for_deployment):
@@ -493,7 +497,8 @@ class TestDeployability:
 
             custom_module_filenames.update(map(os.path.basename, filenames))
 
-        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+        custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        with zipfile.ZipFile(custom_modules, 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
     def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir,
@@ -570,8 +575,8 @@ class TestArbitraryModels:
     @staticmethod
     def _assert_no_deployment_artifacts(model_version):
         artifact_keys = model_version.get_artifact_keys()
-        assert 'custom_modules' not in artifact_keys
-        assert 'model_api.json' not in artifact_keys
+        assert _artifact_utils.CUSTOM_MODULES_KEY not in artifact_keys
+        assert _artifact_utils.MODEL_API_KEY not in artifact_keys
 
     def test_arbitrary_file(self, model_version, random_data):
         with tempfile.TemporaryFile() as f:

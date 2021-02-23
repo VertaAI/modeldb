@@ -1360,7 +1360,7 @@ class ExperimentRun(_DeployableEntity):
         # create and upload custom modules
         if model_type or custom_modules:  # only if provided or model is deployable
             custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
-            self._log_artifact("custom_modules", custom_modules_artifact,
+            self._log_artifact(_artifact_utils.CUSTOM_MODULES_KEY, custom_modules_artifact,
                                _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
         # upload model
@@ -1972,7 +1972,7 @@ class ExperimentRun(_DeployableEntity):
                           category=FutureWarning)
 
         custom_modules_artifact = self._custom_modules_as_artifact(paths)
-        self._log_artifact("custom_modules", custom_modules_artifact,
+        self._log_artifact(_artifact_utils.CUSTOM_MODULES_KEY, custom_modules_artifact,
                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
 
     def log_setup_script(self, script, overwrite=False):

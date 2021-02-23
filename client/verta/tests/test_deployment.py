@@ -90,7 +90,8 @@ class TestLogModel:
 
             custom_module_filenames.update(map(os.path.basename, filenames))
 
-        with zipfile.ZipFile(experiment_run.get_artifact("custom_modules"), 'r') as zipf:
+        custom_modules = experiment_run.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        with zipfile.ZipFile(custom_modules, 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
     def test_no_custom_modules(self, experiment_run, model_for_deployment):
@@ -113,7 +114,8 @@ class TestLogModel:
                     continue
                 custom_module_filenames.update(map(os.path.basename, filenames))
 
-        with zipfile.ZipFile(experiment_run.get_artifact("custom_modules"), 'r') as zipf:
+        custom_modules = experiment_run.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        with zipfile.ZipFile(custom_modules, 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
     def test_model_api(self, experiment_run, model_for_deployment, model_packaging):

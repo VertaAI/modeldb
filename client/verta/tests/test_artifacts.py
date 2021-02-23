@@ -521,8 +521,8 @@ class TestArbitraryModels:
     @staticmethod
     def _assert_no_deployment_artifacts(experiment_run):
         artifact_keys = experiment_run.get_artifact_keys()
-        assert 'custom_modules' not in artifact_keys
-        assert 'model_api.json' not in artifact_keys
+        assert _artifact_utils.CUSTOM_MODULES_KEY not in artifact_keys
+        assert _artifact_utils.MODEL_API_KEY not in artifact_keys
 
     def test_arbitrary_file(self, experiment_run, random_data):
         with tempfile.TemporaryFile() as f:
