@@ -736,7 +736,7 @@ class RegisteredModelVersion(_DeployableEntity):
                 else:
                     raise e
 
-            downloaded_to_path = _request_utils.download(response, download_to_path, overwrite_ok=True)
+            downloaded_to_path = _request_utils.download_file(response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 
     # def archive(self):

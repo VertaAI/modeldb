@@ -20,10 +20,17 @@ from .importer import maybe_dependency, get_tensorflow_major_version
 CHUNK_SIZE = 5*10**6
 
 
+# for zip_dir()
+# dirs zipped by client need an identifiable extension to unzip durig d/l
+ZIP_EXTENSION = "dir.zip"
+
+
 # NOTE: keep up-to-date with Deployment API
+MODEL_KEY = "model.pkl"
+# TODO: maybe bind constants for other keys used throughout client
 BLOCKLISTED_KEYS = {
+    MODEL_KEY,
     'model_api.json',
-    'model.pkl',
     'requirements.txt',
     'train_data',
     'tf_saved_model',
@@ -488,7 +495,7 @@ def zip_dir(dirpath):
 
     os.path.expanduser(dirpath)
 
-    tempf = tempfile.NamedTemporaryFile(suffix=".zip")
+    tempf = tempfile.NamedTemporaryFile(suffix='.'+ZIP_EXTENSION)
     with zipfile.ZipFile(tempf, 'w') as zipf:
         for root, _, files in os.walk(dirpath):
             for filename in files:

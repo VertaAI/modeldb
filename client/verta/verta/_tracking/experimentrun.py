@@ -1257,7 +1257,7 @@ class ExperimentRun(_DeployableEntity):
             train_data = None
 
         self._log_artifact(
-            "model.pkl", model, _CommonCommonService.ArtifactTypeEnum.MODEL, model_extension, method)
+            _artifact_utils.MODEL_KEY, model, _CommonCommonService.ArtifactTypeEnum.MODEL, model_extension, method)
         self._log_artifact("model_api.json", model_api,
                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'json')
         if train_data is not None:
@@ -1367,7 +1367,7 @@ class ExperimentRun(_DeployableEntity):
                                _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
         # upload model
-        self._log_artifact("model.pkl", serialized_model,
+        self._log_artifact(_artifact_utils.MODEL_KEY, serialized_model,
                            _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
 
     def get_model(self):
@@ -1380,7 +1380,7 @@ class ExperimentRun(_DeployableEntity):
             Model for deployment.
 
         """
-        model, _ = self._get_artifact("model.pkl")
+        model, _ = self._get_artifact(_artifact_utils.MODEL_KEY)
         return _artifact_utils.deserialize_model(model)
 
     def log_image(self, key, image, overwrite=False):
@@ -1646,10 +1646,6 @@ class ExperimentRun(_DeployableEntity):
         if artifact is None:
             raise KeyError("no artifact found with key {}".format(key))
 
-        # TODO: unpack dirs logged as artifacts
-        #     But we can't distinguish if a ZIP artifact is a directory we've compressed, or if it
-        #     was a ZIP file the user already had.
-
         # create parent dirs
         pathlib2.Path(download_to_path).parent.mkdir(
             parents=True, exist_ok=True)
@@ -1674,11 +1670,30 @@ class ExperimentRun(_DeployableEntity):
             with _utils.make_request("GET", url, self._conn, stream=True) as response:
                 _utils.raise_for_http_error(response)
 
-                # user-specified filepath, so overwrite
-                _request_utils.download(
-                    response, download_to_path, overwrite_ok=True)
+                if artifact.filename_extension == _artifact_utils.ZIP_EXTENSION:  # verta-created ZIP
+                    downloader = _request_utils.download_zipped_dir
+                else:
+                    downloader = _request_utils.download_file
+                downloader(response, download_to_path, overwrite_ok=True)
 
         return download_to_path
+
+    def download_model(self, download_to_path):
+        """
+        Downloads the model logged with :meth:`log_model` to path `download_to_path`.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where artifact was downloaded to. Matches `download_to_path`.
+
+        """
+        self.download_artifact(_artifact_utils.MODEL_KEY, download_to_path)
 
     def get_artifact_parts(self, key):
         endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
@@ -2244,7 +2259,7 @@ class ExperimentRun(_DeployableEntity):
                 else:
                     raise e
 
-            downloaded_to_path = _request_utils.download(
+            downloaded_to_path = _request_utils.download_file(
                 response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 
@@ -2288,7 +2303,7 @@ class ExperimentRun(_DeployableEntity):
                 else:
                     raise e
 
-            downloaded_to_path = _request_utils.download(
+            downloaded_to_path = _request_utils.download_file(
                 response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
 

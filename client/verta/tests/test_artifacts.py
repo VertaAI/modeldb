@@ -2,19 +2,21 @@ import pytest
 
 import six
 
+import filecmp
 import hashlib
 import os
 import pickle
-import shutil
 import tempfile
 import zipfile
 
 import requests
 
-from verta._internal_utils import _artifact_utils
-from verta._internal_utils import _utils
-
-from . import utils
+from verta._internal_utils import (
+    _artifact_utils,
+    _file_utils,
+    _request_utils,
+    _utils,
+)
 
 
 class TestUtils:
@@ -33,6 +35,54 @@ class TestUtils:
             whole_checksum = hashlib.sha256(tempf.read()).hexdigest()
 
             assert piecewise_checksum == whole_checksum
+
+    def test_download_file_no_collision(self, experiment_run, dir_and_files, in_tempdir):
+        source_dirpath, _ = dir_and_files
+        key = "artifact"
+
+        # create archive and move into cwd so it's deleted on teardown
+        filepath = os.path.abspath("archive.zip")
+        temp_zip = _artifact_utils.zip_dir(source_dirpath)
+        os.rename(temp_zip.name, filepath)
+
+        # upload and download file
+        experiment_run.log_artifact(key, filepath)
+        download_url = experiment_run._get_url_for_artifact(key, "GET").url
+        response = requests.get(download_url)
+        downloaded_filepath = _request_utils.download_file(
+            response, filepath, overwrite_ok=False,
+        )
+        downloaded_filepath = os.path.abspath(downloaded_filepath)
+
+        # different names
+        assert filepath != downloaded_filepath
+        # contents match
+        assert filecmp.cmp(filepath, downloaded_filepath)
+
+    def test_download_zipped_dir_no_collision(self, experiment_run, dir_and_files, in_tempdir):
+        source_dirpath, _ = dir_and_files
+        key = "artifact"
+
+        # move directory into cwd so it's deleted on teardown
+        dirpath = os.path.abspath("directory")
+        os.rename(source_dirpath, dirpath)
+
+        # upload and download directory
+        experiment_run.log_artifact(key, dirpath)
+        download_url = experiment_run._get_url_for_artifact(key, "GET").url
+        response = requests.get(download_url)
+        downloaded_dirpath = _request_utils.download_zipped_dir(
+            response, dirpath, overwrite_ok=False,
+        )
+        downloaded_dirpath = os.path.abspath(downloaded_dirpath)
+
+        # different names
+        assert dirpath != downloaded_dirpath
+        # contents match
+        dircmp = filecmp.dircmp(dirpath, downloaded_dirpath)
+        assert not dircmp.diff_files
+        assert not dircmp.left_only
+        assert not dircmp.right_only
 
 
 class TestArtifacts:
@@ -225,6 +275,18 @@ class TestArtifacts:
         new_filepath = experiment_run.download_artifact(key, new_filename)
         with open(new_filepath, 'rb') as f:
             assert pickle.load(f) == obj
+
+    def test_download_directory(self, experiment_run, strs, dir_and_files, in_tempdir):
+        key, download_path = strs[:2]
+        dirpath, _ = dir_and_files
+
+        experiment_run.log_artifact(key, dirpath)
+        experiment_run.download_artifact(key, download_path)
+
+        dircmp = filecmp.dircmp(dirpath, download_path)
+        assert not dircmp.diff_files
+        assert not dircmp.left_only
+        assert not dircmp.right_only
 
     def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
         key = strs[0]
@@ -493,6 +555,26 @@ class TestArbitraryModels:
         self._assert_no_deployment_artifacts(experiment_run)
 
 
+class TestDownloadModels:
+    def test_download_sklearn(self, experiment_run, in_tempdir):
+        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+
+        upload_filepath = "model.pkl"
+        download_filepath = "retrieved_model.pkl"
+
+        model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
+        with open(upload_filepath, 'wb') as f:
+            pickle.dump(model, f)
+
+        experiment_run.log_model(model, custom_modules=[])
+        experiment_run.download_model(download_filepath)
+
+        with open(download_filepath, 'rb') as f:
+            downloaded_model = pickle.load(f)
+
+        assert downloaded_model.get_params() == model.get_params()
+
+
 class TestImages:
     @staticmethod
     def matplotlib_to_pil(fig):
@@ -608,7 +690,7 @@ class TestOverwrite:
         experiment_run.log_model(model)
         experiment_run.log_model(new_model, overwrite=True)
 
-        assert experiment_run.get_artifact("model.pkl") == new_model
+        assert experiment_run.get_artifact(_artifact_utils.MODEL_KEY) == new_model
 
     def test_requirements(self, experiment_run):
         requirements = ["banana==1"]
