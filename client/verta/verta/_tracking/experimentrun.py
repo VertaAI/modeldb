@@ -365,7 +365,10 @@ class ExperimentRun(_DeployableEntity):
                     "PUT", url_for_artifact.url, self._conn, data=artifact_stream)
             _utils.raise_for_http_error(response)
 
-        print("upload complete ({})".format(key))
+        if key is _artifact_utils.MODEL_KEY:
+            print("model upload complete")
+        else:
+            print("upload complete ({})".format(key))
 
     def _log_artifact_path(self, key, artifact_path, artifact_type, overwrite=False):
         """
