@@ -267,7 +267,9 @@ def serialize_model(model):
             reset_stream(model)  # reset cursor to beginning in case user forgot
             model = deserialize_model(model.read())
         except (TypeError, pickle.UnpicklingError):  # unrecognized model
-            return model, None, None
+            bytestream = model
+            method = None
+            model_type = "custom"
         finally:
             reset_stream(model)  # reset cursor to beginning as a courtesy
 
