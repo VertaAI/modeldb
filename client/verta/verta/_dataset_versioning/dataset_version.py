@@ -13,6 +13,7 @@ from .._protos.public.modeldb.versioning import VersioningService_pb2 as _Versio
 from .._tracking import entity
 from .._repository import commit
 from .._internal_utils import (
+    _artifact_utils,
     _utils,
 )
 
@@ -498,7 +499,7 @@ class DatasetVersion(entity._ModelDBEntity):
         return response_msg
 
     # TODO: consolidate this with similar method in `Commit`
-    def _upload_artifact(self, dataset_component_path, file_handle, part_size=64*(10**6)):
+    def _upload_artifact(self, dataset_component_path, file_handle, part_size=_artifact_utils._64MB):
         """
         Uploads `file_handle` to ModelDB artifact store.
 
