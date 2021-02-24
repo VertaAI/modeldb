@@ -32,7 +32,7 @@ class TestLogEnvironment:
         assert experiment_run.has_environment
         reqs_before = _extract_requirements(experiment_run.get_environment())
 
-        python_env = Python(['tensorflow'])
+        python_env = Python(['tensorflow==1.2.3'])
         experiment_run.log_environment(python_env, overwrite=True)
         assert experiment_run.has_environment
         reqs_after = _extract_requirements(experiment_run.get_environment())
