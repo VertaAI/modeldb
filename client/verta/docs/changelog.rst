@@ -44,7 +44,7 @@ Backwards Incompatibilities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - `an entity created in an organization will use that organization's
   permissions settings by default, instead of defaulting to private
-  <https://github.com/VertaAI/modeldb/pull/1896>`__
+  <https://github.com/VertaAI/modeldb/pull/1993>`__
 
 New Features
 ^^^^^^^^^^^^
