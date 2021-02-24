@@ -1375,16 +1375,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
 
       Map.Entry<String, Long> entry =
-              workspaceIdByProjectId.entrySet().stream()
-                      .findFirst()
-                      .orElseThrow(() -> new ModelDBException("Project not found", Code.INTERNAL));
+          workspaceIdByProjectId.entrySet().stream()
+              .findFirst()
+              .orElseThrow(() -> new ModelDBException("Project not found", Code.INTERNAL));
       saveAuditLogs(
-              Optional.of(authService.getCurrentLoginUserInfo()),
-              ModelDBServiceActions.DELETE,
-              Collections.singletonList(entry.getKey()),
-              ModelDBUtils.getStringFromProtoObjectSilent(request),
-              ModelDBUtils.getStringFromProtoObjectSilent(response),
-              entry.getValue());
+          Optional.of(authService.getCurrentLoginUserInfo()),
+          ModelDBServiceActions.DELETE,
+          Collections.singletonList(entry.getKey()),
+          ModelDBUtils.getStringFromProtoObjectSilent(request),
+          ModelDBUtils.getStringFromProtoObjectSilent(response),
+          entry.getValue());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
