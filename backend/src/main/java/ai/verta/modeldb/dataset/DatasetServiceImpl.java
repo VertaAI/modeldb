@@ -710,25 +710,17 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       deleteRepositoriesByDatasetIds(request.getIdsList());
       DeleteDatasets.Response response =
           DeleteDatasets.Response.newBuilder().setStatus(true).build();
-      List<AuditLogLocalEntity> auditLogLocalEntities =
+      Map.Entry<String, Long> entry =
           workspaceIdByDatasetId.entrySet().stream()
-              .map(
-                  entry ->
-                      new AuditLogLocalEntity(
-                          SERVICE_NAME,
-                          authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-                          ModelDBServiceActions.DELETE,
-                          entry.getKey(),
-                          ModelDBServiceResourceTypes.DATASET,
-                          Service.MODELDB_SERVICE,
-                          MonitoringInterceptor.METHOD_NAME.get(),
-                          ModelDBUtils.getStringFromProtoObjectSilent(request),
-                          ModelDBUtils.getStringFromProtoObjectSilent(response),
-                          entry.getValue()))
-              .collect(Collectors.toList());
-      if (!auditLogLocalEntities.isEmpty()) {
-        auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
-      }
+              .findFirst()
+              .orElseThrow(() -> new ModelDBException("Dataset not found", Code.INTERNAL));
+      saveAuditLogs(
+          Optional.of(authService.getCurrentLoginUserInfo()),
+          ModelDBServiceActions.DELETE,
+          Collections.singletonList(entry.getKey()),
+          ModelDBUtils.getStringFromProtoObjectSilent(request),
+          ModelDBUtils.getStringFromProtoObjectSilent(response),
+          entry.getValue());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 

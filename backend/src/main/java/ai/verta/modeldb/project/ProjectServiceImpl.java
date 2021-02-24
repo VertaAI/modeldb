@@ -54,6 +54,7 @@ import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
@@ -69,6 +70,7 @@ import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
+import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1371,25 +1373,18 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       List<String> deletedProjectIds = projectDAO.deleteProjects(request.getIdsList());
       DeleteProjects.Response response =
           DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
-      List<AuditLogLocalEntity> auditLogLocalEntities =
-          workspaceIdByProjectId.entrySet().stream()
-              .map(
-                  entry ->
-                      new AuditLogLocalEntity(
-                          SERVICE_NAME,
-                          authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-                          ModelDBServiceActions.DELETE,
-                          entry.getKey(),
-                          ModelDBServiceResourceTypes.PROJECT,
-                          Service.MODELDB_SERVICE,
-                          MonitoringInterceptor.METHOD_NAME.get(),
-                          ModelDBUtils.getStringFromProtoObjectSilent(request),
-                          ModelDBUtils.getStringFromProtoObjectSilent(response),
-                          entry.getValue()))
-              .collect(Collectors.toList());
-      if (!auditLogLocalEntities.isEmpty()) {
-        auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
-      }
+
+      Map.Entry<String, Long> entry =
+              workspaceIdByProjectId.entrySet().stream()
+                      .findFirst()
+                      .orElseThrow(() -> new ModelDBException("Project not found", Code.INTERNAL));
+      saveAuditLogs(
+              Optional.of(authService.getCurrentLoginUserInfo()),
+              ModelDBServiceActions.DELETE,
+              Collections.singletonList(entry.getKey()),
+              ModelDBUtils.getStringFromProtoObjectSilent(request),
+              ModelDBUtils.getStringFromProtoObjectSilent(response),
+              entry.getValue());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
