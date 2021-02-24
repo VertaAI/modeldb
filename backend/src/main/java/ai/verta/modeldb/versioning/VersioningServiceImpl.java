@@ -97,28 +97,17 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       Message request,
       List<Repository> repositories,
       Message response) {
-    String vertaIdFromUserInfo =
-        authService.getVertaIdFromUserInfo(
-            userInfo.orElseGet(authService::getCurrentLoginUserInfo));
-    List<AuditLogLocalEntity> auditLogLocalEntities =
+    Repository repository =
         repositories.stream()
-            .map(
-                repository ->
-                    new AuditLogLocalEntity(
-                        SERVICE_NAME,
-                        vertaIdFromUserInfo,
-                        ModelDBServiceActions.READ,
-                        String.valueOf(repository.getId()),
-                        ModelDBServiceResourceTypes.DATASET,
-                        ServiceEnum.Service.MODELDB_SERVICE,
-                        MonitoringInterceptor.METHOD_NAME.get(),
-                        ModelDBUtils.getStringFromProtoObjectSilent(request),
-                        ModelDBUtils.getStringFromProtoObjectSilent(response),
-                        Long.valueOf(repository.getWorkspaceId())))
-            .collect(Collectors.toList());
-    if (!auditLogLocalEntities.isEmpty()) {
-      auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
-    }
+            .findFirst()
+            .orElseThrow(() -> new ModelDBException("Repository not found", Code.NOT_FOUND));
+    saveAuditLogs(
+        userInfo,
+        ModelDBServiceActions.READ,
+        Collections.singletonList(String.valueOf(repository.getId())),
+        ModelDBUtils.getStringFromProtoObjectSilent(request),
+        ModelDBUtils.getStringFromProtoObjectSilent(response),
+        Long.valueOf(repository.getWorkspaceId()));
   }
 
   @Override
