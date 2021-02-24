@@ -293,7 +293,7 @@ class RegisteredModelVersion(_DeployableEntity):
 
         """
         model_artifact = self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL)
-        return _artifact_utils.deserialize_model(model_artifact)
+        return _artifact_utils.deserialize_model(model_artifact, error_ok=True)
 
     def del_model(self):
         """
