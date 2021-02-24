@@ -37,6 +37,31 @@ Release Notes
      <>`__
 
 
+v0.17.1 (2021-02-24)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add run.log_environment()
+  <https://github.com/VertaAI/modeldb/pull/1972>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `support arbitrary models in run.log_model()
+  <https://github.com/VertaAI/modeldb/pull/1971>`__
+- `skip custom modules and model API when logging an arbitrary model
+  <https://github.com/VertaAI/modeldb/pull/1987>`__
+- `unzip artifact directories in run.download_artifact()
+  <https://github.com/VertaAI/modeldb/pull/1973>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `rename artifact key blocklist
+  <https://github.com/VertaAI/modeldb/pull/1974>`__
+- `consolidate chunk sizes with named constants
+  <https://github.com/VertaAI/modeldb/pull/1988>`__
+
+
 v0.17.0 (2021-02-16)
 --------------------
 
