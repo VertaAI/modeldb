@@ -54,6 +54,7 @@ import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
@@ -62,12 +63,14 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
+import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -649,6 +652,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.PROJECT);
       List<String> deletedProjectIds =
           projectDAO.deleteProjects(Collections.singletonList(request.getId()));
       DeleteProject.Response response =
@@ -660,7 +665,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           Collections.singletonList(request.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
-          authService.getWorkspaceIdFromUserInfo(userInfo));
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1356,16 +1361,30 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw new InvalidArgumentException("Project IDs not found in DeleteProjects request");
       }
 
+      Map<String, Long> workspaceIdByProjectId =
+          request.getIdsList().stream()
+              .collect(
+                  Collectors.toMap(
+                      id -> id,
+                      id ->
+                          roleService
+                              .getEntityResource(id, ModelDBServiceResourceTypes.PROJECT)
+                              .getWorkspaceId()));
       List<String> deletedProjectIds = projectDAO.deleteProjects(request.getIdsList());
       DeleteProjects.Response response =
           DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
+
+      Map.Entry<String, Long> entry =
+          workspaceIdByProjectId.entrySet().stream()
+              .findFirst()
+              .orElseThrow(() -> new ModelDBException("Project not found", Code.INTERNAL));
       saveAuditLogs(
-          Optional.empty(),
+          Optional.of(authService.getCurrentLoginUserInfo()),
           ModelDBServiceActions.DELETE,
-          deletedProjectIds,
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()));
+          Collections.singletonList(entry.getKey()),
+          ModelDBUtils.getStringFromProtoObjectSilent(request),
+          ModelDBUtils.getStringFromProtoObjectSilent(response),
+          entry.getValue());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
