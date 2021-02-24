@@ -40,6 +40,12 @@ Release Notes
 v0.17.0 (2021-02-16)
 --------------------
 
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `an entity created in an organization will use that organization's
+  permissions settings by default, instead of defaulting to private
+  <https://github.com/VertaAI/modeldb/pull/1896>`__
+
 New Features
 ^^^^^^^^^^^^
 - `add client.set_workspace() and client.get_workspace()
