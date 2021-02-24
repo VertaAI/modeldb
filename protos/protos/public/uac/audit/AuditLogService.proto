@@ -2,32 +2,32 @@ syntax = "proto3";
 
 package ai.verta.uac.versioning;
 
-option
-go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac/audit";
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac/audit";
 option java_multiple_files = true;
 import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
 import "common/CommonService.proto";
+import "uac/RoleService.proto";
 
 //What
 message AuditResource {
-
     // id of the resource
     string resource_id = 1;
     // the tyep of the resource
-    string resource_type = 2;
+    uac.ResourceType resource_type = 2;
     // the service the resource belongs to
-    string resource_service = 3;
+    uac.ServiceEnum.Service resource_service = 3;
+
+    uint64 workspace_id = 4;
 }
 
 //Who
 message AuditUser {
-
     //verta id of the user performing the action
     string user_id = 1;
 }
 
 message AuditLog {
-
     //Who
     AuditUser user = 1;
 
@@ -35,16 +35,20 @@ message AuditLog {
     AuditResource resource = 2;
 
     // How : the action the user performed
-    string action = 3;
+    uac.Action action = 3;
+
+    // Unique identifier for the method, like the fully qualified method name in grpc
+    string method_name = 8;
 
     //When: timestamp
     int64 ts_nano = 4;
 
-    //other metadata, this is free formed.
-    string metadata_blob = 5;
+    // IO of the request
+    google.protobuf.Value request = 5;
+    google.protobuf.Value response = 6;
 
     //local id, used for consistency
-    string local_id = 6;
+    string local_id = 7;
 }
 
 message BatchResponseRow {
@@ -57,7 +61,7 @@ message BatchResponseRow {
 message AddAuditLogBatch {
     repeated AuditLog log = 1;
     message Response {
-        repeated BatchResponseRow response_rows = 1; 
+        repeated BatchResponseRow response_rows = 1;
     }
 }
 
@@ -68,7 +72,7 @@ message RangeTimeStampPredicate {
 
 message UserPredicate {
 // the query could be with the user id or with the service the service account belongs to
-// Example 
+// Example
 // log for user with id "123"
     AuditUser user = 1;
 }
@@ -103,14 +107,14 @@ message FindAuditLog {
 service AuditLogService {
     rpc postAuditLogs (AddAuditLogBatch) returns (AddAuditLogBatch.Response) {
         option (google.api.http) = {
-            post : "/v1/audit-log/postAuditLogs" 
-            body : "*" 
+            post : "/v1/audit-log/postAuditLogs"
+            body : "*"
         };
     };
     rpc findAuditLog (FindAuditLog) returns (FindAuditLog.Response) {
         option (google.api.http) = {
-            post : "/v1/audit-log/findAuditLog" 
-            body : "*" 
+            post : "/v1/audit-log/findAuditLog"
+            body : "*"
         };
     };
 }

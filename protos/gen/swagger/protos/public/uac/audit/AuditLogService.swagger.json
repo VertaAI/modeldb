@@ -77,6 +77,121 @@
     }
   },
   "definitions": {
+    "AuthzActionEnumAuthzServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "IS_ALLOWED",
+        "GET",
+        "CREATE",
+        "READ",
+        "UPDATE",
+        "DELETE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "AuthzResourceEnumAuthzServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ORGANIZATION",
+        "TEAM",
+        "WORKSPACE",
+        "USER"
+      ],
+      "default": "UNKNOWN"
+    },
+    "DeploymentActionEnumDeploymentServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "CREATE",
+        "READ",
+        "UPDATE",
+        "DELETE",
+        "UPDATE_PERMISSIONS"
+      ],
+      "default": "UNKNOWN"
+    },
+    "DeploymentResourceEnumDeploymentServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ENDPOINT"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ModelDBActionEnumModelDBServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "CREATE",
+        "READ",
+        "UPDATE",
+        "DELETE",
+        "DEPLOY",
+        "PUBLIC_READ",
+        "UPDATE_PERMISSIONS"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ModelDBResourceEnumModelDBServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "PROJECT",
+        "EXPERIMENT",
+        "EXPERIMENT_RUN",
+        "DATASET",
+        "DATASET_VERSION",
+        "DASHBOARD",
+        "REPOSITORY",
+        "REGISTERED_MODEL"
+      ],
+      "default": "UNKNOWN"
+    },
+    "RoleActionEnumRoleServiceActions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "GET_BY_ID",
+        "GET_BY_NAME",
+        "CREATE",
+        "UPDATE",
+        "LIST",
+        "DELETE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "RoleResourceEnumRoleServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ROLE",
+        "ROLE_BINDING"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ServiceEnumService": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ROLE_SERVICE",
+        "AUTHZ_SERVICE",
+        "MODELDB_SERVICE",
+        "DEPLOYMENT_SERVICE"
+      ],
+      "default": "UNKNOWN"
+    },
     "commonPagination": {
       "type": "object",
       "properties": {
@@ -103,6 +218,14 @@
         }
       }
     },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
     "runtimeError": {
       "type": "object",
       "properties": {
@@ -121,6 +244,45 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "uacAction": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
+        },
+        "role_service_action": {
+          "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
+        },
+        "authz_service_action": {
+          "$ref": "#/definitions/AuthzActionEnumAuthzServiceActions"
+        },
+        "modeldb_service_action": {
+          "$ref": "#/definitions/ModelDBActionEnumModelDBServiceActions"
+        },
+        "deployment_service_action": {
+          "$ref": "#/definitions/DeploymentActionEnumDeploymentServiceActions"
+        }
+      },
+      "title": "An action describes a specific operation that can be performed on a service"
+    },
+    "uacResourceType": {
+      "type": "object",
+      "properties": {
+        "role_service_resource_type": {
+          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
+          "title": "Separate based on the service itself"
+        },
+        "authz_service_resource_type": {
+          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
+        },
+        "modeldb_service_resource_type": {
+          "$ref": "#/definitions/ModelDBResourceEnumModelDBServiceResourceTypes"
+        },
+        "deployment_service_resource_type": {
+          "$ref": "#/definitions/DeploymentResourceEnumDeploymentServiceResourceTypes"
         }
       }
     },
@@ -158,17 +320,24 @@
           "title": "What"
         },
         "action": {
-          "type": "string",
+          "$ref": "#/definitions/uacAction",
           "title": "How : the action the user performed"
+        },
+        "method_name": {
+          "type": "string",
+          "title": "Unique identifier for the method, like the fully qualified method name in grpc"
         },
         "ts_nano": {
           "type": "string",
           "format": "int64",
           "title": "When: timestamp"
         },
-        "metadata_blob": {
-          "type": "string",
-          "description": "other metadata, this is free formed."
+        "request": {
+          "type": "object",
+          "title": "IO of the request"
+        },
+        "response": {
+          "type": "object"
         },
         "local_id": {
           "type": "string",
@@ -199,12 +368,16 @@
           "title": "id of the resource"
         },
         "resource_type": {
-          "type": "string",
+          "$ref": "#/definitions/uacResourceType",
           "title": "the tyep of the resource"
         },
         "resource_service": {
-          "type": "string",
+          "$ref": "#/definitions/ServiceEnumService",
           "title": "the service the resource belongs to"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
         }
       },
       "title": "What"
@@ -291,7 +464,7 @@
       "properties": {
         "user": {
           "$ref": "#/definitions/versioningAuditUser",
-          "title": "the query could be with the user id or with the service the service account belongs to\nExample \nlog for user with id \"123\""
+          "title": "the query could be with the user id or with the service the service account belongs to\nExample\nlog for user with id \"123\""
         }
       }
     }
