@@ -2264,24 +2264,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           DeleteExperimentRuns.Response.newBuilder()
               .setStatus(!deleteExperimentRunsIds.isEmpty())
               .build();
-      List<AuditLogLocalEntity> auditLogLocalEntities =
-          workspaceIdByExperimentRunId.entrySet().stream()
-              .map(
-                  entry ->
-                      new AuditLogLocalEntity(
-                          SERVICE_NAME,
-                          authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-                          ModelDBServiceActions.DELETE,
-                          entry.getKey(),
-                          ModelDBServiceResourceTypes.EXPERIMENT_RUN,
-                          Service.MODELDB_SERVICE,
-                          MonitoringInterceptor.METHOD_NAME.get(),
-                          ModelDBUtils.getStringFromProtoObjectSilent(request),
-                          ModelDBUtils.getStringFromProtoObjectSilent(response),
-                          entry.getValue()))
-              .collect(Collectors.toList());
-      if (!auditLogLocalEntities.isEmpty()) {
-        auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
+
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      for (Entry<String, Long> entry : workspaceIdByExperimentRunId.entrySet()) {
+        saveAuditLogs(
+            Optional.of(currentLoginUserInfo),
+            ModelDBServiceActions.DELETE,
+            Collections.singletonList(entry.getKey()),
+            ModelDBUtils.getStringFromProtoObject(request),
+            ModelDBUtils.getStringFromProtoObject(response),
+            entry.getValue());
       }
       responseObserver.onNext(response);
       responseObserver.onCompleted();
