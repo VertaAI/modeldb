@@ -696,4 +696,12 @@ public class ModelDBUtils {
     }
     return modelDBServiceResourceTypes;
   }
+
+  public static String getStringFromProtoObjectSilent(MessageOrBuilder object) {
+    try {
+      return getStringFromProtoObject(object);
+    } catch (InvalidProtocolBufferException e) {
+      throw new ModelDBException(e);
+    }
+  }
 }
