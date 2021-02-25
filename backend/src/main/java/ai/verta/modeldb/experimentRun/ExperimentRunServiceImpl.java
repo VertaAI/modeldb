@@ -76,7 +76,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       String request,
       String response,
       Long workspaceId) {
-    saveAuditLogs(userInfo, action, Collections.singletonList(resourceId), request, response, workspaceId);
+    saveAuditLogs(
+        userInfo, action, Collections.singletonList(resourceId), request, response, workspaceId);
   }
 
   private void saveAuditLogs(
@@ -1877,14 +1878,19 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       MessageOrBuilder request,
       List<ExperimentRun> experimentRuns,
       MessageOrBuilder response,
-      ModelDBServiceActions modelDBServiceActions) throws InvalidProtocolBufferException {
-    Optional<SimpleEntry<String, Long>> workspaceIdByExperimentRunId = experimentRuns.stream()
-        .findFirst().map(experimentRun -> new SimpleEntry<>(
-            experimentRun.getId(),
-            roleService
-                .getEntityResource(
-                    experimentRun.getProjectId(), ModelDBServiceResourceTypes.PROJECT)
-                .getWorkspaceId()));
+      ModelDBServiceActions modelDBServiceActions)
+      throws InvalidProtocolBufferException {
+    Optional<SimpleEntry<String, Long>> workspaceIdByExperimentRunId =
+        experimentRuns.stream()
+            .findFirst()
+            .map(
+                experimentRun ->
+                    new SimpleEntry<>(
+                        experimentRun.getId(),
+                        roleService
+                            .getEntityResource(
+                                experimentRun.getProjectId(), ModelDBServiceResourceTypes.PROJECT)
+                            .getWorkspaceId()));
     UserInfo currentUserInfo = authService.getCurrentLoginUserInfo();
     saveAuditLogs(
         Optional.of(currentUserInfo),
@@ -1892,8 +1898,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         workspaceIdByExperimentRunId.map(SimpleEntry::getKey).orElse(""),
         ModelDBUtils.getStringFromProtoObject(request),
         ModelDBUtils.getStringFromProtoObject(response),
-        workspaceIdByExperimentRunId.map(SimpleEntry::getValue).orElse(
-            Long.valueOf(currentUserInfo.getVertaInfo().getWorkspaceId())));
+        workspaceIdByExperimentRunId
+            .map(SimpleEntry::getValue)
+            .orElse(Long.valueOf(currentUserInfo.getVertaInfo().getWorkspaceId())));
   }
 
   @Override
