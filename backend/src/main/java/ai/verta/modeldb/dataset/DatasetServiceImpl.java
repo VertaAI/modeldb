@@ -79,7 +79,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
   }
 
-  private void saveAuditLogs(
+  private void saveAuditLog(
       Optional<UserInfo> userInfo,
       ModelDBServiceActions action,
       String resourceId,
@@ -219,7 +219,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           .addAllDatasets(datasetPaginationDTO.getDatasets())
           .setTotalRecords(datasetPaginationDTO.getTotalRecords())
           .build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
           ModelDBConstants.EMPTY_STRING,
@@ -309,7 +309,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           .setTotalRecords(datasetPaginationDTO.getTotalRecords())
           .build();
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
-      saveAuditLogs(
+      saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
           ModelDBConstants.EMPTY_STRING,
@@ -376,7 +376,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseBuilder.addAllSharedDatasets(sharedDatasets);
 
       Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
-      saveAuditLogs(
+      saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
           "",
@@ -953,7 +953,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           .newBuilder()
           .addAllExperimentRuns(experimentRuns)
           .build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
           "",
