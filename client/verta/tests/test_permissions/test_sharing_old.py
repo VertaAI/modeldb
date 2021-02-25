@@ -169,7 +169,7 @@ class TestEndpoint:
 
         # PRIVATE
         private_path = "private-{}".format(path)
-        endpoint = client.create_endpoint(private_path, workspace=organization.name)
+        endpoint = client.create_endpoint(private_path, workspace=organization.name, public_within_org=False)
         with pytest.raises(ValueError, match="Endpoint not found"):
             client_2.get_endpoint(private_path, workspace=organization.name)
         endpoint.delete()
