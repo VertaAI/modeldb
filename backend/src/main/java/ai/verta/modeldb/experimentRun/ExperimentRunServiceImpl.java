@@ -72,6 +72,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   private void saveAuditLogs(
       Optional<UserInfo> userInfo,
       ModelDBServiceActions action,
+      String resourceId,
+      String request,
+      String response,
+      Long workspaceId) {
+    saveAuditLogs(userInfo, action, Collections.singletonList(resourceId), request, response, workspaceId);
+  }
+
+  private void saveAuditLogs(
+      Optional<UserInfo> userInfo,
+      ModelDBServiceActions action,
       List<String> resourceIds,
       String request,
       String response,
@@ -1867,36 +1877,23 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       MessageOrBuilder request,
       List<ExperimentRun> experimentRuns,
       MessageOrBuilder response,
-      ModelDBServiceActions modelDBServiceActions) {
-    Map<String, Long> workspaceIdByExperimentRunId =
-        experimentRuns.stream()
-            .collect(
-                Collectors.toMap(
-                    ExperimentRun::getId,
-                    experimentRun ->
-                        roleService
-                            .getEntityResource(
-                                experimentRun.getProjectId(), ModelDBServiceResourceTypes.PROJECT)
-                            .getWorkspaceId()));
-    List<AuditLogLocalEntity> auditLogLocalEntities =
-        workspaceIdByExperimentRunId.entrySet().stream()
-            .map(
-                entry ->
-                    new AuditLogLocalEntity(
-                        SERVICE_NAME,
-                        authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-                        modelDBServiceActions,
-                        entry.getKey(),
-                        ModelDBServiceResourceTypes.EXPERIMENT_RUN,
-                        Service.MODELDB_SERVICE,
-                        MonitoringInterceptor.METHOD_NAME.get(),
-                        ModelDBUtils.getStringFromProtoObjectSilent(request),
-                        ModelDBUtils.getStringFromProtoObjectSilent(response),
-                        entry.getValue()))
-            .collect(Collectors.toList());
-    if (!auditLogLocalEntities.isEmpty()) {
-      auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
-    }
+      ModelDBServiceActions modelDBServiceActions) throws InvalidProtocolBufferException {
+    Optional<SimpleEntry<String, Long>> workspaceIdByExperimentRunId = experimentRuns.stream()
+        .findFirst().map(experimentRun -> new SimpleEntry<>(
+            experimentRun.getId(),
+            roleService
+                .getEntityResource(
+                    experimentRun.getProjectId(), ModelDBServiceResourceTypes.PROJECT)
+                .getWorkspaceId()));
+    UserInfo currentUserInfo = authService.getCurrentLoginUserInfo();
+    saveAuditLogs(
+        Optional.of(currentUserInfo),
+        modelDBServiceActions,
+        workspaceIdByExperimentRunId.map(SimpleEntry::getKey).orElse(""),
+        ModelDBUtils.getStringFromProtoObject(request),
+        ModelDBUtils.getStringFromProtoObject(response),
+        workspaceIdByExperimentRunId.map(SimpleEntry::getValue).orElse(
+            Long.valueOf(currentUserInfo.getVertaInfo().getWorkspaceId())));
   }
 
   @Override
