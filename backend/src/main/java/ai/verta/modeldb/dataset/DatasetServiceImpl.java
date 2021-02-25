@@ -379,7 +379,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          "",
+          ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(responseBuilder.build()),
           workspace.getId());
@@ -956,7 +956,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          "",
+          ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           authService.getWorkspaceIdFromUserInfo(userInfo));
