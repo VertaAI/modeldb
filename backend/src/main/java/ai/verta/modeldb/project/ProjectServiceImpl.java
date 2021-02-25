@@ -720,7 +720,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          "",
+          ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspace.getId());
@@ -826,7 +826,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       saveAuditLog(
           Optional.ofNullable(userInfo),
           ModelDBServiceActions.READ,
-          "",
+          ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspace.getId());
@@ -1266,7 +1266,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          "",
+          ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspace.getId());
@@ -1476,7 +1476,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          "",
+          ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspaceId);
