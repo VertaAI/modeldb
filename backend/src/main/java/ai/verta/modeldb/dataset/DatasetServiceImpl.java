@@ -34,6 +34,7 @@ import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum.Service;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -244,6 +246,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
 
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.DATASET);
       deleteRepositoriesByDatasetIds(Collections.singletonList(request.getId()));
       DeleteDataset.Response response = DeleteDataset.Response.newBuilder().setStatus(true).build();
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
@@ -253,7 +257,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           Collections.singletonList(request.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
-          authService.getWorkspaceIdFromUserInfo(userInfo));
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -740,16 +744,29 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
 
+      Map<String, Long> workspaceIdByDatasetId =
+          request.getIdsList().stream()
+              .collect(
+                  Collectors.toMap(
+                      id -> id,
+                      id ->
+                          roleService
+                              .getEntityResource(id, ModelDBServiceResourceTypes.DATASET)
+                              .getWorkspaceId()));
       deleteRepositoriesByDatasetIds(request.getIdsList());
       DeleteDatasets.Response response =
           DeleteDatasets.Response.newBuilder().setStatus(true).build();
+      Map.Entry<String, Long> entry =
+          workspaceIdByDatasetId.entrySet().stream()
+              .findFirst()
+              .orElseThrow(() -> new ModelDBException("Dataset not found", Code.INTERNAL));
       saveAuditLogs(
-          Optional.empty(),
+          Optional.of(authService.getCurrentLoginUserInfo()),
           ModelDBServiceActions.DELETE,
-          request.getIdsList(),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()));
+          Collections.singletonList(entry.getKey()),
+          ModelDBUtils.getStringFromProtoObjectSilent(request),
+          ModelDBUtils.getStringFromProtoObjectSilent(response),
+          entry.getValue());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
