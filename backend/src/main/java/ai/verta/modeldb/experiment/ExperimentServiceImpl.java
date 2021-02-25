@@ -1338,28 +1338,24 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         throw new InvalidArgumentException("Experiment IDs not found in DeleteExperiments request");
       }
 
-      List<String> deletedIds = experimentDAO.deleteExperiments(request.getIdsList());
-      DeleteExperiments.Response response =
-          DeleteExperiments.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
-
       Map<String, String> projectIdFromExperimentMap =
-          experimentDAO.getProjectIdsByExperimentIds(deletedIds);
+          experimentDAO.getProjectIdsByExperimentIds(request.getIdsList());
       List<GetResourcesResponseItem> entityResources =
           roleService.getResourceItems(
               null,
               new HashSet<>(projectIdFromExperimentMap.values()),
               ModelDBServiceResourceTypes.PROJECT);
-      Long workspaceId =
-          entityResources.stream().findFirst().isPresent()
-              ? entityResources.stream().findFirst().get().getWorkspaceId()
-              : null;
+      List<String> deletedIds = experimentDAO.deleteExperiments(request.getIdsList());
+      DeleteExperiments.Response response =
+          DeleteExperiments.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
+
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
           ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
-          workspaceId);
+          entityResources.stream().findFirst().get().getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
