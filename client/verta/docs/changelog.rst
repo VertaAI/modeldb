@@ -44,6 +44,8 @@ New Features
 ^^^^^^^^^^^^
 - `add run.log_environment()
   <https://github.com/VertaAI/modeldb/pull/1972>`__
+- `add run.download_model()
+  <https://github.com/VertaAI/modeldb/pull/1973>`__
 
 Enhancements
 ^^^^^^^^^^^^

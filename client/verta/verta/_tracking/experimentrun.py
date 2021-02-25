@@ -1679,6 +1679,8 @@ class ExperimentRun(_DeployableEntity):
         """
         Downloads the model logged with :meth:`log_model` to path `download_to_path`.
 
+        .. versionadded:: 0.17.1
+
         Parameters
         ----------
         download_to_path : str
