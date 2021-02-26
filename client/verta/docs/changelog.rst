@@ -37,6 +37,15 @@ Release Notes
      <>`__
 
 
+v0.17.2 (2021-02-26)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `enable finding model versions based on stage
+  <https://github.com/VertaAI/modeldb/pull/2006>`__
+
+
 v0.17.1 (2021-02-24)
 --------------------
 
