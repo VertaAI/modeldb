@@ -364,10 +364,7 @@ public class ProjectEntity {
 
     GetResourcesResponseItem projectResource =
         roleService.getEntityResource(
-            Optional.of(this.id),
-            Optional.empty(),
-            Optional.empty(),
-            ModelDBServiceResourceTypes.PROJECT);
+            Optional.of(this.id), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
     projectBuilder.setVisibility(projectResource.getVisibility());
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
     projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
