@@ -98,6 +98,13 @@ public interface RoleService {
           String resourceId,
           ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
+  void createRoleBinding(
+          String roleName,
+          RoleScope roleBindingScope,
+          CollaboratorBase collaborator,
+          String resourceId,
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
   Role getRoleByName(String roleName, RoleScope roleScope);
 
   boolean deleteRoleBindings(List<String> roleBindingNames);

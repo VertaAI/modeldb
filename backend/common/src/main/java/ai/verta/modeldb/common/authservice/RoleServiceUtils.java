@@ -737,6 +737,30 @@ public class RoleServiceUtils implements RoleService {
     setRoleBindingOnAuthService(true, newRoleBinding);
   }
 
+  @Override
+  public void createRoleBinding(String roleName, RoleScope roleBindingScope, CollaboratorBase collaborator, String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    String roleBindingName =
+            buildRoleBindingName(
+                    roleName, resourceId, collaborator, modelDBServiceResourceTypes.name());
+
+    RoleBinding newRoleBinding =
+            RoleBinding.newBuilder()
+                    .setName(roleBindingName)
+                    .setScope(roleBindingScope)
+                    .setRoleName(roleName)
+                    .addEntities(collaborator.getEntities())
+                    .addResources(
+                            Resources.newBuilder()
+                                    .setService(Service.MODELDB_SERVICE)
+                                    .setResourceType(
+                                            ResourceType.newBuilder()
+                                                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                                    .addResourceIds(resourceId)
+                                    .build())
+                    .build();
+    setRoleBindingOnAuthService(true, newRoleBinding);
+  }
+
   private void setRoleBindingOnAuthService(boolean retry, RoleBinding roleBinding) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
