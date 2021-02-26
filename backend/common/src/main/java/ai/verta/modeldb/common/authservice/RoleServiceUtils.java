@@ -189,18 +189,15 @@ public class RoleServiceUtils implements RoleService {
         return Collections.emptyList();
       }
       List<GetResourcesResponseItem> responseItems = getGetResourcesResponseItems(Optional.empty(), entityName, workspaceName, modelDBServiceResourceTypes, authServiceChannel);
-      if (!responseItems.isEmpty()){
-        return responseItems;
-      } else {
-        StringBuilder errorMessage =
-                new StringBuilder("Failed to locate ")
+      return responseItems.orElseThrow(() -> 
+          new NotFoundException(
+              new StringBuilder("Failed to locate ")
                         .append(modelDBServiceResourceTypes.name())
                         .append(" resources in UAC for ")
                         .append(modelDBServiceResourceTypes.name())
                         .append(" Name ")
-                        .append(entityName.get());
-        throw new NotFoundException(errorMessage.toString());
-      }
+                        .append(entityName.get()).toString())
+      );
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
       throw ex;
