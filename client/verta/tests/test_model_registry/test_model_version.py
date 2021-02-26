@@ -425,6 +425,15 @@ class TestFind:
             assert labels1 == labels2
             assert item._msg == msg_other
 
+    def test_find_stage(self, client, created_entities):
+        # TODO: expand with other stages once client impls version transition
+        reg_model = client.create_registered_model()
+        assert len(reg_model.versions.find("stage == development")) == 0
+
+        reg_model.create_version()
+        assert len(reg_model.versions.find("stage == development")) == 1
+        assert len(reg_model.versions.find("stage == staging")) == 0
+
 
 class TestDeployability:
     """Deployment-related functionality"""
