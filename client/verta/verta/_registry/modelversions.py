@@ -20,6 +20,7 @@ class RegisteredModelVersions(_utils.LazyList):
         'time_created',
         'time_updated',
         'labels',
+        'stage',
     }
 
     def __init__(self, conn, conf):
