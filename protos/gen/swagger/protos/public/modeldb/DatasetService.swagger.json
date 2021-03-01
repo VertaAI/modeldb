@@ -701,6 +701,9 @@
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        },
+        "udf_type": {
+          "type": "string"
         }
       }
     },
