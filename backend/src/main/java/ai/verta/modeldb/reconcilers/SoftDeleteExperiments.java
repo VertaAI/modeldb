@@ -42,7 +42,7 @@ public class SoftDeleteExperiments extends Reconciler<String> {
   }
 
   @Override
-  protected void reconcile(Set<String> ids) {
+  protected ReconcileResult reconcile(Set<String> ids) {
     LOGGER.debug("Reconciling experiments " + ids.toString());
 
     deleteRoleBindings(ids);
@@ -75,6 +75,8 @@ public class SoftDeleteExperiments extends Reconciler<String> {
     } catch (Exception ex) {
       LOGGER.error("reconcile: ", ex);
     }
+
+    return new ReconcileResult();
   }
 
   private void deleteRoleBindings(Set<String> ids) {
