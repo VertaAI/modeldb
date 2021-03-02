@@ -41,7 +41,7 @@ public class SoftDeleteProjects extends Reconciler<String> {
   }
 
   @Override
-  protected void reconcile(Set<String> ids) {
+  protected ReconcileResult reconcile(Set<String> ids) {
     LOGGER.debug("Reconciling projects " + ids.toString());
 
     roleService.deleteEntityResourcesWithServiceUser(
@@ -75,5 +75,7 @@ public class SoftDeleteProjects extends Reconciler<String> {
     } catch (Exception ex) {
       LOGGER.error("reconcile: ", ex);
     }
+
+    return new ReconcileResult();
   }
 }
