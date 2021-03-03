@@ -1,13 +1,11 @@
 package ai.verta.modeldb.dataset;
 
-import static io.grpc.Status.Code.INVALID_ARGUMENT;
-
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
-import ai.verta.modeldb.*;
 import ai.verta.modeldb.Dataset;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
@@ -27,12 +25,7 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.Commit;
-import ai.verta.modeldb.versioning.CommitDAO;
-import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
-import ai.verta.modeldb.versioning.ListCommitsRequest;
-import ai.verta.modeldb.versioning.RepositoryDAO;
-import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum;
@@ -42,13 +35,17 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import static io.grpc.Status.Code.INVALID_ARGUMENT;
 
 public class DatasetServiceImpl extends DatasetServiceImplBase {
 
@@ -387,9 +384,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
-          getDatasetResponse
-              .getDataset()
-              .toBuilder()
+          getDatasetResponse.getDataset().toBuilder()
               .setDescription(request.getDescription())
               .build();
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
@@ -539,9 +534,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
-          getDatasetResponse
-              .getDataset()
-              .toBuilder()
+          getDatasetResponse.getDataset().toBuilder()
               .addAllAttributes(request.getAttributesList())
               .build();
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
@@ -689,7 +682,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     }
   }
 
-  private void deleteRepositoriesByDatasetIds(List<String> datasetIds) throws ModelDBException {
+  private void deleteRepositoriesByDatasetIds(List<String> datasetIds)
+      throws ModelDBException, ExecutionException, InterruptedException {
     for (String datasetId : datasetIds) {
       repositoryDAO.deleteRepository(
           DeleteRepositoryRequest.newBuilder()

@@ -6,15 +6,14 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 public class SoftDeleteExperimentRuns extends Reconciler<String> {
   private static final Logger LOGGER = LogManager.getLogger(SoftDeleteExperimentRuns.class);

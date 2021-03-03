@@ -17,13 +17,15 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class VersioningUtils {
   private static final Logger LOGGER = LogManager.getLogger(VersioningUtils.class);
@@ -257,7 +259,7 @@ public class VersioningUtils {
       String datasetId,
       String datasetVersionId,
       boolean checkWrite)
-      throws ModelDBException {
+      throws ModelDBException, ExecutionException, InterruptedException {
     RepositoryEntity repositoryEntity;
 
     RepositoryIdentification.Builder repositoryIdentification =
