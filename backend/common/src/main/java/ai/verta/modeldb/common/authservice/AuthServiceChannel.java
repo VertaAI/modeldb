@@ -9,9 +9,10 @@ import ai.verta.uac.*;
 import ai.verta.uac.versioning.AuditLogServiceGrpc;
 import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
-import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.TimeUnit;
 
 public class AuthServiceChannel implements AutoCloseable {
 
@@ -26,6 +27,7 @@ public class AuthServiceChannel implements AutoCloseable {
   private AuditLogServiceGrpc.AuditLogServiceBlockingStub auditLogServiceBlockingStub;
   private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStub;
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
+  private CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorServiceFutureStub;
   private String serviceUserEmail;
   private String serviceUserDevKey;
   public final Context.Key<Metadata> metadataInfo;
@@ -217,12 +219,29 @@ public class AuthServiceChannel implements AutoCloseable {
     LOGGER.trace("Header attached with stub");
   }
 
+  private void initCollaboratorServiceFutureStubChannel() {
+    Metadata requestHeaders = getMetadataHeaders();
+    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
+    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
+    collaboratorServiceFutureStub =
+        CollaboratorServiceGrpc.newFutureStub(authServiceChannel)
+            .withInterceptors(clientInterceptor);
+    LOGGER.trace("Header attached with stub");
+  }
+
   public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
       getCollaboratorServiceBlockingStub() {
     if (collaboratorServiceBlockingStub == null) {
       initCollaboratorServiceStubChannel();
     }
     return collaboratorServiceBlockingStub;
+  }
+
+  public CollaboratorServiceGrpc.CollaboratorServiceFutureStub getCollaboratorServiceFutureStub() {
+    if (collaboratorServiceFutureStub == null) {
+      initCollaboratorServiceFutureStubChannel();
+    }
+    return collaboratorServiceFutureStub;
   }
 
   @Override
