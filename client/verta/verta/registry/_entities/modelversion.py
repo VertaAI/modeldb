@@ -3,19 +3,14 @@
 from __future__ import print_function
 
 import os
-import time
+import pickle
 from google.protobuf.struct_pb2 import Value
 
 import requests
 
-from ..._tracking.entity import _ModelDBEntity
 from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
 from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
 
-import requests
-import time
-import os
-import pickle
 from ...external import six
 
 from ..._internal_utils import (
