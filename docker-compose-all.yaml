@@ -13,6 +13,7 @@ services:
             - modeldb_network
         environment:
             - VERTA_MODELDB_CONFIG:/config/config.yaml
+            - LIQUIBASE_MIGRATION:true
         volumes:
             - ./backend/config:/config/
             - ./data/artifact-store:/artifact-store/
