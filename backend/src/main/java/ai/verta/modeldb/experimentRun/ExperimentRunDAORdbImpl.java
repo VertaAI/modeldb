@@ -1533,7 +1533,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           if (!expRunHyperparameterConfigBlobMap.isEmpty()
               && expRunHyperparameterConfigBlobMap.containsKey(experimentRun.getId())) {
             experimentRun =
-                experimentRun.toBuilder()
+                experimentRun
+                    .toBuilder()
                     .addAllHyperparameters(
                         expRunHyperparameterConfigBlobMap.get(experimentRun.getId()))
                     .build();
@@ -1541,7 +1542,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           if (!expRunCodeVersionMap.isEmpty()
               && expRunCodeVersionMap.containsKey(experimentRun.getId())) {
             experimentRun =
-                experimentRun.toBuilder()
+                experimentRun
+                    .toBuilder()
                     .putAllCodeVersionFromBlob(expRunCodeVersionMap.get(experimentRun.getId()))
                     .build();
           }

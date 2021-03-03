@@ -380,8 +380,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                     + " where folder_hash = '"
                     + folderSha
                     + "'")
-            .list()
-            .stream()
+            .list().stream()
             .map(
                 d -> {
                   InternalFolderElementEntity entity = (InternalFolderElementEntity) d;

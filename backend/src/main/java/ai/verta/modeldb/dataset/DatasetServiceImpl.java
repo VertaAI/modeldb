@@ -384,7 +384,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
-          getDatasetResponse.getDataset().toBuilder()
+          getDatasetResponse
+              .getDataset()
+              .toBuilder()
               .setDescription(request.getDescription())
               .build();
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
@@ -534,7 +536,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       GetDatasetById.Response getDatasetResponse =
           repositoryDAO.getDatasetById(metadataDAO, request.getId());
       Dataset updatedDataset =
-          getDatasetResponse.getDataset().toBuilder()
+          getDatasetResponse
+              .getDataset()
+              .toBuilder()
               .addAllAttributes(request.getAttributesList())
               .build();
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
