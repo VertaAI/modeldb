@@ -1,4 +1,4 @@
-package ai.verta.modeldb.reconcilers;
+package ai.verta.modeldb.common.reconcilers;
 
 public class ReconcilerConfig {
   public int resyncPeriodSeconds = 60;

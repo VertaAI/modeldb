@@ -1,6 +1,8 @@
-package ai.verta.modeldb.reconcilers;
+package ai.verta.modeldb.common.reconcilers;
 
 import ai.verta.modeldb.common.CommonUtils;
+import org.apache.logging.log4j.Logger;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -11,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.apache.logging.log4j.Logger;
 
 public abstract class Reconciler<T> {
   final Logger logger;
