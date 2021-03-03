@@ -51,6 +51,8 @@ class RegisteredModelVersion(_DeployableEntity):
         ID of this version's Registered Model.
 
     """
+    ModelVersionMessage = _RegistryService.ModelVersion
+
     def __init__(self, conn, conf, msg):
         super(RegisteredModelVersion, self).__init__(conn, conf, _RegistryService, "registered_model_version", msg)
 
@@ -168,23 +170,21 @@ class RegisteredModelVersion(_DeployableEntity):
         return response.model_versions[0]
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, experiment_run_id=None):
-        ModelVersionMessage = _RegistryService.ModelVersion
-        SetModelVersionMessage = _RegistryService.SetModelVersion
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, experiment_run_id=None, lock_level=None):
         registered_model_id = ctx.registered_model.id
 
-        model_version_msg = ModelVersionMessage(registered_model_id=registered_model_id, version=name,
-                                                description=desc, labels=tags, attributes=attrs,
-                                                time_created=date_created, time_updated=date_created,
-                                                experiment_run_id=experiment_run_id)
+        msg = cls.ModelVersionMessage(
+            registered_model_id=registered_model_id, version=name,
+            description=desc, labels=tags, attributes=attrs,
+            time_created=date_created, time_updated=date_created,
+            experiment_run_id=experiment_run_id, lock_level=lock_level._lock_level,
+        )
         endpoint = "/api/v1/registry/registered_models/{}/model_versions".format(registered_model_id)
-        response = conn.make_proto_request("POST", endpoint, body=model_version_msg)
-        model_version = conn.must_proto_response(response, SetModelVersionMessage.Response).model_version
+        response = conn.make_proto_request("POST", endpoint, body=msg)
+        model_version = conn.must_proto_response(response, _RegistryService.SetModelVersion.Response).model_version
 
         print("created new ModelVersion: {}".format(model_version.version))
         return model_version
-
-    ModelVersionMessage = _RegistryService.ModelVersion
 
     def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
         """
