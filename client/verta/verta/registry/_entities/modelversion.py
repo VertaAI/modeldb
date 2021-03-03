@@ -8,7 +8,10 @@ from google.protobuf.struct_pb2 import Value
 
 import requests
 
-from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
+from ..._protos.public.registry import (
+    RegistryService_pb2 as _RegistryService,
+    StageService_pb2 as _StageService,
+)
 from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 from ...external import six
@@ -60,6 +63,7 @@ class RegisteredModelVersion(_DeployableEntity):
 
         return '\n'.join((
             "version: {}".format(msg.version),
+            "stage: {}".format(_StageService.StageEnum.Stage.Name(msg.stage).lower()),
             "url: {}://{}/{}/registry/{}/versions/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.registered_model_id, self.id),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
