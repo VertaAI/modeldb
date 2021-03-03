@@ -9,7 +9,6 @@ import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.reconcilers.ReconcilerUtils;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -22,6 +21,7 @@ import ai.verta.modeldb.lineage.LineageServiceImpl;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.ProjectServiceImpl;
+import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -194,7 +194,7 @@ public class App implements ApplicationContextAware {
 
       // Initialize cron jobs
       CronJobUtils.initializeCronJobs(config, services);
-      ReconcilerUtils.initialize(config, services);
+      ReconcilerInitializer.initialize(config, services);
 
       // Initialize grpc server
       ServerBuilder<?> serverBuilder = ServerBuilder.forPort(config.grpcServer.port);
