@@ -3,13 +3,13 @@
 from __future__ import print_function
 import requests
 
-from .._internal_utils._utils import NoneProtoResponse, check_unnecessary_params_warning
-from .._tracking.context import _Context
-from .._tracking.entity import _ModelDBEntity
-from .._internal_utils import _utils
+from ..._internal_utils._utils import NoneProtoResponse, check_unnecessary_params_warning
+from ..._tracking.context import _Context
+from ..._tracking.entity import _ModelDBEntity
+from ..._internal_utils import _utils
 
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.registry import RegistryService_pb2 as _RegistryService
+from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
+from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
 
 from .modelversion import RegisteredModelVersion
 from .modelversions import RegisteredModelVersions

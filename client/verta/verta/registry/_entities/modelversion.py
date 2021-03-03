@@ -8,27 +8,27 @@ from google.protobuf.struct_pb2 import Value
 
 import requests
 
-from .._tracking.entity import _ModelDBEntity
-from .._protos.public.registry import RegistryService_pb2 as _RegistryService
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
+from ..._tracking.entity import _ModelDBEntity
+from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
+from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 import requests
 import time
 import os
 import pickle
-from ..external import six
+from ...external import six
 
-from .._internal_utils import (
+from ..._internal_utils import (
     _utils,
     _artifact_utils,
     importer, _request_utils
 )
-from .._internal_utils._utils import NoneProtoResponse
-from .. import utils
+from ..._internal_utils._utils import NoneProtoResponse
+from ... import utils
 
-from .._tracking.entity import _MODEL_ARTIFACTS_ATTR_KEY
-from .._tracking.deployable_entity import _DeployableEntity
-from ..environment import _Environment, Python
+from ..._tracking.entity import _MODEL_ARTIFACTS_ATTR_KEY
+from ..._tracking.deployable_entity import _DeployableEntity
+from ...environment import _Environment, Python
 
 
 class RegisteredModelVersion(_DeployableEntity):
