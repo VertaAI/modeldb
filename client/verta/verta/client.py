@@ -58,7 +58,7 @@ from ._tracking import (
     ExperimentRuns,
 )
 
-from ._registry import (
+from .registry._entities import (
     RegisteredModel,
     RegisteredModels,
     RegisteredModelVersion,
@@ -773,7 +773,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._registry.model.RegisteredModel`
+        :class:`~verta.registry._entities.model.RegisteredModel`
 
         Raises
         ------
@@ -823,7 +823,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._registry.model.RegisteredModel`
+        :class:`~verta.registry._entities.model.RegisteredModel`
         """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
@@ -862,7 +862,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._registry.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
         """
         return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
 
@@ -1142,7 +1142,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._registry.model.RegisteredModel`
+        :class:`~verta.registry._entities.model.RegisteredModel`
 
         Raises
         ------
@@ -1193,7 +1193,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._registry.model.RegisteredModel`
+        :class:`~verta.registry._entities.model.RegisteredModel`
 
         Raises
         ------
