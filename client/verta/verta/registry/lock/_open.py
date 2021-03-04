@@ -1,6 +1,6 @@
 from ..._protos.public.registry import RegistryService_pb2
 
-from ._lock_level import _LockLevel
+from . import _LockLevel
 
 
 class Open(_LockLevel):
