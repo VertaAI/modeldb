@@ -22,6 +22,7 @@ import verta.dataset
 from verta.environment import Python
 from verta._tracking.deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
+from verta.registry import lock
 from verta._internal_utils import (
     _artifact_utils,
     _utils,
@@ -619,3 +620,17 @@ class TestArbitraryModels:
         assert model_version.get_model() == model
 
         self._assert_no_deployment_artifacts(model_version)
+
+
+class TestLockLevels:
+    @pytest.mark.parametrize("lock_level", (lock.Open(), lock.Redact(), lock.Closed()))
+    def test_creation(self, registered_model, lock_level):
+        model_ver = registered_model.create_version(lock_level=lock_level)
+        assert model_ver._msg.lock_level == lock_level._as_proto()
+        assert isinstance(model_ver.get_lock_level(), lock_level.__class__)
+
+    @pytest.mark.parametrize("lock_level", (lock.Open(), lock.Redact(), lock.Closed()))
+    def test_creation_from_run(self, registered_model, experiment_run, lock_level):
+        model_ver = registered_model.create_version_from_run(experiment_run.id, lock_level=lock_level)
+        assert model_ver._msg.lock_level == lock_level._as_proto()
+        assert isinstance(model_ver.get_lock_level(), lock_level.__class__)
