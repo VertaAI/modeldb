@@ -852,6 +852,39 @@ class RegisteredModelVersion(_DeployableEntity):
             self._msg.attributes.remove(attributes[0])
             self._update(self._msg, method="PUT")
 
+    def set_lock_level(self, lock_level):
+        """
+        Sets this model version's lock level
+
+        Parameter
+        ---------
+        lock_level : :ref:`lock level <lock-api>`
+            Lock level to set.
+
+        """
+        if not isinstance(lock_level, lock._LockLevel):
+            raise TypeError(
+                "`lock_level` must be an object from `verta.registry.lock`,"
+                " not {}".format(type(lock_level))
+            )
+
+        self._fetch_with_no_cache()
+        self._msg.lock_level = lock_level._as_proto()
+        self._update(self._msg)
+
+    def get_lock_level(self):
+        """
+        Gets this model version's lock level.
+
+        Returns
+        -------
+        lock_level : :ref:`lock level <lock-api>`
+            This model version's lock level.
+
+        """
+        self._refresh_cache()
+        return lock._LockLevel._from_proto(self._msg.lock_level)
+
     def _update(self, msg, method="PATCH", update_mask=None):
         Message = _RegistryService.SetModelVersion
         self._refresh_cache()  # to have `self._msg.registered_model_id` for URL

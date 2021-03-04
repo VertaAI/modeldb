@@ -83,7 +83,7 @@ class RegisteredModel(_ModelDBEntity):
             Labels of the Model Version.
         attrs : dict of str to {None, bool, fl«oat, int, str}, optional
             Attributes of the Model Version.
-        lock_level : :ref:`lock <lock-api>`, default ``Open()``
+        lock_level : :ref:`lock level <lock-api>`, default ``Open()``
             Lock level to set when creating this model version.
         id : str, optional
             ID of the Model Version. This parameter cannot be provided alongside `name`, and other
@@ -148,7 +148,7 @@ class RegisteredModel(_ModelDBEntity):
             Labels of the Model Version.
         attrs : dict of str to {None, bool, float, int, str}, optional
             Attributes of the Model Version.
-        lock_level : :ref:`lock <lock-api>`, default ``Open()``
+        lock_level : :ref:`lock level <lock-api>`, default ``Open()``
             Lock level to set when creating this model version.
 
         Returns
@@ -175,7 +175,7 @@ class RegisteredModel(_ModelDBEntity):
             ID of the run from which to create the model version.
         name : str, optional
             Name of the model version. If no name is provided, one will be generated.
-        lock_level : :ref:`lock <lock-api>`, default ``Open()``
+        lock_level : :ref:`lock level <lock-api>`, default ``Open()``
             Lock level to set when creating this model version.
 
         Returns
