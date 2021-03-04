@@ -1,3 +1,7 @@
 from ._closed import Closed
-from ._open import Open
-from ._redact import Redact
+# from ._open import Open
+# from ._redact import Redact
+
+closed = Closed()
+# open = Open()
+# redact = Redact()
