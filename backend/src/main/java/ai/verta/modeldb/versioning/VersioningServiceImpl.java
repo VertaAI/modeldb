@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -63,33 +62,26 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
   }
 
-  private void saveAuditLogs(
+  private void saveAuditLog(
       Optional<UserInfo> userInfo,
       ModelDBServiceActions action,
-      List<String> resourceIds,
+      String resourceId,
       String request,
       String response,
       Long workspaceId) {
-    List<AuditLogLocalEntity> auditLogLocalEntities =
-        resourceIds.stream()
-            .map(
-                resourceId ->
-                    new AuditLogLocalEntity(
-                        SERVICE_NAME,
-                        authService.getVertaIdFromUserInfo(
-                            userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
-                        action,
-                        resourceId,
-                        ModelDBServiceResourceTypes.REPOSITORY,
-                        ServiceEnum.Service.MODELDB_SERVICE,
-                        MonitoringInterceptor.METHOD_NAME.get(),
-                        request,
-                        response,
-                        workspaceId))
-            .collect(Collectors.toList());
-    if (!auditLogLocalEntities.isEmpty()) {
-      auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
-    }
+    auditLogLocalDAO.saveAuditLog(
+        new AuditLogLocalEntity(
+            SERVICE_NAME,
+            authService.getVertaIdFromUserInfo(
+                userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
+            action,
+            resourceId,
+            ModelDBServiceResourceTypes.REPOSITORY,
+            ServiceEnum.Service.MODELDB_SERVICE,
+            MonitoringInterceptor.METHOD_NAME.get(),
+            request,
+            response,
+            workspaceId));
   }
 
   private void saveAuditList(
@@ -101,10 +93,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         repositories.stream()
             .findFirst()
             .orElseThrow(() -> new ModelDBException("Repository not found", Code.NOT_FOUND));
-    saveAuditLogs(
+    saveAuditLog(
         userInfo,
         ModelDBServiceActions.READ,
-        Collections.singletonList(String.valueOf(repository.getId())),
+        String.valueOf(repository.getId()),
         ModelDBUtils.getStringFromProtoObjectSilent(request),
         ModelDBUtils.getStringFromProtoObjectSilent(response),
         Long.valueOf(repository.getWorkspaceId()));
@@ -140,10 +132,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       StreamObserver<GetRepositoryRequest.Response> responseObserver) {
     try {
       GetRepositoryRequest.Response response = repositoryDAO.getRepository(request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(response.getRepository().getId())),
+          String.valueOf(response.getRepository().getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           response.getRepository().getWorkspaceServiceId());
@@ -185,10 +177,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       SetRepository.Response response =
           repositoryDAO.setRepository(requestBuilder.build(), userInfo, true);
 
-      saveAuditLogs(
+      saveAuditLog(
           Optional.ofNullable(userInfo),
           ModelDBServiceActions.CREATE,
-          Collections.singletonList(String.valueOf(response.getRepository().getId())),
+          String.valueOf(response.getRepository().getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           response.getRepository().getWorkspaceServiceId());
@@ -222,10 +214,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       SetRepository.Response response =
           repositoryDAO.setRepository(request, authService.getCurrentLoginUserInfo(), false);
 
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(response.getRepository().getId())),
+          String.valueOf(response.getRepository().getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           response.getRepository().getWorkspaceServiceId());
@@ -252,10 +244,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               true,
               RepositoryEnums.RepositoryTypeEnum.REGULAR);
 
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          Collections.singletonList(String.valueOf(repositoryResponse.getRepository().getId())),
+          String.valueOf(repositoryResponse.getRepository().getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repositoryResponse.getRepository().getWorkspaceServiceId());
@@ -281,10 +273,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               request,
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               false);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -311,10 +303,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()));
       GetCommitRequest.Response response =
           GetCommitRequest.Response.newBuilder().setCommit(commit).build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -376,10 +368,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                   blobDAO.setBlobsAttributes(session, repoId, commitHash, blobContainers, true),
               repositoryFunction);
 
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(repository1.getId())),
+          String.valueOf(repository1.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository1.getWorkspaceServiceId());
@@ -429,10 +421,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonList(request.getCommitSha()),
           repositoryDAO);
       DeleteCommitRequest.Response response = DeleteCommitRequest.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -463,10 +455,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               request.getCommitSha(),
               request.getLocationPrefixList());
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -497,10 +489,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               request.getCommitSha(),
               request.getLocationList());
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -524,10 +516,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               .getRepository();
       ComputeRepositoryDiffRequest.Response response =
           blobDAO.computeRepositoryDiff(repositoryDAO, request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -552,10 +544,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               .getRepository();
       MergeRepositoryCommitsRequest.Response mergeResponse =
           blobDAO.mergeCommit(repositoryDAO, request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(mergeResponse),
           repository.getWorkspaceServiceId());
@@ -579,10 +571,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               .getRepository();
       RevertRepositoryCommitsRequest.Response mergeResponse =
           blobDAO.revertCommit(repositoryDAO, request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(mergeResponse),
           repository.getWorkspaceServiceId());
@@ -604,10 +596,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                   GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
               .getRepository();
       ListBranchesRequest.Response response = repositoryDAO.listBranches(request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -630,10 +622,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               .getRepository();
       GetBranchRequest.Response response =
           repositoryDAO.getBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -656,10 +648,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               .getRepository();
       SetBranchRequest.Response response =
           repositoryDAO.setBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -685,10 +677,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                   GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
               .getRepository();
       DeleteBranchRequest.Response response = repositoryDAO.deleteBranch(request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -711,10 +703,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                   GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
               .getRepository();
       ListCommitsLogRequest.Response response = repositoryDAO.listCommitsLog(request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -736,10 +728,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                   GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
               .getRepository();
       ListTagsRequest.Response response = repositoryDAO.listTags(request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -760,10 +752,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                   GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
               .getRepository();
       GetTagRequest.Response response = repositoryDAO.getTag(request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -784,10 +776,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                   GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
               .getRepository();
       SetTagRequest.Response response = repositoryDAO.setTag(request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -811,10 +803,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                   GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
               .getRepository();
       DeleteTagRequest.Response response = repositoryDAO.deleteTag(request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -877,10 +869,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               .getRepository(
                   GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
               .getRepository();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -953,10 +945,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               .getRepository(
                   GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
               .getRepository();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -1000,10 +992,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               .getRepository(
                   GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
               .getRepository();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
@@ -1054,10 +1046,10 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               .getRepository(
                   GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
               .getRepository();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(String.valueOf(repository.getId())),
+          String.valueOf(repository.getId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           repository.getWorkspaceServiceId());
