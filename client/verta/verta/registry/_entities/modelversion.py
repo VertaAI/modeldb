@@ -27,6 +27,7 @@ from ... import utils
 from ..._tracking.entity import _MODEL_ARTIFACTS_ATTR_KEY
 from ..._tracking.deployable_entity import _DeployableEntity
 from ...environment import _Environment, Python
+from .. import lock
 
 
 class RegisteredModelVersion(_DeployableEntity):
@@ -171,6 +172,8 @@ class RegisteredModelVersion(_DeployableEntity):
 
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, experiment_run_id=None, lock_level=None):
+        if lock_level is None:
+            lock_level = lock.Open()
         registered_model_id = ctx.registered_model.id
 
         msg = cls.ModelVersionMessage(
