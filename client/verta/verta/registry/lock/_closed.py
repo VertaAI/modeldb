@@ -19,5 +19,7 @@ class Closed(_LockLevel):
 
     """
 
+    _LOCK_LEVEL = RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.CLOSED
+
     def _as_proto(self):
-        return RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.CLOSED
+        return self._LOCK_LEVEL
