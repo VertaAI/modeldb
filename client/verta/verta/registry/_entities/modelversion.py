@@ -67,6 +67,7 @@ class RegisteredModelVersion(_DeployableEntity):
         return '\n'.join((
             "version: {}".format(msg.version),
             "stage: {}".format(_StageService.StageEnum.Stage.Name(msg.stage).lower()),
+            "lock level: {}".format(_RegistryService.ModelVersionLockLevelEnum.ModelVersionLockLevel.Name(msg.lock_level).lower()),
             "url: {}://{}/{}/registry/{}/versions/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.registered_model_id, self.id),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
