@@ -9,6 +9,7 @@ class _LockLevel(object):
     Base class for lock level. Not for external use.
 
     """
+
     def __repr__(self):
         return "<{} lock level>".format(self.__class__.__name__)
 

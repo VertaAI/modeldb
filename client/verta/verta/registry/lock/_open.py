@@ -18,6 +18,7 @@ class Open(_LockLevel):
         # reg_model.create_version("My Model v0", lock_level=lock.open)
 
     """
+
     @property
     def _lock_level(self):
         return RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.OPEN

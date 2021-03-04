@@ -18,6 +18,7 @@ class Redact(_LockLevel):
         # reg_model.create_version("My Model v0", lock_level=lock.redact)
 
     """
+
     @property
     def _lock_level(self):
         return RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.REDACT
