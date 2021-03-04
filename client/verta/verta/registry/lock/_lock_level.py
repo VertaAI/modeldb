@@ -16,3 +16,30 @@ class _LockLevel(object):
     @abc.abstractmethod
     def _as_proto(self):
         raise NotImplementedError
+
+    @staticmethod
+    def _from_proto(lock_level):
+        """
+        Parameters
+        ----------
+        lock_level : ``RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel``
+
+        Returns
+        -------
+        :class:`_LockLevel`
+
+        """
+        # imports here to avoid circular import in Python 2
+        from . import (
+            Closed,
+            Open,
+            Redact,
+        )
+
+        for lock_level_cls in (Closed, Open, Redact):
+            if lock_level == lock_level_cls._LOCK_LEVEL:
+                return lock_level_cls()
+        else:
+            raise ValueError(
+                "unrecognized lock level {}".format(lock_level)
+            )
