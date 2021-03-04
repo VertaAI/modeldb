@@ -339,9 +339,7 @@ class RegisteredModel(_ModelDBEntity):
     def _update(self, msg, method="PATCH"):
         response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}".format(self.id),
                                            body=msg, include_default=False)
-        Message = _RegistryService.SetRegisteredModel
-        if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
-            raise ValueError("Model not found")
+        self._conn.must_proto_response(response, _RegistryService.SetRegisteredModel.Response)
         self._clear_cache()
 
     def _get_info_list(self):

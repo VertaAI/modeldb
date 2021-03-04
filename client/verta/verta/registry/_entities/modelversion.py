@@ -886,7 +886,6 @@ class RegisteredModelVersion(_DeployableEntity):
         return lock._LockLevel._from_proto(self._msg.lock_level)
 
     def _update(self, msg, method="PATCH", update_mask=None):
-        Message = _RegistryService.SetModelVersion
         self._refresh_cache()  # to have `self._msg.registered_model_id` for URL
         if update_mask:
             url = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/full_body".format(
@@ -900,8 +899,7 @@ class RegisteredModelVersion(_DeployableEntity):
             response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
                                                      .format(self._msg.registered_model_id, self.id),
                                                      body=msg, include_default=False)
-        if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
-            raise ValueError("Model not found")
+        self._conn.must_proto_response(response, _RegistryService.SetModelVersion.Response)
         self._clear_cache()
 
     def _get_info_list(self, model_name):
