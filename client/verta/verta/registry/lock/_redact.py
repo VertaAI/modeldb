@@ -20,6 +20,3 @@ class Redact(_LockLevel):
     """
 
     _LOCK_LEVEL = RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.REDACT
-
-    def _as_proto(self):
-        return self._LOCK_LEVEL

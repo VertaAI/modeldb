@@ -10,12 +10,13 @@ class _LockLevel(object):
 
     """
 
+    _LOCK_LEVEL = None
+
     def __repr__(self):
         return "<{} lock level>".format(self.__class__.__name__)
 
-    @abc.abstractmethod
     def _as_proto(self):
-        raise NotImplementedError
+        return self._LOCK_LEVEL
 
     @staticmethod
     def _from_proto(lock_level):
