@@ -81,7 +81,7 @@ class RegisteredModel(_ModelDBEntity):
             Description of the Model Version.
         labels : list of str, optional
             Labels of the Model Version.
-        attrs : dict of str to {None, bool, fl«oat, int, str}, optional
+        attrs : dict of str to {None, bool, float, int, str}, optional
             Attributes of the Model Version.
         lock_level : :ref:`lock level <lock-api>`, default ``Open()``
             Lock level to set when creating this model version.
