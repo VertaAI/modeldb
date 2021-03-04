@@ -181,7 +181,7 @@ class RegisteredModelVersion(_DeployableEntity):
             registered_model_id=registered_model_id, version=name,
             description=desc, labels=tags, attributes=attrs,
             time_created=date_created, time_updated=date_created,
-            experiment_run_id=experiment_run_id, lock_level=lock_level._lock_level,
+            experiment_run_id=experiment_run_id, lock_level=lock_level._as_proto(),
         )
         endpoint = "/api/v1/registry/registered_models/{}/model_versions".format(registered_model_id)
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -851,7 +851,6 @@ class RegisteredModelVersion(_DeployableEntity):
         if attributes:
             self._msg.attributes.remove(attributes[0])
             self._update(self._msg, method="PUT")
-
 
     def _update(self, msg, method="PATCH", update_mask=None):
         Message = _RegistryService.SetModelVersion

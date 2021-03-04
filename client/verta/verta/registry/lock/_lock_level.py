@@ -13,6 +13,6 @@ class _LockLevel(object):
     def __repr__(self):
         return "<{} lock level>".format(self.__class__.__name__)
 
-    @abc.abstractproperty
-    def _lock_level(self):
+    @abc.abstractmethod
+    def _as_proto(self):
         raise NotImplementedError
