@@ -6,14 +6,14 @@ Lock
 .. note::
     .. versionadded:: 0.17.3
 
-.. autoclass:: verta.lock.Closed
+.. autoclass:: verta.registry.lock.Closed
     :members:
     :inherited-members:
 
-.. autoclass:: verta.lock.Open
+.. autoclass:: verta.registry.lock.Open
     :members:
     :inherited-members:
 
-.. autoclass:: verta.lock.Redact
+.. autoclass:: verta.registry.lock.Redact
     :members:
     :inherited-members:
