@@ -27,6 +27,7 @@ from ... import utils
 from ..._tracking.entity import _MODEL_ARTIFACTS_ATTR_KEY
 from ..._tracking.deployable_entity import _DeployableEntity
 from ...environment import _Environment, Python
+from .. import lock
 
 
 class RegisteredModelVersion(_DeployableEntity):
@@ -51,6 +52,8 @@ class RegisteredModelVersion(_DeployableEntity):
         ID of this version's Registered Model.
 
     """
+    ModelVersionMessage = _RegistryService.ModelVersion
+
     def __init__(self, conn, conf, msg):
         super(RegisteredModelVersion, self).__init__(conn, conf, _RegistryService, "registered_model_version", msg)
 
@@ -64,6 +67,7 @@ class RegisteredModelVersion(_DeployableEntity):
         return '\n'.join((
             "version: {}".format(msg.version),
             "stage: {}".format(_StageService.StageEnum.Stage.Name(msg.stage).lower()),
+            "lock level: {}".format(_RegistryService.ModelVersionLockLevelEnum.ModelVersionLockLevel.Name(msg.lock_level).lower()),
             "url: {}://{}/{}/registry/{}/versions/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.registered_model_id, self.id),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
@@ -168,23 +172,23 @@ class RegisteredModelVersion(_DeployableEntity):
         return response.model_versions[0]
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, experiment_run_id=None):
-        ModelVersionMessage = _RegistryService.ModelVersion
-        SetModelVersionMessage = _RegistryService.SetModelVersion
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, experiment_run_id=None, lock_level=None):
+        if lock_level is None:
+            lock_level = lock.Open()
         registered_model_id = ctx.registered_model.id
 
-        model_version_msg = ModelVersionMessage(registered_model_id=registered_model_id, version=name,
-                                                description=desc, labels=tags, attributes=attrs,
-                                                time_created=date_created, time_updated=date_created,
-                                                experiment_run_id=experiment_run_id)
+        msg = cls.ModelVersionMessage(
+            registered_model_id=registered_model_id, version=name,
+            description=desc, labels=tags, attributes=attrs,
+            time_created=date_created, time_updated=date_created,
+            experiment_run_id=experiment_run_id, lock_level=lock_level._as_proto(),
+        )
         endpoint = "/api/v1/registry/registered_models/{}/model_versions".format(registered_model_id)
-        response = conn.make_proto_request("POST", endpoint, body=model_version_msg)
-        model_version = conn.must_proto_response(response, SetModelVersionMessage.Response).model_version
+        response = conn.make_proto_request("POST", endpoint, body=msg)
+        model_version = conn.must_proto_response(response, _RegistryService.SetModelVersion.Response).model_version
 
         print("created new ModelVersion: {}".format(model_version.version))
         return model_version
-
-    ModelVersionMessage = _RegistryService.ModelVersion
 
     def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
         """
@@ -848,6 +852,38 @@ class RegisteredModelVersion(_DeployableEntity):
             self._msg.attributes.remove(attributes[0])
             self._update(self._msg, method="PUT")
 
+    def set_lock_level(self, lock_level):
+        """
+        Sets this model version's lock level
+
+        Parameter
+        ---------
+        lock_level : :ref:`lock level <lock-api>`
+            Lock level to set.
+
+        """
+        if not isinstance(lock_level, lock._LockLevel):
+            raise TypeError(
+                "`lock_level` must be an object from `verta.registry.lock`,"
+                " not {}".format(type(lock_level))
+            )
+
+        self._fetch_with_no_cache()
+        self._msg.lock_level = lock_level._as_proto()
+        self._update(self._msg)
+
+    def get_lock_level(self):
+        """
+        Gets this model version's lock level.
+
+        Returns
+        -------
+        lock_level : :ref:`lock level <lock-api>`
+            This model version's lock level.
+
+        """
+        self._refresh_cache()
+        return lock._LockLevel._from_proto(self._msg.lock_level)
 
     def _update(self, msg, method="PATCH", update_mask=None):
         Message = _RegistryService.SetModelVersion
