@@ -23,7 +23,7 @@ We begin with the :class:`~verta.client.Client`:
 .. code-block:: python
 
     from verta import Client
-    client = Client(host, email, dev_key)
+    client = Client(host, email=email, dev_key=dev_key)
     # connection successfully established
 
 ``host`` points the client to the Verta back end, ``email`` is the address you have associated
