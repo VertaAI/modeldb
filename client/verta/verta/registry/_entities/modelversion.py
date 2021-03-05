@@ -868,9 +868,12 @@ class RegisteredModelVersion(_DeployableEntity):
                 " not {}".format(type(lock_level))
             )
 
-        self._fetch_with_no_cache()
-        self._msg.lock_level = lock_level._as_proto()
-        self._update(self._msg)
+        msg = _RegistryService.SetLockModelVersionRequest(
+            lock_level=lock_level._as_proto(),
+        )
+        endpoint = "/api/v1/registry/model_versions/{}/lock".format(self.id)
+        response = self._conn.make_proto_request("PUT", endpoint, body=msg)
+        self._conn.must_proto_response(response, msg.Response)
 
     def get_lock_level(self):
         """
