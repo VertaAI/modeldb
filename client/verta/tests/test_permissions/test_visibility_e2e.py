@@ -58,6 +58,23 @@ class TestAccess:
         with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
             retrieved_entity.delete()
 
+    def test_read_registry(self, client, client_2, organization, created_entities):
+        """Registry entities erroneously masked 403s in _update()."""
+        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
+        client.set_workspace(organization.name)
+        client_2.set_workspace(organization.name)
+        visibility = OrgCustom(write=False)
+
+        reg_model = client.create_registered_model(visibility=visibility)
+        retrieved_reg_model = client_2.get_registered_model(reg_model.name)
+        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+            retrieved_reg_model.add_label("foo")
+
+        model_ver = reg_model.create_version()
+        retrieved_model_ver = retrieved_reg_model.get_version(model_ver.name)
+        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+            retrieved_model_ver.add_label("foo")
+
     @pytest.mark.parametrize(
         "entity_name",
         ["dataset", "endpoint", "project", "registered_model"],#, "repository"],
