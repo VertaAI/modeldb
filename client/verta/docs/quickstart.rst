@@ -57,7 +57,7 @@ Python 2.7 & 3.6–3.8 is supported through conda, as well!
     .. code-block:: python
 
         from verta import Client
-        client = Client(HOST, VERTA_EMAIL, VERTA_DEV_KEY)
+        client = Client(HOST, email=VERTA_EMAIL, dev_key=VERTA_DEV_KEY)
 
     *If using open-source ModelDB, leave `VERTA_EMAIL` and `VERTA_DEV_KEY` blank and set `HOST` to `localhost:3000`*
 
