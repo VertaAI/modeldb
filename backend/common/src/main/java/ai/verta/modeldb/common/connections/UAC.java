@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.connections;
 
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
+import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.uac.CollaboratorServiceGrpc;
@@ -87,6 +88,7 @@ public class UAC {
     if (clientInterceptor != null) {
       return collaboratorServiceFutureStub.withInterceptors(clientInterceptor);
     }
-    return collaboratorServiceFutureStub;
+    return collaboratorServiceFutureStub.withInterceptors(
+        MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
   }
 }
