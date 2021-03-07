@@ -740,15 +740,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             DatasetVisibilityEnum.DatasetVisibility.forNumber(
                 repository.getRepositoryVisibilityValue()));
     dataset.addAllAttributes(repository.getAttributesList());
-    List<String> tags =
-        metadataDAO.getLabels(
-            session,
-            IdentificationType.newBuilder()
-                .setIdType(VERSIONING_REPOSITORY)
-                .setIntId(repository.getId())
-                .build());
-    dataset.addAllTags(tags);
-    return dataset.build();
+    try (Session session1 = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      List<String> tags =
+          metadataDAO.getLabels(
+              session1,
+              IdentificationType.newBuilder()
+                  .setIdType(VERSIONING_REPOSITORY)
+                  .setIntId(repository.getId())
+                  .build());
+      dataset.addAllTags(tags);
+      return dataset.build();
+    }
   }
 
   @Override
