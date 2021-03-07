@@ -7,25 +7,29 @@ import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
-import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
+
+import java.io.IOException;
 
 public class ServiceSet {
   private static final Logger LOGGER = LogManager.getLogger(App.class);
 
   public ArtifactStoreService artifactStoreService = null;
   public AuthService authService;
+  public UAC uac;
   public RoleService roleService;
   public App app;
 
   public static ServiceSet fromConfig(Config config) throws IOException {
     ServiceSet set = new ServiceSet();
     set.authService = AuthServiceUtils.FromConfig(config);
-    set.roleService = RoleServiceUtils.FromConfig(config, set.authService);
+    set.uac = UAC.FromConfig(config);
+    set.roleService = RoleServiceUtils.FromConfig(config, set.authService, set.uac);
 
     // Initialize App.java singleton instance
     set.app = App.getInstance();

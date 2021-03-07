@@ -15,6 +15,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.DatasetEntity;
@@ -55,6 +56,7 @@ public class DatasetToRepositoryMigration {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private static AuthService authService;
+  private static UAC uac;
   private static RoleService roleService;
   private static CommitDAO commitDAO;
   private static RepositoryDAO repositoryDAO;
@@ -68,7 +70,8 @@ public class DatasetToRepositoryMigration {
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
     authService = AuthServiceUtils.FromConfig(ai.verta.modeldb.config.Config.getInstance());
-    roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
+    uac = UAC.FromConfig(Config.getInstance());
+    roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
 
     readOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_ONLY, null);
     writeOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_WRITE, null);

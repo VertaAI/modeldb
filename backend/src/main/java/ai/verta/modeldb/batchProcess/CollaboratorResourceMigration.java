@@ -11,6 +11,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ProjectEntity;
@@ -23,18 +24,19 @@ import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
@@ -42,6 +44,7 @@ public class CollaboratorResourceMigration {
       ModelDBHibernateUtil.getInstance();
   private static final String REPOSITORY_GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
   private static AuthService authService;
+  private static UAC uac;
   private static RoleService roleService;
   private static int paginationSize;
 
@@ -51,7 +54,8 @@ public class CollaboratorResourceMigration {
     CollaboratorResourceMigration.paginationSize = 100;
     if (Config.getInstance().hasAuth()) {
       authService = AuthServiceUtils.FromConfig(Config.getInstance());
-      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
+      uac = UAC.FromConfig(Config.getInstance());
+      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found, OSS setup found");
       return;

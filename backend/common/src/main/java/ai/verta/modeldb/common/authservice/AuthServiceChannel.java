@@ -19,7 +19,6 @@ public class AuthServiceChannel implements AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(AuthServiceChannel.class);
   private ManagedChannel authServiceChannel;
   private RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub;
-  private RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub;
   private AuthzServiceGrpc.AuthzServiceBlockingStub authzServiceBlockingStub;
   private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStub;
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
@@ -27,7 +26,6 @@ public class AuthServiceChannel implements AutoCloseable {
   private AuditLogServiceGrpc.AuditLogServiceBlockingStub auditLogServiceBlockingStub;
   private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStub;
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
-  private CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorServiceFutureStub;
   private String serviceUserEmail;
   private String serviceUserDevKey;
   public final Context.Key<Metadata> metadataInfo;
@@ -107,22 +105,6 @@ public class AuthServiceChannel implements AutoCloseable {
       initRoleServiceStubChannel();
     }
     return roleServiceBlockingStub;
-  }
-
-  private void initRoleServiceFutureStubChannel() {
-    Metadata requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
-    roleServiceFutureStub =
-        RoleServiceGrpc.newFutureStub(authServiceChannel).withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
-  }
-
-  public RoleServiceGrpc.RoleServiceFutureStub getRoleServiceFutureStub() {
-    if (roleServiceFutureStub == null) {
-      initRoleServiceFutureStubChannel();
-    }
-    return roleServiceFutureStub;
   }
 
   private void initAuthzServiceStubChannel(Metadata requestHeaders) {
@@ -219,29 +201,12 @@ public class AuthServiceChannel implements AutoCloseable {
     LOGGER.trace("Header attached with stub");
   }
 
-  private void initCollaboratorServiceFutureStubChannel() {
-    Metadata requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
-    collaboratorServiceFutureStub =
-        CollaboratorServiceGrpc.newFutureStub(authServiceChannel)
-            .withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
-  }
-
   public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
       getCollaboratorServiceBlockingStub() {
     if (collaboratorServiceBlockingStub == null) {
       initCollaboratorServiceStubChannel();
     }
     return collaboratorServiceBlockingStub;
-  }
-
-  public CollaboratorServiceGrpc.CollaboratorServiceFutureStub getCollaboratorServiceFutureStub() {
-    if (collaboratorServiceFutureStub == null) {
-      initCollaboratorServiceFutureStubChannel();
-    }
-    return collaboratorServiceFutureStub;
   }
 
   @Override

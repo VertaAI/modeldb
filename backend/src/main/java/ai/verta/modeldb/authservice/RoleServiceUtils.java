@@ -15,6 +15,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -24,27 +25,28 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.rpc.Code;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleServiceUtils
     implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
 
   public static ai.verta.modeldb.authservice.RoleService FromConfig(
-      Config config, AuthService authService) {
+      Config config, AuthService authService, UAC uac) {
     if (!config.hasAuth()) return new PublicRoleServiceUtils(authService);
-    else return new RoleServiceUtils(authService);
+    else return new RoleServiceUtils(authService, uac);
   }
 
-  public RoleServiceUtils(AuthService authService) {
-    this(Config.getInstance(), authService);
+  public RoleServiceUtils(AuthService authService, UAC uac) {
+    this(Config.getInstance(), authService, uac);
   }
 
-  private RoleServiceUtils(Config config, AuthService authService) {
+  private RoleServiceUtils(Config config, AuthService authService, UAC uac) {
     super(
         authService,
         config.authService.host,
@@ -52,7 +54,8 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
         config.mdb_service_user.email,
         config.mdb_service_user.devKey,
         config.grpcServer.requestTimeout,
-        AuthInterceptor.METADATA_INFO);
+        AuthInterceptor.METADATA_INFO,
+        uac);
   }
 
   @Override
