@@ -75,8 +75,6 @@ public class SoftDeleteExperiments extends Reconciler<String> {
         session.delete(experimentEntity);
         transaction.commit();
       }
-    } catch (Exception ex) {
-      LOGGER.error("reconcile: ", ex);
     }
 
     return new ReconcileResult();
