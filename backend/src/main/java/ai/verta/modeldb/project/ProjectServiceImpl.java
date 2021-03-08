@@ -80,6 +80,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -720,7 +721,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          projects.stream()
+              .map(Project::getId)
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspace.getId());
@@ -804,6 +807,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       Project selfOwnerProject = null;
       List<Project> sharedProjects = new ArrayList<>();
+      List<String> projectIds = new ArrayList<>();
 
       for (Project project : projectPaginationDTO.getProjects()) {
         if (userInfo == null
@@ -812,6 +816,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         } else {
           sharedProjects.add(project);
         }
+        projectIds.add(project.getId());
       }
 
       GetProjectByName.Response.Builder responseBuilder = GetProjectByName.Response.newBuilder();
@@ -826,7 +831,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       saveAuditLog(
           Optional.ofNullable(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          String.join(ModelDBConstants.COMMA_DELIMITER, projectIds),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspace.getId());
@@ -1266,7 +1271,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          projects.stream()
+              .map(Project::getId)
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspace.getId());
@@ -1476,7 +1483,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          ModelDBConstants.EMPTY_STRING,
+          String.join(ModelDBConstants.COMMA_DELIMITER, deletedProjectIds),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspaceId);
