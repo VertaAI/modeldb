@@ -35,13 +35,6 @@ import com.google.protobuf.ProtocolStringList;
 import com.google.protobuf.Value;
 import io.grpc.Status;
 import io.grpc.Status.Code;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.LockMode;
-import org.hibernate.LockOptions;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -51,6 +44,12 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 
 public class CommitDAORdbImpl implements CommitDAO {
 
@@ -130,7 +129,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       RepositoryEntity repositoryEntity)
-      throws ModelDBException, NoSuchAlgorithmException, ExecutionException, InterruptedException {
+      throws ModelDBException, NoSuchAlgorithmException {
     RepositoryIdentification repositoryIdentification =
         RepositoryIdentification.newBuilder().setRepoId(repositoryEntity.getId()).build();
     // Set parent datasetVersion
@@ -421,7 +420,7 @@ public class CommitDAORdbImpl implements CommitDAO {
   @Override
   public ListCommitsRequest.Response listCommits(
       ListCommitsRequest request, RepositoryFunction getRepository, boolean ascending)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepository.apply(session);
 
@@ -435,6 +434,8 @@ public class CommitDAORdbImpl implements CommitDAO {
           .addAllCommits(commits)
           .setTotalRecords(commitPaginationDTO.getTotalRecords())
           .build();
+    } catch (ExecutionException | InterruptedException e) {
+      throw new ModelDBException(e);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return listCommits(request, getRepository, ascending);
@@ -472,7 +473,7 @@ public class CommitDAORdbImpl implements CommitDAO {
 
   @Override
   public Commit getCommit(String commitHash, RepositoryFunction getRepository)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CommitEntity commitEntity = getCommitEntity(session, commitHash, getRepository);
 
@@ -489,13 +490,18 @@ public class CommitDAORdbImpl implements CommitDAO {
   @Override
   public CommitEntity getCommitEntity(
       Session session, String commitHash, RepositoryFunction getRepositoryFunction)
-      throws ModelDBException, ExecutionException, InterruptedException {
-    RepositoryEntity repositoryEntity = getRepositoryFunction.apply(session);
-    boolean exists =
-        VersioningUtils.commitRepositoryMappingExists(
-            session, commitHash, repositoryEntity.getId());
-    if (!exists) {
-      throw new ModelDBException("Commit_hash and repository_id mapping not found", Code.NOT_FOUND);
+      throws ModelDBException {
+    try {
+      RepositoryEntity repositoryEntity = getRepositoryFunction.apply(session);
+      boolean exists =
+          VersioningUtils.commitRepositoryMappingExists(
+              session, commitHash, repositoryEntity.getId());
+      if (!exists) {
+        throw new ModelDBException(
+            "Commit_hash and repository_id mapping not found", Code.NOT_FOUND);
+      }
+    } catch (ExecutionException | InterruptedException e) {
+      throw new ModelDBException(e);
     }
 
     return session.load(CommitEntity.class, commitHash);
@@ -523,7 +529,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryIdentification repositoryIdentification,
       List<String> datasetVersionIds,
       RepositoryDAO repositoryDAO)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity = null;
       if (repositoryIdentification != null) {
@@ -645,7 +651,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryIdentification repositoryIdentification,
       List<String> commitShas,
       RepositoryDAO repositoryDAO)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query<CommitEntity> getCommitQuery =
           session.createQuery(
@@ -783,7 +789,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       String datasetVersionId,
       List<String> tagsList,
       boolean deleteAll)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity =
           VersioningUtils.getDatasetRepositoryEntity(
@@ -817,7 +823,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       boolean addLabels,
       List<String> labelsList,
       boolean deleteAll)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String compositeId =
           VersioningUtils.getVersioningCompositeId(
@@ -1419,7 +1425,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       String datasetId,
       String datasetVersionId,
       String description)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity;
       CommitEntity commitEntity = null;
@@ -1489,7 +1495,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       String datasetVersionId)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       return blobDAO.convertToDatasetVersion(
           repositoryDAO, metadataDAO, null, datasetVersionId, false);

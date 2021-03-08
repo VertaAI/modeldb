@@ -7,18 +7,18 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.InvalidProtocolBufferException;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
-
-import javax.persistence.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import javax.persistence.*;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "project")
@@ -328,7 +328,7 @@ public class ProjectEntity {
   }
 
   public Project getProtoObject(RoleService roleService, AuthService authService)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      throws InvalidProtocolBufferException {
     Project.Builder projectBuilder =
         Project.newBuilder()
             .setId(getId())
@@ -351,33 +351,37 @@ public class ProjectEntity {
       projectBuilder.setCodeVersionSnapshot(getCode_version_snapshot().getProtoObject());
     }
 
-    GetResourcesResponseItem projectResource =
-        roleService
-            .getEntityResource(
-                Optional.of(this.id), Optional.empty(), ModelDBServiceResourceTypes.PROJECT)
-            .get();
-    projectBuilder.setVisibility(projectResource.getVisibility());
-    projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
-    projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
-    projectBuilder.setCustomPermission(projectResource.getCustomPermission());
+    try {
+      GetResourcesResponseItem projectResource =
+          roleService
+              .getEntityResource(
+                  Optional.of(this.id), Optional.empty(), ModelDBServiceResourceTypes.PROJECT)
+              .get();
+      projectBuilder.setVisibility(projectResource.getVisibility());
+      projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
+      projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+      projectBuilder.setCustomPermission(projectResource.getCustomPermission());
 
-    Workspace workspace = authService.workspaceById(false, projectResource.getWorkspaceId());
-    switch (workspace.getInternalIdCase()) {
-      case ORG_ID:
-        projectBuilder.setWorkspaceId(workspace.getOrgId());
-        projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
-        break;
-      case USER_ID:
-        projectBuilder.setWorkspaceId(workspace.getUserId());
-        projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
-        break;
+      Workspace workspace = authService.workspaceById(false, projectResource.getWorkspaceId());
+      switch (workspace.getInternalIdCase()) {
+        case ORG_ID:
+          projectBuilder.setWorkspaceId(workspace.getOrgId());
+          projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
+          break;
+        case USER_ID:
+          projectBuilder.setWorkspaceId(workspace.getUserId());
+          projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+          break;
+      }
+
+      ProjectVisibility visibility =
+          (ProjectVisibility)
+              ModelDBUtils.getOldVisibility(
+                  ModelDBServiceResourceTypes.PROJECT, projectResource.getVisibility());
+      projectBuilder.setProjectVisibility(visibility);
+    } catch (ExecutionException | InterruptedException e) {
+      throw new ModelDBException(e);
     }
-
-    ProjectVisibility visibility =
-        (ProjectVisibility)
-            ModelDBUtils.getOldVisibility(
-                ModelDBServiceResourceTypes.PROJECT, projectResource.getVisibility());
-    projectBuilder.setProjectVisibility(visibility);
 
     return projectBuilder.build();
   }

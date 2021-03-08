@@ -28,12 +28,10 @@ import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.stub.StreamObserver;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 public class ProjectServiceImpl extends ProjectServiceImplBase {
 
@@ -1123,8 +1121,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     }
   }
 
-  private String getUrlForCode(GetUrlForArtifact request)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  private String getUrlForCode(GetUrlForArtifact request) throws InvalidProtocolBufferException {
     String s3Key = null;
     Project proj = projectDAO.getProjectByID(request.getId());
     if (proj.getCodeVersionSnapshot() != null

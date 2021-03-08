@@ -26,15 +26,13 @@ import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
@@ -203,8 +201,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
   private DatasetVersionDTO getDatasetVersionDTOByDatasetId(
       String datasetId, int pageNumber, int pageLimit, boolean ascending)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException {
+      throws InvalidProtocolBufferException, ModelDBException {
 
     /*Get Data*/
     RepositoryIdentification repositoryIdentification =
@@ -244,8 +241,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   }
 
   private List<DatasetVersion> convertRepoDatasetVersions(
-      RepositoryEntity repositoryEntity, List<Commit> commitList)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      RepositoryEntity repositoryEntity, List<Commit> commitList) throws ModelDBException {
     List<DatasetVersion> datasetVersions = new ArrayList<>();
     for (Commit commit : commitList) {
       if (commit.getParentShasList().isEmpty()) {

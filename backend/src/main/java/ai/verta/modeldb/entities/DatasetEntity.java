@@ -1,24 +1,23 @@
 package ai.verta.modeldb.entities;
 
-import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
-
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import javax.persistence.*;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "dataset")
@@ -222,8 +221,7 @@ public class DatasetEntity {
     this.deleted = deleted;
   }
 
-  public Dataset getProtoObject(RoleService roleService)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public Dataset getProtoObject(RoleService roleService) throws InvalidProtocolBufferException {
     Dataset.Builder datasetBuilder =
         Dataset.newBuilder()
             .setId(getId())
@@ -239,23 +237,27 @@ public class DatasetEntity {
             .setWorkspaceId(getWorkspace())
             .setWorkspaceTypeValue(getWorkspace_type());
 
-    GetResourcesResponseItem repositoryResource =
-        roleService
-            .getEntityResource(
-                Optional.ofNullable(String.valueOf(this.id)),
-                Optional.empty(),
-                ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET)
-            .get();
-    datasetBuilder.setVisibility(repositoryResource.getVisibility());
-    datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
-    datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
-    datasetBuilder.setCustomPermission(repositoryResource.getCustomPermission());
+    try {
+      GetResourcesResponseItem repositoryResource =
+          roleService
+              .getEntityResource(
+                  Optional.ofNullable(String.valueOf(this.id)),
+                  Optional.empty(),
+                  ModelDBServiceResourceTypes.DATASET)
+              .get();
+      datasetBuilder.setVisibility(repositoryResource.getVisibility());
+      datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
+      datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
+      datasetBuilder.setCustomPermission(repositoryResource.getCustomPermission());
 
-    DatasetVisibilityEnum.DatasetVisibility visibility =
-        (DatasetVisibilityEnum.DatasetVisibility)
-            ModelDBUtils.getOldVisibility(
-                ModelDBServiceResourceTypes.DATASET, repositoryResource.getVisibility());
-    datasetBuilder.setDatasetVisibility(visibility);
+      DatasetVisibilityEnum.DatasetVisibility visibility =
+          (DatasetVisibilityEnum.DatasetVisibility)
+              ModelDBUtils.getOldVisibility(
+                  ModelDBServiceResourceTypes.DATASET, repositoryResource.getVisibility());
+      datasetBuilder.setDatasetVisibility(visibility);
+    } catch (InterruptedException | ExecutionException e) {
+      throw new ModelDBException(e);
+    }
 
     return datasetBuilder.build();
   }

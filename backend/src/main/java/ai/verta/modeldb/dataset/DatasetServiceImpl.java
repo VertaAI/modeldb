@@ -1,11 +1,13 @@
 package ai.verta.modeldb.dataset;
 
+import static io.grpc.Status.Code.INVALID_ARGUMENT;
+
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
-import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.*;
+import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
@@ -35,17 +37,13 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-
-import static io.grpc.Status.Code.INVALID_ARGUMENT;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class DatasetServiceImpl extends DatasetServiceImplBase {
 
@@ -686,8 +684,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     }
   }
 
-  private void deleteRepositoriesByDatasetIds(List<String> datasetIds)
-      throws ModelDBException, ExecutionException, InterruptedException {
+  private void deleteRepositoriesByDatasetIds(List<String> datasetIds) throws ModelDBException {
     for (String datasetId : datasetIds) {
       repositoryDAO.deleteRepository(
           DeleteRepositoryRequest.newBuilder()

@@ -10,11 +10,10 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
+import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
-
-import java.io.IOException;
 
 public class ServiceSet {
   private static final Logger LOGGER = LogManager.getLogger(App.class);

@@ -35,12 +35,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import io.grpc.Metadata;
 import io.grpc.stub.StreamObserver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
@@ -1000,7 +998,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       UserInfo currentLoginUserInfo,
       CollaboratorBase host,
       ResourceVisibility visibility)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      throws InvalidProtocolBufferException {
 
     ProjectPaginationDTO projectPaginationDTO =
         projectDAO.findProjects(findProjectsRequest, host, currentLoginUserInfo, visibility);
