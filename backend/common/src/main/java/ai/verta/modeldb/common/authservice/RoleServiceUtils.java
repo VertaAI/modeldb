@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
 import ai.verta.uac.*;
@@ -26,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 
 public class RoleServiceUtils implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
+  private final UAC uac;
   protected AuthService authService;
   private final String host;
   private final Integer port;
@@ -41,7 +43,8 @@ public class RoleServiceUtils implements RoleService {
       String serviceUserEmail,
       String serviceUserDevKey,
       Integer timeout,
-      Context.Key<Metadata> metadataInfo) {
+      Context.Key<Metadata> metadataInfo,
+      UAC uac) {
     this.authService = authService;
     this.host = host;
     this.port = port;
@@ -49,6 +52,7 @@ public class RoleServiceUtils implements RoleService {
     this.serviceUserDevKey = serviceUserDevKey;
     this.timeout = timeout;
     this.metadataInfo = metadataInfo;
+    this.uac = uac;
   }
 
   /**
@@ -256,9 +260,7 @@ public class RoleServiceUtils implements RoleService {
     workspaceName.ifPresent(getResourcesBuilder::setWorkspaceName);
 
     final ListenableFuture<GetResources.Response> response =
-        authServiceChannel
-            .getCollaboratorServiceFutureStub()
-            .getResources(getResourcesBuilder.build());
+        uac.getCollaboratorService().getResources(getResourcesBuilder.build());
     return Futures.transform(response, r -> r.getItemList(), MoreExecutors.directExecutor());
   }
 
