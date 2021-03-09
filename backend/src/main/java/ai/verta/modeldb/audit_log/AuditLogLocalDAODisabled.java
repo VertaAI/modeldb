@@ -10,5 +10,5 @@ public class AuditLogLocalDAODisabled implements AuditLogLocalDAO {
   public void saveAuditLogs(List<AuditLogLocalEntity> auditLogEntities) {}
 
   @Override
-  public void saveAuditLog(AuditLogLocalEntity auditLogEntity) {}
+  public void saveAuditLog(AuditLogLocalEntity auditLogLocalEntity) {}
 }
