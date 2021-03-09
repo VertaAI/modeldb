@@ -9,6 +9,7 @@ import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
+import ai.verta.modeldb.GetAllDatasets.Response;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
@@ -38,6 +39,7 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
@@ -196,11 +198,21 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       LOGGER.debug(
           ModelDBMessages.ACCESSIBLE_DATASET_IN_SERVICE, datasetPaginationDTO.getDatasets().size());
-      responseObserver.onNext(
-          GetAllDatasets.Response.newBuilder()
+      Workspace workspace =
+          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
+      final Response response =
+          Response.newBuilder()
               .addAllDatasets(datasetPaginationDTO.getDatasets())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
-              .build());
+              .build();
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.READ,
+          ModelDBConstants.EMPTY_STRING,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          workspace.getId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -255,7 +267,16 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.READ);
 
-      responseObserver.onNext(repositoryDAO.getDatasetById(metadataDAO, request.getId()));
+      final GetDatasetById.Response response =
+          repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          request.getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          response.getDataset().getWorkspaceServiceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -271,11 +292,21 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       DatasetPaginationDTO datasetPaginationDTO =
           repositoryDAO.findDatasets(metadataDAO, request, userInfo, ResourceVisibility.PRIVATE);
-      responseObserver.onNext(
+      final FindDatasets.Response response =
           FindDatasets.Response.newBuilder()
               .addAllDatasets(datasetPaginationDTO.getDatasets())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
-              .build());
+              .build();
+      Workspace workspace =
+          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.READ,
+          ModelDBConstants.EMPTY_STRING,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          workspace.getId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -334,6 +365,15 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
       responseBuilder.addAllSharedDatasets(sharedDatasets);
 
+      Workspace workspace =
+          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.READ,
+          ModelDBConstants.EMPTY_STRING,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(responseBuilder.build()),
+          workspace.getId());
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -817,14 +857,33 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         }
       }
 
+      final LastExperimentByDatasetId.Response response;
+      Optional<Long> workspaceServiceId;
       if (lastUpdatedExperiment != null) {
-        responseObserver.onNext(
+        response =
             LastExperimentByDatasetId.Response.newBuilder()
                 .setExperiment(lastUpdatedExperiment)
-                .build());
+                .build();
+        workspaceServiceId =
+            Optional.of(
+                projectDAO
+                    .getProjectByID(lastUpdatedExperiment.getProjectId())
+                    .getWorkspaceServiceId());
+        responseObserver.onNext(response);
       } else {
-        responseObserver.onNext(LastExperimentByDatasetId.Response.newBuilder().build());
+        response = LastExperimentByDatasetId.Response.newBuilder().build();
+        workspaceServiceId = Optional.empty();
+        responseObserver.onNext(response);
       }
+      Long workspaceId =
+          workspaceServiceId.orElse(authService.getWorkspaceIdFromUserInfo(userInfo));
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.READ,
+          request.getDatasetId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          workspaceId);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -895,10 +954,18 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         }
       }
 
-      responseObserver.onNext(
+      final GetExperimentRunByDataset.Response response =
           GetExperimentRunByDataset.Response.newBuilder()
               .addAllExperimentRuns(experimentRuns)
-              .build());
+              .build();
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.READ,
+          ModelDBConstants.EMPTY_STRING,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          authService.getWorkspaceIdFromUserInfo(userInfo));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
