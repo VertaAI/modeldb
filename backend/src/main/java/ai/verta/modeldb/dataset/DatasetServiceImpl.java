@@ -84,6 +84,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private void saveAuditLog(
       Optional<UserInfo> userInfo,
       ModelDBServiceActions action,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
       String request,
       String response,
@@ -95,7 +96,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                 userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
             action,
             resourceId,
-            ModelDBServiceResourceTypes.DATASET,
+            modelDBServiceResourceTypes,
             Service.MODELDB_SERVICE,
             MonitoringInterceptor.METHOD_NAME.get(),
             request,
@@ -125,6 +126,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.CREATE,
+          ModelDBServiceResourceTypes.DATASET,
           dataset.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
@@ -208,7 +210,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          ModelDBServiceResourceTypes.DATASET,
+          datasetPaginationDTO.getDatasets().stream()
+              .map(Dataset::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspace.getId());
@@ -238,6 +243,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.DELETE,
+          ModelDBServiceResourceTypes.DATASET,
           request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
@@ -272,6 +278,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
+          ModelDBServiceResourceTypes.DATASET,
           request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
@@ -302,7 +309,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          ModelDBServiceResourceTypes.DATASET,
+          datasetPaginationDTO.getDatasets().stream()
+              .map(Dataset::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspace.getId());
@@ -368,9 +378,12 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       Workspace workspace =
           roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
       saveAuditLog(
-          Optional.of(userInfo),
+          Optional.ofNullable(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          ModelDBServiceResourceTypes.DATASET,
+          datasetPaginationDTO.getDatasets().stream()
+              .map(Dataset::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(responseBuilder.build()),
           workspace.getId());
@@ -417,6 +430,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.UPDATE,
+          ModelDBServiceResourceTypes.DATASET,
           request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
@@ -460,6 +474,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.UPDATE,
+          ModelDBServiceResourceTypes.DATASET,
           request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
@@ -503,6 +518,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
+          ModelDBServiceResourceTypes.DATASET,
           request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
@@ -557,6 +573,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
+          ModelDBServiceResourceTypes.DATASET,
           request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
@@ -608,6 +625,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
+          ModelDBServiceResourceTypes.DATASET,
           request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
@@ -655,6 +673,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
+          ModelDBServiceResourceTypes.DATASET,
           request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
@@ -709,6 +728,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
+          ModelDBServiceResourceTypes.DATASET,
           request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
@@ -750,7 +770,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          ModelDBConstants.EMPTY_STRING,
+          ModelDBServiceResourceTypes.DATASET,
+          String.join(ModelDBConstants.COMMA_DELIMITER, workspaceIdByDatasetId.keySet()),
           ModelDBUtils.getStringFromProtoObjectSilent(request),
           ModelDBUtils.getStringFromProtoObjectSilent(response),
           entry.getValue());
@@ -880,6 +901,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
+          ModelDBServiceResourceTypes.DATASET,
           request.getDatasetId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
@@ -958,13 +980,20 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           GetExperimentRunByDataset.Response.newBuilder()
               .addAllExperimentRuns(experimentRuns)
               .build();
+
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          ModelDBServiceResourceTypes.EXPERIMENT_RUN,
+          experimentRuns.stream()
+              .map(ExperimentRun::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
-          authService.getWorkspaceIdFromUserInfo(userInfo));
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 

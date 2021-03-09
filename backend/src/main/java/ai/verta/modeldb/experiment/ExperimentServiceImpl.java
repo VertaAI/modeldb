@@ -29,6 +29,7 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -211,7 +212,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.CREATE,
-          ModelDBConstants.EMPTY_STRING,
+          experiments.stream()
+              .map(Experiment::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -313,7 +316,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          experiments.stream()
+              .map(Experiment::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -948,7 +953,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
-          null);
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1090,7 +1095,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          experiments.stream()
+              .map(Experiment::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1352,7 +1359,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          ModelDBConstants.EMPTY_STRING,
+          String.join(ModelDBConstants.COMMA_DELIMITER, deletedIds),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResources.stream().findFirst().get().getWorkspaceId());

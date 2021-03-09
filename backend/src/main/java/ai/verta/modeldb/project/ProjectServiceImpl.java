@@ -1476,17 +1476,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       List<String> deletedProjectIds = projectDAO.deleteProjects(request.getIdsList());
       DeleteProjects.Response response =
           DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
-      Long workspaceId =
-          responseItems.stream().findFirst().isPresent()
-              ? responseItems.stream().findFirst().get().getWorkspaceId()
-              : null;
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
           String.join(ModelDBConstants.COMMA_DELIMITER, deletedProjectIds),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
-          workspaceId);
+          responseItems.stream().findFirst().get().getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 

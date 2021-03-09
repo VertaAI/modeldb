@@ -36,6 +36,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -231,7 +232,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          ModelDBConstants.EMPTY_STRING,
+          String.join(ModelDBConstants.COMMA_DELIMITER, deletedRunIds),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -280,7 +281,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          experimentRuns.stream()
+              .map(ExperimentRun::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -336,7 +339,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          experimentRuns.stream()
+              .map(ExperimentRun::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -455,7 +460,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          experimentRunList.stream()
+              .map(ExperimentRun::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1807,7 +1814,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          experimentRuns.stream()
+              .map(ExperimentRun::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1876,7 +1885,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     saveAuditLog(
         Optional.of(currentUserInfo),
         modelDBServiceActions,
-        ModelDBConstants.EMPTY_STRING,
+        experimentRuns.stream()
+            .map(ExperimentRun::getId) // TODO: don't save every single ID on fetch
+            .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
         ModelDBUtils.getStringFromProtoObject(request),
         ModelDBUtils.getStringFromProtoObject(response),
         workspaceIdByExperimentRunId
@@ -2029,7 +2040,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          experimentRuns.stream()
+              .map(ExperimentRun::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -2246,7 +2259,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          ModelDBConstants.EMPTY_STRING,
+          String.join(ModelDBConstants.COMMA_DELIMITER, deleteExperimentRunsIds),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           responseItems.stream().findFirst().get().getWorkspaceId());

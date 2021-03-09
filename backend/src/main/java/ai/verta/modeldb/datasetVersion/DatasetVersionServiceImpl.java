@@ -34,6 +34,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -211,7 +212,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          datasetVersionDTO.getDatasetVersions().stream()
+              .map(DatasetVersion::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -448,7 +451,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          ModelDBConstants.EMPTY_STRING,
+          datasetVersions.stream()
+              .map(DatasetVersion::getId) // TODO: don't save every single ID on fetch
+              .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -842,7 +847,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          ModelDBConstants.EMPTY_STRING,
+          String.join(ModelDBConstants.COMMA_DELIMITER, request.getIdsList()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
