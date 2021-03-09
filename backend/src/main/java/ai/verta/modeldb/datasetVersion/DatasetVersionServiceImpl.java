@@ -1,12 +1,14 @@
 package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.CreateDatasetVersion.Response;
 import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceImplBase;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
+import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -17,11 +19,13 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.MetadataDAO;
+import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.*;
-import ai.verta.uac.ServiceEnum;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
-import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
@@ -29,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,9 +49,11 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private final AuditLogLocalDAO auditLogLocalDAO;
   private static final String SERVICE_NAME =
       String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.DATASET_VERSION);
+  private final RoleService roleService;
 
   public DatasetVersionServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
+    this.roleService = serviceSet.roleService;
     this.repositoryDAO = daoSet.repositoryDAO;
     this.commitDAO = daoSet.commitDAO;
     this.blobDAO = daoSet.blobDAO;
@@ -56,25 +62,26 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
   }
 
-  private void saveAuditLogs(
-      UserInfo userInfo, String action, List<String> resourceIds, String metadataBlob) {
-    List<AuditLogLocalEntity> auditLogLocalEntities =
-        resourceIds.stream()
-            .map(
-                resourceId ->
-                    new AuditLogLocalEntity(
-                        SERVICE_NAME,
-                        authService.getVertaIdFromUserInfo(
-                            userInfo == null ? authService.getCurrentLoginUserInfo() : userInfo),
-                        action,
-                        resourceId,
-                        ModelDBConstants.DATASET_VERSION,
-                        ServiceEnum.Service.MODELDB_SERVICE.name(),
-                        metadataBlob))
-            .collect(Collectors.toList());
-    if (!auditLogLocalEntities.isEmpty()) {
-      auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
-    }
+  private void saveAuditLog(
+      Optional<UserInfo> userInfo,
+      ModelDBServiceActions action,
+      String resourceId,
+      String request,
+      String response,
+      Long workspaceId) {
+    auditLogLocalDAO.saveAuditLog(
+        new AuditLogLocalEntity(
+            SERVICE_NAME,
+            authService.getVertaIdFromUserInfo(
+                userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
+            action,
+            resourceId,
+            ModelDBServiceResourceTypes.DATASET_VERSION,
+            Service.MODELDB_SERVICE,
+            MonitoringInterceptor.METHOD_NAME.get(),
+            request,
+            response,
+            workspaceId));
   }
 
   private DatasetVersion getDatasetVersionFromRequest(
@@ -155,10 +162,19 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               repositoryEntity,
               createCommitResponse.getCommit().getCommitSha(),
               true);
-      saveAuditLogs(
-          userInfo, ModelDBConstants.CREATE, Collections.singletonList(datasetVersion.getId()), "");
-      responseObserver.onNext(
-          CreateDatasetVersion.Response.newBuilder().setDatasetVersion(datasetVersion).build());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              datasetVersion.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      CreateDatasetVersion.Response response =
+          CreateDatasetVersion.Response.newBuilder().setDatasetVersion(datasetVersion).build();
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.CREATE,
+          datasetVersion.getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -184,12 +200,23 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getPageLimit(),
               request.getAscending());
 
-      /*Build response*/
-      responseObserver.onNext(
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      final GetAllDatasetVersionsByDatasetId.Response response =
           GetAllDatasetVersionsByDatasetId.Response.newBuilder()
               .addAllDatasetVersions(datasetVersionDTO.getDatasetVersions())
               .setTotalRecords(datasetVersionDTO.getTotalRecords())
-              .build());
+              .build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          ModelDBConstants.EMPTY_STRING,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      /*Build response*/
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -267,6 +294,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw new InvalidArgumentException(ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST);
       }
 
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
       commitDAO.deleteDatasetVersions(
           request.getDatasetId().isEmpty()
               ? null
@@ -275,8 +305,15 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
                   .build(),
           Collections.singletonList(request.getId()),
           repositoryDAO);
-      saveAuditLogs(null, ModelDBConstants.DELETE, Collections.singletonList(request.getId()), "");
-      responseObserver.onNext(DeleteDatasetVersion.Response.getDefaultInstance());
+      DeleteDatasetVersion.Response response = DeleteDatasetVersion.Response.getDefaultInstance();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          request.getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -336,11 +373,23 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw new NotFoundException(
             "No datasetVersion found for dataset '" + request.getDatasetId() + "'");
       }
-      /*Build response*/
-      responseObserver.onNext(
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      final DatasetVersion datasetVersion = datasetVersions.get(0);
+      final GetLatestDatasetVersionByDatasetId.Response response =
           GetLatestDatasetVersionByDatasetId.Response.newBuilder()
-              .setDatasetVersion(datasetVersions.get(0))
-              .build());
+              .setDatasetVersion(datasetVersion)
+              .build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          datasetVersion.getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      /*Build response*/
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -388,11 +437,22 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       List<DatasetVersion> datasetVersions =
           new ArrayList<>(
               convertRepoDatasetVersions(repositoryEntity, commitPaginationDTO.getCommits()));
-      responseObserver.onNext(
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      final FindDatasetVersions.Response response =
           FindDatasetVersions.Response.newBuilder()
               .addAllDatasetVersions(datasetVersions)
               .setTotalRecords(commitPaginationDTO.getTotalRecords())
-              .build());
+              .build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          ModelDBConstants.EMPTY_STRING,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -420,19 +480,21 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getDatasetId(),
               request.getId(),
               request.getDescription());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(datasetVersion.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "update",
-              "description",
-              request.getDescription()));
-      responseObserver.onNext(
+      UpdateDatasetVersionDescription.Response response =
           UpdateDatasetVersionDescription.Response.newBuilder()
               .setDatasetVersion(datasetVersion)
-              .build());
+              .build();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          request.getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -471,17 +533,19 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getId(),
               request.getTagsList(),
               false);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(datasetVersion.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "tags",
-              new Gson().toJsonTree(request.getTagsList())));
-      responseObserver.onNext(
-          AddDatasetVersionTags.Response.newBuilder().setDatasetVersion(datasetVersion).build());
+      AddDatasetVersionTags.Response response =
+          AddDatasetVersionTags.Response.newBuilder().setDatasetVersion(datasetVersion).build();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          request.getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -520,17 +584,19 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getId(),
               request.getTagsList(),
               request.getDeleteAll());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(datasetVersion.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "delete",
-              "tags",
-              request.getDeleteAll() ? "deleteAll" : new Gson().toJsonTree(request.getTagsList())));
-      responseObserver.onNext(
-          DeleteDatasetVersionTags.Response.newBuilder().setDatasetVersion(datasetVersion).build());
+      DeleteDatasetVersionTags.Response response =
+          DeleteDatasetVersionTags.Response.newBuilder().setDatasetVersion(datasetVersion).build();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          request.getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -568,19 +634,21 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getId(),
               request.getAttributesList(),
               true);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "attributes",
-              new Gson().toJsonTree(request.getAttributesList())));
-      responseObserver.onNext(
+      AddDatasetVersionAttributes.Response response =
           AddDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
-              .build());
+              .build();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          request.getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -618,19 +686,21 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getId(),
               Collections.singletonList(request.getAttribute()),
               false);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "attributes",
-              ModelDBUtils.getStringFromProtoObject(request.getAttribute())));
-      responseObserver.onNext(
+      UpdateDatasetVersionAttributes.Response response =
           UpdateDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
-              .build());
+              .build();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          request.getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -670,8 +740,19 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION),
               request.getAttributeKeysList());
 
-      responseObserver.onNext(
-          GetDatasetVersionAttributes.Response.newBuilder().addAllAttributes(attributes).build());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      final GetDatasetVersionAttributes.Response response =
+          GetDatasetVersionAttributes.Response.newBuilder().addAllAttributes(attributes).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          request.getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -713,21 +794,21 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getAttributeKeysList(),
               Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION),
               request.getDeleteAll());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "delete",
-              "attributes",
-              request.getDeleteAll()
-                  ? "deleteAll"
-                  : new Gson().toJsonTree(request.getAttributeKeysList())));
-      responseObserver.onNext(
+      DeleteDatasetVersionAttributes.Response response =
           DeleteDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
-              .build());
+              .build();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          request.getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -754,8 +835,18 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
                   .build(),
           request.getIdsList(),
           repositoryDAO);
-      saveAuditLogs(null, ModelDBConstants.DELETE, request.getIdsList(), "");
-      responseObserver.onNext(DeleteDatasetVersions.Response.getDefaultInstance());
+      DeleteDatasetVersions.Response response = DeleteDatasetVersions.Response.getDefaultInstance();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.DELETE,
+          ModelDBConstants.EMPTY_STRING,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -780,6 +871,16 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
               request);
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          request.getDatasetVersionId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -826,16 +927,19 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           (session, repository) ->
               commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
           request);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getDatasetVersionId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "commit",
-              "versionedDatasetBlobArtifactPart",
-              ModelDBUtils.getStringFromProtoObject(request.getArtifactPart())));
-      responseObserver.onNext(CommitVersionedDatasetBlobArtifactPart.Response.newBuilder().build());
+      CommitVersionedDatasetBlobArtifactPart.Response response =
+          CommitVersionedDatasetBlobArtifactPart.Response.newBuilder().build();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          request.getDatasetVersionId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -857,6 +961,16 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
               request);
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          request.getDatasetVersionId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -885,17 +999,19 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
           request,
           artifactStoreDAO::commitMultipart);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getDatasetVersionId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "commit",
-              "multipartVersionedDatasetBlobArtifact-location",
-              request.getPathDatasetComponentBlobPath()));
-      responseObserver.onNext(
-          CommitMultipartVersionedDatasetBlobArtifact.Response.newBuilder().build());
+      CommitMultipartVersionedDatasetBlobArtifact.Response response =
+          CommitMultipartVersionedDatasetBlobArtifact.Response.newBuilder().build();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          request.getDatasetVersionId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -915,12 +1031,23 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
 
-      responseObserver.onNext(
+      final GetDatasetVersionById.Response response =
           GetDatasetVersionById.Response.newBuilder()
               .setDatasetVersion(
                   commitDAO.getDatasetVersionById(
                       repositoryDAO, blobDAO, metadataDAO, request.getId()))
-              .build());
+              .build();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              response.getDatasetVersion().getDatasetId(), ModelDBServiceResourceTypes.DATASET);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          response.getDatasetVersion().getId(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(

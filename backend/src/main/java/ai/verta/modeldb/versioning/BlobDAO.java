@@ -186,5 +186,6 @@ public interface BlobDAO {
       throws ModelDBException;
 
   FindRepositoriesBlobs.Response findRepositoriesBlobs(
-      CommitDAO commitDAO, FindRepositoriesBlobs request) throws ModelDBException;
+      CommitDAO commitDAO, FindRepositoriesBlobs request, List<Repository> repositories)
+      throws ModelDBException;
 }
