@@ -50,6 +50,7 @@ import ai.verta.modeldb.versioning.blob.diff.TypeChecker;
 import ai.verta.modeldb.versioning.blob.factory.BlobFactory;
 import ai.verta.uac.UserInfo;
 import com.amazonaws.services.s3.model.PartETag;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status;
 import java.security.NoSuchAlgorithmException;
@@ -72,6 +73,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
@@ -1653,7 +1655,8 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public FindRepositoriesBlobs.Response findRepositoriesBlobs(
-      CommitDAO commitDAO, FindRepositoriesBlobs request) throws ModelDBException {
+      CommitDAO commitDAO, FindRepositoriesBlobs request, List<Repository> repositories)
+      throws ModelDBException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
 
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
@@ -1683,13 +1686,27 @@ public class BlobDAORdbImpl implements BlobDAO {
         blobExpandedSet.addAll(blobExpandedMap.values());
       }
 
+      Function<RepositoryEntity, Repository> toProto =
+          (repositoryEntity) -> {
+            try {
+              return repositoryEntity.toProto(roleService, authService);
+            } catch (InvalidProtocolBufferException e) {
+              throw new ModelDBException(e);
+            }
+          };
+      repositories.addAll(
+          commitPaginationDTO.getCommitEntities().stream()
+              .flatMap(commitEntity -> commitEntity.getRepository().stream())
+              .map(toProto)
+              .collect(Collectors.toList()));
+
       return FindRepositoriesBlobs.Response.newBuilder()
           .addAllBlobs(blobExpandedSet)
           .setTotalRecords(totalRecords)
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return findRepositoriesBlobs(commitDAO, request);
+        return findRepositoriesBlobs(commitDAO, request, repositories);
       } else {
         throw ex;
       }
