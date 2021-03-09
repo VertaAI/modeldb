@@ -35,7 +35,6 @@ import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -68,33 +67,26 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     this.repositoryDAO = daoSet.repositoryDAO;
   }
 
-  private void saveAuditLogs(
+  private void saveAuditLog(
       Optional<UserInfo> userInfo,
       ModelDBServiceActions action,
-      List<String> resourceIds,
+      String resourceId,
       String request,
       String response,
       Long workspaceId) {
-    List<AuditLogLocalEntity> auditLogLocalEntities =
-        resourceIds.stream()
-            .map(
-                resourceId ->
-                    new AuditLogLocalEntity(
-                        SERVICE_NAME,
-                        authService.getVertaIdFromUserInfo(
-                            userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
-                        action,
-                        resourceId,
-                        ModelDBServiceResourceTypes.EXPERIMENT_RUN,
-                        Service.MODELDB_SERVICE,
-                        MonitoringInterceptor.METHOD_NAME.get(),
-                        request,
-                        response,
-                        workspaceId))
-            .collect(Collectors.toList());
-    if (!auditLogLocalEntities.isEmpty()) {
-      auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
-    }
+    auditLogLocalDAO.saveAuditLog(
+        new AuditLogLocalEntity(
+            SERVICE_NAME,
+            authService.getVertaIdFromUserInfo(
+                userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
+            action,
+            resourceId,
+            ModelDBServiceResourceTypes.EXPERIMENT_RUN,
+            Service.MODELDB_SERVICE,
+            MonitoringInterceptor.METHOD_NAME.get(),
+            request,
+            response,
+            workspaceId));
   }
 
   private void validateExperimentEntity(String experimentId) throws InvalidProtocolBufferException {
@@ -203,10 +195,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(
               experimentRun.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.CREATE,
-          Collections.singletonList(experimentRun.getId()),
+          experimentRun.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -235,10 +227,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           experimentRunDAO.deleteExperimentRuns(Collections.singletonList(request.getId()));
       DeleteExperimentRun.Response response =
           DeleteExperimentRun.Response.newBuilder().setStatus(!deletedRunIds.isEmpty()).build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          Collections.singletonList(request.getId()),
+          ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -458,10 +450,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UpdateExperimentRunDescription.Response.newBuilder()
               .setExperimentRun(updatedExperimentRun)
               .build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -495,10 +487,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
       UpdateExperimentRunName.Response response =
           UpdateExperimentRunName.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -542,10 +534,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
       AddExperimentRunTags.Response response =
           AddExperimentRunTags.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -589,10 +581,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
       AddExperimentRunTag.Response response =
           AddExperimentRunTag.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -663,10 +655,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           DeleteExperimentRunTags.Response.newBuilder()
               .setExperimentRun(updatedExperimentRun)
               .build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -712,10 +704,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           DeleteExperimentRunTag.Response.newBuilder()
               .setExperimentRun(updatedExperimentRun)
               .build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -758,10 +750,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.addExperimentRunAttributes(request.getId(), request.getAttributesList());
       AddExperimentRunAttributes.Response response =
           AddExperimentRunAttributes.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -807,10 +799,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
       DeleteExperimentRunAttributes.Response response =
           DeleteExperimentRunAttributes.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -853,10 +845,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.logObservations(
           request.getId(), Collections.singletonList(request.getObservation()));
       LogObservation.Response response = LogObservation.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -894,10 +886,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logObservations(request.getId(), request.getObservationsList());
       LogObservations.Response response = LogObservations.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -971,10 +963,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logMetrics(request.getId(), Collections.singletonList(request.getMetric()));
       LogMetric.Response response = LogMetric.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1011,10 +1003,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logMetrics(request.getId(), request.getMetricsList());
       LogMetrics.Response response = LogMetrics.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1141,10 +1133,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       GetUrlForArtifact.Response response =
           artifactStoreDAO.getUrlForArtifactMultipart(
               s3Key, request.getMethod(), request.getPartNumber(), uploadId);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1249,10 +1241,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logArtifacts(request.getId(), Collections.singletonList(artifact));
       LogArtifact.Response response = LogArtifact.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1293,10 +1285,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logArtifacts(request.getId(), artifactList);
       LogArtifacts.Response response = LogArtifacts.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1381,10 +1373,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
       LogExperimentRunCodeVersion.Response response =
           LogExperimentRunCodeVersion.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1457,10 +1449,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.logHyperparameters(
           request.getId(), Collections.singletonList(request.getHyperparameter()));
       LogHyperparameter.Response response = LogHyperparameter.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1500,10 +1492,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logHyperparameters(request.getId(), request.getHyperparametersList());
       LogHyperparameters.Response response = LogHyperparameters.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1573,10 +1565,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.logAttributes(
           request.getId(), Collections.singletonList(request.getAttribute()));
       LogAttribute.Response response = LogAttribute.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1615,10 +1607,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logAttributes(request.getId(), request.getAttributesList());
       LogAttributes.Response response = LogAttributes.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1796,10 +1788,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logJobId(request.getId(), request.getJobId());
       LogJobId.Response response = LogJobId.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1915,10 +1907,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getExperimentRunId(), request.getParentId());
       SetParentExperimentRunId.Response response =
           SetParentExperimentRunId.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getExperimentRunId()),
+          request.getExperimentRunId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1959,10 +1951,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.logDatasets(
           request.getId(), Collections.singletonList(dataset), request.getOverwrite());
       LogDataset.Response response = LogDataset.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1997,10 +1989,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.logDatasets(
           request.getId(), request.getDatasetsList(), request.getOverwrite());
       LogDatasets.Response response = LogDatasets.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -2038,10 +2030,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.deleteArtifacts(request.getId(), request.getKey());
       DeleteArtifact.Response response = DeleteArtifact.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -2063,34 +2055,24 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             "ExperimentRun IDs not found in DeleteExperimentRuns request");
       }
 
-      Map<String, Long> workspaceIdByExperimentRunId =
-          request.getIdsList().stream()
-              .collect(
-                  Collectors.toMap(
-                      id -> id,
-                      id ->
-                          roleService
-                              .getEntityResource(
-                                  experimentRunDAO.getProjectIdByExperimentRunId(id),
-                                  ModelDBServiceResourceTypes.PROJECT)
-                              .getWorkspaceId()));
+      Map<String, String> projectIdsMap =
+          experimentRunDAO.getProjectIdsFromExperimentRunIds(request.getIdsList());
+      List<GetResourcesResponseItem> responseItems =
+          roleService.getResourceItems(
+              null, new HashSet<>(projectIdsMap.values()), ModelDBServiceResourceTypes.PROJECT);
       List<String> deleteExperimentRunsIds =
           experimentRunDAO.deleteExperimentRuns(request.getIdsList());
       DeleteExperimentRuns.Response response =
           DeleteExperimentRuns.Response.newBuilder()
               .setStatus(!deleteExperimentRunsIds.isEmpty())
               .build();
-
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-      for (Entry<String, Long> entry : workspaceIdByExperimentRunId.entrySet()) {
-        saveAuditLogs(
-            Optional.of(currentLoginUserInfo),
-            ModelDBServiceActions.DELETE,
-            Collections.singletonList(entry.getKey()),
-            ModelDBUtils.getStringFromProtoObject(request),
-            ModelDBUtils.getStringFromProtoObject(response),
-            entry.getValue());
-      }
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.DELETE,
+          ModelDBConstants.EMPTY_STRING,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItems.stream().findFirst().get().getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -2123,10 +2105,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       experimentRunDAO.logVersionedInput(request);
       LogVersionedInput.Response response = LogVersionedInput.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -2185,10 +2167,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       CommitArtifactPart.Response response = experimentRunDAO.commitArtifactPart(request);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -2258,10 +2240,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       CommitMultipartArtifact.Response response =
           experimentRunDAO.commitMultipartArtifact(request, artifactStoreDAO::commitMultipart);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -2299,10 +2281,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getDeleteAll(),
           ModelDBConstants.HYPERPARAMETERS);
       DeleteHyperparameters.Response response = DeleteHyperparameters.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -2339,10 +2321,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getDeleteAll(),
           ModelDBConstants.METRICS);
       DeleteMetrics.Response response = DeleteMetrics.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -2375,10 +2357,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.deleteExperimentRunObservationsEntities(
           request.getId(), request.getObservationKeysList(), request.getDeleteAll());
       DeleteObservations.Response response = DeleteObservations.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -2479,10 +2461,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               clonedExperimentRun.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
       CloneExperimentRun.Response response =
           CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.CREATE,
-          Collections.singletonList(clonedExperimentRun.getId()),
+          clonedExperimentRun.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -2511,10 +2493,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logEnvironment(request.getId(), request.getEnvironment());
       LogEnvironment.Response response = LogEnvironment.Response.newBuilder().build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
