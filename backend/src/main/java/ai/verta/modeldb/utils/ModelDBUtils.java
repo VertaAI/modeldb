@@ -704,12 +704,4 @@ public class ModelDBUtils {
     }
     return modelDBServiceResourceTypes;
   }
-
-  public static String getStringFromProtoObjectSilent(MessageOrBuilder messageOrBuilder) {
-    try {
-      return ModelDBUtils.getStringFromProtoObject(messageOrBuilder);
-    } catch (InvalidProtocolBufferException e) {
-      throw new ModelDBException(e);
-    }
-  }
 }
