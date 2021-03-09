@@ -19,3 +19,4 @@ For additional information on how to use them, see our tutorials:
     :titlesonly:
 
     api/visibility
+    api/lock

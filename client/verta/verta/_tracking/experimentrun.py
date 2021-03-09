@@ -1378,7 +1378,7 @@ class ExperimentRun(_DeployableEntity):
 
         """
         model, _ = self._get_artifact(_artifact_utils.MODEL_KEY)
-        return _artifact_utils.deserialize_model(model)
+        return _artifact_utils.deserialize_model(model, error_ok=True)
 
     def log_image(self, key, image, overwrite=False):
         """
@@ -1678,6 +1678,8 @@ class ExperimentRun(_DeployableEntity):
     def download_model(self, download_to_path):
         """
         Downloads the model logged with :meth:`log_model` to path `download_to_path`.
+
+        .. versionadded:: 0.17.1
 
         Parameters
         ----------

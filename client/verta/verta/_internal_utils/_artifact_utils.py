@@ -260,31 +260,32 @@ def serialize_model(model):
         Framework with which the model was built.
 
     """
-    if isinstance(model, six.string_types):  # filesystem path
+    # if `model` is filesystem path
+    if isinstance(model, six.string_types):
         if os.path.isdir(model):
             return zip_dir(model), "zip", None
         else:  # filepath
             # open and continue
             model = open(model, 'rb')
 
-    if hasattr(model, 'read'):  # if `model` is file-like
+    # if `model` is file-like
+    if hasattr(model, 'read'):
         try:  # attempt to deserialize
             reset_stream(model)  # reset cursor to beginning in case user forgot
             model = deserialize_model(model.read())
-        except (TypeError, pickle.UnpicklingError):  # unrecognized model
-            bytestream = model
-            method = None
-            model_type = "custom"
+        except (TypeError, pickle.UnpicklingError):
+            # unrecognized serialization method and model type
+            return model, None, None  # return bytestream
         finally:
             reset_stream(model)  # reset cursor to beginning as a courtesy
 
-    # `model` is a class
+    # if `model` is a class
     if isinstance(model, six.class_types):
         model_type = "class"
         bytestream, method = ensure_bytestream(model)
         return bytestream, method, model_type
 
-    # `model` is an instance
+    # if`model` is an instance
     pyspark_ml_base = maybe_dependency("pyspark.ml.base")
     if pyspark_ml_base:
         # https://spark.apache.org/docs/latest/api/python/_modules/pyspark/ml/base.html
@@ -352,7 +353,7 @@ def serialize_model(model):
     return bytestream, method, model_type
 
 
-def deserialize_model(bytestring):
+def deserialize_model(bytestring, error_ok=False):
     """
     Deserializes a model from a bytestring, attempting various methods.
 
@@ -362,11 +363,20 @@ def deserialize_model(bytestring):
     ----------
     bytestring : bytes
         Bytes representing the model.
+    error_ok : bool, default False
+        Whether to return the serialized bytes if the model cannot be
+        deserialized. If False, an ``UnpicklingError`` is raised instead.
 
     Returns
     -------
     model : obj or file-like
         Model or buffered bytestream representing the model.
+
+    Raises
+    ------
+    pickle.UnpicklingError
+        If `bytestring` cannot be deserialized into an object, and `error_ok`
+        is False.
 
     """
     keras = maybe_dependency("tensorflow.keras")
@@ -405,7 +415,10 @@ def deserialize_model(bytestring):
     except:  # not a pickled object
         bytestream.seek(0)
 
-    return bytestream
+    if error_ok:
+        return bytestream
+    else:
+        raise pickle.UnpicklingError("unable to deserialize model")
 
 
 def get_stream_length(stream, chunk_size=_5MB):

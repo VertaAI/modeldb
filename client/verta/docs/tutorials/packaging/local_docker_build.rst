@@ -21,7 +21,7 @@ For example, you can run
 
 and our client will save a file named ``context.tgz`` in your folder with all the contents for the build.
 
-The Docker context can also be downloaded from a :class:`~verta._registry.modelversion.RegisteredModelVersion`:
+The Docker context can also be downloaded from a :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`:
 
 .. code-block:: python
 

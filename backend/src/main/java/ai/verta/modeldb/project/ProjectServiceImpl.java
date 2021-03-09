@@ -633,16 +633,18 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           request.getWorkspaceName().isEmpty()
               ? authService.getUsernameFromUserInfo(userInfo)
               : request.getWorkspaceName();
-      GetResourcesResponseItem responseItem =
-          roleService.getEntityResource(
-              Optional.empty(),
+      List<GetResourcesResponseItem> responseItem =
+          roleService.getEntityResourcesByName(
               Optional.of(request.getName()),
-              Optional.of(workspaceName),
+              Optional.empty(),
               ModelDBServiceResourceTypes.PROJECT);
 
       FindProjects.Builder findProjects =
           FindProjects.newBuilder()
-              .addProjectIds(responseItem.getResourceId())
+              .addAllProjectIds(
+                  responseItem.stream()
+                      .map(GetResourcesResponseItem::getResourceId)
+                      .collect(Collectors.toList()))
               .setWorkspaceName(workspaceName);
 
       ProjectPaginationDTO projectPaginationDTO =

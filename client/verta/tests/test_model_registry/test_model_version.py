@@ -22,6 +22,7 @@ import verta.dataset
 from verta.environment import Python
 from verta._tracking.deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
+from verta.registry import lock
 from verta._internal_utils import (
     _artifact_utils,
     _utils,
@@ -297,52 +298,6 @@ class TestModelVersion:
         model_version.set_description(desc)
         assert desc == model_version.get_description()
 
-    def test_list_from_client(self, client, created_entities):
-        """
-        At some point, backend API was unexpectedly changed to require model ID
-        in /model_versions/find, which broke client.registered_model_versions.
-
-        """
-        registered_model = client.create_registered_model()
-        created_entities.append(registered_model)
-
-        len(client.registered_model_versions)
-
-    def test_find(self, client, created_entities):
-        name = "registered_model_test"
-        registered_model = client.set_registered_model()
-        created_entities.append(registered_model)
-        model_version = registered_model.get_or_create_version(name=name)
-
-        find_result = registered_model.versions.find(["version == '{}'".format(name)])
-        assert len(find_result) == 1
-        for item in find_result:
-            assert item._msg == model_version._msg
-
-        tag_name = name + "_tag"
-        versions = {name + "1": registered_model.get_or_create_version(name + "1"),
-                    name + "2": registered_model.get_or_create_version(name + "2")}
-        versions[name + "1"].add_label(tag_name)
-        versions[name + "2"].add_label(tag_name)
-        versions[name + "2"].add_label("label2")
-
-        for version in versions:
-            versions[version] = registered_model.get_version(version)
-
-        find_result = registered_model.versions.find(["labels == \"{}\"".format(tag_name)])
-        assert len(find_result) == 2
-        for item in find_result:
-            assert versions[item._msg.version]
-            msg_other = versions[item._msg.version]._msg
-            item._msg.time_updated = msg_other.time_updated = 0
-            labels1 = set(item._msg.labels)
-            item._msg.labels[:] = []
-            labels2 = set(msg_other.labels)
-            msg_other.labels[:] = []
-            msg_other.model.CopyFrom(item._msg.model)
-            assert labels1 == labels2
-            assert item._msg == msg_other
-
     @pytest.mark.skip(reason="functionality postponed in Client")
     def test_archive(self, model_version):
         assert (not model_version.is_archived)
@@ -422,6 +377,64 @@ class TestModelVersion:
         assert version.get_labels() == LABELS
 
         assert version.get_attributes() == ATTRIBUTES
+
+
+class TestFind:
+    def test_list_from_client(self, client, created_entities):
+        """
+        At some point, backend API was unexpectedly changed to require model ID
+        in /model_versions/find, which broke client.registered_model_versions.
+
+        """
+        registered_model = client.create_registered_model()
+        created_entities.append(registered_model)
+
+        len(client.registered_model_versions)
+
+    def test_find(self, client, created_entities):
+        name = "registered_model_test"
+        registered_model = client.set_registered_model()
+        created_entities.append(registered_model)
+        model_version = registered_model.get_or_create_version(name=name)
+
+        find_result = registered_model.versions.find(["version == '{}'".format(name)])
+        assert len(find_result) == 1
+        for item in find_result:
+            assert item._msg == model_version._msg
+
+        tag_name = name + "_tag"
+        versions = {name + "1": registered_model.get_or_create_version(name + "1"),
+                    name + "2": registered_model.get_or_create_version(name + "2")}
+        versions[name + "1"].add_label(tag_name)
+        versions[name + "2"].add_label(tag_name)
+        versions[name + "2"].add_label("label2")
+
+        for version in versions:
+            versions[version] = registered_model.get_version(version)
+
+        find_result = registered_model.versions.find(["labels == \"{}\"".format(tag_name)])
+        assert len(find_result) == 2
+        for item in find_result:
+            assert versions[item._msg.version]
+            msg_other = versions[item._msg.version]._msg
+            item._msg.time_updated = msg_other.time_updated = 0
+            labels1 = set(item._msg.labels)
+            item._msg.labels[:] = []
+            labels2 = set(msg_other.labels)
+            msg_other.labels[:] = []
+            msg_other.model.CopyFrom(item._msg.model)
+            assert labels1 == labels2
+            assert item._msg == msg_other
+
+    def test_find_stage(self, client, created_entities):
+        # TODO: expand with other stages once client impls version transition
+        reg_model = client.create_registered_model()
+        assert len(reg_model.versions.find("stage == development")) == 0
+
+        reg_model.create_version()
+        assert len(reg_model.versions.find("stage == development")) == 1
+        assert len(reg_model.versions.find("stage == staging")) == 0
+
 
 class TestDeployability:
     """Deployment-related functionality"""
@@ -579,7 +592,7 @@ class TestArbitraryModels:
         assert _artifact_utils.MODEL_API_KEY not in artifact_keys
 
     def test_arbitrary_file(self, model_version, random_data):
-        with tempfile.TemporaryFile() as f:
+        with tempfile.NamedTemporaryFile() as f:
             f.write(random_data)
             f.seek(0)
 
@@ -607,3 +620,17 @@ class TestArbitraryModels:
         assert model_version.get_model() == model
 
         self._assert_no_deployment_artifacts(model_version)
+
+
+class TestLockLevels:
+    @pytest.mark.parametrize("lock_level", (lock.Open(), lock.Redact(), lock.Closed()))
+    def test_creation(self, registered_model, lock_level):
+        model_ver = registered_model.create_version(lock_level=lock_level)
+        assert model_ver._msg.lock_level == lock_level._as_proto()
+        assert isinstance(model_ver.get_lock_level(), lock_level.__class__)
+
+    @pytest.mark.parametrize("lock_level", (lock.Open(), lock.Redact(), lock.Closed()))
+    def test_creation_from_run(self, registered_model, experiment_run, lock_level):
+        model_ver = registered_model.create_version_from_run(experiment_run.id, lock_level=lock_level)
+        assert model_ver._msg.lock_level == lock_level._as_proto()
+        assert isinstance(model_ver.get_lock_level(), lock_level.__class__)

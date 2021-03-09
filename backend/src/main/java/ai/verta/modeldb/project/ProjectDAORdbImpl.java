@@ -22,7 +22,7 @@ import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.reconcilers.ReconcilerUtils;
+import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -727,7 +727,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       LOGGER.debug("Mark Projects as deleted : {}, count : {}", allowedProjectIds, updatedCount);
       transaction.commit();
       LOGGER.debug("Project deleted successfully");
-      allowedProjectIds.forEach(ReconcilerUtils.softDeleteProjects::insert);
+      allowedProjectIds.forEach(ReconcilerInitializer.softDeleteProjects::insert);
       return allowedProjectIds;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {

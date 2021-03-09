@@ -153,27 +153,9 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public GetResourcesResponseItem getEntityResource(
-      Optional<String> entityId, Optional<String> entityName, Optional<String> workspaceName, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      Optional<String> entityId, Optional<String> workspaceName, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      ResourceType resourceType =
-              ResourceType.newBuilder()
-                      .setModeldbServiceResourceType(modelDBServiceResourceTypes)
-                      .build();
-      Resources.Builder resources =
-              Resources.newBuilder()
-                      .setResourceType(resourceType)
-                      .setService(Service.MODELDB_SERVICE);
-      entityId.ifPresent(resources::addResourceIds);
-
-      final GetResources.Builder getResourcesBuilder = GetResources.newBuilder().setResources(resources);
-      entityName.ifPresent(getResourcesBuilder::setResourceName);
-      workspaceName.ifPresent(getResourcesBuilder::setWorkspaceName);
-
-      final GetResources.Response response =
-              authServiceChannel
-                      .getCollaboratorServiceBlockingStub()
-                      .getResources(getResourcesBuilder.build());
-      List<GetResourcesResponseItem> responseItems = response.getItemList();
+      List<GetResourcesResponseItem> responseItems = getGetResourcesResponseItems(entityId, Optional.empty(), workspaceName, modelDBServiceResourceTypes, authServiceChannel);
       if (responseItems.size() > 1) {
         LOGGER.warn(
                 "Role service returned {}"
@@ -190,18 +172,62 @@ public class RoleServiceUtils implements RoleService {
                 new StringBuilder("Failed to locate ")
                         .append(modelDBServiceResourceTypes.name())
                         .append(" resources in UAC for ")
-                        .append(modelDBServiceResourceTypes.name());
-        if (entityName.isPresent()){
-          errorMessage.append(" Name ").append(entityName);
-        } else {
-          errorMessage.append(" ID ").append(entityId);
-        }
+                        .append(modelDBServiceResourceTypes.name())
+                        .append(" ID ").append(entityId);
         throw new NotFoundException(errorMessage.toString());
       }
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
       throw ex;
     }
+  }
+
+  @Override
+  public List<GetResourcesResponseItem> getEntityResourcesByName(Optional<String> entityName, Optional<String> workspaceName, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
+      if (!entityName.isPresent()){
+        return Collections.emptyList();
+      }
+      List<GetResourcesResponseItem> responseItems = getGetResourcesResponseItems(Optional.empty(), entityName, workspaceName, modelDBServiceResourceTypes, authServiceChannel);
+      if (!responseItems.isEmpty()){
+        return responseItems;
+      } else {
+        StringBuilder errorMessage =
+            new StringBuilder("Failed to locate ")
+                .append(modelDBServiceResourceTypes.name())
+                .append(" resources in UAC for ")
+                .append(modelDBServiceResourceTypes.name())
+                .append(" Name ")
+                .append(entityName.get());
+        throw new NotFoundException(errorMessage.toString());
+      }
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      throw ex;
+    }
+  }
+
+  private List<GetResourcesResponseItem> getGetResourcesResponseItems(Optional<String> entityId, Optional<String> entityName, Optional<String> workspaceName, ModelDBServiceResourceTypes modelDBServiceResourceTypes, AuthServiceChannel authServiceChannel) {
+    ResourceType resourceType =
+            ResourceType.newBuilder()
+                    .setModeldbServiceResourceType(modelDBServiceResourceTypes)
+                    .build();
+    Resources.Builder resources =
+            Resources.newBuilder()
+                    .setResourceType(resourceType)
+                    .setService(Service.MODELDB_SERVICE);
+    entityId.ifPresent(resources::addResourceIds);
+
+    final GetResources.Builder getResourcesBuilder = GetResources.newBuilder().setResources(resources);
+    entityName.ifPresent(getResourcesBuilder::setResourceName);
+    workspaceName.ifPresent(getResourcesBuilder::setWorkspaceName);
+
+    final GetResources.Response response =
+            authServiceChannel
+                    .getCollaboratorServiceBlockingStub()
+                    .getResources(getResourcesBuilder.build());
+    List<GetResourcesResponseItem> responseItems = response.getItemList();
+    return responseItems;
   }
 
   @Override
@@ -734,6 +760,30 @@ public class RoleServiceUtils implements RoleService {
                     .addResourceIds(resourceId)
                     .build())
             .build();
+    setRoleBindingOnAuthService(true, newRoleBinding);
+  }
+
+  @Override
+  public void createRoleBinding(String roleName, RoleScope roleBindingScope, CollaboratorBase collaborator, String resourceId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    String roleBindingName =
+            buildRoleBindingName(
+                    roleName, resourceId, collaborator, modelDBServiceResourceTypes.name());
+
+    RoleBinding newRoleBinding =
+            RoleBinding.newBuilder()
+                    .setName(roleBindingName)
+                    .setScope(roleBindingScope)
+                    .setRoleName(roleName)
+                    .addEntities(collaborator.getEntities())
+                    .addResources(
+                            Resources.newBuilder()
+                                    .setService(Service.MODELDB_SERVICE)
+                                    .setResourceType(
+                                            ResourceType.newBuilder()
+                                                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                                    .addResourceIds(resourceId)
+                                    .build())
+                    .build();
     setRoleBindingOnAuthService(true, newRoleBinding);
   }
 

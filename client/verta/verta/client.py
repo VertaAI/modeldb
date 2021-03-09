@@ -58,7 +58,7 @@ from ._tracking import (
     ExperimentRuns,
 )
 
-from ._registry import (
+from .registry._entities import (
     RegisteredModel,
     RegisteredModels,
     RegisteredModelVersion,
@@ -402,12 +402,14 @@ class Client(object):
         workspace : str, optional
             Workspace under which the Project with name `name` exists. If not provided, the current
             user's personal workspace will be used.
-        public_within_org : bool, default False
-            If creating a Project in an organization's workspace, whether to make this Project
-            accessible to all members of that organization.
+        public_within_org : bool, optional
+            If creating a Project in an organization's workspace: ``True`` for
+            public, ``False`` for private. In older backends, default is
+            private; in newer backends, uses the org's settings by default.
         visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this project. If not provided, an
-            appropriate default will be used.
+            appropriate default will be used. This parameter should be
+            preferred over `public_within_org`.
         id : str, optional
             ID of the Project. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
@@ -657,12 +659,14 @@ class Client(object):
             current user's personal workspace will be used.
         id : str, optional
             ID of the Repository, to be provided instead of `name`.
-        public_within_org : bool, default False
-            If creating a Repository in an organization's workspace, whether to make this Repository
-            accessible to all members of that organization.
+        public_within_org : bool, optional
+            If creating a Repository in an organization's workspace: ``True``
+            for public, ``False`` for private. In older backends, default is
+            private; in newer backends, uses the org's settings by default.
         visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this repository. If not provided,
-            an appropriate default will be used.
+            an appropriate default will be used. This parameter should be
+            preferred over `public_within_org`.
 
         Returns
         -------
@@ -754,19 +758,22 @@ class Client(object):
         workspace : str, optional
             Workspace under which the registered_model with name `name` exists. If not provided, the current
             user's personal workspace will be used.
-        public_within_org : bool, default False
-            If creating a registered_model in an organization's workspace, whether to make this registered_model
-            accessible to all members of that organization.
+        public_within_org : bool, optional
+            If creating a registered_model in an organization's workspace:
+            ``True`` for public, ``False`` for private. In older backends,
+            default is private; in newer backends, uses the org's settings by
+            default.
         visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this registered model. If not
-            provided, an appropriate default will be used.
+            provided, an appropriate default will be used. This parameter
+            should be preferred over `public_within_org`.
         id : str, optional
             ID of the registered_model. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
 
         Returns
         -------
-        :class:`~verta._registry.model.RegisteredModel`
+        :class:`~verta.registry._entities.model.RegisteredModel`
 
         Raises
         ------
@@ -816,7 +823,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._registry.model.RegisteredModel`
+        :class:`~verta.registry._entities.model.RegisteredModel`
         """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
@@ -855,7 +862,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._registry.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
         """
         return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
 
@@ -884,12 +891,14 @@ class Client(object):
         workspace : str, optional
             Workspace under which the endpoint with name `name` exists. If not provided, the current
             user's personal workspace will be used.
-        public_within_org : bool, default False
-            If creating an endpoint in an organization's workspace, whether to make this endpoint
-            accessible to all members of that organization.
+        public_within_org : bool, optional
+            If creating an endpoint in an organization's workspace: ``True``
+            for public, ``False`` for private. In older backends, default is
+            private; in newer backends, uses the org's settings by default.
         visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this endpoint. If not provided, an
-            appropriate default will be used.
+            appropriate default will be used. This parameter should be
+            preferred over `public_within_org`.
         id : str, optional
             ID of the endpoint. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
@@ -993,12 +1002,14 @@ class Client(object):
         workspace : str, optional
             Workspace under which the Project with name `name` exists. If not provided, the current
             user's personal workspace will be used.
-        public_within_org : bool, default False
-            If creating a Project in an organization's workspace, whether to make this Project
-            accessible to all members of that organization.
+        public_within_org : bool, optional
+            If creating a Project in an organization's workspace: ``True`` for
+            public, ``False`` for private. In older backends, default is
+            private; in newer backends, uses the org's settings by default.
         visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this project. If not provided, an
-            appropriate default will be used.
+            appropriate default will be used. This parameter should be
+            preferred over `public_within_org`.
 
         Returns
         -------
@@ -1119,16 +1130,19 @@ class Client(object):
         workspace : str, optional
             Workspace under which the registered_model with name `name` exists. If not provided, the current
             user's personal workspace will be used.
-        public_within_org : bool, default False
-            If creating a registered_model in an organization's workspace, whether to make this registered_model
-            accessible to all members of that organization.
+        public_within_org : bool, optional
+            If creating a registered_model in an organization's workspace:
+            ``True`` for public, ``False`` for private. In older backends,
+            default is private; in newer backends, uses the org's settings by
+            default.
         visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this registered model. If not
-            provided, an appropriate default will be used.
+            provided, an appropriate default will be used. This parameter
+            should be preferred over `public_within_org`.
 
         Returns
         -------
-        :class:`~verta._registry.model.RegisteredModel`
+        :class:`~verta.registry._entities.model.RegisteredModel`
 
         Raises
         ------
@@ -1168,16 +1182,18 @@ class Client(object):
         workspace : str, optional
             Workspace under which the endpoint with name `name` exists. If not provided, the current
             user's personal workspace will be used.
-        public_within_org : bool, default False
-            If creating an endpoint in an organization's workspace, whether to make this endpoint
-            accessible to all members of that organization.
+        public_within_org : bool, optional
+            If creating an endpoint in an organization's workspace: ``True``
+            for public, ``False`` for private. In older backends, default is
+            private; in newer backends, uses the org's settings by default.
         visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this endpoint. If not provided, an
-            appropriate default will be used.
+            appropriate default will be used. This parameter should be
+            preferred over `public_within_org`.
 
         Returns
         -------
-        :class:`~verta._registry.model.RegisteredModel`
+        :class:`~verta.registry._entities.model.RegisteredModel`
 
         Raises
         ------
@@ -1280,12 +1296,14 @@ class Client(object):
         workspace : str, optional
             Workspace under which the dataset with name `name` exists. If not provided, the current
             user's personal workspace will be used.
-        public_within_org : bool, default False
-            If creating a dataset in an organization's workspace, whether to make this dataset
-            accessible to all members of that organization.
+        public_within_org : bool, optional
+            If creating a dataset in an organization's workspace: ``True`` for
+            public, ``False`` for private. In older backends, default is
+            private; in newer backends, uses the org's settings by default.
         visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this dataset. If not provided, an
-            appropriate default will be used.
+            appropriate default will be used. This parameter should be
+            preferred over `public_within_org`.
         id : str, optional
             ID of the dataset. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
@@ -1359,12 +1377,14 @@ class Client(object):
         workspace : str, optional
             Workspace under which the dataset with name `name` exists. If not provided, the current
             user's personal workspace will be used.
-        public_within_org : bool, default False
-            If creating a dataset in an organization's workspace, whether to make this dataset
-            accessible to all members of that organization.
+        public_within_org : bool, optional
+            If creating a dataset in an organization's workspace: ``True`` for
+            public, ``False`` for private. In older backends, default is
+            private; in newer backends, uses the org's settings by default.
         visibility : :ref:`visibility <visibility-api>`, optional
             Visibility to set when creating this dataset. If not provided, an
-            appropriate default will be used.
+            appropriate default will be used. This parameter should be
+            preferred over `public_within_org`.
 
         Returns
         -------

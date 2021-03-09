@@ -9,6 +9,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/field_mask.proto";
 import "common/CommonService.proto";
 import "modeldb/versioning/Environment.proto";
+import "registry/StageService.proto";
 import "uac/Collaborator.proto";
 
 message RegisteredModel {
@@ -112,6 +113,15 @@ message DeleteRegisteredModelRequest {
     message Response { }
 }
 
+message ModelVersionLockLevelEnum {
+    enum ModelVersionLockLevel {
+        UNKNOWN = 0;
+        OPEN = 1;
+        CLOSED = 2;
+        REDACT = 3;
+    }
+}
+
 message ModelVersion {
 
     // internal id
@@ -166,6 +176,19 @@ message ModelVersion {
     // Other attributes
     repeated common.KeyValue attributes = 17;
 
+    // Stage of the model version. This field must be searchable as per our "find" operation
+    StageEnum.Stage stage = 18;
+
+    // Current lock level for this model version
+    ModelVersionLockLevelEnum.ModelVersionLockLevel lock_level = 19;
+}
+
+message SetLockModelVersionRequest {
+    //User or organization name
+    ModelVersionIdentification id = 1;
+    ModelVersionLockLevelEnum.ModelVersionLockLevel lock_level = 2;
+
+    message Response {}
 }
 
 message ModelVersionIdentification {
@@ -409,6 +432,13 @@ service RegistryService {
             }
         };
     }
+
+    rpc SetLockModelVersion(SetLockModelVersionRequest) returns (SetLockModelVersionRequest.Response) {
+        option (google.api.http) = {
+            put: "/v1/registry/model_versions/{id.model_version_id}/lock"
+            body: "*"
+        };
+    };
 
     rpc DeleteModelVersion(DeleteModelVersionRequest) returns (DeleteModelVersionRequest.Response) {
         option (google.api.http) = {

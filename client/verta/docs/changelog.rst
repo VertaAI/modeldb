@@ -37,8 +37,51 @@ Release Notes
      <>`__
 
 
+v0.17.2 (2021-02-26)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `enable finding model versions based on stage
+  <https://github.com/VertaAI/modeldb/pull/2006>`__
+
+
+v0.17.1 (2021-02-24)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add run.log_environment()
+  <https://github.com/VertaAI/modeldb/pull/1972>`__
+- `add run.download_model()
+  <https://github.com/VertaAI/modeldb/pull/1973>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `support arbitrary models in run.log_model()
+  <https://github.com/VertaAI/modeldb/pull/1971>`__
+- `skip custom modules and model API when logging an arbitrary model
+  <https://github.com/VertaAI/modeldb/pull/1987>`__
+- `unzip artifact directories in run.download_artifact()
+  <https://github.com/VertaAI/modeldb/pull/1973>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `rename artifact key blocklist
+  <https://github.com/VertaAI/modeldb/pull/1974>`__
+- `consolidate chunk sizes with named constants
+  <https://github.com/VertaAI/modeldb/pull/1988>`__
+
+
 v0.17.0 (2021-02-16)
 --------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `in newer backends, an entity created in an organization will use that
+  organization's permissions settings by default, instead of defaulting to
+  private
+  <https://github.com/VertaAI/modeldb/pull/1993>`__
 
 New Features
 ^^^^^^^^^^^^

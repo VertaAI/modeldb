@@ -1,4 +1,4 @@
-package ai.verta.modeldb.reconcilers;
+package ai.verta.modeldb.common.reconcilers;
 
 import ai.verta.modeldb.common.CommonUtils;
 import org.apache.logging.log4j.Logger;
@@ -100,5 +100,5 @@ public abstract class Reconciler<T> {
 
   public abstract void resync();
 
-  protected abstract void reconcile(Set<T> objs);
+  protected abstract ReconcileResult reconcile(Set<T> objs);
 }

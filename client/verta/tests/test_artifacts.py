@@ -525,7 +525,7 @@ class TestArbitraryModels:
         assert _artifact_utils.MODEL_API_KEY not in artifact_keys
 
     def test_arbitrary_file(self, experiment_run, random_data):
-        with tempfile.TemporaryFile() as f:
+        with tempfile.NamedTemporaryFile() as f:
             f.write(random_data)
             f.seek(0)
 

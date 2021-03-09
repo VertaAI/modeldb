@@ -3,13 +3,13 @@
 from __future__ import print_function
 import requests
 
-from .._internal_utils._utils import NoneProtoResponse, check_unnecessary_params_warning
-from .._tracking.context import _Context
-from .._tracking.entity import _ModelDBEntity
-from .._internal_utils import _utils
+from ..._internal_utils._utils import NoneProtoResponse, check_unnecessary_params_warning
+from ..._tracking.context import _Context
+from ..._tracking.entity import _ModelDBEntity
+from ..._internal_utils import _utils
 
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.registry import RegistryService_pb2 as _RegistryService
+from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
+from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
 
 from .modelversion import RegisteredModelVersion
 from .modelversions import RegisteredModelVersions
@@ -29,7 +29,7 @@ class RegisteredModel(_ModelDBEntity):
         ID of this Registered Model.
     name : str
         Name of this Registered Model.
-    versions : iterable of :class:`~verta._registry.modelversion.RegisteredModelVersion`
+    versions : iterable of :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
         Versions of this RegisteredModel.
 
     """
@@ -64,7 +64,7 @@ class RegisteredModel(_ModelDBEntity):
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
 
-    def get_or_create_version(self, name=None, desc=None, labels=None, attrs=None, id=None, time_created=None):
+    def get_or_create_version(self, name=None, desc=None, labels=None, attrs=None, time_created=None, lock_level=None, id=None):
         """
         Gets or creates a Model Version.
 
@@ -83,13 +83,15 @@ class RegisteredModel(_ModelDBEntity):
             Labels of the Model Version.
         attrs : dict of str to {None, bool, float, int, str}, optional
             Attributes of the Model Version.
+        lock_level : :ref:`lock level <lock-api>`, default ``Open()``
+            Lock level to set when creating this model version.
         id : str, optional
             ID of the Model Version. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
 
         Returns
         -------
-        :class:`~verta._registry.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
 
         Raises
         ------
@@ -101,22 +103,29 @@ class RegisteredModel(_ModelDBEntity):
             raise ValueError("cannot specify both `name` and `id`")
 
         resource_name = "Model Version"
-        param_names = "`desc`, `labels`, `attrs`, or `time_created`"
-        params = (desc, labels, attrs, time_created)
+        param_names = "`desc`, `labels`, `attrs`, `time_created`, or `lock_level`"
+        params = (desc, labels, attrs, time_created, lock_level)
         if id is not None:
             check_unnecessary_params_warning(resource_name, "id {}".format(id),
-                                                  param_names, params)
+                                             param_names, params)
             return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
         else:
             ctx = _Context(self._conn, self._conf)
             ctx.registered_model = self
-            return RegisteredModelVersion._get_or_create_by_name(self._conn, name,
-                                                       lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
-                                                       lambda name: RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, attrs=attrs, date_created=time_created),
-                                                       lambda: check_unnecessary_params_warning(
-                                                             resource_name,
-                                                             "name {}".format(name),
-                                                             param_names, params))
+            return RegisteredModelVersion._get_or_create_by_name(
+                self._conn, name,
+                lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
+                lambda name: RegisteredModelVersion._create(
+                    self._conn, self._conf, ctx,
+                    name=name, desc=desc, tags=labels, attrs=attrs,
+                    date_created=time_created, lock_level=lock_level,
+                ),
+                lambda: check_unnecessary_params_warning(
+                    resource_name,
+                    "name {}".format(name),
+                    param_names, params,
+                )
+            )
 
     def set_version(self, *args, **kwargs):
         """
@@ -125,7 +134,7 @@ class RegisteredModel(_ModelDBEntity):
         """
         return self.get_or_create_version(*args, **kwargs)
 
-    def create_version(self, name=None, desc=None, labels=None, attrs=None, time_created=None):
+    def create_version(self, name=None, desc=None, labels=None, attrs=None, time_created=None, lock_level=None):
         """
         Creates a model registry entry.
 
@@ -139,34 +148,47 @@ class RegisteredModel(_ModelDBEntity):
             Labels of the Model Version.
         attrs : dict of str to {None, bool, float, int, str}, optional
             Attributes of the Model Version.
+        lock_level : :ref:`lock level <lock-api>`, default ``Open()``
+            Lock level to set when creating this model version.
 
         Returns
         -------
-        :class:`~verta._registry.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
 
         """
         ctx = _Context(self._conn, self._conf)
         ctx.registered_model = self
-        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, attrs=attrs, date_created=time_created)
+        return RegisteredModelVersion._create(
+            self._conn, self._conf, ctx,
+            name=name, desc=desc, tags=labels, attrs=attrs,
+            date_created=time_created, lock_level=lock_level,
+        )
 
 
-    def create_version_from_run(self, run_id, name=None):
+    def create_version_from_run(self, run_id, name=None, lock_level=None):
         """
         Creates a model registry entry based on an Experiment Run.
 
         Parameters
         ----------
         run_id : str
+            ID of the run from which to create the model version.
         name : str, optional
+            Name of the model version. If no name is provided, one will be generated.
+        lock_level : :ref:`lock level <lock-api>`, default ``Open()``
+            Lock level to set when creating this model version.
 
         Returns
         -------
-        :class:`~verta._registry.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
 
         """
         ctx = _Context(self._conn, self._conf)
         ctx.registered_model = self
-        return RegisteredModelVersion._create(self._conn, self._conf, ctx, name=name, experiment_run_id=run_id)
+        return RegisteredModelVersion._create(
+            self._conn, self._conf, ctx,
+            name=name, experiment_run_id=run_id, lock_level=lock_level,
+        )
 
     def get_version(self, name=None, id=None):
         """
@@ -182,7 +204,7 @@ class RegisteredModel(_ModelDBEntity):
 
         Returns
         -------
-        :class:`~verta._registry.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
 
         """
         if name is not None and id is not None:
@@ -317,9 +339,7 @@ class RegisteredModel(_ModelDBEntity):
     def _update(self, msg, method="PATCH"):
         response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}".format(self.id),
                                            body=msg, include_default=False)
-        Message = _RegistryService.SetRegisteredModel
-        if isinstance(self._conn.maybe_proto_response(response, Message.Response), NoneProtoResponse):
-            raise ValueError("Model not found")
+        self._conn.must_proto_response(response, _RegistryService.SetRegisteredModel.Response)
         self._clear_cache()
 
     def _get_info_list(self):

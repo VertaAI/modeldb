@@ -74,6 +74,14 @@ public class PublicRoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
 
   @Override
+  public void createRoleBinding(
+      String roleName,
+      RoleScope roleBindingScope,
+      CollaboratorBase collaborator,
+      String resourceId,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
+
+  @Override
   public void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
@@ -227,10 +235,17 @@ public class PublicRoleServiceUtils implements RoleService {
   @Override
   public GetResourcesResponseItem getEntityResource(
       Optional<String> entityId,
-      Optional<String> entityName,
       Optional<String> workspaceName,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build();
+  }
+
+  @Override
+  public List<GetResourcesResponseItem> getEntityResourcesByName(
+      Optional<String> entityName,
+      Optional<String> workspaceName,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return Collections.emptyList();
   }
 
   @Override

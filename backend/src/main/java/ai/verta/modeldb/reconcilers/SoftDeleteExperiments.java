@@ -3,6 +3,9 @@ package ai.verta.modeldb.reconcilers;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.reconcilers.ReconcileResult;
+import ai.verta.modeldb.common.reconcilers.Reconciler;
+import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -42,7 +45,7 @@ public class SoftDeleteExperiments extends Reconciler<String> {
   }
 
   @Override
-  protected void reconcile(Set<String> ids) {
+  protected ReconcileResult reconcile(Set<String> ids) {
     LOGGER.debug("Reconciling experiments " + ids.toString());
 
     deleteRoleBindings(ids);
@@ -72,9 +75,9 @@ public class SoftDeleteExperiments extends Reconciler<String> {
         session.delete(experimentEntity);
         transaction.commit();
       }
-    } catch (Exception ex) {
-      LOGGER.error("reconcile: ", ex);
     }
+
+    return new ReconcileResult();
   }
 
   private void deleteRoleBindings(Set<String> ids) {
