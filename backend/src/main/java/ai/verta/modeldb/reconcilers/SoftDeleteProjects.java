@@ -8,15 +8,15 @@ import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 public class SoftDeleteProjects extends Reconciler<String> {
   private static final Logger LOGGER = LogManager.getLogger(SoftDeleteProjects.class);
@@ -71,9 +71,13 @@ public class SoftDeleteProjects extends Reconciler<String> {
 
       // TODO: figure out if doing a single query to delete all projects
       for (ProjectEntity projectEntity : projectEntities) {
-        transaction = session.beginTransaction();
-        session.delete(projectEntity);
-        transaction.commit();
+        try {
+          transaction = session.beginTransaction();
+          session.delete(projectEntity);
+          transaction.commit();
+        } catch (OptimisticLockException ex) {
+          LOGGER.info("SoftDeleteProjects : deleteProjects : Exception: {}", ex.getMessage());
+        }
       }
     }
 

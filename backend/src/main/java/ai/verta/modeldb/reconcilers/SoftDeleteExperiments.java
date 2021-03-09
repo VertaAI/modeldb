@@ -9,15 +9,15 @@ import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 public class SoftDeleteExperiments extends Reconciler<String> {
   private static final Logger LOGGER = LogManager.getLogger(SoftDeleteExperiments.class);
@@ -71,9 +71,13 @@ public class SoftDeleteExperiments extends Reconciler<String> {
       transaction.commit();
 
       for (ExperimentEntity experimentEntity : experimentEntities) {
-        transaction = session.beginTransaction();
-        session.delete(experimentEntity);
-        transaction.commit();
+        try {
+          transaction = session.beginTransaction();
+          session.delete(experimentEntity);
+          transaction.commit();
+        } catch (OptimisticLockException ex) {
+          LOGGER.info("SoftDeleteExperiments : deleteExperiments : Exception: {}", ex.getMessage());
+        }
       }
     }
 
