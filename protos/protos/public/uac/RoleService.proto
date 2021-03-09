@@ -59,9 +59,6 @@ message ModelDBActionEnum {
         DEPLOY = 6;
         PUBLIC_READ =7;
         UPDATE_PERMISSIONS = 8;
-        LOCK = 9;
-        UNLOCK = 10;
-        UPDATE_REDACT = 11;
     }
 };
 

@@ -150,46 +150,6 @@
         ]
       }
     },
-    "/registry/model_versions/{id.model_version_id}/lock": {
-      "put": {
-        "operationId": "RegistryService_SetLockModelVersion",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registrySetLockModelVersionRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registrySetLockModelVersionRequest"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
     "/registry/model_versions/{model_version_id}/commitArtifactPart": {
       "post": {
         "operationId": "RegistryService_commitArtifactPart",
@@ -1587,16 +1547,6 @@
       ],
       "default": "READ_ONLY"
     },
-    "ModelVersionLockLevelEnumModelVersionLockLevel": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "OPEN",
-        "CLOSED",
-        "REDACT"
-      ],
-      "default": "UNKNOWN"
-    },
     "OperatorEnumOperator": {
       "type": "string",
       "enum": [
@@ -1611,17 +1561,6 @@
         "IN"
       ],
       "default": "EQ"
-    },
-    "StageEnumStage": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "DEVELOPMENT",
-        "STAGING",
-        "PRODUCTION",
-        "ARCHIVED"
-      ],
-      "default": "UNKNOWN"
     },
     "TernaryEnumTernary": {
       "type": "string",
@@ -2037,14 +1976,6 @@
             "$ref": "#/definitions/commonKeyValue"
           },
           "title": "Other attributes"
-        },
-        "stage": {
-          "$ref": "#/definitions/StageEnumStage",
-          "title": "Stage of the model version. This field must be searchable as per our \"find\" operation"
-        },
-        "lock_level": {
-          "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel",
-          "title": "Current lock level for this model version"
         }
       }
     },
@@ -2158,21 +2089,6 @@
           "title": "WorkspaceName"
         }
       }
-    },
-    "registrySetLockModelVersionRequest": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "$ref": "#/definitions/registryModelVersionIdentification",
-          "title": "User or organization name"
-        },
-        "lock_level": {
-          "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel"
-        }
-      }
-    },
-    "registrySetLockModelVersionRequestResponse": {
-      "type": "object"
     },
     "registrySetModelVersion": {
       "type": "object",
