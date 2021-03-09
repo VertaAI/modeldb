@@ -38,6 +38,7 @@ public class AuditLogLocalDAORdbImpl implements AuditLogLocalDAO {
     AuditLogInterceptor.increaseAuditCountStatic();
   }
 
+  @Override
   public void saveAuditLog(AuditLogLocalEntity auditLogLocalEntity) {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
@@ -53,8 +54,8 @@ public class AuditLogLocalDAORdbImpl implements AuditLogLocalDAO {
     }
   }
 
-  private void saveAuditLog(Session session, AuditLogLocalEntity auditLogLocalEntity) {
-    session.save(auditLogLocalEntity);
+  private void saveAuditLog(Session session, AuditLogLocalEntity auditLogEntity) {
+    session.save(auditLogEntity);
     AuditLogInterceptor.increaseAuditCountStatic();
   }
 }
