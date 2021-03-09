@@ -492,7 +492,7 @@ def calc_sha256(bytestream, chunk_size=_5MB):
     return checksum.hexdigest()
 
 
-def zip_dir(dirpath):
+def zip_dir(dirpath, followlinks=True):
     """
     ZIPs a directory.
 
@@ -517,7 +517,7 @@ def zip_dir(dirpath):
 
     tempf = tempfile.NamedTemporaryFile(suffix='.'+ZIP_EXTENSION)
     with zipfile.ZipFile(tempf, 'w') as zipf:
-        for root, _, files in os.walk(dirpath):
+        for root, _, files in os.walk(dirpath, followlinks=followlinks):
             for filename in files:
                 filepath = os.path.join(root, filename)
                 zipf.write(filepath, os.path.relpath(filepath, dirpath))

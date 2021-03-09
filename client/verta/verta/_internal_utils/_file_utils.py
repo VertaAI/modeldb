@@ -115,7 +115,7 @@ def remove_prefix(s, prefix):
     return s
 
 
-def walk_files(dirpath):
+def walk_files(dirpath, followlinks=True):
     """
     Yields paths to the files within `dirpath`'s directory tree.
 
@@ -130,7 +130,7 @@ def walk_files(dirpath):
         Filepath (relative to cwd).
 
     """
-    for root, _, filenames in os.walk(dirpath):
+    for root, _, filenames in os.walk(dirpath, followlinks=followlinks):
         for filename in filenames:
             yield os.path.join(root, filename)
 
