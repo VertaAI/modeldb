@@ -722,7 +722,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
           projects.stream()
-              .map(Project::getId)
+              .map(Project::getId) // TODO: don't save every single ID on fetch
               .collect(Collectors.joining(ModelDBConstants.COMMA_DELIMITER)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
