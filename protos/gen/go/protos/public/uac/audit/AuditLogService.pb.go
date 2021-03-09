@@ -41,7 +41,7 @@ type AuditResource struct {
 
 	// id of the resource
 	ResourceId string `protobuf:"bytes,1,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
-	// the tyep of the resource
+	// the type of the resource
 	ResourceType *uac.ResourceType `protobuf:"bytes,2,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
 	// the service the resource belongs to
 	ResourceService uac.ServiceEnum_Service `protobuf:"varint,3,opt,name=resource_service,json=resourceService,proto3,enum=ai.verta.uac.ServiceEnum_Service" json:"resource_service,omitempty"`
