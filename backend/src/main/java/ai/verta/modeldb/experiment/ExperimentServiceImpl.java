@@ -29,7 +29,6 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -54,33 +53,26 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
   }
 
-  private void saveAuditLogs(
+  private void saveAuditLog(
       Optional<UserInfo> userInfo,
       ModelDBServiceActions action,
-      List<String> resourceIds,
+      String resourceId,
       String request,
       String response,
       Long workspaceId) {
-    List<AuditLogLocalEntity> auditLogLocalEntities =
-        resourceIds.stream()
-            .map(
-                resourceId ->
-                    new AuditLogLocalEntity(
-                        SERVICE_NAME,
-                        authService.getVertaIdFromUserInfo(
-                            userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
-                        action,
-                        resourceId,
-                        ModelDBServiceResourceTypes.EXPERIMENT,
-                        Service.MODELDB_SERVICE,
-                        MonitoringInterceptor.METHOD_NAME.get(),
-                        request,
-                        response,
-                        workspaceId))
-            .collect(Collectors.toList());
-    if (!auditLogLocalEntities.isEmpty()) {
-      auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
-    }
+    auditLogLocalDAO.saveAuditLog(
+        new AuditLogLocalEntity(
+            SERVICE_NAME,
+            authService.getVertaIdFromUserInfo(
+                userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
+            action,
+            resourceId,
+            ModelDBServiceResourceTypes.EXPERIMENT,
+            Service.MODELDB_SERVICE,
+            MonitoringInterceptor.METHOD_NAME.get(),
+            request,
+            response,
+            workspaceId));
   }
 
   /**
@@ -163,10 +155,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(
               experiment.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.CREATE,
-          Collections.singletonList(experiment.getId()),
+          experiment.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -216,10 +208,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(
               request.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.CREATE,
-          experiments.stream().map(Experiment::getId).collect(Collectors.toList()),
+          ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -254,10 +246,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               experiment.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
       GetExperimentById.Response response =
           GetExperimentById.Response.newBuilder().setExperiment(experiment).build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(experiment.getId()),
+          experiment.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -318,10 +310,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               request.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
       GetExperimentByName.Response response =
           GetExperimentByName.Response.newBuilder().setExperiment(experiments.get(0)).build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          experiments.stream().map(Experiment::getId).collect(Collectors.toList()),
+          ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -379,10 +371,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -430,10 +422,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(updatedExperiment.getId()),
+          updatedExperiment.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -479,10 +471,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(updatedExperiment.getId()),
+          updatedExperiment.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -528,10 +520,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(updatedExperiment.getId()),
+          updatedExperiment.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -578,10 +570,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(updatedExperiment.getId()),
+          updatedExperiment.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -614,10 +606,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       GetTags.Response response = GetTags.Response.newBuilder().addAllTags(experimentTags).build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -663,10 +655,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(updatedExperiment.getId()),
+          updatedExperiment.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -712,10 +704,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(updatedExperiment.getId()),
+          updatedExperiment.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -755,10 +747,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -804,10 +796,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(experiment.getId()),
+          experiment.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -858,10 +850,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       GetAttributes.Response response =
           GetAttributes.Response.newBuilder().addAllAttributes(attributes).build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -909,10 +901,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(updatedExperiment.getId()),
+          updatedExperiment.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -950,10 +942,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           null);
@@ -1011,10 +1003,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(
               existingExperiment.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1054,10 +1046,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               existingExperiment.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
       GetExperimentCodeVersion.Response response =
           GetExperimentCodeVersion.Response.newBuilder().setCodeVersion(codeVersion).build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(existingExperiment.getId()),
+          existingExperiment.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1095,10 +1087,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               .addAllExperiments(experiments)
               .setTotalRecords(experimentPaginationDTO.getTotalRecords())
               .build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          experiments.stream().map(Experiment::getId).collect(Collectors.toList()),
+          ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1162,10 +1154,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1232,10 +1224,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1275,10 +1267,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               projectIdFromExperimentMap.get(request.getId()), ModelDBServiceResourceTypes.PROJECT);
       GetArtifacts.Response response =
           GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build();
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1322,10 +1314,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          Collections.singletonList(request.getId()),
+          request.getId(),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResource.getWorkspaceId());
@@ -1346,21 +1338,21 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         throw new InvalidArgumentException("Experiment IDs not found in DeleteExperiments request");
       }
 
-      List<String> deletedIds = experimentDAO.deleteExperiments(request.getIdsList());
-      DeleteExperiments.Response response =
-          DeleteExperiments.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
-
       Map<String, String> projectIdFromExperimentMap =
-          experimentDAO.getProjectIdsByExperimentIds(deletedIds);
+          experimentDAO.getProjectIdsByExperimentIds(request.getIdsList());
       List<GetResourcesResponseItem> entityResources =
           roleService.getResourceItems(
               null,
               new HashSet<>(projectIdFromExperimentMap.values()),
               ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLogs(
+      List<String> deletedIds = experimentDAO.deleteExperiments(request.getIdsList());
+      DeleteExperiments.Response response =
+          DeleteExperiments.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
+
+      saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          request.getIdsList(),
+          ModelDBConstants.EMPTY_STRING,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           entityResources.stream().findFirst().get().getWorkspaceId());

@@ -13,6 +13,8 @@ import ai.verta.uac.versioning.AuditUser;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import io.grpc.Status;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -88,16 +90,28 @@ public class AuditLogLocalEntity {
     this.workspaceId = workspaceId;
   }
 
+  public String getLocalId() {
+    return localId;
+  }
+
   public AuditLog toProto() {
-    final AuditResource.Builder resource =
-        AuditResource.newBuilder().setResourceId(resourceId).setWorkspaceId(workspaceId);
-    if (resourceType != null) {
-      resource.setResourceType(
-          ResourceType.newBuilder().setModeldbServiceResourceTypeValue(resourceType).build());
+
+    String[] resourceIds = resourceId.split(",");
+
+    List<AuditResource> auditResources = new ArrayList<>();
+    for (String resourceId : resourceIds) {
+      final AuditResource.Builder resource =
+          AuditResource.newBuilder().setResourceId(resourceId).setWorkspaceId(workspaceId);
+      if (resourceType != null) {
+        resource.setResourceType(
+            ResourceType.newBuilder().setModeldbServiceResourceTypeValue(resourceType).build());
+      }
+      if (resourceService != null) {
+        resource.setResourceServiceValue(resourceService);
+      }
+      auditResources.add(resource.build());
     }
-    if (resourceService != null) {
-      resource.setResourceServiceValue(resourceService);
-    }
+
     AuditLog.Builder builder =
         AuditLog.newBuilder()
             .setLocalId(localId)
@@ -107,7 +121,7 @@ public class AuditLogLocalEntity {
                     .setModeldbServiceAction(ModelDBServiceActions.forNumber(action))
                     .setServiceValue(resourceService)
                     .build())
-            .setResource(resource);
+            .addAllResource(auditResources);
     if (tsNano != null) {
       builder.setTsNano(tsNano);
     }
