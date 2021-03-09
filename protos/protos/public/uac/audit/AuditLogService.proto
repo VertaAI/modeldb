@@ -13,7 +13,7 @@ import "uac/RoleService.proto";
 message AuditResource {
     // id of the resource
     string resource_id = 1;
-    // the tyep of the resource
+    // the type of the resource
     uac.ResourceType resource_type = 2;
     // the service the resource belongs to
     uac.ServiceEnum.Service resource_service = 3;
@@ -32,7 +32,7 @@ message AuditLog {
     AuditUser user = 1;
 
     //What
-    AuditResource resource = 2;
+    repeated AuditResource resource = 2;
 
     // How : the action the user performed
     uac.Action action = 3;
