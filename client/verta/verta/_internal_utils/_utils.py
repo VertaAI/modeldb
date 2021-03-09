@@ -716,7 +716,7 @@ def is_hidden(path):  # to avoid "./".startswith('.')
     return os.path.basename(path.rstrip('/')).startswith('.') and path != "."
 
 
-def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=False):
+def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=False, followlinks=True):
     """
     Unravels a list of file and directory paths into a list of only filepaths by walking through the
     directories.
@@ -752,7 +752,7 @@ def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=Fa
     filepaths = set()
     for path in paths:
         if os.path.isdir(path):
-            for parent_dir, dirnames, filenames in os.walk(path):
+            for parent_dir, dirnames, filenames in os.walk(path, followlinks=followlinks):
                 if not include_hidden:
                     # skip hidden directories
                     dirnames[:] = [dirname for dirname in dirnames if not is_hidden(dirname)]
