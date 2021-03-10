@@ -148,14 +148,14 @@ class Connection:
                 raise
 
         """
-        curl = "curl -X"
-        curl += ' ' + request.method
-        curl += ' ' + '"{}"'.format(request.url)
+        lines = []
+        lines.append("curl -X {} \"{}\"".format(request.method, request.url))
         if request.headers:
-            curl += ' ' + ' '.join('-H "{}: {}"'.format(key, val) for key, val in request.headers.items())
+            lines.extend('-H "{}: {}"'.format(key, val) for key, val in request.headers.items())
         if request.body:
-            curl += ' ' + "-d '{}'".format(request.body.decode())
+            lines.append("-d '{}'".format(request.body.decode()))
 
+        curl = " \\\n    ".join(lines)
         print(curl)
 
     @staticmethod
