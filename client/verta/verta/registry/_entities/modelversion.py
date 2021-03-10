@@ -911,3 +911,14 @@ class RegisteredModelVersion(_DeployableEntity):
         else :
             id_or_name = model_name
         return [self._msg.version, str(self.id), id_or_name, _utils.timestamp_to_str(self._msg.time_updated)]
+
+    def delete(self):
+        """
+        Deletes this model version.
+
+        .. versionadded:: 0.17.3
+
+        """
+        endpoint = "/api/v1/registry/model_versions/{}".format(self.id)
+        response = self._conn.make_proto_request("DELETE", endpoint)
+        self._conn.must_response(response)
