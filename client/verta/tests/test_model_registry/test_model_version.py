@@ -19,6 +19,7 @@ from .. import utils
 import os
 
 import verta.dataset
+from verta import visibility
 from verta.environment import Python
 from verta._tracking.deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
@@ -634,3 +635,93 @@ class TestLockLevels:
         model_ver = registered_model.create_version_from_run(experiment_run.id, lock_level=lock_level)
         assert model_ver._msg.lock_level == lock_level._as_proto()
         assert isinstance(model_ver.get_lock_level(), lock_level.__class__)
+
+    def test_transition_levels(self, client, client_2, organization, created_entities):
+        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
+        reg_model = client.create_registered_model(
+            workspace=organization.name,
+            visibility=visibility.OrgCustom(write=True),
+        )
+        created_entities.append(reg_model)
+        # org owner
+        admin_model_ver = reg_model.create_version()
+        # same model version as R/W user
+        user_model_ver = client_2.get_registered_model_version(admin_model_ver.id)
+
+        # R/W user can upgrade lock level
+        user_model_ver.set_lock_level(lock.redact)
+        user_model_ver.set_lock_level(lock.closed)
+
+        # R/W user cannot downgrade; admin can
+        with pytest.raises(requests.HTTPError, match="Access Denied"):
+            user_model_ver.set_lock_level(lock.redact)
+        admin_model_ver.set_lock_level(lock.redact)
+        with pytest.raises(requests.HTTPError, match="Access Denied"):
+            user_model_ver.set_lock_level(lock.open)
+        admin_model_ver.set_lock_level(lock.open)
+
+        # admin can upgrade lock level
+        admin_model_ver.set_lock_level(lock.redact)
+        admin_model_ver.set_lock_level(lock.closed)
+
+    def test_closed(self, client, client_2, organization, created_entities):
+        description = "My model version"
+        label = "mine"
+
+        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
+        reg_model = client.create_registered_model(
+            workspace=organization.name,
+            visibility=visibility.OrgCustom(write=True),
+        )
+        created_entities.append(reg_model)
+
+        # org owner
+        admin_model_ver = reg_model.create_version(lock_level=lock.closed)
+        # same model version as R/W user
+        user_model_ver = client_2.get_registered_model_version(admin_model_ver.id)
+
+        for model_ver in [admin_model_ver, user_model_ver]:
+            model_ver.set_description(description)
+            assert model_ver.get_description() == description
+            model_ver.add_label(label)
+            assert model_ver.get_labels() == [label]
+            # model_ver.del_label(label)  # TODO: backend VR-10150
+            with pytest.raises(requests.HTTPError, match="locked for changes"):
+                model_ver.add_attribute("a", {"a": 1})
+            with pytest.raises(requests.HTTPError, match="locked for changes"):
+                model_ver.delete()
+
+    def test_redact(self, client, client_2, organization, created_entities):
+        description = "My model version"
+        label = "mine"
+
+        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
+        reg_model = client.create_registered_model(
+            workspace=organization.name,
+            visibility=visibility.OrgCustom(write=True),
+        )
+        created_entities.append(reg_model)
+
+        # org owner
+        admin_model_ver = reg_model.create_version(lock_level=lock.redact)
+        # same model version as R/W user
+        user_model_ver = client_2.get_registered_model_version(admin_model_ver.id)
+
+        for model_ver in [admin_model_ver, user_model_ver]:
+            model_ver.set_description(description)
+            assert model_ver.get_description() == description
+            model_ver.add_label(label)
+            assert model_ver.get_labels() == [label]
+            # model_ver.del_label(label)  # TODO: backend VR-10150
+
+        admin_model_ver.add_attribute("a", {"a": 1})
+        with pytest.raises(requests.HTTPError, match="Access Denied"):
+            user_model_ver.del_attribute("a")
+
+        admin_model_ver.log_artifact("b", {"b": 2})
+        with pytest.raises(requests.HTTPError, match="Access Denied"):
+            user_model_ver.del_artifact("b")
+
+        with pytest.raises(requests.HTTPError, match="Access Denied"):
+            user_model_ver.delete()
+        admin_model_ver.delete()
