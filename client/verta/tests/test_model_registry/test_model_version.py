@@ -685,7 +685,7 @@ class TestLockLevels:
             assert model_ver.get_description() == description
             model_ver.add_label(label)
             assert model_ver.get_labels() == [label]
-            # model_ver.del_label(label)  # TODO: backend VR-10150
+            model_ver.del_label(label)
             with pytest.raises(requests.HTTPError, match="locked for changes"):
                 model_ver.add_attribute("a", {"a": 1})
             with pytest.raises(requests.HTTPError, match="locked for changes"):
@@ -712,7 +712,7 @@ class TestLockLevels:
             assert model_ver.get_description() == description
             model_ver.add_label(label)
             assert model_ver.get_labels() == [label]
-            # model_ver.del_label(label)  # TODO: backend VR-10150
+            model_ver.del_label(label)
 
         admin_model_ver.add_attribute("a", {"a": 1})
         with pytest.raises(requests.HTTPError, match="Access Denied"):
