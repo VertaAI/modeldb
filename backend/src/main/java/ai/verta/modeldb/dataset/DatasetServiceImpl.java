@@ -86,7 +86,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private void saveAuditLog(
       Optional<UserInfo> userInfo,
       ModelDBServiceActions action,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       Map<String, Long> resourceIdWorkspaceIdMap,
       String request,
       String response) {
@@ -97,7 +96,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                 userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
             action,
             resourceIdWorkspaceIdMap,
-            modelDBServiceResourceTypes,
+            ModelDBServiceResourceTypes.DATASET,
             Service.MODELDB_SERVICE,
             MonitoringInterceptor.METHOD_NAME.get(),
             request,
@@ -126,7 +125,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.CREATE,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(dataset.getId(), dataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
@@ -214,7 +212,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBServiceResourceTypes.DATASET,
           responseItems.stream()
               .collect(
                   Collectors.toMap(
@@ -248,7 +245,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.DELETE,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(entityResource.getResourceId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
@@ -282,7 +278,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(
               response.getDataset().getId(), response.getDataset().getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -318,7 +313,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBServiceResourceTypes.DATASET,
           responseItems.stream()
               .collect(
                   Collectors.toMap(
@@ -395,7 +389,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.ofNullable(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBServiceResourceTypes.DATASET,
           responseItems.stream()
               .collect(
                   Collectors.toMap(
@@ -446,7 +439,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.UPDATE,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(updatedDataset.getId(), updatedDataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
@@ -489,7 +481,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.UPDATE,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(updatedDataset.getId(), updatedDataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
@@ -532,7 +523,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(
               response.getDataset().getId(), response.getDataset().getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -587,7 +577,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(updatedDataset.getId(), updatedDataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
@@ -638,7 +627,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(updatedDataset.getId(), updatedDataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
@@ -685,7 +673,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(updatedDataset.getId(), updatedDataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
@@ -739,7 +726,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.UPDATE,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(
               response.getDataset().getId(), response.getDataset().getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -771,7 +757,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.DELETE,
-          ModelDBServiceResourceTypes.DATASET,
           responseItems.stream()
               .collect(
                   Collectors.toMap(
@@ -900,7 +885,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(responseItem.getResourceId(), responseItem.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
@@ -985,7 +969,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          ModelDBServiceResourceTypes.DATASET,
           Collections.singletonMap(entityResource.getResourceId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
