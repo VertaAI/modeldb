@@ -19,16 +19,17 @@ import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
+import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
@@ -68,25 +69,24 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     this.repositoryDAO = daoSet.repositoryDAO;
   }
 
-  private void saveAuditLogs(
-      UserInfo userInfo, String action, List<String> resourceIds, String metadataBlob) {
-    List<AuditLogLocalEntity> auditLogLocalEntities =
-        resourceIds.stream()
-            .map(
-                resourceId ->
-                    new AuditLogLocalEntity(
-                        SERVICE_NAME,
-                        authService.getVertaIdFromUserInfo(
-                            userInfo == null ? authService.getCurrentLoginUserInfo() : userInfo),
-                        action,
-                        resourceId,
-                        ModelDBConstants.EXPERIMENT_RUN,
-                        Service.MODELDB_SERVICE.name(),
-                        metadataBlob))
-            .collect(Collectors.toList());
-    if (!auditLogLocalEntities.isEmpty()) {
-      auditLogLocalDAO.saveAuditLogs(auditLogLocalEntities);
-    }
+  private void saveAuditLog(
+      Optional<UserInfo> userInfo,
+      ModelDBServiceActions action,
+      Map<String, Long> resourceIdWorkspaceIdMap,
+      String request,
+      String response) {
+    auditLogLocalDAO.saveAuditLog(
+        new AuditLogLocalEntity(
+            SERVICE_NAME,
+            authService.getVertaIdFromUserInfo(
+                userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
+            action,
+            resourceIdWorkspaceIdMap,
+            ModelDBServiceResourceTypes.EXPERIMENT_RUN,
+            Service.MODELDB_SERVICE,
+            MonitoringInterceptor.METHOD_NAME.get(),
+            request,
+            response));
   }
 
   private void validateExperimentEntity(String experimentId) throws InvalidProtocolBufferException {
@@ -190,10 +190,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       validateExperimentEntity(request.getExperimentId());
 
       experimentRun = experimentRunDAO.insertExperimentRun(projectDAO, experimentRun, userInfo);
-      saveAuditLogs(
-          userInfo, ModelDBConstants.CREATE, Collections.singletonList(experimentRun.getId()), "");
-      responseObserver.onNext(
-          CreateExperimentRun.Response.newBuilder().setExperimentRun(experimentRun).build());
+      CreateExperimentRun.Response response =
+          CreateExperimentRun.Response.newBuilder().setExperimentRun(experimentRun).build();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              experimentRun.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.CREATE,
+          Collections.singletonMap(experimentRun.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -211,11 +219,24 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       List<String> deletedRunIds =
           experimentRunDAO.deleteExperimentRuns(Collections.singletonList(request.getId()));
-      saveAuditLogs(null, ModelDBConstants.DELETE, deletedRunIds, "");
-      responseObserver.onNext(
-          DeleteExperimentRun.Response.newBuilder().setStatus(!deletedRunIds.isEmpty()).build());
+      DeleteExperimentRun.Response response =
+          DeleteExperimentRun.Response.newBuilder().setStatus(!deletedRunIds.isEmpty()).build();
+      Map<String, Long> auditResourceMap = new HashMap<>();
+      deletedRunIds.forEach(
+          experimentRunId ->
+              auditResourceMap.put(experimentRunId, entityResource.getWorkspaceId()));
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.DELETE,
+          auditResourceMap,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -248,11 +269,26 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               request.getPageLimit(),
               request.getAscending(),
               request.getSortKey());
-      responseObserver.onNext(
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
+      List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRuns();
+      GetExperimentRunsInProject.Response response =
           GetExperimentRunsInProject.Response.newBuilder()
-              .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
+              .addAllExperimentRuns(experimentRuns)
               .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
-              .build());
+              .build();
+      Map<String, Long> auditResourceMap = new HashMap<>();
+      experimentRuns.forEach(
+          experimentRun ->
+              auditResourceMap.put(experimentRun.getId(), entityResource.getWorkspaceId()));
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          auditResourceMap,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -293,11 +329,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               request.getPageLimit(),
               request.getAscending(),
               request.getSortKey());
-      responseObserver.onNext(
+      List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRuns();
+      GetExperimentRunsInExperiment.Response response =
           GetExperimentRunsInExperiment.Response.newBuilder()
-              .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
+              .addAllExperimentRuns(experimentRuns)
               .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
-              .build());
+              .build();
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
+      Map<String, Long> auditResourceMap = new HashMap<>();
+      experimentRuns.forEach(
+          experimentRun ->
+              auditResourceMap.put(experimentRun.getId(), entityResource.getWorkspaceId()));
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          auditResourceMap,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -335,6 +385,14 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
         response.setExperimentRun(experimentRunPaginationDTO.getExperimentRuns().get(0));
       }
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response.build());
       responseObserver.onCompleted();
 
@@ -394,10 +452,23 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw new InternalErrorException("Multiple ExperimentRun found in database");
       }
 
-      responseObserver.onNext(
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
+      GetExperimentRunByName.Response response =
           GetExperimentRunByName.Response.newBuilder()
               .setExperimentRun(experimentRunList.get(0))
-              .build());
+              .build();
+      Map<String, Long> auditResourceMap = new HashMap<>();
+      experimentRunList.forEach(
+          experimentRun ->
+              auditResourceMap.put(experimentRun.getId(), entityResource.getWorkspaceId()));
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          auditResourceMap,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -418,6 +489,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
@@ -425,19 +498,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       ExperimentRun updatedExperimentRun =
           experimentRunDAO.updateExperimentRunDescription(
               request.getId(), request.getDescription());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(updatedExperimentRun.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "update",
-              "description",
-              request.getDescription()));
-      responseObserver.onNext(
+      UpdateExperimentRunDescription.Response response =
           UpdateExperimentRunDescription.Response.newBuilder()
               .setExperimentRun(updatedExperimentRun)
-              .build());
+              .build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -457,34 +528,23 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.updateExperimentRunName(
           request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
-
-      auditLogLocalDAO.saveAuditLogs(
-          Collections.singletonList(
-              new AuditLogLocalEntity(
-                  SERVICE_NAME,
-                  authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-                  ModelDBConstants.UPDATE,
-                  request.getId(),
-                  ModelDBConstants.EXPERIMENT_RUN,
-                  Service.MODELDB_SERVICE.name(),
-                  String.format(
-                      ModelDBConstants.METADATA_JSON_TEMPLATE,
-                      "update",
-                      "name",
-                      request.getName()))));
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "update", "name", request.getName()));
-      responseObserver.onNext(UpdateExperimentRunName.Response.newBuilder().build());
+      UpdateExperimentRunName.Response response =
+          UpdateExperimentRunName.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -513,6 +573,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
@@ -520,19 +582,15 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       ExperimentRun updatedExperimentRun =
           experimentRunDAO.addExperimentRunTags(
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(updatedExperimentRun.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "tags",
-              new Gson().toJsonTree(request.getTagsList())));
-      responseObserver.onNext(
-          AddExperimentRunTags.Response.newBuilder()
-              .setExperimentRun(updatedExperimentRun)
-              .build());
+      AddExperimentRunTags.Response response =
+          AddExperimentRunTags.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -560,6 +618,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
@@ -568,13 +628,15 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           experimentRunDAO.addExperimentRunTags(
               request.getId(),
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(updatedExperimentRun.getId()),
-          String.format(ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "tag", request.getTag()));
-      responseObserver.onNext(
-          AddExperimentRunTag.Response.newBuilder().setExperimentRun(updatedExperimentRun).build());
+      AddExperimentRunTag.Response response =
+          AddExperimentRunTag.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -593,12 +655,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<String> experimentRunTags = experimentRunDAO.getExperimentRunTags(request.getId());
-      responseObserver.onNext(GetTags.Response.newBuilder().addAllTags(experimentRunTags).build());
+      GetTags.Response response =
+          GetTags.Response.newBuilder().addAllTags(experimentRunTags).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -626,6 +698,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
@@ -633,19 +707,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       ExperimentRun updatedExperimentRun =
           experimentRunDAO.deleteExperimentRunTags(
               request.getId(), request.getTagsList(), request.getDeleteAll());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(updatedExperimentRun.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "delete",
-              "tags",
-              request.getDeleteAll() ? "deleteAll" : new Gson().toJsonTree(request.getTagsList())));
-      responseObserver.onNext(
+      DeleteExperimentRunTags.Response response =
           DeleteExperimentRunTags.Response.newBuilder()
               .setExperimentRun(updatedExperimentRun)
-              .build());
+              .build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -674,6 +746,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
@@ -681,16 +755,17 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       ExperimentRun updatedExperimentRun =
           experimentRunDAO.deleteExperimentRunTags(
               request.getId(), Collections.singletonList(request.getTag()), false);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(updatedExperimentRun.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "delete", "tag", request.getTag()));
-      responseObserver.onNext(
+      DeleteExperimentRunTag.Response response =
           DeleteExperimentRunTag.Response.newBuilder()
               .setExperimentRun(updatedExperimentRun)
-              .build());
+              .build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -720,21 +795,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.addExperimentRunAttributes(request.getId(), request.getAttributesList());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "attributes",
-              new Gson().toJsonTree(request.getAttributesList())));
-      responseObserver.onNext(AddExperimentRunAttributes.Response.newBuilder().build());
+      AddExperimentRunAttributes.Response response =
+          AddExperimentRunAttributes.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -766,22 +842,23 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.deleteExperimentRunAttributes(
           request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "delete",
-              "attributes",
-              request.getDeleteAll() ? "deleteAll" : request.getAttributeKeysList()));
-      responseObserver.onNext(DeleteExperimentRunAttributes.Response.newBuilder().build());
+      DeleteExperimentRunAttributes.Response response =
+          DeleteExperimentRunAttributes.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -811,22 +888,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logObservations(
           request.getId(), Collections.singletonList(request.getObservation()));
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "observation",
-              new Gson().toJsonTree(request.getObservation())));
-      responseObserver.onNext(LogObservation.Response.newBuilder().build());
+      LogObservation.Response response = LogObservation.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -852,21 +929,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logObservations(request.getId(), request.getObservationsList());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "observations",
-              new Gson().toJsonTree(request.getObservationsList())));
-      responseObserver.onNext(LogObservations.Response.newBuilder().build());
+      LogObservations.Response response = LogObservations.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -892,14 +969,23 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<Observation> observations =
           experimentRunDAO.getObservationByKey(request.getId(), request.getObservationKey());
-      responseObserver.onNext(
-          GetObservations.Response.newBuilder().addAllObservations(observations).build());
+      GetObservations.Response response =
+          GetObservations.Response.newBuilder().addAllObservations(observations).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -926,21 +1012,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logMetrics(request.getId(), Collections.singletonList(request.getMetric()));
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "metric",
-              new Gson().toJsonTree(request.getMetric())));
-      responseObserver.onNext(LogMetric.Response.newBuilder().build());
+      LogMetric.Response response = LogMetric.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -965,21 +1051,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logMetrics(request.getId(), request.getMetricsList());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "metrics",
-              new Gson().toJsonTree(request.getMetricsList())));
-      responseObserver.onNext(LogMetrics.Response.newBuilder().build());
+      LogMetrics.Response response = LogMetrics.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -996,12 +1082,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<KeyValue> metricList = experimentRunDAO.getExperimentRunMetrics(request.getId());
-      responseObserver.onNext(GetMetrics.Response.newBuilder().addAllMetrics(metricList).build());
+      GetMetrics.Response response =
+          GetMetrics.Response.newBuilder().addAllMetrics(metricList).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1019,13 +1115,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<Artifact> datasetList = experimentRunDAO.getExperimentRunDatasets(request.getId());
-      responseObserver.onNext(
-          GetDatasets.Response.newBuilder().addAllDatasets(datasetList).build());
+      GetDatasets.Response response =
+          GetDatasets.Response.newBuilder().addAllDatasets(datasetList).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1055,6 +1160,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
@@ -1096,20 +1203,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       GetUrlForArtifact.Response response =
           artifactStoreDAO.getUrlForArtifactMultipart(
               s3Key, request.getMethod(), request.getPartNumber(), uploadId);
-      JsonObject jsonObject = new JsonObject();
-      jsonObject.addProperty("key", s3Key);
-      jsonObject.addProperty("method", request.getMethod());
-      jsonObject.addProperty("part_number", request.getPartNumber());
-      jsonObject.addProperty("upload_id", uploadId);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.GET,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "get",
-              "getURLForArtifact",
-              new Gson().toJson(jsonObject)));
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1192,6 +1291,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
@@ -1208,16 +1309,14 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       Artifact artifact = artifacts.get(0);
 
       experimentRunDAO.logArtifacts(request.getId(), Collections.singletonList(artifact));
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "artifact",
-              new Gson().toJsonTree(request.getArtifact())));
-      responseObserver.onNext(LogArtifact.Response.newBuilder().build());
+      LogArtifact.Response response = LogArtifact.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1243,6 +1342,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
@@ -1251,16 +1352,14 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
 
       experimentRunDAO.logArtifacts(request.getId(), artifactList);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "artifacts",
-              new Gson().toJsonTree(artifactList)));
-      responseObserver.onNext(LogArtifacts.Response.newBuilder().build());
+      LogArtifacts.Response response = LogArtifacts.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1278,13 +1377,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<Artifact> artifactList = experimentRunDAO.getExperimentRunArtifacts(request.getId());
-      responseObserver.onNext(
-          GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build());
+      GetArtifacts.Response response =
+          GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1315,6 +1423,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       /*User validation*/
       ExperimentRun existingExperimentRun = experimentRunDAO.getExperimentRun(request.getId());
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
@@ -1334,16 +1445,15 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           throw new AlreadyExistsException(errorMessage);
         }
       }
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "log",
-              "code_version",
-              new Gson().toJsonTree(request.getCodeVersion())));
-      responseObserver.onNext(LogExperimentRunCodeVersion.Response.newBuilder().build());
+      LogExperimentRunCodeVersion.Response response =
+          LogExperimentRunCodeVersion.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1374,8 +1484,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       /*Get code version*/
       CodeVersion codeVersion = existingExperimentRun.getCodeVersionSnapshot();
 
-      responseObserver.onNext(
-          GetExperimentRunCodeVersion.Response.newBuilder().setCodeVersion(codeVersion).build());
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
+      GetExperimentRunCodeVersion.Response response =
+          GetExperimentRunCodeVersion.Response.newBuilder().setCodeVersion(codeVersion).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1403,22 +1523,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logHyperparameters(
           request.getId(), Collections.singletonList(request.getHyperparameter()));
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "hyperparameter",
-              new Gson().toJsonTree(request.getHyperparameter())));
-      responseObserver.onNext(LogHyperparameter.Response.newBuilder().build());
+      LogHyperparameter.Response response = LogHyperparameter.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1446,21 +1566,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logHyperparameters(request.getId(), request.getHyperparametersList());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "hyperparameters",
-              new Gson().toJsonTree(request.getHyperparametersList())));
-      responseObserver.onNext(LogHyperparameters.Response.newBuilder().build());
+      LogHyperparameters.Response response = LogHyperparameters.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1479,16 +1599,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<KeyValue> hyperparameterList =
           experimentRunDAO.getExperimentRunHyperparameters(request.getId());
-      responseObserver.onNext(
+      GetHyperparameters.Response response =
           GetHyperparameters.Response.newBuilder()
               .addAllHyperparameters(hyperparameterList)
-              .build());
+              .build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1515,20 +1644,23 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
       experimentRunDAO.logAttributes(
           request.getId(), Collections.singletonList(request.getAttribute()));
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "attribute", request.getAttribute()));
+      LogAttribute.Response response = LogAttribute.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
       LOGGER.info("Auditing complete, creating response.");
-      responseObserver.onNext(LogAttribute.Response.newBuilder().build());
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1554,21 +1686,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logAttributes(request.getId(), request.getAttributesList());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "attributes",
-              request.getAttributesList()));
-      responseObserver.onNext(LogAttributes.Response.newBuilder().build());
+      LogAttributes.Response response = LogAttributes.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1596,6 +1728,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
@@ -1603,8 +1737,15 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       List<KeyValue> attributeList =
           experimentRunDAO.getExperimentRunAttributes(
               request.getId(), request.getAttributeKeysList(), request.getGetAll());
-      responseObserver.onNext(
-          GetAttributes.Response.newBuilder().addAllAttributes(attributeList).build());
+      GetAttributes.Response response =
+          GetAttributes.Response.newBuilder().addAllAttributes(attributeList).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1632,14 +1773,29 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
       }
 
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              request.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
           experimentRunDAO.findExperimentRuns(
               projectDAO, authService.getCurrentLoginUserInfo(), request);
-      responseObserver.onNext(
+      List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRuns();
+      FindExperimentRuns.Response response =
           FindExperimentRuns.Response.newBuilder()
-              .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
+              .addAllExperimentRuns(experimentRuns)
               .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
-              .build());
+              .build();
+      Map<String, Long> auditResourceMap = new HashMap<>();
+      experimentRuns.forEach(
+          experimentRun ->
+              auditResourceMap.put(experimentRun.getId(), entityResource.getWorkspaceId()));
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          auditResourceMap,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1667,17 +1823,51 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
           experimentRunDAO.sortExperimentRuns(projectDAO, request);
-      responseObserver.onNext(
+      List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRuns();
+      SortExperimentRuns.Response response =
           SortExperimentRuns.Response.newBuilder()
-              .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
+              .addAllExperimentRuns(experimentRuns)
               .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
-              .build());
+              .build();
+      saveExperimentRunsLogs(request, experimentRuns, response, ModelDBServiceActions.READ);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
       ModelDBUtils.observeError(
           responseObserver, e, SortExperimentRuns.Response.getDefaultInstance());
     }
+  }
+
+  private void saveExperimentRunsLogs(
+      MessageOrBuilder request,
+      List<ExperimentRun> experimentRuns,
+      MessageOrBuilder response,
+      ModelDBServiceActions modelDBServiceActions)
+      throws InvalidProtocolBufferException {
+    List<GetResourcesResponseItem> responseItems =
+        roleService.getResourceItems(
+            null,
+            experimentRuns.stream().map(ExperimentRun::getProjectId).collect(Collectors.toSet()),
+            ModelDBServiceResourceTypes.PROJECT);
+    UserInfo currentUserInfo = authService.getCurrentLoginUserInfo();
+    Map<String, Long> projectWorkspaceMap = new HashMap<>();
+    responseItems.forEach(
+        responseItem ->
+            projectWorkspaceMap.put(responseItem.getResourceId(), responseItem.getWorkspaceId()));
+
+    Map<String, Long> auditResourceMap = new HashMap<>();
+    experimentRuns.forEach(
+        experimentRun -> {
+          String projectId = experimentRun.getProjectId();
+          auditResourceMap.put(experimentRun.getId(), projectWorkspaceMap.get(projectId));
+        });
+    saveAuditLog(
+        Optional.of(currentUserInfo),
+        modelDBServiceActions,
+        auditResourceMap,
+        ModelDBUtils.getStringFromProtoObject(request),
+        ModelDBUtils.getStringFromProtoObject(response));
   }
 
   @Override
@@ -1703,10 +1893,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       List<ExperimentRun> experimentRuns =
           experimentRunDAO.getTopExperimentRuns(projectDAO, request);
-      responseObserver.onNext(
+      TopExperimentRunsSelector.Response response =
           TopExperimentRunsSelector.Response.newBuilder()
               .addAllExperimentRuns(experimentRuns)
-              .build());
+              .build();
+      saveExperimentRunsLogs(request, experimentRuns, response, ModelDBServiceActions.READ);
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1732,17 +1924,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logJobId(request.getId(), request.getJobId());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "job", request.getJobId()));
-      responseObserver.onNext(LogJobId.Response.newBuilder().build());
+      LogJobId.Response response = LogJobId.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1759,12 +1955,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       String jobId = experimentRunDAO.getJobId(request.getId());
-      responseObserver.onNext(GetJobId.Response.newBuilder().setJobId(jobId).build());
+      GetJobId.Response response = GetJobId.Response.newBuilder().setJobId(jobId).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1797,11 +2002,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               request.getPageLimit(),
               request.getAscending(),
               request.getSortKey());
-      responseObserver.onNext(
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
+      List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRuns();
+      GetChildrenExperimentRuns.Response response =
           GetChildrenExperimentRuns.Response.newBuilder()
-              .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
+              .addAllExperimentRuns(experimentRuns)
               .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
-              .build());
+              .build();
+      Map<String, Long> auditResourceMap = new HashMap<>();
+      experimentRuns.forEach(
+          experimentRun ->
+              auditResourceMap.put(experimentRun.getId(), entityResource.getWorkspaceId()));
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          auditResourceMap,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1831,6 +2050,9 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       String parentExperimentRunProjectId =
           experimentRunDAO.getProjectIdByExperimentRunId(request.getParentId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              parentExperimentRunProjectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
@@ -1847,13 +2069,15 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.setParentExperimentRunId(
           request.getExperimentRunId(), request.getParentId());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getExperimentRunId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "parentId", request.getParentId()));
-      responseObserver.onNext(SetParentExperimentRunId.Response.newBuilder().build());
+      SetParentExperimentRunId.Response response =
+          SetParentExperimentRunId.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getExperimentRunId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1879,6 +2103,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
@@ -1887,16 +2113,14 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logDatasets(
           request.getId(), Collections.singletonList(dataset), request.getOverwrite());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "dataset",
-              new Gson().toJsonTree(dataset)));
-      responseObserver.onNext(LogDataset.Response.newBuilder().build());
+      LogDataset.Response response = LogDataset.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1918,22 +2142,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logDatasets(
           request.getId(), request.getDatasetsList(), request.getOverwrite());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "add",
-              "datasets",
-              new Gson().toJsonTree(request.getDatasetsList())));
-      responseObserver.onNext(LogDatasets.Response.newBuilder().build());
+      LogDatasets.Response response = LogDatasets.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1959,18 +2183,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.deleteArtifacts(request.getId(), request.getKey());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE, "delete", "artifacts", request.getKey()));
-      responseObserver.onNext(DeleteArtifact.Response.newBuilder().build());
+      DeleteArtifact.Response response = DeleteArtifact.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1988,13 +2215,35 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             "ExperimentRun IDs not found in DeleteExperimentRuns request");
       }
 
+      Map<String, String> projectIdsMap =
+          experimentRunDAO.getProjectIdsFromExperimentRunIds(request.getIdsList());
+      List<GetResourcesResponseItem> responseItems =
+          roleService.getResourceItems(
+              null, new HashSet<>(projectIdsMap.values()), ModelDBServiceResourceTypes.PROJECT);
       List<String> deleteExperimentRunsIds =
           experimentRunDAO.deleteExperimentRuns(request.getIdsList());
-      saveAuditLogs(null, ModelDBConstants.DELETE, deleteExperimentRunsIds, "");
-      responseObserver.onNext(
+      DeleteExperimentRuns.Response response =
           DeleteExperimentRuns.Response.newBuilder()
               .setStatus(!deleteExperimentRunsIds.isEmpty())
-              .build());
+              .build();
+      Map<String, Long> projectWorkspaceMap = new HashMap<>();
+      responseItems.forEach(
+          responseItem ->
+              projectWorkspaceMap.put(responseItem.getResourceId(), responseItem.getWorkspaceId()));
+
+      Map<String, Long> auditResourceMap = new HashMap<>();
+      deleteExperimentRunsIds.forEach(
+          experimentRunId -> {
+            String projectId = projectIdsMap.get(experimentRunId);
+            auditResourceMap.put(experimentRunId, projectWorkspaceMap.get(projectId));
+          });
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.DELETE,
+          auditResourceMap,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -2021,13 +2270,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       experimentRunDAO.logVersionedInput(request);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(ModelDBConstants.METADATA_JSON_TEMPLATE, "add", "version_input", ""));
-      responseObserver.onNext(LogVersionedInput.Response.newBuilder().build());
+      LogVersionedInput.Response response = LogVersionedInput.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -2049,6 +2303,15 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       GetVersionedInput.Response response = experimentRunDAO.getVersionedInputs(request);
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2075,24 +2338,19 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       CommitArtifactPart.Response response = experimentRunDAO.commitArtifactPart(request);
-      JsonObject partInfoJson = new JsonObject();
-      partInfoJson.addProperty(
-          "artifact_part", ModelDBUtils.getStringFromProtoObject(request.getArtifactPart()));
-      partInfoJson.addProperty("artifact_key", request.getKey());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "upload_artifact_part",
-              "artifact_part_info",
-              new Gson().toJson(partInfoJson)));
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2118,12 +2376,20 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       GetCommittedArtifactParts.Response response =
           experimentRunDAO.getCommittedArtifactParts(request);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2149,30 +2415,20 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Gson gson = new Gson();
-      JsonObject multipartInfo = new JsonObject();
       CommitMultipartArtifact.Response response =
-          experimentRunDAO.commitMultipartArtifact(
-              request,
-              (s3Key, uploadId, partETags) -> {
-                multipartInfo.addProperty("artifact_key", s3Key);
-                multipartInfo.addProperty("upload_id", uploadId);
-                multipartInfo.add("part_etags", gson.toJsonTree(partETags));
-                artifactStoreDAO.commitMultipart(s3Key, uploadId, partETags);
-              });
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "commit_artifact_parts",
-              "artifact_multipart_info",
-              new Gson().toJson(multipartInfo)));
+          experimentRunDAO.commitMultipartArtifact(request, artifactStoreDAO::commitMultipart);
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2198,23 +2454,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
       }
 
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       experimentRunDAO.deleteExperimentRunKeyValuesEntities(
           request.getId(),
           request.getHyperparameterKeysList(),
           request.getDeleteAll(),
           ModelDBConstants.HYPERPARAMETERS);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "delete",
-              "hyperparameters",
-              request.getDeleteAll()
-                  ? "deleteAll"
-                  : new Gson().toJsonTree(request.getHyperparameterKeysList())));
-      responseObserver.onNext(DeleteHyperparameters.Response.newBuilder().build());
+      DeleteHyperparameters.Response response = DeleteHyperparameters.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -2238,23 +2493,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
       }
 
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       experimentRunDAO.deleteExperimentRunKeyValuesEntities(
           request.getId(),
           request.getMetricKeysList(),
           request.getDeleteAll(),
           ModelDBConstants.METRICS);
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "delete",
-              "metrics",
-              request.getDeleteAll()
-                  ? "deleteAll"
-                  : new Gson().toJsonTree(request.getMetricKeysList())));
-      responseObserver.onNext(DeleteMetrics.Response.newBuilder().build());
+      DeleteMetrics.Response response = DeleteMetrics.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, DeleteMetrics.Response.getDefaultInstance());
@@ -2277,20 +2531,19 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
       }
 
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       experimentRunDAO.deleteExperimentRunObservationsEntities(
           request.getId(), request.getObservationKeysList(), request.getDeleteAll());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "delete",
-              "observation",
-              request.getDeleteAll()
-                  ? "deleteAll"
-                  : new Gson().toJsonTree(request.getObservationKeysList())));
-      responseObserver.onNext(DeleteObservations.Response.newBuilder().build());
+      DeleteObservations.Response response = DeleteObservations.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -2314,6 +2567,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
+      saveExperimentRunsLogs(request, response.getRunsList(), response, ModelDBServiceActions.READ);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2338,6 +2592,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository));
+      saveExperimentRunsLogs(request, response.getRunsList(), response, ModelDBServiceActions.READ);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2357,11 +2612,13 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
           experimentRunDAO.getExperimentRunsByDatasetVersionId(projectDAO, request);
+      List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRuns();
       GetExperimentRunsByDatasetVersionId.Response response =
           GetExperimentRunsByDatasetVersionId.Response.newBuilder()
-              .addAllExperimentRuns(experimentRunPaginationDTO.getExperimentRuns())
+              .addAllExperimentRuns(experimentRuns)
               .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
               .build();
+      saveExperimentRunsLogs(request, experimentRuns, response, ModelDBServiceActions.READ);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2382,13 +2639,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       ExperimentRun clonedExperimentRun =
           experimentRunDAO.cloneExperimentRun(
               projectDAO, request, authService.getCurrentLoginUserInfo());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.CREATE,
-          Collections.singletonList(clonedExperimentRun.getId()),
-          "");
-      responseObserver.onNext(
-          CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(
+              clonedExperimentRun.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
+      CloneExperimentRun.Response response =
+          CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.CREATE,
+          Collections.singletonMap(clonedExperimentRun.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(
@@ -2405,21 +2667,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       }
 
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      GetResourcesResponseItem entityResource =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentRunDAO.logEnvironment(request.getId(), request.getEnvironment());
-      saveAuditLogs(
-          null,
-          ModelDBConstants.UPDATE,
-          Collections.singletonList(request.getId()),
-          String.format(
-              ModelDBConstants.METADATA_JSON_TEMPLATE,
-              "log",
-              "environment",
-              ModelDBUtils.getStringFromProtoObject(request.getEnvironment())));
-      responseObserver.onNext(LogEnvironment.Response.newBuilder().build());
+      LogEnvironment.Response response = LogEnvironment.Response.newBuilder().build();
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response));
+      responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
       ModelDBUtils.observeError(responseObserver, e, LogEnvironment.Response.getDefaultInstance());

@@ -1,22 +1,31 @@
 package ai.verta.modeldb.entities.audit_log;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
-import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceType;
+import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.versioning.AuditLog;
 import ai.verta.uac.versioning.AuditResource;
 import ai.verta.uac.versioning.AuditUser;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import io.grpc.Status;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 
 @Entity
@@ -36,8 +45,13 @@ public class AuditLogLocalEntity {
   @Column(name = "action")
   private Integer action;
 
-  @Column(name = "resource_id")
-  private String resourceId;
+  @ElementCollection
+  @CollectionTable(
+      name = "audit_resource_workspace_mapping",
+      joinColumns = {@JoinColumn(name = "audit_log_id", referencedColumnName = "id")})
+  @MapKeyColumn(name = "resource_id")
+  @Column(name = "workspace_id")
+  private Map<String, Long> resourceIdWorkspaceIdMap;
 
   @Column(name = "resource_type")
   private Integer resourceType;
@@ -57,56 +71,61 @@ public class AuditLogLocalEntity {
   @Column(name = "response", columnDefinition = "text")
   private String response;
 
-  @Column(name = "workspace_id")
-  private Long workspaceId;
-
-  public AuditLogLocalEntity() {}
+  private AuditLogLocalEntity() {}
 
   public AuditLogLocalEntity(
       String serviceName,
       String userId,
-      int action,
-      String resourceId,
-      int resourceType,
-      int resourceService,
+      ModelDBServiceActions action,
+      Map<String, Long> resourceIdWorkspaceIdMap,
+      ModelDBServiceResourceTypes resourceType,
+      Service resourceService,
       String methodName,
       String request,
-      String response,
-      Long workspaceId) {
+      String response) {
     tsNano = System.currentTimeMillis() * 1000000;
     localId = String.format("%s_%s", serviceName, UUID.randomUUID());
     this.userId = userId;
-    this.action = action;
-    this.resourceId = resourceId;
-    this.resourceType = resourceType;
-    this.resourceService = resourceService;
+    this.action = action.getNumber();
+    this.resourceIdWorkspaceIdMap = resourceIdWorkspaceIdMap;
+    this.resourceType = resourceType.getNumber();
+    this.resourceService = resourceService.getNumber();
     this.methodName = methodName;
     this.request = request;
     this.response = response;
-    this.workspaceId = workspaceId;
+  }
+
+  public String getLocalId() {
+    return localId;
   }
 
   public AuditLog toProto() {
-    final AuditResource.Builder resource =
-        AuditResource.newBuilder().setResourceId(resourceId).setWorkspaceId(workspaceId);
-    if (resourceType != null) {
-      resource.setResourceType(
-          ResourceType.newBuilder().setModeldbServiceResourceTypeValue(resourceType).build());
+    List<AuditResource> auditResources = new ArrayList<>();
+    for (Map.Entry<String, Long> resourceId : resourceIdWorkspaceIdMap.entrySet()) {
+      final AuditResource.Builder resource =
+          AuditResource.newBuilder()
+              .setResourceId(resourceId.getKey())
+              .setWorkspaceId(resourceId.getValue());
+      if (resourceType != null) {
+        resource.setResourceType(
+            ResourceType.newBuilder().setModeldbServiceResourceTypeValue(resourceType).build());
+      }
+      if (resourceService != null) {
+        resource.setResourceServiceValue(resourceService);
+      }
+      auditResources.add(resource.build());
     }
-    if (resourceService != null) {
-      resource.setResourceServiceValue(resourceService);
-    }
+
     AuditLog.Builder builder =
         AuditLog.newBuilder()
             .setLocalId(localId)
             .setUser(AuditUser.newBuilder().setUserId(userId))
             .setAction(
                 Action.newBuilder()
-                    .setModeldbServiceAction(
-                        ModelDBActionEnum.ModelDBServiceActions.forNumber(action))
+                    .setModeldbServiceAction(ModelDBServiceActions.forNumber(action))
                     .setServiceValue(resourceService)
                     .build())
-            .setResource(resource);
+            .addAllResource(auditResources);
     if (tsNano != null) {
       builder.setTsNano(tsNano);
     }

@@ -509,4 +509,41 @@
         </rollback>
     </changeSet>
 
+    <changeSet author="anandJ" id="drop-audit_resourceId_workspaceId_column">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="audit_service_local_audit_log"/>
+        </preConditions>
+        <dropColumn tableName="audit_service_local_audit_log" columnName="resource_id"/>
+        <dropColumn tableName="audit_service_local_audit_log" columnName="workspace_id"/>
+        <rollback>
+            <addColumn tableName="audit_service_local_audit_log">
+                <column name="resource_id" type="VARCHAR(255)">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="workspace_id" type="int8" />
+            </addColumn>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create-audit_resource_workspace_mapping">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="audit_resource_workspace_mapping"/>
+            </not>
+        </preConditions>
+        <createTable tableName="audit_resource_workspace_mapping">
+            <column name="audit_log_id" type="int8">
+                <constraints foreignKeyName="audit_fk_audit_service_local_audit_log_id" referencedTableName="audit_service_local_audit_log"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="resource_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="workspace_id" type="int8" />
+        </createTable>
+        <rollback>
+            <dropTable tableName="audit_resource_workspace_mapping"/>
+        </rollback>
+    </changeSet>
+
 </databaseChangeLog>
