@@ -290,6 +290,7 @@ public interface ModelDBConstants {
   String DATASET = "DATASET";
   String DATASET_VERSION = "DATASET_VERSION";
   String REPOSITORY_CAPS = "REPOSITORY";
+  String COMMENT = "COMMENT";
 
   String COMMA_DELIMITER = ",";
 }
