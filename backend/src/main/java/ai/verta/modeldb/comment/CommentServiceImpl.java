@@ -155,7 +155,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       saveAuditLog(
           Optional.of(userInfo),
-          ModelDBServiceActions.CREATE,
+          ModelDBServiceActions.UPDATE,
           ModelDBServiceResourceTypes.EXPERIMENT_RUN,
           Collections.singletonMap(newComment.getId(), responseItem.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
@@ -260,7 +260,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       saveAuditLog(
           Optional.of(userInfo),
-          ModelDBServiceActions.DELETE,
+          ModelDBServiceActions.UPDATE,
           ModelDBServiceResourceTypes.EXPERIMENT_RUN,
           Collections.singletonMap(request.getId(), responseItem.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
