@@ -206,8 +206,13 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           roleService.getEntityResource(
               request.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
       Map<String, Long> auditResourceMap = new HashMap<>();
-      experiments.forEach(
-          experiment -> auditResourceMap.put(experiment.getId(), entityResource.getWorkspaceId()));
+      if (experiments.isEmpty()) {
+        auditResourceMap.put(ModelDBConstants.EMPTY_STRING, entityResource.getWorkspaceId());
+      } else {
+        experiments.forEach(
+            experiment ->
+                auditResourceMap.put(experiment.getId(), entityResource.getWorkspaceId()));
+      }
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
@@ -1074,8 +1079,13 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               .build();
 
       Map<String, Long> auditResourceMap = new HashMap<>();
-      experiments.forEach(
-          experiment -> auditResourceMap.put(experiment.getId(), entityResource.getWorkspaceId()));
+      if (experiments.isEmpty()) {
+        auditResourceMap.put(ModelDBConstants.EMPTY_STRING, entityResource.getWorkspaceId());
+      } else {
+        experiments.forEach(
+            experiment ->
+                auditResourceMap.put(experiment.getId(), entityResource.getWorkspaceId()));
+      }
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,

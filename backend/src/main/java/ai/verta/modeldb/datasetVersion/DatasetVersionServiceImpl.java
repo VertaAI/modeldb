@@ -208,11 +208,15 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .setTotalRecords(datasetVersionDTO.getTotalRecords())
               .build();
       Map<String, Long> auditResourceMap = new HashMap<>();
-      datasetVersionDTO
-          .getDatasetVersions()
-          .forEach(
-              datasetVersion ->
-                  auditResourceMap.put(datasetVersion.getId(), entityResource.getWorkspaceId()));
+      if (datasetVersionDTO.getDatasetVersions().isEmpty()) {
+        auditResourceMap.put(ModelDBConstants.EMPTY_STRING, entityResource.getWorkspaceId());
+      } else {
+        datasetVersionDTO
+            .getDatasetVersions()
+            .forEach(
+                datasetVersion ->
+                    auditResourceMap.put(datasetVersion.getId(), entityResource.getWorkspaceId()));
+      }
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
@@ -449,9 +453,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build();
 
       Map<String, Long> auditResourceMap = new HashMap<>();
-      datasetVersions.forEach(
-          datasetVersion ->
-              auditResourceMap.put(datasetVersion.getId(), entityResource.getWorkspaceId()));
+      if (datasetVersions.isEmpty()) {
+        auditResourceMap.put(ModelDBConstants.EMPTY_STRING, entityResource.getWorkspaceId());
+      } else {
+        datasetVersions.forEach(
+            datasetVersion ->
+                auditResourceMap.put(datasetVersion.getId(), entityResource.getWorkspaceId()));
+      }
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,

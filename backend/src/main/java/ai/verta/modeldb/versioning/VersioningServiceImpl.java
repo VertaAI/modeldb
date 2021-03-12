@@ -25,9 +25,11 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -98,21 +100,30 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       Response response = repositoryDAO.listRepositories(request, userInfo);
 
-      List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              null,
-              response.getRepositoriesList().stream()
-                  .map(repository -> String.valueOf(repository.getId()))
-                  .collect(Collectors.toSet()),
-              ModelDBServiceResourceTypes.REPOSITORY);
+      Map<String, Long> resourceIdWorkspaceIdMap = new HashMap<>();
+      if (response.getRepositoriesList().isEmpty()) {
+        Workspace workspace =
+            roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
+        resourceIdWorkspaceIdMap.put(ModelDBConstants.EMPTY_STRING, workspace.getId());
+      } else {
+        List<GetResourcesResponseItem> responseItems =
+            roleService.getResourceItems(
+                null,
+                response.getRepositoriesList().stream()
+                    .map(repository -> String.valueOf(repository.getId()))
+                    .collect(Collectors.toSet()),
+                ModelDBServiceResourceTypes.REPOSITORY);
+        resourceIdWorkspaceIdMap =
+            responseItems.stream()
+                .collect(
+                    Collectors.toMap(
+                        GetResourcesResponseItem::getResourceId,
+                        GetResourcesResponseItem::getWorkspaceId));
+      }
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          responseItems.stream()
-              .collect(
-                  Collectors.toMap(
-                      GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId)),
+          resourceIdWorkspaceIdMap,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
 
@@ -825,21 +836,31 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       FindRepositories request, StreamObserver<FindRepositories.Response> responseObserver) {
     try {
       FindRepositories.Response response = repositoryDAO.findRepositories(request);
-      List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              null,
-              response.getRepositoriesList().stream()
-                  .map(repository -> String.valueOf(repository.getId()))
-                  .collect(Collectors.toSet()),
-              ModelDBServiceResourceTypes.REPOSITORY);
+      Map<String, Long> resourceIdWorkspaceIdMap = new HashMap<>();
+      if (response.getRepositoriesList().isEmpty()) {
+        Workspace workspace =
+            roleService.getWorkspaceByWorkspaceName(
+                authService.getCurrentLoginUserInfo(), request.getWorkspaceName());
+        resourceIdWorkspaceIdMap.put(ModelDBConstants.EMPTY_STRING, workspace.getId());
+      } else {
+        List<GetResourcesResponseItem> responseItems =
+            roleService.getResourceItems(
+                null,
+                response.getRepositoriesList().stream()
+                    .map(repository -> String.valueOf(repository.getId()))
+                    .collect(Collectors.toSet()),
+                ModelDBServiceResourceTypes.REPOSITORY);
+        resourceIdWorkspaceIdMap =
+            responseItems.stream()
+                .collect(
+                    Collectors.toMap(
+                        GetResourcesResponseItem::getResourceId,
+                        GetResourcesResponseItem::getWorkspaceId));
+      }
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          responseItems.stream()
-              .collect(
-                  Collectors.toMap(
-                      GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId)),
+          resourceIdWorkspaceIdMap,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response);
@@ -858,14 +879,31 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       List<Repository> repositories = new LinkedList<>();
       FindRepositoriesBlobs.Response response =
           blobDAO.findRepositoriesBlobs(commitDAO, request, repositories);
+      Map<String, Long> resourceIdWorkspaceIdMap = new HashMap<>();
+      if (repositories.isEmpty()) {
+        Workspace workspace =
+            roleService.getWorkspaceByWorkspaceName(
+                authService.getCurrentLoginUserInfo(), request.getWorkspaceName());
+        resourceIdWorkspaceIdMap.put(ModelDBConstants.EMPTY_STRING, workspace.getId());
+      } else {
+        List<GetResourcesResponseItem> responseItems =
+            roleService.getResourceItems(
+                null,
+                repositories.stream()
+                    .map(repository -> String.valueOf(repository.getId()))
+                    .collect(Collectors.toSet()),
+                ModelDBServiceResourceTypes.REPOSITORY);
+        resourceIdWorkspaceIdMap =
+            responseItems.stream()
+                .collect(
+                    Collectors.toMap(
+                        GetResourcesResponseItem::getResourceId,
+                        GetResourcesResponseItem::getWorkspaceId));
+      }
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          repositories.stream()
-              .collect(
-                  Collectors.toMap(
-                      repository -> String.valueOf(repository.getId()),
-                      Repository::getWorkspaceServiceId)),
+          resourceIdWorkspaceIdMap,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response);

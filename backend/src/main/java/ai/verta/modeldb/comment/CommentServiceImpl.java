@@ -215,8 +215,12 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       GetResourcesResponseItem responseItem =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       Map<String, Long> auditResourceMap = new HashMap<>();
-      comments.forEach(
-          comment -> auditResourceMap.put(comment.getId(), responseItem.getWorkspaceId()));
+      if (comments.isEmpty()) {
+        auditResourceMap.put(ModelDBConstants.EMPTY_STRING, responseItem.getWorkspaceId());
+      } else {
+        comments.forEach(
+            comment -> auditResourceMap.put(comment.getId(), responseItem.getWorkspaceId()));
+      }
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,

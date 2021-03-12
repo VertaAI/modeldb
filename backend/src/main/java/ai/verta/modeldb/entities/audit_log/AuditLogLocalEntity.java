@@ -101,19 +101,23 @@ public class AuditLogLocalEntity {
 
   public AuditLog toProto() {
     List<AuditResource> auditResources = new ArrayList<>();
-    for (Map.Entry<String, Long> resourceId : resourceIdWorkspaceIdMap.entrySet()) {
-      final AuditResource.Builder resource =
-          AuditResource.newBuilder()
-              .setResourceId(resourceId.getKey())
-              .setWorkspaceId(resourceId.getValue());
-      if (resourceType != null) {
-        resource.setResourceType(
-            ResourceType.newBuilder().setModeldbServiceResourceTypeValue(resourceType).build());
+    if (resourceIdWorkspaceIdMap != null) {
+      for (Map.Entry<String, Long> resourceId : resourceIdWorkspaceIdMap.entrySet()) {
+        final AuditResource.Builder resource =
+            AuditResource.newBuilder().setWorkspaceId(resourceId.getValue());
+        if (resourceId.getKey() != null && !resourceId.getKey().isEmpty()) {
+          resource.setResourceId(resourceId.getKey());
+        }
+
+        if (resourceType != null) {
+          resource.setResourceType(
+              ResourceType.newBuilder().setModeldbServiceResourceTypeValue(resourceType).build());
+        }
+        if (resourceService != null) {
+          resource.setResourceServiceValue(resourceService);
+        }
+        auditResources.add(resource.build());
       }
-      if (resourceService != null) {
-        resource.setResourceServiceValue(resourceService);
-      }
-      auditResources.add(resource.build());
     }
 
     AuditLog.Builder builder =

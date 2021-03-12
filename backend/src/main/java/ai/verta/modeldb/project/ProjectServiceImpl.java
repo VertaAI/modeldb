@@ -703,19 +703,26 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               .build();
       Workspace workspace =
           roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
-      List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              workspace,
-              projects.stream().map(Project::getId).collect(Collectors.toSet()),
-              ModelDBServiceResourceTypes.PROJECT);
+      Map<String, Long> resourceIdWorkspaceIdMap = new HashMap<>();
+      if (projects.isEmpty()) {
+        resourceIdWorkspaceIdMap.put(ModelDBConstants.EMPTY_STRING, workspace.getId());
+      } else {
+        List<GetResourcesResponseItem> responseItems =
+            roleService.getResourceItems(
+                workspace,
+                projects.stream().map(Project::getId).collect(Collectors.toSet()),
+                ModelDBServiceResourceTypes.PROJECT);
+        resourceIdWorkspaceIdMap =
+            responseItems.stream()
+                .collect(
+                    Collectors.toMap(
+                        GetResourcesResponseItem::getResourceId,
+                        GetResourcesResponseItem::getWorkspaceId));
+      }
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          responseItems.stream()
-              .collect(
-                  Collectors.toMap(
-                      GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId)),
+          resourceIdWorkspaceIdMap,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response);
@@ -1254,21 +1261,28 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               .addAllProjects(projects)
               .setTotalRecords(projectPaginationDTO.getTotalRecords())
               .build();
-      Workspace workspace =
-          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
-      List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              workspace,
-              projects.stream().map(Project::getId).collect(Collectors.toSet()),
-              ModelDBServiceResourceTypes.PROJECT);
+      Map<String, Long> resourceIdWorkspaceIdMap = new HashMap<>();
+      if (projects.isEmpty()) {
+        Workspace workspace =
+            roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
+        resourceIdWorkspaceIdMap.put(ModelDBConstants.EMPTY_STRING, workspace.getId());
+      } else {
+        List<GetResourcesResponseItem> responseItems =
+            roleService.getResourceItems(
+                null,
+                projects.stream().map(Project::getId).collect(Collectors.toSet()),
+                ModelDBServiceResourceTypes.PROJECT);
+        resourceIdWorkspaceIdMap =
+            responseItems.stream()
+                .collect(
+                    Collectors.toMap(
+                        GetResourcesResponseItem::getResourceId,
+                        GetResourcesResponseItem::getWorkspaceId));
+      }
       saveAuditLog(
           Optional.ofNullable(userInfo),
           ModelDBServiceActions.READ,
-          responseItems.stream()
-              .collect(
-                  Collectors.toMap(
-                      GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId)),
+          resourceIdWorkspaceIdMap,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response);

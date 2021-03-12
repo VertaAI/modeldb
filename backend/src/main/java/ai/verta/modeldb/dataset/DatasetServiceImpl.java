@@ -47,6 +47,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -202,21 +203,29 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .addAllDatasets(datasetPaginationDTO.getDatasets())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
               .build();
-      Workspace workspace =
-          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
-      List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              workspace,
-              response.getDatasetsList().stream().map(Dataset::getId).collect(Collectors.toSet()),
-              ModelDBServiceResourceTypes.DATASET);
+
+      Map<String, Long> resourceIdWorkspaceIdMap = new HashMap<>();
+      if (datasetPaginationDTO.getDatasets().isEmpty()) {
+        Workspace workspace =
+            roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
+        resourceIdWorkspaceIdMap.put(ModelDBConstants.EMPTY_STRING, workspace.getId());
+      } else {
+        List<GetResourcesResponseItem> responseItems =
+            roleService.getResourceItems(
+                null,
+                response.getDatasetsList().stream().map(Dataset::getId).collect(Collectors.toSet()),
+                ModelDBServiceResourceTypes.DATASET);
+        resourceIdWorkspaceIdMap =
+            responseItems.stream()
+                .collect(
+                    Collectors.toMap(
+                        GetResourcesResponseItem::getResourceId,
+                        GetResourcesResponseItem::getWorkspaceId));
+      }
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          responseItems.stream()
-              .collect(
-                  Collectors.toMap(
-                      GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId)),
+          resourceIdWorkspaceIdMap,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response);
@@ -303,21 +312,28 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .addAllDatasets(datasetPaginationDTO.getDatasets())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
               .build();
-      Workspace workspace =
-          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
-      List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              workspace,
-              response.getDatasetsList().stream().map(Dataset::getId).collect(Collectors.toSet()),
-              ModelDBServiceResourceTypes.DATASET);
+      Map<String, Long> resourceIdWorkspaceIdMap = new HashMap<>();
+      if (datasetPaginationDTO.getDatasets().isEmpty()) {
+        Workspace workspace =
+            roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
+        resourceIdWorkspaceIdMap.put(ModelDBConstants.EMPTY_STRING, workspace.getId());
+      } else {
+        List<GetResourcesResponseItem> responseItems =
+            roleService.getResourceItems(
+                null,
+                response.getDatasetsList().stream().map(Dataset::getId).collect(Collectors.toSet()),
+                ModelDBServiceResourceTypes.DATASET);
+        resourceIdWorkspaceIdMap =
+            responseItems.stream()
+                .collect(
+                    Collectors.toMap(
+                        GetResourcesResponseItem::getResourceId,
+                        GetResourcesResponseItem::getWorkspaceId));
+      }
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
-          responseItems.stream()
-              .collect(
-                  Collectors.toMap(
-                      GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId)),
+          resourceIdWorkspaceIdMap,
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response));
       responseObserver.onNext(response);
@@ -381,11 +397,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
       responseBuilder.addAllSharedDatasets(sharedDatasets);
 
-      Workspace workspace =
-          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
       List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              workspace, datasetIdSet, ModelDBServiceResourceTypes.DATASET);
+          roleService.getResourceItems(null, datasetIdSet, ModelDBServiceResourceTypes.DATASET);
       saveAuditLog(
           Optional.ofNullable(userInfo),
           ModelDBServiceActions.READ,

@@ -46,6 +46,9 @@ public interface CommitDAO {
       Session session, String commitHash, RepositoryFunction getRepositoryFunction)
       throws ModelDBException;
 
+  String getDatasetIdByDatasetVersion(RepositoryDAO repositoryDAO, String commitHash)
+      throws ModelDBException;
+
   void deleteDatasetVersions(
       RepositoryIdentification repositoryIdentification,
       List<String> datasetVersionIds,
