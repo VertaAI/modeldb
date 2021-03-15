@@ -9,16 +9,16 @@ import ai.verta.uac.*;
 import ai.verta.uac.versioning.AuditLogServiceGrpc;
 import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
-import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.TimeUnit;
 
 public class AuthServiceChannel implements AutoCloseable {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthServiceChannel.class);
   private ManagedChannel authServiceChannel;
   private RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub;
-  private RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub;
   private AuthzServiceGrpc.AuthzServiceBlockingStub authzServiceBlockingStub;
   private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStub;
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
@@ -105,22 +105,6 @@ public class AuthServiceChannel implements AutoCloseable {
       initRoleServiceStubChannel();
     }
     return roleServiceBlockingStub;
-  }
-
-  private void initRoleServiceFutureStubChannel() {
-    Metadata requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
-    roleServiceFutureStub =
-        RoleServiceGrpc.newFutureStub(authServiceChannel).withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
-  }
-
-  public RoleServiceGrpc.RoleServiceFutureStub getRoleServiceFutureStub() {
-    if (roleServiceFutureStub == null) {
-      initRoleServiceFutureStubChannel();
-    }
-    return roleServiceFutureStub;
   }
 
   private void initAuthzServiceStubChannel(Metadata requestHeaders) {

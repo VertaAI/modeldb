@@ -15,6 +15,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.DatasetEntity;
@@ -33,18 +34,20 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class DatasetToRepositoryMigration {
   private DatasetToRepositoryMigration() {}
@@ -53,6 +56,7 @@ public class DatasetToRepositoryMigration {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private static AuthService authService;
+  private static UAC uac;
   private static RoleService roleService;
   private static CommitDAO commitDAO;
   private static RepositoryDAO repositoryDAO;
@@ -66,7 +70,8 @@ public class DatasetToRepositoryMigration {
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
     authService = AuthServiceUtils.FromConfig(ai.verta.modeldb.config.Config.getInstance());
-    roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
+    uac = UAC.FromConfig(Config.getInstance());
+    roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
 
     readOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_ONLY, null);
     writeOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_WRITE, null);
@@ -264,7 +269,8 @@ public class DatasetToRepositoryMigration {
 
   private static void createRepository(
       Session session, DatasetEntity datasetEntity, UserInfo userInfoValue)
-      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
+      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException,
+          ExecutionException, InterruptedException {
     String datasetId = datasetEntity.getId();
     Dataset newDataset = datasetEntity.getProtoObject(roleService).toBuilder().setId("").build();
     Dataset dataset;
@@ -447,7 +453,7 @@ public class DatasetToRepositoryMigration {
 
   private static String createCommitAndBlobsFromDatsetVersion(
       Session session, DatasetVersion newDatasetVersion, Long repoId)
-      throws ModelDBException, NoSuchAlgorithmException {
+      throws ModelDBException, NoSuchAlgorithmException, ExecutionException, InterruptedException {
     RepositoryEntity repositoryEntity = session.get(RepositoryEntity.class, repoId);
     CreateCommitRequest.Response createCommitResponse =
         commitDAO.setCommitFromDatasetVersion(

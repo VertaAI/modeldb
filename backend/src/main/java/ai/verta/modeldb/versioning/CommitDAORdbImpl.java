@@ -17,12 +17,7 @@ import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
-import ai.verta.modeldb.entities.versioning.BranchEntity;
-import ai.verta.modeldb.entities.versioning.CommitEntity;
-import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
-import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.entities.versioning.RepositoryEnums;
-import ai.verta.modeldb.entities.versioning.TagsEntity;
+import ai.verta.modeldb.entities.versioning.*;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
@@ -40,16 +35,15 @@ import com.google.protobuf.ProtocolStringList;
 import com.google.protobuf.Value;
 import io.grpc.Status;
 import io.grpc.Status.Code;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -57,12 +51,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.LockMode;
-import org.hibernate.LockOptions;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
 
 public class CommitDAORdbImpl implements CommitDAO {
 
@@ -142,7 +130,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       RepositoryEntity repositoryEntity)
-      throws ModelDBException, NoSuchAlgorithmException {
+      throws ModelDBException, NoSuchAlgorithmException, ExecutionException, InterruptedException {
     RepositoryIdentification repositoryIdentification =
         RepositoryIdentification.newBuilder().setRepoId(repositoryEntity.getId()).build();
     // Set parent datasetVersion
@@ -433,7 +421,7 @@ public class CommitDAORdbImpl implements CommitDAO {
   @Override
   public ListCommitsRequest.Response listCommits(
       ListCommitsRequest request, RepositoryFunction getRepository, boolean ascending)
-      throws ModelDBException {
+      throws ModelDBException, ExecutionException, InterruptedException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepository.apply(session);
 
@@ -484,7 +472,7 @@ public class CommitDAORdbImpl implements CommitDAO {
 
   @Override
   public Commit getCommit(String commitHash, RepositoryFunction getRepository)
-      throws ModelDBException {
+      throws ModelDBException, ExecutionException, InterruptedException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CommitEntity commitEntity = getCommitEntity(session, commitHash, getRepository);
 
@@ -501,7 +489,7 @@ public class CommitDAORdbImpl implements CommitDAO {
   @Override
   public CommitEntity getCommitEntity(
       Session session, String commitHash, RepositoryFunction getRepositoryFunction)
-      throws ModelDBException {
+      throws ModelDBException, ExecutionException, InterruptedException {
     RepositoryEntity repositoryEntity = getRepositoryFunction.apply(session);
     boolean exists =
         VersioningUtils.commitRepositoryMappingExists(
@@ -535,7 +523,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryIdentification repositoryIdentification,
       List<String> datasetVersionIds,
       RepositoryDAO repositoryDAO)
-      throws ModelDBException {
+      throws ModelDBException, ExecutionException, InterruptedException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity = null;
       if (repositoryIdentification != null) {
@@ -657,7 +645,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryIdentification repositoryIdentification,
       List<String> commitShas,
       RepositoryDAO repositoryDAO)
-      throws ModelDBException {
+      throws ModelDBException, ExecutionException, InterruptedException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query<CommitEntity> getCommitQuery =
           session.createQuery(
@@ -795,7 +783,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       String datasetVersionId,
       List<String> tagsList,
       boolean deleteAll)
-      throws ModelDBException {
+      throws ModelDBException, ExecutionException, InterruptedException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity =
           VersioningUtils.getDatasetRepositoryEntity(
@@ -829,7 +817,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       boolean addLabels,
       List<String> labelsList,
       boolean deleteAll)
-      throws ModelDBException {
+      throws ModelDBException, ExecutionException, InterruptedException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String compositeId =
           VersioningUtils.getVersioningCompositeId(
@@ -1431,7 +1419,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       String datasetId,
       String datasetVersionId,
       String description)
-      throws ModelDBException {
+      throws ModelDBException, ExecutionException, InterruptedException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity;
       CommitEntity commitEntity = null;
@@ -1501,7 +1489,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       String datasetVersionId)
-      throws ModelDBException {
+      throws ModelDBException, ExecutionException, InterruptedException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       return blobDAO.convertToDatasetVersion(
           repositoryDAO, metadataDAO, null, datasetVersionId, false);

@@ -7,6 +7,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -14,18 +15,19 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class OwnerRoleBindingRepositoryUtils {
   private OwnerRoleBindingRepositoryUtils() {}
@@ -34,12 +36,14 @@ public class OwnerRoleBindingRepositoryUtils {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private static AuthService authService;
+  private static UAC uac;
   private static RoleService roleService;
 
   public static void execute() {
     if (Config.getInstance().hasAuth()) {
       authService = AuthServiceUtils.FromConfig(Config.getInstance());
-      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
+      uac = UAC.FromConfig(Config.getInstance());
+      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
       return;

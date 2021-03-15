@@ -1,7 +1,8 @@
 package ai.verta.modeldb.project;
 
-import ai.verta.common.*;
+import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
+import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.LogProjectCodeVersion.Response;
@@ -27,10 +28,12 @@ import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.stub.StreamObserver;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class ProjectServiceImpl extends ProjectServiceImplBase {
 
@@ -1120,7 +1123,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     }
   }
 
-  private String getUrlForCode(GetUrlForArtifact request) throws InvalidProtocolBufferException {
+  private String getUrlForCode(GetUrlForArtifact request)
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     String s3Key = null;
     Project proj = projectDAO.getProjectByID(request.getId());
     if (proj.getCodeVersionSnapshot() != null

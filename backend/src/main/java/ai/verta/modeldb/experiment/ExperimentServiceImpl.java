@@ -17,7 +17,8 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
-import ai.verta.modeldb.exceptions.*;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -29,10 +30,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
@@ -1026,7 +1029,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     }
   }
 
-  private String getUrlForCode(GetUrlForArtifact request) throws InvalidProtocolBufferException {
+  private String getUrlForCode(GetUrlForArtifact request)
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     String s3Key = null;
     Experiment expr = experimentDAO.getExperiment(request.getId());
     if (expr.getCodeVersionSnapshot() != null

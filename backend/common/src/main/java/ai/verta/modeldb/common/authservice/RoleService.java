@@ -3,20 +3,15 @@ package ai.verta.modeldb.common.authservice;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
-import ai.verta.uac.Actions;
-import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.Organization;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Role;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.Workspace;
+import ai.verta.uac.*;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.GeneratedMessageV3;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 public interface RoleService {
 
@@ -33,79 +28,85 @@ public interface RoleService {
   boolean deleteEntityResourcesWithServiceUser(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  GetResourcesResponseItem getEntityResource(
-          Optional<String> entityId, Optional<String> workspaceName, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+  ListenableFuture<GetResourcesResponseItem> getEntityResource(
+      Optional<String> entityId,
+      Optional<String> workspaceName,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  List<GetResourcesResponseItem> getEntityResourcesByName(Optional<String> entityName, Optional<String> workspaceName, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+  List<GetResourcesResponseItem> getEntityResourcesByName(
+      Optional<String> entityName,
+      Optional<String> workspaceName,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes)
+      throws ExecutionException, InterruptedException;
 
   GeneratedMessageV3 getOrgById(String orgId);
 
   GeneratedMessageV3 getTeamById(String teamId);
 
   List<GetResourcesResponseItem> getResourceItems(
-          Workspace workspace,
-          Set<String> resourceIds,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+      Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   List<String> getWorkspaceRoleBindings(
-          String workspace_id,
-          WorkspaceTypeEnum.WorkspaceType workspaceType,
-          String resourceId,
-          String adminRole,
-          ModelDBServiceResourceTypes resourceType,
-          boolean orgScopedPublic,
-          String globalSharing);
+      String workspace_id,
+      WorkspaceTypeEnum.WorkspaceType workspaceType,
+      String resourceId,
+      String adminRole,
+      ModelDBServiceResourceTypes resourceType,
+      boolean orgScopedPublic,
+      String globalSharing);
 
   String buildRoleBindingName(
-          String roleName, String resourceId, CollaboratorBase collaborator, String resourceTypeName);
+      String roleName, String resourceId, CollaboratorBase collaborator, String resourceTypeName);
 
   String buildRoleBindingName(
-          String roleName, String resourceId, String userId, String resourceTypeName);
+      String roleName, String resourceId, String userId, String resourceTypeName);
 
   List<String> getAccessibleResourceIds(
-          CollaboratorBase hostUserInfo,
-          CollaboratorBase currentLoginUserInfo,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          List<String> requestedResourceIds);
+      CollaboratorBase hostUserInfo,
+      CollaboratorBase currentLoginUserInfo,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      List<String> requestedResourceIds);
 
   List<String> getAllowedResources(
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
-          CollaboratorBase collaboratorBase);
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      CollaboratorBase collaboratorBase);
 
   List<String> getSelfAllowedResources(
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions);
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions);
 
   List<String> getSelfDirectlyAllowedResources(
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions);
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions);
 
   void isSelfAllowed(
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
-          String resourceId);
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      String resourceId);
 
   List<String> getAccessibleResourceIdsByActions(
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-          ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
-          List<String> requestedIdList);
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      List<String> requestedIdList);
 
   Map<String, Actions> getSelfAllowedActionsBatch(
-          List<String> resourceIds, ModelDBServiceResourceTypes type);
+      List<String> resourceIds, ModelDBServiceResourceTypes type);
 
   void createRoleBinding(
-          Role role,
-          CollaboratorBase collaborator,
-          String resourceId,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+      Role role,
+      CollaboratorBase collaborator,
+      String resourceId,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   void createRoleBinding(
-          String roleName,
-          RoleScope roleBindingScope,
-          CollaboratorBase collaborator,
-          String resourceId,
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+      String roleName,
+      RoleScope roleBindingScope,
+      CollaboratorBase collaborator,
+      String resourceId,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   Role getRoleByName(String roleName, RoleScope roleScope);
 

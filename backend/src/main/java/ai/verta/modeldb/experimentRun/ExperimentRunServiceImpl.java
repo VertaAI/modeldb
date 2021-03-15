@@ -18,7 +18,8 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
-import ai.verta.modeldb.exceptions.*;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.ProjectDAO;
@@ -34,12 +35,14 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
-import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.AbstractMap.SimpleEntry;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
@@ -1121,7 +1124,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   private Map.Entry<String, String> getUrlForData(GetUrlForArtifact request)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
+          InterruptedException {
 
     assert (request.getArtifactType().equals(ArtifactType.DATA));
     assert (!request.getId().isEmpty());
@@ -1147,7 +1151,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   private String getUrlForCode(GetUrlForArtifact request)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
+          InterruptedException {
     ExperimentRun exprRun = experimentRunDAO.getExperimentRun(request.getId());
     String s3Key = null;
     /*If code version is not logged at a lower level we check for code at the higher level

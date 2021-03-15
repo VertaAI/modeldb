@@ -11,19 +11,14 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
+import java.util.concurrent.ExecutionException;
 
 @Entity
 @Table(name = "dataset")
@@ -227,7 +222,8 @@ public class DatasetEntity {
     this.deleted = deleted;
   }
 
-  public Dataset getProtoObject(RoleService roleService) throws InvalidProtocolBufferException {
+  public Dataset getProtoObject(RoleService roleService)
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     Dataset.Builder datasetBuilder =
         Dataset.newBuilder()
             .setId(getId())
@@ -244,10 +240,12 @@ public class DatasetEntity {
             .setWorkspaceTypeValue(getWorkspace_type());
 
     GetResourcesResponseItem repositoryResource =
-        roleService.getEntityResource(
-            Optional.ofNullable(String.valueOf(this.id)),
-            Optional.empty(),
-            ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
+        roleService
+            .getEntityResource(
+                Optional.ofNullable(String.valueOf(this.id)),
+                Optional.empty(),
+                ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET)
+            .get();
     datasetBuilder.setVisibility(repositoryResource.getVisibility());
     datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));

@@ -23,10 +23,14 @@ import ai.verta.modeldb.versioning.CommitDAORdbImpl;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Metadata;
+
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class PublicRoleServiceUtils implements RoleService {
 
@@ -124,7 +128,7 @@ public class PublicRoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
       ModelDBServiceActions modelDBServiceActions)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     if (resourceId != null && !resourceId.isEmpty()) {
       if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
         if (!projectDAO.projectExistsInDB(resourceId)) {
@@ -233,11 +237,12 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public GetResourcesResponseItem getEntityResource(
+  public ListenableFuture<GetResourcesResponseItem> getEntityResource(
       Optional<String> entityId,
       Optional<String> workspaceName,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build();
+    return Futures.immediateFuture(
+        GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build());
   }
 
   @Override
