@@ -14,6 +14,7 @@ public abstract class Config {
   public GrpcServerConfig grpcServer;
   public SpringServerConfig springServer;
   public TestConfig test;
+  public ServiceUserConfig mdb_service_user;
 
   public void Validate() throws InvalidConfigException {
 

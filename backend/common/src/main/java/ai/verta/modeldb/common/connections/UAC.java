@@ -4,7 +4,7 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
