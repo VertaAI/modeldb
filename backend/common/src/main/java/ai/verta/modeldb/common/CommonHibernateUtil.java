@@ -271,7 +271,7 @@ public abstract class CommonHibernateUtil {
   }
 
   public void createTablesLiquibaseMigration(
-      DatabaseConfig config, String changeSetToRevertUntilTag)
+      DatabaseConfig config, String changeSetToRevertUntilTag, String liquibaseRootPath)
       throws LiquibaseException, SQLException, InterruptedException, ClassNotFoundException {
     RdbConfig rdb = config.RdbConfiguration;
 
@@ -287,7 +287,7 @@ public abstract class CommonHibernateUtil {
       // Initialize Liquibase and run the update
       Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
       String rootPath = System.getProperty(CommonConstants.userDir);
-      rootPath = rootPath + liquibaseRootFilePath;
+      rootPath = rootPath + liquibaseRootPath;
       Liquibase liquibase = new Liquibase(rootPath, new FileSystemResourceAccessor(), database);
 
       boolean liquibaseExecuted = false;
@@ -457,6 +457,11 @@ public abstract class CommonHibernateUtil {
 
   public void runLiquibaseMigration(DatabaseConfig config)
       throws InterruptedException, LiquibaseException, SQLException, ClassNotFoundException {
+    runLiquibaseMigration(config, liquibaseRootFilePath);
+  }
+
+  public void runLiquibaseMigration(DatabaseConfig config, String liquibaseRootPath)
+      throws InterruptedException, LiquibaseException, SQLException, ClassNotFoundException {
     // Change liquibase default table names
     System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
     System.getProperties()
@@ -482,7 +487,7 @@ public abstract class CommonHibernateUtil {
     releaseLiquibaseLock(config);
 
     // Run tables liquibase migration
-    createTablesLiquibaseMigration(config, config.changeSetToRevertUntilTag);
+    createTablesLiquibaseMigration(config, config.changeSetToRevertUntilTag, liquibaseRootPath);
   }
 
   public void createDBIfNotExists(RdbConfig rdb) throws SQLException {

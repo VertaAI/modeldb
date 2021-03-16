@@ -15,7 +15,6 @@ import org.yaml.snakeyaml.constructor.Constructor;
 public class Config extends ai.verta.modeldb.common.config.Config {
 
   private static Config config = null;
-  public ServiceUserConfig mdb_service_user;
   public String starterProject;
   public ArtifactStoreConfig artifactStoreConfig;
   public TelemetryConfig telemetry;
