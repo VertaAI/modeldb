@@ -3,8 +3,8 @@ package ai.verta.modeldb.common.connections;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
-import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.modeldb.common.config.Config;
+import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
@@ -34,8 +34,8 @@ public class UAC {
     this(
         config.authService.host,
         config.authService.port,
-        config.mdb_service_user.email,
-        config.mdb_service_user.devKey);
+        config.service_user.email,
+        config.service_user.devKey);
   }
 
   public UAC(String host, Integer port, String serviceUserEmail, String serviceUserDevKey) {

@@ -51,8 +51,8 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
         authService,
         config.authService.host,
         config.authService.port,
-        config.mdb_service_user.email,
-        config.mdb_service_user.devKey,
+        config.service_user.email,
+        config.service_user.devKey,
         config.grpcServer.requestTimeout,
         AuthInterceptor.METADATA_INFO,
         uac);
