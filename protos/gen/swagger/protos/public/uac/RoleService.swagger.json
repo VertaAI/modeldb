@@ -85,8 +85,7 @@
               "REPOSITORY",
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
-              "MONITORED_ENTITY",
-              "MONITORED_ENTITY_VERSION"
+              "MONITORED_ENTITY"
             ],
             "default": "UNKNOWN"
           },
@@ -572,8 +571,7 @@
         "REPOSITORY",
         "REGISTERED_MODEL",
         "REGISTERED_MODEL_VERSION",
-        "MONITORED_ENTITY",
-        "MONITORED_ENTITY_VERSION"
+        "MONITORED_ENTITY"
       ],
       "default": "UNKNOWN"
     },
