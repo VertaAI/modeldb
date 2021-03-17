@@ -13,7 +13,10 @@ from .._protos.public.modeldb.versioning import VersioningService_pb2 as _Versio
 
 from ..external import six
 
-from .._internal_utils import _utils
+from .._internal_utils import (
+    _artifact_utils,
+    _utils,
+)
 from .. import code
 from .. import configuration
 from .. import dataset
@@ -183,7 +186,7 @@ class Commit(object):
         return response_msg
 
     # TODO: consolidate this with similar method in `ExperimentRun`
-    def _upload_artifact(self, blob_path, dataset_component_path, file_handle, part_size=64*(10**6)):
+    def _upload_artifact(self, blob_path, dataset_component_path, file_handle, part_size=_artifact_utils._64MB):
         """
         Uploads `file_handle` to ModelDB artifact store.
 

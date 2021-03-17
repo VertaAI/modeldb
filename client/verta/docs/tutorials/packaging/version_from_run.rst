@@ -22,7 +22,7 @@ A model version created from an experiment run will automatically inherit its mo
 Using the client
 ----------------
 
-To create a new model version from an existing experiment run, we can use :meth:`RegisteredModel.create_version_from_run() <verta._registry.model.RegisteredModel.create_version_from_run>`:
+To create a new model version from an existing experiment run, we can use :meth:`RegisteredModel.create_version_from_run() <verta.registry._entities.model.RegisteredModel.create_version_from_run>`:
 
 .. code-block:: python
 

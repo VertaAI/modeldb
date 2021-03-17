@@ -3,12 +3,36 @@ package ai.verta.modeldb.datasetVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.Pagination;
-import ai.verta.modeldb.*;
+import ai.verta.modeldb.AddDatasetVersionAttributes;
+import ai.verta.modeldb.AddDatasetVersionTags;
+import ai.verta.modeldb.CommitMultipartVersionedDatasetBlobArtifact;
+import ai.verta.modeldb.CommitVersionedDatasetBlobArtifactPart;
+import ai.verta.modeldb.CreateDatasetVersion;
 import ai.verta.modeldb.CreateDatasetVersion.Response;
+import ai.verta.modeldb.DAOSet;
+import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceImplBase;
+import ai.verta.modeldb.DeleteDatasetVersion;
+import ai.verta.modeldb.DeleteDatasetVersionAttributes;
+import ai.verta.modeldb.DeleteDatasetVersionTags;
+import ai.verta.modeldb.DeleteDatasetVersions;
+import ai.verta.modeldb.FindDatasetVersions;
+import ai.verta.modeldb.GetAllDatasetVersionsByDatasetId;
+import ai.verta.modeldb.GetCommittedVersionedDatasetBlobArtifactParts;
+import ai.verta.modeldb.GetDatasetVersionAttributes;
+import ai.verta.modeldb.GetDatasetVersionById;
+import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
+import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.PathDatasetVersionInfo;
+import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.UpdateDatasetVersionAttributes;
+import ai.verta.modeldb.UpdateDatasetVersionDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -21,7 +45,14 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.versioning.*;
+import ai.verta.modeldb.versioning.BlobDAO;
+import ai.verta.modeldb.versioning.Commit;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.CreateCommitRequest;
+import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
+import ai.verta.modeldb.versioning.ListCommitsRequest;
+import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
@@ -36,6 +67,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -177,7 +209,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, CreateDatasetVersion.Response.getDefaultInstance());
     }
   }
@@ -224,14 +256,15 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetAllDatasetVersionsByDatasetId.Response.getDefaultInstance());
     }
   }
 
   private DatasetVersionDTO getDatasetVersionDTOByDatasetId(
       String datasetId, int pageNumber, int pageLimit, boolean ascending)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
+          InterruptedException {
 
     /*Get Data*/
     RepositoryIdentification repositoryIdentification =
@@ -271,7 +304,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   }
 
   private List<DatasetVersion> convertRepoDatasetVersions(
-      RepositoryEntity repositoryEntity, List<Commit> commitList) throws ModelDBException {
+      RepositoryEntity repositoryEntity, List<Commit> commitList)
+      throws ModelDBException, ExecutionException, InterruptedException {
     List<DatasetVersion> datasetVersions = new ArrayList<>();
     for (Commit commit : commitList) {
       if (commit.getParentShasList().isEmpty()) {
@@ -320,7 +354,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetVersion.Response.getDefaultInstance());
     }
   }
@@ -395,7 +429,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance());
     }
   }
@@ -462,7 +496,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, FindDatasetVersions.Response.getDefaultInstance());
     }
   }
@@ -503,7 +537,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateDatasetVersionDescription.Response.getDefaultInstance());
     }
   }
@@ -553,7 +587,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AddDatasetVersionTags.Response.getDefaultInstance());
     }
   }
@@ -603,7 +637,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetVersionTags.Response.getDefaultInstance());
     }
   }
@@ -654,7 +688,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AddDatasetVersionAttributes.Response.getDefaultInstance());
     }
   }
@@ -705,7 +739,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateDatasetVersionAttributes.Response.getDefaultInstance());
     }
   }
@@ -756,7 +790,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetDatasetVersionAttributes.Response.getDefaultInstance());
     }
   }
@@ -811,7 +845,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetVersionAttributes.Response.getDefaultInstance());
     }
   }
@@ -854,7 +888,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetVersions.Response.getDefaultInstance());
     }
   }
@@ -887,7 +921,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetUrlForDatasetBlobVersioned.Response.getDefaultInstance());
     }
   }
@@ -944,7 +978,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver,
           e,
           CommitVersionedDatasetBlobArtifactPart.Response.getDefaultInstance());
@@ -975,7 +1009,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver,
           e,
           GetCommittedVersionedDatasetBlobArtifactParts.Response.getDefaultInstance());
@@ -1014,7 +1048,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver,
           e,
           CommitMultipartVersionedDatasetBlobArtifact.Response.getDefaultInstance());
@@ -1050,7 +1084,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetDatasetVersionById.Response.getDefaultInstance());
     }
   }

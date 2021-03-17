@@ -9,4 +9,5 @@ public interface CommonMessages {
   String ROLE_SERVICE_RES_RECEIVED_MSG = "RoleService response received";
   String ROLE_SERVICE_RES_RECEIVED_TRACE_MSG = ROLE_SERVICE_RES_RECEIVED_MSG + " : {}";
   String AUTH_SERVICE_RES_RECEIVED_MSG = "AuthService response received";
+  String READY_STATUS = "Setting isReady to true, was {}";
 }

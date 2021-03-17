@@ -11,6 +11,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ProjectEntity;
@@ -38,8 +39,11 @@ import org.hibernate.query.Query;
 
 public class CollaboratorResourceMigration {
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
   private static final String REPOSITORY_GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
   private static AuthService authService;
+  private static UAC uac;
   private static RoleService roleService;
   private static int paginationSize;
 
@@ -49,7 +53,8 @@ public class CollaboratorResourceMigration {
     CollaboratorResourceMigration.paginationSize = 100;
     if (Config.getInstance().hasAuth()) {
       authService = AuthServiceUtils.FromConfig(Config.getInstance());
-      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
+      uac = UAC.FromConfig(Config.getInstance());
+      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found, OSS setup found");
       return;
@@ -77,7 +82,7 @@ public class CollaboratorResourceMigration {
     final int pagesize = CollaboratorResourceMigration.paginationSize;
     LOGGER.debug("Total Projects to migrate {}", count);
 
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
       CriteriaQuery<ProjectEntity> criteriaQuery = criteriaBuilder.createQuery(ProjectEntity.class);
@@ -144,7 +149,8 @@ public class CollaboratorResourceMigration {
           // ignore the CollaboratorType
           try {
             roleService.createWorkspacePermissions(
-                workspaceDTO.getWorkspaceName(),
+                Optional.empty(),
+                Optional.of(workspaceDTO.getWorkspaceName()),
                 project.getId(),
                 project.getName(),
                 Optional.of(owner),
@@ -174,7 +180,7 @@ public class CollaboratorResourceMigration {
           if (!resources.isEmpty()) {
             GetResourcesResponseItem resourceDetails = resources.get(0);
             roleService.createWorkspacePermissions(
-                resourceDetails.getWorkspaceId(),
+                Optional.of(resourceDetails.getWorkspaceId()),
                 Optional.empty(),
                 project.getId(),
                 project.getName(),
@@ -187,7 +193,7 @@ public class CollaboratorResourceMigration {
         }
         if (migrated) {
           deleteRoleBindingsForProjects(Collections.singletonList(project));
-          try (Session session1 = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+          try (Session session1 = modelDBHibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = null;
             try {
               transaction = session1.beginTransaction();
@@ -216,7 +222,7 @@ public class CollaboratorResourceMigration {
 
     LOGGER.debug("Total Repositories to migrate {}", count);
 
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
       CriteriaQuery<RepositoryEntity> criteriaQuery =
@@ -288,7 +294,8 @@ public class CollaboratorResourceMigration {
           // ignore the CollaboratorType
           try {
             roleService.createWorkspacePermissions(
-                workspaceDTO.getWorkspaceName(),
+                Optional.empty(),
+                Optional.of(workspaceDTO.getWorkspaceName()),
                 String.valueOf(repository.getId()),
                 repository.getName(),
                 Optional.of(Long.parseLong(repository.getOwner())),
@@ -332,7 +339,7 @@ public class CollaboratorResourceMigration {
             GetResourcesResponseItem resourceDetails =
                 responseItemMap.get(String.valueOf(repository.getId()));
             roleService.createWorkspacePermissions(
-                resourceDetails.getWorkspaceId(),
+                Optional.of(resourceDetails.getWorkspaceId()),
                 Optional.empty(),
                 String.valueOf(repository.getId()),
                 repository.getName(),
@@ -345,7 +352,7 @@ public class CollaboratorResourceMigration {
         }
         if (migrated) {
           deleteRoleBindingsOfRepositories(Collections.singletonList(repository));
-          try (Session session1 = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+          try (Session session1 = modelDBHibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = null;
             try {
               transaction = session1.beginTransaction();
@@ -369,7 +376,7 @@ public class CollaboratorResourceMigration {
   }
 
   private static <T> Long getEntityCount(Class<T> klass) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
       Root<T> root = countQuery.from(klass);

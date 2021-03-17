@@ -24,15 +24,12 @@ import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.Organization;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.UserInfo;
+import ai.verta.uac.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.*;
 import org.apache.logging.log4j.LogManager;
@@ -46,6 +43,8 @@ import org.hibernate.query.Query;
 public class DatasetDAORdbImpl implements DatasetDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetDAORdbImpl.class);
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
   public static final String GLOBAL_SHARING = "_DATASET_GLOBAL_SHARING";
   private final AuthService authService;
   private final RoleService roleService;
@@ -90,18 +89,20 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   private void checkDatasetAlreadyExist(Dataset dataset) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ModelDBHibernateUtil.checkIfEntityAlreadyExists(
-          session,
-          "ds",
-          CHECK_DATASE_QUERY_PREFIX,
-          "Dataset",
-          "datasetName",
-          dataset.getName(),
-          ModelDBConstants.WORKSPACE,
-          dataset.getWorkspaceId(),
-          dataset.getWorkspaceType(),
-          LOGGER);
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      // TODO: this entire DAO will removed after merging of the PR:
+      // https://github.com/VertaAI/modeldb/pull/1846
+      /*modelDBHibernateUtil.checkIfEntityAlreadyExists(
+      session,
+      "ds",
+      CHECK_DATASE_QUERY_PREFIX,
+      "Dataset",
+      "datasetName",
+      dataset.getName(),
+      ModelDBConstants.WORKSPACE,
+      dataset.getWorkspaceId(),
+      dataset.getWorkspaceType(),
+      LOGGER);*/
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         checkDatasetAlreadyExist(dataset);
@@ -113,11 +114,11 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset createDataset(Dataset dataset, UserInfo userInfo)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     // Check entity already exists
     checkDatasetAlreadyExist(dataset);
 
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetEntity = RdbmsUtils.generateDatasetEntity(dataset);
       Transaction transaction = session.beginTransaction();
       session.save(datasetEntity);
@@ -130,11 +131,11 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             ModelDBUtils.getResourceVisibility(Optional.empty(), dataset.getDatasetVisibility());
       }
       roleService.createWorkspacePermissions(
-          dataset.getWorkspaceServiceId(),
-          Optional.of(dataset.getWorkspaceType()),
+          Optional.of(dataset.getWorkspaceServiceId()),
+          Optional.empty(),
           dataset.getId(),
           datasetEntity.getName(),
-          Optional.empty(), // UAC will populate the owner ID
+          Optional.empty(),
           ModelDBServiceResourceTypes.DATASET,
           dataset.getCustomPermission(),
           resourceVisibility);
@@ -152,8 +153,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public List<Dataset> getDatasetByIds(List<String> sharedDatasetIds)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<DatasetEntity> datasetEntities = getDatasetEntityList(session, sharedDatasetIds);
       LOGGER.debug("Got Dataset by Ids successfully");
       return RdbmsUtils.convertDatasetsFromDatasetEntityList(roleService, datasetEntities);
@@ -181,7 +182,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       Boolean order,
       String sortKey,
       ResourceVisibility datasetVisibility)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     FindDatasets findDatasets =
         FindDatasets.newBuilder()
             .setPageNumber(pageNumber)
@@ -204,7 +205,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       throw new PermissionDeniedException("Access Denied for given dataset Ids : " + datasetIds);
     }
 
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       Query deletedDatasetsQuery =
           session
@@ -227,8 +228,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public Dataset getDatasetById(String datasetId) throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+  public Dataset getDatasetById(String datasetId)
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj = getDatasetEntity(session, datasetId);
       return datasetObj.getProtoObject(roleService);
     } catch (Exception ex) {
@@ -255,8 +257,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       FindDatasets queryParameters,
       UserInfo currentLoginUserInfo,
       ResourceVisibility datasetVisibility)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       List<String> accessibleDatasetIds =
           roleService.getAccessibleResourceIds(
@@ -444,7 +446,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public List<Dataset> getDatasets(String key, String value, UserInfo userInfo)
-      throws InvalidProtocolBufferException {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     FindDatasets findDatasets =
         FindDatasets.newBuilder()
             .addPredicates(
@@ -463,8 +465,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset updateDatasetName(String datasetId, String datasetName)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
 
@@ -495,8 +497,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset updateDatasetDescription(String datasetId, String datasetDescription)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       datasetObj.setDescription(datasetDescription);
@@ -517,8 +519,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset addDatasetTags(String datasetId, List<String> tagsList)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       if (datasetObj == null) {
@@ -553,8 +555,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public List<String> getDatasetTags(String datasetId) throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+  public List<String> getDatasetTags(String datasetId)
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       LOGGER.debug("Got Dataset");
       return datasetObj.getProtoObject(roleService).getTagsList();
@@ -569,8 +572,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset deleteDatasetTags(String datasetId, List<String> datasetTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       StringBuilder stringQueryBuilder = new StringBuilder("delete from TagsMapping tm WHERE ");
       if (deleteAll) {
@@ -610,8 +613,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset addDatasetAttributes(String datasetId, List<KeyValue> attributesList)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       datasetObj.setAttributeMapping(
@@ -634,8 +637,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset updateDatasetAttributes(String datasetId, KeyValue attribute)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       if (datasetObj == null) {
@@ -681,8 +684,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   @Override
   public List<KeyValue> getDatasetAttributes(
       String datasetId, List<String> attributeKeyList, Boolean getAll)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       if (getAll) {
         DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
         return datasetObj.getProtoObject(roleService).getAttributesList();
@@ -708,8 +711,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   @Override
   public Dataset deleteDatasetAttributes(
       String datasetId, List<String> attributeKeyList, Boolean deleteAll)
-      throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
       StringBuilder stringQueryBuilder =
@@ -750,7 +753,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Map<String, String> getOwnersByDatasetIds(List<String> datasetIds) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery(GET_DATASET_BY_IDS_QUERY);
       query.setParameterList("ids", datasetIds);
 
@@ -774,7 +777,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   @Override
   public List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo) {
     if (!roleService.IsImplemented()) {
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         return session.createQuery(NON_DELETED_DATASET_IDS).list();
       }
     } else {
@@ -814,7 +817,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       LOGGER.debug("accessibleAllWorkspaceDatasetIds : {}", accessibleResourceIds);
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         @SuppressWarnings("unchecked")
         Query<String> query = session.createQuery(NON_DELETED_DATASET_IDS_BY_IDS);
         query.setParameterList(ModelDBConstants.DATASET_IDS, accessibleDatasetIds);
@@ -828,7 +831,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public boolean datasetExistsInDB(String datasetId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery(COUNT_DATASET_BY_ID_HQL);
       query.setParameter("datasetId", datasetId);
       Long projectCount = (Long) query.getSingleResult();

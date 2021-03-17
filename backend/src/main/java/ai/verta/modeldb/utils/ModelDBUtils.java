@@ -13,6 +13,7 @@ import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.common.authservice.AuthService;
@@ -20,6 +21,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
@@ -37,7 +39,6 @@ import com.mysql.cj.exceptions.CJCommunicationsException;
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
-import io.grpc.stub.StreamObserver;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -60,26 +61,17 @@ import org.yaml.snakeyaml.Yaml;
 public class ModelDBUtils {
 
   private static final Logger LOGGER = LogManager.getLogger(ModelDBUtils.class);
-  private static final int STACKTRACE_LENGTH = 4;
 
   private ModelDBUtils() {}
 
   public static Map<String, Object> readYamlProperties(String filePath) throws IOException {
     LOGGER.info("Reading File {} as YAML", filePath);
-    filePath = appendOptionalTelepresencePath(filePath);
+    filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
     InputStream inputStream = new FileInputStream(new File(filePath));
     Yaml yaml = new Yaml();
     @SuppressWarnings("unchecked")
     Map<String, Object> prop = (Map<String, Object>) yaml.load(inputStream);
     return prop;
-  }
-
-  public static String appendOptionalTelepresencePath(String filePath) {
-    String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
-    if (telepresenceRoot != null) {
-      filePath = telepresenceRoot + filePath;
-    }
-    return filePath;
   }
 
   public static String getStringFromProtoObject(MessageOrBuilder object)
@@ -254,7 +246,7 @@ public class ModelDBUtils {
               collaborator1 = new CollaboratorTeam(collaborator.getVertaId(), roleService);
               break;
             default:
-              throw new InternalErrorException(ModelDBConstants.INTERNAL_ERROR);
+              throw new InternalErrorException(CommonConstants.INTERNAL_ERROR);
           }
 
           final Builder builder = CollaboratorUserInfo.newBuilder();
@@ -382,121 +374,6 @@ public class ModelDBUtils {
     executor.scheduleAtFixedRate(task, initialDelay, frequency, timeUnit);
   }
 
-  public static Throwable findRootCause(Throwable throwable) {
-    if (throwable == null) {
-      return null;
-    }
-    Throwable rootCause = throwable;
-    while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
-      rootCause = rootCause.getCause();
-    }
-    return rootCause;
-  }
-
-  public static StatusRuntimeException logError(Exception e) {
-    return logError(e, null);
-  }
-
-  public static <T extends GeneratedMessageV3> StatusRuntimeException logError(
-      Exception e, T defaultInstance) {
-    Status status;
-    StatusRuntimeException statusRuntimeException;
-    if (e instanceof StatusRuntimeException) {
-      statusRuntimeException = (StatusRuntimeException) e;
-    } else {
-      Throwable throwable = findRootCause(e);
-      // Condition 'throwable != null' covered by below condition 'throwable instanceof
-      // SocketException'
-      StackTraceElement[] stack = e.getStackTrace();
-      if (throwable instanceof SocketException) {
-        String errorMessage = "Database Connection not found: ";
-        LOGGER.info(errorMessage + "{}", e.getMessage());
-        status =
-            Status.newBuilder()
-                .setCode(Code.UNAVAILABLE_VALUE)
-                .setMessage(errorMessage + throwable.getMessage())
-                .build();
-      } else if (e instanceof LockAcquisitionException) {
-        String errorMessage = "Encountered deadlock in database connection.";
-        LOGGER.info(errorMessage + "{}", e.getMessage());
-        status =
-            Status.newBuilder()
-                .setCode(Code.ABORTED_VALUE)
-                .setMessage(errorMessage + throwable.getMessage())
-                .build();
-      } else if (e instanceof ModelDBException) {
-        ModelDBException modelDBException = (ModelDBException) e;
-        logBasedOnTheErrorCode(isClientError(modelDBException.getCode().value()), modelDBException);
-        status =
-            Status.newBuilder()
-                .setCode(modelDBException.getCode().value())
-                .setMessage(modelDBException.getMessage())
-                .build();
-      } else {
-        LOGGER.error(
-            "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());
-        status =
-            Status.newBuilder()
-                .setCode(Code.INTERNAL_VALUE)
-                .setMessage(ModelDBConstants.INTERNAL_ERROR)
-                .build();
-      }
-      int n = 0;
-      boolean isLongStack = stack.length > STACKTRACE_LENGTH;
-      if (isLongStack) {
-        for (; n < STACKTRACE_LENGTH + 1; ++n) {
-          LOGGER.warn("{}: {}", n, stack[n].toString());
-        }
-      }
-      for (; n < stack.length; ++n) {
-        if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
-          LOGGER.warn("{}: {}", n, stack[n].toString());
-        }
-      }
-      statusRuntimeException = StatusProto.toStatusRuntimeException(status);
-    }
-
-    return statusRuntimeException;
-  }
-
-  public static <T extends GeneratedMessageV3> void observeError(
-      StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
-    responseObserver.onError(logError(e, defaultInstance));
-  }
-
-  public static void logBasedOnTheErrorCode(boolean isClientError, Throwable e) {
-    if (isClientError) {
-      LOGGER.info("Exception occurred:{} {}", e.getClass(), e.getMessage());
-    } else {
-      LOGGER.warn("Exception occurred:{} {}", e.getClass(), e.getMessage());
-    }
-  }
-
-  public static boolean isClientError(int grpcCodeValue) {
-    switch (grpcCodeValue) {
-      case 0: // OK : 200 OK
-      case 1: // CANCELLED : 499 Client Closed Request
-      case 3: // INVALID_ARGUMENT: 400 Bad Request
-      case 5: // NOT_FOUND: 404 Not Found
-      case 7: // PERMISSION_DENIED: 403 Forbidden
-      case 6: // ALREADY_EXISTS: 409 Conflict
-      case 8: // RESOURCE_EXHAUSTED: 429 Too Many Requests
-      case 9: // FAILED_PRECONDITION: 400 Bad Request
-      case 10: // ABORTED: 409 Conflict
-      case 11: // OUT_OF_RANGE: 400 Bad Request
-      case 16: // UNAUTHENTICATED: 401 Unauthorized
-        return true;
-      case 2: // UNKNOWN: 500 Internal Server Error
-      case 4: // DEADLINE_EXCEEDED: 504 Gateway Timeout
-      case 12: // UNIMPLEMENTED: 501 Not Implemented
-      case 13: // INTERNAL: 500 Internal Server Error
-      case 14: // UNAVAILABLE: 503 Service Unavailable
-      case 15: // DATA_LOSS: 500 Internal Server Error
-      default:
-        return false;
-    }
-  }
-
   public static boolean needToRetry(Exception ex) {
     Throwable communicationsException = findCommunicationsFailedCause(ex);
     if ((communicationsException.getCause() instanceof CommunicationsException)
@@ -506,10 +383,11 @@ public class ModelDBUtils {
       LOGGER.warn(
           "Detected communication exception of type {}",
           communicationsException.getCause().getClass());
-      if (ModelDBHibernateUtil.checkDBConnection()) {
+      ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
+      if (modelDBHibernateUtil.checkDBConnection()) {
         LOGGER.info("Resetting session Factory");
 
-        ModelDBHibernateUtil.resetSessionFactory();
+        modelDBHibernateUtil.resetSessionFactory();
         LOGGER.info("Resetted session Factory");
       } else {
         LOGGER.warn("DB could not be reached");

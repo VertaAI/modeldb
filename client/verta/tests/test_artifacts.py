@@ -2,19 +2,21 @@ import pytest
 
 import six
 
+import filecmp
 import hashlib
 import os
 import pickle
-import shutil
 import tempfile
 import zipfile
 
 import requests
 
-from verta._internal_utils import _artifact_utils
-from verta._internal_utils import _utils
-
-from . import utils
+from verta._internal_utils import (
+    _artifact_utils,
+    _file_utils,
+    _request_utils,
+    _utils,
+)
 
 
 class TestUtils:
@@ -33,6 +35,54 @@ class TestUtils:
             whole_checksum = hashlib.sha256(tempf.read()).hexdigest()
 
             assert piecewise_checksum == whole_checksum
+
+    def test_download_file_no_collision(self, experiment_run, dir_and_files, in_tempdir):
+        source_dirpath, _ = dir_and_files
+        key = "artifact"
+
+        # create archive and move into cwd so it's deleted on teardown
+        filepath = os.path.abspath("archive.zip")
+        temp_zip = _artifact_utils.zip_dir(source_dirpath)
+        os.rename(temp_zip.name, filepath)
+
+        # upload and download file
+        experiment_run.log_artifact(key, filepath)
+        download_url = experiment_run._get_url_for_artifact(key, "GET").url
+        response = requests.get(download_url)
+        downloaded_filepath = _request_utils.download_file(
+            response, filepath, overwrite_ok=False,
+        )
+        downloaded_filepath = os.path.abspath(downloaded_filepath)
+
+        # different names
+        assert filepath != downloaded_filepath
+        # contents match
+        assert filecmp.cmp(filepath, downloaded_filepath)
+
+    def test_download_zipped_dir_no_collision(self, experiment_run, dir_and_files, in_tempdir):
+        source_dirpath, _ = dir_and_files
+        key = "artifact"
+
+        # move directory into cwd so it's deleted on teardown
+        dirpath = os.path.abspath("directory")
+        os.rename(source_dirpath, dirpath)
+
+        # upload and download directory
+        experiment_run.log_artifact(key, dirpath)
+        download_url = experiment_run._get_url_for_artifact(key, "GET").url
+        response = requests.get(download_url)
+        downloaded_dirpath = _request_utils.download_zipped_dir(
+            response, dirpath, overwrite_ok=False,
+        )
+        downloaded_dirpath = os.path.abspath(downloaded_dirpath)
+
+        # different names
+        assert dirpath != downloaded_dirpath
+        # contents match
+        dircmp = filecmp.dircmp(dirpath, downloaded_dirpath)
+        assert not dircmp.diff_files
+        assert not dircmp.left_only
+        assert not dircmp.right_only
 
 
 class TestArtifacts:
@@ -150,30 +200,20 @@ class TestArtifacts:
             with pytest.raises(ValueError):
                 experiment_run.log_artifact(key, artifact)
 
-    def test_blacklisted_key_error(self, experiment_run, all_values):
+    def test_blocklisted_key_error(self, experiment_run, all_values):
         all_values = (value  # log_artifact treats str value as filepath to open
                       for value in all_values if not isinstance(value, str))
 
-        for key, artifact in zip(_artifact_utils.BLACKLISTED_KEYS, all_values):
+        for key, artifact in zip(_artifact_utils.BLOCKLISTED_KEYS, all_values):
             with pytest.raises(ValueError):
                 experiment_run.log_artifact(key, artifact)
             with pytest.raises(ValueError):
                 experiment_run.log_artifact_path(key, artifact)
 
-    @staticmethod
-    def generate_random_data():
-        while True:
-            data = os.urandom(2 ** 16)
-            bytestream = six.BytesIO(data)
-            try:
-                pickle.load(bytestream)
-            except:
-                return data
-
-    def test_clientside_storage(self, experiment_run, strs, in_tempdir):
+    def test_clientside_storage(self, experiment_run, strs, in_tempdir, random_data):
         key = strs[0]
         filename = strs[1]
-        FILE_CONTENTS = self.generate_random_data()
+        FILE_CONTENTS = random_data
 
         # TODO: be able to use existing env var for debugging
         # NOTE: there is an assertion of `== 1` artifact that would need to be changed
@@ -211,11 +251,11 @@ class TestArtifacts:
             else:
                 del os.environ[VERTA_ARTIFACT_DIR_KEY]
 
-    def test_download(self, experiment_run, strs, in_tempdir):
+    def test_download(self, experiment_run, strs, in_tempdir, random_data):
         key = strs[0]
         filename = strs[1]
         new_filename = strs[2]
-        FILE_CONTENTS = self.generate_random_data()
+        FILE_CONTENTS = random_data
 
         # create file and upload as artifact
         with open(filename, 'wb') as f:
@@ -235,6 +275,18 @@ class TestArtifacts:
         new_filepath = experiment_run.download_artifact(key, new_filename)
         with open(new_filepath, 'rb') as f:
             assert pickle.load(f) == obj
+
+    def test_download_directory(self, experiment_run, strs, dir_and_files, in_tempdir):
+        key, download_path = strs[:2]
+        dirpath, _ = dir_and_files
+
+        experiment_run.log_artifact(key, dirpath)
+        experiment_run.download_artifact(key, download_path)
+
+        dircmp = filecmp.dircmp(dirpath, download_path)
+        assert not dircmp.diff_files
+        assert not dircmp.left_only
+        assert not dircmp.right_only
 
     def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
         key = strs[0]
@@ -434,6 +486,94 @@ class TestModels:
         assert experiment_run.get_model().__dict__ == custom.__dict__
         assert experiment_run.get_model().predict(strs) == custom.predict(strs)
 
+    def test_pyspark(self, experiment_run, in_tempdir):
+        data_filename = "census-train.csv"
+        spark_model_dir = "spark-model"
+
+        pytest.importorskip("boto3").client("s3").download_file("verta-starter", data_filename, data_filename)
+        SparkSession = pytest.importorskip("pyspark.sql").SparkSession
+        col = pytest.importorskip("pyspark.sql.functions").col
+        LogisticRegression = pytest.importorskip("pyspark.ml.classification").LogisticRegression
+        LogisticRegressionModel = pytest.importorskip("pyspark.ml.classification").LogisticRegressionModel
+        VectorAssembler = pytest.importorskip("pyspark.ml.feature").VectorAssembler
+
+        spark = SparkSession.builder.master("local").appName("parquet_example").getOrCreate()
+
+        df = spark.read.csv(data_filename, header=True, inferSchema=True)
+        df.repartition(5).write.mode("overwrite").parquet("datasets/census-train-parquet")
+        df = VectorAssembler(
+            inputCols=[c for c in df.columns if c != ">50k"],
+            outputCol="features",
+        ).transform(df)
+        df = df.withColumn("label", col(">50k"))
+        df = df["features", "label"]
+
+        # log model
+        model = LogisticRegression().fit(df)
+        experiment_run.log_model(model, custom_modules=[])
+
+        # get model
+        with zipfile.ZipFile(experiment_run.get_model()) as zipf:
+            zipf.extractall(spark_model_dir)
+        assert LogisticRegressionModel.load(spark_model_dir).params == model.params
+
+class TestArbitraryModels:
+    @staticmethod
+    def _assert_no_deployment_artifacts(experiment_run):
+        artifact_keys = experiment_run.get_artifact_keys()
+        assert _artifact_utils.CUSTOM_MODULES_KEY not in artifact_keys
+        assert _artifact_utils.MODEL_API_KEY not in artifact_keys
+
+    def test_arbitrary_file(self, experiment_run, random_data):
+        with tempfile.NamedTemporaryFile() as f:
+            f.write(random_data)
+            f.seek(0)
+
+            experiment_run.log_model(f)
+
+        assert experiment_run.get_model().read() == random_data
+
+        self._assert_no_deployment_artifacts(experiment_run)
+
+    def test_arbitrary_directory(self, experiment_run, dir_and_files):
+        dirpath, filepaths = dir_and_files
+
+        experiment_run.log_model(dirpath)
+
+        with zipfile.ZipFile(experiment_run.get_model(), 'r') as zipf:
+            assert set(zipf.namelist()) == filepaths
+
+        self._assert_no_deployment_artifacts(experiment_run)
+
+    def test_arbitrary_object(self, experiment_run):
+        model = {'a': 1}
+
+        experiment_run.log_model(model)
+
+        assert experiment_run.get_model() == model
+
+        self._assert_no_deployment_artifacts(experiment_run)
+
+
+class TestDownloadModels:
+    def test_download_sklearn(self, experiment_run, in_tempdir):
+        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+
+        upload_filepath = "model.pkl"
+        download_filepath = "retrieved_model.pkl"
+
+        model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
+        with open(upload_filepath, 'wb') as f:
+            pickle.dump(model, f)
+
+        experiment_run.log_model(model, custom_modules=[])
+        experiment_run.download_model(download_filepath)
+
+        with open(download_filepath, 'rb') as f:
+            downloaded_model = pickle.load(f)
+
+        assert downloaded_model.get_params() == model.get_params()
+
 
 class TestImages:
     @staticmethod
@@ -522,11 +662,11 @@ class TestImages:
             with pytest.raises(ValueError):
                 experiment_run.log_image(key, image)
 
-    def test_blacklisted_key_error(self, experiment_run, all_values):
+    def test_blocklisted_key_error(self, experiment_run, all_values):
         all_values = (value  # log_artifact treats str value as filepath to open
                       for value in all_values if not isinstance(value, str))
 
-        for key, artifact in zip(_artifact_utils.BLACKLISTED_KEYS, all_values):
+        for key, artifact in zip(_artifact_utils.BLOCKLISTED_KEYS, all_values):
             with pytest.raises(ValueError):
                 experiment_run.log_image(key, artifact)
             with pytest.raises(ValueError):
@@ -550,7 +690,7 @@ class TestOverwrite:
         experiment_run.log_model(model)
         experiment_run.log_model(new_model, overwrite=True)
 
-        assert experiment_run.get_artifact("model.pkl") == new_model
+        assert experiment_run.get_artifact(_artifact_utils.MODEL_KEY) == new_model
 
     def test_requirements(self, experiment_run):
         requirements = ["banana==1"]

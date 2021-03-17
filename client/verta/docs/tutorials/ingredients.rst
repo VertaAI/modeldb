@@ -16,7 +16,7 @@ using :meth:`Client.get_or_create_repository <verta.client.Client.get_or_create_
 .. code-block:: python
 
     from verta import Client
-    client = Client(host, email, dev_key)
+    client = Client(host, email=email, dev_key=dev_key)
     repo = client.get_or_create_repository("My awesome repo")
 
 This repository works similarly to a Git repo. You can access it by checking the current commit:

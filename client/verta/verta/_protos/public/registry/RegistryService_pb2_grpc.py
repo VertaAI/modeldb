@@ -59,6 +59,11 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.SetModelVersion.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.SetModelVersion.Response.FromString,
         )
+    self.SetLockModelVersion = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/SetLockModelVersion',
+        request_serializer=registry_dot_RegistryService__pb2.SetLockModelVersionRequest.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.SetLockModelVersionRequest.Response.FromString,
+        )
     self.DeleteModelVersion = channel.unary_unary(
         '/ai.verta.registry.RegistryService/DeleteModelVersion',
         request_serializer=registry_dot_RegistryService__pb2.DeleteModelVersionRequest.SerializeToString,
@@ -153,6 +158,13 @@ class RegistryServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def SetLockModelVersion(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def DeleteModelVersion(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -235,6 +247,11 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           servicer.UpdateModelVersion,
           request_deserializer=registry_dot_RegistryService__pb2.SetModelVersion.FromString,
           response_serializer=registry_dot_RegistryService__pb2.SetModelVersion.Response.SerializeToString,
+      ),
+      'SetLockModelVersion': grpc.unary_unary_rpc_method_handler(
+          servicer.SetLockModelVersion,
+          request_deserializer=registry_dot_RegistryService__pb2.SetLockModelVersionRequest.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.SetLockModelVersionRequest.Response.SerializeToString,
       ),
       'DeleteModelVersion': grpc.unary_unary_rpc_method_handler(
           servicer.DeleteModelVersion,

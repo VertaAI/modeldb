@@ -2,7 +2,9 @@
 
 import hashlib
 import os
+import shutil
 import tempfile
+import zipfile
 
 import cloudpickle
 
@@ -14,18 +16,30 @@ from .. import __about__
 from .importer import maybe_dependency, get_tensorflow_major_version
 
 
-# default for chunked utils
-CHUNK_SIZE = 5*10**6
+# default chunk sizes
+# these values were all chosen arbitrarily at different times
+_64MB = 64*(10**6)  # used for artifact uploads
+_32MB = 32*(10**6)  # used in _request_utils
+_5MB = 5*(10**6)  # used in this module
+
+
+# for zip_dir()
+# dirs zipped by client need an identifiable extension to unzip durig d/l
+ZIP_EXTENSION = "dir.zip"
 
 
 # NOTE: keep up-to-date with Deployment API
-BLACKLISTED_KEYS = {
-    'model_api.json',
-    'model.pkl',
+CUSTOM_MODULES_KEY = "custom_modules"
+MODEL_KEY = "model.pkl"
+MODEL_API_KEY = "model_api.json"
+# TODO: maybe bind constants for other keys used throughout client
+BLOCKLISTED_KEYS = {
+    CUSTOM_MODULES_KEY,
+    MODEL_KEY,
+    MODEL_API_KEY,
     'requirements.txt',
     'train_data',
     'tf_saved_model',
-    'custom_modules',
     'setup_script',
 }
 
@@ -48,10 +62,10 @@ def validate_key(key):
     Raises
     ------
     ValueError
-        If `key` is blacklisted.
+        If `key` is blocklisted.
 
     """
-    if key in BLACKLISTED_KEYS:
+    if key in BLOCKLISTED_KEYS:
         msg = "\"{}\" is reserved for internal use; please use a different key".format(key)
         raise ValueError(msg)
 
@@ -114,6 +128,8 @@ def ext_from_method(method):
         return 'hdf5'
     elif method in ("joblib", "cloudpickle", "pickle"):
         return 'pkl'
+    elif method == "zip":
+        return "zip"
     elif method is None:
         return None
     else:
@@ -244,24 +260,50 @@ def serialize_model(model):
         Framework with which the model was built.
 
     """
-    if hasattr(model, 'read'):  # if `model` is file-like
+    # if `model` is filesystem path
+    if isinstance(model, six.string_types):
+        if os.path.isdir(model):
+            return zip_dir(model), "zip", None
+        else:  # filepath
+            # open and continue
+            model = open(model, 'rb')
+
+    # if `model` is file-like
+    if hasattr(model, 'read'):
         try:  # attempt to deserialize
             reset_stream(model)  # reset cursor to beginning in case user forgot
             model = deserialize_model(model.read())
-        except pickle.UnpicklingError:  # unrecognized model
-            bytestream, _ = ensure_bytestream(model)  # pass along file-like
-            method = None
-            model_type = "custom"
+        except (TypeError, pickle.UnpicklingError):
+            # unrecognized serialization method and model type
+            return model, None, None  # return bytestream
         finally:
             reset_stream(model)  # reset cursor to beginning as a courtesy
 
-    # `model` is a class
+    # if `model` is a class
     if isinstance(model, six.class_types):
         model_type = "class"
         bytestream, method = ensure_bytestream(model)
         return bytestream, method, model_type
 
-    # `model` is an instance
+    # if`model` is an instance
+    pyspark_ml_base = maybe_dependency("pyspark.ml.base")
+    if pyspark_ml_base:
+        # https://spark.apache.org/docs/latest/api/python/_modules/pyspark/ml/base.html
+        pyspark_base_classes = (
+            pyspark_ml_base.Estimator,
+            pyspark_ml_base.Model,
+            pyspark_ml_base.Transformer,
+        )
+        if isinstance(model, pyspark_base_classes):
+            temp_dir = tempfile.mkdtemp()
+            try:
+                spark_model_dir = os.path.join(temp_dir, "spark-model")
+                model.save(spark_model_dir)
+                bytestream = zip_dir(spark_model_dir)
+            finally:
+                shutil.rmtree(temp_dir)
+            # TODO: see if more info would be needed to deserialize in model service
+            return bytestream, "zip", "pyspark"
     for class_obj in model.__class__.__mro__:
         module_name = class_obj.__module__
         if not module_name:
@@ -303,16 +345,15 @@ def serialize_model(model):
     else:
         if hasattr(model, 'predict'):
             model_type = "custom"
-            bytestream, method = ensure_bytestream(model)
         elif callable(model):
             model_type = "callable"
-            bytestream, method = ensure_bytestream(model)
         else:
-            raise TypeError("cannot determine the type for model argument")
+            model_type = None
+        bytestream, method = ensure_bytestream(model)
     return bytestream, method, model_type
 
 
-def deserialize_model(bytestring):
+def deserialize_model(bytestring, error_ok=False):
     """
     Deserializes a model from a bytestring, attempting various methods.
 
@@ -322,11 +363,20 @@ def deserialize_model(bytestring):
     ----------
     bytestring : bytes
         Bytes representing the model.
+    error_ok : bool, default False
+        Whether to return the serialized bytes if the model cannot be
+        deserialized. If False, an ``UnpicklingError`` is raised instead.
 
     Returns
     -------
     model : obj or file-like
         Model or buffered bytestream representing the model.
+
+    Raises
+    ------
+    pickle.UnpicklingError
+        If `bytestring` cannot be deserialized into an object, and `error_ok`
+        is False.
 
     """
     keras = maybe_dependency("tensorflow.keras")
@@ -365,10 +415,13 @@ def deserialize_model(bytestring):
     except:  # not a pickled object
         bytestream.seek(0)
 
-    return bytestream
+    if error_ok:
+        return bytestream
+    else:
+        raise pickle.UnpicklingError("unable to deserialize model")
 
 
-def get_stream_length(stream, chunk_size=CHUNK_SIZE):
+def get_stream_length(stream, chunk_size=_5MB):
     """
     Get the length of the contents of a stream.
 
@@ -405,7 +458,7 @@ def get_stream_length(stream, chunk_size=CHUNK_SIZE):
     return length
 
 
-def calc_sha256(bytestream, chunk_size=CHUNK_SIZE):
+def calc_sha256(bytestream, chunk_size=_5MB):
     """
     Calculates the SHA-256 checksum of a bytestream.
 
@@ -437,3 +490,68 @@ def calc_sha256(bytestream, chunk_size=CHUNK_SIZE):
         reset_stream(bytestream)  # reset cursor to beginning as a courtesy
 
     return checksum.hexdigest()
+
+
+def zip_dir(dirpath, followlinks=True):
+    """
+    ZIPs a directory.
+
+    Parameters
+    ----------
+    dirpath : str
+        Directory path.
+
+    Returns
+    -------
+    tempf : :class:`tempfile.NamedTemporaryFile`
+        ZIP file handle.
+
+    """
+    e_msg = "{} is not a directory".format(str(dirpath))
+    if not isinstance(dirpath, six.string_types):
+        raise TypeError(e_msg)
+    if not os.path.isdir(dirpath):
+        raise ValueError(e_msg)
+
+    os.path.expanduser(dirpath)
+
+    tempf = tempfile.NamedTemporaryFile(suffix='.'+ZIP_EXTENSION)
+    with zipfile.ZipFile(tempf, 'w') as zipf:
+        for root, _, files in os.walk(dirpath, followlinks=followlinks):
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                zipf.write(filepath, os.path.relpath(filepath, dirpath))
+
+    tempf.seek(0)
+    return tempf
+
+
+def global_read_zipinfo(filename):
+    """
+    Returns a :class:`zipfile.ZipInfo` with ``644`` permissions.
+
+    :meth:`zipfile.ZipFile.writestr` creates files with ``600`` [1]_ [2]_,
+    which means non-owners are unable to read the file, which can be
+    problematic for custom modules in deployment.
+
+    Parameters
+    ----------
+    filename : str
+        Name to assign to the file in the ZIP archive.
+
+    Returns
+    -------
+    zip_info : :class:`zipfile.ZipInfo`
+        File metadata; the first arg to :meth:`zipfile.ZipFile.writestr`.
+
+    References
+    ----------
+    .. [1] https://github.com/python/cpython/blob/2.7/Lib/zipfile.py#L1244
+
+    .. [2] https://bugs.python.org/msg69937
+
+    """
+    zip_info = zipfile.ZipInfo(filename)
+    zip_info.external_attr = 0o644 << 16  # ?rw-r--r--
+
+    return zip_info

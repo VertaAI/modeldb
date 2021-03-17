@@ -45,6 +45,7 @@ class Python(_environment._Environment):
         )
 
     """
+
     def __init__(self, requirements, constraints=None, env_vars=None, _autocapture=True):
         super(Python, self).__init__(env_vars, _autocapture)
 
@@ -131,8 +132,10 @@ class Python(_environment._Environment):
         msg : PythonRequirementEnvironmentBlob
 
         """
-        library, constraint, version = _pip_requirements_utils.parse_req_spec(req_spec)
-        major, minor, patch, suffix = _pip_requirements_utils.parse_version(version)
+        library, constraint, version = _pip_requirements_utils.parse_req_spec(
+            req_spec)
+        major, minor, patch, suffix = _pip_requirements_utils.parse_version(
+            version)
 
         req_blob_msg = _EnvironmentService.PythonRequirementEnvironmentBlob()
         req_blob_msg.library = library

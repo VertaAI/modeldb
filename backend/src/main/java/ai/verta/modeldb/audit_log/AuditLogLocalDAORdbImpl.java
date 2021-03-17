@@ -14,12 +14,14 @@ public class AuditLogLocalDAORdbImpl implements AuditLogLocalDAO {
 
   private static final Logger LOGGER =
       LogManager.getLogger(AuditLogLocalDAORdbImpl.class.getName());
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
 
   // TODO: Remove below method after all services use saveAuditLog
   @Deprecated
   @Override
   public void saveAuditLogs(List<AuditLogLocalEntity> auditLogEntities) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       saveAuditLogs(session, auditLogEntities);
       transaction.commit();
@@ -40,7 +42,7 @@ public class AuditLogLocalDAORdbImpl implements AuditLogLocalDAO {
 
   @Override
   public void saveAuditLog(AuditLogLocalEntity auditLogLocalEntity) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       saveAuditLog(session, auditLogLocalEntity);
       transaction.commit();

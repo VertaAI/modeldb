@@ -29,6 +29,7 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import javax.persistence.criteria.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +42,8 @@ import org.hibernate.query.Query;
 public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetVersionDAORdbImpl.class);
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
   private final AuthService authService;
   private final RoleService roleService;
 
@@ -108,7 +111,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       boolean isAscending,
       String sortKey,
       UserInfo currentLoginUser)
-      throws InvalidProtocolBufferException, PermissionDeniedException {
+      throws InvalidProtocolBufferException, PermissionDeniedException, ExecutionException,
+          InterruptedException {
     FindDatasetVersions findDatasetVersions =
         FindDatasetVersions.newBuilder()
             .setDatasetId(datasetId)
@@ -122,7 +126,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       Query query =
           session
@@ -146,7 +150,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public DatasetVersion getDatasetVersion(String datasetVersionId)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       if (datasetVersionObj == null || datasetVersionObj.getDeleted()) {
@@ -176,7 +180,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       LOGGER.info("Input datasetVersionIds is empty");
       return new ArrayList<>();
     }
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery(DATASET_VERSION_BY_IDS_QUERY);
       query.setParameterList("ids", datasetVersionIds);
 
@@ -247,8 +251,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public DatasetVersionDTO findDatasetVersions(
       DatasetDAO datasetDAO, FindDatasetVersions queryParameters, UserInfo currentLoginUserInfo)
-      throws InvalidProtocolBufferException, PermissionDeniedException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws InvalidProtocolBufferException, PermissionDeniedException, ExecutionException,
+          InterruptedException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       List<String> accessibleDatasetVersionIds = new ArrayList<>();
       if (!queryParameters.getDatasetVersionIdsList().isEmpty()) {
@@ -459,7 +464,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public DatasetVersion updateDatasetVersionDescription(
       String datasetVersionId, String datasetVersionDescription)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       datasetVersionObj.setDescription(datasetVersionDescription);
@@ -482,7 +487,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public DatasetVersion addDatasetVersionTags(String datasetVersionId, List<String> tagsList)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       if (datasetVersionObj == null) {
@@ -520,7 +525,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public DatasetVersion deleteDatasetVersionTags(
       String datasetVersionId, List<String> datasetVersionTagList, Boolean deleteAll)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
       if (deleteAll) {
@@ -563,7 +568,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public DatasetVersion addDatasetVersionAttributes(
       String datasetVersionId, List<KeyValue> attributesList)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       datasetVersionObj.setAttributeMapping(
@@ -588,7 +593,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public DatasetVersion updateDatasetVersionAttributes(String datasetVersionId, KeyValue attribute)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       if (datasetVersionObj == null) {
@@ -636,7 +641,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public List<KeyValue> getDatasetVersionAttributes(
       String datasetVersionId, List<String> attributeKeyList, Boolean getAll)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       if (getAll) {
         DatasetVersionEntity datasetVersionObj =
             session.get(DatasetVersionEntity.class, datasetVersionId);
@@ -664,7 +669,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   public DatasetVersion deleteDatasetVersionAttributes(
       String datasetVersionId, List<String> attributeKeyList, Boolean deleteAll)
       throws InvalidProtocolBufferException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
       if (deleteAll) {

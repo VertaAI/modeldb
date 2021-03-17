@@ -21,6 +21,7 @@ import org.hibernate.query.Query;
 
 public class AuditLogsCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(AuditLogsCron.class);
+  private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private final Integer recordUpdateLimit;
 
   public AuditLogsCron(Integer recordUpdateLimit) {
@@ -33,7 +34,7 @@ public class AuditLogsCron extends TimerTask {
     LOGGER.info("AuditLogsCron wakeup");
 
     CommonUtils.registeredBackgroundUtilsCount();
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String alias = "al";
       String getAuditLogsLocalQueryString =
           new StringBuilder("FROM ")

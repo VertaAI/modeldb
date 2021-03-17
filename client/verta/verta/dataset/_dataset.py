@@ -4,10 +4,14 @@ from __future__ import print_function
 
 import abc
 import copy
+import functools
+import hashlib
 import os
 import pathlib2
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
+
+from ..external import six
 
 from .._internal_utils import (
     _file_utils,
@@ -77,8 +81,19 @@ class _Dataset(blob.Blob):
         if self._mdb_versioned != other._mdb_versioned:
             raise ValueError("datasets must have same value for `enable_mdb_versioning`")
 
-        self._components_map.update(other._components_map)
+        self._add_components(other._components_map.values())
         return self
+
+    @classmethod
+    def _create_empty(cls):
+        return cls([])
+
+    def _add_components(self, components):
+        self._components_map.update({
+            component.path: component
+            for component
+            in components
+        })
 
     @abc.abstractmethod
     def _prepare_components_to_upload(self):
@@ -251,6 +266,51 @@ class _Dataset(blob.Blob):
 
         return (components_to_download, os.path.abspath(downloaded_to_path))
 
+    @staticmethod
+    def _is_hidden_to_spark(path):
+        # PySpark ignores certain files and raises a "does not exist" error
+        # https://stackoverflow.com/a/38479545
+        return os.path.basename(path).startswith(('_', '.'))
+
+    @classmethod
+    def with_spark(cls, sc, paths):
+        """
+        Creates a dataset blob with a SparkContext instance.
+
+        Parameters
+        ----------
+        sc : pyspark.SparkContext
+            SparkContext instance.
+        paths : list of strs
+            List of paths to binary input data file(s).
+
+        Returns
+        -------
+        dataset :ref:`blob <blobs>`
+            Dataset blob capturing the metadata of the binary files.
+
+        """
+        if isinstance(paths, six.string_types):
+            paths = [paths]
+
+        rdds = list(map(sc.binaryFiles, paths))
+        rdd = functools.reduce(lambda a,b: a.union(b), rdds)
+
+        def get_component(entry):
+            filepath, content = entry
+            return Component(
+                path=filepath,
+                size=len(content),
+                # last_modified=metadata['modificationTime'], # handle timezone?
+                md5=hashlib.md5(content).hexdigest(),
+            )
+
+        result = rdd.map(get_component)
+        result = result.collect()
+        obj = cls._create_empty()
+        obj._add_components(result)
+        return obj
+
     @abc.abstractmethod
     def add(self, paths):
         pass
@@ -301,12 +361,12 @@ class _Dataset(blob.Blob):
                 if (implicit_download_to_path
                         and len(components_to_download) == 1):  # single file download
                     # update `downloaded_to_path` in case changed to avoid overwrite
-                    downloaded_to_path = _request_utils.download(response, local_path, overwrite_ok=False)
+                    downloaded_to_path = _request_utils.download_file(response, local_path, overwrite_ok=False)
                 else:
                     # don't update `downloaded_to_path` here because we are either downloading:
                     #     - single file with an explicit destination, so `local_path` won't change
                     #     - directory, so individual path's `local_path` isn't important
-                    _request_utils.download(response, local_path, overwrite_ok=True)
+                    _request_utils.download_file(response, local_path, overwrite_ok=True)
 
         return os.path.abspath(downloaded_to_path)
 

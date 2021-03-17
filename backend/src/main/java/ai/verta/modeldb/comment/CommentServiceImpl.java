@@ -13,6 +13,7 @@ import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateComment;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
@@ -163,7 +164,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, AddComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, AddComment.Response.getDefaultInstance());
     }
   }
 
@@ -192,7 +193,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, UpdateComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, UpdateComment.Response.getDefaultInstance());
     }
   }
 
@@ -227,7 +228,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetComments.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetComments.Response.getDefaultInstance());
     }
   }
 
@@ -268,7 +269,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, DeleteComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, DeleteComment.Response.getDefaultInstance());
     }
   }
 }

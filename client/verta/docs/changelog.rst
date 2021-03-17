@@ -37,6 +37,80 @@ Release Notes
      <>`__
 
 
+v0.17.2 (2021-02-26)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `enable finding model versions based on stage
+  <https://github.com/VertaAI/modeldb/pull/2006>`__
+
+
+v0.17.1 (2021-02-24)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add run.log_environment()
+  <https://github.com/VertaAI/modeldb/pull/1972>`__
+- `add run.download_model()
+  <https://github.com/VertaAI/modeldb/pull/1973>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `support arbitrary models in run.log_model()
+  <https://github.com/VertaAI/modeldb/pull/1971>`__
+- `skip custom modules and model API when logging an arbitrary model
+  <https://github.com/VertaAI/modeldb/pull/1987>`__
+- `unzip artifact directories in run.download_artifact()
+  <https://github.com/VertaAI/modeldb/pull/1973>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `rename artifact key blocklist
+  <https://github.com/VertaAI/modeldb/pull/1974>`__
+- `consolidate chunk sizes with named constants
+  <https://github.com/VertaAI/modeldb/pull/1988>`__
+
+
+v0.17.0 (2021-02-16)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `in newer backends, an entity created in an organization will use that
+  organization's permissions settings by default, instead of defaulting to
+  private
+  <https://github.com/VertaAI/modeldb/pull/1993>`__
+
+New Features
+^^^^^^^^^^^^
+- `add client.set_workspace() and client.get_workspace()
+  <https://github.com/VertaAI/modeldb/pull/1916>`__
+- `enable new visibility values for newer backends
+  <https://github.com/VertaAI/modeldb/pull/1896>`__
+- `enable passing PySpark models to run.log_model()
+  <https://github.com/VertaAI/modeldb/pull/1935>`__
+- `add Path.with_spark()
+  <https://github.com/VertaAI/modeldb/pull/1941>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `for custom modules files, grant non-owners read access
+  <https://github.com/VertaAI/modeldb/pull/1939>`__
+- `remove "file:" prefix from path datasets
+  <https://github.com/VertaAI/modeldb/pull/1940>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `consolidate workspace helper methods into Connection
+  <https://github.com/VertaAI/modeldb/pull/1914>`__
+- `add Connection methods for personal and default workspace
+  <https://github.com/VertaAI/modeldb/pull/1915>`__
+- `prevent test teardowns from resulting in 403s
+  <https://github.com/VertaAI/modeldb/pull/1930>`__
+
+
 v0.16.5 (2021-01-26)
 --------------------
 
@@ -522,7 +596,7 @@ Bug Fixes
   <https://github.com/VertaAI/modeldb/pull/631>`__
 - `inject verta and cloudpickle into Python environment Blobs
   <https://github.com/VertaAI/modeldb/pull/644>`__
-- `blacklist deployment artifact keys
+- `blocklist deployment artifact keys
   <https://github.com/VertaAI/modeldb/pull/648>`__
 
 Internal Changes

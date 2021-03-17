@@ -39,6 +39,7 @@ import org.hibernate.query.Query;
 
 public class PopulateEnvironmentInRunCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(PopulateEnvironmentInRunCron.class);
+  private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private final ArtifactStoreDAO artifactStoreDAO;
   private final Integer recordUpdateLimit;
 
@@ -53,7 +54,7 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
   public void run() {
     LOGGER.info("PopulateEnvironmentInRunCron wakeup");
 
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       // Update experimentRun
       updateExperimentRuns(session);
     } catch (Exception ex) {

@@ -6,6 +6,7 @@ from six.moves import filterfalse
 import datetime
 import itertools
 import os
+import pickle
 import random
 import shutil
 import string
@@ -75,16 +76,25 @@ def dev_key():
     return os.environ.get("VERTA_DEV_KEY", DEFAULT_DEV_KEY)
 
 
+# for collaboration tests
 @pytest.fixture(scope='session')
 def email_2():
-    # For collaboration tests
     return os.environ.get("VERTA_EMAIL_2")
 
 
 @pytest.fixture(scope='session')
 def dev_key_2():
-    # For collaboration tests
     return os.environ.get("VERTA_DEV_KEY_2")
+
+
+@pytest.fixture(scope='session')
+def email_3():
+    return os.environ.get("VERTA_EMAIL_3")
+
+
+@pytest.fixture(scope='session')
+def dev_key_3():
+    return os.environ.get("VERTA_DEV_KEY_3")
 
 
 @pytest.fixture
@@ -262,6 +272,22 @@ def dir_and_files(strs, tmp_path):
 
 
 @pytest.fixture
+def random_data():
+    """
+    Returns random bytes that cannot be unpickled,
+    which is sometimes the case by chance.
+
+    """
+    while True:
+        data = os.urandom(2 ** 16)
+        bytestream = six.BytesIO(data)
+        try:
+            pickle.load(bytestream)
+        except:
+            return data
+
+
+@pytest.fixture
 def tempdir_root():
     return os.environ.get("TEMPDIR_ROOT")
 
@@ -297,17 +323,25 @@ def client(host, port, email, dev_key, created_entities):
 
 
 @pytest.fixture
-def client_2(host, port, email_2, dev_key_2):
+def client_2(host, port, email_2, dev_key_2, created_entities):
     """For collaboration tests."""
     if not (email_2 and dev_key_2):
         pytest.skip("second account credentials not present")
-    print("[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
 
     client = Client(host, port, email_2, dev_key_2, debug=True)
 
-    yield client
+    return client
 
-    print("[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
+
+@pytest.fixture
+def client_3(host, port, email_3, dev_key_3, created_entities):
+    """For collaboration tests."""
+    if not (email_3 and dev_key_3):
+        pytest.skip("second account credentials not present")
+
+    client = Client(host, port, email_3, dev_key_3, debug=True)
+
+    return client
 
 
 @pytest.fixture

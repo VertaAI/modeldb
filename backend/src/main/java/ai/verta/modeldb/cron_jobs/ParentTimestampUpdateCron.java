@@ -11,19 +11,22 @@ import org.hibernate.query.Query;
 
 public class ParentTimestampUpdateCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(ParentTimestampUpdateCron.class);
+  private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
+  private final boolean isPostgres;
   private static String updateExperimentQuery;
   private static String updateProjectQuery;
   private static String updateRepositoryQuery;
 
-  public ParentTimestampUpdateCron(int recordUpdateLimit) {
+  public ParentTimestampUpdateCron(int recordUpdateLimit, boolean isPostgres) {
 
+    this.isPostgres = isPostgres;
     initExperimentUpdateQueryString(recordUpdateLimit);
     initProjectUpdateQueryString(recordUpdateLimit);
     initRepositoryUpdateQueryString(recordUpdateLimit);
   }
 
   public void initExperimentUpdateQueryString(int recordUpdateLimit) {
-    if (ModelDBHibernateUtil.config.RdbConfiguration.isPostgres()) {
+    if (isPostgres) {
       updateExperimentQuery =
           new StringBuilder("with expr_alias as ")
               .append(" ( SELECT expr.experiment_id, MAX(expr.date_updated) AS max_date ")
@@ -53,7 +56,7 @@ public class ParentTimestampUpdateCron extends TimerTask {
   }
 
   private void initProjectUpdateQueryString(int recordUpdateLimit) {
-    if (ModelDBHibernateUtil.config.RdbConfiguration.isPostgres()) {
+    if (isPostgres) {
       updateProjectQuery =
           new StringBuilder("with ex_alias as ")
               .append(" ( SELECT ex.project_id, MAX(ex.date_updated) AS max_date ")
@@ -82,7 +85,7 @@ public class ParentTimestampUpdateCron extends TimerTask {
   }
 
   private void initRepositoryUpdateQueryString(int recordUpdateLimit) {
-    if (ModelDBHibernateUtil.config.RdbConfiguration.isPostgres()) {
+    if (isPostgres) {
       updateRepositoryQuery =
           new StringBuilder("with cm_alias as ")
               .append(" ( SELECT rc.repository_id, MAX(cm.date_created) AS max_date ")
@@ -124,7 +127,7 @@ public class ParentTimestampUpdateCron extends TimerTask {
   public void run() {
     LOGGER.info("ParentTimestampUpdateCron wakeup");
 
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       // Update experiment timestamp
       session.beginTransaction();
       try {

@@ -48,7 +48,7 @@ For example, when using an experiment run, you can just do
 
 and that class will be logged into the system.
 
-The same can be done using a :class:`~verta._registry.modelversion.RegisteredModelVersion`:
+The same can be done using a :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`:
 
 .. code-block:: python
 
