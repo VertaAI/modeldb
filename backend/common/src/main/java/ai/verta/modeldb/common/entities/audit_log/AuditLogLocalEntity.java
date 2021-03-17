@@ -65,10 +65,10 @@ public class AuditLogLocalEntity {
   @Column(name = "method_name", columnDefinition = "text")
   private String methodName;
 
-  @Column(name = "request", columnDefinition = "text")
+  @Column(name = "request", columnDefinition = "longtext")
   private String request;
 
-  @Column(name = "response", columnDefinition = "text")
+  @Column(name = "response", columnDefinition = "longtext")
   private String response;
 
   private AuditLogLocalEntity() {}
