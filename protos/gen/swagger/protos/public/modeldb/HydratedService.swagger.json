@@ -894,7 +894,10 @@
         "DELETE",
         "DEPLOY",
         "PUBLIC_READ",
-        "UPDATE_PERMISSIONS"
+        "UPDATE_PERMISSIONS",
+        "LOCK",
+        "UNLOCK",
+        "UPDATE_REDACT"
       ],
       "default": "UNKNOWN"
     },
