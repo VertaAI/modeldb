@@ -87,12 +87,6 @@ public class ModelDBUtils {
     }
   }
 
-  public static Message.Builder getProtoObjectFromString(String jsonString, Message.Builder builder)
-      throws InvalidProtocolBufferException {
-    JsonFormat.parser().merge(jsonString, builder);
-    return builder;
-  }
-
   public static boolean isValidEmail(String email) {
     String emailRegex =
         "^[a-zA-Z0-9_+&*-]+(?:\\."
