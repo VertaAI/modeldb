@@ -40,6 +40,9 @@ message AuditLog {
     // Unique identifier for the method, like the fully qualified method name in grpc
     string method_name = 8;
 
+    // Workspace of the request, independent from any resource being returned.
+    uint64 workspace_id = 9;
+
     //When: timestamp
     int64 ts_nano = 4;
 
@@ -92,6 +95,7 @@ message AuditLogPredicates {
     RangeTimeStampPredicate timestamp_predicate = 1;
     UserPredicate user_predicate = 2;
     ResourcePredicate resource_predicate = 3;
+    repeated uint64 workspace_ids = 9;
 }
 
 message FindAuditLog {
