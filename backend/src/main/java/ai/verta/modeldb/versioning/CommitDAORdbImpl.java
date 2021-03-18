@@ -503,7 +503,7 @@ public class CommitDAORdbImpl implements CommitDAO {
   @Override
   public String getDatasetIdByDatasetVersion(RepositoryDAO repositoryDAO, String commitHash)
       throws ModelDBException {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CommitEntity commitEntity = session.get(CommitEntity.class, commitHash);
 
       if (commitEntity == null) {
