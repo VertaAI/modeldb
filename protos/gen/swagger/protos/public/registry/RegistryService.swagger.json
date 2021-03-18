@@ -1590,11 +1590,12 @@
     "ModelVersionLockLevelEnumModelVersionLockLevel": {
       "type": "string",
       "enum": [
+        "UNKNOWN",
         "OPEN",
         "CLOSED",
         "REDACT"
       ],
-      "default": "OPEN"
+      "default": "UNKNOWN"
     },
     "OperatorEnumOperator": {
       "type": "string",
