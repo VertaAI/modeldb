@@ -62,7 +62,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       ModelDBServiceActions action,
       Map<String, Long> resourceIdWorkspaceIdMap,
       String request,
-      String response) {
+      String response,
+      Long workspaceId) {
     auditLogLocalDAO.saveAuditLog(
         new AuditLogLocalEntity(
             SERVICE_NAME,
@@ -74,7 +75,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             Service.MODELDB_SERVICE,
             MonitoringInterceptor.METHOD_NAME.get(),
             request,
-            response));
+            response,
+            workspaceId));
   }
 
   /**
@@ -162,7 +164,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.CREATE,
           Collections.singletonMap(experiment.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -209,19 +212,15 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           roleService.getEntityResource(
               request.getProjectId(), ModelDBServiceResourceTypes.PROJECT);
       Map<String, Long> auditResourceMap = new HashMap<>();
-      if (experiments.isEmpty()) {
-        auditResourceMap.put(ModelDBConstants.EMPTY_STRING, entityResource.getWorkspaceId());
-      } else {
-        experiments.forEach(
-            experiment ->
-                auditResourceMap.put(experiment.getId(), entityResource.getWorkspaceId()));
-      }
+      experiments.forEach(
+          experiment -> auditResourceMap.put(experiment.getId(), entityResource.getWorkspaceId()));
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
           auditResourceMap,
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -258,7 +257,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(experiment.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -324,7 +324,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.READ,
           auditResourceMap,
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -384,7 +385,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -434,7 +436,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedExperiment.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -482,7 +485,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedExperiment.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -530,7 +534,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedExperiment.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -579,7 +584,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedExperiment.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -613,7 +619,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -661,7 +668,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedExperiment.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -709,7 +717,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedExperiment.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -751,7 +760,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -799,7 +809,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(experiment.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -852,7 +863,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -902,7 +914,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedExperiment.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -942,7 +955,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.DELETE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1001,7 +1015,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1043,7 +1058,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(existingExperiment.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1080,19 +1096,15 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               .build();
 
       Map<String, Long> auditResourceMap = new HashMap<>();
-      if (experiments.isEmpty()) {
-        auditResourceMap.put(ModelDBConstants.EMPTY_STRING, entityResource.getWorkspaceId());
-      } else {
-        experiments.forEach(
-            experiment ->
-                auditResourceMap.put(experiment.getId(), entityResource.getWorkspaceId()));
-      }
+      experiments.forEach(
+          experiment -> auditResourceMap.put(experiment.getId(), entityResource.getWorkspaceId()));
       saveAuditLog(
           Optional.of(userInfo),
           ModelDBServiceActions.READ,
           auditResourceMap,
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1158,7 +1170,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1228,7 +1241,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1270,7 +1284,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1316,7 +1331,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1360,7 +1376,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.DELETE,
           auditResourceMap,
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResources.get(0).getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 

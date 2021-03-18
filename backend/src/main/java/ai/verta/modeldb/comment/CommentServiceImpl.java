@@ -63,7 +63,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       Map<String, Long> resourceIdWorkspaceIdMap,
       String request,
-      String response) {
+      String response,
+      Long workspaceId) {
     auditLogLocalDAO.saveAuditLog(
         new AuditLogLocalEntity(
             SERVICE_NAME,
@@ -75,7 +76,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
             ServiceEnum.Service.MODELDB_SERVICE,
             MonitoringInterceptor.METHOD_NAME.get(),
             request,
-            response));
+            response,
+            workspaceId));
   }
 
   /**
@@ -160,7 +162,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           ModelDBServiceResourceTypes.EXPERIMENT_RUN,
           Collections.singletonMap(newComment.getId(), responseItem.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -188,7 +191,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           ModelDBServiceResourceTypes.EXPERIMENT_RUN,
           Collections.singletonMap(updatedComment.getId(), responseItem.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -216,19 +220,16 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       GetResourcesResponseItem responseItem =
           roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
       Map<String, Long> auditResourceMap = new HashMap<>();
-      if (comments.isEmpty()) {
-        auditResourceMap.put(ModelDBConstants.EMPTY_STRING, responseItem.getWorkspaceId());
-      } else {
-        comments.forEach(
-            comment -> auditResourceMap.put(comment.getId(), responseItem.getWorkspaceId()));
-      }
+      comments.forEach(
+          comment -> auditResourceMap.put(comment.getId(), responseItem.getWorkspaceId()));
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
           ModelDBServiceResourceTypes.EXPERIMENT_RUN,
           auditResourceMap,
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -269,7 +270,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           ModelDBServiceResourceTypes.EXPERIMENT_RUN,
           Collections.singletonMap(request.getId(), responseItem.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {

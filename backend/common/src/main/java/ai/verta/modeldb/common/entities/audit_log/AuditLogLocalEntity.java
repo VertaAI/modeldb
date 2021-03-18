@@ -132,7 +132,8 @@ public class AuditLogLocalEntity {
                     .setModeldbServiceAction(ModelDBServiceActions.forNumber(action))
                     .setServiceValue(resourceService)
                     .build())
-            .addAllResource(auditResources).setWorkspaceId(this.workspaceId);
+            .addAllResource(auditResources)
+            .setWorkspaceId(this.workspaceId);
     if (tsNano != null) {
       builder.setTsNano(tsNano);
     }
