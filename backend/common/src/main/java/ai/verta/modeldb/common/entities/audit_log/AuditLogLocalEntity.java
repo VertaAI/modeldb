@@ -1,8 +1,8 @@
-package ai.verta.modeldb.entities.audit_log;
+package ai.verta.modeldb.common.entities.audit_log;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.Action;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceType;
@@ -65,10 +65,10 @@ public class AuditLogLocalEntity {
   @Column(name = "method_name", columnDefinition = "text")
   private String methodName;
 
-  @Column(name = "request", columnDefinition = "text")
+  @Column(name = "request", columnDefinition = "longtext")
   private String request;
 
-  @Column(name = "response", columnDefinition = "text")
+  @Column(name = "response", columnDefinition = "longtext")
   private String response;
 
   private AuditLogLocalEntity() {}
@@ -133,7 +133,7 @@ public class AuditLogLocalEntity {
 
     try {
       Value.Builder requestBuilder = Value.newBuilder();
-      ModelDBUtils.getProtoObjectFromString(request, requestBuilder);
+      CommonUtils.getProtoObjectFromString(request, requestBuilder);
       builder.setRequest(requestBuilder.build());
     } catch (InvalidProtocolBufferException e) {
       throw new ModelDBException(e.getMessage(), Status.Code.INTERNAL);
@@ -141,7 +141,7 @@ public class AuditLogLocalEntity {
 
     try {
       Value.Builder responseBuilder = Value.newBuilder();
-      ModelDBUtils.getProtoObjectFromString(response, responseBuilder);
+      CommonUtils.getProtoObjectFromString(response, responseBuilder);
       builder.setResponse(responseBuilder.build());
     } catch (InvalidProtocolBufferException e) {
       throw new ModelDBException(e.getMessage(), Status.Code.INTERNAL);

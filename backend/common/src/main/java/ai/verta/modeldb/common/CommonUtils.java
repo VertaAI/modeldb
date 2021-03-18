@@ -4,6 +4,9 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -82,6 +85,12 @@ public class CommonUtils {
     LOGGER.trace("After unregistered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
     System.setProperty(
         CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+  }
+
+  public static Message.Builder getProtoObjectFromString(String jsonString, Message.Builder builder)
+      throws InvalidProtocolBufferException {
+    JsonFormat.parser().merge(jsonString, builder);
+    return builder;
   }
 
   public interface RetryCallInterface<T> {

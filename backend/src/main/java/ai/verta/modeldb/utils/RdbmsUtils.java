@@ -5,6 +5,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -2159,7 +2160,7 @@ public class RdbmsUtils {
       if (versioningModeldbEntityMapping.getVersioning_location() != null
           && !versioningModeldbEntityMapping.getVersioning_location().isEmpty()) {
         Location.Builder locationBuilder = Location.newBuilder();
-        ModelDBUtils.getProtoObjectFromString(
+        CommonUtils.getProtoObjectFromString(
             versioningModeldbEntityMapping.getVersioning_location(), locationBuilder);
         versioningEntry.putKeyLocationMap(
             versioningModeldbEntityMapping.getVersioning_key(), locationBuilder.build());

@@ -1,7 +1,7 @@
 package ai.verta.modeldb.audit_log;
 
+import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
-import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.List;
