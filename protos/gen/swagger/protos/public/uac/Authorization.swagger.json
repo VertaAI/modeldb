@@ -360,10 +360,7 @@
         "DELETE",
         "DEPLOY",
         "PUBLIC_READ",
-        "UPDATE_PERMISSIONS",
-        "LOCK",
-        "UNLOCK",
-        "UPDATE_REDACT"
+        "UPDATE_PERMISSIONS"
       ],
       "default": "UNKNOWN"
     },
@@ -379,8 +376,7 @@
         "DATASET_VERSION",
         "DASHBOARD",
         "REPOSITORY",
-        "REGISTERED_MODEL",
-        "REGISTERED_MODEL_VERSION"
+        "REGISTERED_MODEL"
       ],
       "default": "UNKNOWN"
     },

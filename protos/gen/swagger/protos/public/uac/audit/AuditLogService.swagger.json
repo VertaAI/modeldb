@@ -136,10 +136,7 @@
         "DELETE",
         "DEPLOY",
         "PUBLIC_READ",
-        "UPDATE_PERMISSIONS",
-        "LOCK",
-        "UNLOCK",
-        "UPDATE_REDACT"
+        "UPDATE_PERMISSIONS"
       ],
       "default": "UNKNOWN"
     },
@@ -155,8 +152,7 @@
         "DATASET_VERSION",
         "DASHBOARD",
         "REPOSITORY",
-        "REGISTERED_MODEL",
-        "REGISTERED_MODEL_VERSION"
+        "REGISTERED_MODEL"
       ],
       "default": "UNKNOWN"
     },
@@ -320,10 +316,7 @@
           "title": "Who"
         },
         "resource": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningAuditResource"
-          },
+          "$ref": "#/definitions/versioningAuditResource",
           "title": "What"
         },
         "action": {
@@ -376,7 +369,7 @@
         },
         "resource_type": {
           "$ref": "#/definitions/uacResourceType",
-          "title": "the type of the resource"
+          "title": "the tyep of the resource"
         },
         "resource_service": {
           "$ref": "#/definitions/ServiceEnumService",
