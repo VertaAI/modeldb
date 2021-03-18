@@ -2,11 +2,7 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
-import ai.verta.modeldb.CommitMultipartVersionedDatasetBlobArtifact;
-import ai.verta.modeldb.CommitVersionedDatasetBlobArtifactPart;
-import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.GetCommittedVersionedDatasetBlobArtifactParts;
-import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -18,6 +14,7 @@ import com.google.protobuf.ProtocolStringList;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import org.hibernate.Session;
 
 public interface BlobDAO {
@@ -41,7 +38,7 @@ public interface BlobDAO {
       String commitHash,
       List<KeyValue> attributes,
       boolean addAttribute)
-      throws ModelDBException;
+      throws ModelDBException, ExecutionException, InterruptedException;
 
   void addUpdateBlobAttributes(
       CommitDAO commitDAO,
@@ -49,7 +46,7 @@ public interface BlobDAO {
       String commitHash,
       List<KeyValue> attributes,
       boolean addAttribute)
-      throws ModelDBException;
+      throws ModelDBException, ExecutionException, InterruptedException;
 
   DatasetVersion deleteDatasetVersionAttributes(
       RepositoryDAO repositoryDAO,
@@ -60,7 +57,7 @@ public interface BlobDAO {
       List<String> attributesKeys,
       List<String> location,
       boolean deleteAll)
-      throws ModelDBException;
+      throws ModelDBException, ExecutionException, InterruptedException;
 
   void deleteBlobAttributes(
       CommitDAO commitDAO,
@@ -69,7 +66,7 @@ public interface BlobDAO {
       List<String> attributesKeys,
       List<String> location,
       boolean deleteAll)
-      throws ModelDBException;
+      throws ModelDBException, ExecutionException, InterruptedException;
 
   List<KeyValue> getDatasetVersionAttributes(
       RepositoryDAO repositoryDAO,
@@ -78,7 +75,7 @@ public interface BlobDAO {
       String commitHash,
       List<String> location,
       List<String> attributeKeysList)
-      throws ModelDBException;
+      throws ModelDBException, ExecutionException, InterruptedException;
 
   List<KeyValue> getBlobAttributes(
       Long repositoryId, String commitHash, List<String> location, List<String> attributeKeysList)
@@ -86,11 +83,11 @@ public interface BlobDAO {
 
   GetCommitComponentRequest.Response getCommitComponent(
       RepositoryFunction repositoryFunction, String commitHash, ProtocolStringList locationList)
-      throws NoSuchAlgorithmException, ModelDBException;
+      throws NoSuchAlgorithmException, ModelDBException, ExecutionException, InterruptedException;
 
   ListCommitBlobsRequest.Response getCommitBlobsList(
       RepositoryFunction repositoryFunction, String commitHash, List<String> locationList)
-      throws NoSuchAlgorithmException, ModelDBException;
+      throws NoSuchAlgorithmException, ModelDBException, ExecutionException, InterruptedException;
 
   DatasetVersion convertToDatasetVersion(
       RepositoryDAO repositoryDAO,
@@ -98,7 +95,7 @@ public interface BlobDAO {
       RepositoryEntity repositoryEntity,
       String commitHash,
       boolean checkWrite)
-      throws ModelDBException;
+      throws ModelDBException, ExecutionException, InterruptedException;
 
   Map<String, BlobExpanded> getCommitBlobMap(
       Session session, String folderHash, List<String> locationList) throws ModelDBException;
@@ -108,21 +105,22 @@ public interface BlobDAO {
       throws ModelDBException;
 
   ComputeRepositoryDiffRequest.Response computeRepositoryDiff(
-      RepositoryDAO repositoryDAO, ComputeRepositoryDiffRequest request) throws ModelDBException;
+      RepositoryDAO repositoryDAO, ComputeRepositoryDiffRequest request)
+      throws ModelDBException, ExecutionException, InterruptedException;
 
   List<BlobContainer> convertBlobDiffsToBlobs(
       List<AutogenBlobDiff> blobDiffs,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
-      throws ModelDBException;
+      throws ModelDBException, ExecutionException, InterruptedException;
 
   MergeRepositoryCommitsRequest.Response mergeCommit(
       RepositoryDAO repositoryDAO, MergeRepositoryCommitsRequest request)
-      throws ModelDBException, NoSuchAlgorithmException;
+      throws ModelDBException, NoSuchAlgorithmException, ExecutionException, InterruptedException;
 
   RevertRepositoryCommitsRequest.Response revertCommit(
       RepositoryDAO repositoryDAO, RevertRepositoryCommitsRequest request)
-      throws ModelDBException, NoSuchAlgorithmException;
+      throws ModelDBException, NoSuchAlgorithmException, ExecutionException, InterruptedException;
 
   GetUrlForDatasetBlobVersioned.Response getUrlForVersionedDatasetBlob(
       ArtifactStoreDAO artifactStoreDAO,
@@ -130,14 +128,14 @@ public interface BlobDAO {
       String datasetId,
       CommitFunction commitFunction,
       GetUrlForDatasetBlobVersioned request)
-      throws ModelDBException;
+      throws ModelDBException, ExecutionException, InterruptedException;
 
   GetUrlForBlobVersioned.Response getUrlForVersionedBlob(
       ArtifactStoreDAO artifactStoreDAO,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction,
       GetUrlForBlobVersioned request)
-      throws ModelDBException;
+      throws ModelDBException, ExecutionException, InterruptedException;
 
   void commitVersionedDatasetBlobArtifactPart(
       RepositoryDAO repositoryDAO,

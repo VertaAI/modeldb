@@ -72,7 +72,7 @@ dependency like
         artifacts=["tensorflow_saved_model", "nearest_neighbor_index"],  # logged artifact keys
     )
 
-The same can be done using a :class:`~verta._registry.modelversion.RegisteredModelVersion`:
+The same can be done using a :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`:
 
 .. code-block:: python
 

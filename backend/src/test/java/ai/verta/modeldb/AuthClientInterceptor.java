@@ -1,6 +1,6 @@
 package ai.verta.modeldb;
 
-import ai.verta.modeldb.config.TestConfig;
+import ai.verta.modeldb.common.config.TestConfig;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;

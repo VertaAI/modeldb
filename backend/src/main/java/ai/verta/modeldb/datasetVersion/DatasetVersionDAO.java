@@ -9,6 +9,7 @@ import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.hibernate.Session;
 
 public interface DatasetVersionDAO {
@@ -34,7 +35,8 @@ public interface DatasetVersionDAO {
       boolean isAscending,
       String sortKey,
       UserInfo currentLoginUser)
-      throws InvalidProtocolBufferException, PermissionDeniedException;
+      throws InvalidProtocolBufferException, PermissionDeniedException, ExecutionException,
+          InterruptedException;
 
   /**
    * Delete all datasetVersions with dataset ids matching the ids in request.
@@ -82,7 +84,8 @@ public interface DatasetVersionDAO {
    */
   DatasetVersionDTO findDatasetVersions(
       DatasetDAO datasetDAO, FindDatasetVersions queryParameters, UserInfo userInfo)
-      throws InvalidProtocolBufferException, PermissionDeniedException;
+      throws InvalidProtocolBufferException, PermissionDeniedException, ExecutionException,
+          InterruptedException;
 
   /**
    * Update DatasetVersion description in database using datasetVersionId.

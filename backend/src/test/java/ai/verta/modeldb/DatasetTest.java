@@ -1416,7 +1416,8 @@ public class DatasetTest extends TestsInit {
           experimentRun.getDateUpdated(),
           response.getExperimentRun().getDateUpdated());
 
-      ParentTimestampUpdateCron parentTimestampUpdateCron = new ParentTimestampUpdateCron(100);
+      ParentTimestampUpdateCron parentTimestampUpdateCron =
+          new ParentTimestampUpdateCron(100, config.database.RdbConfiguration.isPostgres());
       parentTimestampUpdateCron.run();
 
       LastExperimentByDatasetId lastExperimentByDatasetId =

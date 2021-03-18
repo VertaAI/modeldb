@@ -4,6 +4,7 @@ import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -544,7 +545,7 @@ public class ExperimentRunEntity {
 
     if (this.environment != null && !this.environment.isEmpty()) {
       EnvironmentBlob.Builder environmentBlobBuilder = EnvironmentBlob.newBuilder();
-      ModelDBUtils.getProtoObjectFromString(this.environment, environmentBlobBuilder);
+      CommonUtils.getProtoObjectFromString(this.environment, environmentBlobBuilder);
       experimentRunBuilder.setEnvironment(environmentBlobBuilder.build());
     }
 

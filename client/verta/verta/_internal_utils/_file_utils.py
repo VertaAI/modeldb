@@ -103,13 +103,19 @@ def remove_prefix_dir(path, prefix_dir):
         prefix_dir += '/'
 
     if path.startswith(prefix_dir):
-        path = path[len(prefix_dir):]
+        path = remove_prefix(path, prefix_dir)
         path = path.lstrip('/')  # remove leading slashes, e.g. for "s3:"
 
     return path
 
 
-def walk_files(dirpath):
+def remove_prefix(s, prefix):
+    if s.startswith(prefix):
+        return s[len(prefix):]
+    return s
+
+
+def walk_files(dirpath, followlinks=True):
     """
     Yields paths to the files within `dirpath`'s directory tree.
 
@@ -124,7 +130,7 @@ def walk_files(dirpath):
         Filepath (relative to cwd).
 
     """
-    for root, _, filenames in os.walk(dirpath):
+    for root, _, filenames in os.walk(dirpath, followlinks=followlinks):
         for filename in filenames:
             yield os.path.join(root, filename)
 

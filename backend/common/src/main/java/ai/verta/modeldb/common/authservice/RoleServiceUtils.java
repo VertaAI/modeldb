@@ -7,9 +7,14 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
 import ai.verta.uac.*;
 import ai.verta.uac.ServiceEnum.Service;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Context;
 import io.grpc.Metadata;
@@ -18,9 +23,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class RoleServiceUtils implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
+  private final UAC uac;
   protected AuthService authService;
   private final String host;
   private final Integer port;
@@ -36,7 +43,8 @@ public class RoleServiceUtils implements RoleService {
       String serviceUserEmail,
       String serviceUserDevKey,
       Integer timeout,
-      Context.Key<Metadata> metadataInfo) {
+      Context.Key<Metadata> metadataInfo,
+      UAC uac) {
     this.authService = authService;
     this.host = host;
     this.port = port;
@@ -44,8 +52,21 @@ public class RoleServiceUtils implements RoleService {
     this.serviceUserDevKey = serviceUserDevKey;
     this.timeout = timeout;
     this.metadataInfo = metadataInfo;
+    this.uac = uac;
   }
 
+  /**
+   * @param workspaceId workspace.id
+   * @param workspaceName workspace.name
+   * @param resourceId project.id, repository.id etc.
+   * @param resourceName project.name, repository.name etc.
+   * @param ownerId: parameter added for migration where we should have to populate entity owner.For
+   *     other UAC will populate the owner ID
+   * @param resourceType PROJECT, REPOSITORY, DATASET
+   * @param permissions CollaboratorPermissions.
+   * @param resourceVisibility ResourceVisibility
+   * @return {@link Boolean} true, false based on success call
+   */
   @Override
   public boolean createWorkspacePermissions(
       Optional<Long> workspaceId,
@@ -102,8 +123,12 @@ public class RoleServiceUtils implements RoleService {
     return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey, metadataInfo);
   }
 
-  public boolean deleteResources(Resources resources) {
-    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
+  private AuthServiceChannel getAuthServiceChannelWithServiceUser() {
+    return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey, null);
+  }
+
+  public boolean deleteResourcesWithServiceUser(Resources resources) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannelWithServiceUser()) {
       LOGGER.trace("Calling CollaboratorService to delete resources");
       DeleteResources deleteResources =
           DeleteResources.newBuilder().setResources(resources).build();
@@ -119,7 +144,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean deleteEntityResources(
+  public boolean deleteEntityResourcesWithServiceUser(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     ResourceType modeldbServiceResourceType =
         ResourceType.newBuilder()
@@ -131,65 +156,112 @@ public class RoleServiceUtils implements RoleService {
             .setService(Service.MODELDB_SERVICE)
             .addAllResourceIds(entityIds)
             .build();
-    return deleteResources(resources);
+    return deleteResourcesWithServiceUser(resources);
   }
 
   @Override
-  public GetResourcesResponseItem getEntityResource(
-      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    ResourceType resourceType =
-        ResourceType.newBuilder()
-            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
-            .build();
-    Resources resources =
-        Resources.newBuilder()
-            .setResourceType(resourceType)
-            .setService(Service.MODELDB_SERVICE)
-            .addResourceIds(entityId)
-            .build();
-    List<GetResourcesResponseItem> responseItems = getResourceItems(Optional.of(resources));
-    if (responseItems.size() > 1) {
-      LOGGER.warn(
-          "Role service returned {}"
-              + " resource response items fetching {} resource, but only expected 1. ID: {}",
-          responseItems.size(),
-          modelDBServiceResourceTypes.name(),
-          entityId);
-    }
-    final Optional<GetResourcesResponseItem> responseItem =
-        responseItems.stream()
-            .filter(
-                item ->
-                    item.getResourceType().getModeldbServiceResourceType()
-                            == modelDBServiceResourceTypes
-                        && item.getService() == Service.MODELDB_SERVICE)
-            .findFirst();
-    if (responseItem.isPresent()) {
-      return responseItem.get();
-    }
-    throw new IllegalArgumentException(
-        "Failed to locate "
-            + modelDBServiceResourceTypes.name()
-            + " resources in UAC for "
-            + modelDBServiceResourceTypes.name()
-            + " ID "
-            + entityId);
-  }
-
-  public List<GetResourcesResponseItem> getResourceItems(Optional<Resources> filterTo) {
+  public ListenableFuture<GetResourcesResponseItem> getEntityResource(
+      Optional<String> entityId,
+      Optional<String> workspaceName,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      final GetResources.Builder getResourcesBuilder = GetResources.newBuilder();
-      filterTo.ifPresent(getResourcesBuilder::setResources);
-
-      final GetResources.Response response =
-          authServiceChannel
-              .getCollaboratorServiceBlockingStub()
-              .getResources(getResourcesBuilder.build());
-      return response.getItemList();
+      ListenableFuture<List<GetResourcesResponseItem>> responseItems =
+          getGetResourcesResponseItems(
+              entityId,
+              Optional.empty(),
+              workspaceName,
+              modelDBServiceResourceTypes,
+              authServiceChannel);
+      return Futures.transform(
+          responseItems,
+          items -> {
+            if (items.size() > 1) {
+              LOGGER.warn(
+                  "Role service returned {}"
+                      + " resource response items fetching {} resource, but only expected 1. ID: {}",
+                  items.size(),
+                  modelDBServiceResourceTypes.name(),
+                  entityId);
+            }
+            Optional<GetResourcesResponseItem> responseItem = items.stream().findFirst();
+            if (responseItem.isPresent()) {
+              return responseItem.get();
+            } else {
+              StringBuilder errorMessage =
+                  new StringBuilder("Failed to locate ")
+                      .append(modelDBServiceResourceTypes.name())
+                      .append(" resources in UAC for ")
+                      .append(modelDBServiceResourceTypes.name())
+                      .append(" ID ")
+                      .append(entityId);
+              throw new NotFoundException(errorMessage.toString());
+            }
+          },
+          MoreExecutors.directExecutor());
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
       throw ex;
     }
+  }
+
+  @Override
+  public List<GetResourcesResponseItem> getEntityResourcesByName(
+      Optional<String> entityName,
+      Optional<String> workspaceName,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes)
+      throws ExecutionException, InterruptedException {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
+      if (!entityName.isPresent()) {
+        return Collections.emptyList();
+      }
+      List<GetResourcesResponseItem> responseItems =
+          getGetResourcesResponseItems(
+                  Optional.empty(),
+                  entityName,
+                  workspaceName,
+                  modelDBServiceResourceTypes,
+                  authServiceChannel)
+              .get();
+      if (!responseItems.isEmpty()) {
+        return responseItems;
+      } else {
+        StringBuilder errorMessage =
+            new StringBuilder("Failed to locate ")
+                .append(modelDBServiceResourceTypes.name())
+                .append(" resources in UAC for ")
+                .append(modelDBServiceResourceTypes.name())
+                .append(" Name ")
+                .append(entityName.get());
+        throw new NotFoundException(errorMessage.toString());
+      }
+    } catch (StatusRuntimeException ex) {
+      LOGGER.error(ex);
+      throw ex;
+    }
+  }
+
+  private ListenableFuture<List<GetResourcesResponseItem>> getGetResourcesResponseItems(
+      Optional<String> entityId,
+      Optional<String> entityName,
+      Optional<String> workspaceName,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      AuthServiceChannel authServiceChannel) {
+    ResourceType resourceType =
+        ResourceType.newBuilder()
+            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
+            .build();
+    Resources.Builder resources =
+        Resources.newBuilder().setResourceType(resourceType).setService(Service.MODELDB_SERVICE);
+    entityId.ifPresent(resources::addResourceIds);
+
+    final GetResources.Builder getResourcesBuilder =
+        GetResources.newBuilder().setResources(resources);
+    entityName.ifPresent(getResourcesBuilder::setResourceName);
+    workspaceName.ifPresent(getResourcesBuilder::setWorkspaceName);
+
+    final ListenableFuture<GetResources.Response> response =
+        uac.getCollaboratorService().getResources(getResourcesBuilder.build());
+    return Futures.transform(response, r -> r.getItemList(), MoreExecutors.directExecutor());
   }
 
   @Override
@@ -712,6 +784,35 @@ public class RoleServiceUtils implements RoleService {
             .setName(roleBindingName)
             .setScope(role.getScope())
             .setRoleId(role.getId())
+            .addEntities(collaborator.getEntities())
+            .addResources(
+                Resources.newBuilder()
+                    .setService(Service.MODELDB_SERVICE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                    .addResourceIds(resourceId)
+                    .build())
+            .build();
+    setRoleBindingOnAuthService(true, newRoleBinding);
+  }
+
+  @Override
+  public void createRoleBinding(
+      String roleName,
+      RoleScope roleBindingScope,
+      CollaboratorBase collaborator,
+      String resourceId,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    String roleBindingName =
+        buildRoleBindingName(
+            roleName, resourceId, collaborator, modelDBServiceResourceTypes.name());
+
+    RoleBinding newRoleBinding =
+        RoleBinding.newBuilder()
+            .setName(roleBindingName)
+            .setScope(roleBindingScope)
+            .setRoleName(roleName)
             .addEntities(collaborator.getEntities())
             .addResources(
                 Resources.newBuilder()

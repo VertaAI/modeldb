@@ -23,7 +23,7 @@ from .._internal_utils import (
     _utils,
 )
 from .._tracking import experimentrun
-from .._registry import RegisteredModelVersion
+from ..registry._entities import RegisteredModelVersion
 from ..visibility import _visibility
 
 
@@ -179,7 +179,7 @@ class Endpoint(object):
 
         Parameters
         ----------
-        model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta._registry.modelversion.RegisteredModelVersion`
+        model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
         strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the Endpoint.

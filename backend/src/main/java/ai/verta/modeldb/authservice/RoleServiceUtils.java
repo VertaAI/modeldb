@@ -9,11 +9,13 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
+import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -34,24 +36,25 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
 
   public static ai.verta.modeldb.authservice.RoleService FromConfig(
-      Config config, AuthService authService) {
+      Config config, AuthService authService, UAC uac) {
     if (!config.hasAuth()) return new PublicRoleServiceUtils(authService);
-    else return new RoleServiceUtils(authService);
+    else return new RoleServiceUtils(authService, uac);
   }
 
-  public RoleServiceUtils(AuthService authService) {
-    this(Config.getInstance(), authService);
+  public RoleServiceUtils(AuthService authService, UAC uac) {
+    this(Config.getInstance(), authService, uac);
   }
 
-  private RoleServiceUtils(Config config, AuthService authService) {
+  private RoleServiceUtils(Config config, AuthService authService, UAC uac) {
     super(
         authService,
         config.authService.host,
         config.authService.port,
-        config.mdb_service_user.email,
-        config.mdb_service_user.devKey,
+        config.service_user.email,
+        config.service_user.devKey,
         config.grpcServer.requestTimeout,
-        AuthInterceptor.METADATA_INFO);
+        AuthInterceptor.METADATA_INFO,
+        uac);
   }
 
   @Override
@@ -439,127 +442,6 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
         return workspaceDTO;
       default:
         return null;
-    }
-  }
-
-  @Override
-  public boolean createWorkspacePermissions(
-      String workspaceName,
-      String resourceId,
-      String resourceName,
-      Optional<Long> ownerId,
-      ModelDBServiceResourceTypes resourceType,
-      CollaboratorPermissions permissions,
-      ResourceVisibility visibility) {
-    return createWorkspacePermissions(
-        Optional.empty(),
-        Optional.of(workspaceName),
-        resourceId,
-        resourceName,
-        ownerId,
-        resourceType,
-        permissions,
-        visibility);
-  }
-
-  @Override
-  public boolean createWorkspacePermissions(
-      Long workspaceId,
-      Optional<WorkspaceType> workspaceType,
-      String resourceId,
-      String resourceName,
-      Optional<Long> ownerId,
-      ModelDBServiceResourceTypes resourceType,
-      CollaboratorPermissions permissions,
-      ResourceVisibility visibility) {
-    return createWorkspacePermissions(
-        Optional.of(workspaceId),
-        Optional.empty(),
-        resourceId,
-        resourceName,
-        ownerId,
-        resourceType,
-        permissions,
-        visibility);
-  }
-
-  @Override
-  public void createWorkspacePermissions(
-      String workspaceId,
-      WorkspaceType workspaceType,
-      String resourceId,
-      String roleAdminName,
-      ModelDBServiceResourceTypes resourceType,
-      boolean orgScopedPublic,
-      String globalSharing) {
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      final CollaboratorUser collaboratorUser;
-      switch (workspaceType) {
-        case ORGANIZATION:
-          if (orgScopedPublic) {
-            String globalSharingRoleName =
-                new StringBuilder()
-                    .append("O_")
-                    .append(workspaceId)
-                    .append(globalSharing)
-                    .toString();
-            Role globalSharingRole =
-                getRoleByName(
-                    globalSharingRoleName, RoleScope.newBuilder().setOrgId(workspaceId).build());
-            createRoleBinding(
-                globalSharingRole, new CollaboratorOrg(workspaceId), resourceId, resourceType);
-          }
-          Organization org = (Organization) getOrgById(workspaceId);
-          collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
-          break;
-        case USER:
-          collaboratorUser = new CollaboratorUser(authService, workspaceId);
-          break;
-        default:
-          return;
-      }
-      Role admin = getRoleByName(roleAdminName, null);
-      createRoleBinding(admin, collaboratorUser, resourceId, resourceType);
-    }
-  }
-
-  @Override
-  public boolean deleteAllResources(
-      List<String> resourceIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return deleteAllResources(true, resourceIds, modelDBServiceResourceTypes);
-  }
-
-  private boolean deleteAllResources(
-      boolean retry,
-      List<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    RemoveResources removeAllCollaboratorsRequest =
-        RemoveResources.newBuilder()
-            .addAllResourceIds(resourceIds)
-            .setResourceType(
-                ResourceType.newBuilder()
-                    .setModeldbServiceResourceType(modelDBServiceResourceTypes)
-                    .build())
-            .build();
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
-      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-
-      RemoveResources.Response removeAllCollaboratorResponse =
-          authServiceChannel
-              .getRoleServiceBlockingStub()
-              .removeResources(removeAllCollaboratorsRequest);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(
-          CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, removeAllCollaboratorResponse);
-
-      return removeAllCollaboratorResponse.getStatus();
-    } catch (StatusRuntimeException ex) {
-      return (Boolean)
-          ModelDBUtils.retryOrThrowException(
-              ex,
-              retry,
-              (RetryCallInterface<Boolean>)
-                  (retry1) -> deleteAllResources(retry1, resourceIds, modelDBServiceResourceTypes));
     }
   }
 
