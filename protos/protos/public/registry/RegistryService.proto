@@ -115,10 +115,9 @@ message DeleteRegisteredModelRequest {
 
 message ModelVersionLockLevelEnum {
     enum ModelVersionLockLevel {
-        UNKNOWN = 0;
-        OPEN = 1;
-        CLOSED = 2;
-        REDACT = 3;
+        OPEN = 0;
+        CLOSED = 1;
+        REDACT = 2;
     }
 }
 
