@@ -334,6 +334,11 @@
           "type": "string",
           "title": "Unique identifier for the method, like the fully qualified method name in grpc"
         },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Workspace of the request, independent from any resource being returned."
+        },
         "ts_nano": {
           "type": "string",
           "format": "int64",
@@ -364,6 +369,13 @@
         },
         "resource_predicate": {
           "$ref": "#/definitions/versioningResourcePredicate"
+        },
+        "workspace_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
         }
       }
     },
