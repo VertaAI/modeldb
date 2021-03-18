@@ -208,7 +208,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
               .build();
 
-      Map<String, Long> resourceIdWorkspaceIdMap;
       Workspace workspace =
           roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
       List<GetResourcesResponseItem> responseItems =
@@ -216,16 +215,14 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               null,
               response.getDatasetsList().stream().map(Dataset::getId).collect(Collectors.toSet()),
               ModelDBServiceResourceTypes.DATASET);
-      resourceIdWorkspaceIdMap =
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.READ,
           responseItems.stream()
               .collect(
                   Collectors.toMap(
                       GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId));
-      saveAuditLog(
-          Optional.of(userInfo),
-          ModelDBServiceActions.READ,
-          resourceIdWorkspaceIdMap,
+                      GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspace.getId());
@@ -315,7 +312,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .addAllDatasets(datasetPaginationDTO.getDatasets())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
               .build();
-      Map<String, Long> resourceIdWorkspaceIdMap;
       Workspace workspace =
           roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
       List<GetResourcesResponseItem> responseItems =
@@ -323,16 +319,14 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               null,
               response.getDatasetsList().stream().map(Dataset::getId).collect(Collectors.toSet()),
               ModelDBServiceResourceTypes.DATASET);
-      resourceIdWorkspaceIdMap =
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.READ,
           responseItems.stream()
               .collect(
                   Collectors.toMap(
                       GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId));
-      saveAuditLog(
-          Optional.of(userInfo),
-          ModelDBServiceActions.READ,
-          resourceIdWorkspaceIdMap,
+                      GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
           ModelDBUtils.getStringFromProtoObject(response),
           workspace.getId());
