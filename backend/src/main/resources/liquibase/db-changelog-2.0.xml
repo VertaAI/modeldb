@@ -546,4 +546,18 @@
         </rollback>
     </changeSet>
 
+    <changeSet id="add-workspace-id-audit_service_local_audit_log" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="audit_service_local_audit_log" columnName="workspace_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="audit_service_local_audit_log">
+            <column name="workspace_id" type="int8"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="audit_service_local_audit_log" columnName="workspace_id"/>
+        </rollback>
+    </changeSet>
+
 </databaseChangeLog>
