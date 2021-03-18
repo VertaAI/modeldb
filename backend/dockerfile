@@ -14,7 +14,7 @@ WORKDIR /modeldb-project-work-dir
 
 COPY target/modeldb-1.0-SNAPSHOT-client-build.jar modeldb-1.0-SNAPSHOT-client-build.jar
 COPY src/main/resources/liquibase/ src/main/resources/liquibase/
-COPY src/main/resources/c3p0.properties c3p0.properties
+# COPY src/main/resources/c3p0.properties c3p0.properties
 
 # Define environment variable
 ENV NAME modeldb-backend

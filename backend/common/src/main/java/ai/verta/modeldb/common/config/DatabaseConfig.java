@@ -1,15 +1,15 @@
 package ai.verta.modeldb.common.config;
 
-import ai.verta.modeldb.common.CommonConstants;
-
 public class DatabaseConfig {
   public String DBType;
   public Integer timeout;
   public Integer liquibaseLockThreshold = 60;
   public String changeSetToRevertUntilTag;
-  public Integer minConnectionPoolSize = CommonConstants.MIN_CONNECTION_SIZE_DEFAULT;
-  public Integer maxConnectionPoolSize = CommonConstants.MAX_CONNECTION_SIZE_DEFAULT;
-  public Integer connectionTimeout = CommonConstants.CONNECTION_TIMEOUT_DEFAULT;
+  public String idleTimeout = "60000";
+  public String maxLifetime = "300000";
+  public String minConnectionPoolSize = "0";
+  public String maxConnectionPoolSize = "20";
+  public String connectionTimeout = "300";
 
   public RdbConfig RdbConfiguration;
 
