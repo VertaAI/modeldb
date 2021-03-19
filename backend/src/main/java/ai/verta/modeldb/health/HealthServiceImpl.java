@@ -27,11 +27,15 @@ import io.grpc.health.v1.HealthCheckResponse;
 import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
 import io.grpc.health.v1.HealthGrpc;
 import io.grpc.stub.StreamObserver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.annotation.Nullable;
 
 public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
+  private static final Logger LOGGER = LogManager.getLogger(HealthServiceImpl.class);
 
   /* Due to the latency of rpc calls, synchronization of the map does not help with consistency.
    * However, need use ConcurrentHashMap to prevent the possible race condition of concurrently
@@ -41,6 +45,7 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
   @Override
   public void check(
       HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver) {
+    LOGGER.debug("got health request");
     ServingStatus globalStatus;
     if (!request.getService().equals("")) {
       globalStatus = getStatus("");
@@ -54,10 +59,12 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
     }
     ServingStatus status = getStatus(request.getService());
     if (status == null) {
+      LOGGER.debug("unknown service " + request.getService());
       responseObserver.onError(
           new StatusException(
               Status.NOT_FOUND.withDescription("unknown service " + request.getService())));
     } else {
+      LOGGER.debug("health response: " + status.toString());
       HealthCheckResponse response = HealthCheckResponse.newBuilder().setStatus(status).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
