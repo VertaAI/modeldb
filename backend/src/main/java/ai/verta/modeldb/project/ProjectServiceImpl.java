@@ -54,6 +54,7 @@ import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -799,6 +800,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void verifyConnection(
       Empty request, StreamObserver<VerifyConnectionResponse> responseObserver) {
+    AuditLogInterceptor.increaseAuditCountStatic();
     responseObserver.onNext(VerifyConnectionResponse.newBuilder().setStatus(true).build());
     responseObserver.onCompleted();
   }
