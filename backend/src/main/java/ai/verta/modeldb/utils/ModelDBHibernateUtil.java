@@ -192,7 +192,7 @@ public class ModelDBHibernateUtil {
         settings.put("hibernate.hikari.idleTimeout", "300000");
         settings.put("hibernate.hikari.minimumIdle", "0");
         settings.put("hibernate.hikari.maximumPoolSize", "20");
-        settings.put("hibernate.hikari.connectionTimeout", "300");
+        settings.put("hibernate.hikari.connectionTimeout", "5000");
         configuration.setProperties(settings);
 
         LOGGER.trace("connectionString {}", connectionString);
