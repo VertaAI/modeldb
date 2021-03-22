@@ -1,5 +1,8 @@
 package ai.verta.modeldb.versioning;
 
+import static ai.verta.modeldb.ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION;
+import static java.util.stream.Collectors.toMap;
+
 import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.*;
@@ -36,13 +39,6 @@ import ai.verta.uac.UserInfo;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.LockMode;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
@@ -50,9 +46,12 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static ai.verta.modeldb.ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION;
-import static java.util.stream.Collectors.toMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 public class BlobDAORdbImpl implements BlobDAO {
 
@@ -372,15 +371,14 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   private Folder getFolder(Session session, String commitSha, String folderSha) {
+    Query query =
+        session.createQuery(
+            "From "
+                + InternalFolderElementEntity.class.getSimpleName()
+                + " where folder_hash = :folder_hash");
+    query.setParameter("folder_hash", folderSha);
     Optional result =
-        session
-            .createQuery(
-                "From "
-                    + InternalFolderElementEntity.class.getSimpleName()
-                    + " where folder_hash = '"
-                    + folderSha
-                    + "'")
-            .list().stream()
+        query.list().stream()
             .map(
                 d -> {
                   InternalFolderElementEntity entity = (InternalFolderElementEntity) d;
