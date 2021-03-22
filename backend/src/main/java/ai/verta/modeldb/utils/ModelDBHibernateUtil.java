@@ -188,7 +188,9 @@ public class ModelDBHibernateUtil {
         settings.put(Environment.DIALECT, rDBDialect);
         settings.put(Environment.HBM2DDL_AUTO, "validate");
         settings.put(Environment.SHOW_SQL, "false");
-        settings.put("hibernate.connection.provider_class", "org.hibernate.hikaricp.internal.HikariCPConnectionProvider");
+        settings.put(
+            "hibernate.connection.provider_class",
+            "org.hibernate.hikaricp.internal.HikariCPConnectionProvider");
         settings.put("hibernate.hikari.maxLifetime", "60000");
         settings.put("hibernate.hikari.idleTimeout", "300000");
         settings.put("hibernate.hikari.minimumIdle", "0");
