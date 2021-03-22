@@ -14,6 +14,8 @@ public interface ModelDBConstants {
   String MINIO_ENDPOINT = "minioEndpoint";
   String AWS_REGION = "aws_region";
   String DEFAULT_AWS_REGION = "us-east-1";
+  String GCS = "GCS";
+  String SIGNED_URL_VALIDITY = "signedUrlValidity";
   String DATABASE = "database";
   String DB_TYPE = "DBType";
   String DISABLED_MDB_COLLABORATOR = "disabled-mdb-collaborator";

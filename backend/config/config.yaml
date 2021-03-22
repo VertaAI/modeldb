@@ -8,7 +8,7 @@ springServer:
   shutdownTimeout: 30 #time in second
 
 artifactStoreConfig:
-  artifactStoreType: NFS #S3, GCP, NFS
+  artifactStoreType: NFS #S3, GCS, NFS
   NFS:
     nfsUrlProtocol: http
     nfsRootPath: /artifact-store/

@@ -4,6 +4,7 @@ import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.artifactStore.storageservice.GCSService;
 import ai.verta.modeldb.artifactStore.storageservice.S3Service;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
@@ -63,6 +64,7 @@ import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import java.time.Duration;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -125,6 +127,9 @@ public class App implements ApplicationContextAware {
   private String cloudSecretKey = null;
   private String minioEndpoint = null;
   private String awsRegion = null;
+
+  // GCS Artifact Store
+  private Duration signedUrlValidity;
 
   // NFS Artifact store
   private Boolean pickNFSHostFromConfig = null;
@@ -575,9 +580,25 @@ public class App implements ApplicationContextAware {
             (String)
                 s3ConfigMap.getOrDefault(
                     ModelDBConstants.AWS_REGION, ModelDBConstants.DEFAULT_AWS_REGION);
-        String cloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
-        artifactStoreService = new S3Service(cloudBucketName);
-        app.storeTypePathPrefix = "s3://" + cloudBucketName + ModelDBConstants.PATH_DELIMITER;
+        String s3CloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
+        artifactStoreService = new S3Service(s3CloudBucketName);
+        app.storeTypePathPrefix = "s3://" + s3CloudBucketName + ModelDBConstants.PATH_DELIMITER;
+        System.getProperties().put("scan.packages", "dummyPackageName");
+        SpringApplication.run(App.class, new String[0]);
+        break;
+      case ModelDBConstants.GCS:
+        Map<String, Object> gcsConfigMap =
+            (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.GCS);
+        // setting signedUrlValidity value to be 5 minutes if it is not present in the config file.
+        // Using the Java Duration parser to extract time. Value specified should follow ISO-8601
+        // standard.
+        // (https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/Duration.html#parse(java.lang.CharSequence))
+        app.signedUrlValidity =
+            Duration.parse(
+                gcsConfigMap.getOrDefault(ModelDBConstants.SIGNED_URL_VALIDITY, "PT5M").toString());
+        String gcsCloudBucketName = (String) gcsConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
+        artifactStoreService = new GCSService(gcsCloudBucketName);
+        app.storeTypePathPrefix = "gs://" + gcsCloudBucketName + ModelDBConstants.PATH_DELIMITER;
         System.getProperties().put("scan.packages", "dummyPackageName");
         SpringApplication.run(App.class, new String[0]);
         break;
@@ -736,6 +757,10 @@ public class App implements ApplicationContextAware {
 
   public String getAwsRegion() {
     return awsRegion;
+  }
+
+  public Duration getSignedUrlValidity() {
+    return signedUrlValidity;
   }
 
   public Boolean getStoreClientCreationTimestamp() {

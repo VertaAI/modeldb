@@ -137,6 +137,40 @@ config.yaml --> artifactStoreConfig --> nfsRootPath : "root path"
 - Configure port number for ArtifactStore gRPC server : artifactStore_grpcServer --> port : 8086
 - Setup cloud storage name : artifactStoreConfig --> name : amazonS3 OR googleCloudStorage OR nfs
 - Setup list of bucket name : artifactStoreConfig --> buckets_names : - bucket_name
+- The below configs represents example configs for various cloud artifact store methods:
+```yaml
+  artifactStoreType: S3
+  S3:
+    cloudAccessKey: <PASTE_ACCESS_KEY>
+    cloudSecretKey: <PASTE_SECRET_KEY>
+    cloudBucketName: <BUCKET_NAME>
+    aws_region: us-east-1
+```
+```yaml
+  artifactStoreType: S3 # This config is would allow you to use MinIO Endpoint instead of S3
+  S3:
+    # This config assumes connecting to a minio endpoint at localhost 9000.
+    cloudAccessKey: <MINIO_USERNAME>
+    cloudSecretKey: <MINIO_PASSWORD>
+    cloudBucketName: <BUCKET_NAME>
+    aws_region: us-east-1 # This field is not used but required to be specified because of the way S3Service is currently implemented.
+    minioEndpoint: <MINIO_ENDPOINT_URL>
+```
+```yaml
+#   Set GOOGLE_APPLICATION_CREDENTIALS Environment variable with the path to service account credentials JSON file
+#   if you want to use ServiceAccountCredentials in google to authenticate. If this application is running in a
+#   Google Kubernetes Engine, you can also use Google Compute Engine authentication without setting the environment variable.
+#   If you are this service on a local machine and want to upload artifacts to GCS, then you will have to use a
+#   service account JSON file to authenticate.
+  artifactStoreType: GCS
+  GCS:
+    cloudBucketName: <BUCKET_NAME>
+    # Default value for signedUrlValidityInMinutes is 5 minutes if signedUrlValidityInMinutes is not present in config.
+    # Using the Java Duration parser to extract time. Value specified should follow ISO-8601 standard.
+    #  (https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/Duration.html#parse(java.lang.CharSequence))
+    # If you want to upload large files upto 1 GB, set the validtiy to at least 30 minutes.
+    signedUrlValidity: PT5M
+```
 
 ## Additional Functionaries
 
