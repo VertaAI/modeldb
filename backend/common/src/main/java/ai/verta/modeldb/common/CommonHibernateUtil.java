@@ -310,7 +310,7 @@ public abstract class CommonHibernateUtil {
     return checkDBConnection(databaseConfig.RdbConfiguration, databaseConfig.timeout);
   }
 
-  public Connection getDBConnection(RdbConfig rdb) throws SQLException, ClassNotFoundException {
+  public static Connection getDBConnection(RdbConfig rdb) throws SQLException, ClassNotFoundException {
     String connectionString =
         rdb.RdbUrl
             + "/"
