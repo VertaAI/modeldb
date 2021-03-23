@@ -74,4 +74,52 @@
         <tagDatabase tag="db_version_2.2"/>
     </changeSet>
 
+    <changeSet author="anandJ" id="index_key_value_experiment_run_id_field_type">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_key_value_experiment_run_id_field_type"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_key_value_experiment_run_id_field_type"
+                     tableName="keyvalue">
+            <column name="experiment_run_id"/>
+            <column name="field_type"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="keyvalue" indexName="index_key_value_experiment_run_id_field_type"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_key_value_experiment_run_id_field_type">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_key_value_experiment_run_id_field_type"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_key_value_experiment_run_id_field_type"
+                     tableName="keyvalue">
+            <column name="experiment_run_id"/>
+            <column name="field_type"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="keyvalue" indexName="index_key_value_experiment_run_id_field_type"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_observation_experiment_run_id_field_type">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_observation_experiment_run_id_field_type"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_observation_experiment_run_id_field_type"
+                     tableName="observation">
+            <column name="experiment_run_id"/>
+            <column name="field_type"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="observation" indexName="index_observation_experiment_run_id_field_type"/>
+        </rollback>
+    </changeSet>
+
 </databaseChangeLog>
