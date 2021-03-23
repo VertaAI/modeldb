@@ -90,19 +90,17 @@
         </rollback>
     </changeSet>
 
-    <changeSet author="anandJ" id="index_key_value_experiment_run_id_field_type">
+    <changeSet author="anandJ" id="index_key_value_kv_key_experiment_run_id_field_type">
         <preConditions onFail="MARK_RAN">
             <not>
-                <indexExists indexName="index_key_value_experiment_run_id_field_type"/>
+                <indexExists indexName="index_key_value_kv_key_experiment_run_id_field_type"/>
             </not>
         </preConditions>
-        <createIndex indexName="index_key_value_experiment_run_id_field_type"
-                     tableName="keyvalue">
-            <column name="experiment_run_id"/>
-            <column name="field_type"/>
-        </createIndex>
+        <sql>
+            CREATE INDEX index_key_value_kv_key_experiment_run_id_field_type ON keyvalue (kv_key(255), experiment_run_id, field_type);
+        </sql>
         <rollback>
-            <dropIndex tableName="keyvalue" indexName="index_key_value_experiment_run_id_field_type"/>
+            <dropIndex tableName="keyvalue" indexName="index_key_value_kv_key_experiment_run_id_field_type"/>
         </rollback>
     </changeSet>
 
