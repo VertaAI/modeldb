@@ -35,13 +35,6 @@ import com.google.protobuf.ProtocolStringList;
 import com.google.protobuf.Value;
 import io.grpc.Status;
 import io.grpc.Status.Code;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.LockMode;
-import org.hibernate.LockOptions;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -51,6 +44,12 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 
 public class CommitDAORdbImpl implements CommitDAO {
 
@@ -370,6 +369,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             " FROM "
                 + CommitEntity.class.getSimpleName()
                 + " cm INNER JOIN cm.repository repo WHERE repo.id = :repoId ");
+    Map<String, Long> parameterMap = new HashMap<>();
     if (!request.getCommitBase().isEmpty()) {
       CommitEntity baseCommitEntity =
           Optional.ofNullable(session.get(CommitEntity.class, request.getCommitBase()))
@@ -379,7 +379,8 @@ public class CommitDAORdbImpl implements CommitDAO {
                           "Couldn't find base commit by sha : " + request.getCommitBase(),
                           Code.NOT_FOUND));
       Long baseTime = baseCommitEntity.getDate_created();
-      commitQueryBuilder.append(" AND cm.date_created >= " + baseTime);
+      commitQueryBuilder.append(" AND cm.date_created >= :date_created_baseTime ");
+      parameterMap.put("date_created_baseTime", baseTime);
     }
 
     if (!request.getCommitHead().isEmpty()) {
@@ -391,7 +392,8 @@ public class CommitDAORdbImpl implements CommitDAO {
                           "Couldn't find head commit by sha : " + request.getCommitHead(),
                           Code.NOT_FOUND));
       Long headTime = headCommitEntity.getDate_created();
-      commitQueryBuilder.append(" AND cm.date_created <= " + headTime);
+      commitQueryBuilder.append(" AND cm.date_created <= :date_created_headTime ");
+      parameterMap.put("date_created_headTime", headTime);
     }
 
     String order = ascending ? " ASC " : " DESC ";
@@ -399,7 +401,17 @@ public class CommitDAORdbImpl implements CommitDAO {
     Query<CommitEntity> commitEntityQuery =
         session.createQuery(
             "SELECT cm " + commitQueryBuilder.toString() + " ORDER BY cm.date_updated " + order);
+    Query countQuery = session.createQuery("SELECT count(cm) " + commitQueryBuilder.toString());
+
     commitEntityQuery.setParameter("repoId", repoId);
+    countQuery.setParameter("repoId", repoId);
+    if (!parameterMap.isEmpty()) {
+      parameterMap.forEach(
+          (key, value) -> {
+            commitEntityQuery.setParameter(key, value);
+            countQuery.setParameter(key, value);
+          });
+    }
     if (request.hasPagination()) {
       int pageLimit = request.getPagination().getPageLimit();
       final int startPosition = (request.getPagination().getPageNumber() - 1) * pageLimit;
@@ -407,9 +419,6 @@ public class CommitDAORdbImpl implements CommitDAO {
       commitEntityQuery.setMaxResults(pageLimit);
     }
     List<CommitEntity> commitEntities = commitEntityQuery.list();
-
-    Query countQuery = session.createQuery("SELECT count(cm) " + commitQueryBuilder.toString());
-    countQuery.setParameter("repoId", repoId);
     Long totalRecords = (long) countQuery.uniqueResult();
 
     CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();

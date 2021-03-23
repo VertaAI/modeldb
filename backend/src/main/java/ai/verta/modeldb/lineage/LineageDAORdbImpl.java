@@ -224,26 +224,23 @@ public class LineageDAORdbImpl implements LineageDAO {
       Session session, LineageEntry input, LineageEntry output) {
     Query query =
         session.createQuery(
-            "from LineageEntity where inputExternalId = '"
-                + input.getExternalId()
-                + "' and inputType = '"
-                + input.getTypeValue()
-                + "' and outputExternalId = '"
-                + output.getExternalId()
-                + "' and outputType = '"
-                + output.getTypeValue()
-                + "'");
+            "from LineageEntity where inputExternalId = :inputExternalId "
+                + " and inputType = :inputType "
+                + " and outputExternalId = :outputExternalId "
+                + " and outputType = :outputType ");
+    query.setParameter("inputExternalId", input.getExternalId());
+    query.setParameter("inputType", input.getTypeValue());
+    query.setParameter("outputExternalId", output.getExternalId());
+    query.setParameter("outputType", output.getTypeValue());
     return Optional.ofNullable((LineageEntity) query.uniqueResult());
   }
 
   private List<LineageEntry> getOutputsByInput(Session session, LineageEntry input) {
     Query query =
         session.createQuery(
-            "from LineageEntity where inputExternalId = '"
-                + input.getExternalId()
-                + "' and inputType = '"
-                + input.getTypeValue()
-                + "'");
+            "from LineageEntity where inputExternalId = :inputExternalId and inputType = :inputType ");
+    query.setParameter("inputExternalId", input.getExternalId());
+    query.setParameter("inputType", input.getTypeValue());
     List<LineageEntry> result = new LinkedList<>();
     for (Object r : query.getResultList()) {
       LineageEntity lineageEntity = (LineageEntity) r;
@@ -259,11 +256,9 @@ public class LineageDAORdbImpl implements LineageDAO {
   private List<LineageEntry> getInputsByOutput(Session session, LineageEntry output) {
     Query query =
         session.createQuery(
-            "from LineageEntity where outputExternalId = '"
-                + output.getExternalId()
-                + "' and outputType = '"
-                + output.getTypeValue()
-                + "'");
+            "from LineageEntity where outputExternalId = :outputExternalId and outputType = :outputType");
+    query.setParameter("outputExternalId", output.getExternalId());
+    query.setParameter("outputType", output.getTypeValue());
     List<LineageEntry> result = new LinkedList<>();
     for (Object r : query.getResultList()) {
       LineageEntity lineageEntity = (LineageEntity) r;
