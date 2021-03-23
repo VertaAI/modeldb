@@ -90,17 +90,41 @@
         </rollback>
     </changeSet>
 
-    <changeSet author="anandJ" id="index_key_value_kv_key_experiment_run_id_field_type">
+    <!--For SQL-->
+    <changeSet author="anandJ" id="index_key_value_kv_key_experiment_run_id_field_type_mysql">
         <preConditions onFail="MARK_RAN">
-            <not>
-                <indexExists indexName="index_key_value_kv_key_experiment_run_id_field_type"/>
-            </not>
+            <and>
+                <not>
+                    <indexExists indexName="index_key_value_kv_key_experiment_run_id_field_type_mysql"/>
+                </not>
+                <dbms type="mysql"/>
+            </and>
         </preConditions>
         <sql>
-            CREATE INDEX index_key_value_kv_key_experiment_run_id_field_type ON keyvalue (kv_key(255), experiment_run_id, field_type);
+            CREATE INDEX index_key_value_kv_key_experiment_run_id_field_type_mysql ON keyvalue (kv_key(255), experiment_run_id, field_type);
         </sql>
         <rollback>
-            <dropIndex tableName="keyvalue" indexName="index_key_value_kv_key_experiment_run_id_field_type"/>
+            <dropIndex tableName="keyvalue" indexName="index_key_value_kv_key_experiment_run_id_field_type_mysql"/>
+        </rollback>
+    </changeSet>
+
+    <!--For Postgres-->
+    <changeSet author="anandJ" id="index_key_value_kv_key_experiment_run_id_field_type_postgresql">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <not>
+                    <indexExists indexName="index_key_value_kv_key_experiment_run_id_field_type_postgresql"/>
+                </not>
+                <dbms type="postgresql"/>
+            </and>
+        </preConditions>
+        <createIndex indexName="index_key_value_kv_key_experiment_run_id_field_type_postgresql" tableName="keyvalue">
+            <column name="kv_key"/>
+            <column name="experiment_run_id"/>
+            <column name="field_type"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="keyvalue" indexName="index_key_value_kv_key_experiment_run_id_field_type_postgresql"/>
         </rollback>
     </changeSet>
 
@@ -117,6 +141,22 @@
         </createIndex>
         <rollback>
             <dropIndex tableName="observation" indexName="index_observation_experiment_run_id_field_type"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_run_id_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_run_id_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_run_id_date_updated"
+                     tableName="experiment_run">
+            <column name="id"/>
+            <column name="date_updated"/>
+        </createIndex>
+        <rollback>
+            <dropIndex tableName="experiment_run" indexName="index_exp_run_id_date_updated"/>
         </rollback>
     </changeSet>
 
