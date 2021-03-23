@@ -63,7 +63,7 @@ public class ExperimentRunEntity {
         RdbmsUtils.convertKeyValuesFromKeyValueEntityList(
             this, ModelDBConstants.METRICS, experimentRun.getMetricsList()));
     setObservationMapping(
-        RdbmsUtils.convertObservationsFromObservationEntityList(
+        RdbmsUtils.validateObservationListAndConvertToEntities(
             null,
             this,
             ModelDBConstants.OBSERVATIONS,

@@ -151,7 +151,7 @@ public class KeyValueEntity {
 
   private void setExperimentRunEntity(Object entity) {
     this.experimentRunEntity = (ExperimentRunEntity) entity;
-    this.entity_name = this.experimentRunEntity.getClass().getSimpleName();
+    this.entity_name = ExperimentRunEntity.class.getSimpleName();
   }
 
   public JobEntity getJobEntity() {

@@ -247,14 +247,8 @@ public class RdbmsUtils {
     return Collections.emptyList();
   }
 
-  public static ObservationEntity generateObservationEntity(
-      Session session,
-      Object entity,
-      String fieldType,
-      Observation observation,
-      String entity_name,
-      String entity_id)
-      throws InvalidProtocolBufferException {
+  public static Observation validateObservation(
+      Session session, Observation observation, String entity_name, String entity_id) {
     if (session == null // request came from creating the entire ExperimentRun
         || observation.hasEpochNumber()) {
       if (observation.getEpochNumber().getKindCase() != KindCase.NUMBER_VALUE) {
@@ -268,7 +262,7 @@ public class RdbmsUtils {
                 .build();
         throw StatusProto.toStatusRuntimeException(invalidEpoch);
       }
-      return new ObservationEntity(entity, fieldType, observation);
+      return observation;
     } else {
       if (entity_name.equalsIgnoreCase("ExperimentRunEntity") && observation.hasAttribute()) {
         String MAX_EPOCH_NUMBER_SQL =
@@ -281,11 +275,9 @@ public class RdbmsUtils {
         BigInteger maxEpochNumber = (BigInteger) sqlQuery.uniqueResult();
         Long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber.longValue() + 1;
 
-        Observation new_observation =
-            Observation.newBuilder(observation)
-                .setEpochNumber(Value.newBuilder().setNumberValue(newEpochValue))
-                .build();
-        return new ObservationEntity(entity, fieldType, new_observation);
+        return Observation.newBuilder(observation)
+            .setEpochNumber(Value.newBuilder().setNumberValue(newEpochValue))
+            .build();
       } else {
         String unimplementedErrorMessage =
             "Observations not supported for non ExperimentRun entities, found "
@@ -303,7 +295,7 @@ public class RdbmsUtils {
     }
   }
 
-  public static List<ObservationEntity> convertObservationsFromObservationEntityList(
+  public static List<ObservationEntity> validateObservationListAndConvertToEntities(
       Session session,
       Object entity,
       String fieldType,
@@ -311,21 +303,26 @@ public class RdbmsUtils {
       String entity_name,
       String entity_id)
       throws InvalidProtocolBufferException {
-    LOGGER.trace("Converting ObservationsFromObservationEntityList");
-    LOGGER.trace("fieldType {}", fieldType);
-    List<ObservationEntity> observationEntityList = new ArrayList<>();
-    if (observationList != null) {
-      LOGGER.trace("observationList size {}", observationList.size());
-      for (Observation observation : observationList) {
-        ObservationEntity observationEntity =
-            generateObservationEntity(
-                session, entity, fieldType, observation, entity_name, entity_id);
-        observationEntityList.add(observationEntity);
-      }
+    List<ObservationEntity> entities = new ArrayList<>();
+    for (Observation observation :
+        validateObservationList(session, observationList, entity_name, entity_id)) {
+      ObservationEntity observationEntity = new ObservationEntity(entity, fieldType, observation);
+      entities.add(observationEntity);
     }
-    LOGGER.trace("observationList size 0");
-    LOGGER.trace("Converted ObservationsFromObservationEntityList");
-    return observationEntityList;
+    return entities;
+  }
+
+  public static List<Observation> validateObservationList(
+      Session session, List<Observation> observationList, String entity_name, String entity_id)
+      throws InvalidProtocolBufferException {
+    LOGGER.trace("Converting ObservationsFromObservationEntityList");
+    List<Observation> observations = new ArrayList<>();
+    for (Observation observation : observationList) {
+      Observation validateObservation =
+          validateObservation(session, observation, entity_name, entity_id);
+      observations.add(validateObservation);
+    }
+    return observations;
   }
 
   public static List<Observation> convertObservationEntityListFromObservations(

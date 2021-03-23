@@ -84,9 +84,11 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import java.math.BigInteger;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -835,9 +837,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
-      if (experimentRunEntityObj == null) {
+      BigInteger count =
+          (BigInteger)
+              session
+                  .createNativeQuery("SELECT count(*) FROM experiment_run WHERE id = :id")
+                  .setParameter("id", experimentRunId)
+                  .getSingleResult();
+      if (count.intValue() != 1) {
         LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
         Status status =
             Status.newBuilder()
@@ -846,20 +852,46 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
+      //  1. Hibernate insert.
+      //
+      //      Transaction transaction = session.beginTransaction();
+      //      List<ObservationEntity> newObservationList =
+      //          RdbmsUtils.convertObservationsFromObservationEntityList(
+      //              session,
+      //              experimentRunEntityObj,
+      //              ModelDBConstants.OBSERVATIONS,
+      //              observations,
+      //              ExperimentRunEntity.class.getSimpleName(),
+      //              experimentRunId);
+      //      for (ObservationEntity observationEntity : newObservationList) {
+      //        session.save(observationEntity);
+      //      }
+      //      transaction.commit();
 
+      // 2. Native Query insert
       Transaction transaction = session.beginTransaction();
-      List<ObservationEntity> newObservationList =
-          RdbmsUtils.convertObservationsFromObservationEntityList(
-              session,
-              experimentRunEntityObj,
-              ModelDBConstants.OBSERVATIONS,
-              observations,
-              ExperimentRunEntity.class.getSimpleName(),
-              experimentRunEntityObj.getId());
-      experimentRunEntityObj.setObservationMapping(newObservationList);
-      long currentTimestamp = Calendar.getInstance().getTimeInMillis();
-      experimentRunEntityObj.setDate_updated(currentTimestamp);
-      session.saveOrUpdate(experimentRunEntityObj);
+      RdbmsUtils.validateObservationList(
+              session, observations, ExperimentRunEntity.class.getSimpleName(), experimentRunId)
+          .forEach(
+              observation -> {
+                String sql =
+                    "INSERT INTO observation"
+                        + " (entity_name, field_type, timestamp, experiment_run_id, epoch_number)"
+                        + " VALUES (:entity_name, :field_type, :timestamp, :experiment_run_id, :epoch_number)";
+                Query query =
+                    session
+                        .createNativeQuery(sql)
+                        .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
+                        .setParameter("experiment_run_id", experimentRunId)
+                        .setParameter("field_type", ModelDBConstants.OBSERVATIONS)
+                        .setParameter("timestamp", observation.getTimestamp());
+                if (observation.hasEpochNumber()) {
+                  query.setParameter("epoch_number", observation.getEpochNumber().getNumberValue());
+                } else {
+                  query.setParameter("epoch_number", null);
+                }
+                query.executeUpdate();
+              });
       transaction.commit();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -910,7 +942,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+          session.load(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntityObj == null) {
         LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
         Status status =
@@ -921,30 +953,33 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      List<KeyValue> existingMetrics = experimentRunEntityObj.getProtoObject().getMetricsList();
-      for (KeyValue existingMetric : existingMetrics) {
-        for (KeyValue newMetric : newMetrics) {
-          if (existingMetric.getKey().equals(newMetric.getKey())) {
-            Status status =
-                Status.newBuilder()
-                    .setCode(Code.ALREADY_EXISTS_VALUE)
-                    .setMessage(
-                        "Metric being logged already exists. existing metric Key : "
-                            + newMetric.getKey())
-                    .build();
-            throw StatusProto.toStatusRuntimeException(status);
-          }
-        }
+      String existsQueryString =
+          "Select kv.key FROM KeyValueEntity kv WHERE kv.experimentRunEntity.id IS NOT NULL AND kv.experimentRunEntity.id = :runId AND kv.key IN (:keys) AND kv.field_type = :field_type";
+      Query existsQuery = session.createQuery(existsQueryString);
+      existsQuery.setParameter("runId", experimentRunId);
+      existsQuery.setParameterList(
+          "keys", newMetrics.stream().map(KeyValue::getKey).collect(Collectors.toList()));
+      existsQuery.setParameter("field_type", ModelDBConstants.METRICS);
+      List<String> existingKeys = existsQuery.list();
+      if (!existingKeys.isEmpty()) {
+        Status status =
+            Status.newBuilder()
+                .setCode(Code.ALREADY_EXISTS_VALUE)
+                .setMessage(
+                    "Metric being logged already exists. existing metric Key : "
+                        + Arrays.toString(existingKeys.toArray()))
+                .build();
+        throw StatusProto.toStatusRuntimeException(status);
       }
 
       List<KeyValueEntity> newMetricList =
           RdbmsUtils.convertKeyValuesFromKeyValueEntityList(
               experimentRunEntityObj, ModelDBConstants.METRICS, newMetrics);
-      experimentRunEntityObj.setKeyValueMapping(newMetricList);
-      long currentTimestamp = Calendar.getInstance().getTimeInMillis();
-      experimentRunEntityObj.setDate_updated(currentTimestamp);
       Transaction transaction = session.beginTransaction();
-      session.saveOrUpdate(experimentRunEntityObj);
+      for (KeyValueEntity keyValueEntity : newMetricList) {
+        session.save(keyValueEntity);
+      }
+      updateExperimentRunTimestamp(experimentRunId, session);
       transaction.commit();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -2745,11 +2780,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       } else {
         deleteKeyValueEntities(session, experimentRunId, experimentRunKeyValuesKeys, fieldType);
       }
-      ExperimentRunEntity experimentRunObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
-      long currentTimestamp = Calendar.getInstance().getTimeInMillis();
-      experimentRunObj.setDate_updated(currentTimestamp);
-      session.update(experimentRunObj);
+      updateExperimentRunTimestamp(experimentRunId, session);
       transaction.commit();
       LOGGER.debug("ExperimentRun {} deleted successfully", fieldType);
     } catch (Exception ex) {
@@ -2775,34 +2806,31 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query query = session.createQuery(GET_ALL_OBSERVATIONS_HQL);
-      query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
-      query.setParameter("field_type", ModelDBConstants.OBSERVATIONS);
-      List<ObservationEntity> observationEntities = query.list();
-      List<ObservationEntity> removedObservationEntities = new ArrayList<>();
       if (deleteAll) {
+        Query query = session.createQuery(GET_ALL_OBSERVATIONS_HQL);
+        query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
+        query.setParameter("field_type", ModelDBConstants.OBSERVATIONS);
+        List<ObservationEntity> observationEntities = query.list();
         observationEntities.forEach(session::delete);
-        removedObservationEntities.addAll(observationEntities);
       } else {
-        observationEntities.forEach(
-            observationEntity -> {
-              if ((observationEntity.getKeyValueMapping() != null
-                      && experimentRunObservationsKeys.contains(
-                          observationEntity.getKeyValueMapping().getKey()))
-                  || (observationEntity.getArtifactMapping() != null
-                      && experimentRunObservationsKeys.contains(
-                          observationEntity.getArtifactMapping().getKey()))) {
-                session.delete(observationEntity);
-                removedObservationEntities.add(observationEntity);
-              }
-            });
+        String GET_SELECTED_OBSERVATIONS_HQL =
+            new StringBuilder("FROM ObservationEntity oe WHERE oe.experimentRunEntity.")
+                .append(ModelDBConstants.ID)
+                .append(" = :experimentRunId")
+                .append(" AND oe.field_type = :field_type")
+                .append(
+                    " AND (oe.keyValueMapping.key IN (:keys) OR oe.artifactMapping.key IN (:keys))")
+                .toString();
+        Query query = session.createQuery(GET_SELECTED_OBSERVATIONS_HQL);
+        query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
+        query.setParameter("field_type", ModelDBConstants.OBSERVATIONS);
+        query.setParameterList("keys", experimentRunObservationsKeys);
+        List<ObservationEntity> observationEntities = query.list();
+        for (ObservationEntity observationEntity : observationEntities) {
+          session.delete(observationEntity);
+        }
       }
-      ExperimentRunEntity experimentRunObj =
-          session.load(ExperimentRunEntity.class, experimentRunId);
-      experimentRunObj.getObservationMapping().removeAll(removedObservationEntities);
-      long currentTimestamp = Calendar.getInstance().getTimeInMillis();
-      experimentRunObj.setDate_updated(currentTimestamp);
-      session.update(experimentRunObj);
+      updateExperimentRunTimestamp(experimentRunId, session);
       transaction.commit();
       LOGGER.debug("ExperimentRun {} deleted successfully", ModelDBConstants.OBSERVATIONS);
     } catch (Exception ex) {
@@ -2813,6 +2841,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw ex;
       }
     }
+  }
+
+  private void updateExperimentRunTimestamp(String experimentRunId, Session session) {
+    long currentTimestamp = Calendar.getInstance().getTimeInMillis();
+    StringBuilder updateExperimentRunTimeQuery =
+        new StringBuilder(
+            "UPDATE ExperimentRunEntity er SET er.date_updated = :updatedTime where er.id = :runId ");
+    Query updateExperimentRunQuery = session.createQuery(updateExperimentRunTimeQuery.toString());
+    updateExperimentRunQuery.setParameter("updatedTime", currentTimestamp);
+    updateExperimentRunQuery.setParameter("runId", experimentRunId);
+    updateExperimentRunQuery.executeUpdate();
   }
 
   @Override

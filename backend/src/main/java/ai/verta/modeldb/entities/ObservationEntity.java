@@ -127,7 +127,7 @@ public class ObservationEntity {
 
   private void setProjectEntity(Object entity) {
     this.projectEntity = (ProjectEntity) entity;
-    this.entityName = this.projectEntity.getClass().getSimpleName();
+    this.entityName = ProjectEntity.class.getSimpleName();
   }
 
   public ExperimentEntity getExperimentEntity() {
@@ -136,7 +136,7 @@ public class ObservationEntity {
 
   private void setExperimentEntity(Object experimentEntity) {
     this.experimentEntity = (ExperimentEntity) experimentEntity;
-    this.entityName = this.experimentEntity.getClass().getSimpleName();
+    this.entityName = ExperimentEntity.class.getSimpleName();
   }
 
   public ExperimentRunEntity getExperimentRunEntity() {
@@ -145,7 +145,7 @@ public class ObservationEntity {
 
   private void setExperimentRunEntity(Object entity) {
     this.experimentRunEntity = (ExperimentRunEntity) entity;
-    this.entityName = this.experimentRunEntity.getClass().getSimpleName();
+    this.entityName = ExperimentRunEntity.class.getSimpleName();
   }
 
   public String getField_type() {
