@@ -5,6 +5,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -29,18 +30,17 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
-
-import javax.persistence.criteria.*;
-import javax.persistence.criteria.CriteriaBuilder.Trimspec;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder.Trimspec;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 
 public class RdbmsUtils {
 
@@ -2160,7 +2160,7 @@ public class RdbmsUtils {
       if (versioningModeldbEntityMapping.getVersioning_location() != null
           && !versioningModeldbEntityMapping.getVersioning_location().isEmpty()) {
         Location.Builder locationBuilder = Location.newBuilder();
-        ModelDBUtils.getProtoObjectFromString(
+        CommonUtils.getProtoObjectFromString(
             versioningModeldbEntityMapping.getVersioning_location(), locationBuilder);
         versioningEntry.putKeyLocationMap(
             versioningModeldbEntityMapping.getVersioning_key(), locationBuilder.build());

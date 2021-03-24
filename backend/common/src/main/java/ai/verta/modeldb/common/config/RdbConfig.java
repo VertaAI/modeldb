@@ -20,8 +20,6 @@ public class RdbConfig {
       throw new InvalidConfigException(base + ".RdbUrl", Config.MISSING_REQUIRED);
     if (RdbUsername == null || RdbUsername.isEmpty())
       throw new InvalidConfigException(base + ".RdbUsername", Config.MISSING_REQUIRED);
-    if (RdbPassword == null || RdbPassword.isEmpty())
-      throw new InvalidConfigException(base + ".RdbPassword", Config.MISSING_REQUIRED);
   }
 
   public boolean isPostgres() {

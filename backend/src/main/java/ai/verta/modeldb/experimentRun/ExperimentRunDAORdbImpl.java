@@ -1,10 +1,13 @@
 package ai.verta.modeldb.experimentRun;
 
+import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
+
 import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.CommitArtifactPart.Response;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
@@ -39,15 +42,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.StatusRuntimeException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.LockMode;
-import org.hibernate.LockOptions;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
-
-import javax.persistence.criteria.*;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
@@ -57,8 +51,14 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
-
-import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
+import javax.persistence.criteria.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
@@ -1762,7 +1762,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           codeBlobMap = new LinkedHashMap<>();
         }
         Location.Builder locationBuilder = Location.newBuilder();
-        ModelDBUtils.getProtoObjectFromString(versioningLocation, locationBuilder);
+        CommonUtils.getProtoObjectFromString(versioningLocation, locationBuilder);
         codeBlobMap.put(
             ModelDBUtils.getLocationWithSlashOperator(locationBuilder.getLocationList()),
             codeVersionBuilder.build());

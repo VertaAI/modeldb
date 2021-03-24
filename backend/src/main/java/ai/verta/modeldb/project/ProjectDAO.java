@@ -12,7 +12,6 @@ import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
-
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 

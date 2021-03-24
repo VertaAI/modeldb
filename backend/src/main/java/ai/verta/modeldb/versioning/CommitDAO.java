@@ -7,11 +7,10 @@ import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.UserInfo;
-import org.hibernate.Session;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import org.hibernate.Session;
 
 public interface CommitDAO {
   CreateCommitRequest.Response setCommit(
@@ -48,6 +47,9 @@ public interface CommitDAO {
   CommitEntity getCommitEntity(
       Session session, String commitHash, RepositoryFunction getRepositoryFunction)
       throws ModelDBException, ExecutionException, InterruptedException;
+
+  String getDatasetIdByDatasetVersion(RepositoryDAO repositoryDAO, String commitHash)
+      throws ModelDBException;
 
   void deleteDatasetVersions(
       RepositoryIdentification repositoryIdentification,

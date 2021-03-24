@@ -510,6 +510,32 @@ public class CommitDAORdbImpl implements CommitDAO {
     return session.load(CommitEntity.class, commitHash);
   }
 
+  @Override
+  public String getDatasetIdByDatasetVersion(RepositoryDAO repositoryDAO, String commitHash)
+      throws ModelDBException {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      CommitEntity commitEntity = session.get(CommitEntity.class, commitHash);
+
+      if (commitEntity == null) {
+        throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
+      }
+
+      if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
+        throw new ModelDBException(
+            "DatasetVersion '"
+                + commitEntity.getCommit_hash()
+                + "' associated with multiple datasets",
+            Code.INTERNAL);
+      }
+      return String.valueOf(new ArrayList<>(commitEntity.getRepository()).get(0).getId());
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetIdByDatasetVersion(repositoryDAO, commitHash);
+      } else {
+        throw ex;
+      }
+    }
+  }
   /**
    * Deleting dataversiosn stored as commits
    *

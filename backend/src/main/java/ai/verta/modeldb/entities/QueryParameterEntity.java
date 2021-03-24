@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.modeldb.QueryParameter;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -107,7 +108,7 @@ public class QueryParameterEntity {
 
   public QueryParameter getProtoObject() throws InvalidProtocolBufferException {
     Builder valueBuilder = Value.newBuilder();
-    valueBuilder = (Builder) ModelDBUtils.getProtoObjectFromString(getValue(), valueBuilder);
+    valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(getValue(), valueBuilder);
     return QueryParameter.newBuilder()
         .setParameterName(getParameter_name())
         .setValue(valueBuilder.build())

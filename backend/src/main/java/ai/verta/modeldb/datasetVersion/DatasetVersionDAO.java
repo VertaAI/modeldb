@@ -8,10 +8,9 @@ import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
-import org.hibernate.Session;
-
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import org.hibernate.Session;
 
 public interface DatasetVersionDAO {
 

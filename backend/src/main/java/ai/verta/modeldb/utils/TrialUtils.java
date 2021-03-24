@@ -1,5 +1,7 @@
 package ai.verta.modeldb.utils;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
+
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
@@ -15,15 +17,12 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSSessionCredentials;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-
-import static java.time.format.DateTimeFormatter.ofPattern;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TrialUtils {
 
