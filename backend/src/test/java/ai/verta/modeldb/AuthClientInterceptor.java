@@ -1,14 +1,8 @@
 package ai.verta.modeldb;
 
 import ai.verta.modeldb.common.config.TestConfig;
-import io.grpc.CallOptions;
-import io.grpc.Channel;
-import io.grpc.ClientCall;
-import io.grpc.ClientInterceptor;
-import io.grpc.ForwardingClientCall;
-import io.grpc.Metadata;
-import io.grpc.MethodDescriptor;
-import java.util.Map;
+import ai.verta.modeldb.common.config.TestUser;
+import io.grpc.*;
 
 @SuppressWarnings("unchecked")
 public class AuthClientInterceptor {
@@ -21,13 +15,10 @@ public class AuthClientInterceptor {
   private Client2AuthInterceptor client2AuthInterceptor;
 
   public AuthClientInterceptor(TestConfig testConfig) {
-    Map<String, Object> testUerPropMap = (Map<String, Object>) testConfig.testUsers;
-    Map<String, Object> primaryUserPropMap =
-        (Map<String, Object>) testUerPropMap.get("primaryUser");
-    Map<String, Object> secondaryUserPropMap =
-        (Map<String, Object>) testUerPropMap.get("secondaryUser");
-    client1AuthInterceptor = new Client1AuthInterceptor(primaryUserPropMap);
-    client2AuthInterceptor = new Client2AuthInterceptor(secondaryUserPropMap);
+    client1AuthInterceptor =
+        new Client1AuthInterceptor(testConfig.testUsers.getOrDefault("primaryUser", null));
+    client2AuthInterceptor =
+        new Client2AuthInterceptor(testConfig.testUsers.getOrDefault("secondaryUser", null));
   }
 
   public Client1AuthInterceptor getClient1AuthInterceptor() {
@@ -48,9 +39,9 @@ public class AuthClientInterceptor {
 
   private class Client1AuthInterceptor implements ClientInterceptor {
 
-    public Client1AuthInterceptor(Map<String, Object> primaryUserPropMap) {
-      client1Email = (String) primaryUserPropMap.getOrDefault("email", "");
-      client1DevKey = (String) primaryUserPropMap.getOrDefault("devKey", "");
+    public Client1AuthInterceptor(TestUser user) {
+      client1Email = user.email;
+      client1DevKey = user.devKey;
     }
 
     @Override
@@ -79,9 +70,9 @@ public class AuthClientInterceptor {
 
   private class Client2AuthInterceptor implements ClientInterceptor {
 
-    Client2AuthInterceptor(Map<String, Object> secondaryUserPropMap) {
-      client2Email = (String) secondaryUserPropMap.getOrDefault("email", "");
-      client2DevKey = (String) secondaryUserPropMap.getOrDefault("devKey", "");
+    Client2AuthInterceptor(TestUser user) {
+      client2Email = user.email;
+      client2DevKey = user.devKey;
     }
 
     public String getClient2Email() {
