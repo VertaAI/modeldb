@@ -12,7 +12,9 @@ _sym_db = _symbol_database.Default()
 
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
+from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 from ...common import CommonService_pb2 as common_dot_CommonService__pb2
+from ...uac import RoleService_pb2 as uac_dot_RoleService__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -20,9 +22,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac.versioning',
   syntax='proto3',
   serialized_options=b'P\001Z@github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac/audit',
-  serialized_pb=b'\n\x1fuac/audit/AuditLogService.proto\x12\x17\x61i.verta.uac.versioning\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"U\n\rAuditResource\x12\x13\n\x0bresource_id\x18\x01 \x01(\t\x12\x15\n\rresource_type\x18\x02 \x01(\t\x12\x18\n\x10resource_service\x18\x03 \x01(\t\"\x1c\n\tAuditUser\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"\xc0\x01\n\x08\x41uditLog\x12\x30\n\x04user\x18\x01 \x01(\x0b\x32\".ai.verta.uac.versioning.AuditUser\x12\x38\n\x08resource\x18\x02 \x01(\x0b\x32&.ai.verta.uac.versioning.AuditResource\x12\x0e\n\x06\x61\x63tion\x18\x03 \x01(\t\x12\x0f\n\x07ts_nano\x18\x04 \x01(\x03\x12\x15\n\rmetadata_blob\x18\x05 \x01(\t\x12\x10\n\x08local_id\x18\x06 \x01(\t\"\\\n\x10\x42\x61tchResponseRow\x12\x10\n\x08local_id\x18\x01 \x01(\t\x12\x13\n\x0b\x61\x63knowledge\x18\x02 \x01(\x08\x12\x12\n\nerror_code\x18\x03 \x01(\x05\x12\r\n\x05\x65rror\x18\x04 \x01(\t\"\x90\x01\n\x10\x41\x64\x64\x41uditLogBatch\x12.\n\x03log\x18\x01 \x03(\x0b\x32!.ai.verta.uac.versioning.AuditLog\x1aL\n\x08Response\x12@\n\rresponse_rows\x18\x01 \x03(\x0b\x32).ai.verta.uac.versioning.BatchResponseRow\"9\n\x17RangeTimeStampPredicate\x12\x0f\n\x07\x66rom_ts\x18\x01 \x01(\x03\x12\r\n\x05to_ts\x18\x02 \x01(\x03\"A\n\rUserPredicate\x12\x30\n\x04user\x18\x01 \x01(\x0b\x32\".ai.verta.uac.versioning.AuditUser\"M\n\x11ResourcePredicate\x12\x38\n\x08resource\x18\x01 \x01(\x0b\x32&.ai.verta.uac.versioning.AuditResource\"\xeb\x01\n\x12\x41uditLogPredicates\x12M\n\x13timestamp_predicate\x18\x01 \x01(\x0b\x32\x30.ai.verta.uac.versioning.RangeTimeStampPredicate\x12>\n\x0euser_predicate\x18\x02 \x01(\x0b\x32&.ai.verta.uac.versioning.UserPredicate\x12\x46\n\x12resource_predicate\x18\x03 \x01(\x0b\x32*.ai.verta.uac.versioning.ResourcePredicate\"\xcf\x01\n\x0c\x46indAuditLog\x12:\n\x05query\x18\x01 \x01(\x0b\x32+.ai.verta.uac.versioning.AuditLogPredicates\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1aR\n\x08Response\x12/\n\x04logs\x18\x01 \x03(\x0b\x32!.ai.verta.uac.versioning.AuditLog\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x32\xb9\x02\n\x0f\x41uditLogService\x12\x96\x01\n\rpostAuditLogs\x12).ai.verta.uac.versioning.AddAuditLogBatch\x1a\x32.ai.verta.uac.versioning.AddAuditLogBatch.Response\"&\x82\xd3\xe4\x93\x02 \"\x1b/v1/audit-log/postAuditLogs:\x01*\x12\x8c\x01\n\x0c\x66indAuditLog\x12%.ai.verta.uac.versioning.FindAuditLog\x1a..ai.verta.uac.versioning.FindAuditLog.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/audit-log/findAuditLog:\x01*BDP\x01Z@github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac/auditb\x06proto3'
+  serialized_pb=b'\n\x1fuac/audit/AuditLogService.proto\x12\x17\x61i.verta.uac.versioning\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x15uac/RoleService.proto\"\xaa\x01\n\rAuditResource\x12\x13\n\x0bresource_id\x18\x01 \x01(\t\x12\x31\n\rresource_type\x18\x02 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x12;\n\x10resource_service\x18\x03 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x14\n\x0cworkspace_id\x18\x04 \x01(\x04\"\x1c\n\tAuditUser\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"\xbd\x02\n\x08\x41uditLog\x12\x30\n\x04user\x18\x01 \x01(\x0b\x32\".ai.verta.uac.versioning.AuditUser\x12\x38\n\x08resource\x18\x02 \x03(\x0b\x32&.ai.verta.uac.versioning.AuditResource\x12$\n\x06\x61\x63tion\x18\x03 \x01(\x0b\x32\x14.ai.verta.uac.Action\x12\x13\n\x0bmethod_name\x18\x08 \x01(\t\x12\x14\n\x0cworkspace_id\x18\t \x01(\x04\x12\x0f\n\x07ts_nano\x18\x04 \x01(\x03\x12\'\n\x07request\x18\x05 \x01(\x0b\x32\x16.google.protobuf.Value\x12(\n\x08response\x18\x06 \x01(\x0b\x32\x16.google.protobuf.Value\x12\x10\n\x08local_id\x18\x07 \x01(\t\"\\\n\x10\x42\x61tchResponseRow\x12\x10\n\x08local_id\x18\x01 \x01(\t\x12\x13\n\x0b\x61\x63knowledge\x18\x02 \x01(\x08\x12\x12\n\nerror_code\x18\x03 \x01(\x05\x12\r\n\x05\x65rror\x18\x04 \x01(\t\"\x90\x01\n\x10\x41\x64\x64\x41uditLogBatch\x12.\n\x03log\x18\x01 \x03(\x0b\x32!.ai.verta.uac.versioning.AuditLog\x1aL\n\x08Response\x12@\n\rresponse_rows\x18\x01 \x03(\x0b\x32).ai.verta.uac.versioning.BatchResponseRow\"9\n\x17RangeTimeStampPredicate\x12\x0f\n\x07\x66rom_ts\x18\x01 \x01(\x03\x12\r\n\x05to_ts\x18\x02 \x01(\x03\"A\n\rUserPredicate\x12\x30\n\x04user\x18\x01 \x01(\x0b\x32\".ai.verta.uac.versioning.AuditUser\"M\n\x11ResourcePredicate\x12\x38\n\x08resource\x18\x01 \x01(\x0b\x32&.ai.verta.uac.versioning.AuditResource\"\x82\x02\n\x12\x41uditLogPredicates\x12M\n\x13timestamp_predicate\x18\x01 \x01(\x0b\x32\x30.ai.verta.uac.versioning.RangeTimeStampPredicate\x12>\n\x0euser_predicate\x18\x02 \x01(\x0b\x32&.ai.verta.uac.versioning.UserPredicate\x12\x46\n\x12resource_predicate\x18\x03 \x01(\x0b\x32*.ai.verta.uac.versioning.ResourcePredicate\x12\x15\n\rworkspace_ids\x18\t \x03(\x04\"\xcf\x01\n\x0c\x46indAuditLog\x12:\n\x05query\x18\x01 \x01(\x0b\x32+.ai.verta.uac.versioning.AuditLogPredicates\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1aR\n\x08Response\x12/\n\x04logs\x18\x01 \x03(\x0b\x32!.ai.verta.uac.versioning.AuditLog\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x32\xb9\x02\n\x0f\x41uditLogService\x12\x96\x01\n\rpostAuditLogs\x12).ai.verta.uac.versioning.AddAuditLogBatch\x1a\x32.ai.verta.uac.versioning.AddAuditLogBatch.Response\"&\x82\xd3\xe4\x93\x02 \"\x1b/v1/audit-log/postAuditLogs:\x01*\x12\x8c\x01\n\x0c\x66indAuditLog\x12%.ai.verta.uac.versioning.FindAuditLog\x1a..ai.verta.uac.versioning.FindAuditLog.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/audit-log/findAuditLog:\x01*BDP\x01Z@github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac/auditb\x06proto3'
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,uac_dot_RoleService__pb2.DESCRIPTOR,])
 
 
 
@@ -43,15 +45,22 @@ _AUDITRESOURCE = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='resource_type', full_name='ai.verta.uac.versioning.AuditResource.resource_type', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='resource_service', full_name='ai.verta.uac.versioning.AuditResource.resource_service', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      number=3, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='workspace_id', full_name='ai.verta.uac.versioning.AuditResource.workspace_id', index=3,
+      number=4, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -67,8 +76,8 @@ _AUDITRESOURCE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=118,
-  serialized_end=203,
+  serialized_start=172,
+  serialized_end=342,
 )
 
 
@@ -98,8 +107,8 @@ _AUDITUSER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=205,
-  serialized_end=233,
+  serialized_start=344,
+  serialized_end=372,
 )
 
 
@@ -119,35 +128,56 @@ _AUDITLOG = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='resource', full_name='ai.verta.uac.versioning.AuditLog.resource', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='action', full_name='ai.verta.uac.versioning.AuditLog.action', index=2,
-      number=3, type=9, cpp_type=9, label=1,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='method_name', full_name='ai.verta.uac.versioning.AuditLog.method_name', index=3,
+      number=8, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='ts_nano', full_name='ai.verta.uac.versioning.AuditLog.ts_nano', index=3,
+      name='workspace_id', full_name='ai.verta.uac.versioning.AuditLog.workspace_id', index=4,
+      number=9, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ts_nano', full_name='ai.verta.uac.versioning.AuditLog.ts_nano', index=5,
       number=4, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='metadata_blob', full_name='ai.verta.uac.versioning.AuditLog.metadata_blob', index=4,
-      number=5, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      name='request', full_name='ai.verta.uac.versioning.AuditLog.request', index=6,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='local_id', full_name='ai.verta.uac.versioning.AuditLog.local_id', index=5,
-      number=6, type=9, cpp_type=9, label=1,
+      name='response', full_name='ai.verta.uac.versioning.AuditLog.response', index=7,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='local_id', full_name='ai.verta.uac.versioning.AuditLog.local_id', index=8,
+      number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -164,8 +194,8 @@ _AUDITLOG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=236,
-  serialized_end=428,
+  serialized_start=375,
+  serialized_end=692,
 )
 
 
@@ -216,8 +246,8 @@ _BATCHRESPONSEROW = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=430,
-  serialized_end=522,
+  serialized_start=694,
+  serialized_end=786,
 )
 
 
@@ -247,8 +277,8 @@ _ADDAUDITLOGBATCH_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=593,
-  serialized_end=669,
+  serialized_start=857,
+  serialized_end=933,
 )
 
 _ADDAUDITLOGBATCH = _descriptor.Descriptor(
@@ -277,8 +307,8 @@ _ADDAUDITLOGBATCH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=525,
-  serialized_end=669,
+  serialized_start=789,
+  serialized_end=933,
 )
 
 
@@ -315,8 +345,8 @@ _RANGETIMESTAMPPREDICATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=671,
-  serialized_end=728,
+  serialized_start=935,
+  serialized_end=992,
 )
 
 
@@ -346,8 +376,8 @@ _USERPREDICATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=730,
-  serialized_end=795,
+  serialized_start=994,
+  serialized_end=1059,
 )
 
 
@@ -377,8 +407,8 @@ _RESOURCEPREDICATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=797,
-  serialized_end=874,
+  serialized_start=1061,
+  serialized_end=1138,
 )
 
 
@@ -410,6 +440,13 @@ _AUDITLOGPREDICATES = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='workspace_ids', full_name='ai.verta.uac.versioning.AuditLogPredicates.workspace_ids', index=3,
+      number=9, type=4, cpp_type=4, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -422,8 +459,8 @@ _AUDITLOGPREDICATES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=877,
-  serialized_end=1112,
+  serialized_start=1141,
+  serialized_end=1399,
 )
 
 
@@ -460,8 +497,8 @@ _FINDAUDITLOG_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1240,
-  serialized_end=1322,
+  serialized_start=1527,
+  serialized_end=1609,
 )
 
 _FINDAUDITLOG = _descriptor.Descriptor(
@@ -497,12 +534,17 @@ _FINDAUDITLOG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1115,
-  serialized_end=1322,
+  serialized_start=1402,
+  serialized_end=1609,
 )
 
+_AUDITRESOURCE.fields_by_name['resource_type'].message_type = uac_dot_RoleService__pb2._RESOURCETYPE
+_AUDITRESOURCE.fields_by_name['resource_service'].enum_type = uac_dot_RoleService__pb2._SERVICEENUM_SERVICE
 _AUDITLOG.fields_by_name['user'].message_type = _AUDITUSER
 _AUDITLOG.fields_by_name['resource'].message_type = _AUDITRESOURCE
+_AUDITLOG.fields_by_name['action'].message_type = uac_dot_RoleService__pb2._ACTION
+_AUDITLOG.fields_by_name['request'].message_type = google_dot_protobuf_dot_struct__pb2._VALUE
+_AUDITLOG.fields_by_name['response'].message_type = google_dot_protobuf_dot_struct__pb2._VALUE
 _ADDAUDITLOGBATCH_RESPONSE.fields_by_name['response_rows'].message_type = _BATCHRESPONSEROW
 _ADDAUDITLOGBATCH_RESPONSE.containing_type = _ADDAUDITLOGBATCH
 _ADDAUDITLOGBATCH.fields_by_name['log'].message_type = _AUDITLOG
@@ -622,8 +664,8 @@ _AUDITLOGSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1325,
-  serialized_end=1638,
+  serialized_start=1612,
+  serialized_end=1925,
   methods=[
   _descriptor.MethodDescriptor(
     name='postAuditLogs',
