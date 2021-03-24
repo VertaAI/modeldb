@@ -852,23 +852,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .build();
         throw StatusProto.toStatusRuntimeException(status);
       }
-      //  1. Hibernate insert.
-      //
-      //      Transaction transaction = session.beginTransaction();
-      //      List<ObservationEntity> newObservationList =
-      //          RdbmsUtils.convertObservationsFromObservationEntityList(
-      //              session,
-      //              experimentRunEntityObj,
-      //              ModelDBConstants.OBSERVATIONS,
-      //              observations,
-      //              ExperimentRunEntity.class.getSimpleName(),
-      //              experimentRunId);
-      //      for (ObservationEntity observationEntity : newObservationList) {
-      //        session.save(observationEntity);
-      //      }
-      //      transaction.commit();
-
-      // 2. Native Query insert
       Transaction transaction = session.beginTransaction();
       RdbmsUtils.validateObservationList(
               session, observations, ExperimentRunEntity.class.getSimpleName(), experimentRunId)
