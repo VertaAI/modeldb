@@ -36,25 +36,25 @@ public class UAC {
 
   private UAC(Config config) {
     this(
-            config.authService.host,
-            config.authService.port,
-            config.service_user.email,
-            config.service_user.devKey);
+        config.authService.host,
+        config.authService.port,
+        config.service_user.email,
+        config.service_user.devKey);
   }
 
   public UAC(String host, Integer port, String serviceUserEmail, String serviceUserDevKey) {
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
     if (host != null && port != null) { // AuthService not available.
       authServiceChannel =
-              ManagedChannelBuilder.forTarget(host + CommonConstants.STRING_COLON + port)
-                      .usePlaintext()
-                      .build();
+          ManagedChannelBuilder.forTarget(host + CommonConstants.STRING_COLON + port)
+              .usePlaintext()
+              .build();
 
       this.serviceUserEmail = serviceUserEmail;
       this.serviceUserDevKey = serviceUserDevKey;
     } else {
       throw new UnavailableException(
-              "Host OR Port not found for contacting authentication service");
+          "Host OR Port not found for contacting authentication service");
     }
 
     collaboratorServiceFutureStub = CollaboratorServiceGrpc.newFutureStub(authServiceChannel);
@@ -73,18 +73,22 @@ public class UAC {
   }
 
   public UAC withServiceAccount() {
+    return this.withServiceAccount(this.serviceUserEmail, this.serviceUserDevKey);
+  }
+
+  public UAC withServiceAccount(String serviceUserEmail, String serviceUserDevKey) {
     UAC c = new UAC(this);
     Metadata requestHeaders = new Metadata();
     Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> dev_key =
-            Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+        Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> dev_key_hyphen =
-            Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+        Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-    requestHeaders.put(email_key, this.serviceUserEmail);
-    requestHeaders.put(dev_key, this.serviceUserDevKey);
-    requestHeaders.put(dev_key_hyphen, this.serviceUserDevKey);
+    requestHeaders.put(email_key, serviceUserEmail);
+    requestHeaders.put(dev_key, serviceUserDevKey);
+    requestHeaders.put(dev_key_hyphen, serviceUserDevKey);
     requestHeaders.put(source_key, "PythonClient");
 
     c.clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
@@ -97,7 +101,7 @@ public class UAC {
       return collaboratorServiceFutureStub.withInterceptors(clientInterceptor);
     }
     return collaboratorServiceFutureStub.withInterceptors(
-            MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
+        MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
   }
 
   public UACServiceGrpc.UACServiceFutureStub getUACService() {
@@ -105,7 +109,7 @@ public class UAC {
       return uacServiceFutureStub.withInterceptors(clientInterceptor);
     }
     return uacServiceFutureStub.withInterceptors(
-            MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
+        MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
   }
 
   public WorkspaceServiceGrpc.WorkspaceServiceFutureStub getWorkspaceService() {
@@ -113,6 +117,6 @@ public class UAC {
       return workspaceServiceFutureStub.withInterceptors(clientInterceptor);
     }
     return workspaceServiceFutureStub.withInterceptors(
-            MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
+        MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
   }
 }
