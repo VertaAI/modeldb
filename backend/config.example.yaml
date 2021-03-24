@@ -8,16 +8,15 @@ springServer:
   port: 8086
   shutdownTimeout: 30 #time in second
 
-mdb_service_user:
+service_user:
   email:
   devKey:
 
 artifactStoreConfig:
   artifactStoreType: NFS #S3, GCP, NFS
   pickArtifactStoreHostFromConfig: false
-  artifactStoreServerHost: localhost:8086
-  artifactStoreUrlProtocol: http
-  artifactStoreServerPort: 8086
+  host: localhost:8086
+  protocol: http
   artifactEndpoint:
     getArtifact: "/v1/artifact/getArtifact"
     storeArtifact: "/v1/artifact/storeArtifact"
